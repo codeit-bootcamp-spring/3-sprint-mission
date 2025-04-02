@@ -1,16 +1,39 @@
 package com.sprint.mission.discodeit.entity;
 
-public class Channel {
+public class Channel extends Common {
 	/*
 	 * # Channel field
+	 *
+	 * ## Local
+	 * - name(회원명)
+	 *
+	 * ## Common
 	 * - id(UUID)
 	 * - createdAt(최초 생성)
-	 * - updateAt(최초 생성, 수정 시)
+	 * - updatedAt(생성 직후?, 수정 시)
 	 */
+	private String name;
 
-	// 채널 생성 - id(채널 UUID), pw(비공개 채널?), name(채널명), createdAt(최초 생성), updatedAt(생성 직후?, 수정 시)
+	public Channel(String name) {
+		super(); // Common 객체 생성 - id, createdAt, updatedAt
+		this.name = name;
+	}
 
-	// 정보 수정 - pw, name, updatedAt
+	public String getName() {
+		return name;
+	}
 
-	// getter, setter
+	public void setName(String name) {
+		this.name = name;
+		super.setUpdatedAt(); // 수정 시간 업데이트
+	}
+
+	@Override
+	public String toString() {
+		return "Channel{" +
+				"name='" + name + '\'' +
+				", createdAt='" + getCreatedAt() + '\'' +
+				", updatedAt='" + getUpdatedAt() + '\'' +
+				'}';
+	}
 }
