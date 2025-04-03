@@ -1,12 +1,13 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class JCFChannelService {
+public class JCFChannelService implements ChannelService {
 
     private final List<Channel> channelList;
 
@@ -18,17 +19,17 @@ public class JCFChannelService {
         channelList.add(channel);
     }
 
-    List<Channel> readById(UUID id) {
+    public List<Channel> readById(UUID id) {
         return channelList.stream()
                 .filter(c -> c.getId().equals(id))
                 .collect(Collectors.toList());
     }
 
-    List<Channel> readAll() {
+    public List<Channel> readAll() {
         return channelList;
     }
 
-    void update(UUID id, String channelName, String channelDescription,
+    public void update(UUID id, String channelName, String channelDescription,
                 boolean isPrivate) {
 
         for (Channel c: channelList) {
@@ -38,7 +39,7 @@ public class JCFChannelService {
         }
     }
 
-    void deleteById(UUID id) {
+    public void deleteById(UUID id) {
         channelList.removeIf(c -> c.getId().equals(id));
     }
 

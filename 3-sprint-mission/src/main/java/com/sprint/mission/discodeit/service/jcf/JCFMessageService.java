@@ -2,12 +2,13 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class JCFMessageService {
+public class JCFMessageService implements MessageService {
 
     private final List<Message> messageList;
 
@@ -19,17 +20,17 @@ public class JCFMessageService {
         messageList.add(message);
     }
 
-    List<Message> readById(UUID id) {
+    public List<Message> readById(UUID id) {
         return messageList.stream()
                 .filter(m -> m.getId().equals(id))
                 .collect(Collectors.toList());
     }
 
-    List<Message> readAll() {
+    public List<Message> readAll() {
         return messageList;
     }
 
-    void update(UUID id, String content) {
+    public void update(UUID id, String content) {
 
         for (Message m: messageList) {
             if (m.getId().equals(id)) {
@@ -38,7 +39,7 @@ public class JCFMessageService {
         }
     }
 
-    void deleteById(UUID id) {
+    public void deleteById(UUID id) {
         messageList.removeIf(m -> m.getId().equals(id));
     }
 

@@ -7,14 +7,15 @@ import java.util.UUID;
 
 public interface UserService {
 
-    void create(User user);
+    public void create(User user);
 
-    List<User> readById(UUID id);
+    public List<User> readById(UUID id);
 
-    List<User> readAll();
+    public List<User> readAll();
 
-    void update(UUID id);
+    public void update(UUID id, String userName, String userId
+            ,String userPassword, String userEmail);
 
-    void deleteById(UUID id);
+    public void deleteById(UUID id);
 
 }

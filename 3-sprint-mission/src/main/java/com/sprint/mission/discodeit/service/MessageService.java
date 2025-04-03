@@ -7,13 +7,13 @@ import java.util.UUID;
 
 public interface MessageService {
 
-    void create(Message message);
+    public void create(Message message);
 
-    Message readById(UUID id);
+    public List<Message> readById(UUID id);
 
-    List<Message> readAll();
+    public List<Message> readAll();
 
-    void update(UUID id, Message message);
+    public void update(UUID id, String content);
 
-    void deleteById(UUID id);
+    public void deleteById(UUID id);
 }
