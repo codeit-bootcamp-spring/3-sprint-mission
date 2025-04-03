@@ -6,7 +6,7 @@ import java.util.UUID;
 import static java.lang.System.currentTimeMillis;
 
 public class User {
-    private UUID id = UUID.randomUUID();
+    private final UUID id = UUID.randomUUID();
     private String name;
     private String createdAt = new SimpleDateFormat("HH:mm:ss").format(currentTimeMillis());
     private String UpdatedAt;
