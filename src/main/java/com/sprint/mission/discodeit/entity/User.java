@@ -18,6 +18,7 @@ public class User {
         // for fixed unique id
         this.id = UUID.nameUUIDFromBytes(name.concat(String.valueOf(age)).getBytes());
         this.createdAt = Instant.now().getEpochSecond();
+        this.updatedAt = Instant.now().getEpochSecond();
 
     }
 
