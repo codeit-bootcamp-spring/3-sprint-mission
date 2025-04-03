@@ -137,13 +137,25 @@ public class JavaApplication {
         System.out.println("updatedchannel = " + updatedchannel.toString());
 
         // Channel 삭제
-        channelService.delete(channel2.getId());
+        channelService.delete(channel3.getId());
 
         // Channel 삭제 후 결과 조회
         channelService.readAll().stream().forEach(ch ->
                 System.out.println(ch.toString())
         );
 
+        // Channel 입장
+        channelService.joinChannel(channel1, user2);
+        channelService.joinChannel(channel2, user4);
+        channelService.joinChannel(channel2, user5);
+
+        // Channel 퇴장
+        channelService.leaveChannel(channel2, user3);
+
+        // 참가자 리스트
+        channelService.readAttendees(channel2).stream().forEach(user ->
+                System.out.println(user.toString())
+        );
 
         System.out.println("---service end---");
 

@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 
@@ -68,17 +67,17 @@ public class JCFChannelService implements ChannelService {
         return selectedChannel.getAttendees();
     }
 
-    @Override
-    public void sendMessage(Channel ch, Message msg) {
-        Channel selectedChannel = this.data.get(ch.getId());
-        //TODO : 참조변수 추가 방법 체크
-        selectedChannel.getMessages().addAll(Arrays.asList(msg));
-    }
-
-    @Override
-    public List<Message> readMessages(Channel ch) {
-        Channel selectedChannel = this.data.get(ch.getId());
-        return selectedChannel.getMessages();
-    }
+    // Q. 메세지 로직은 MessageService에 있어야하는데?
+//    @Override
+//    public void sendMessage(Channel ch, Message msg) {
+//        Channel selectedChannel = this.data.get(ch.getId());
+//        selectedChannel.getMessages().addAll(Arrays.asList(msg));
+//    }
+//
+//    @Override
+//    public List<Message> readMessages(Channel ch) {
+//        Channel selectedChannel = this.data.get(ch.getId());
+//        return selectedChannel.getMessages();
+//    }
 
 }

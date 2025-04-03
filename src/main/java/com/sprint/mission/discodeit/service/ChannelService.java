@@ -5,7 +5,6 @@ package com.sprint.mission.discodeit.service;
  * */
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
@@ -29,8 +28,9 @@ public interface ChannelService {
 
     public List<User> readAttendees(Channel ch);
 
-    public void sendMessage(Channel ch, Message message);
-
-    public List<Message> readMessages(Channel ch);
+    // Q. 메세지 로직은 MessageService에 있어야하는데?
+//    public void sendMessage(Channel ch, Message message);
+//
+//    public List<Message> readMessages(Channel ch);
 
 }
