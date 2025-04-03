@@ -19,9 +19,9 @@ public interface ChannelService {
 
     public List<Channel> readAll();
 
-    public Channel update(Channel ch);
+    public Channel update(UUID id, String name);
 
-    public boolean delete(Channel ch);
+    public boolean delete(UUID id);
 
     public User joinChannel(Channel ch, User user);
 

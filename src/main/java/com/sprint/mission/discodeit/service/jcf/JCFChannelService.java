@@ -31,16 +31,15 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(Channel ch) {
-        Channel selected = this.data.get(ch.getId());
-        selected.update(ch);
+    public Channel update(UUID id, String name) {
+        Channel selected = this.data.get(id);
+        selected.update(name);
         return selected;
     }
 
     @Override
-    public boolean delete(Channel ch) {
-        this.data.remove(ch.getId());
-
+    public boolean delete(UUID id) {
+        this.data.remove(id);
         //TODO : update return value
         return true;
     }

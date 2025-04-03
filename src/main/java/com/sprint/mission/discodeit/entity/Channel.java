@@ -16,9 +16,13 @@ public class Channel {
 
     // Q. attendees는 처음부터 리스트로 받아야하나? 아니면 User로 받고 생성자 안에서 처리해줘야하나?
     public Channel(String name, User attendee) {
+        // for fixed unique id
+        this.id = UUID.nameUUIDFromBytes(name.concat(attendee.getName()).getBytes());
         this.name = name;
         this.attendees = new ArrayList<>();
         this.attendees.add(attendee);
+        this.createdAt = Instant.now().getEpochSecond();
+        this.updatedAt = Instant.now().getEpochSecond();
     }
 
     public UUID getId() {
@@ -56,9 +60,21 @@ public class Channel {
     }
 
     // 필드를 수정하는 update 함수를 정의하세요.
-    public void update(Channel ch) {
+    public void update(String name) {
         // TODO: add setter method for field
-        this.name = ch.getName();
+        this.name = name;
         this.updatedAt = Instant.now().getEpochSecond();
+    }
+
+    @Override
+    public String toString() {
+        return "Channel{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", name='" + name + '\'' +
+                ", attendees=" + attendees +
+                ", messages=" + messages +
+                '}';
     }
 }
