@@ -1,10 +1,14 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
+
+import java.util.List;
+
 public class JCFChannelService {
 
-    private final JCFUserService userService;
+    private final List<Channel> channelList;
 
-    public JCFChannelService(JCFUserService userService) {
-        this.userService = userService;
+    public JCFChannelService(List<Channel> channelList) {
+        this.channelList = channelList;
     }
 }

@@ -9,7 +9,7 @@ public interface UserService {
 
     void create(User user);
 
-    User readById(UUID id);
+    List<User> readById(UUID id);
 
     List<User> readAll();
 
