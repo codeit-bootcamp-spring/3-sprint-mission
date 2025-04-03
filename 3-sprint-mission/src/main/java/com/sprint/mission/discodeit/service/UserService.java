@@ -13,7 +13,7 @@ public interface UserService {
 
     List<User> readAll();
 
-    void update(UUID id, User user);
+    void update(UUID id);
 
     void deleteById(UUID id);
 

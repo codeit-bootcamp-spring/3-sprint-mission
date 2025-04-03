@@ -29,7 +29,7 @@ public class JCFUserService {
     }
 
     //수정 필요성 (DTO로 수정할 파라미터를 받는게 제일 깔끔할 듯, 그러나 오버라이드도 가능)
-    public void update(UUID id, User user , String userName, String userId
+    public void update(UUID id, String userName, String userId
                        ,String userPassword, String userEmail) {
         for (User u : userList) {
             if (u.getId().equals(id)) {

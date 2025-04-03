@@ -9,11 +9,11 @@ public interface ChannelService {
 
     void create(Channel channel);
 
-    Channel readById(UUID id);
+    List<Channel> readById(UUID id);
 
     List<Channel> readAll();
 
-    void update(UUID id, Channel channel);
+    void update(UUID id);
 
     void deleteById(UUID id);
 
