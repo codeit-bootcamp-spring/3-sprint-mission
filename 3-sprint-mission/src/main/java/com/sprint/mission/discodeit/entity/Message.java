@@ -25,7 +25,7 @@ public class Message extends BaseEntity {
         return content;
     }
 
-    public void update(String userId, String channelId, String content) {
+    public void update(String content) {
         this.content = content;
         setUpdatedAt();
     }
