@@ -40,7 +40,11 @@ public class User {
     }
 
     // 필드를 수정하는 update 함수를 정의하세요.
-    public void update() {
-        // TODO: need to update this.updatedAt
+    public void update(User user) {
+        this.updatedAt = Instant.now().getEpochSecond();
+
+        //TODO : to check if values are different before update
+        this.name = user.name;
+        this.age = user.age;
     }
 }
