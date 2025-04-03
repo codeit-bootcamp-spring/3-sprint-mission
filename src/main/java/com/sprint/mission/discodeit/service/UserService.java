@@ -20,8 +20,12 @@ public interface UserService {
 
     public List<User> readAll();
 
-    public User update(User user);
+    public User update(UUID id, String name);
 
-    public boolean delete(User user);
+    public User update(UUID id, int age);
+
+    public User update(UUID id, String name, int age);
+
+    public boolean delete(UUID id);
 
 }

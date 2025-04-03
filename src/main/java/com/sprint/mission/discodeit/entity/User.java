@@ -15,8 +15,10 @@ public class User {
     public User(String name, int age) {
         this.name = name;
         this.age = age;
-        this.id = UUID.randomUUID();
+        // for fixed unique id
+        this.id = UUID.nameUUIDFromBytes(name.concat(String.valueOf(age)).getBytes());
         this.createdAt = Instant.now().getEpochSecond();
+
     }
 
     public UUID getId() {
@@ -40,11 +42,28 @@ public class User {
     }
 
     // 필드를 수정하는 update 함수를 정의하세요.
-    public void update(User user) {
+    public void update(String name) {
         this.updatedAt = Instant.now().getEpochSecond();
 
         //TODO : to check if values are different before update
-        this.name = user.name;
-        this.age = user.age;
+        this.name = name;
+    }
+
+    public void update(int age) {
+        this.updatedAt = Instant.now().getEpochSecond();
+
+        //TODO : to check if values are different before update
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", name='" + name + '\'' +
+                ", age=" + age +
+                '}';
     }
 }

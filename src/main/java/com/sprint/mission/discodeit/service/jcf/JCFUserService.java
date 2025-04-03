@@ -55,15 +55,30 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User update(User user) {
-        User selected = this.data.get(user.getId());
-        selected.update(user);
+    public User update(UUID id, String name) {
+        User selected = this.data.get(id);
+        selected.update(name);
         return selected;
     }
 
     @Override
-    public boolean delete(User user) {
-        this.data.remove(user.getId());
+    public User update(UUID id, int age) {
+        User selected = this.data.get(id);
+        selected.update(age);
+        return selected;
+    }
+
+    @Override
+    public User update(UUID id, String name, int age) {
+        User selected = this.data.get(id);
+        selected.update(name);
+        selected.update(age);
+        return selected;
+    }
+
+    @Override
+    public boolean delete(UUID id) {
+        this.data.remove(id);
 
         //TODO : update return value
         return true;
