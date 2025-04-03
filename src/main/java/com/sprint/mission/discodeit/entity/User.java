@@ -41,8 +41,9 @@ public class User extends Common {
 	@Override
 	public String toString() {
 		return "User{" +
-				"name='" + name + '\'' +
+				"name='" + getName() + '\'' +
 				", pwd='" + pwd + '\'' +
+				", id='" + getId() + '\'' +
 				", createdAt='" + getCreatedAt() + '\'' +
 				", updatedAt='" + getUpdatedAt() + '\'' +
 				'}';

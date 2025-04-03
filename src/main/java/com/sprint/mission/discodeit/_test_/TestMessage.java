@@ -15,7 +15,7 @@ public class TestMessage {
 		// User 생성
 		User user = new User("user1","pw123");
 		// Channel 생성
-		Channel channel = new Channel("channel1");
+		Channel channel = new Channel(user,"channel1");
 
 		// Message 생성
 		Message message = new Message("blahblah", user.getId(), channel.getId());

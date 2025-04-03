@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit._test_;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.User;
 
 public class TestChannel {
 	public static void main(String[] args) {
@@ -11,8 +12,9 @@ public class TestChannel {
 		 * - Channel 생성, 결과 출력
 		 */
 		try {
+			User user = new User("user1","pwd123");
 			// Channel 생성
-			Channel channel = new Channel("channel1");
+			Channel channel = new Channel(user,"channel1");
 			System.out.println(channel);
 
 			// 이름 변경
