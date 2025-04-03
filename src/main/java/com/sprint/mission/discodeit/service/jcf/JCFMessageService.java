@@ -44,17 +44,15 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public List<String> findAllMessages() {
-        return data.stream().map(message -> message.getMessage()).collect(Collectors.toList());
+    public List<Message> findAllMessages() {
+        return data.stream().collect(Collectors.toList());
     }
 
     @Override
-    public List<String> findMessageById(UUID id) {
-        List<String> result = data.stream()
+    public List<Message> findMessageById(UUID id) {
+        return data.stream()
                 .filter(message -> message.getId().equals(id))
-                .map(message -> message.getMessage())
                 .collect(Collectors.toList());
-        return result;
     }
 
     @Override

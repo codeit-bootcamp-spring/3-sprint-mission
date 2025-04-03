@@ -37,7 +37,7 @@ public class JCFUserService implements UserService {
 
     // 단건 조회
     @Override
-    public List<User> findUserByUsername(UUID id) {
+    public List<User> findUserById(UUID id) {
         List<User> users = data.stream().filter(user -> user.getId().equals(id)).collect(Collectors.toList());
         if (users.isEmpty()) {
             return new ArrayList<>();

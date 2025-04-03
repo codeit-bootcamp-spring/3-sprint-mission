@@ -19,9 +19,9 @@ import java.util.UUID;
 public interface MessageService {
     UUID createMessage(UUID senderId, UUID channelId, String message);
 
-    List<String> findAllMessages();
+    List<Message> findAllMessages();
 
-    List<String> findMessageById(UUID id);
+    List<Message> findMessageById(UUID id);
 
     void updateMessage(UUID id, String newMessage);
 
