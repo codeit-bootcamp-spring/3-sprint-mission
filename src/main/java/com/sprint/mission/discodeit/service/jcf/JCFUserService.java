@@ -12,17 +12,20 @@ public class JCFUserService implements UserService {
 	private final Map<UUID, User> data = new HashMap<>();
 
 	// 등록
+	@Override
 	public User create(User user) {
 		data.put(user.getId(), user);
 		return user;
 	}
 
 	// 단건 조회
+	@Override
 	public User read(UUID id) {
 		return data.get(id);
 	}
 
 	// name으로 조회
+	@Override
 	public List<User> readByName(String name) {
 		// data에서 name으로 조회된 결과를 담아서 리턴
 		return data.values().stream() // Map의 User 객체들을 Stream으로 변환
@@ -31,11 +34,13 @@ public class JCFUserService implements UserService {
 	}
 
 	// 전체 조회
+	@Override
 	public List<User> readAll() {
 		return new ArrayList<>(data.values());
 	}
 
 	// 이름 또는 비밀번호 수정
+	@Override
 	public User update(User user, String name, String pwd) {
 		if(name!=null && !name.isEmpty()) {
 			user.setName(name);
@@ -49,6 +54,7 @@ public class JCFUserService implements UserService {
 
 	// 삭제
 	// 실제 삭제가 아닌 flag로 변경할 수도?
+	@Override
 	public void delete(UUID id) {
 		data.remove(id);
 	}

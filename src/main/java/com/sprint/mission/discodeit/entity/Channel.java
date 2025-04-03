@@ -10,7 +10,7 @@ public class Channel extends Common {
 	 * ## Local
 	 * - creator (생성자)
 	 * - name (채널명)
-	 * - participants (참여자) // 방보다 사용자가 더 많지 않을까
+	 * - participants (참여자) // 방보다 유저가 더 많지 않을까
 	 *
 	 * ## Common
 	 * - id(UUID)

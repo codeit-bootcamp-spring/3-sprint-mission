@@ -16,17 +16,20 @@ public class JCFChannelService implements ChannelService {
 	private final Map<UUID, Channel> data = new HashMap<>();
 
 	// 등록
+	@Override
 	public Channel create(Channel channel) {
 		data.put(channel.getId(), channel);
 		return channel;
 	};
 
 	// 단건 조회
+	@Override
 	public Channel read(UUID id) {
 		return data.get(id);
 	};
 
 	// 생성자 Id로 조회
+	@Override
 	public List<Channel> readByCreatorId(UUID userId) {
 		return data.values().stream()
 				.filter(m -> m.getCreator().getId().equals(userId))
@@ -34,6 +37,7 @@ public class JCFChannelService implements ChannelService {
 	};
 
 	// 참여자 Id로 조회
+	@Override
 	public List<Channel> readByParticipantId(UUID userId) {
     return data.values().stream()
             .filter(m -> m.getParticipants().stream()
@@ -44,6 +48,7 @@ public class JCFChannelService implements ChannelService {
 	};
 
 	// 채널 이름 수정
+	@Override
 	public Channel update(Channel channel, String newName) {
         Channel target = data.get(channel.getId());
         target.setName(newName);
@@ -51,6 +56,7 @@ public class JCFChannelService implements ChannelService {
 	};
 
 	// 참여자 초대
+	@Override
 	public Channel inviteParticipant(Channel channel, User user) throws Exception {
         Channel target = data.get(channel.getId());
 
@@ -67,6 +73,7 @@ public class JCFChannelService implements ChannelService {
 	};
 
 	// 참여자 추방
+	@Override
     public Channel kickParticipant(Channel channel, User user) {
         Channel target = data.get(channel.getId());
 		// 참여자에서 user 제거
@@ -75,6 +82,7 @@ public class JCFChannelService implements ChannelService {
 	};
 
 	// 삭제
+	@Override
 	public void delete(UUID id) {
 		data.remove(id);
 	};

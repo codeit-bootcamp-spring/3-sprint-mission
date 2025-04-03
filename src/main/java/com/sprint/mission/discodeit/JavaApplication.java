@@ -14,7 +14,7 @@ public class JavaApplication {
 	public static void main(String[] args) {
 		JCFUserService userService = new JCFUserService();
 		JCFChannelService channelService = new JCFChannelService();
-		JCFMessageService messageService = new JCFMessageService();
+		JCFMessageService messageService = new JCFMessageService(userService, channelService);
 
 		/* 등록 */
 		// 유저 생성
@@ -32,6 +32,7 @@ public class JavaApplication {
 		Channel channel2_3 = channelService.create(new Channel(user2,"channel2-3"));
 
 		// 메시지 생성
+		System.out.println("[============= 메시지 생성 시 유효성 검사 =============]");
 		Message message1_1_1 = messageService.create(new Message("channel1-1의 메시지", user1.getId(), channel1_1.getId()));
 		Message message1_1_2 = messageService.create(new Message("channel1-1의 메시지", user1.getId(), channel1_1.getId()));
 		Message message1_2_1 = messageService.create(new Message("channel1-2의 메시지", user1.getId(), channel1_2.getId()));
@@ -39,6 +40,7 @@ public class JavaApplication {
 		Message message1_2_3 = messageService.create(new Message("channel1-2의 메시지", user1.getId(), channel1_2.getId()));
 
 		/* 조회(단건, 다건) */
+		System.out.println("\n[============= 조회 =============]");
 		// 유저 단건 조회
 		System.out.println("[유저 단건 조회] - user의 id로 조회");
 		System.out.println(userService.read(user1.getId()));
@@ -60,6 +62,7 @@ public class JavaApplication {
 		messageService.readByUserId(user1.getId()).forEach(System.out::println);
 
 		/* 수정 */
+		System.out.println("\n[============= 수정 =============]");
 		// 유저 수정
 		userService.update(user1, "라이온", null);
 		// 유저 조회
@@ -79,13 +82,13 @@ public class JavaApplication {
 		messageService.readByChannelIdAndUserId(channel1_1.getId(),user1.getId()).forEach(System.out::println);
 
 		/* 삭제 */
+		System.out.println("\n[============= 삭제 =============]");
 		// 유저 삭제
+		// idea: 유저 정보 중 개인정보는 하드 삭제, 관련 데이터(채널의 참여자, 메시지 이력 등)는 소프트 삭제
 		userService.delete(user1.getId());
 		// 유저 조회
-		System.out.println("[유저 삭제 조회] - 같은 유저명이 존해자니 UUID로 비교");
+		System.out.println("[유저 삭제 조회] - 같은 유저명이 존재하니 UUID로 비교");
 		userService.readAll().forEach(System.out::println);
-		System.out.println("[유저 삭제 조회] - 삭제된 유저를 조회하려고 시도");
-		userService.read(user1.getId());
 
 		// 메시지 삭제
 		messageService.delete(message1_1_1.getId());
@@ -93,5 +96,19 @@ public class JavaApplication {
 		// 메시지 조회
 		System.out.println("[메시지 삭제 조회]");
 		messageService.readByChannelIdAndUserId(channel1_1.getId(),user1.getId()).forEach(System.out::println);
+
+		// 채널 삭제
+		channelService.delete(channel1_1.getId());
+		// 채널 조회
+		channelService.readByCreatorId(user1.getId()).forEach(System.out::println);
+
+		/* 유효성 검사 */
+		System.out.println("\n[============= 유효성 검사 =============]");
+		System.out.println("[메시지 유효성 검사 케이스 1]");
+		Message message_valid_1 = messageService.create(new Message("삭제된 유저 & 삭제된 채널의 경우 유저를 먼저 검증해서 오류 우선순위가 다름", user1.getId(), channel1_1.getId()));
+		System.out.println("[메시지 유효성 검사 케이스 2]");
+		Message message_valid_2 = messageService.create(new Message("채널 참여자가 아닌 경우", user2.getId(), channel1_2.getId()));
+		System.out.println("[메시지 유효성 검사 케이스 3]");
+		Message message_valid_3 = messageService.create(new Message("채널이 삭제된 경우", user3.getId(), channel1_1.getId()));
 	}
 }
