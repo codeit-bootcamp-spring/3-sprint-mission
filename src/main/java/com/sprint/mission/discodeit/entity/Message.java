@@ -39,7 +39,9 @@ public class Message {
     }
 
     // 필드를 수정하는 update 함수를 정의하세요.
-    public void update() {
-        // TODO: need to update this.updatedAt
+    public void update(Message msg) {
+        // TODO: add setter method for field
+        this.text = msg.getText();
+        this.updatedAt = Instant.now().getEpochSecond();
     }
 }
