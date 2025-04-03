@@ -12,11 +12,11 @@
     - [x] channelName: 채널 이름 String 타입으로 선언
     - [x] createdAt, updatedAt: 각각 객체의 생성, 수정 시간을 유닉스 타임스탬프로 나타내기 위한 필드로 Long 타입으로 선언
     - [x] updateChannelName: 입력받은 이름으로 channelName 수정
-- [ ] Message
-    - [ ] id: 객체를 식별하기 위한 id로 UUID 타입으로 선언
-    - [ ] message: 메시지 내용 String 타입으로 선언
-    - [ ] createdAt, updatedAt: 각각 객체의 생성, 수정 시간을 유닉스 타임스탬프로 나타내기 위한 필드로 Long 타입으로 선언
-    - [ ] updateMessage: 입력받은 메세지로 message 수정
+- [x] Message
+    - [x] id: 객체를 식별하기 위한 id로 UUID 타입으로 선언
+    - [x] message: 메시지 내용 String 타입으로 선언
+    - [x] createdAt, updatedAt: 각각 객체의 생성, 수정 시간을 유닉스 타임스탬프로 나타내기 위한 필드로 Long 타입으로 선언
+    - [x] updateMessage: 입력받은 메세지로 message 수정
 
 ### Service
 
