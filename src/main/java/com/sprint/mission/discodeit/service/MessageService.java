@@ -19,18 +19,13 @@ import java.util.UUID;
 public interface MessageService {
     UUID createMessage(UUID senderId, UUID channelId, String message);
 
-    List<Message> findAllMessages();
+    List<String> findAllMessages();
 
-    Message findMessageByMessageId(UUID messageId);
+    List<String> findMessageById(UUID id);
 
-    void updateMessage(UUID messageId, String newMessage);
+    void updateMessage(UUID id, String newMessage);
 
-    void deleteMessageById(UUID messageId);
-
-    void deleteMessagesByChannelId(UUID channelId);
-
-
-
+    void deleteMessageById(UUID id);
 
 
 }

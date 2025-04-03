@@ -9,26 +9,27 @@ import java.util.UUID;
  * fileName       : Channel
  * author         : doungukkim
  * date           : 2025. 4. 3.
- * description    : channel entity
+ * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2025. 4. 3.        doungukkim       최초 생성
  */
 public class Channel {
+    // userid,user2id,messages,title(userid의 방),
     private UUID id;
     private Long createdAt;
     private Long updatedAt;
     private String title;
     private List<Message> messages;
-    private List<UUID> usersIds;
+    private List<User> channelUsers;
 
-    public Channel(UUID userId) {
+    public Channel(List<User> channelUsers) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
+        this.title = channelUsers.get(0).getUsername() + "'s channel";
         this.messages = new ArrayList<>();
-        this.usersIds =new ArrayList<>();
-        this.usersIds.add(userId);
+        this.channelUsers = channelUsers;
     }
 
     public String getTitle() {
@@ -47,12 +48,24 @@ public class Channel {
         this.messages = messages;
     }
 
-    public List<UUID> getUsersIds() {
-        return usersIds;
+    public List<User> getChannelUsers() {
+        return channelUsers;
     }
 
-    public void setUsersIds(List<UUID> usersIds) {
-        this.usersIds = usersIds;
+    public void setChannelUsers(List<User> channelUsers) {
+        this.channelUsers = channelUsers;
+    }
+
+    @Override
+    public String toString() {
+        return "Channel{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", \nupdatedAt=" + updatedAt +
+                ", title='" + title + '\'' +
+                ", messages=" + messages +
+                ", channelUsers=" + channelUsers +
+                '}';
     }
 
     public UUID getId() {
@@ -77,17 +90,5 @@ public class Channel {
 
     public void setUpdatedAt(Long updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    @Override
-    public String toString() {
-        return "Channel{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", title='" + title + '\'' +
-                ", messages=" + messages +
-                ", usersIds=" + usersIds +
-                '}';
     }
 }

@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -9,7 +7,7 @@ import java.util.UUID;
  * fileName       : User
  * author         : doungukkim
  * date           : 2025. 4. 3.
- * description    : user entity
+ * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
@@ -20,29 +18,30 @@ public class User {
     private Long createdAt;
     private Long updatedAt;
     private String username;
-    private List<UUID> channelIds;
 
     public User(String username) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.username = username;
-        this.channelIds = new ArrayList<>();
+
     }
 
     public String getUsername() {
         return username;
     }
 
-    public List<UUID> getChannelIds() {
-        return channelIds;
-    }
-
-    public void setChannelIds(List<UUID> channelIds) {
-        this.channelIds = channelIds;
-    }
-
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", username='" + username + '\'' +
+                '}';
     }
 
     public UUID getId() {
@@ -67,16 +66,5 @@ public class User {
 
     public void setUpdatedAt(Long updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", username='" + username + '\'' +
-                ", channelIds=" + channelIds +
-                '}';
     }
 }

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
@@ -7,7 +8,7 @@ import java.util.UUID;
  * fileName       : Message
  * author         : doungukkim
  * date           : 2025. 4. 3.
- * description    : message entity
+ * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
@@ -18,23 +19,15 @@ public class Message {
     private Long createdAt;
     private Long updatedAt;
     private String message;
-    private UUID senderId;
+    private UUID userId;
     private UUID channelId;
 
-    public Message(UUID senderId, UUID channelId, String message) {
+    public Message(UUID userId, UUID channelId, String message) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
-        this.senderId = senderId;
+        this.userId = userId;
         this.channelId = channelId;
         this.message = message;
-    }
-
-    public UUID getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(UUID senderId) {
-        this.senderId = senderId;
     }
 
     public String getMessage() {
@@ -45,6 +38,13 @@ public class Message {
         this.message = message;
     }
 
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
 
     public UUID getChannelId() {
         return channelId;
@@ -52,6 +52,18 @@ public class Message {
 
     public void setChannelId(UUID channelId) {
         this.channelId = channelId;
+    }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", message='" + message + '\'' +
+                ", userId=" + userId +
+                ", channelId=" + channelId +
+                '}';
     }
 
     public UUID getId() {
@@ -76,18 +88,6 @@ public class Message {
 
     public void setUpdatedAt(Long updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    @Override
-    public String toString() {
-        return "Message{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", message='" + message + '\'' +
-                ", senderId=" + senderId +
-                ", channelId=" + channelId +
-                '}';
     }
 }
 
