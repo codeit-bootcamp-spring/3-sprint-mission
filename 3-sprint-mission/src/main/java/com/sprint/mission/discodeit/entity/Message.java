@@ -1,11 +1,32 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+public class Message extends BaseEntity {
+    // userId channelId content
+    private String userId;
+    private String channelId;
+    private String content;
 
-public class Message {
+    public Message(String userId, String channelId, String content) {
+        super();
+        this.userId = userId;
+        this.channelId = channelId;
+        this.content = content;
+    }
 
-    private UUID id;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void update(String userId, String channelId, String content) {
+        this.content = content;
+        setUpdatedAt();
+    }
 }
