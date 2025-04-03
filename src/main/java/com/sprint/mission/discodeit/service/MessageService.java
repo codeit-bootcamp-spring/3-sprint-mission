@@ -17,8 +17,8 @@ public interface MessageService {
 
     public List<Message> readAll();
 
-    public Message update(Message msg);
+    public Message update(UUID id, String text);
 
-    public boolean delete(Message msg);
+    public boolean delete(UUID id);
 
 }

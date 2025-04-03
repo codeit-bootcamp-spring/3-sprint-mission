@@ -14,8 +14,10 @@ public class Message {
     public Message(String text, User sender) {
         this.text = text;
         this.sender = sender;
-        this.id = UUID.randomUUID();
+        // for fixed unique id
+        this.id = UUID.nameUUIDFromBytes(sender.getName().concat(text).getBytes());
         this.createdAt = Instant.now().getEpochSecond();
+        this.updatedAt = Instant.now().getEpochSecond();
     }
 
     public UUID getId() {
@@ -39,9 +41,20 @@ public class Message {
     }
 
     // 필드를 수정하는 update 함수를 정의하세요.
-    public void update(Message msg) {
+    public void update(String text) {
         // TODO: add setter method for field
-        this.text = msg.getText();
+        this.text = text;
         this.updatedAt = Instant.now().getEpochSecond();
+    }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", text='" + text + '\'' +
+                ", sender=" + sender +
+                '}';
     }
 }

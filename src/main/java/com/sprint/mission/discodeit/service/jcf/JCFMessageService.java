@@ -31,15 +31,15 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message update(Message msg) {
-        Message selected = this.data.get(msg.getId());
-        selected.update(msg);
+    public Message update(UUID id, String text) {
+        Message selected = this.data.get(id);
+        selected.update(text);
         return selected;
     }
 
     @Override
-    public boolean delete(Message msg) {
-        this.data.remove(msg.getId());
+    public boolean delete(UUID id) {
+        this.data.remove(id);
 
         //TODO : update return value
         return true;
