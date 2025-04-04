@@ -22,6 +22,8 @@ public interface ChannelService {
 
     public boolean delete(UUID id);
 
+    public List<User> getAttendees(Channel ch);
+
     public User joinChannel(Channel ch, User user);
 
     public User leaveChannel(Channel ch, User user);

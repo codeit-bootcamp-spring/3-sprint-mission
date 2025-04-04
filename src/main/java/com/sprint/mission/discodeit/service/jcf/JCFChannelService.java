@@ -44,6 +44,12 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
+    public List<User> getAttendees(Channel ch) {
+        Channel selected = this.data.get(ch.getId());
+        return selected.getAttendees();
+    }
+
+    @Override
     public User joinChannel(Channel ch, User user) {
         Channel selectedChannel = this.data.get(ch.getId());
         //TODO : 참조변수 추가 방법 체크

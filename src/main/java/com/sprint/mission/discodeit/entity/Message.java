@@ -4,12 +4,12 @@ import java.time.Instant;
 import java.util.UUID;
 
 public class Message {
-    private UUID id;
-    private long createdAt;
+    private final UUID id;
+    private final long createdAt;
     private long updatedAt;
 
     private String text;
-    private User sender;
+    private final User sender;
 
     public Message(String text, User sender) {
         this.text = text;
@@ -54,7 +54,7 @@ public class Message {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", text='" + text + '\'' +
-                ", sender=" + sender +
+                ", sender=" + sender.getName() +
                 '}';
     }
 }
