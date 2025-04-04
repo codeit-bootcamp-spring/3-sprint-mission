@@ -64,4 +64,16 @@ public class Channel extends BaseEntity {
         this.isPrivate = isPrivate;
         setUpdatedAt();
     }
+
+    @Override
+    public String toString() {
+        return "Channel{" +
+                "channelName='" + channelName + '\'' +
+                ", channelDescription='" + channelDescription + '\'' +
+                ", isPrivate=" + isPrivate +
+                ", creator=" + creator +
+                ", memberCount=" + memberCount +
+                ", memberList=" + memberList +
+                '}';
+    }
 }

@@ -19,9 +19,9 @@ public class JCFChannelService implements ChannelService {
         channelList.add(channel);
     }
 
-    public List<Channel> readById(UUID id) {
+    public List<Channel> readById(String channelName) {
         return channelList.stream()
-                .filter(c -> c.getId().equals(id))
+                .filter(c -> c.getChannelName().equals(channelName))
                 .collect(Collectors.toList());
     }
 
@@ -29,18 +29,18 @@ public class JCFChannelService implements ChannelService {
         return channelList;
     }
 
-    public void update(UUID id, String channelName, String channelDescription,
+    public void update(String channelName, String ModifiedChannelName, String channelDescription,
                 boolean isPrivate) {
 
         for (Channel c: channelList) {
-            if (c.getId().equals(id)) {
-                c.update(channelName, channelDescription, isPrivate);
+            if (c.getChannelName().equals(channelName)) {
+                c.update(ModifiedChannelName, channelDescription, isPrivate);
             }
         }
     }
 
-    public void deleteById(UUID id) {
-        channelList.removeIf(c -> c.getId().equals(id));
+    public void deleteById(String channelName) {
+        channelList.removeIf(c -> c.getChannelName().equals(channelName));
     }
 
 }
