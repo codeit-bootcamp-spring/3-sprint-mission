@@ -38,6 +38,10 @@ public class Channel {
         return ownerChannelId;
     }
 
+    public String getChannelName() {
+        return channelName;
+    }
+
     public boolean isPrivate() {
         return isPrivate;
     }
