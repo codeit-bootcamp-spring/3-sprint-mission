@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.entity;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-// 필요하다면 다른 import 추가 (e.g., List<UUID> for members)
 
 public class Channel {
 
@@ -44,10 +43,6 @@ public class Channel {
 
     public boolean isPrivate() {
         return isPrivate;
-    }
-
-    public String getChannelName() {
-        return channelName;
     }
 
     public String getPassword() {
