@@ -131,12 +131,12 @@ public class JavaApplication {
 
         //----------------------Message----------------------
         // 메세지 생성
-        Message message1 = new Message(LJY.getId(), spring.getId(), "위워크 금욜 ㄱㄱ");
-        Message message2 = new Message(HJI.getId(), spring.getId(), "ㅇㅋㅇㅋ");
-        Message message3 = new Message(BEH.getId(), lol.getId(), "미드");
-        Message message4 = new Message(JHA.getId(), yanolja.getId(), "예약 완료");
-        Message message5 = new Message(JYJ.getId(), spring.getId(), "ㅇㅋ");
-        Message message6 = new Message(LJY.getId(), lol.getId(), "정글");
+        Message message1 = new Message(LJY, spring, "위워크 금욜 ㄱㄱ");
+        Message message2 = new Message(HJI, spring, "ㅇㅋㅇㅋ");
+        Message message3 = new Message(BEH, lol, "미드");
+        Message message4 = new Message(JHA, yanolja, "예약 완료");
+        Message message5 = new Message(JYJ, spring, "ㅇㅋ");
+        Message message6 = new Message(LJY, lol, "정글");
 
 
         List<Message> messageList = new ArrayList<>();

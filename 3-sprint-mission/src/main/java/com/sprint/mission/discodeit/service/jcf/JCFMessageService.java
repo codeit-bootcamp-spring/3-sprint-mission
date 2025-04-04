@@ -28,7 +28,7 @@ public class JCFMessageService implements MessageService {
 
     public List<Message> readByChannelId(UUID id) {
         return messageList.stream()
-                .filter(m -> m.getChannelId().equals(id))
+                .filter(m -> m.getChannel().getId().equals(id))
                 .collect(Collectors.toList());
     }
 

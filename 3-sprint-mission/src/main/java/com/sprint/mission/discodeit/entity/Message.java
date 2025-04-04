@@ -4,22 +4,21 @@ import java.util.UUID;
 
 public class Message extends BaseEntity {
     // userId channelId content
-    private UUID userId;
-    private UUID channelId;
+    private User user;
+    private Channel channel;
     private String content;
 
-    public Message(UUID userId, UUID channelId, String content) {
-        this.userId = userId;
-        this.channelId = channelId;
+    public Message(User user, Channel channel, String content) {
+        this.user = user;
+        this.channel = channel;
         this.content = content;
     }
-
-    public UUID getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public UUID getChannelId() {
-        return channelId;
+    public Channel getChannel() {
+        return channel;
     }
 
     public String getContent() {
@@ -34,9 +33,10 @@ public class Message extends BaseEntity {
     @Override
     public String toString() {
         return "Message{" +
-                "userId=" + userId +
-                ", channelId=" + channelId +
-                ", content='" + content + '\'' +
+                " time: " + getUpdatedAt() +
+                ", userId: " + user.getUserName() +
+                ", channelId: " + channel.getChannelName() +
+                ", content: '" + content + '\'' +
                 '}';
     }
 }
