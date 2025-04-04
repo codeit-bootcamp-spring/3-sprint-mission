@@ -6,12 +6,12 @@ import java.util.UUID;
 public class BaseEntity {
 
     private final UUID id;
-    private final LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private final Long createdAt;
+    private Long updatedAt;
 
     public BaseEntity() {
         this.id = UUID.randomUUID();
-        this.createdAt = LocalDateTime.now();
+        this.createdAt =  System.currentTimeMillis();
         this.updatedAt = this.createdAt;
     }
 
@@ -19,15 +19,15 @@ public class BaseEntity {
         return id;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Long getCreatedAt() {
         return createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public Long getUpdatedAt() {
         return updatedAt;
     }
 
     public void setUpdatedAt() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = System.currentTimeMillis();
     }
 }
