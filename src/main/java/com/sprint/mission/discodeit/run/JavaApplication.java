@@ -14,16 +14,17 @@ import java.util.*;
 public class JavaApplication {
 
     public static void main(String[] args) {
+        // 기본 요구사항
         // User 등록
         UserService userService = new JCFUserService();
         User user1 = new User("name1", "email1@email.com", "pwd123", "Hi",
-                true, new ArrayList<>(), new ArrayList<>());
+                true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         User user2 = new User("name2", "email2@email.com", "pwd1234", "Hello",
-                true, new ArrayList<>(), new ArrayList<>());
+                true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         User user3 = new User("name3", "email3@email.com", "pwd12345", "Nice",
-                true, new ArrayList<>(), new ArrayList<>());
+                true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         User user4 = new User("name4", "email4@email.com", "pwd123456", "I'm Kim",
-                true, new ArrayList<>(), new ArrayList<>());
+                true, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         userService.save(user1);
         userService.save(user2);
         userService.save(user3);
@@ -66,16 +67,16 @@ public class JavaApplication {
 
         System.out.println();
         // Channel 등록
-        ChannelService channelService = new JCFChannelService();
-        Channel channel1 = new Channel("channel1", "It's Channel1",
+        ChannelService channelService = new JCFChannelService(userService);
+        Channel channel1 = new Channel("channel1", user1, "It's Channel1",
                 new ArrayList<>(), new ArrayList<>());
-        Channel channel2= new Channel("channel2", "It's Channel2",
+        Channel channel2= new Channel("channel2", user2, "It's Channel2",
                 new ArrayList<>(), new ArrayList<>());
-        Channel channel3 = new Channel("channel3", "It's Channel3",
+        Channel channel3 = new Channel("channel3", user1, "It's Channel3",
                 new ArrayList<>(), new ArrayList<>());
-        Channel channel4 = new Channel("channel4", "It's Channel4",
+        Channel channel4 = new Channel("channel4", user2,"It's Channel4",
                 new ArrayList<>(), new ArrayList<>());
-        Channel channel5 = new Channel("channel5", "It's Channel5",
+        Channel channel5 = new Channel("channel5", user3, "It's Channel5",
                 new ArrayList<>(), new ArrayList<>());
 
         channelService.save(channel1);
@@ -121,7 +122,7 @@ public class JavaApplication {
 
         System.out.println();
         // Message 등록
-        MessageService messageService = new JCFMessageService();
+        MessageService messageService = new JCFMessageService(userService, channelService);
         Message message1 = new Message("Hello, World!", user1, channel1);
         Message message2 = new Message("Hello", user2, channel2);
         Message message3 = new Message("Hi", user3, channel3);
@@ -174,5 +175,35 @@ public class JavaApplication {
         System.out.println("----------------------------");
         System.out.println("Message5 삭제 확인: ");
         messageService.findAll().forEach(System.out::println);
+
+        // 심화 요구사항
+        System.out.println("----------------------------");
+        Channel channel6 = new Channel("channel6", user4, "It's channel6",
+                new ArrayList<>(), new ArrayList<>());
+
+        // 삭제된 user를 채널 주인으로 설정하여 채널 생성 시도
+        try {
+            channelService.save(channel6);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+
+        Message message6 = new Message("안녕하세요", user4, channel1);
+        System.out.println("----------------------------");
+        // 삭제된 user를 sender로 설정하여 메시지 생성 시도
+        try {
+            messageService.create(message6);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+
+        Message message7 = new Message("반갑습니다.", user1, channel5);
+        System.out.println("----------------------------");
+        // 삭제된 user를 sender로 설정하여 메시지 생성 시도
+        try {
+            messageService.create(message7);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }

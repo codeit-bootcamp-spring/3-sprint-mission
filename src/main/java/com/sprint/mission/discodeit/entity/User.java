@@ -13,9 +13,10 @@ public class User {
     private boolean status; // 접속 여부
     private List<UUID> friends; // 친구 목록
     private List<Channel> channels; // 속한 채널 목록
+    private List<Message> messages; // 보낸 메시지
 
     public User(String name, String email, String password, String introduction,
-                boolean status, List<UUID> friends, List<Channel> channels) {
+                boolean status, List<UUID> friends, List<Channel> channels, List<Message> messages) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.name = name;
@@ -25,6 +26,7 @@ public class User {
         this.status = status;
         this.friends = friends;
         this.channels = channels;
+        this.messages = messages;
     }
 
     public UUID getId() {
@@ -67,6 +69,10 @@ public class User {
         return channels;
     }
 
+    public List<Message> getMessages() {
+        return messages;
+    }
+
     public void updateName(String name) {
         this.name = name;
         this.updatedAt = System.currentTimeMillis();
@@ -99,6 +105,10 @@ public class User {
         this.channels = channels;
     }
 
+    public void updateMessages(List<Message> messages) {
+        this.messages = messages;
+    }
+
     @Override
     public String toString() {
         return "User {\n" +
@@ -112,6 +122,7 @@ public class User {
                 "  status=" + status + ",\n" +
                 "  friends=" + friends + ",\n" +
                 "  channels=" + channels.stream().map(Channel::getId).toList() + "\n" +
+                "  messages=" + messages.stream().map(Message::getId).toList() + "\n" +
                 '}';
     }
 }
