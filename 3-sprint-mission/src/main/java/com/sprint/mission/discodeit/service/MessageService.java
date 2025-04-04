@@ -11,6 +11,8 @@ public interface MessageService {
 
     public List<Message> readById(UUID id);
 
+    public List<Message> readByChannelId(UUID id);
+
     public List<Message> readAll();
 
     public void update(UUID id, String content);
