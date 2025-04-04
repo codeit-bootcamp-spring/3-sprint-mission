@@ -61,6 +61,7 @@ public class JCFUserService implements UserService {
             User user = data.get(i);
             if (user.getId().equals(id)) {
                 data.get(i).setUsername(newName);
+                data.get(i).setUpdatedAt(System.currentTimeMillis());
             }
         }
     }

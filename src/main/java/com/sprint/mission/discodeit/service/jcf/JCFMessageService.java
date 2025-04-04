@@ -60,6 +60,7 @@ public class JCFMessageService implements MessageService {
         for (int i = 0; i < data.size(); i++) {
             if (data.get(i).getId().equals(id)) {
                 data.get(i).setMessage(newMessage);
+                data.get(i).setUpdatedAt(System.currentTimeMillis());
             }
         }
     }

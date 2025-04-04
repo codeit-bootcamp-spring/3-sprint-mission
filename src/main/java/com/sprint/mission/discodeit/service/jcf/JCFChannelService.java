@@ -52,7 +52,7 @@ public class JCFChannelService implements ChannelService {
         for (Channel channel : data) {
             if (channel.getId().equals(id)) {
                 channel.setTitle(title);
-                System.out.println("업데이트 성공");
+                channel.setUpdatedAt(System.currentTimeMillis());
             }
         }
     }
