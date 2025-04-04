@@ -11,4 +11,5 @@ public interface ChannelService {
     List<Channel> getAllChannels();
     void updateChannel(UUID id, String name);
     void deleteChannel(UUID id);
+    public boolean existsById(UUID id);
 }

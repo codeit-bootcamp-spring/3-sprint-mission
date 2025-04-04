@@ -7,15 +7,16 @@ import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class JavaApplication {
     public static void main(String[] args) {
         JCFUserService userService = new JCFUserService();
         JCFChannelService channelService = new JCFChannelService();
-        JCFMessageService messageService = new JCFMessageService();
+        JCFMessageService messageService = new JCFMessageService(userService, channelService);
 
 
         //*** User 클래스 ***
@@ -63,7 +64,6 @@ public class JavaApplication {
         // 2. 모든 채널 조회
         System.out.println("[Channel] 모든 채널 조회");
         channelService.getAllChannels().forEach(System.out::println);
-        //channels.forEach(System.out::println);
 
         // 3. 채널 조회
         System.out.println("\n[Channel] 단일 채널 조회 (코드잇, 스프린트)");
@@ -88,25 +88,29 @@ public class JavaApplication {
         System.out.println("\n--------- Message 클래스 ---------");
 
         // 1. 메시지 생성
-        List<Message> messages = List.of(
+        List<Message> messages = Stream.of(
                 messageService.createMessage(users.get(0).getId(), channels.get(0).getId(), "안녕하세요!"),
                 messageService.createMessage(users.get(2).getId(), channels.get(0).getId(), "안녕하세요 코드잇 채널입니다~"),
-                messageService.createMessage(users.get(1).getId(), channels.get(1).getId(), "스프린트 채널입니다..")
-        );
+                messageService.createMessage(users.get(1).getId(), channels.get(2).getId(), "스프린트 채널입니다..")
+        )
+                .filter(Objects::nonNull)
+                .toList();
 
         // 2. 모든 메시지 조회
         System.out.println("[Message] 모든 메시지 조회");
         messageService.getAllMessages().forEach(System.out::println);
 
         // 3. 메시지 조회
-        System.out.println("\n[Message] 단일 메시지 조회 (첫 번째, 두 번째 메시지)");
+        System.out.println("\n[Message] 단일 메시지 조회 (1, 2번 메시지)");
         System.out.println(messageService.getMessage(messages.get(0).getId()));
         System.out.println(messageService.getMessage(messages.get(1).getId()));
 
-        // 4. 채널
+        // 4. 채널의 메시지 조회
+        System.out.println("\n[Message] 채널1의 메시지 조회");
+        messageService.getMessagesByChannel(channels.get(0).getId()).forEach(System.out::println);
 
         // 5. 메시지 수정
-        System.out.println("\n[Message] 메시지 수정 ()");
+        System.out.println("\n[Message] 메시지 수정 (1번 메시지)");
         messageService.updateMessage(messages.get(0).getId(), "Hello!");
         System.out.println(messageService.getMessage(messages.get(0).getId()));
 

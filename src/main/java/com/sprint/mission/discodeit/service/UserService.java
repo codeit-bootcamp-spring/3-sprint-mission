@@ -11,4 +11,5 @@ public interface UserService {
     List<User> getAllUsers();
     void updateUser(UUID id, String name);
     void deleteUser(UUID id);
+    public boolean existsById(UUID id);
 }
