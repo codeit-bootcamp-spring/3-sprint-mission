@@ -4,10 +4,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /*
 *
@@ -22,8 +19,8 @@ import java.util.UUID;
 public class JCFUserService implements UserService {
     private final Map<UUID, User> data; //database
 
-    public JCFUserService(Map<UUID, User> data) {
-        this.data = data;
+    public JCFUserService() {
+        this.data = new HashMap<>();
     }
 
     @Override

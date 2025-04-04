@@ -7,8 +7,6 @@ import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
-import java.util.HashMap;
-
 public class JavaApplication {
     public static void main(String[] args) {
 
@@ -22,9 +20,9 @@ public class JavaApplication {
 [ ] 조회를 통해 삭제되었는지 확인
 */
 
-        System.out.println("---service start---");
+        System.out.println("🏃🏃🏃Service Start🏃🏃🏃");
         /* user service */
-        JCFUserService userService = new JCFUserService(new HashMap<>());
+        JCFUserService userService = new JCFUserService();
 
         // User 5명 생성 및 등록
         User user1 = new User("John", 20);
@@ -38,7 +36,7 @@ public class JavaApplication {
         userService.create(user4);
         userService.create(user5);
 
-
+        System.out.println("================User Log================");
         // User 조회 - 전체
         userService.readAll().stream().forEach(user ->
                 System.out.println(user.toString())
@@ -64,7 +62,7 @@ public class JavaApplication {
 
 
         /* message service */
-        JCFMessageService messageService = new JCFMessageService(new HashMap<>());
+        JCFMessageService messageService = new JCFMessageService();
 
         // 각 User 마다 2개의 Message 생성 및 등록
         Message msg1 = new Message("hello I'am " + user1.getName() + ", this is my first message!", user1);
@@ -93,6 +91,8 @@ public class JavaApplication {
         messageService.create(msg9);
         messageService.create(msg10);
 
+        System.out.println("================Message Log================");
+
         // Message 조회 - 전체
         messageService.readAll().stream().forEach(msg ->
                 System.out.println(msg.toString())
@@ -113,7 +113,7 @@ public class JavaApplication {
         );
 
         /* Channel service */
-        JCFChannelService channelService = new JCFChannelService(new HashMap<>());
+        JCFChannelService channelService = new JCFChannelService();
 
 
         // channel 총 3개 생성 및 등록
@@ -125,6 +125,7 @@ public class JavaApplication {
         channelService.create(channel2);
         channelService.create(channel3);
 
+        System.out.println("================Channel Log================");
         // Channel 조회 - 전체
         channelService.readAll().stream().forEach(ch ->
                 System.out.println(ch.toString())
@@ -157,7 +158,7 @@ public class JavaApplication {
                 System.out.println(user.toString())
         );
 
-        System.out.println("---service end---");
+        System.out.println("🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️Service End🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️️‍");
 
     }
 }
