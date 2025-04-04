@@ -29,6 +29,7 @@ public class JavaApplication {
     private static ChannelService channelService = new JCFChannelService();
     private static MessageService messageService = new JCFMessageService(channelService);
 
+
     public static void main(String[] args) {
 
         System.out.println("-----------------------------------User 테스트 시작-----------------------------------");
@@ -98,8 +99,8 @@ public class JavaApplication {
         UUID johnChannel = channelService.createChannel(userJohn);
 
 
-//        단건 조회
 
+//        단건 조회
         System.out.println("\n**채널 단건 조회(danielChannel)");
         channelService.findChannelsById(danielChannel).stream()
                 .map(channel -> channel.getTitle())
@@ -175,7 +176,6 @@ public class JavaApplication {
                 .collect(Collectors.joining("] [", "수정 후: ", "")));
 
 
-
 //    [ ] 삭제
         System.out.println("\n**메세지 삭제(Hello, people I am John))");
         System.out.print("삭제 전: ");
@@ -189,6 +189,41 @@ public class JavaApplication {
         System.out.println(messageService.findAllMessages().stream()
                 .map(e -> e.getMessage())
                 .collect(Collectors.joining("] [", "[", "]")));
+
+
+
+        System.out.println("\n\n-----------------------------------심화 과정 테스트-----------------------------------");
+        System.out.println("\n**시나리오 1 : message삭제 => channel의 메세지 삭제");
+
+        // 체널에 메세지 추가
+        UUID testMessageId = messageService.createMessage(jackId, danielChannel, "I am testing deleteMessageById");
+        UUID testMessageId2 = messageService.createMessage(danielId, danielChannel, "I hope this works fine.. please");
+
+        System.out.println("\n삭제 전 채널: ["+channelService.findChannelsById(danielChannel).get(0).getTitle()+"]");
+        // 채널의 메세지 확인
+        channelService.findChannelsById(danielChannel).get(0).getMessages()
+                .stream()
+                .forEach(message -> System.out.println(userService.findUserById(message.getUserId()).get(0).getUsername()+" : "+ message.getMessage()));
+
+        // 메세지 삭제
+        messageService.deleteMessageById(testMessageId);
+
+        // 채널의 메세지 확인
+        System.out.println("\n삭제 후 채널: ["+channelService.findChannelsById(danielChannel).get(0).getTitle()+"]");
+        channelService.findChannelsById(danielChannel).get(0).getMessages()
+                .stream()
+                .forEach(message -> System.out.println(userService.findUserById(message.getUserId()).get(0).getUsername()+" : "+ message.getMessage()));
+
+//        System.out.println("\n**시나리오 2 : channel삭제 => channel의 messages 삭제");
+//
+//        System.out.println("\n삭제 예정 채널: ["+channelService.findChannelsById(danielChannel).get(0).getTitle()+"]");
+//        channelService.findChannelsById(danielChannel).get(0).getMessages()
+//                .stream()
+//                .forEach(message -> System.out.println(userService.findUserById(message.getUserId()).get(0).getUsername()+" : "+ message.getMessage()));
+//
+//        channelService.deleteChannel(danielChannel);
+//        messageService.findMessageById(testMessageId).forEach(message -> System.out.println("삭제한 채널의 메세지 조회결과: "+message.getMessage()));
+
 
 
 

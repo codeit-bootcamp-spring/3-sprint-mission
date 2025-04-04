@@ -19,8 +19,8 @@ import java.util.UUID;
 public interface UserService {
 
     UUID registerUser(String username);
-    List<User> findUserById(UUID id);
+    List<User> findUserById(UUID userId);
     List<User> findAllUsers();
-    void updateUsername(UUID id,String newName);
-    void deleteUser(UUID id);
+    void updateUsername(UUID userId,String newName);
+    void deleteUser(UUID userId);
 }

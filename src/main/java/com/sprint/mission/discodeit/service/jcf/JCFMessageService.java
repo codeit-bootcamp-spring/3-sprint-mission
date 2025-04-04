@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -33,12 +34,14 @@ public class JCFMessageService implements MessageService {
         Message newMessage = new Message(senderId, channelId, message);
         data.add(newMessage);
 
-        // Channel에 message 추가
-        // Channel 찾기
-        if (channelService.findChannelsById(channelId).isEmpty()) {
 
-        }
-        // List에 추가
+        // Channel 찾기
+        List<Message> messages = channelService.findChannelsById(channelId).get(0).getMessages();
+
+        // List에 메세지 추가 추가
+        messages.add(newMessage);
+        // 저장
+        channelService.findChannelsById(channelId).get(0).setMessages(messages);
 
         return newMessage.getId();
     }
@@ -49,16 +52,21 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public List<Message> findMessageById(UUID id) {
-        return data.stream()
-                .filter(message -> message.getId().equals(id))
-                .collect(Collectors.toList());
+    public List<Message> findMessageById(UUID messageId) {
+        try {
+            List<Message> targetMessage = data.stream()
+                    .filter(message -> message.getId().equals(messageId))
+                    .collect(Collectors.toList());
+            return targetMessage;
+        } catch (NullPointerException e) {
+            return new ArrayList<>();
+        }
     }
 
     @Override
-    public void updateMessage(UUID id, String newMessage) {
+    public void updateMessage(UUID messageId, String newMessage) {
         for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getId().equals(id)) {
+            if (data.get(i).getId().equals(messageId)) {
                 data.get(i).setMessage(newMessage);
                 data.get(i).setUpdatedAt(System.currentTimeMillis());
             }
@@ -66,11 +74,24 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void deleteMessageById(UUID id) {
+    public void deleteMessageById(UUID messageid) {
+        List<Channel> channelsById;
         for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getId().equals(id)) {
+            if (data.get(i).getId().equals(messageid)) {
+//                System.out.println("메세지의 id와 같은 메세지 발견 : "+data.get(i).getMessage());
+                channelsById = channelService.findChannelsById(data.get(i).getChannelId()); // List<Channel>
+                for (int j = 0; j < channelsById.size(); j++) {
+                    if (channelsById.get(j).getMessages().contains(findMessageById(messageid).get(0))) {
+//                        System.out.println("체널에서 메세지 삭제");
+                        channelsById.get(j).getMessages().remove(findMessageById(messageid).get(0));
+                        break;
+                    }
+                }
                 data.remove(i);
+                break;
             }
         }
     }
+
+
 }

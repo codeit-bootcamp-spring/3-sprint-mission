@@ -37,8 +37,8 @@ public class JCFUserService implements UserService {
 
     // 단건 조회
     @Override
-    public List<User> findUserById(UUID id) {
-        List<User> users = data.stream().filter(user -> user.getId().equals(id)).collect(Collectors.toList());
+    public List<User> findUserById(UUID userId) {
+        List<User> users = data.stream().filter(user -> user.getId().equals(userId)).collect(Collectors.toList());
         if (users.isEmpty()) {
             return new ArrayList<>();
         } else{
@@ -55,11 +55,11 @@ public class JCFUserService implements UserService {
 
     // 수정
     @Override
-    public void updateUsername(UUID id, String newName) {
+    public void updateUsername(UUID userId, String newName) {
 
         for (int i = 0; i < data.size(); i++) {
             User user = data.get(i);
-            if (user.getId().equals(id)) {
+            if (user.getId().equals(userId)) {
                 data.get(i).setUsername(newName);
                 data.get(i).setUpdatedAt(System.currentTimeMillis());
             }
@@ -68,10 +68,11 @@ public class JCFUserService implements UserService {
 
 //    삭제
     @Override
-    public void deleteUser(UUID id) {
+    public void deleteUser(UUID userId) {
         for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getId().equals(id)) {
+            if (data.get(i).getId().equals(userId)) {
                 data.remove(i);
+                break;
             }
         }
     }
