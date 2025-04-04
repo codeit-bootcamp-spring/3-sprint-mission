@@ -14,22 +14,22 @@ import java.util.List;
 public class JavaApplication {
     public static void main(String[] args) {
 
-//        new User("이주용", "SB001", "B001", "sb001@gmail.com");
-//        new User("황지인", "SB002", "B002", "sb002@gmail.com");
-//        new User("백은호", "SB003", "B003", "sb003@gmail.com");
-//        new User("조현아", "SB004", "B004", "sb004@gmail.comw");
-//        new User("정윤지", "SB005", "B005", "sb005@gmail.com");
+        User LJY = new User("이주용", "SB001", "B001", "sb001@gmail.com");
+        User HJI = new User("황지인", "SB002", "B002", "sb002@gmail.com");
+        User BEH = new User("백은호", "SB003", "B003", "sb003@gmail.com");
+        User JHA = new User("조현아", "SB004", "B004", "sb004@gmail.comw");
+        User JYJ = new User("정윤지", "SB005", "B005", "sb005@gmail.com");
 
         //----------------------User----------------
         List<User> userList = new ArrayList<>();
         UserService userService = new JCFUserService(userList);
 
         //1.등록
-        userService.create(new User("이주용", "SB001", "B001", "sb001@gmail.com"));
-        userService.create(new User("황지인", "SB002", "B002", "sb002@gmail.com"));
-        userService.create(new User("백은호", "SB003", "B003", "sb003@gmail.com"));
-        userService.create(new User("조현아", "SB004", "B004", "sb004@gmail.comw"));
-        userService.create(new User("정윤지", "SB005", "B005", "sb005@gmail.com"));
+        userService.create(LJY);
+        userService.create(HJI);
+        userService.create(BEH);
+        userService.create(JHA);
+        userService.create(JYJ);
 
         //2-1.전체 사용자 조회
         System.out.println("----------전체 사용자 조회----------");
@@ -72,11 +72,6 @@ public class JavaApplication {
         //----------------------Channel----------------------
         List<Channel> channelList = new ArrayList<>();
         ChannelService channelService = new JCFChannelService(channelList);
-        User LJY = new User("이주용", "SB001", "B001", "sb001@gmail.com");
-        User HJI = new User("황지인", "SB002", "B002", "sb002@gmail.com");
-        User BEH = new User("백은호", "SB003", "B003", "sb003@gmail.com");
-        User JHA = new User("조현아", "SB004", "B004", "sb004@gmail.comw");
-        User JYJ = new User("정윤지", "SB005", "B005", "sb005@gmail.com");
 
         //1.등록
         channelService.create(new Channel("스프린트 스프링 3기", "스프링 백엔드",false, LJY));
