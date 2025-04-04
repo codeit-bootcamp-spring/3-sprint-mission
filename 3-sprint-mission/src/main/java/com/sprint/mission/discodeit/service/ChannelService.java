@@ -9,13 +9,13 @@ public interface ChannelService {
 
     public void create(Channel channel);
 
-    public List<Channel> readById(String channelName);
+    public List<Channel> readById(Channel channel);
 
     public List<Channel> readAll();
 
-    public void update( String channelName, String ModifiedChannelName, String channelDescription,
+    public void update( Channel channel, String ModifiedChannelName, String channelDescription,
                 boolean isPrivate);
 
-    public void deleteById(String channelName);
+    public void deleteById(Channel channel);
 
 }

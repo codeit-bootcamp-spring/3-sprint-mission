@@ -9,13 +9,13 @@ public interface UserService {
 
     public void create(User user);
 
-    public List<User> readById(String userId);
+    public List<User> readById(User user);
 
     public List<User> readAll();
 
-    public void update(String userId, String userName, String ModifiedUserId
+    public void update(User user, String userName, String ModifiedUserId
             ,String userPassword, String userEmail);
 
-    public void deleteById(String userId);
+    public void deleteById(User user);
 
 }
