@@ -14,13 +14,16 @@ import java.util.List;
 public class JavaApplication {
     public static void main(String[] args) {
 
+
+
+        //----------------------User----------------
+        //유저 생성
         User LJY = new User("이주용", "SB001", "B001", "sb001@gmail.com");
         User HJI = new User("황지인", "SB002", "B002", "sb002@gmail.com");
         User BEH = new User("백은호", "SB003", "B003", "sb003@gmail.com");
         User JHA = new User("조현아", "SB004", "B004", "sb004@gmail.comw");
         User JYJ = new User("정윤지", "SB005", "B005", "sb005@gmail.com");
-
-        //----------------------User----------------
+        
         List<User> userList = new ArrayList<>();
         UserService userService = new JCFUserService(userList);
 
@@ -70,15 +73,22 @@ public class JavaApplication {
         System.out.println();
 
         //----------------------Channel----------------------
+        // 채널 생성
+        Channel spring = new Channel("스프린트 스프링 3기", "스프링 백엔드",false, LJY);
+        Channel community =new Channel("스프린트 커뮤니티", "스프링 백엔드",false, HJI);
+        Channel lol =new Channel("롤 다인큐", "스프링 백엔드",false, BEH);
+        Channel yanolja =new Channel("야놀자", "스프링 백엔드",false, JHA);
+        Channel lunch =new Channel("점메추", "스프링 백엔드",false, JYJ);
+
         List<Channel> channelList = new ArrayList<>();
         ChannelService channelService = new JCFChannelService(channelList);
 
         //1.등록
-        channelService.create(new Channel("스프린트 스프링 3기", "스프링 백엔드",false, LJY));
-        channelService.create(new Channel("스프린트 커뮤니티", "스프링 백엔드",false, HJI));
-        channelService.create(new Channel("롤 다인큐", "스프링 백엔드",false, BEH));
-        channelService.create(new Channel("야놀자", "스프링 백엔드",false, JHA));
-        channelService.create(new Channel("점메추", "스프링 백엔드",false, JYJ));
+        channelService.create(spring);
+        channelService.create(community);
+        channelService.create(lol);
+        channelService.create(yanolja);
+        channelService.create(lunch);
 
         //2-1.전체 채널 조회
         System.out.println("----------전체 채널 조회----------");
