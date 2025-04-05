@@ -10,7 +10,7 @@ import java.util.UUID;
  * fileName       : UserService
  * author         : doungukkim
  * date           : 2025. 4. 3.
- * description    :
+ * description    : interface of uesr service
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------

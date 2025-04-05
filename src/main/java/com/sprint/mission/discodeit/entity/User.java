@@ -7,7 +7,7 @@ import java.util.UUID;
  * fileName       : User
  * author         : doungukkim
  * date           : 2025. 4. 3.
- * description    :
+ * description    : user entity
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
@@ -34,16 +34,6 @@ public class User {
         this.username = username;
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", username='" + username + '\'' +
-                '}';
-    }
-
     public UUID getId() {
         return id;
     }
@@ -66,5 +56,15 @@ public class User {
 
     public void setUpdatedAt(Long updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", username='" + username + '\'' +
+                '}';
     }
 }

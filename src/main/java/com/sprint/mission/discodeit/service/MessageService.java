@@ -21,11 +21,13 @@ public interface MessageService {
 
     List<Message> findAllMessages();
 
-    List<Message> findMessageById(UUID messageId);
+    List<Message> findMessageByMessageId(UUID messageId);
 
     void updateMessage(UUID messageId, String newMessage);
 
     void deleteMessageById(UUID messageId);
+
+    void deleteMessagesByChannelId(UUID channelId);
 
 
 

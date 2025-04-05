@@ -9,7 +9,7 @@ import java.util.UUID;
  * fileName       : Channel
  * author         : doungukkim
  * date           : 2025. 4. 3.
- * description    :
+ * description    : channel entity
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
@@ -56,18 +56,6 @@ public class Channel {
         this.channelUsers = channelUsers;
     }
 
-    @Override
-    public String toString() {
-        return "Channel{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", \nupdatedAt=" + updatedAt +
-                ", title='" + title + '\'' +
-                ", messages=" + messages +
-                ", channelUsers=" + channelUsers +
-                '}';
-    }
-
     public UUID getId() {
         return id;
     }
@@ -90,5 +78,17 @@ public class Channel {
 
     public void setUpdatedAt(Long updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "Channel{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", \nupdatedAt=" + updatedAt +
+                ", title='" + title + '\'' +
+                ", messages=" + messages +
+                ", channelUsers=" + channelUsers +
+                '}';
     }
 }

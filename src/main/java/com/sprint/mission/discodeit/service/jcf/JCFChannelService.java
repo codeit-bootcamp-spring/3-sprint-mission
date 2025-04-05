@@ -29,7 +29,7 @@ public class JCFChannelService implements ChannelService {
         this.data = new ArrayList<>();
     }
 
-    private void setMessageService(MessageService messageService) {
+    public void setMessageService(MessageService messageService) {
         this.messageService = messageService;
     }
 
@@ -65,68 +65,30 @@ public class JCFChannelService implements ChannelService {
     public void deleteChannel(UUID channelId) {
         for (int i = 0; i < data.size(); i++) {
             if (data.get(i).getId().equals(channelId)) {
-                List<Message> messages = data.get(i).getMessages();
-                for (Message message : messages) {
-                    //업데이트 필요
-                }
+                messageService.deleteMessagesByChannelId(channelId);
                 data.remove(i);
                 break;
             }
         }
     }
 
+    @Override
+    public void addMessageInChannel(UUID channelId, Message message) {
+        for (Channel channel : data) {
+            if (channel.getId().equals(channelId)) {
+                channel.getMessages().add(message);
+            }
+        }
+    }
 
-//    public void deleteUserFromChannel(UUID id) {
-//        //모든 방에서 특정 유저를 삭제 해야함
-//        List<UUID> emptyChannel = new ArrayList<>();
-//
-////        System.out.println("삭제할 UUID: " + id);
-////
-////        for (Channel channel : data) {
-////            for (User user : channel.getChannelUsers()) {
-////                System.out.println("채널 " + channel.getId() + " 유저: " + user.getUsername() + ", UUID: " + user.getId());
-////            }
-////        }
-//        // 모든 방 조회
-//        for (Channel channel : data) {
-//
-//
-//            List<User> channelUsers = channel.getChannelUsers();
-//
-//            // 그 안에 유저 있는지 확인
-//            // 있으면 유저 삭제
-//            List<User> modifiedUsers = channelUsers.stream().filter(u-> !u.getId().equals(id)).collect(Collectors.toList());
-////            System.out.println("before: channel.getChannelUsers() = " + channel.getChannelUsers()
-////                    .stream()
-////                    .map(user -> user.getUsername())
-////                    .collect(Collectors.joining(", ")));
-//
-//            // 방에 유저 있는지 확인
-//            if (modifiedUsers.isEmpty()) {
-//                // 없으면 emptyChannel에 추가
-//                emptyChannel.add(channel.getId());
-//            } else {
-//                // 있으면 channel 업데이트
-//                channel.setChannelUsers(modifiedUsers);
-//                // 날짜 업데이트
-//                channel.setUpdatedAt(System.currentTimeMillis());
-//            }
-//
-////            System.out.println("after: channel.getChannelUsers() = " + channel.getChannelUsers()
-////                    .stream()
-////                    .map(user -> user.getUsername())
-////                    .collect(Collectors.joining(", ")));
-//        }
-//
-//        // user가 없는 방 삭제
-//        for (int i = 0; i < emptyChannel.size(); i++) {
-//            UUID channelId = emptyChannel.get(i);
-//            deleteChannel(channelId);
-//
-//
-//        }
-////        System.out.println(emptyChannel);
-//    }
 
+    @Override
+    public void deleteMessageInChannel(UUID messageId) {
+        for (Channel channel : data) {
+            for (int i = 0; i < channel.getMessages().size(); i++) {
+                channel.getMessages().removeIf(message -> message.getId().equals(messageId));
+            }
+        }
+    }
 }
 

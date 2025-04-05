@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -13,85 +12,87 @@ import java.util.stream.Collectors;
  * fileName       : JCFMessageService
  * author         : doungukkim
  * date           : 2025. 4. 3.
- * description    :
+ * description    : implements MessageService
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2025. 4. 3.        doungukkim       최초 생성
+ * 2025. 4. 5.        doungukkim       List<Message> 구조에서 Map<UUID, List<Message>> 구조로 수정
  */
 public class JCFMessageService implements MessageService {
     private final ChannelService channelService;
     // (channelId, message)
-    private final List<Message> data;
+    private final Map<UUID,List<Message>> data;
 
     public JCFMessageService(ChannelService channelService) {
-        this.data = new ArrayList<>();
+        this.data = new HashMap<>();
         this.channelService = channelService;
     }
 
     @Override
     public UUID createMessage(UUID senderId, UUID channelId, String message) {
+        List<Message> messageList = new ArrayList<>();
         Message newMessage = new Message(senderId, channelId, message);
-        data.add(newMessage);
+        messageList.add(newMessage);
 
+        if (data.get(channelId)==null) {
+            // 체널에 메세지가 없을 때
+            data.put(channelId, messageList);
+        } else {
+            // 채널에 메세지가 있을 때
+            data.get(channelId).add(newMessage);
+        }
 
-        // Channel 찾기
-        List<Message> messages = channelService.findChannelsById(channelId).get(0).getMessages();
-
-        // List에 메세지 추가 추가
-        messages.add(newMessage);
-        // 저장
-        channelService.findChannelsById(channelId).get(0).setMessages(messages);
+        channelService.addMessageInChannel(channelId, newMessage);
 
         return newMessage.getId();
     }
 
     @Override
     public List<Message> findAllMessages() {
-        return data.stream().collect(Collectors.toList());
+        return data.values().stream().flatMap(List::stream).collect(Collectors.toList());
+
     }
 
     @Override
-    public List<Message> findMessageById(UUID messageId) {
-        try {
-            List<Message> targetMessage = data.stream()
-                    .filter(message -> message.getId().equals(messageId))
-                    .collect(Collectors.toList());
-            return targetMessage;
-        } catch (NullPointerException e) {
-            return new ArrayList<>();
-        }
+    public List<Message> findMessageByMessageId(UUID messageId) {
+        return data.values().stream().flatMap(List::stream)
+                .filter(message -> message.getId().equals(messageId)).collect(Collectors.toList());
     }
 
     @Override
     public void updateMessage(UUID messageId, String newMessage) {
-        for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getId().equals(messageId)) {
-                data.get(i).setMessage(newMessage);
-                data.get(i).setUpdatedAt(System.currentTimeMillis());
+
+        UUID channelId = findMessageByMessageId(messageId).get(0).getChannelId();
+
+        List<Message> messages = data.get(channelId);
+
+        for (Message message : messages) {
+            if (message.getId().equals(messageId)) {
+                message.setMessage(newMessage);
             }
         }
     }
 
     @Override
-    public void deleteMessageById(UUID messageid) {
-        List<Channel> channelsById;
-        for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getId().equals(messageid)) {
-//                System.out.println("메세지의 id와 같은 메세지 발견 : "+data.get(i).getMessage());
-                channelsById = channelService.findChannelsById(data.get(i).getChannelId()); // List<Channel>
-                for (int j = 0; j < channelsById.size(); j++) {
-                    if (channelsById.get(j).getMessages().contains(findMessageById(messageid).get(0))) {
-//                        System.out.println("체널에서 메세지 삭제");
-                        channelsById.get(j).getMessages().remove(findMessageById(messageid).get(0));
-                        break;
-                    }
-                }
-                data.remove(i);
-                break;
-            }
+    public void deleteMessageById(UUID messageId) {
+
+        UUID channelId = findMessageByMessageId(messageId).get(0).getChannelId();
+        List<Message> messages = data.get(channelId);
+
+        // 비어있는게 아니면 메세지 삭제
+        if(!messages.isEmpty()){
+            messages.removeIf(message -> message.getId().equals(messageId));
         }
+        // 채널에 있는 메세지 삭제
+        channelService.deleteMessageInChannel(messageId);
     }
 
+    @Override
+    public void deleteMessagesByChannelId(UUID channelId) {
+        if (data.containsKey(channelId)) {
+            data.remove(channelId);
+        }
+    }
 
 }
