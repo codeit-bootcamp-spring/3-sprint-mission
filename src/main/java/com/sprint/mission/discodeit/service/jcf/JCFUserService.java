@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
@@ -22,9 +23,11 @@ import java.util.stream.Collectors;
 public class JCFUserService implements UserService {
 
     private final List<User> data;
+    private final ChannelService channelService;
 
-    public JCFUserService() {
+    public JCFUserService(ChannelService channelService) {
         this.data = new ArrayList<>();
+        this.channelService = channelService;
     }
 
     // 등록

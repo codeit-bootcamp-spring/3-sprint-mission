@@ -28,13 +28,14 @@ import java.util.stream.Collectors;
  * 2025. 4. 5.        doungukkim       심화 코드 작성, 결과 추가
  */
 public class JavaApplication {
-    private static UserService userService = new JCFUserService();
+    private static final UserService userService;
+    public static final MessageService messageService;
     public static ChannelService channelService;
-    public static MessageService messageService;
 
     static {
         // 1. 구현체 먼저 생성
         JCFChannelService jcfChannelService = new JCFChannelService();
+        JCFUserService jcfUserService = new JCFUserService(jcfChannelService);
         JCFMessageService jcfMessageService = new JCFMessageService(jcfChannelService);
 
         // 2. 순환 의존 setter로 해결
@@ -43,6 +44,7 @@ public class JavaApplication {
         // 3. 인터페이스로 노출
         channelService = jcfChannelService;
         messageService = jcfMessageService;
+        userService = jcfUserService;
     }
 
     public static void main(String[] args) {
