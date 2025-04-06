@@ -39,7 +39,7 @@ public class JavaApplication {
         JCFMessageService jcfMessageService = new JCFMessageService(jcfChannelService);
 
         // 2. 순환 의존 setter로 해결
-        jcfChannelService.setMessageService(jcfMessageService);
+        jcfChannelService.setMessageService(jcfMessageService, jcfUserService);
 
         // 3. 인터페이스로 노출
         channelService = jcfChannelService;
@@ -100,9 +100,9 @@ public class JavaApplication {
 
 //        등록
         System.out.println("\n**채널 등록");
-        UUID danielChannelId = channelService.createChannel(userDaniel);
-        UUID hannahChannelId = channelService.createChannel(userHannah);
-        channelService.createChannel(userJohn);
+        UUID danielChannelId = channelService.createChannel(danielId);
+        UUID hannahChannelId = channelService.createChannel(hannahId);
+        channelService.createChannel(johnId);
 
 //        단건 조회
         System.out.println("\n**채널 단건 조회(danielChannelId)");
@@ -119,8 +119,7 @@ public class JavaApplication {
         channelService.updateChannelName(danielChannelId,"daniel's family channel");
 
 //        수정 데이터 조회
-        System.out.println("\n**수정 데이터 조회");
-        System.out.println("변경 전: daniel's channel");
+        System.out.println("**수정 데이터 조회");
         System.out.println("변경 후: "+channelService.findChannelsById(danielChannelId).getTitle());
 
 //        삭제, 삭제 확인
@@ -151,21 +150,20 @@ public class JavaApplication {
                 .forEach(message -> System.out.println(userService.findUserById(message.getSenderId()).getUsername() + " : " + message.getMessage()));
 
 //        수정(message id기준)
-        System.out.println("\n**메세지 수정");
+        System.out.println("\n**메세지 수정(hello, I am Daniel => where is my project?)");
         messageService.updateMessage(danielMessageId,"where is my project?");
 
 //        수정된 데이터 조회(message)
         System.out.println("**수정 메세지 조회");
-        System.out.println("수정 전 => daniel : hello, I am Daniel");
         msg = messageService.findMessageByMessageId(danielMessageId);
-        System.out.println("수정 후 => " + userService.findUserById(msg.getSenderId()).getUsername() + " : " + msg.getMessage());
+        System.out.println(userService.findUserById(msg.getSenderId()).getUsername() + " : " + msg.getMessage());
 
 //        삭제
-        System.out.println("\n**메세지 삭제(hannah : What are you doing?))");
+        System.out.println("\n**메세지 삭제(What are you doing?))");
         messageService.deleteMessageById(hannahMessageId);
 
 //        삭제 확인
-        System.out.println("**삭제 확인(What are you doing?)");
+        System.out.println("**삭제 확인");
         System.out.println("메세지 조회 결과: " + messageService.findMessageByMessageId(hannahMessageId));
 
         System.out.println("\n\n-----------------------------------심화 테스트-----------------------------------");
@@ -189,7 +187,17 @@ public class JavaApplication {
                 .getMessages()
                 .forEach(message -> System.out.println(userService.findUserById(message.getSenderId()).getUsername() + " : " + message.getMessage()));
 
-        System.out.println("\n**시나리오 3 : channel삭제 => channel의 messages 삭제");
+        System.out.println("\n**시나리오 3 : channel추가 => User에 channel 추가");
+        System.out.println("\n**체널 추가(daniel's channel)");
+        channelService.createChannel(danielId);
+        System.out.println("**채널 조회 결과: ");
+        channelService.findChannelsByUserId(danielId).stream().forEach(channel -> System.out.println(channel.getTitle()));
+        System.out.println("**유저 객체에서 채널 조회 결과: ");
+        userService.findChannelIdsById(danielId).stream().forEach(channelId-> System.out.println("체널 id: "+channelId));
+
+
+
+        System.out.println("\n**시나리오 4 : channel삭제 => channel의 messages 삭제");
         System.out.println("\n1. 채널 삭제");
         channelService.deleteChannel(danielChannelId);
 
@@ -199,6 +207,8 @@ public class JavaApplication {
         System.out.println("2. 삭제한 체널과 메세지 조회");
         System.out.println("채널 조회 결과 : "+channelResult);
         System.out.println("메세지 조회 결과 : "+messageResult);
+
+
 
     }
 }

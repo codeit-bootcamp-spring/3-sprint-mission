@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,31 +25,49 @@ import java.util.stream.Collectors;
 public class JCFChannelService implements ChannelService {
     private final List<Channel> data;
     private MessageService messageService;
+    private UserService userService;
 
     public JCFChannelService() {
         this.data = new ArrayList<>();
     }
 
-    public void setMessageService(MessageService messageService) {
+    public void setMessageService(MessageService messageService, UserService userService) {
         this.messageService = messageService;
+        this.userService = userService;
     }
 
     @Override
-    public UUID createChannel(User channelUser) {
-        Channel channel = new Channel(channelUser);
+    public UUID createChannel(UUID userId) {
+        Channel channel = new Channel(userId);
+        String username = userService.findUserById(userId).getUsername();
+        channel.setTitle(username + "'s channel");
+        // add new channel
         data.add(channel);
+        // add channelId in User
+        userService.addChannel(userId, channel.getId());
+
         return channel.getId();
+    }
+
+    @Override
+    public List<Channel> findChannelsByUserId(UUID userId) {
+        List<Channel> result = new ArrayList<>();
+        for (Channel channel : data) {
+            for (int i = 0; i < channel.getUsersIds().size(); i++) {
+                if (channel.getUsersIds().get(i).equals(userId)) {
+                    result.add(channel);
+                }
+            }
+
+        }
+        return result;
     }
 
     @Override
     public Channel findChannelsById(UUID channelId) {
         for (Channel channel : data) {
-            try {
-                if (channel.getId().equals(channelId)) {
-                    return channel;
-                }
-            } catch (Exception e) {
-                System.out.println("찾는 채널이 없습니다.");
+            if (channel.getId().equals(channelId)) {
+                return channel;
             }
         }
         return null;

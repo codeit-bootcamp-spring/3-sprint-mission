@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -18,16 +20,25 @@ public class User {
     private Long createdAt;
     private Long updatedAt;
     private String username;
+    private List<UUID> channelIds;
 
     public User(String username) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.username = username;
-
+        this.channelIds = new ArrayList<>();
     }
 
     public String getUsername() {
         return username;
+    }
+
+    public List<UUID> getChannelIds() {
+        return channelIds;
+    }
+
+    public void setChannelIds(List<UUID> channelIds) {
+        this.channelIds = channelIds;
     }
 
     public void setUsername(String username) {

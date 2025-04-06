@@ -22,15 +22,15 @@ public class Channel {
     private Long updatedAt;
     private String title;
     private List<Message> messages;
-    private List<User> channelUsers;
+    private List<UUID> usersIds;
 
-    public Channel(User channelUser) {
+    public Channel(UUID userId) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
-        this.title = channelUser.getUsername() + "'s channel";
+//        this.title = channelUser.getUsername() + "'s channel";
         this.messages = new ArrayList<>();
-        this.channelUsers=new ArrayList<>();
-        this.channelUsers.add(channelUser);
+        this.usersIds =new ArrayList<>();
+        this.usersIds.add(userId);
     }
 
     public String getTitle() {
@@ -49,12 +49,12 @@ public class Channel {
         this.messages = messages;
     }
 
-    public List<User> getChannelUsers() {
-        return channelUsers;
+    public List<UUID> getUsersIds() {
+        return usersIds;
     }
 
-    public void setChannelUsers(List<User> channelUsers) {
-        this.channelUsers = channelUsers;
+    public void setUsersIds(List<UUID> usersIds) {
+        this.usersIds = usersIds;
     }
 
     public UUID getId() {
@@ -89,7 +89,7 @@ public class Channel {
                 ", \nupdatedAt=" + updatedAt +
                 ", title='" + title + '\'' +
                 ", messages=" + messages +
-                ", channelUsers=" + channelUsers +
+                ", channelUsers=" + usersIds +
                 '}';
     }
 }

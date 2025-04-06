@@ -20,9 +20,11 @@ import java.util.UUID;
  */public interface ChannelService {
 
 
-    UUID createChannel(User channelUsers);
+    UUID createChannel(UUID userId);
 
     Channel findChannelsById(UUID channelId);
+
+    List<Channel> findChannelsByUserId(UUID userId);
 
     List<Channel> findAllChannel();
 
@@ -35,6 +37,4 @@ import java.util.UUID;
     void addMessageInChannel(UUID channalId, Message message);
 
     void deleteMessageInChannel(UUID messageId);
-
-
 }

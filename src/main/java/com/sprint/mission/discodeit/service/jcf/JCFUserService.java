@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
  * -----------------------------------------------------------
  * 2025. 4. 3.        doungukkim       최초 생성
  */
+
 public class JCFUserService implements UserService {
 
     private final List<User> data;
@@ -81,4 +82,30 @@ public class JCFUserService implements UserService {
             }
         }
     }
+
+    @Override
+    public void addChannel(UUID userId, UUID channelId) {
+        for (User user : data) {
+            if (user.getId().equals(userId)) {
+                if(user.getChannelIds()!=null){
+                    List<UUID> channelIds = user.getChannelIds();
+                    // 새 메세지 추가
+                    channelIds.add(channelId);
+                    user.setChannelIds(channelIds);
+                }
+            }
+        }
+    }
+
+    @Override
+    public List<UUID> findChannelIdsById(UUID userId) {
+        for (User user : data) {
+            if (user.getId().equals(userId)) {
+                List<UUID> channelIds = user.getChannelIds();
+                return channelIds;
+            }
+        }
+        return new ArrayList<>();
+    }
+
 }
