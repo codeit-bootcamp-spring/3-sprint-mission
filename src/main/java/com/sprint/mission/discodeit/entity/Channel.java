@@ -24,12 +24,13 @@ public class Channel {
     private List<Message> messages;
     private List<User> channelUsers;
 
-    public Channel(List<User> channelUsers) {
+    public Channel(User channelUser) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
-        this.title = channelUsers.get(0).getUsername() + "'s channel";
+        this.title = channelUser.getUsername() + "'s channel";
         this.messages = new ArrayList<>();
-        this.channelUsers = channelUsers;
+        this.channelUsers=new ArrayList<>();
+        this.channelUsers.add(channelUser);
     }
 
     public String getTitle() {

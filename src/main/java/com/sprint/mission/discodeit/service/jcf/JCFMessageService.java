@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.jcf
@@ -55,15 +56,25 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public List<Message> findMessageByMessageId(UUID messageId) {
-        return data.values().stream().flatMap(List::stream)
-                .filter(message -> message.getId().equals(messageId)).collect(Collectors.toList());
+    public Message findMessageByMessageId(UUID messageId) {
+
+        List<Message> msgs = data.values().stream().flatMap(List::stream).collect(Collectors.toList());
+        for (Message msg : msgs) {
+            if (msg.getId().equals(messageId)) {
+                return msg;
+            }
+//            try {
+//            } catch (Exception e) {
+//                System.out.println("메세지가 없습니다.");
+//            }
+        }
+        return null;
     }
 
     @Override
     public void updateMessage(UUID messageId, String newMessage) {
 
-        UUID channelId = findMessageByMessageId(messageId).get(0).getChannelId();
+        UUID channelId = findMessageByMessageId(messageId).getChannelId();
 
         List<Message> messages = data.get(channelId);
 
@@ -77,7 +88,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public void deleteMessageById(UUID messageId) {
 
-        UUID channelId = findMessageByMessageId(messageId).get(0).getChannelId();
+        UUID channelId = findMessageByMessageId(messageId).getChannelId();
         List<Message> messages = data.get(channelId);
 
         // 비어있는게 아니면 메세지 삭제

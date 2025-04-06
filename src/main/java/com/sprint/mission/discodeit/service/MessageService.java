@@ -21,7 +21,7 @@ public interface MessageService {
 
     List<Message> findAllMessages();
 
-    List<Message> findMessageByMessageId(UUID messageId);
+    Message findMessageByMessageId(UUID messageId);
 
     void updateMessage(UUID messageId, String newMessage);
 

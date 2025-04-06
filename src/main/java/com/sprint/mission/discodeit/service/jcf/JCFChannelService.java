@@ -34,16 +34,26 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public UUID createChannel(List<User> channelUsers) {
-        Channel channel = new Channel(channelUsers);
+    public UUID createChannel(User channelUser) {
+        Channel channel = new Channel(channelUser);
         data.add(channel);
         return channel.getId();
     }
 
     @Override
-    public List<Channel> findChannelsById(UUID channelId) {
-        return data.stream().filter(channel -> channel.getId().equals(channelId)).collect(Collectors.toList());
+    public Channel findChannelsById(UUID channelId) {
+        for (Channel channel : data) {
+            try {
+                if (channel.getId().equals(channelId)) {
+                    return channel;
+                }
+            } catch (Exception e) {
+                System.out.println("찾는 채널이 없습니다.");
+            }
+        }
+        return null;
     }
+
 
     @Override
     public List<Channel> findAllChannel() {

@@ -40,19 +40,22 @@ public class JCFUserService implements UserService {
 
     // 단건 조회
     @Override
-    public List<User> findUserById(UUID userId) {
-        List<User> users = data.stream().filter(user -> user.getId().equals(userId)).collect(Collectors.toList());
-        if (users.isEmpty()) {
-            return new ArrayList<>();
-        } else{
-            return users;
+    public User findUserById(UUID userId) {
+        for (User user : data) {
+            try {
+                if (user.getId().equals(userId)) {
+                    return user;
+                }
+            } catch (Exception e) {
+                System.out.println("찾는 유저 없음");
+            }
         }
+        return null;
     }
 
     // 다건 조회
     @Override
     public List<User> findAllUsers() {
-
         return data;
     }
 
@@ -60,11 +63,10 @@ public class JCFUserService implements UserService {
     @Override
     public void updateUsername(UUID userId, String newName) {
 
-        for (int i = 0; i < data.size(); i++) {
-            User user = data.get(i);
+        for (User user : data) {
             if (user.getId().equals(userId)) {
-                data.get(i).setUsername(newName);
-                data.get(i).setUpdatedAt(System.currentTimeMillis());
+                user.setUsername(newName);
+                user.setUpdatedAt(System.currentTimeMillis());
             }
         }
     }

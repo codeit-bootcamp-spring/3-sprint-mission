@@ -19,7 +19,7 @@ import java.util.UUID;
 public interface UserService {
 
     UUID registerUser(String username);
-    List<User> findUserById(UUID userId);
+    User findUserById(UUID userId);
     List<User> findAllUsers();
     void updateUsername(UUID userId,String newName);
     void deleteUser(UUID userId);

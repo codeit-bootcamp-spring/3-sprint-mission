@@ -20,9 +20,9 @@ import java.util.UUID;
  */public interface ChannelService {
 
 
-    UUID createChannel(List<User> channelUsers);
+    UUID createChannel(User channelUsers);
 
-    List<Channel> findChannelsById(UUID channelId);
+    Channel findChannelsById(UUID channelId);
 
     List<Channel> findAllChannel();
 
