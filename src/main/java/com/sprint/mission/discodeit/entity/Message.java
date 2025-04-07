@@ -50,6 +50,7 @@ public class Message {
 
     @Override
     public String toString() {
-        return "[Message] {id=" + id + ", userId=" + userId + ", channelId=" + channelId + ", content='" + content + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt +  "'}" ;
+        return "[Message] {id=" + id + ", userId=" + userId + ", channelId=" + channelId +
+                ", \n\tcontent='" + content + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt +  "'}" ;
     }
 }

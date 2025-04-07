@@ -3,9 +3,6 @@ package com.sprint.mission.discodeit.entity;
 import java.util.UUID;
 
 public class User {
-
-    // 공통 필드: 객체 id, 객체 생성시간, 객체 수정시간
-    // 선택 필드: 사용자 이름, 성별,
     private final UUID id;
     private final Long createdAt;
     private Long updatedAt;

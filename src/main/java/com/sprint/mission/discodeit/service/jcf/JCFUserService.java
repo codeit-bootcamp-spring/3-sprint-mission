@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -12,6 +13,13 @@ public class JCFUserService implements UserService {
     //----------- 사용자 생성 -----------
     @Override
     public User createUser(String name) {
+        // 이름 중복 검사
+        if (getUserByName(name) != null) {
+            System.out.println("[User] 이름 중복 검사");
+            System.out.println("[User] 이미 존재하는 사용자 이름입니다. (" + name + ")");
+            return null;
+        }
+
         User user = new User(name);
         data.put(user.getId(), user);
         return user;
@@ -27,6 +35,15 @@ public class JCFUserService implements UserService {
     @Override
     public List<User> getAllUsers() {
         return data.values().stream().toList();
+    }
+
+    //----------- 채널명으로 채널 조회 -----------
+    @Override
+    public User getUserByName(String name) {
+        return data.values().stream()
+                .filter(user -> user.getUsername().equals(name))
+                .findFirst()
+                .orElse(null);
     }
 
     //----------- 사용자 이름 수정 -----------

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 
@@ -21,12 +22,18 @@ public class JCFMessageService  implements MessageService {
     public Message createMessage(UUID userId, UUID channelId, String content) {
         //검증 로직
         if (!userService.existsById(userId)) {
-            System.out.println("존재하지 않는 사용자입니다.");
+            System.out.println("[Message] 존재하지 않는 사용자입니다.");
             return null;
         }
 
         if (!channelService.existsById(channelId)) {
-            System.out.println("존재하지 않는 채널입니다.");
+            System.out.println("[Message] 존재하지 않는 채널입니다.");
+            return null;
+        }
+
+        Channel channel = channelService.getChannel(channelId);
+        if (!channel.isMember(userId)) {
+            System.out.println("[Message] 먼저 채널에 접속해주세요.");
             return null;
         }
 

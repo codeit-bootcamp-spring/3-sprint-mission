@@ -9,7 +9,9 @@ public interface ChannelService {
     Channel createChannel(String name);
     Channel getChannel(UUID id);
     List<Channel> getAllChannels();
+    Channel getChannelByName(String name);
     void updateChannel(UUID id, String name);
+    void joinChannel(UUID userId, UUID channelId);
     void deleteChannel(UUID id);
-    public boolean existsById(UUID id);
+    boolean existsById(UUID id);
 }

@@ -1,29 +1,52 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Channel {
-
-    // 공통 필드: 객체 id, 객체 생성시간, 객체 수정시간
-    // 선택 필드: 채널 id,
     private final UUID id;
     private final Long createdAt;
     private Long updatedAt;
     private String channelName;
+    private Set<UUID> members;
 
     public Channel(String name) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = this.createdAt;
         this.channelName = name;
+        this.members = new HashSet<UUID>();
     }
 
-    public UUID getId() { return id; }
-    public long getCreatedAt() { return createdAt; }
-    public long getUpdatedAt() { return updatedAt; }
-    public String getName() { return channelName; }
+    public UUID getId() {
+        return id;
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
+    public long getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public String getChannelName() {
+        return channelName;
+    }
+
+    public Set<UUID> getMembers() {
+        return members;
+    }
+
+    public void join(UUID userId) {
+        members.add(userId);
+    }
+
+    public void leave(UUID userId) {
+        members.remove(userId);
+    }
+
+    public boolean isMember(UUID userId) {
+        return members.contains(userId);
+    }
 
     public void setChannelName(String name) {
         this.channelName = name;
@@ -32,6 +55,7 @@ public class Channel {
 
     @Override
     public String toString() {
-        return "[Channel] {" + channelName + " id=" +  id + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "}";
+        return "[Channel] {" + channelName + " id=" +  id + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "}"
+                + "\n\tmembers=" + members + "}";
     }
 }
