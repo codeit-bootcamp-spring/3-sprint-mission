@@ -14,8 +14,8 @@ public class JavaApplication {
 
     public static void main(String[] args) {
         JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService();
-        JCFMessageService messageService = new JCFMessageService();
+        JCFChannelService channelService = new JCFChannelService(userService);
+        JCFMessageService messageService = new JCFMessageService(userService, channelService);
 
         //1. User Domain
         User user1 = userService.createUser("Hansel", "Hansel@gmail.com", "0000");
@@ -115,10 +115,73 @@ public class JavaApplication {
         System.out.println("\n=== (Channel)삭제후 전체 채널 조회 ===");
         channelService.getAllChannels().forEach(System.out::println);
 
+        System.out.println("\n=== (Channel) 도메인 검증 테스트 ===");
+
+        // 1. 존재하지 않는 사용자로 채널 생성 시도
+        System.out.println("\n--- 존재하지 않는 소유자로 채널 생성 시도 ---");
+        try {
+            channelService.createChannel("유령 채널", false, "", UUID.randomUUID());
+        } catch (IllegalArgumentException e) {
+            System.out.println("예외 발생 (정상): " + e.getMessage());
+        }
+
+        // 2. 존재하지 않는 채널에 참가 시도
+        System.out.println("\n--- 존재하지 않는 채널에 참가 시도 ---");
+        try {
+            channelService.joinChannel(UUID.randomUUID(), user3.getUserId(), "");
+        } catch (IllegalArgumentException e) {
+            System.out.println("예외 발생 (정상): " + e.getMessage());
+        }
+
+        // 3. 존재하지 않는 사용자로 채널 참가 시도
+        System.out.println("\n--- 존재하지 않는 사용자로 채널 참가 시도 ---");
+        try {
+            channelService.joinChannel(channel1.getChannelId(), UUID.randomUUID(), "");
+        } catch (IllegalArgumentException e) {
+            System.out.println("예외 발생 (정상): " + e.getMessage());
+        }
+
+        // 4. 비공개 채널에 잘못된 비밀번호로 참가 시도
+        System.out.println("\n--- 비공개 채널 잘못된 비밀번호로 참가 시도 ---");
+        // 테스트를 위해 새 비공개 채널 생성 (기존 channel2는 삭제됨)
+        Channel privateChannel = channelService.createChannel("비밀방", true, "correct_password", user4.getUserId());
+        try {
+            channelService.joinChannel(privateChannel.getChannelId(), user3.getUserId(), "wrong_password");
+        } catch (IllegalArgumentException e) {
+            System.out.println("예외 발생 (정상): " + e.getMessage());
+        }
+        // 정상 참여 시도 (참가자 확인용)
+        System.out.println("비밀방 정상 참여 시도 결과: " + channelService.joinChannel(privateChannel.getChannelId(), user3.getUserId(), "correct_password"));
+
+
+        // 5. 채널 소유자가 채널 떠나기 시도
+        System.out.println("\n--- 채널 소유자가 채널 떠나기 시도 ---");
+        try {
+            channelService.leaveChannel(privateChannel.getChannelId(), user4.getUserId()); // user4가 소유자
+        } catch (IllegalArgumentException e) {
+            System.out.println("예외 발생 (정상): " + e.getMessage());
+        }
+
+        // 6. 존재하지 않는 채널의 참여자 조회 시도
+        System.out.println("\n--- 존재하지 않는 채널 참여자 조회 시도 ---");
+        try {
+            channelService.getChannelParticipants(UUID.randomUUID());
+        } catch (IllegalArgumentException e) {
+            System.out.println("예외 발생 (정상): " + e.getMessage());
+        }
+
+        // 테스트용으로 생성한 비공개 채널 정리
+        System.out.println("\n--- 테스트용 비공개 채널 삭제 ---");
+        channelService.deleteChannel(privateChannel.getChannelId());
+        System.out.println("삭제 후 채널 수: " + channelService.getAllChannels().size());
+
         //3. Message Domain
-        System.out.println("=== (Message)메세지 생성===");
-        Message message1 = messageService.createMessage("Hello Gretel", user1.getUserId(), channel1.getChannelId());
-        Message message2 = messageService.createMessage("Hello Hansel", user2.getUserId(), channel1.getChannelId());
+        System.out.println("\n\n=== (Message)메세지 생성===");
+        
+        Message message1 = messageService.createMessage("Hello everyone in Channel 1", user5.getUserId(), channel1.getChannelId());
+        Message message2 = messageService.createMessage("It's me again!", user5.getUserId(), channel1.getChannelId());
+        System.out.println("메시지 1 생성: " + message1.getContent());
+        System.out.println("메시지 2 생성: " + message2.getContent());
 
         System.out.println("\n=== (Message)ID를 통해 메시지 조회 ===");
         System.out.println(messageService.getMessageById(message1.getMessageId()));
@@ -126,13 +189,15 @@ public class JavaApplication {
         System.out.println("\n=== (Message)특정 채널의 모든 메시지 조회 ===");
         messageService.getMessagesByChannel(channel1.getChannelId()).forEach(System.out::println);
 
-        System.out.println("\n=== (Message)특정 작성자의 모든 메시지 조회 ===");
-        messageService.getMessagesByAuthor(user2.getUserId()).forEach(System.out::println);
+        System.out.println("\n=== (Message)특정 작성자의 모든 메시지 조회 (user5) ===");
+        messageService.getMessagesByAuthor(user5.getUserId()).forEach(System.out::println);
 
         System.out.println("\n=== (Message)메세지 정보 수정 전 ===");
+        System.out.println(messageService.getMessageById(message1.getMessageId()));
 
         System.out.println("\n=== (Message)메세지 정보 수정 후 ===");
-        messageService.updateMessage(message1.getMessageId(), "안녕 그레텔");
+        messageService.updateMessage(message1.getMessageId(), "채널1 여러분 안녕하세요");
+        System.out.println(messageService.getMessageById(message1.getMessageId()));
 
         System.out.println("\n=== (Message)수정된 메시지 조회 ===");
         messageService.getMessagesByChannel(channel1.getChannelId()).forEach(System.out::println);
@@ -142,5 +207,31 @@ public class JavaApplication {
 
         System.out.println("\n=== (Message)삭제후 해당 채널의 전체 메시지 조회 ===");
         messageService.getMessagesByChannel(channel1.getChannelId()).forEach(System.out::println);
+
+        System.out.println("\n=== (Message) 도메인 검증 테스트 ===");
+
+        // 1. 존재하지 않는 작성자로 메시지 생성 시도
+        System.out.println("\n--- 존재하지 않는 작성자로 메시지 생성 시도 ---");
+        try {
+            messageService.createMessage("유령 메시지", UUID.randomUUID(), channel1.getChannelId());
+        } catch (IllegalArgumentException e) {
+            System.out.println("예외 발생 (정상): " + e.getMessage());
+        }
+
+        // 2. 존재하지 않는 채널에 메시지 생성 시도
+        System.out.println("\n--- 존재하지 않는 채널에 메시지 생성 시도 ---");
+        try {
+            messageService.createMessage("어디로 가는 메시지?", user5.getUserId(), UUID.randomUUID());
+        } catch (IllegalArgumentException e) {
+            System.out.println("예외 발생 (정상): " + e.getMessage());
+        }
+
+        // 3. 채널에 참여하지 않은 사용자가 메시지 생성 시도
+        System.out.println("\n--- 채널 미참여자가 메시지 생성 시도 ---");
+        try {
+            messageService.createMessage("나 여기 없는데?", user4.getUserId(), channel1.getChannelId());
+        } catch (IllegalArgumentException e) {
+            System.out.println("예외 발생 (정상): " + e.getMessage());
+        }
     }
 }
