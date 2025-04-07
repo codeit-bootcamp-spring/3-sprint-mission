@@ -16,7 +16,6 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void create(Channel ch) {
         this.data.put(ch.getId(), ch);
-
     }
 
     @Override
@@ -73,7 +72,7 @@ public class JCFChannelService implements ChannelService {
         return selectedChannel.getAttendees();
     }
 
-    // Q. 메세지 로직은 MessageService에 있어야하는데?
+    // QUESTION :  메세지 로직은 MessageService에 있어야하는데?
 //    @Override
 //    public void sendMessage(Channel ch, Message msg) {
 //        Channel selectedChannel = this.data.get(ch.getId());

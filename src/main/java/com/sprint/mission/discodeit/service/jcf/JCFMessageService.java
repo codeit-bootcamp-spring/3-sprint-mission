@@ -30,12 +30,10 @@ public class JCFMessageService implements MessageService {
             System.out.println("Invalid user(" + msgUser.getName() + ") on this channel(" + channel.getName() + ")");
         }
 
-
     }
 
     @Override
     public Message read(UUID id) {
-        System.out.println("this.data ====" + this.data);
         return this.data.get(id);
     }
 
