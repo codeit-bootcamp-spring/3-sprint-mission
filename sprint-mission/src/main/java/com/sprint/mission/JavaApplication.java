@@ -11,7 +11,7 @@ public class JavaApplication {
 
 
     public static void main(String[] args) {
-
+        // 구현체 인터페이스 생성
         JCFChannelService channelService = new JCFChannelService();
         JCFUserService userService = new JCFUserService();
         JCFMessageService messageService = new JCFMessageService(channelService);
@@ -104,6 +104,8 @@ public class JavaApplication {
         messageService.deleteMessage(message1.getId());
         messageService.deleteMessage(message2.getId());
         System.out.println(messageService.readMessage(message1.getId()));
+
+
 
 
 

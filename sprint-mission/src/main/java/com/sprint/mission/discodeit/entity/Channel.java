@@ -10,7 +10,7 @@ public class Channel {
     private final long createdAt;
     private long updatedAt;
     private String channelName;
-    private List<UUID> messageList;
+    private List<UUID> messageList; // 채널에서 받은 메시지 리스트
 
     // 생성자
     public Channel(String channelName) {
@@ -56,7 +56,6 @@ public class Channel {
     @Override
     public String toString() {
         return  " 채널명 : " + channelName +
-                " / 식별번호 : " + id +
                 " / messageList : " + messageList
                 +"\n";
     }

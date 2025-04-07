@@ -8,9 +8,8 @@ public class Message {
     private final long createdAt;
     private long updatedAt;
     private String text;
-    private final UUID channelId;
-    private final UUID userId;
-
+    private final UUID channelId; // 메시지를 보낼 채널의 id
+    private final UUID userId; // 메시지 보낸 유저의 Id
     // 생성자
     public Message(String text, UUID channelId, UUID userId) {
         this.id = UUID.randomUUID();

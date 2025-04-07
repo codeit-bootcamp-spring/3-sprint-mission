@@ -44,9 +44,6 @@ public class User {
 
     @Override
     public String toString() {
-        return  " 이름 : " + userName + " /" +
-                " 아이디 생성 시간 : " + createdAt + " /" +
-                " 업데이트 된 시간 : " + updatedAt + " /" +
-                " 식별번호 = " + id + "\n";
+        return  " 이름 : " + userName + "\n";
     }
 }

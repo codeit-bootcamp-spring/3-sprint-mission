@@ -17,7 +17,7 @@ public class JCFUserService implements UserService {
         return newUser;
     }
 
-    // 다건 -> 아직 구현 못함
+    // 다건
     @Override
     public Map<UUID, User> readUsers() {
         return users.readAll();
@@ -38,5 +38,4 @@ public class JCFUserService implements UserService {
     public User deleteUser(UUID id) {
         return users.remove(id);
     }
-
 }
