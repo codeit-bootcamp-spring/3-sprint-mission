@@ -83,7 +83,6 @@ public class JCFUserService implements UserService {
         }
     }
 
-    // user 객체에 메세지 id 추가
     @Override
     public void addChannel(UUID userId, UUID channelId) {
         for (User user : data) {
@@ -102,7 +101,8 @@ public class JCFUserService implements UserService {
     public List<UUID> findChannelIdsById(UUID userId) {
         for (User user : data) {
             if (user.getId().equals(userId)) {
-                return user.getChannelIds();
+                List<UUID> channelIds = user.getChannelIds();
+                return channelIds;
             }
         }
         return new ArrayList<>();

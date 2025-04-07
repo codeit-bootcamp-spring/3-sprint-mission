@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2025. 4. 3.        doungukkim       최초 생성
- * 2025. 4. 5.        doungukkim       message의 map 결과 확인할 수 있게 수정
+ * 2025. 4. 5.        doungukkim       message의 map 결과 할 수 있게 수정
  * 2025. 4. 5.        doungukkim       심화 코드 작성, 결과 추가
  */
 public class JavaApplication {
@@ -38,7 +38,7 @@ public class JavaApplication {
         JCFUserService jcfUserService = new JCFUserService(jcfChannelService);
         JCFMessageService jcfMessageService = new JCFMessageService(jcfChannelService);
 
-        // 2. 순환 의존 setter로 해결
+        // 2. 순환 의존 setter
         jcfChannelService.setMessageService(jcfMessageService, jcfUserService);
 
         // 3. 인터페이스로 노출
@@ -50,7 +50,7 @@ public class JavaApplication {
     public static void main(String[] args) {
 
         System.out.println("-----------------------------------User 테스트 시작-----------------------------------");
-//        등록 + id 변수에 저장
+//        등록
         System.out.println("**등록");
         UUID danielId = userService.registerUser("daniel");
         UUID johnId = userService.registerUser("john");
@@ -93,11 +93,6 @@ public class JavaApplication {
 
         System.out.println("\n\n-----------------------------------Channel 테스트 시작-----------------------------------");
 
-        // 체널에 등록될 유저(User에서 만든) 객체
-//        userService.findUserById(danielId);
-//        userService.findUserById(hannahId);
-//        userService.findUserById(johnId);
-
 //        등록
         System.out.println("\n**채널 등록");
         UUID danielChannelId = channelService.createChannel(danielId);
@@ -105,7 +100,7 @@ public class JavaApplication {
         channelService.createChannel(johnId);
 
 //        단건 조회
-        System.out.println("\n**채널 단건 조회(danielChannelId)");
+        System.out.println("**채널 단건 조회(danielChannelId)");
         System.out.println("방 이름: " + channelService.findChannelsById(danielChannelId).getTitle());
 
 //        다건 조회
@@ -139,7 +134,7 @@ public class JavaApplication {
         messageService.createMessage(danielId, danielChannelId, "my favorite sport is baseball!");
 
 //        단건 조회(message)
-        System.out.println("\n**메세지 단건 조회(daniel)");
+        System.out.println("**메세지 단건 조회(daniel)");
 
         Message msg = messageService.findMessageByMessageId(danielMessageId);
         System.out.println(userService.findUserById(msg.getSenderId()).getUsername() + " : " + msg.getMessage());
@@ -167,8 +162,8 @@ public class JavaApplication {
         System.out.println("메세지 조회 결과: " + messageService.findMessageByMessageId(hannahMessageId));
 
         System.out.println("\n\n-----------------------------------심화 테스트-----------------------------------");
-        System.out.println("\n**시나리오 1 : message등록 => channel에 메세지 등록");
 
+        System.out.println("\n**시나리오 1 : message등록 => channel에 메세지 등록");
         // 체널에 메세지 추가
         System.out.println("\n1. message 추가: \"I hope this works fine.. please\"  ");
         UUID testMessageId = messageService.createMessage(danielId, danielChannelId, "I hope this works fine.. please");
@@ -177,9 +172,8 @@ public class JavaApplication {
                 .getMessages()
                 .forEach(message -> System.out.println(userService.findUserById(message.getSenderId()).getUsername() + " : " + message.getMessage()));
 
+
         System.out.println("\n**시나리오 2 : message삭제 => channel의 메세지 삭제");
-
-
         System.out.println("1. 메세지 삭제(daniel : I hope this works fine.. please)");
         messageService.deleteMessageById(testMessageId);
         System.out.println("2. 삭제 후 채널 메세지");
@@ -196,7 +190,6 @@ public class JavaApplication {
         userService.findChannelIdsById(danielId).stream().forEach(channelId-> System.out.println("체널 id: "+channelId));
 
 
-
         System.out.println("\n**시나리오 4 : channel삭제 => channel의 messages 삭제");
         System.out.println("\n1. 채널 삭제");
         channelService.deleteChannel(danielChannelId);
@@ -207,8 +200,5 @@ public class JavaApplication {
         System.out.println("2. 삭제한 체널과 메세지 조회");
         System.out.println("채널 조회 결과 : "+channelResult);
         System.out.println("메세지 조회 결과 : "+messageResult);
-
-
-
     }
 }
