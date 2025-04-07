@@ -6,15 +6,15 @@ import java.util.List;
 import java.util.UUID;
 
 public class Channel {
-    private UUID id;
-    private long createdAt;
+    private final UUID id;
+    private final long createdAt;
     private long updatedAt;
 
     private String name;
     private List<User> attendees;
     private List<Message> messages;
 
-    // Q. attendees는 처음부터 리스트로 받아야하나? 아니면 User로 받고 생성자 안에서 처리해줘야하나?
+    // Question : attendees는 처음부터 리스트로 받아야하나? 아니면 User로 받고 생성자 안에서 처리해줘야하나?
     public Channel(String name, User attendee) {
         // for fixed unique id
         this.id = UUID.nameUUIDFromBytes(name.concat(attendee.getName()).getBytes());

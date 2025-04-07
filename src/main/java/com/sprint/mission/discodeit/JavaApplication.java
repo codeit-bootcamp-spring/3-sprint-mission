@@ -38,29 +38,29 @@ public class JavaApplication {
         userService.create(user4);
         userService.create(user5);
 
-//        System.out.println("================User Log================");
-//        // User 조회 - 전체
-//        userService.readAll().stream().forEach(user ->
-//                System.out.println(user.toString())
-//        );
-//        // User 조회 - by name
-//        userService.read("John").stream().forEach(user ->
-//                System.out.println(user.toString())
-//        );
-//        // User 조회 - by id
-//        System.out.println(userService.read(user4.getId()).toString());
-//
-//        // User 수정
-//        User updatedUser = userService.update(user3.getId(), 3);
-//        System.out.println("updatedUser = " + updatedUser.toString());
-//
-//        // User 삭제
-//        userService.delete(user2.getId());
-//
-//        // User 삭제 후 결과 조회
-//        userService.readAll().stream().forEach(user ->
-//                System.out.println(user.toString())
-//        );
+        System.out.println("================User Log================");
+        // User 조회 - 전체
+        userService.readAll().stream().forEach(user ->
+                System.out.println("Get all users : " + user.toString())
+        );
+        // User 조회 - by name
+        userService.read("John").stream().forEach(user ->
+                System.out.println("Get by name : " + user.toString())
+        );
+        // User 조회 - by id
+        System.out.println("Get by id : " + userService.read(user4.getId()).toString());
+
+        // User 수정
+        User updatedUser = userService.update(user3.getId(), 3);
+        System.out.println("Updated user : " + updatedUser.toString());
+
+        // User 삭제
+        userService.delete(user2.getId());
+
+        // User 삭제 후 결과 조회
+        userService.readAll().stream().forEach(user ->
+                System.out.println("Get all users after deleting 'John(60)' : " + user.toString())
+        );
 
         System.out.println("================Channel Log================");
         /* Channel service */
@@ -77,21 +77,21 @@ public class JavaApplication {
 
         // Channel 조회 - 전체
         channelService.readAll().stream().forEach(ch ->
-                System.out.println(ch.toString())
+                System.out.println("Get all channels : " + ch.toString())
         );
         // Channel 조회 - by id
-        System.out.println(channelService.read(channel1.getId()).toString());
+        System.out.println("Get by id : " + channelService.read(channel1.getId()).toString());
 
         // Channel 수정
         Channel updatedchannel = channelService.update(channel1.getId(), "updated chat1");
-        System.out.println("updatedchannel = " + updatedchannel.toString());
+        System.out.println("Updated channel : " + updatedchannel.toString());
 
         // Channel 삭제
         channelService.delete(channel3.getId());
 
         // Channel 삭제 후 결과 조회
         channelService.readAll().stream().forEach(ch ->
-                System.out.println(ch.toString())
+                System.out.println("Get all channels after deleting 'chat3' : " + ch.toString())
         );
 
         // Channel 입장
@@ -99,12 +99,12 @@ public class JavaApplication {
         channelService.joinChannel(channel2, user4);
         channelService.joinChannel(channel2, user5);
 
-//        // Channel 퇴장
-//        channelService.leaveChannel(channel2, user3);
+        // Channel 퇴장
+        channelService.leaveChannel(channel2, user3);
 
         // 참가자 리스트
         channelService.readAttendees(channel2).stream().forEach(user ->
-                System.out.println(user.toString())
+                System.out.println("Get all attendees on channel 2 : " + user.toString())
         );
 
         System.out.println("================Message Log================");
@@ -131,21 +131,22 @@ public class JavaApplication {
 
         // Message 조회 - 전체
         messageService.readAll().stream().forEach(msg ->
-                System.out.println(msg.toString())
+                System.out.println("Get all messages : " + msg.toString())
         );
         // Message 조회 - by id    sample id : 1f431bc6-b20a-3aae-af05-d138303d1154
         Message msg1 = messageService.read(UUID.fromString("1f431bc6-b20a-3aae-af05-d138303d1154"));
+        System.out.println("Get by id : " + msg1);
 
         // Message 수정
         Message updatedMsg = messageService.update(msg1.getId(), "updated msg");
-        System.out.println("updatedMsg = " + updatedMsg.toString());
+        System.out.println("Updated message : " + updatedMsg.toString());
 
         // Message 삭제
         messageService.delete(msg1.getId());
 
         // Message 삭제 후 결과 조회
         messageService.readAll().stream().forEach(msg ->
-                System.out.println(msg.toString())
+                System.out.println("Get all channels after deleting 'msg1' : " + msg.toString())
         );
 
         System.out.println("🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️Service End🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️️‍");
