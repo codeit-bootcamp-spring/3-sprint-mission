@@ -85,7 +85,7 @@ public class Message {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", message='" + message + '\'' +
-                ", userId=" + senderId +
+                ", senderId=" + senderId +
                 ", channelId=" + channelId +
                 '}';
     }

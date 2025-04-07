@@ -81,7 +81,6 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void updateChannelName(UUID id, String title) {
-
         for (Channel channel : data) {
             if (channel.getId().equals(id)) {
                 channel.setTitle(title);

@@ -16,7 +16,6 @@ import java.util.UUID;
  * 2025. 4. 3.        doungukkim       최초 생성
  */
 public class Channel {
-    // userid,user2id,messages,title(userid의 방),
     private UUID id;
     private Long createdAt;
     private Long updatedAt;
@@ -27,7 +26,6 @@ public class Channel {
     public Channel(UUID userId) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
-//        this.title = channelUser.getUsername() + "'s channel";
         this.messages = new ArrayList<>();
         this.usersIds =new ArrayList<>();
         this.usersIds.add(userId);
@@ -86,10 +84,10 @@ public class Channel {
         return "Channel{" +
                 "id=" + id +
                 ", createdAt=" + createdAt +
-                ", \nupdatedAt=" + updatedAt +
+                ", updatedAt=" + updatedAt +
                 ", title='" + title + '\'' +
                 ", messages=" + messages +
-                ", channelUsers=" + usersIds +
+                ", usersIds=" + usersIds +
                 '}';
     }
 }

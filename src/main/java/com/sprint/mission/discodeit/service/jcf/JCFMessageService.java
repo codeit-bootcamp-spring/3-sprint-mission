@@ -22,7 +22,6 @@ import java.util.stream.Stream;
  */
 public class JCFMessageService implements MessageService {
     private final ChannelService channelService;
-    // (channelId, message)
     private final Map<UUID,List<Message>> data;
 
     public JCFMessageService(ChannelService channelService) {
@@ -52,32 +51,23 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> findAllMessages() {
         return data.values().stream().flatMap(List::stream).collect(Collectors.toList());
-
     }
 
     @Override
     public Message findMessageByMessageId(UUID messageId) {
-
         List<Message> msgs = data.values().stream().flatMap(List::stream).collect(Collectors.toList());
         for (Message msg : msgs) {
             if (msg.getId().equals(messageId)) {
                 return msg;
             }
-//            try {
-//            } catch (Exception e) {
-//                System.out.println("메세지가 없습니다.");
-//            }
         }
         return null;
     }
 
     @Override
     public void updateMessage(UUID messageId, String newMessage) {
-
         UUID channelId = findMessageByMessageId(messageId).getChannelId();
-
         List<Message> messages = data.get(channelId);
-
         for (Message message : messages) {
             if (message.getId().equals(messageId)) {
                 message.setMessage(newMessage);
@@ -87,10 +77,8 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void deleteMessageById(UUID messageId) {
-
         UUID channelId = findMessageByMessageId(messageId).getChannelId();
         List<Message> messages = data.get(channelId);
-
         // 비어있는게 아니면 메세지 삭제
         if(!messages.isEmpty()){
             messages.removeIf(message -> message.getId().equals(messageId));

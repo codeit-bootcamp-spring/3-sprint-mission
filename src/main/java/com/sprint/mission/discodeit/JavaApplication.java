@@ -94,9 +94,9 @@ public class JavaApplication {
         System.out.println("\n\n-----------------------------------Channel 테스트 시작-----------------------------------");
 
         // 체널에 등록될 유저(User에서 만든) 객체
-        User userDaniel = userService.findUserById(danielId);
-        User userHannah = userService.findUserById(hannahId);
-        User userJohn = userService.findUserById(johnId);
+//        userService.findUserById(danielId);
+//        userService.findUserById(hannahId);
+//        userService.findUserById(johnId);
 
 //        등록
         System.out.println("\n**채널 등록");
@@ -135,8 +135,8 @@ public class JavaApplication {
         // 방에 있는 유저의 아이디
         System.out.println("\n**메세지 추가");
         UUID danielMessageId = messageService.createMessage(danielId, danielChannelId, "hello, I am Daniel");
-        UUID danielMessageId2 = messageService.createMessage(danielId, danielChannelId, "my favorite sport is baseball!");
         UUID hannahMessageId = messageService.createMessage(hannahId, hannahChannelId, "What are you doing?");
+        messageService.createMessage(danielId, danielChannelId, "my favorite sport is baseball!");
 
 //        단건 조회(message)
         System.out.println("\n**메세지 단건 조회(daniel)");

@@ -32,8 +32,6 @@ import java.util.UUID;
 
     void deleteChannel(UUID channelId);
 
-    //    // channel에서 유저 삭제
-//    // updatedAt()업데이트
     void addMessageInChannel(UUID channalId, Message message);
 
     void deleteMessageInChannel(UUID messageId);

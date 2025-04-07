@@ -76,6 +76,7 @@ public class User {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", username='" + username + '\'' +
+                ", channelIds=" + channelIds +
                 '}';
     }
 }
