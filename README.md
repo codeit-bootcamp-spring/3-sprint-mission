@@ -55,22 +55,20 @@ Location은 /some/path
 
 - [ ] 디스코드 서비스를 활용해보면서 각 도메인 모델에 필요한 정보를 도출하고, Java Class로 구현하세요.
 - [ ] 패키지명: com.sprint.mission.discodeit.entity
-- [ ] 도메인 모델 정의
-- [ ] 공통
+- 도메인 모델 정의
+- 공통
 - [ ] id: 객체를 식별하기 위한 id로 UUID 타입으로 선언합니다.
 - [ ] createdAt, updatedAt: 각각 객체의 생성, 수정 시간을 유닉스 타임스탬프로 나타내기 위한 필드로 Long 타입으로 선언합니다.
-- [ ] User
-- [ ] Channel
-- [ ] Message
-- [ ] 생성자
+- User, Channel, Message
+- 생성자
 - [ ] id는 생성자에서 초기화하세요.
 - [ ] createdAt는 생성자에서 초기화하세요.
 - [ ] id, createdAt, updatedAt을 제외한 필드는 생성자의 파라미터를 통해 초기화하세요.
-- [ ] 메소드
+- 메소드
 - [ ] 각 필드를 반환하는 Getter 함수를 정의하세요.
 - [ ] 필드를 수정하는 update 함수를 정의하세요.
 
-## 서비스 설계 및 구현
+### 서비스 설계 및 구현
 
 - [ ] 도메인 모델 별 CRUD(생성, 읽기, 모두 읽기, 수정, 삭제) 기능을 인터페이스로 선언하세요.
 - [ ] 인터페이스 패키지명: com.sprint.mission.discodeit.service
@@ -91,7 +89,7 @@ Location은 /some/path
 - [ ] 삭제
 - [ ] 조회를 통해 삭제되었는지 확인
 
-## 기본 요구사항 커밋 태그
+### 기본 요구사항 커밋 태그
 
 - [ ] 여기까지 진행 후 반드시 커밋해주세요. 그리고 sprint1-basic 태그를 생성해주세요.
 
