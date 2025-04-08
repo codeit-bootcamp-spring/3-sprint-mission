@@ -65,4 +65,15 @@ public class JCFChannelService implements ChannelService {
             }
         }
     }
+
+    @Override
+    public void addUserInChannel(UUID userId, UUID channelId) {
+        for (Channel channel : data) {
+            if (channel.getId().equals(channelId)) {
+                List<UUID> usersIds = channel.getUsersIds();
+                usersIds.add(userId);
+                channel.setUsersIds(usersIds);
+            }
+        }
+    }
 }

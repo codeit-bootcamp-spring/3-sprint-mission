@@ -42,7 +42,6 @@ public class JCFMessageService implements MessageService {
             // 채널에 메세지가 있을 때
             data.get(channelId).add(newMessage);
         }
-        System.out.println(channelId+" "+newMessage);
         channelService.addMessageInChannel(channelId, newMessage);
 
         return newMessage.getId();

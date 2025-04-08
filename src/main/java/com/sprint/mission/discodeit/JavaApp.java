@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import javax.swing.*;
+import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -54,6 +55,7 @@ public class JavaApp {
         while (true) {
 //            (1). 회원 이름 수정 // 개인정보 관리
 //            (2). 회원 방 조회 usage //=> 메세지 조회, 회원 조회, 메세지 작성, 회원 방 선택
+//            (3). 프로그램 종료
             printPrimaryOptions();
 
             System.out.println("\n명령을 입력하세요");
@@ -74,10 +76,12 @@ public class JavaApp {
     }
 
     private static void goToUserCli(User user, Scanner sc) {
-        while (true) {
+        boolean channelStatus = true;
+        while (channelStatus) {
             System.out.println("(1). 방 생성");
             System.out.println("(2). 방 선택"); // 메세지 조회(방 기준), 방 초대, 전체 방 조회
-            System.out.println("(3). 방 이름 수정\n");
+            System.out.println("(3). 방 이름 수정");
+            System.out.println("(0). 뒤로가기\n");
 //            printChannelOptions()
 
             String choice = sc.nextLine();
@@ -89,32 +93,61 @@ public class JavaApp {
                     break;
                 case "2":
                     selectedChannel = getChannelBySelectedNumber(user, sc);
-                    if (selectedChannel != null) {
-                        boolean chatStatus = true;
-                        System.out.println("<" + selectedChannel.getTitle() + ">");
-                        selectedChannel.getMessages().forEach(message -> System.out.println(userService.findUserById(message.getSenderId()).getUsername() + " : " + message.getMessage()));
-                        System.out.println("---------------");
-
-                        while(chatStatus){
-                            System.out.println("<" + selectedChannel.getTitle() + ">");
-                            selectedChannel.getMessages().forEach(message -> System.out.println(userService.findUserById(message.getSenderId()).getUsername() + " : " + message.getMessage()));
-                            System.out.println("---------------");
-                            System.out.println("(0) 채팅 종료\n");
-                            String newChat = sc.nextLine();
-                            if (newChat.equals("0")) {
-                                chatStatus = false;
-                            } else {
-                                messageService.createMessage(user.getId(), selectedChannel.getId(), newChat);
-                                System.out.println("<" + selectedChannel.getTitle() + ">");
-                                selectedChannel.getMessages().forEach(message -> System.out.println(userService.findUserById(message.getSenderId()).getUsername() + " : " + message.getMessage()));
-                                System.out.println("---------------");
-                                System.out.println("(0) 채팅 종료\n");
-                            }
-                        }
-                    } else {
-                        System.out.println("방 번호를 입력 해주세요.");
+                    if (selectedChannel == null) {
+                        break;
                     }
-                    break;
+                    System.out.println("(1). 유저 초대");
+                    System.out.println("(2). 채팅 시작");
+                    System.out.println("(0). 뒤로 가기");
+                    boolean roomStatus = true;
+                    while(roomStatus){
+                        String shit = sc.nextLine();
+                        switch (shit) {
+                            case "1":
+                                // 유저 초대
+                                List<User> allUsers = userService.findAllUsers();
+                                for (int i = 0; i < allUsers.size(); i++) {
+                                    System.out.println("("+i+"). "+allUsers.get(i).getUsername());
+                                }
+                                User choseUser = allUsers.get(sc.nextInt());
+                                sc.nextLine();
+                                selectedChannel = getChannelBySelectedNumber(user, sc);
+                                if (selectedChannel != null) {
+                                    channelService.addUserInChannel(choseUser.getId(), selectedChannel.getId());
+                                }
+                                break;
+                            case "2":
+                                // 채팅 시작
+                                if (selectedChannel != null) {
+                                    boolean chatStatus = true;
+                                    System.out.println("<" + selectedChannel.getTitle() + ">");
+                                    selectedChannel.getMessages().forEach(message -> System.out.println(userService.findUserById(message.getSenderId()).getUsername() + " : " + message.getMessage()));
+                                    System.out.println("---------------");
+
+                                    while(chatStatus){
+                                        String newChat = sc.nextLine().trim();
+                                        if (newChat.equals("0")) {
+                                            chatStatus = false;
+                                        } else {
+                                            messageService.createMessage(user.getId(), selectedChannel.getId(), newChat);
+                                            System.out.println("<" + selectedChannel.getTitle() + ">");
+                                            selectedChannel.getMessages().forEach(message -> System.out.println(userService.findUserById(message.getSenderId()).getUsername() + " : " + message.getMessage()));
+                                            System.out.println("---------------");
+                                            System.out.println("(0) 채팅 종료\n");
+                                        }
+                                    }
+                                } else {
+                                    System.out.println("방 번호를 입력 해주세요.");
+                                }
+                                break;
+                            case "0":
+                                roomStatus = false;
+                                break;
+                            default:
+                                System.out.println("정확히 입력하세요");
+                        }
+                        break;
+                    }
 
                 case "3":
                     selectedChannel = getChannelBySelectedNumber(user, sc);
@@ -132,7 +165,8 @@ public class JavaApp {
                         System.out.println("방이 없습니다.");
                         break;
                     }
-
+                case "0":
+                    channelStatus = false;
             }
 
         }
@@ -145,7 +179,12 @@ public class JavaApp {
         for (int i = 0; i < channelService.findChannelsByUserId(user.getId()).size(); i++) {
             System.out.println("(" + (i + 1) + ") : " + channelService.findChannelsByUserId(user.getId()).get(i).getTitle());
         }
-        channelNumber = sc.nextInt();
+        System.out.println("다른 키를 눌러 뒤로가기");
+        try {
+            channelNumber = sc.nextInt();
+        } catch (Exception e) {
+            return null;
+        }
         sc.nextLine();
 
         if (channelService.findChannelsByUserId(user.getId())!= null) {
@@ -170,6 +209,8 @@ public class JavaApp {
     private static void printPrimaryOptions(){
         System.out.println("\n(1). 회원 이름 수정"); // 개인정보 관리
         System.out.println("(2). 회원 방 조회"); //=> 메세지 조회, 회원 조회, 메세지 작성, 회원 방 선택
+        System.out.println("(0). 프로그램 종료");
+
     }
 
     private static void startDiscodeit() {
