@@ -21,9 +21,9 @@
 
 ## 서비스 설계 및 구현
 
-- [ ] 도메인 모델 별 CRUD(생성, 읽기, 모두 읽기, 수정, 삭제) 기능을 인터페이스로 선언하세요.
-    - [ ] 인터페이스 패키지명: com.sprint.mission.discodeit.service
-    - [ ] 인터페이스 네이밍 규칙: [도메인 모델 이름]Service
+- [x] 도메인 모델 별 CRUD(생성, 읽기, 모두 읽기, 수정, 삭제) 기능을 인터페이스로 선언하세요.
+    - [x] 인터페이스 패키지명: com.sprint.mission.discodeit.service
+    - [x] 인터페이스 네이밍 규칙: [도메인 모델 이름]Service
 - [ ] 다음의 조건을 만족하는 서비스 인터페이스의 구현체를 작성하세요.
     - [ ] 클래스 패키지명: com.sprint.mission.discodeit.service.jcf
     - [ ] 클래스 네이밍 규칙: JCF[인터페이스 이름]
