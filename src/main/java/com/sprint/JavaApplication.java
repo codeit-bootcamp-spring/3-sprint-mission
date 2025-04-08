@@ -60,6 +60,13 @@ public class JavaApplication {
                 System.out.println(user.getUsername() + " 정보를 삭제합니다.");
                 JCFUserService.deleteUserName(num);
             }
+            if (n == 6) {
+                System.out.println("변경하실 프로필 번호를 입력하세요.");
+                JCFUserService.outputAllUsersInfo();
+                int loginNumber = Integer.parseInt(sc.nextLine());
+                login(loginNumber, users);
+                user = JCFUserService.changeUser(loginNumber);
+            }
 
             if (n == 7) {
                 break;
@@ -99,6 +106,12 @@ public class JavaApplication {
                 System.out.println(selectChannel.getChannelName() + " 채널을 삭제합니다.");
                 JCFChannelService.deleteChannelName(selectChannel.getChannelName());
                 n = 7;
+            }
+            if (n == 6) {
+                System.out.println("변경하실 채널 번호를 입력해주세요.");
+                JCFChannelService.outputAllChannelInfo();
+                int newChannelNumber = Integer.parseInt(sc.nextLine());
+                selectChannel = JCFChannelService.changeChannel(newChannelNumber);
             }
 
             if (n == 7) {
