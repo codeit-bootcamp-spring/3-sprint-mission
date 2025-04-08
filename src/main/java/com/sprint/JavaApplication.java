@@ -42,6 +42,12 @@ public class JavaApplication {
                 String newUser = sc.nextLine();
                 JCFUserService.createNewUserNames(user.getUsername(), newUser);
             }
+            if (n == 2) {
+                JCFUserService.outputAllUsersInfo();
+            }
+            if (n == 3) {
+                JCFUserService.outputOneUserInfo(user.getUsername());
+            }
 
             if (n == 7) {
                 break;
@@ -52,6 +58,8 @@ public class JavaApplication {
 
     private static void handleChannelMenu(int channelNumber, List<Channel> channels,
                                           JCFChannelService JCFChannelService) {
+        Channel selectChannel = channels.stream().filter(channel1 -> channel1.getChannelNumber() == channelNumber)
+                .findFirst().orElse(null);
 
         while (true) {
             System.out.println("1.채널 생성\t2.현재 채널 정보 출력\t3.모든 채널 정보 출력\t4.채널 이름 수정\t5.채널 삭제\t6.채널 변경\t7.이전 메뉴");
@@ -60,6 +68,12 @@ public class JavaApplication {
                 System.out.println("새로 추가하실 채널 이름을 입력해 주세요.");
                 String newChannelName = sc.nextLine();
                 JCFChannelService.createNewChannel(newChannelName);
+            }
+            if (n == 2) {
+                JCFChannelService.outputOneChannelInfo(selectChannel);
+            }
+            if (n == 3) {
+                JCFChannelService.outputAllChannelInfo();
             }
 
             if (n == 7) {
@@ -78,6 +92,9 @@ public class JavaApplication {
                 String messageText = sc.nextLine();
                 messages = messageService.inputMessage(messageText);
                 System.out.println("메시지 작성 완료!");
+            }
+            if (n == 2) {
+                messageService.outputUserMessage();
             }
 
             if (n == 5) {
