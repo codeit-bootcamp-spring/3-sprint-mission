@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.entity;
 import java.util.UUID;
 
 public class User {
+    private static int counter = 1;
+    private int number;
     private String username;
     private UUID id;
     private Long createdAt;
@@ -10,6 +12,7 @@ public class User {
 
 
     public User(String name) {
+        this.number = counter++;
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
@@ -38,10 +41,15 @@ public class User {
         return updatedAt;
     }
 
+    public int getNumber() {
+        return number;
+    }
+
     @Override
     public String toString() {
         return "User{" +
-                "username='" + username + '\'' +
+                "number=" + number +
+                ", username='" + username + '\'' +
                 ", id=" + id +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
