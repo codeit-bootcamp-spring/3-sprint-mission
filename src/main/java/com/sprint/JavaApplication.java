@@ -34,7 +34,7 @@ public class JavaApplication {
 
         while (true) {
             System.out.println(
-                    "1.새로운 프로필 추가\t2.모든 프로필 정보 출력\t3.프로필 정보 출력\t4.프로필 이름 수정\t5.프로필 정보 삭\t6.프로필 변경\t7.이전 메뉴");
+                    "1.새로운 프로필 추가\t2.모든 프로필 정보 출력\t3.프로필 정보 출력\t4.프로필 이름 수정\t5.프로필 정보 삭제\t6.프로필 변경\t7.이전 메뉴");
 
             int n = Integer.parseInt(sc.nextLine());
             if (n == 1) {
