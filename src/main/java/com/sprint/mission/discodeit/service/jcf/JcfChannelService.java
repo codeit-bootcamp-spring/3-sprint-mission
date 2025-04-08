@@ -80,4 +80,16 @@ public class JcfChannelService implements ChannelService {
     Channel channel = getChannelById(channelId);
     return new ArrayList<>(channel.getChannelUsers());
   }
+
+  // 유저가 만든 모든 채널 삭제
+  public void deleteChannelsCreatedByUser(UUID userId) {
+    channels.removeIf(channel -> channel.getChannelOwner().getId().equals(userId));
+  }
+
+  // 유저가 참여 중인 모든 채널에서 탈퇴
+  public void removeUserFromAllChannels(UUID userId) {
+    for (Channel channel : channels) {
+      channel.getChannelUsers().removeIf(user -> user.getId().equals(userId));
+    }
+  }
 }

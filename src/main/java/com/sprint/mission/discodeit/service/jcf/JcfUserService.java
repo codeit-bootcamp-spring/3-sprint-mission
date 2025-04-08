@@ -15,6 +15,13 @@ public class JcfUserService implements UserService {
       순환참조 발생
       1. Setter 주입으로 바꿔서 해결
   */
+
+  private JcfChannelService channelService;
+
+  public void setChannelService(JcfChannelService channelService) {
+    this.channelService = channelService;
+  }
+
   @Override
   public User createUser(String username, String email) {
     boolean emailExists = data.stream()
@@ -72,12 +79,29 @@ public class JcfUserService implements UserService {
 
     // removeIf()는 리스트를 순회하면서 Predicate 조건에 맞는 요소를 삭제
     // 삭제가 일어나면 true, 삭제할 요소가 없으면 false를 반환
-    boolean removed = data.removeIf(user -> user.getId().equals(id));
 
-    if (!removed) {
+//    boolean removed = data.removeIf(user -> user.getId().equals(id));
+//
+//    if (!removed) {
+//      throw new IllegalArgumentException("해당 ID의 유저를 찾을 수 없습니다: " + id);
+//    }
+
+    User user = getUserById(id);
+    if (user == null) {
       throw new IllegalArgumentException("해당 ID의 유저를 찾을 수 없습니다: " + id);
     }
+
+    // 채널 정리
+    if (channelService != null) {
+      channelService.deleteChannelsCreatedByUser(id);     // 유저가 만든 채널 삭제
+      channelService.removeUserFromAllChannels(id);        // 유저가 참여한 채널에서 탈퇴
+    }
+
+    // 유저 삭제
+    data.remove(user);
   }
+
+
   // 시간복잡도
   // Create - List.add() -> O(1) ~ O(N)
   // Read - getUserById() ... filter() -> O(N)   &   getAllUsers() -> new ArrayList<> 리스트 복사 O(N)

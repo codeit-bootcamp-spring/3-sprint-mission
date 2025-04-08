@@ -17,71 +17,72 @@ public class JavaApplication {
     //JcfUserServiceUsingMap userService = new JcfUserServiceUsingMap();
     JcfUserService userService = new JcfUserService();
     JcfChannelService channelService = new JcfChannelService(userService);
+    userService.setChannelService(channelService);
     JcfMessageService messageService = new JcfMessageService(userService, channelService);
 
-    //  유저 생성
-    User test01 = userService.createUser("test01", "test01@.com");
-    User test02 = userService.createUser("test02", "test02@.com");
-    User test03 = userService.createUser("test03", "test03@.com");
-    User test04 = userService.createUser("test04", "test04@.com");
-
-    //개별 유저 조회
-    User testuser01 = userService.getUserById(test01.getId());
-    System.out.println("===개별 User 조회 ===" + "\n" + testuser01);
-
-    //전체 유저 조회
-    System.out.println("\n=== 전체 유저 조회 ===");
-    userService.getAllUsers().forEach(System.out::println);
-
-    //유저 정보 수정 테스트
-    System.out.println("\n=== 유저 정보(test01 이름변경) 수정 후 조회===");
-    userService.updateUser(testuser01.getId(), "test0101", "test0101@.com");
-    System.out.println(userService.getUserById(testuser01.getId()));
-
-    //유저 삭제 후 전체 유저 조회 //  try-catch로 만약 유저가 존재하지 않으면 예외 처리 필요
-    userService.deleteUser(test02.getId());
-    System.out.println("\n=== 유저 삭제 후 전체 조회 ===");
-    userService.getAllUsers().forEach(System.out::println);
-    System.out.println();
-
-    System.out.println("===============================================================================================");
-
-    // test01과 test02이 채널 1개씩 생성
-    Channel channel1 = channelService.createChannel("2025_Channel", test01);
-    Channel channel2 = channelService.createChannel("2024_Channel", test02);
-
-    // 개별 채널 조회
-    Channel testChannel = channelService.getChannelById(channel2.getId());
-    System.out.println("\n=== 개별 채널 조회 ===");
-    System.out.println(testChannel);
-
-    System.out.println("\n=== 채널 이름(2024_Channel) 수정 후 전체 채널 조회 ===");
-    channelService.updateChannelName(channel2.getId(), "2023_channel");
-    List<Channel> allChannels = channelService.getAllChannels();
-    allChannels.forEach(System.out::println);
-
-    // 유저 추가 (test02, test03을 채널에 추가)  & 삭제된 유저는 data에 담을 수 없다.
-    System.out.println("\n=== 2025_Channel에 멤버(test02,test03) 추가 ===");
-    channelService.addMember(channel1.getId(), test02.getId()); // User에서 test02를 삭제함.
-    channelService.addMember(channel1.getId(), test03.getId());
-
-    // 채널 멤버 조회
-    System.out.println("\n=== 2025_Channel 전체멤버 조회 ===");
-    List<User> channelMembers = channelService.getChannelMembers(channel1.getId());
-    channelMembers.forEach(user -> System.out.println("멤버: " + user.getUsername()));
-
-    // 유저 제거 테스트 (test03 제거)
-    System.out.println("\n=== 2025_Channel에서 멤버 제거(test03) 후 조회 ===");
-    channelService.removeMember(channel1.getId(), test03.getId());
-    channelService.getChannelMembers(channel1.getId()).forEach(user -> System.out.println("멤버: " + user.getUsername()));
-
-    // 채널 삭제 후 전체 채널 조회
-    System.out.println("\n=== 2025_Channel 삭제 후 남은 채널 조회 ===");
-    channelService.deleteChannel(channel1.getId());
-    List<Channel> remainingChannels = channelService.getAllChannels();
-    System.out.println(remainingChannels.isEmpty() ? "남은 채널 없음" : remainingChannels);
-
-    System.out.println("\n===============================================================================================\n[##유저+채널+메시지 crud 테스트]\n");
+//    //  유저 생성
+//    User test01 = userService.createUser("test01", "test01@.com");
+//    User test02 = userService.createUser("test02", "test02@.com");
+//    User test03 = userService.createUser("test03", "test03@.com");
+//    User test04 = userService.createUser("test04", "test04@.com");
+//
+//    //개별 유저 조회
+//    User testuser01 = userService.getUserById(test01.getId());
+//    System.out.println("===개별 User 조회 ===" + "\n" + testuser01);
+//
+//    //전체 유저 조회
+//    System.out.println("\n=== 전체 유저 조회 ===");
+//    userService.getAllUsers().forEach(System.out::println);
+//
+//    //유저 정보 수정 테스트
+//    System.out.println("\n=== 유저 정보(test01 이름변경) 수정 후 조회===");
+//    userService.updateUser(testuser01.getId(), "test0101", "test0101@.com");
+//    System.out.println(userService.getUserById(testuser01.getId()));
+//
+//    //유저 삭제 후 전체 유저 조회 //  try-catch로 만약 유저가 존재하지 않으면 예외 처리 필요
+//    userService.deleteUser(test02.getId());
+//    System.out.println("\n=== 유저 삭제 후 전체 조회 ===");
+//    userService.getAllUsers().forEach(System.out::println);
+//    System.out.println();
+//
+//    System.out.println("===============================================================================================");
+//
+//    // test01과 test02이 채널 1개씩 생성
+//    Channel channel1 = channelService.createChannel("2025_Channel", test01);
+//    Channel channel2 = channelService.createChannel("2024_Channel", test02);
+//
+//    // 개별 채널 조회
+//    Channel testChannel = channelService.getChannelById(channel2.getId());
+//    System.out.println("\n=== 개별 채널 조회 ===");
+//    System.out.println(testChannel);
+//
+//    System.out.println("\n=== 채널 이름(2024_Channel) 수정 후 전체 채널 조회 ===");
+//    channelService.updateChannelName(channel2.getId(), "2023_channel");
+//    List<Channel> allChannels = channelService.getAllChannels();
+//    allChannels.forEach(System.out::println);
+//
+//    // 유저 추가 (test02, test03을 채널에 추가)  & 삭제된 유저는 data에 담을 수 없다.
+//    System.out.println("\n=== 2025_Channel에 멤버(test02,test03) 추가 ===");
+//    channelService.addMember(channel1.getId(), test02.getId()); // User에서 test02를 삭제함.
+//    channelService.addMember(channel1.getId(), test03.getId());
+//
+//    // 채널 멤버 조회
+//    System.out.println("\n=== 2025_Channel 전체멤버 조회 ===");
+//    List<User> channelMembers = channelService.getChannelMembers(channel1.getId());
+//    channelMembers.forEach(user -> System.out.println("멤버: " + user.getUsername()));
+//
+//    // 유저 제거 테스트 (test03 제거)
+//    System.out.println("\n=== 2025_Channel에서 멤버 제거(test03) 후 조회 ===");
+//    channelService.removeMember(channel1.getId(), test03.getId());
+//    channelService.getChannelMembers(channel1.getId()).forEach(user -> System.out.println("멤버: " + user.getUsername()));
+//
+//    // 채널 삭제 후 전체 채널 조회
+//    System.out.println("\n=== 2025_Channel 삭제 후 남은 채널 조회 ===");
+//    channelService.deleteChannel(channel1.getId());
+//    List<Channel> remainingChannels = channelService.getAllChannels();
+//    System.out.println(remainingChannels.isEmpty() ? "남은 채널 없음" : remainingChannels);
+//
+//    System.out.println("\n===============================================================================================\n[##유저+채널+메시지 crud 테스트]\n");
 
     Map<String, User> users = new HashMap<>();
     String[][] userInfos = {
@@ -147,7 +148,7 @@ public class JavaApplication {
 
     //공지방 전체 메시지 조회 (user3가 요청자라고 가정)
     System.out.println("\n[##공지방 전체 메시지 조회]");
-    messageService.getAllMessagesInChannel(noticeRoom.getId(), user3.getId())
+    messageService.getAllMessagesInChannel(noticeRoom.getId(), user2.getId())
         .forEach(msg -> System.out.println(messageService.formatMessage(msg)));
 
     System.out.println("\n[##user1이 공부방에서 보낸 메시지 수정]");
@@ -181,12 +182,24 @@ public class JavaApplication {
     }
 
     // user3이 공부방에서 받은 메시지 조회
-    System.out.println("\n[##user3이 공부방에서 받은 메시지 조회]");
-    messageService.getMessagesByReceiverInChannel(studyRoom.getId(), user3.getId())
+    System.out.println("\n[##user2가 공부방에서 받은 메시지 조회]");
+    messageService.getMessagesByReceiverInChannel(studyRoom.getId(), user2.getId())
         .forEach(msg -> System.out.println(messageService.formatMessage(msg)));
 
-    System.out.println("\n[##공지방 채널소유주인 user02가 탈퇴후 공지방 채널 메세지 조회]");
+    System.out.println("\n[##공지방 채널소유주인 user2가 탈퇴후 공지방 채널 메세지 조회]");
     //  예상 출력값: 존재하지 않는 사용자 && 존재하지 않는 채널
     //  도메인 간 양방향 의존성 문제 & 사용자 탈퇴 시 관련된 채널 및 연결 관계 정리 필요
+    System.out.println("\n[##user2 탈퇴 처리 - 공지방 소유자]");
+    userService.deleteUser(user2.getId());
+
+    System.out.println("\n[##공지방 채널소유주인 user2가 탈퇴후 공지방 채널 메시지 조회 시도]");
+    try {
+      List<Message> noticeMessagesAfterDelete = messageService.getAllMessagesInChannel(noticeRoom.getId(), user2.getId());
+      noticeMessagesAfterDelete.forEach(msg -> System.out.println(messageService.formatMessage(msg)));
+    } catch (IllegalArgumentException e) {
+      System.out.println("예외 발생: " + e.getMessage()); // 예상: 채널이 존재하지 않습니다.
+    } catch (SecurityException e) {
+      System.out.println("예외 발생: " + e.getMessage()); // 예상: 채널에 접근할 수 있는 권한이 없습니다.
+    }
   }
 }
