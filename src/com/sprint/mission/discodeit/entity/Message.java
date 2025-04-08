@@ -1,20 +1,39 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.UUID;
 
 public class Message {
-    public static int msgNumber = 0;
-    List<String> msgs;
-    List<String> msgTstamps;
+    private final UUID id = UUID.randomUUID();
+    public static int totMsgNumber = 0;
+    private int msgNumber;
+    private String author;
+    private String textMsg;
+    private long createdAt  = System.currentTimeMillis();
+    private long updatedAt;
 
 
-
-    public Message(List<String> msgs, List<String> msgTstamps) {
-        this.msgs = msgs;
-        this.msgTstamps = msgTstamps;
+    public Message(int msgNumber, String author, String textMsg,long createdAt, long updatedAt) {
+        this.msgNumber = msgNumber;
+        this.author = author;
+        this.textMsg = textMsg;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
+    public UUID getId() {return id;}
+    public int getMsgNumber() {return msgNumber;}
+    public String getAuthor() {return author;}
+    public void setAuthor(String newAuthor) {this.author = newAuthor;}
+    public void setTextMsg(String textMsg) {this.textMsg = textMsg;}
+    public String getTextMsg() {return textMsg;}
 
-    @Override
-    public String toString() { return "" + msgs + msgTstamps; }
+    public String getCreatedAt() {
+        String formatedTime = new SimpleDateFormat("HH:mm:ss").format(createdAt);
+        return formatedTime;}
+    public String getUpdatedAt() {
+        String formatedTime = new SimpleDateFormat("HH:mm:ss").format(updatedAt);
+        return formatedTime;}
+    public void setUpdatedAt(long updatedAt) {this.updatedAt = updatedAt;}
 }
 

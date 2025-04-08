@@ -1,4 +1,4 @@
 package com.sprint.mission.discodeit.jcf;
 
-public class JCFChannel {
+public class JCFChannelService {
 }

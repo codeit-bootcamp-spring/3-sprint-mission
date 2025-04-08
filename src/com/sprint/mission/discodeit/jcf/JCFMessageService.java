@@ -1,43 +1,48 @@
 package com.sprint.mission.discodeit.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.MessageService;
 
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
-import static com.sprint.mission.discodeit.entity.Message.msgNumber;
-import static java.lang.System.currentTimeMillis;
+public class JCFMessageService implements MessageService {
+    private final List<Message> messages = new ArrayList<>();
+    private static Scanner scanner = new Scanner(System.in);
 
-public class JCFMessage implements MessageService {
-
-    public void sendMessage() {             // 새로운 메세지 입력
-        while (true) {
-            System.out.print("메세지 입력 >>> ");
-            Scanner sc = new Scanner(System.in);
-            String scannedMsg = sc.nextLine();
-            if (scannedMsg.length() == 0) {break;}
-            String nowTime = new SimpleDateFormat("HH:mm:ss").format(currentTimeMillis()); // 현재시각 TimeStamp생성
-            messageMap.put(msgNumber++, new Message(List.of("Sender1", scannedMsg, nowTime, nowTime)));
-            System.out.println(messageMap.get(msgNumber -1));
+    @Override
+    public boolean uploadMsg(User user){
+        System.out.print("\n 메세지를 입력해주세요 >>  ");
+        String txtMsg = scanner.nextLine();
+        if (txtMsg.length()!=0){
+            long now = System.currentTimeMillis();
+            Message message = new Message(Message.totMsgNumber++,user.getName(),txtMsg,now,now);
+            messages.add(message);
+            System.out.print("\n System : [메세지 등록 완료]");
+            System.out.println(" >> 메세지 번호 : " + message.getMsgNumber() + "     등록시간 : " + message.getCreatedAt());
+            return true;} else{
+            System.out.println(" System : 메세지 입력을 종료합니다");
+            return false;
         }
     }
 
-    public void readAllMessage() {                         // 메세지 목록 MAP 전체 불러오기
-        System.out.println(" 입력된 메세지는 아래와 같습니다. \n 글번호 | 작성자 , 메세지 , 작성시간 , 수정시간");
-        for (Map.Entry<Integer, Message> entry : messageMap.entrySet()) {
-            int msgNumber = entry.getKey();
-            Message msgBody = entry.getValue();
-            System.out.println(msgNumber + " | " + msgBody);
-        }
+    @Override
+    public void updateMsg(Message message) {
+        System.out.println("저장된 메세지 : " + message.getTextMsg());
+        System.out.print("변경할 메세지 : ");
+        String newMsg = scanner.nextLine();
+        message.setTextMsg(newMsg);
+        message.setUpdatedAt(System.currentTimeMillis());
+        System.out.println();
     }
-//    public void modifyMessage(int modMsgNumber){
-//        String newmessage = "modified";
-//        messageMap.get(modMsgNumber).setMsgs(1,newmessage);
-//        messageMap.put(modMsgNumber,)
-//
-//    }
 
+    public void printAllMessages() {
+        System.out.println("<< 입력된 전체 메세지 >>");
+        messages.forEach(m -> System.out.println(m.getMsgNumber() + "|" + m.getAuthor() + "|" + m.getTextMsg() + "|" + m.getCreatedAt() + "|" + m.getUpdatedAt() + "|||" + m.getId()));
+    }
+    public List<Message> getMessagesList() {
+        return new ArrayList<>(messages);
+    }
 }
