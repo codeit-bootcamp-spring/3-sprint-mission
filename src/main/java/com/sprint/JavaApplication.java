@@ -48,6 +48,11 @@ public class JavaApplication {
             if (n == 3) {
                 JCFUserService.outputOneUserInfo(user.getUsername());
             }
+            if (n == 4) {
+                System.out.println("현재 사용자 이름은 " + user.getUsername() + "입니다. 새로운 이름을 입력해 주세요.");
+                String updateUserName = sc.nextLine();
+                JCFUserService.updateUserName(user.getUsername(), updateUserName);
+            }
 
             if (n == 7) {
                 break;
@@ -75,6 +80,13 @@ public class JavaApplication {
             if (n == 3) {
                 JCFChannelService.outputAllChannelInfo();
             }
+            if (n == 4) {
+                assert selectChannel != null;
+                System.out.println(
+                        "현재 접속중인 채널은" + selectChannel.getChannelName() + "입니다. 새로운 채널 이름을 작성 해 주세요.");
+                String updateChannelName = sc.nextLine();
+                JCFChannelService.updateChannelName(selectChannel.getChannelName(), updateChannelName);
+            }
 
             if (n == 7) {
                 break;
@@ -95,6 +107,14 @@ public class JavaApplication {
             }
             if (n == 2) {
                 messageService.outputUserMessage();
+            }
+            if (n == 3) {
+                System.out.println("수정 할 메시지의 번호를 입력해 주세요.");
+                messageService.outputUserMessage();
+                int messageNumber = Integer.parseInt(sc.nextLine());
+                System.out.println("메시지를 입력해 주세요.");
+                String newMessage = sc.nextLine();
+                messageService.updateUserMessage(messages, messageNumber, newMessage);
             }
 
             if (n == 5) {
