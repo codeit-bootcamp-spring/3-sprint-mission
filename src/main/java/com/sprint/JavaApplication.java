@@ -53,6 +53,13 @@ public class JavaApplication {
                 String updateUserName = sc.nextLine();
                 JCFUserService.updateUserName(user.getUsername(), updateUserName);
             }
+            if (n == 5) {
+                JCFUserService.outputAllUsersInfo();
+                System.out.println("삭제 할 사용자의 번호를 입력하세요.");
+                int num = Integer.parseInt(sc.nextLine());
+                System.out.println(user.getUsername() + " 정보를 삭제합니다.");
+                JCFUserService.deleteUserName(num);
+            }
 
             if (n == 7) {
                 break;
@@ -87,6 +94,12 @@ public class JavaApplication {
                 String updateChannelName = sc.nextLine();
                 JCFChannelService.updateChannelName(selectChannel.getChannelName(), updateChannelName);
             }
+            if (n == 5) {
+                assert selectChannel != null;
+                System.out.println(selectChannel.getChannelName() + " 채널을 삭제합니다.");
+                JCFChannelService.deleteChannelName(selectChannel.getChannelName());
+                n = 7;
+            }
 
             if (n == 7) {
                 break;
@@ -115,6 +128,13 @@ public class JavaApplication {
                 System.out.println("메시지를 입력해 주세요.");
                 String newMessage = sc.nextLine();
                 messageService.updateUserMessage(messages, messageNumber, newMessage);
+            }
+            if (n == 4) {
+                System.out.println("삭제한 메시지의 번호를 입력해 주세요.");
+                messageService.outputUserMessage();
+                int deleteMessageNumber = Integer.parseInt(sc.nextLine());
+                messageService.deleteUserMessage(messages, deleteMessageNumber);
+                System.out.println("삭제가 완료됐습니다.");
             }
 
             if (n == 5) {
