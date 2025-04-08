@@ -3,7 +3,9 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -14,11 +16,11 @@ public class JcfMessageService implements MessageService {
   private final Map<UUID, List<Message>> channelMessagesMap = new HashMap<>();
   private final Map<UUID, List<Message>> userMessagesMap = new HashMap<>();
 
-  private final JcfUserService userService;
-  private final JcfChannelService channelService;
+  private final UserService userService;
+  private final ChannelService channelService;
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM월 dd일 a hh시 mm분 ss초");
 
-  public JcfMessageService(JcfUserService userService, JcfChannelService channelService) {
+  public JcfMessageService(UserService userService, ChannelService channelService) {
     this.userService = userService;
     this.channelService = channelService;
   }

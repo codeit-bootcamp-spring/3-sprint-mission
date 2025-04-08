@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
@@ -16,11 +17,13 @@ public class JcfUserService implements UserService {
       1. Setter 주입으로 바꿔서 해결
   */
 
-  private JcfChannelService channelService;
+  //private JcfChannelService channelService;
+  private ChannelService channelService;
 
-  public void setChannelService(JcfChannelService channelService) {
+  public void setChannelService(ChannelService channelService) {
     this.channelService = channelService;
   }
+
 
   @Override
   public User createUser(String username, String email) {

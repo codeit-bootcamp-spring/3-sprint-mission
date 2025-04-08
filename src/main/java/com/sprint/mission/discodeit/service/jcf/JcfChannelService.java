@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +12,15 @@ import java.util.UUID;
 public class JcfChannelService implements ChannelService {
   private final List<Channel> channels = new ArrayList<>();
 
-  private final JcfUserService userService;
+//  private final JcfUserService userService;
+//
+//  //JcfChannelService에서 JcfUserService를 의존성으로 추가하고, 그 안에 저장된 유저를 가져온다.
+//  public JcfChannelService(JcfUserService userService) {
+//    this.userService = userService;
+//  }
 
-  //JcfChannelService에서 JcfUserService를 의존성으로 추가하고, 그 안에 저장된 유저를 가져온다.
-  public JcfChannelService(JcfUserService userService) {
+  private final UserService userService;
+  public JcfChannelService(UserService userService) {
     this.userService = userService;
   }
 
@@ -81,12 +87,12 @@ public class JcfChannelService implements ChannelService {
     return new ArrayList<>(channel.getChannelUsers());
   }
 
-  // 유저가 만든 모든 채널 삭제
+  @Override
   public void deleteChannelsCreatedByUser(UUID userId) {
     channels.removeIf(channel -> channel.getChannelOwner().getId().equals(userId));
   }
 
-  // 유저가 참여 중인 모든 채널에서 탈퇴
+ @Override
   public void removeUserFromAllChannels(UUID userId) {
     for (Channel channel : channels) {
       channel.getChannelUsers().removeIf(user -> user.getId().equals(userId));
