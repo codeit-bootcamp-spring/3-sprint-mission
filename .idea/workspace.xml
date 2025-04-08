@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="08140402-956f-48d4-b229-3a6d3ecba6ec" name="Changes" comment="" />
+    <list default="true" id="08140402-956f-48d4-b229-3a6d3ecba6ec" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/sprint-mission/src/main/java/com/sprint/mission/JavaApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/sprint-mission/src/main/java/com/sprint/mission/JavaApplication.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,6 +15,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "LZHTK"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "git@github.com:LZHTK/3-sprint-mission.git",
+    "accountId": "0a6ac7a0-2909-46f8-b246-b2ded6b315f0"
+  }
+}]]></component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="DEPENDENCY_CHECKER_PROBLEMS_TAB" />
   </component>

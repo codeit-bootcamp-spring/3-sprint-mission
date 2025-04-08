@@ -11,7 +11,7 @@ public class JavaApplication {
 
 
     public static void main(String[] args) {
-        // 구현체 생성
+        // 구현체의 생성자를 호출해 인스턴스 생성
         JCFChannelService channelService = new JCFChannelService();
         JCFUserService userService = new JCFUserService();
         JCFMessageService messageService = new JCFMessageService(channelService);
@@ -124,6 +124,10 @@ public class JavaApplication {
 
 
         System.out.println("-----------------------------------------------------------------------------------\n");
+
+
+
+
 
 
 
