@@ -7,8 +7,8 @@ public class Channel {
     private int number;
     private String channelName;
     private UUID id;
-    private Long createdAt;
-    private Long updateAt;
+    private long createdAt;
+    private long updateAt;
 
     public Channel(String channelName) {
         this.number = counter++;
