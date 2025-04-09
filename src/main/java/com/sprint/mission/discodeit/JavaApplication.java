@@ -20,7 +20,6 @@ public class JavaApplication {
     //JcfUserServiceUsingMap userService = new JcfUserServiceUsingMap();
 
     ServiceFactory.initializeServices();
-
     UserService userService = ServiceFactory.getUserService();
     ChannelService channelService = ServiceFactory.getChannelService();
 
@@ -45,13 +44,13 @@ public class JavaApplication {
     userService.getAllUsers().forEach(System.out::println);
 
     //유저 정보 수정 테스트
-    System.out.println("\n=== 유저 정보(test01 이름변경) 수정 후 조회===");
-    userService.updateUser(testuser01.getId(), "test0101", "test0101@.com");
+    System.out.println("\n=== test01 이름변경 후 조회===");
+    userService.updateUserName(testuser01.getId(), "test0101");
     System.out.println(userService.getUserById(testuser01.getId()));
 
     //유저 삭제 후 전체 유저 조회 //  try-catch로 만약 유저가 존재하지 않으면 예외 처리 필요
     userService.deleteUser(test02.getId());
-    System.out.println("\n=== 유저 삭제 후 전체 조회 ===");
+    System.out.println("\n=== test02 삭제 후 전체 조회 ===");
     userService.getAllUsers().forEach(System.out::println);
     System.out.println();
 
@@ -68,16 +67,21 @@ public class JavaApplication {
 
     System.out.println("\n=== 채널 이름(2024_Channel) 수정 후 전체 채널 조회 ===");
     channelService.updateChannelName(channel2.getId(), "2023_channel");
+    try {
+      channelService.updateChannelName(channel2.getId(), "2023_channel");
+    } catch (IllegalArgumentException e) {
+      System.out.println("[채널명 변경 실패: " + e.getMessage() + "]\n");
+    }
     List<Channel> allChannels = channelService.getAllChannels();
     allChannels.forEach(System.out::println);
 
     // 유저 추가 (test02, test03을 채널에 추가)  & 삭제된 유저는 data에 담을 수 없다.
-    System.out.println("\n=== 2025_Channel에 멤버(test02,test03) 추가 ===");
-    channelService.addMember(channel1.getId(), test02.getId()); // User에서 test02를 삭제함.
+    System.out.println("\n=== 2025_Channel에 멤버(test02(탈퇴),test03) 추가 ===");
+    channelService.addMember(channel1.getId(), test02.getId()); // test02는 삭제된 유저
     channelService.addMember(channel1.getId(), test03.getId());
 
     // 채널 멤버 조회
-    System.out.println("\n=== 2025_Channel 전체멤버 조회 ===");
+    System.out.println("\n=== 2025_Channel 전체멤버(채널소유자 포함) 조회 ===");
     List<User> channelMembers = channelService.getChannelMembers(channel1.getId());
     channelMembers.forEach(user -> System.out.println("멤버: " + user.getUsername()));
 
@@ -89,8 +93,8 @@ public class JavaApplication {
     // 채널 삭제 후 전체 채널 조회
     System.out.println("\n=== 2025_Channel 삭제 후 남은 채널 조회 ===");
     channelService.deleteChannel(channel1.getId());
-    List<Channel> remainingChannels = channelService.getAllChannels();
-    System.out.println(remainingChannels.isEmpty() ? "남은 채널 없음" : remainingChannels);
+    List<Channel> totalChannels = channelService.getAllChannels();
+    System.out.println(totalChannels.isEmpty() ? "남은 채널 없음" : totalChannels);
 
     System.out.println("\n===============================================================================================\n[##유저+채널+메시지 crud 테스트]\n");
 
@@ -135,6 +139,7 @@ public class JavaApplication {
     messageService.createMessage(noticeRoom.getId(), user4.getId(), "user4입니다.");
     messageService.createMessage(noticeRoom.getId(), user3.getId(), "user3입니다.");
 
+    // 메세지 생성시간 & 메세지내용변경 수정시간 텀을 확인
     try {
       Thread.sleep(1000); // 1000ms = 1초
     } catch (InterruptedException e) {
@@ -196,16 +201,14 @@ public class JavaApplication {
     messageService.getMessagesByReceiverInChannel(studyRoom.getId(), user2.getId())
         .forEach(msg -> System.out.println(messageService.formatMessage(msg)));
 
-    System.out.println("\n[##공지방 채널소유주인 user2가 탈퇴후 공지방 채널 메세지 조회]");
     //  예상 출력값: 존재하지 않는 사용자 && 존재하지 않는 채널
-    //  도메인 간 양방향 의존성 문제 & 사용자 탈퇴 시 관련된 채널 및 연결 관계 정리 필요
     System.out.println("\n[##user2 탈퇴 처리 - 공지방 소유자]");
     userService.deleteUser(user2.getId());
 
     System.out.println("\n[##공지방 채널소유주인 user2가 탈퇴후 공지방 채널 메시지 조회 시도]");
     try {
-      List<Message> noticeMessagesAfterDelete = messageService.getAllMessagesInChannel(noticeRoom.getId(), user2.getId());
-      noticeMessagesAfterDelete.forEach(msg -> System.out.println(messageService.formatMessage(msg)));
+      List<Message> selectMsg = messageService.getAllMessagesInChannel(noticeRoom.getId(), user2.getId());
+      selectMsg.forEach(msg -> System.out.println(messageService.formatMessage(msg)));
     } catch (IllegalArgumentException e) {
       System.out.println("예외 발생: " + e.getMessage()); // 예상: 채널이 존재하지 않습니다.
     } catch (SecurityException e) {

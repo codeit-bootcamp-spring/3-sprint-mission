@@ -35,22 +35,8 @@ public class User {
     updatedAt = System.currentTimeMillis();
   }
 
-  public String getCreatedAtFormatted() {
-    return formatDate(this.createdAt);
-  }
-
-  private String formatDate(Long timestamp) {
-    SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss");
-    return sdf.format(new Date(timestamp));
-  }
-
   @Override
   public String toString() {
-    return "[" +
-        "createdAt= " + getCreatedAtFormatted() +
-        ", updatedAt= " + updatedAt +
-        ", username='" + username + '\'' +
-        ", email='" + email + '\'' +
-        ']';
+    return "[" + "username='" + username + ", email='" + email + '\'' + ']';
   }
 }

@@ -13,7 +13,8 @@ public interface UserService {
   // 3. 유저 전체 조회
   List<User> getAllUsers();
   // 4. 유저 수정
-  void updateUser(UUID id,String name,String email);
+  void updateUserName(UUID id,String name);
+  void updateUserEmail(UUID id,String email);
   // 5. 유저 삭제
   void deleteUser(UUID id);
 }

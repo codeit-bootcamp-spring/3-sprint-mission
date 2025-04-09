@@ -7,8 +7,8 @@ import com.sprint.mission.discodeit.service.jcf.JcfUserService;
 
 public class ServiceFactory {
   // 의존성 주입을 수동으로 관리하는 DI 컨테이너
-  // ServiceFactory를 쓰는이유: JcfUserService와 JcfChannelService가 서로 의존하는 문제를 해결하고자
-  // userService와 channelService를 프로그램 실행 동안 하나의 인스턴스만 유지 - 싱글톤처럼 사용
+  // ServiceFactory를 쓰는이유: JcfUserService와 JcfChannelService의 순환 참조 (A->B->A) 문제를 해결하고자
+  // userService와 channelService를 프로그램 실행 하는 동안 하나의 인스턴스만 유지 - 싱글톤패턴
   // 어디서든 ServiceFactory.getUserService()로 같은 인스턴스를 사용할 수 있다.
   private static UserService userService;
   private static ChannelService channelService;

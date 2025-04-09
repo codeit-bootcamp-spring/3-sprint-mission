@@ -57,9 +57,7 @@ public class JcfMessageService implements MessageService {
   public List<Message> getMessagesBySenderInChannel(UUID channelId, UUID senderId) {
     Channel channel = channelService.getChannelById(channelId);
     if (channel == null) throw new IllegalArgumentException("채널이 존재하지 않습니다.");
-    if (channel.getChannelUsers().stream().noneMatch(u -> u.getId().equals(senderId))) // terminal operation
-      // anyMatch() : 최소한 한 개의 요소가 주어진 조건에 만족하는지 | 하나라도 만족하면 true
-      // allMatch() : 모든 요소들이 매개값으로 주어진 조건을 만족하는지 | 모두 만족해야 true
+    if (channel.getChannelUsers().stream().noneMatch(u -> u.getId().equals(senderId)))
       // noneMatch() : 모든 요소들이 주어진 조건을 만족하지 않는지 | 아무도 조건을 만족하지 않아야 true
       throw new IllegalArgumentException("해당 유저는 이 채널의 멤버가 아닙니다."); // 커스텀 예외처리 필요
 

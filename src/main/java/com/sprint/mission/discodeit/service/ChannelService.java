@@ -21,8 +21,8 @@ public interface ChannelService {
   // 4. 채널 이름 수정
   void updateChannelName(UUID channelId, String channelName);
 
-  // 채널 소유자 변경 ... 채널 소유자가 탈퇴한다면? 채널도 삭제된다. <- 이 전제로 1. 필요없는 메서드로 진행
-  // 2. 채널 소유자가 떠나도 채널이 유지되어야 하는 경우에는 해당 메서드가 필요
+  // 채널 소유자 변경 ... 채널 소유자가 탈퇴한다면? 채널도 삭제된다. <- 이 전제로 1) 필요없는 메서드로 진행
+  // 2) 채널 소유자가 떠나도 채널이 유지되어야 하는 경우에는 해당 메서드가 필요
   //void updateChannelOwner(UUID channelId, UUID ownerUserId);
 
   // 5. 채널 삭제(채널 소유자만 삭제 가능)
