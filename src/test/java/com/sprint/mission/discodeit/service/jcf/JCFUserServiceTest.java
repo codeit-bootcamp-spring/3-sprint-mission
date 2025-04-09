@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -33,11 +34,13 @@ class JCFUserServiceTest {
         User createdUser = userService.createUser(username, email, password);
 
         // Then
-        assertNotNull(createdUser, "생성된 사용자는 null이 아니어야 합니다.");
-        assertNotNull(createdUser.getUserId(), "사용자 ID가 할당되어야 합니다.");
-        assertEquals(username, createdUser.getUserName(), "사용자 이름이 일치해야 합니다.");
-        assertEquals(email, createdUser.getEmail(), "이메일이 일치해야 합니다.");
-        assertEquals(password, createdUser.getPassword(), "비밀번호가 일치해야 합니다.");
+        assertAll(
+                () -> assertNotNull(createdUser, "생성된 사용자는 null이 아니어야 합니다."),
+                () -> assertNotNull(createdUser.getUserId(), "사용자 ID가 할당되어야 합니다."),
+                () -> assertEquals(username, createdUser.getUserName(), "사용자 이름이 일치해야 합니다."),
+                () -> assertEquals(email, createdUser.getEmail(), "이메일이 일치해야 합니다."),
+                () -> assertEquals(password, createdUser.getPassword(), "비밀번호가 일치해야 합니다.")
+        );
     }
 
     @Test
@@ -51,9 +54,11 @@ class JCFUserServiceTest {
         User foundUser = userService.getUserById(userId);
 
         // Then
-        assertNotNull(foundUser);
-        assertEquals(userId, foundUser.getUserId());
-        assertEquals("findMe", foundUser.getUserName());
+        assertAll(
+                () -> assertNotNull(foundUser),
+                () -> assertEquals(userId, foundUser.getUserId()),
+                () -> assertEquals("findMe", foundUser.getUserName())
+        );
     }
 
     @Test
@@ -80,8 +85,10 @@ class JCFUserServiceTest {
         List<User> allUsers = userService.getAllUsers();
 
         // Then
-        assertNotNull(allUsers);
-        assertEquals(2, allUsers.size(), "생성된 사용자 수만큼 반환되어야 합니다.");
+        assertAll(
+                () -> assertNotNull(allUsers),
+                () -> assertEquals(2, allUsers.size(), "생성된 사용자 수만큼 반환되어야 합니다.")
+        );
     }
 
     @Test
@@ -97,8 +104,10 @@ class JCFUserServiceTest {
         User updatedUser = userService.getUserById(userId);
 
         // Then
-        assertNotNull(updatedUser);
-        assertEquals(newUsername, updatedUser.getUserName(), "사용자 이름이 업데이트되어야 합니다.");
+        assertAll(
+                () -> assertNotNull(updatedUser),
+                () -> assertEquals(newUsername, updatedUser.getUserName(), "사용자 이름이 업데이트되어야 합니다.")
+        );
     }
 
     @Test
@@ -114,8 +123,10 @@ class JCFUserServiceTest {
         User updatedUser = userService.getUserById(userId);
 
         // Then
-        assertNotNull(updatedUser);
-        assertEquals(newEmail, updatedUser.getEmail(), "사용자 이메일이 업데이트되어야 합니다.");
+        assertAll(
+                () -> assertNotNull(updatedUser),
+                () -> assertEquals(newEmail, updatedUser.getEmail(), "사용자 이메일이 업데이트되어야 합니다.")
+        );
     }
 
     @Test
@@ -132,10 +143,30 @@ class JCFUserServiceTest {
         List<User> remainingUsers = userService.getAllUsers();
 
         // Then
-        assertNull(foundUser, "삭제된 사용자는 조회 시 null이어야 합니다.");
-        assertEquals(1, remainingUsers.size(), "삭제 후 사용자 수가 1이어야 합니다.");
-        assertEquals("keepMe", remainingUsers.get(0).getUserName(), "삭제되지 않은 사용자만 남아있어야 합니다.");
+        assertAll(
+                () -> assertNull(foundUser, "삭제된 사용자는 조회 시 null이어야 합니다."),
+                () -> assertEquals(1, remainingUsers.size(), "삭제 후 사용자 수가 1이어야 합니다."),
+                () -> assertEquals("keepMe", remainingUsers.get(0).getUserName(), "삭제되지 않은 사용자만 남아있어야 합니다.")
+        );
     }
 
     // updateUserPassword 테스트 등 추가...
+    @Test
+    @DisplayName("사용자 비밀번호 업데이트")
+    void updateUserPassword_shouldChangeUserPassword() {
+        // Given
+        User user = userService.createUser("user", "user@e.com", "p");
+        UUID userId = user.getUserId();
+        String newPassword = "newPassword";
+
+        // When
+        userService.updateUserPassword(userId, newPassword);
+        User updatedUser = userService.getUserById(userId);
+
+        // Then
+        assertAll(
+                () -> assertNotNull(updatedUser),
+                () -> assertEquals(newPassword, updatedUser.getPassword(), "사용자 비밀번호가 업데이트되어야 합니다.")
+        );
+    }
 }

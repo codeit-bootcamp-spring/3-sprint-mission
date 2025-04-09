@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -43,11 +44,13 @@ class JCFChannelServiceTest {
         Channel createdChannel = channelService.createChannel(channelName, isPrivate, password, testOwner.getUserId());
 
         // Then
-        assertNotNull(createdChannel);
-        assertEquals(channelName, createdChannel.getChannelName());
-        assertTrue(createdChannel.isPrivate());
-        assertEquals(password, createdChannel.getPassword());
-        assertEquals(testOwner.getUserId(), createdChannel.getOwnerChannelId());
+        assertAll(
+                () -> assertNotNull(createdChannel),
+                () -> assertEquals(channelName, createdChannel.getChannelName()),
+                () -> assertTrue(createdChannel.isPrivate()),
+                () -> assertEquals(password, createdChannel.getPassword()),
+                () -> assertEquals(testOwner.getUserId(), createdChannel.getOwnerChannelId())
+        );
     }
 
     @Test
@@ -60,9 +63,11 @@ class JCFChannelServiceTest {
         Channel foundChannel = channelService.getChannelById(channelId);
 
         // Then
-        assertNotNull(foundChannel);
-        assertEquals(testChannel.getChannelName(), foundChannel.getChannelName());
-        assertEquals(testChannel.getOwnerChannelId(), foundChannel.getOwnerChannelId());
+        assertAll(
+                () -> assertNotNull(foundChannel),
+                () -> assertEquals(testChannel.getChannelName(), foundChannel.getChannelName()),
+                () -> assertEquals(testChannel.getOwnerChannelId(), foundChannel.getOwnerChannelId())
+        );
     }
 
     @Test
@@ -76,8 +81,10 @@ class JCFChannelServiceTest {
         List<Channel> allChannels = channelService.getAllChannels();
 
         // Then
-        assertNotNull(allChannels);
-        assertEquals(3, allChannels.size()); // testChannel + 2개 추가
+        assertAll(
+                () -> assertNotNull(allChannels),
+                () -> assertEquals(3, allChannels.size()) // testChannel + 2개 추가
+        );
     }
 
     @Test
@@ -88,11 +95,13 @@ class JCFChannelServiceTest {
 
         // When
         boolean joinResult = channelService.joinChannel(testChannel.getChannelId(), newUser.getUserId(), "");
+        Set<UUID> participants = channelService.getChannelParticipants(testChannel.getChannelId());
 
         // Then
-        assertTrue(joinResult);
-        Set<UUID> participants = channelService.getChannelParticipants(testChannel.getChannelId());
-        assertTrue(participants.contains(newUser.getUserId()));
+        assertAll(
+                () -> assertTrue(joinResult),
+                () -> assertTrue(participants.contains(newUser.getUserId()))
+        );
     }
 
     @Test
@@ -104,11 +113,12 @@ class JCFChannelServiceTest {
 
         // When
         boolean leaveResult = channelService.leaveChannel(testChannel.getChannelId(), participant.getUserId());
-
-        // Then
-        assertTrue(leaveResult);
         Set<UUID> participants = channelService.getChannelParticipants(testChannel.getChannelId());
-        assertFalse(participants.contains(participant.getUserId()));
+        // Then
+        assertAll(
+                () -> assertTrue(leaveResult),
+                () -> assertFalse(participants.contains(participant.getUserId()))
+        );
     }
 
     @Test
@@ -124,10 +134,12 @@ class JCFChannelServiceTest {
         Channel updatedChannel = channelService.getChannelById(testChannel.getChannelId());
 
         // Then
-        assertNotNull(updatedChannel);
-        assertEquals(newName, updatedChannel.getChannelName());
-        assertTrue(updatedChannel.isPrivate());
-        assertEquals(newPassword, updatedChannel.getPassword());
+        assertAll(
+                () -> assertNotNull(updatedChannel),
+                () -> assertEquals(newName, updatedChannel.getChannelName()),
+                () -> assertTrue(updatedChannel.isPrivate()),
+                () -> assertEquals(newPassword, updatedChannel.getPassword())
+        );
     }
 
     @Test
@@ -140,7 +152,9 @@ class JCFChannelServiceTest {
         channelService.deleteChannel(channelId);
 
         // Then
-        assertNull(channelService.getChannelById(channelId));
-        assertTrue(channelService.getAllChannels().isEmpty());
+        assertAll(
+                () -> assertNull(channelService.getChannelById(channelId)),
+                () -> assertTrue(channelService.getAllChannels().isEmpty())
+        );
     }
 }

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -45,10 +46,12 @@ class JCFMessageServiceTest {
         Message createdMessage = messageService.createMessage(content, testAuthor.getUserId(), testChannel.getChannelId());
 
         // Then
-        assertNotNull(createdMessage);
-        assertEquals(content, createdMessage.getContent());
-        assertEquals(testAuthor.getUserId(), createdMessage.getAuthorId());
-        assertEquals(testChannel.getChannelId(), createdMessage.getChannelId());
+        assertAll(
+                () -> assertNotNull(createdMessage),
+                () -> assertEquals(content, createdMessage.getContent()),
+                () -> assertEquals(testAuthor.getUserId(), createdMessage.getAuthorId()),
+                () -> assertEquals(testChannel.getChannelId(), createdMessage.getChannelId())
+        );
     }
 
     @Test
@@ -61,9 +64,11 @@ class JCFMessageServiceTest {
         Message foundMessage = messageService.getMessageById(messageId);
 
         // Then
-        assertNotNull(foundMessage);
-        assertEquals(testMessage.getContent(), foundMessage.getContent());
-        assertEquals(testMessage.getAuthorId(), foundMessage.getAuthorId());
+        assertAll(
+                () -> assertNotNull(foundMessage),
+                () -> assertEquals(testMessage.getContent(), foundMessage.getContent()),
+                () -> assertEquals(testMessage.getAuthorId(), foundMessage.getAuthorId())
+        );
     }
 
     @Test
@@ -77,8 +82,10 @@ class JCFMessageServiceTest {
         List<Message> channelMessages = messageService.getMessagesByChannel(testChannel.getChannelId());
 
         // Then
-        assertNotNull(channelMessages);
-        assertEquals(3, channelMessages.size()); // testMessage + 2개 추가
+        assertAll(
+                () -> assertNotNull(channelMessages),
+                () -> assertEquals(3, channelMessages.size()) // testMessage + 2개 추가
+        );
     }
 
     @Test
@@ -91,9 +98,12 @@ class JCFMessageServiceTest {
         List<Message> authorMessages = messageService.getMessagesByAuthor(testAuthor.getUserId());
 
         // Then
-        assertNotNull(authorMessages);
-        assertEquals(2, authorMessages.size()); // testMessage + 1개 추가
-        assertTrue(authorMessages.stream().allMatch(m -> m.getAuthorId().equals(testAuthor.getUserId())));
+        assertAll(
+                () -> assertNotNull(authorMessages),
+                () -> assertEquals(2, authorMessages.size()), // testMessage + 1개 추가
+                () -> assertTrue(authorMessages.stream().allMatch(m -> m.getAuthorId().equals(testAuthor.getUserId())))
+        );
+
     }
 
     @Test
@@ -107,8 +117,10 @@ class JCFMessageServiceTest {
         Message updatedMessage = messageService.getMessageById(testMessage.getMessageId());
 
         // Then
-        assertNotNull(updatedMessage);
-        assertEquals(newContent, updatedMessage.getContent());
+        assertAll(
+                () -> assertNotNull(updatedMessage),
+                () -> assertEquals(newContent, updatedMessage.getContent())
+        );
     }
 
     @Test
@@ -121,7 +133,9 @@ class JCFMessageServiceTest {
         messageService.deleteMessage(messageId);
 
         // Then
-        assertNull(messageService.getMessageById(messageId));
-        assertTrue(messageService.getMessagesByChannel(testChannel.getChannelId()).isEmpty());
+        assertAll(
+                () -> assertNull(messageService.getMessageById(messageId)),
+                () -> assertTrue(messageService.getMessagesByChannel(testChannel.getChannelId()).isEmpty())
+        );
     }
 }
