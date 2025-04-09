@@ -9,14 +9,16 @@ public class User {
     private final Long createdAt;
     private Long updatedAt;
     private String userName;
+    private final UUID channelId;
 
     // 생성자
-    public User(String userName) {
+    public User(String userName, UUID channelId) {
         // 버전 4로 랜덤한 UUID 생성
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = createdAt;
         this.userName = userName;
+        this.channelId = channelId;
     }
 
     // getter 함수부
@@ -35,6 +37,8 @@ public class User {
     public String getUserName() {
         return userName;
     }
+
+    public UUID getChannelId() { return channelId; }
 
     // userName 업데이트 함수
     public void updateUserName(String userName) {

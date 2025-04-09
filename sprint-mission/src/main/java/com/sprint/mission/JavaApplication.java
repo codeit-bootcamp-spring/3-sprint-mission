@@ -13,40 +13,8 @@ public class JavaApplication {
     public static void main(String[] args) {
         // 구현체의 생성자를 호출해 인스턴스 생성
         JCFChannelService channelService = new JCFChannelService();
-        JCFUserService userService = new JCFUserService();
+        JCFUserService userService = new JCFUserService(channelService);
         JCFMessageService messageService = new JCFMessageService(channelService);
-
-        System.out.println("----- 유저 등록 --------\n");
-
-        User user1 = userService.createUser("KHG"); // 유저 1 등록
-        User user2 = userService.createUser("PM"); // 유저 2 등록
-
-
-        System.out.println("----- 유저 조회 단건 --------\n");
-
-        System.out.println(userService.readUser(user1.getId())); // 유저 1 조회
-        System.out.println(userService.readUser(user2.getId())); // 유저 2 조회
-
-        System.out.println("----- 유저 조회 다건 --------\n");
-
-        System.out.println(userService.readUsers()); // 모든 유저 조회
-
-
-        System.out.println("----- 유저 이름 수정 --------\n");
-
-        userService.updateUser(user1.getId(), "김현기");
-        userService.updateUser(user2.getId(), "박민");
-        // 유저명 수정 후 조회
-        System.out.println(userService.readUser(user1.getId()));
-        System.out.println(userService.readUser(user2.getId()));
-
-        System.out.println("----- 유저 삭제 --------\n");
-        // 유저삭제 후에 삭제가 잘 되었는지 확인
-        userService.deleteUser(user1.getId());
-        userService.deleteUser(user2.getId());
-        System.out.println(userService.readUser(user1.getId()));
-        System.out.println(userService.readUser(user2.getId()));
-
 
         System.out.println("-----------------------------------------------------------------------------------\n");
 
@@ -74,8 +42,7 @@ public class JavaApplication {
         System.out.println(channelService.readChannel(channel2.getId()));
         System.out.println(channelService.readChannel(channel3.getId()));
 
-        System.out.println("----- 채널 삭제 --------\n");
-        channelService.deleteChannel(channel1.getId());
+        System.out.println("----- 채널 삭제 2,3 --------\n");
         channelService.deleteChannel(channel2.getId());
         channelService.deleteChannel(channel3.getId());
         System.out.println(channelService.readChannel(channel1.getId()));
@@ -84,22 +51,57 @@ public class JavaApplication {
 
         System.out.println("-----------------------------------------------------------------------------------\n");
 
-        // 메시지를 보낼 새로운 유저 생성
-        User user3 = userService.createUser("양주원");
-        User user4 = userService.createUser("조원준");
+        System.out.println("----- 유저 등록 --------\n");
+
+        User user1 = userService.createUser("KHG",channel1.getId()); // 유저 1 등록
+        User user2 = userService.createUser("PM",channel1.getId()); // 유저 2 등록
+
+
+        System.out.println("----- 유저 조회 단건 --------\n");
+
+        System.out.println(userService.readUser(user1.getId())); // 유저 1 조회
+        System.out.println(userService.readUser(user2.getId())); // 유저 2 조회
+
+        System.out.println("----- 유저 조회 다건 --------\n");
+
+        System.out.println(userService.readUsers()); // 모든 유저 조회
+//
+//
+        System.out.println("----- 유저 이름 수정 --------\n");
+
+        userService.updateUser(user1.getId(), "김현기");
+        userService.updateUser(user2.getId(), "박민");
+        // 유저명 수정 후 조회
+        System.out.println(userService.readUser(user1.getId()));
+        System.out.println(userService.readUser(user2.getId()));
+
+        System.out.println("----- 유저1 삭제 --------\n");
+        // 유저삭제 후에 삭제가 잘 되었는지 확인
+        userService.deleteUser(user1.getId());
+        System.out.println(userService.readUser(user1.getId()));
+        System.out.println(userService.readUser(user2.getId()));
+//
+//
+        System.out.println("-----------------------------------------------------------------------------------\n");
 
         // 메시지를 받을 새로운 채널 생성
         Channel channel4 = channelService.createChannel("코딩룸");
 
+        // 메시지를 보낼 새로운 유저 생성
+        User user3 = userService.createUser("양주원",channel4.getId());
+        User user4 = userService.createUser("조원준",channel4.getId());
 
-
+//
+//
+//
+//
         System.out.println("----- 메시지 등록 --------\n");
 
         Message message1 = messageService.createMessage("안녕하세요!",channel4.getId(),user3.getId());
         Message message2 = messageService.createMessage("반갑습니다.",channel4.getId(),user4.getId());
 
         System.out.println("----- 메시지 조회 단건 --------\n");
-
+//
         System.out.println(messageService.readMessage(message1.getId()));
         System.out.println(messageService.readMessage(message2.getId()));
 
@@ -126,6 +128,9 @@ public class JavaApplication {
         System.out.println("-----------------------------------------------------------------------------------\n");
 
 
+        System.out.println("---- 결과적으로 채널4 포함된 유저와 메시지 -----");
+//
+        System.out.println(channelService.readChannel(channel4.getId()));
 
 
 

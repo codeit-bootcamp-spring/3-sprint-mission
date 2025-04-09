@@ -9,15 +9,18 @@ import java.util.UUID;
 
 public class JCFUserService implements UserService {
     private final Map<UUID, User> data;
+    private final JCFChannelService jcfChannelService;
 
-    public JCFUserService() {
+    public JCFUserService(JCFChannelService jcfChannelService) {
+        this.jcfChannelService = jcfChannelService;
         this.data = new HashMap<>();
     }
 
     @Override
-    public User createUser(String username) {
-        User user = new User(username);
+    public User createUser(String username, UUID channelId) {
+        User user = new User(username, channelId);
         data.put(user.getId(), user);
+        jcfChannelService.addUserToChannel(channelId, user.getId());
         return user;
     }
 

@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public interface UserService {
-    User createUser(String username);
+    User createUser(String username, UUID channelId);
 
 
    Map<UUID, User> readUsers();

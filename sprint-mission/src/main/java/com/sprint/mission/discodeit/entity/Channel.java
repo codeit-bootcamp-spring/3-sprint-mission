@@ -11,7 +11,7 @@ public class Channel {
     private long updatedAt;
     private String channelName;
     private List<UUID> messageList; // 채널에서 받은 메시지 리스트
-
+    private List<UUID> userList;
     // 생성자
     public Channel(String channelName) {
         this.id = UUID.randomUUID();
@@ -19,6 +19,7 @@ public class Channel {
         this.channelName = channelName;
         this.messageList = new ArrayList<>();
         this.updatedAt = createdAt;
+        this.userList = new ArrayList<>();
     }
 
     // getter 함수부
@@ -38,13 +39,21 @@ public class Channel {
         return messageList;
     }
 
+    public List<UUID> getUserList() { return userList; }
+
     public long getUpdatedAt() {
         return updatedAt;
     }
 
+
     public UUID addMessageToChannel(UUID messageUUID){
         messageList.add(messageUUID);
         return messageUUID;
+    }
+
+    public UUID addUserToChannel(UUID userUUID){
+        userList.add(userUUID);
+        return userUUID;
     }
 
     // channelName 업데이트 함수
@@ -56,7 +65,8 @@ public class Channel {
     @Override
     public String toString() {
         return  " 채널명 : " + channelName +
-                " / messageList : " + messageList
+                " / 메시지 리스트 : " + messageList +
+                " / 유저 리스트 : " + userList
                 +"\n";
     }
 }
