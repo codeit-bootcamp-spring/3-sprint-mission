@@ -63,12 +63,12 @@ public class JavaApplication {
         System.out.println("채널 : " + channel1.getChannelName() + "의 모든 메시지 목록");
         messageService.getAllMessages().stream()
                 .filter(message -> message.getChannelId().equals(channel1.getId()))
-                .forEach(message -> System.out.println(message.getId() + " - " + message.getMsgContent()));
+                .forEach(message -> System.out.println(message.getId() + " - " + message));
 
         System.out.println("채널 : " + channel2.getChannelName() + "의 모든 메시지 목록");
         messageService.getAllMessages().stream()
                 .filter(message -> message.getChannelId().equals(channel2.getId()))
-                .forEach(message -> System.out.println(message.getId() + " - " + message.getMsgContent()));
+                .forEach(message -> System.out.println(message.getId() + " - " + message));
 
         System.out.println();
         System.out.print("수정된 유저 정보 : ");

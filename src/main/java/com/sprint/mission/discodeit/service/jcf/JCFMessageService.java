@@ -62,8 +62,8 @@ public class JCFMessageService implements MessageService {
         }
 
         Message message = new Message(msgContent, senderId, channelId);
-        data.put(message.getId(), message);
-        channelService.addMessageToChannel(channelId,message.getId());
-        return message;
+        Message created = createMessage(message);
+        channelService.addMessageToChannel(channelId, created.getId());
+        return created;
     }
 }

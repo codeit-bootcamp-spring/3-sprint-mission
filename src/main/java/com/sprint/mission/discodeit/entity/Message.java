@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.Date;
 import java.util.UUID;
 
 public class Message extends BaseEntity {
@@ -26,12 +27,19 @@ public class Message extends BaseEntity {
         return channelId;
     }
 
+    public boolean isUpdated() {
+        return getUpdatedAt() != getCreatedAt();
+    }
+
     @Override
     public String toString() {
-        return "Message{senderId=" + senderId +
-                ", channelId=" + channelId +
-                ", msgContent=" + msgContent +
-                ", createdAt=" + getCreatedAt() +
-                ", updatedAt=" + getUpdatedAt() + '}';
+        StringBuilder sb = new StringBuilder();
+        long displayTime = isUpdated() ? getUpdatedAt() : getCreatedAt();
+        sb.append("[").append(new Date(displayTime)).append("] ");
+        sb.append(msgContent);
+        if (isUpdated()) {
+            sb.append(" (수정됨)");
+        }
+        return sb.toString();
     }
 }
