@@ -13,7 +13,7 @@ import java.util.Scanner;
 
 public class JavaApplication {
 
-    static Scanner sc = new Scanner(System.in);
+    private final static Scanner sc = new Scanner(System.in);
     static List<User> users = new ArrayList<>();
 
     static JCFUserService JCFUserService = new JCFUserService(users);
