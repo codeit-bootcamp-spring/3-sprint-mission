@@ -6,8 +6,8 @@ public class Message {
     private static int counter = 1;
     private int number;
     private UUID id;
-    private Long createdAt;
-    private Long updateAt;
+    private long createdAt;
+    private long updateAt;
     private String message;
 
     public Message(String message) {
@@ -28,11 +28,11 @@ public class Message {
         return id;
     }
 
-    public Long getCreatedAt() {
+    public long getCreatedAt() {
         return createdAt;
     }
 
-    public Long getUpdateAt() {
+    public long getUpdateAt() {
         return updateAt;
     }
 

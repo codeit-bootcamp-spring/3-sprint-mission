@@ -7,8 +7,8 @@ public class User {
     private int number;
     private String username;
     private UUID id;
-    private Long createdAt;
-    private Long updatedAt;
+    private long createdAt;
+    private long updatedAt;
 
 
     public User(String name) {
@@ -33,11 +33,11 @@ public class User {
         return id;
     }
 
-    public Long getCreatedAt() {
+    public long getCreatedAt() {
         return createdAt;
     }
 
-    public Long getUpdatedAt() {
+    public long getUpdatedAt() {
         return updatedAt;
     }
 
