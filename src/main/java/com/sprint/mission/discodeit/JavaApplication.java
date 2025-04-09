@@ -23,8 +23,8 @@ public class JavaApplication {
         while (true) {
             System.out.println("===== MAIN MENU =====");
             System.out.println("1. 사용자 메뉴");
-            System.out.println("2. 메시지 메뉴");
-            System.out.println("3. 채널 메뉴");
+            System.out.println("2. 채널 메뉴");
+            System.out.println("3. 메시지 메뉴");
             System.out.println("0. 종료");
             System.out.println("번호를 입력하세요");
             String mainMenu = scanner.nextLine();
@@ -65,6 +65,7 @@ public class JavaApplication {
                     System.out.println("사용자 이름 입력");
                     String userName = scanner.nextLine();
                     User user = new User(userName);
+                    userService.createUser(user);
                     System.out.println("생성된 사용자 식별키 : " + user.getId());
                     break;
                 case "2":
