@@ -7,7 +7,7 @@ import com.sprint.mission.discodeit.entity.User;
 import java.util.*;
 
 public interface MessageService{
-    boolean uploadMsg(User user);
+    void uploadMsg(User user,String txtMsg);
     void updateMsg(Message message,String Msg);
     Message findMessageByNum(int num);
 

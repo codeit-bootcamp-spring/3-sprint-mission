@@ -6,12 +6,13 @@ import java.util.UUID;
 
 public class Message {
     private final UUID id = UUID.randomUUID();
-    public static int totMsgNumber = 0;
-    private int msgNumber;
-    private String author;
-    private String textMsg;
     private long createdAt  = System.currentTimeMillis();
     private long updatedAt;
+
+    private int msgNumber;
+
+    private String author;
+    private String textMsg;
 
 
     public Message(int msgNumber, String author, String textMsg,long createdAt, long updatedAt) {
@@ -34,6 +35,7 @@ public class Message {
     public String getUpdatedAt() {
         String formatedTime = new SimpleDateFormat("HH:mm:ss").format(updatedAt);
         return formatedTime;}
-    public void setUpdatedAt(long updatedAt) {this.updatedAt = updatedAt;}
+    public void setUpdatedAt(long updatedAt) {
+        this.updatedAt = updatedAt;}
 }
 

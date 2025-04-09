@@ -6,11 +6,9 @@ import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class JCFMessageService implements MessageService {
     private final List<Message> messages = new ArrayList<>();
-    private static Scanner scanner = new Scanner(System.in);
     // 테스트용 초기 더미 데이터 입력
     public JCFMessageService() {
         messages.add(new Message(001,"희동이","요리보고 조리봐도", 1744036548250L , 1744036548250L));
@@ -19,20 +17,13 @@ public class JCFMessageService implements MessageService {
         messages.add(new Message(004,"고길동","우리집에 들어왔지 이 식충이녀석들", 1744036938250L , 1744036938250L));
     }
     @Override
-    public boolean uploadMsg(User user){
-        System.out.print(" >>  ");
-        String txtMsg = scanner.nextLine();
-        if (txtMsg.length()!=0){
-            long now = System.currentTimeMillis();
-            Message.totMsgNumber = messages.size();
-            Message message = new Message(Message.totMsgNumber + 1,user.getName(),txtMsg,now,now);
-            messages.add(message);
-            System.out.print("\n ▶ [메세지 등록 완료]");
-            System.out.println(" ▶ 메세지 번호 : " + message.getMsgNumber() + "     ▶ 등록시간 : " + message.getCreatedAt());
-            return true;} else{
-            System.out.println(" ▶ 메세지 입력을 종료합니다");
-            return false;
-        }
+    public void uploadMsg(User user,String txtMsg){
+        long now = System.currentTimeMillis();
+        Message message = new Message(messages.size() + 1,user.getName(),txtMsg,now,now);
+        messages.add(message);
+        System.out.print("\n ▶ [메세지 등록 완료]");
+        System.out.println(" ▶ 메세지 번호 : " + message.getMsgNumber() + "     ▶ 등록시간 : " + message.getCreatedAt());
+
     }
 
     @Override

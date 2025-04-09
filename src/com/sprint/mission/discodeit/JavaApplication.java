@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.jcf.JCFUserService;
 
@@ -10,14 +12,17 @@ import java.util.Scanner;
 
 public class JavaApplication {
     private static final JCFUserService userService = new JCFUserService();
-    private static final JCFMessageService messageService = new JCFMessageService();
+    private static final JCFChannelService channelService = new JCFChannelService();
     static final Scanner scanner = new Scanner(System.in);
     private static User currentUser;
+    private static Channel currentChannel;
 
     public static void main(String[] args) {
         // 0. 초기 사용자 인증
         currentUser = verifyUser();
         // 0_1. intro 메세지
+
+
         System.out.println(" ▶ discodeit 메세지 서비스에 연결되었습니다.");
         // 1. mainmenu 호출
         menuMain();
@@ -40,6 +45,7 @@ public class JavaApplication {
            ////          │    ├ 3_2 현재 사용자 변경
            ////          │    └ 3_3 전체 사용자 목록 조회
            ////          │    └ 3_4 전체 사용자 목록 조회
+           ////          │    └ 3_5 현재 사용자 변경
            ////          │    └ 3_5 상위메뉴로
            ////          └ 5. 프로그램 종료
 
@@ -82,6 +88,23 @@ public class JavaApplication {
             return newUser;
         }
     }
+    public static Channel verifyChannel(){ // 사용자명 입력 >> 없는 사용자 : 사용자 생성 / 있는 사용자 : 이름으로 확인, ID연결
+        System.out.print(" ▶ 채널명을 입력해 주세요 : ");
+        String chanName = scanner.nextLine();
+        Channel channel = channelService.findChannelByName(chanName);
+        if (channel != null) {
+            System.out.println("[" + channel.getChannelName() + "] 에 접속합니다." + ", 채널 ID: " + channel.getId());
+            return channel;
+        } else {
+            System.out.println("\n ▶ 존재하지 않는 채널입니다. 새로운 채널을 개설합니다.");
+            System.out.println("\n ▶ 새로운 채널의 설명을 입력해주세요.");
+            String chanDesc = scanner.nextLine();
+            Channel newChannel = channelService.addChannel(chanName,chanDesc,currentUser);
+            System.out.println("\n ▶ 생성에 성공하였습니다.");
+            System.out.println("[" + newChannel.getChannelName() + "] 에 접속합니다." + ", 채널 ID: " + newChannel.getId());
+            return newChannel;
+        }
+    }
     public static void menuMain(){
         while (true) {
             System.out.println(" ▶ 원하는 메뉴를 선택해 주세요.");
@@ -95,7 +118,9 @@ public class JavaApplication {
 
             switch (choice) {
                 case 1:         // 채널 입장 : 메세지 관리 메서드 호출
-                    menuMessageMng(currentUser);
+                    currentChannel = verifyChannel();
+                    channelService.printAllChannels();
+                    menuMessageMng(currentUser,currentChannel);
                     break;
                 case 2:
                     System.out.println(" ▶ 2번 메뉴는 아직 미지원입니다.\n ");
@@ -114,56 +139,61 @@ public class JavaApplication {
         }
 
     }
-    public static void menuMessageMng(User currentUser){       // 1 채널 조작 메서드
+    public static void menuMessageMng(User currentUser,Channel currentChannel){       // 1 채널 조작 메서드
 
         while (true) {
             System.out.println(" *******************************************************\n"
-                    + " || 채널에 입장했습니다.    원하는 기능을 선택하세요. ||\n"
+                    + " || "+currentChannel.getChannelName()+"채널에 입장했습니다.\n"
+                    + " ||   원하는 기능을 선택하세요.                       ||\n"
                     + " ||      1 > 신규 메세지 작성                         ||\n"
                     + " ||      2 > 전체 메세지 조회                         ||\n"
                     + " ||      3 > 메세지 수정                              ||\n"
                     + " ||      4 > 메세지 삭제                              ||\n"
-                    + " ||      5 > 현재 사용자 변경                         ||\n"
-                    + " ||      6 > 상위 메뉴로 돌아가기                     ||\n"
+                    + " ||      5 > 다른 채널에 접속                         ||\n"
+                    + " ||      6 > 현재 사용자 변경                         ||\n"
+                    + " ||      7 > 상위 메뉴로 돌아가기                     ||\n"
                     + " *******************************************************\n");
             int choice = scanInt(); // 숫자 입력 메서드 호출
-            int inputMsgNum = -1;
-            Message currentMsg = null;
+            int inputMsgNum;
+            Message currentMsg;
             switch (choice) {
                 case 1:                 // 1_1 메세지 작성
                         while (true){
-                            System.out.println(" ▶ 새로운 메세지를 등록합니다.\n ");
-                        boolean breakpoint= messageService.uploadMsg(currentUser);
-                        if (breakpoint != true){
-                            break;
+                            System.out.println(" ▶ 새로운 메세지를 등록합니다.\n  >>  ");
+                            String txtMsg = scanner.nextLine();
+                            if (txtMsg.length()!=0) {
+                                currentChannel.messageService().uploadMsg(currentUser, txtMsg);
+                            }else {
+                                System.out.println(" ▶ 메세지 입력을 종료합니다");
+                                break;
+                            }
                         }
-                    }
                     break;
 
                 case 2:               //1_2 전체 메세지 조회
                     System.out.println(" ▶ 채널에 등록된 모든 메세지를 조회합니다.\n ");
-                    messageService.printAllMessages();
+                    currentChannel.messageService().printAllMessages();
                     break;
                 case 3:               // 1_3 메세지 수정
                     System.out.println(" ▶ 현재 등록된 메세지는 아래와 같습니다.");
-                    messageService.printAllMessages();
+                    currentChannel.messageService().printAllMessages();
                     System.out.println(" ▶ 수정할 메세지의 번호를 입력해 주세요");
                     inputMsgNum = scanInt(); // 숫자 입력 메서드 호출
-                    currentMsg = messageService.findMessageByNum(inputMsgNum);
+                    currentMsg = currentChannel.messageService().findMessageByNum(inputMsgNum);
                     System.out.println(" ▶ [" + inputMsgNum + "]번 메세지는 아래와 같습니다.");
                         System.out.println(currentMsg.getTextMsg());
 
                     System.out.print("수정할 새로운 메세지를 입력해 주세요.\n >> ");
                         String newMessage = scanner.nextLine();
-                        messageService.updateMsg(currentMsg,newMessage);
+                        currentChannel.messageService().updateMsg(currentMsg,newMessage);
                         System.out.println("기존 내용을 [" + newMessage + "] 로 수정하였습니다.");
                     break;
                 case 4:               // 1_4 메세지 삭제
                     System.out.println(" ▶ 현재 등록된 메세지는 아래와 같습니다.");
-                    messageService.printAllMessages();
+                    currentChannel.messageService().printAllMessages();
                     System.out.println(" ▶ 삭제할 메세지의 번호를 입력해 주세요");
                     inputMsgNum = scanInt(); // 숫자 입력 메서드 호출
-                    currentMsg = messageService.findMessageByNum(inputMsgNum);
+                    currentMsg = currentChannel.messageService().findMessageByNum(inputMsgNum);
                     System.out.println(" ▶ [" + inputMsgNum + "]번 메세지는 아래와 같습니다.");
                     System.out.println(currentMsg.getTextMsg());
 
@@ -173,13 +203,16 @@ public class JavaApplication {
                         System.out.println(" ▶ 잘못된 입력입니다. 이전 메뉴로 돌아갑니다.");
                         break;
                     }else if(deleteConfirm.equals("삭제")) {
-                        messageService.deleteMessage(currentMsg);
+                        currentChannel.messageService().deleteMessage(currentMsg);
                         System.out.println("메세지가 삭제되었습니다.");
                     }else{
                         System.out.println(" ▶ 잘못된 입력입니다. 사용자 삭제를 취소합니다.");
                     }
                     break;
-                case 5:               // 1_5 현재 사용자 변경
+                case 5:               // 1_5 현재 채널 변경
+                    currentChannel = verifyChannel();
+                    break;
+                case 6:               // 1_5 현재 사용자 변경
                     System.out.print(" ▶ 어떤 사용자로 로그인할까요?");
                     String username = scanner.nextLine();
                     User user = userService.findUserByName(username);
@@ -192,12 +225,12 @@ public class JavaApplication {
                         System.out.println("");
                     }
                     break;
-                case 6:               // 1_6 상위메뉴로 이동
+                case 7:               // 1_7 상위메뉴로 이동
                     break;
                 default:              // 세부메뉴 입력예외처리
                     System.out.println(" ▶ 잘못된 접근입니다. 다시 입력해 주세요");
             }
-            if (choice == 6) {break;}
+            if (choice == 7) {break;}
         }
 
 
