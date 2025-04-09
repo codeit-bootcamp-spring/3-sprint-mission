@@ -33,6 +33,13 @@ public class JCFMessageService implements MessageService {
 
         data.put(message.getId(), message);
 
+        // 메시지를 보낸 user의 mesagesList에 해당 메시지 추가
+        userService.findById(message.getSenderId()).ifPresent(user -> {
+            user.getMessages().add(message);
+            userService.update(user);
+        });
+
+        // 메시지를 보낸 channel의 mesagesList에 해당 메시지 추가
         channelService.findById(message.getChannelId()).ifPresent(channel -> {
             channel.getMessageList().add(message);
             channelService.update(channel);

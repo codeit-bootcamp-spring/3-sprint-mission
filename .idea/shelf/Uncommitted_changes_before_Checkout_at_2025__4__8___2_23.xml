@@ -1,0 +1,92 @@
+<changelist name="Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23" date="1744089833488" recycled="true" deleted="true">
+  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/shelved.patch" />
+  <option name="DESCRIPTION" value="Uncommitted changes before Checkout at 2025. 4. 8. 오후 2:23" />
+  <binary>
+    <option name="AFTER_PATH" value="build/classes/java/main/com/sprint/mission/discodeit/run/JavaApplication.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/JavaApplication.class" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value="build/classes/java/main/com/sprint/mission/discodeit/service/ChannelService.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/ChannelService.class" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value=".gradle/8.10/executionHistory/executionHistory.lock" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/executionHistory.lock" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value=".gradle/buildOutputCleanup/outputFiles.bin" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/outputFiles.bin" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value="build/classes/java/main/com/sprint/mission/discodeit/service/jcf/JCFChannelService.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/JCFChannelService.class" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value="build/classes/java/main/com/sprint/mission/discodeit/entity/User.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/User.class" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value=".gradle/8.10/fileHashes/fileHashes.lock" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/fileHashes.lock" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value="build/classes/java/main/com/sprint/mission/discodeit/entity/Message.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/Message.class" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value="build/tmp/compileJava/previous-compilation-data.bin" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/previous-compilation-data.bin" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value=".gradle/8.10/checksums/checksums.lock" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/checksums.lock" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value="build/classes/java/main/com/sprint/mission/discodeit/service/jcf/JCFMessageService.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/JCFMessageService.class" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value=".gradle/8.10/fileChanges/last-build.bin" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/last-build.bin" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value=".gradle/8.10/fileHashes/resourceHashesCache.bin" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/resourceHashesCache.bin" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value=".gradle/buildOutputCleanup/buildOutputCleanup.lock" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/buildOutputCleanup.lock" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value=".gradle/8.10/executionHistory/executionHistory.bin" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/executionHistory.bin" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value="build/classes/java/main/com/sprint/mission/discodeit/service/jcf/JCFUserService.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/JCFUserService.class" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value=".gradle/file-system.probe" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/file-system.probe" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value="build/classes/java/main/com/sprint/mission/discodeit/service/MessageService.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/MessageService.class" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value="build/classes/java/main/com/sprint/mission/discodeit/entity/Channel.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/Channel.class" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value=".gradle/8.10/fileHashes/fileHashes.bin" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/fileHashes.bin" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value="build/tmp/compileJava/compileTransaction/stash-dir/JavaApplication.class.uniqueId0" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/JavaApplication.class.uniqueId0" />
+  </binary>
+  <binary>
+    <option name="AFTER_PATH" value="build/classes/java/main/com/sprint/mission/discodeit/service/UserService.class" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2025__4__8__오후_2_23/UserService.class" />
+  </binary>
+</changelist>
