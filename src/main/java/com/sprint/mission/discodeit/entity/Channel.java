@@ -24,12 +24,16 @@ public class Channel extends BaseEntity {
         return userIds;
     }
 
+    public List<UUID> getMessageIds() { return messageIds; }
+
     public void addUser(UUID userId) {
         userIds.add(userId);
+        updateTime();
     }
 
     public void addMessage(UUID messageId) {
         messageIds.add(messageId);
+        updateTime();
     }
 
     @Override

@@ -11,4 +11,5 @@ public interface MessageService {
     List<Message> getAllMessages();
     void updateMessage(UUID messageId, String msgContent);
     void deleteMessage(UUID messageId);
+    Message createMessageCheck(String msgContent, UUID senderId, UUID channelId);
 }

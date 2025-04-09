@@ -21,6 +21,10 @@ public class User extends BaseEntity {
         updateTime();
     }
 
+    public void addChannel(UUID channelId) {
+        channelIds.add(channelId);
+    }
+
     @Override
     public String toString() {
         return "User{name = " + userName +

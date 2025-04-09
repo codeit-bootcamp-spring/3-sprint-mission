@@ -5,8 +5,8 @@ import java.util.UUID;
 // 공통으로 들어갈 변수들
 public abstract class BaseEntity {
     private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
+    private final long createdAt;
+    private long updatedAt;
 
     public BaseEntity() {
         this.id = UUID.randomUUID();
@@ -18,11 +18,11 @@ public abstract class BaseEntity {
         return id;
     }
 
-    public Long getCreatedAt() {
+    public long getCreatedAt() {
         return createdAt;
     }
 
-    public Long getUpdatedAt() {
+    public long getUpdatedAt() {
         return updatedAt;
     }
 
