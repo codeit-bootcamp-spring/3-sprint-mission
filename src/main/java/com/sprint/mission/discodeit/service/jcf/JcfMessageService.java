@@ -11,7 +11,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class JcfMessageService implements MessageService {
-  //private final List<Message> data = new ArrayList<>();
   private final Map<UUID, Message> messageMap = new HashMap<>();
   private final Map<UUID, List<Message>> channelMessagesMap = new HashMap<>();
   private final Map<UUID, List<Message>> userMessagesMap = new HashMap<>();
@@ -37,7 +36,7 @@ public class JcfMessageService implements MessageService {
       throw new IllegalStateException("채널에 최소 두 명 이상의 유저가 있어야 메시지를 보낼 수 있습니다.");
     }
     if (!channel.getChannelUsers().contains(sender)) {
-      throw new IllegalArgumentException("해당 유저는 이 채널의 멤버가 아닙니다."); // 커스텀 예외처리 필요
+      throw new IllegalArgumentException("해당 유저는 이 채널의 멤버가 아닙니다.");
     }
 
     Message message = new Message(content, channelId, senderId);
@@ -59,23 +58,23 @@ public class JcfMessageService implements MessageService {
     if (channel == null) throw new IllegalArgumentException("채널이 존재하지 않습니다.");
     if (channel.getChannelUsers().stream().noneMatch(u -> u.getId().equals(senderId)))
       // noneMatch() : 모든 요소들이 주어진 조건을 만족하지 않는지 | 아무도 조건을 만족하지 않아야 true
-      throw new IllegalArgumentException("해당 유저는 이 채널의 멤버가 아닙니다."); // 커스텀 예외처리 필요
+      throw new IllegalArgumentException("해당 유저는 이 채널의 멤버가 아닙니다.");
 
     return channelMessagesMap.getOrDefault(channelId, Collections.emptyList())
         .stream()
         .filter(m -> m.getSenderId().equals(senderId))
         .toList();
+
 //    List<Message> messages;
 //    if (channelMessagesMap.containsKey(channelId)) {
 //      messages = channelMessagesMap.get(channelId);
 //    } else {
-//      messages = new ArrayList<>();  //  null이 아닌 안전한 리스트 사용 .stream() 에서의 NullPointerException 방지
+//      messages = new ArrayList<>();  //  null이 아닌 안전한 리스트 사용 .stream() 에서의 NPE 방지
 //    }
 //
 //    return messages.stream()
 //        .filter(m -> m.getSenderId().equals(senderId))
 //        .toList();
-
   }
 
   @Override
@@ -83,7 +82,7 @@ public class JcfMessageService implements MessageService {
     Channel channel = channelService.getChannelById(channelId);
     if (channel == null) throw new IllegalArgumentException("채널이 존재하지 않습니다.");
     if (channel.getChannelUsers().stream().noneMatch(u -> u.getId().equals(receiverId)))
-      throw new IllegalArgumentException("해당 유저는 이 채널의 멤버가 아닙니다."); // 커스텀 예외처리 필요
+      throw new IllegalArgumentException("해당 유저는 이 채널의 멤버가 아닙니다.");
 
     return channelMessagesMap.getOrDefault(channelId, Collections.emptyList())
         .stream()
@@ -122,7 +121,7 @@ public class JcfMessageService implements MessageService {
     Message msg = messageMap.get(messageId);
     if (msg == null) throw new IllegalArgumentException("메시지를 찾을 수 없습니다.");
     if (!msg.getSenderId().equals(senderId)) {
-      throw new SecurityException("해당 메시지를 수정할 권한이 없습니다."); // 커스텀 예외처리 필요
+      throw new SecurityException("해당 메시지를 수정할 권한이 없습니다.");
     }
     msg.updateContent(newContent);
   }
@@ -136,7 +135,7 @@ public class JcfMessageService implements MessageService {
     Message msg = messageMap.get(messageId);
     if (msg == null) throw new IllegalArgumentException("메시지를 찾을 수 없습니다.");
     if (!msg.getSenderId().equals(senderId)) {
-      throw new SecurityException("해당 메시지를 삭제할 권한이 없습니다."); // 커스텀 예외처리 필요
+      throw new SecurityException("해당 메시지를 삭제할 권한이 없습니다.");
     }
     messageMap.remove(messageId);
     channelMessagesMap.getOrDefault(msg.getChannelId(), new ArrayList<>()).remove(msg);
@@ -148,11 +147,12 @@ public class JcfMessageService implements MessageService {
     Channel channel = channelService.getChannelById(channelId);
     if (channel == null) throw new IllegalArgumentException("채널이 존재하지 않습니다.");
     if (channel.getChannelUsers().stream().noneMatch(u -> u.getId().equals(requesterId)))
-      throw new SecurityException("채널에 접근할 수 있는 권한이 없습니다."); // 커스텀 예외처리 필요
+      throw new SecurityException("채널에 접근할 수 있는 권한이 없습니다.");
 
     return channelMessagesMap.getOrDefault(channelId, Collections.emptyList());
   }
 
+  // 출력- 문자열 포맷팅
   public String formatMessage(Message message) {
     boolean isEdited = !message.getCreatedAt().equals(message.getUpdatedAt());
     long timestamp = isEdited ? message.getUpdatedAt() : message.getCreatedAt();

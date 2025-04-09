@@ -134,5 +134,24 @@ public class JcfChannelService implements ChannelService {
   public Channel getChannelById(UUID channelId) {
     return findChannelById(channelId).orElse(null);
   }
+
+  ===================================================================================
+  커스텀 예외처리 updateUserName() 에서 null체크 생략 가능
+@Override
+public User getUserById(UUID id) {
+  return data.stream()
+      .filter(e -> e.getId().equals(id))
+      .findFirst()
+      .orElseThrow(() -> new UserNotFoundException(id)); //
+}
+
+public void updateUserName(UUID id, String name) {
+  User user = getUserById(id); // 못 찾으면 여기서 예외 던짐
+//  if (user == null) {
+//    throw new IllegalArgumentException("해당 ID의 유저를 찾을 수 없습니다: " + id);
+//  }
+  user.updateName(name);
+}
+
    */
 }
