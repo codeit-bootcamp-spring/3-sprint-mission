@@ -1,7 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+
+import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.*;
 
 public class Channel {
     private final String id;
@@ -21,18 +27,17 @@ public class Channel {
     public String getId() {
         return id;
     }
-
     public String getName() {
         return name;
     }
 
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
+    // Date 타입 포매팅
+    public String getCreatedAt() {
+        String formattedCreatedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(createdAt);
+        return formattedCreatedTime;}
+    public String getUpdatedAt() {
+        String formattedUpdatedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(updatedAt);
+        return formattedUpdatedTime;}
 
     @Override
     public String toString() {
@@ -40,15 +45,13 @@ public class Channel {
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", maker='" + maker + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
+                // 포매팅된 date 사용
+                ", createdAt=" + getCreatedAt() +
+                ", updatedAt=" + getUpdatedAt() +
                 '}';
     }
 
-    public void updateById(String id, String name) {
-        this.name = name;
-    }
-
+    public void updateById(String id, String name) {this.name = name;}
     public void updateDateTime() {this.updatedAt = System.currentTimeMillis();}
 
 }
