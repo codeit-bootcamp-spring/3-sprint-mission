@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.User;
 
-public interface UserInterface {
+public interface UserService {
     public User inputUserName();
 
     public void createNewUserNames(String oldName, String newName);

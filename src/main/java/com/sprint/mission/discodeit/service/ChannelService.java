@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
 
-public interface ChannelInterface {
+public interface ChannelService {
 
     public void outputAllChannelInfo();
 
