@@ -33,6 +33,16 @@ public class JCFUserService implements UserService {
     }
 
     @Override
+    public boolean deleteUser(UUID id) {
+        return users.removeIf(user -> user.getId().equals(id));
+    }
+
+    @Override
+    public boolean deleteUser(String name) {
+        return users.removeIf(user -> user.getName().equals(name));
+    }
+
+    @Override
     public User findUserById(UUID id) {
         for (User user : users) {
             if (user.getId().equals(id)) {
@@ -52,16 +62,7 @@ public class JCFUserService implements UserService {
         return null; // 없으면 null 리턴
     }
 
-    @Override
-    public boolean deleteUser(UUID id) {
-        return users.removeIf(user -> user.getId().equals(id));
-    }
 
-    @Override
-    public boolean deleteUser(String name) {
-
-        return users.removeIf(user -> user.getName().equals(name));
-    }
 
 
 

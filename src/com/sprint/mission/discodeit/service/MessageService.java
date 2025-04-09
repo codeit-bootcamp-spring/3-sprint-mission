@@ -11,9 +11,6 @@ public interface MessageService{
     void updateMsg(Message message,String Msg);
     Message findMessageByNum(int num);
 
-//    Optional<User> findMsgByNum(UUID id);
-//    Optional<User> findUserByUser(String name);
-//    boolean deleteUserById(UUID id);
     void deleteMessage(Message message);
 //
     void printAllMessages();

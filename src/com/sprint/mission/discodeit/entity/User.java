@@ -23,8 +23,8 @@ public class User {
         String formatedTime = new SimpleDateFormat("MM.dd HH:mm:ss").format(createdAt);
         return formatedTime;}
     public String getUpdatedAt() {
-        String formatedTime = new SimpleDateFormat("MM.dd HH:mm:ss").format(updatedAt);
-        return formatedTime;}
+        String aformatedTime = new SimpleDateFormat("MM.dd HH:mm:ss").format(updatedAt);
+        return aformatedTime;}
     public void setUpdatedAt(long updatedAt) {this.updatedAt = updatedAt;}
 
 @Override

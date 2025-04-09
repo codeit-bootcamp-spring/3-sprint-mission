@@ -10,12 +10,11 @@ public class Channel {
     private final UUID id = UUID.randomUUID();
     private long createdAt  = System.currentTimeMillis();
     private long updatedAt;
-
-    private JCFMessageService messageService;
-
     private String channelName;
     private String channelDescription;
     private String channelCreater;
+
+    private JCFMessageService messageService;
 
 
     public Channel(String channelName, String channelDescription, String channelCreater, long createdAt, long updatedAt) {

@@ -11,10 +11,10 @@ public class JCFMessageService implements MessageService {
     private final List<Message> messages = new ArrayList<>();
     // 테스트용 초기 더미 데이터 입력
     public JCFMessageService() {
-        messages.add(new Message(001,"희동이","요리보고 조리봐도", 1744036548250L , 1744036548250L));
-        messages.add(new Message(002,"희동이","알수없는 둘리둘리", 1744036558250L , 1744036558250L));
-        messages.add(new Message(003,"도우너","빙하타고~내려와아~", 1744036938250L , 1744036938250L));
-        messages.add(new Message(004,"고길동","우리집에 들어왔지 이 식충이녀석들", 1744036938250L , 1744036938250L));
+        messages.add(new Message(001,"희동이","더미 데이터 1 요리보고 조리봐도", 1744036548250L , 1744036548250L));
+        messages.add(new Message(002,"희동이","더미 데이터 2 알수없는 둘리둘리", 1744036558250L , 1744036558250L));
+        messages.add(new Message(003,"도우너","더미 데이터 3 빙하타고~내려와아", 1744036938250L , 1744036938250L));
+        messages.add(new Message(004,"고길동","더미 데이터 4 치인구를 만났지만", 1744036938250L , 1744036938250L));
     }
     @Override
     public void uploadMsg(User user,String txtMsg){
