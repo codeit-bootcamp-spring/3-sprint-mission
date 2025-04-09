@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -168,5 +170,43 @@ class JCFUserServiceTest {
                 () -> assertNotNull(updatedUser),
                 () -> assertEquals(newPassword, updatedUser.getPassword(), "사용자 비밀번호가 업데이트되어야 합니다.")
         );
+    }
+
+    @Test
+    @DisplayName("사용자 비밀번호 업데이트 시 비밀번호가 null인 경우 예외 발생")
+    void updateUserPassword_shouldThrowExceptionForNullPassword() {
+        // Given
+        User user = userService.createUser("user", "user@e.com", "p");
+        UUID userId = user.getUserId();
+        String newPassword = null;
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> userService.updateUserPassword(userId, newPassword),
+                "Null 비밀번호는 IllegalArgumentException을 발생시켜야 합니다.");
+    }
+
+    @Test
+    @DisplayName("사용자 비밀번호 업데이트 시 비밀번호가 빈 문자열인 경우 예외 발생")
+    void updateUserPassword_shouldThrowExceptionForEmptyPassword() {
+        // Given
+        User user = userService.createUser("user", "user@e.com", "p");
+        UUID userId = user.getUserId();
+        String newPassword = "";
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> userService.updateUserPassword(userId, newPassword),
+                "빈 문자열 비밀번호는 IllegalArgumentException을 발생시켜야 합니다.");
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 사용자의 비밀번호 업데이트 시도")
+    void updateUserPassword_shouldDoNothingForNonExistingUser() {
+        // Given
+        UUID nonExistingUserId = UUID.randomUUID();
+        String newPassword = "newPassword";
+
+        // When & Then: 아무 일도 일어나지 않아야 함 (예외 발생 X)
+        assertDoesNotThrow(() -> userService.updateUserPassword(nonExistingUserId, newPassword));
+        // 추가 검증: 실제 데이터 변경이 없는지 확인 (getAllUsers 등으로 확인 가능하나 여기선 생략)
     }
 }

@@ -54,7 +54,11 @@ public class JCFUserService implements UserService {
     @Override
     public void updateUserPassword(UUID userId, String newPassword) {
         User user = data.get(userId);
-        if (user != null && newPassword != null && !newPassword.isEmpty()) {
+        if (user != null) {
+            // null 또는 빈 문자열 검사 및 예외 발생
+            if (newPassword == null || newPassword.isEmpty()) {
+                throw new IllegalArgumentException("비밀번호는 null이거나 빈 문자열일 수 없습니다.");
+            }
             user.updatePassword(newPassword);
         }
     }

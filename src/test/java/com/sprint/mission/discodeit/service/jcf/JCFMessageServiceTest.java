@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,23 +16,24 @@ import org.junit.jupiter.api.Test;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 
 class JCFMessageServiceTest {
 
     private JCFMessageService messageService;
-    private JCFUserService userService;
-    private JCFChannelService channelService;
+    private UserService userService;
+    private ChannelService channelService;
     private User testAuthor;
     private Channel testChannel;
     private Message testMessage;
 
     @BeforeEach
     public void setUp() {
-        this.messageService = new JCFMessageService();
         this.userService = new JCFUserService();
-        this.channelService = new JCFChannelService();
+        this.channelService = new JCFChannelService(this.userService);
+        this.messageService = new JCFMessageService(this.userService, this.channelService);
 
-        // 테스트용 사용자, 채널, 메시지 생성
         testAuthor = userService.createUser("testAuthor", "author@test.com", "password");
         testChannel = channelService.createChannel("TestChannel", false, "", testAuthor.getUserId());
         testMessage = messageService.createMessage("Test message", testAuthor.getUserId(), testChannel.getChannelId());
@@ -137,5 +139,66 @@ class JCFMessageServiceTest {
                 () -> assertNull(messageService.getMessageById(messageId)),
                 () -> assertTrue(messageService.getMessagesByChannel(testChannel.getChannelId()).isEmpty())
         );
+    }
+
+    @Test
+    @DisplayName("메시지 생성 시 존재하지 않는 작성자 ID 사용 시 예외 발생")
+    void createMessage_shouldThrowExceptionForNonExistingAuthor() {
+        // Given
+        UUID nonExistingAuthorId = UUID.randomUUID();
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> {
+            messageService.createMessage("Fail message", nonExistingAuthorId, testChannel.getChannelId());
+        });
+    }
+
+    @Test
+    @DisplayName("메시지 생성 시 존재하지 않는 채널 ID 사용 시 예외 발생")
+    void createMessage_shouldThrowExceptionForNonExistingChannel() {
+        // Given
+        UUID nonExistingChannelId = UUID.randomUUID();
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> {
+            messageService.createMessage("Fail message", testAuthor.getUserId(), nonExistingChannelId);
+        });
+    }
+
+    @Test
+    @DisplayName("메시지 생성 시 채널에 참가하지 않은 사용자가 작성 시 예외 발생")
+    void createMessage_shouldThrowExceptionWhenAuthorIsNotParticipant() {
+        // Given
+        User nonParticipant = userService.createUser("nonParticipant", "non@test.com", "pass");
+        // testChannel에는 testAuthor만 참가되어 있음
+
+        // When & Then
+        assertThrows(IllegalStateException.class, () -> {
+            messageService.createMessage("Intruder message", nonParticipant.getUserId(), testChannel.getChannelId());
+        });
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 메시지 업데이트 시도 시 예외 발생")
+    void updateMessage_shouldThrowExceptionForNonExistingMessage() {
+        // Given
+        UUID nonExistingMessageId = UUID.randomUUID();
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> {
+            messageService.updateMessage(nonExistingMessageId, "Updated fail");
+        });
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 메시지 삭제 시도 시 예외 발생")
+    void deleteMessage_shouldThrowExceptionForNonExistingMessage() {
+        // Given
+        UUID nonExistingMessageId = UUID.randomUUID();
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> {
+            messageService.deleteMessage(nonExistingMessageId);
+        });
     }
 }
