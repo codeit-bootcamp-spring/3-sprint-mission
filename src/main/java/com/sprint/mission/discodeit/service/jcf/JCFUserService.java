@@ -42,9 +42,7 @@ public class JCFUserService implements UserService {
         data.remove(userId);
         channelServiceSet.forEach(service -> {
             service.getAllChannels().forEach(channel -> {
-                if (channel.getUserIds().contains(userId)) {
-                    channel.getUserIds().remove(userId);
-                }
+                channel.getUserIds().remove(userId);
             });
         });
     }

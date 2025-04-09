@@ -179,9 +179,9 @@ public class JavaApplication {
             System.out.println("5. 메시지 삭제");
             System.out.println("0. 초기 화면으로");
             System.out.println("번호를 입력하세요");
-            String choice = scanner.nextLine();
+            String select = scanner.nextLine();
 
-            switch (choice) {
+            switch (select) {
                 case "1":
                     System.out.print("보낼 메시지 내용");
                     String content = scanner.nextLine();
