@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.UserInterface;
+import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
 import java.util.Scanner;
 
-public class JCFUserService implements UserInterface {
+public class JCFUserService implements UserService {
 
     private final List<User> users;
 

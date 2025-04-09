@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.service.MessageInterface;
+import com.sprint.mission.discodeit.service.MessageService;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JCFMessageService implements MessageInterface {
+public class JCFMessageService implements MessageService {
     private final List<Message> messages = new ArrayList<>();
 
     public List<Message> inputMessage(String newMessage) {
