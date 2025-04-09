@@ -4,6 +4,9 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -14,14 +17,15 @@ import java.util.Scanner;
 public class JavaApplication {
 
     private final static Scanner sc = new Scanner(System.in);
-    static List<User> users = new ArrayList<>();
+    private static List<User> users = new ArrayList<>();
+    
+    public static List<Channel> channels = ChannelRepository.getChannel();
+    public static List<Message> messages = new ArrayList<>();
 
-    static JCFUserService JCFUserService = new JCFUserService(users);
-    static List<Channel> channels = ChannelRepository.getChannel();
-    static JCFChannelService JCFChannelService = new JCFChannelService(channels);
-    static JCFMessageService messageService = new JCFMessageService();
-    static List<Message> messages = new ArrayList<>();
 
+    private static final UserService jCFUserService = new JCFUserService(users);
+    private static final ChannelService jCFChannelService = new JCFChannelService(channels);
+    private static final MessageService jcfMessageService = new JCFMessageService();
 
     public static void login(int loginNumber, List<User> users) {
         users.stream()
@@ -30,7 +34,7 @@ public class JavaApplication {
                 .orElseThrow(() -> new RuntimeException("해당 번호의 유저가 존재하지 않습니다: "));
     }
 
-    private static void handleUserMenu(User user, JCFUserService JCFUserService) {
+    private static void handleUserMenu(User user) {
 
         while (true) {
             System.out.println(
@@ -40,32 +44,32 @@ public class JavaApplication {
             if (n == 1) {
                 System.out.println("새롭게 추가 할 프로필 이름을 입력해 주세요.");
                 String newUser = sc.nextLine();
-                JCFUserService.createNewUserNames(user.getUsername(), newUser);
+                jCFUserService.createNewUserNames(user.getUsername(), newUser);
             }
             if (n == 2) {
-                JCFUserService.outputAllUsersInfo();
+                jCFUserService.outputAllUsersInfo();
             }
             if (n == 3) {
-                JCFUserService.outputOneUserInfo(user.getUsername());
+                jCFUserService.outputOneUserInfo(user.getUsername());
             }
             if (n == 4) {
                 System.out.println("현재 사용자 이름은 " + user.getUsername() + "입니다. 새로운 이름을 입력해 주세요.");
                 String updateUserName = sc.nextLine();
-                JCFUserService.updateUserName(user.getUsername(), updateUserName);
+                jCFUserService.updateUserName(user.getUsername(), updateUserName);
             }
             if (n == 5) {
-                JCFUserService.outputAllUsersInfo();
+                jCFUserService.outputAllUsersInfo();
                 System.out.println("삭제 할 사용자의 번호를 입력하세요.");
                 int num = Integer.parseInt(sc.nextLine());
                 System.out.println(user.getUsername() + " 정보를 삭제합니다.");
-                JCFUserService.deleteUserName(num);
+                jCFUserService.deleteUserName(num);
             }
             if (n == 6) {
                 System.out.println("변경하실 프로필 번호를 입력하세요.");
-                JCFUserService.outputAllUsersInfo();
+                jCFUserService.outputAllUsersInfo();
                 int loginNumber = Integer.parseInt(sc.nextLine());
                 login(loginNumber, users);
-                user = JCFUserService.changeUser(loginNumber);
+                user = jCFUserService.changeUser(loginNumber);
             }
 
             if (n == 7) {
@@ -75,8 +79,7 @@ public class JavaApplication {
 
     }
 
-    private static void handleChannelMenu(int channelNumber, List<Channel> channels,
-                                          JCFChannelService JCFChannelService) {
+    private static void handleChannelMenu(int channelNumber, List<Channel> channels) {
         Channel selectChannel = channels.stream().filter(channel1 -> channel1.getChannelNumber() == channelNumber)
                 .findFirst().orElse(null);
 
@@ -86,32 +89,32 @@ public class JavaApplication {
             if (n == 1) {
                 System.out.println("새로 추가하실 채널 이름을 입력해 주세요.");
                 String newChannelName = sc.nextLine();
-                JCFChannelService.createNewChannel(newChannelName);
+                jCFChannelService.createNewChannel(newChannelName);
             }
             if (n == 2) {
-                JCFChannelService.outputOneChannelInfo(selectChannel);
+                jCFChannelService.outputOneChannelInfo(selectChannel);
             }
             if (n == 3) {
-                JCFChannelService.outputAllChannelInfo();
+                jCFChannelService.outputAllChannelInfo();
             }
             if (n == 4) {
                 assert selectChannel != null;
                 System.out.println(
                         "현재 접속중인 채널은" + selectChannel.getChannelName() + "입니다. 새로운 채널 이름을 작성 해 주세요.");
                 String updateChannelName = sc.nextLine();
-                JCFChannelService.updateChannelName(selectChannel.getChannelName(), updateChannelName);
+                jCFChannelService.updateChannelName(selectChannel.getChannelName(), updateChannelName);
             }
             if (n == 5) {
                 assert selectChannel != null;
                 System.out.println(selectChannel.getChannelName() + " 채널을 삭제합니다.");
-                JCFChannelService.deleteChannelName(selectChannel.getChannelName());
+                jCFChannelService.deleteChannelName(selectChannel.getChannelName());
                 n = 7;
             }
             if (n == 6) {
                 System.out.println("변경하실 채널 번호를 입력해주세요.");
-                JCFChannelService.outputAllChannelInfo();
+                jCFChannelService.outputAllChannelInfo();
                 int newChannelNumber = Integer.parseInt(sc.nextLine());
-                selectChannel = JCFChannelService.changeChannel(newChannelNumber);
+                selectChannel = jCFChannelService.changeChannel(newChannelNumber);
             }
 
             if (n == 7) {
@@ -121,32 +124,32 @@ public class JavaApplication {
     }
 
 
-    private static void handleMessageMenu(JCFMessageService messageService, User user) {
+    private static void handleMessageMenu(User user) {
         while (true) {
             System.out.println("1.메시지 작성\t2.작성한 메시지 출력\t3.메시지 수정\t4.메시지 삭제\t5.이전 메뉴로 돌아가기");
             int n = Integer.parseInt(sc.nextLine());
             if (n == 1) {
                 System.out.println("작성하실 메시지 입력해 주세요");
                 String messageText = sc.nextLine();
-                messages = messageService.inputMessage(messageText);
+                messages = jcfMessageService.inputMessage(messageText);
                 System.out.println("메시지 작성 완료!");
             }
             if (n == 2) {
-                messageService.outputUserMessage();
+                jcfMessageService.outputUserMessage();
             }
             if (n == 3) {
                 System.out.println("수정 할 메시지의 번호를 입력해 주세요.");
-                messageService.outputUserMessage();
+                jcfMessageService.outputUserMessage();
                 int messageNumber = Integer.parseInt(sc.nextLine());
                 System.out.println("메시지를 입력해 주세요.");
                 String newMessage = sc.nextLine();
-                messageService.updateUserMessage(messageNumber, newMessage);
+                jcfMessageService.updateUserMessage(messageNumber, newMessage);
             }
             if (n == 4) {
                 System.out.println("삭제한 메시지의 번호를 입력해 주세요.");
-                messageService.outputUserMessage();
+                jcfMessageService.outputUserMessage();
                 int deleteMessageNumber = Integer.parseInt(sc.nextLine());
-                messageService.deleteUserMessage(deleteMessageNumber);
+                jcfMessageService.deleteUserMessage(deleteMessageNumber);
                 System.out.println("삭제가 완료됐습니다.");
             }
 
@@ -165,15 +168,15 @@ public class JavaApplication {
 
     public static void main(String[] args) {
 
-        User user = JCFUserService.inputUserName();
+        User user = jCFUserService.inputUserName();
         users.add(user);
 
         System.out.println("로그인 하실 프로필 번호를 입력해 주세요.");
-        JCFUserService.outputAllUsersInfo();
+        jCFUserService.outputAllUsersInfo();
         inputDefaultUser(user);
 
         System.out.println("모든 채널 정보를 출력합니다.");
-        JCFChannelService.outputAllChannelInfo();
+        jCFChannelService.outputAllChannelInfo();
         System.out.println("들어가실 채널번호를 선택해 주세요.");
         int channelNumber = Integer.parseInt(sc.nextLine());
 
@@ -189,13 +192,13 @@ public class JavaApplication {
             int num = Integer.parseInt(sc.nextLine());
 
             if (num == 1) {
-                handleUserMenu(user, JCFUserService);
+                handleUserMenu(user);
             }
             if (num == 2) {
-                handleChannelMenu(channelNumber, channels, JCFChannelService);
+                handleChannelMenu(channelNumber, channels);
             }
             if (num == 3) {
-                handleMessageMenu(messageService, user);
+                handleMessageMenu(user);
 
             }
             if (num == 4) {
