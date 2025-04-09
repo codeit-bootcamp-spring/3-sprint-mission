@@ -48,6 +48,7 @@ public class User {
 
     @Override
     public String toString() {
-        return  " 이름 : " + userName + "\n";
+        return  " 이름 : " + userName + " / 유저 식별 ID : " + id  + " / 유저가 포함된 채널 식별 ID : " + channelId
+                +  "\n";
     }
 }

@@ -118,20 +118,14 @@ public class JavaApplication {
         System.out.println(messageService.readMessage(message2.getId()));
 
 
-        System.out.println("----- 메시지 삭제 --------\n");
+        System.out.println("----- 메시지 2번 삭제 --------\n");
 
-        messageService.deleteMessage(message1.getId());
         messageService.deleteMessage(message2.getId());
         System.out.println(messageService.readMessage(message1.getId()));
+        System.out.println(messageService.readMessage(message2.getId()));
 
 
         System.out.println("-----------------------------------------------------------------------------------\n");
-
-
-        System.out.println("---- 결과적으로 채널4 포함된 유저와 메시지 -----");
-//
-        System.out.println(channelService.readChannel(channel4.getId()));
-
 
 
 

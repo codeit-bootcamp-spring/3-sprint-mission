@@ -48,8 +48,9 @@ public class Message {
     @Override
     public String toString() {
         return  "  Messsage : " + text +
-                " ( 보낸 시간 : " + updatedAt + " )" + "\n"
-                 ;
+                " ( 보낸 시간 : " + updatedAt + " )"  + "/  보내진 메시지의 채널 식별 ID : " + channelId
+                + " / 메시지를 보낸 유저의 식별 ID : " + userId
+                + "\n";
     }
 
     // text 업데이트 함수
