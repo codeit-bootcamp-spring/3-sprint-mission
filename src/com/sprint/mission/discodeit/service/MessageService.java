@@ -8,12 +8,13 @@ import java.util.*;
 
 public interface MessageService{
     boolean uploadMsg(User user);
-    void updateMsg(Message message);
+    void updateMsg(Message message,String Msg);
+    Message findMessageByNum(int num);
 
 //    Optional<User> findMsgByNum(UUID id);
 //    Optional<User> findUserByUser(String name);
 //    boolean deleteUserById(UUID id);
-//    boolean deleteUserByName(String name);
+    void deleteMessage(Message message);
 //
     void printAllMessages();
     List<Message> getMessagesList(); // 사용자 전체 조회

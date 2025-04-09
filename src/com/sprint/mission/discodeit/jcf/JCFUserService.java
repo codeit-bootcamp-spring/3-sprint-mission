@@ -72,7 +72,7 @@ public class JCFUserService implements UserService {
         System.out.println("");
     }
     public List<User> getUserslist() {
-        return new ArrayList<>(users);
+        return users;
     }
 
 }
