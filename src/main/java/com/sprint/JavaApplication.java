@@ -121,7 +121,7 @@ public class JavaApplication {
     }
 
 
-    private static void handleMessageMenu(List<Message> messages, JCFMessageService messageService, User user) {
+    private static void handleMessageMenu(JCFMessageService messageService, User user) {
         while (true) {
             System.out.println("1.메시지 작성\t2.작성한 메시지 출력\t3.메시지 수정\t4.메시지 삭제\t5.이전 메뉴로 돌아가기");
             int n = Integer.parseInt(sc.nextLine());
@@ -140,13 +140,13 @@ public class JavaApplication {
                 int messageNumber = Integer.parseInt(sc.nextLine());
                 System.out.println("메시지를 입력해 주세요.");
                 String newMessage = sc.nextLine();
-                messageService.updateUserMessage(messages, messageNumber, newMessage);
+                messageService.updateUserMessage(messageNumber, newMessage);
             }
             if (n == 4) {
                 System.out.println("삭제한 메시지의 번호를 입력해 주세요.");
                 messageService.outputUserMessage();
                 int deleteMessageNumber = Integer.parseInt(sc.nextLine());
-                messageService.deleteUserMessage(messages, deleteMessageNumber);
+                messageService.deleteUserMessage(deleteMessageNumber);
                 System.out.println("삭제가 완료됐습니다.");
             }
 
@@ -195,7 +195,7 @@ public class JavaApplication {
                 handleChannelMenu(channelNumber, channels, JCFChannelService);
             }
             if (num == 3) {
-                handleMessageMenu(messages, messageService, user);
+                handleMessageMenu(messageService, user);
 
             }
             if (num == 4) {

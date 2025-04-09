@@ -25,14 +25,14 @@ public class JCFMessageService implements MessageService {
 
     }
 
-    public void updateUserMessage(List<Message> messages, int number, String newMessage) {
+    public void updateUserMessage(int number, String newMessage) {
         messages.stream()
                 .filter(message1 -> message1.getNumber() == number)
                 .findFirst()
                 .ifPresent(message1 -> message1.updateMessage(newMessage));
     }
 
-    public void deleteUserMessage(List<Message> messages, int number) {
+    public void deleteUserMessage(int number) {
         messages.stream()
                 .filter(message1 -> message1.getNumber() == number)
                 .findFirst()
