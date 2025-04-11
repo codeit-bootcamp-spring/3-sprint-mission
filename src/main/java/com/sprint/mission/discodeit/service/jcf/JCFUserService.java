@@ -44,14 +44,14 @@ public class JCFUserService implements UserService {
         System.out.println(userName);
     }
 
-    public void updateUserName(String oldName, String newName) {
-        if (oldName.equals(newName.trim())) {
+    public void updateUserName(User user, String newName) {
+        if (user.getUsername().equals(newName.trim())) {
             System.out.println("프로필 이름은 중복 될 수 없습니다.");
         } else {
             users.stream()
-                    .filter(user -> user.getUsername().equals(oldName))
+                    .filter(user1 -> user1.getUsername().equals(user.getUsername()))
                     .findFirst()
-                    .ifPresent(user -> user.updateUserName(newName));
+                    .ifPresent(user1 -> user1.updateUserName(newName));
         }
 
     }

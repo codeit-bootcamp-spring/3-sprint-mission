@@ -11,7 +11,7 @@ public interface UserService {
 
     public void outputOneUserInfo(String name);
 
-    public void updateUserName(String oldName, String newName);
+    public void updateUserName(User user, String newName);
 
     public void deleteUserName(int userNumber);
 

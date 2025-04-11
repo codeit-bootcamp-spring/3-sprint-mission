@@ -52,7 +52,7 @@ public class JavaApplication {
                 case 4 -> {
                     System.out.println("현재 사용자 이름은 " + user.getUsername() + "입니다. 새로운 이름을 입력해 주세요.");
                     String updateUserName = sc.nextLine();
-                    jCFUserService.updateUserName(user.getUsername(), updateUserName);
+                    jCFUserService.updateUserName(user, updateUserName);
                 }
                 case 5 -> {
                     jCFUserService.outputAllUsersInfo();
