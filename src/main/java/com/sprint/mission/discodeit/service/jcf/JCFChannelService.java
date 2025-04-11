@@ -2,19 +2,24 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class JCFChannelService implements ChannelService {
 
-    private final List<Channel> channels;
+    private final Map<Integer, Channel> channelMap;
 
     public JCFChannelService(List<Channel> channels) {
-        this.channels = channels;
+        this.channelMap = new HashMap<>();
+        for (Channel channel : channels) {
+            channelMap.put(channel.getChannelNumber(), channel);
+        }
     }
 
     @Override
     public void outputAllChannelInfo() {
-        for (Channel channel : channels) {
+        for (Channel channel : channelMap.values()) {
             System.out.println(channel);
         }
     }
@@ -28,26 +33,33 @@ public class JCFChannelService implements ChannelService {
     }
 
     public void updateChannelName(String oldName, String newName) {
-        channels.stream()
-                .filter(channel -> channel.getChannelName().equals(oldName))
-                .findFirst()
-                .ifPresent(channel1 -> channel1.updateChannel(newName));
+        for (Channel channel : channelMap.values()) {
+            if (channel.getChannelName().equals(oldName)) {
+                channel.updateChannel(newName);
+                break;
+            }
+        }
     }
 
     public void deleteChannelName(String channelName) {
-        channels.stream()
-                .filter(channel1 -> channel1.getChannelName().equals(channelName))
-                .findFirst()
-                .ifPresent(channel1 -> channels.remove(channel1));
+        Integer findChannelKey = null;
+        for (Map.Entry<Integer, Channel> entry : channelMap.entrySet()) {
+            if (entry.getValue().getChannelName().equals(channelName)) {
+                findChannelKey = entry.getKey();
+                break;
+            }
+        }
+        if (findChannelKey != null) {
+            channelMap.remove(findChannelKey);
+        }
     }
 
     public void createNewChannel(String channelName) {
         Channel channel = new Channel(channelName);
-        channels.add(channel);
+        channelMap.put(channel.getChannelNumber(), channel);
     }
 
     public Channel changeChannel(int channelNumber) {
-        return channels.stream().filter(channel1 -> channel1.getChannelNumber() == channelNumber).findFirst()
-                .orElse(null);
+        return channelMap.getOrDefault(channelNumber, null);
     }
 }
