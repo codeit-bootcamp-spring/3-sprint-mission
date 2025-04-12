@@ -4,16 +4,21 @@ import com.sprint.mission.discodeit.entity.*;          // 도메인 클래스들
 import com.sprint.mission.discodeit.service.*;         // 서비스 인터페이스들
 import com.sprint.mission.discodeit.jcf.*;             // 실제 구현 클래스들
 
+import java.util.Comparator;
+
 
 public class JavaApplication {
 
     public static void main(String[] args) {
 
+        // 서비스 생성 (팩토리 사용)
+        UserService userService = ServiceFactory.createUserService();
+        ChannelService channelService = ServiceFactory.createChannelService();
+        MessageService messageService = ServiceFactory.createMessageService(userService, channelService);
+
 
         System.out.println("\n==============[유저]==============");
         //============================[UserServiceTset]============================
-        //서비스 객체 생성
-        UserService userService = new JCFUserService();
 
         //유저 생성
         User user1 = new User("테스트-01");
@@ -56,7 +61,6 @@ public class JavaApplication {
         System.out.println("-----------------------------");
 
         //============================[ChannelServiceTest]============================
-        ChannelService channelService = new JCFChannelService();
 
         //채널 등록
         Channel ch1 = new Channel("테스트채널-01");
@@ -100,7 +104,6 @@ public class JavaApplication {
                 System.out.println("-----------------------------");
 
         //============================[MessageServiceTest]============================
-        MessageService messageService = new JCFMessageService();
 
         Message msg1 = new Message(user1.getId(), ch1.getId(), "테스트메시지-01");
         Message msg2 = new Message(user2.getId(), ch2.getId(), "테스트메시지-02");
@@ -120,7 +123,6 @@ public class JavaApplication {
             System.out.println("채널명   : " + channelName + " (ID: " + msg.getChannelId() + ")");
             System.out.println("-----------------------------");
         });
-
 
         //단일 메세지 조회
         System.out.println("[단일 메시지 조회]");
@@ -143,5 +145,29 @@ public class JavaApplication {
         messageService.getAll().forEach(msg ->
                 System.out.println(msg.getContent()));
                 System.out.println("-----------------------------");
+
+        System.out.println("[최신순 메시지 목록]");
+        messageService.getAll().stream()
+                .sorted(Comparator.comparing(Message::getCreatedAt).reversed()) // 최신순 정렬
+                .forEach(msg -> {
+                    String userName = userService.getById(msg.getUserId()).getName();
+                    String channelName = channelService.getById(msg.getChannelId()).getName();
+                    System.out.println("내용     : " + msg.getContent());
+                    System.out.println("작성자   : " + userName);
+                    System.out.println("채널명   : " + channelName);
+                    System.out.println("-----------------------------");
+                });
+
+        System.out.println("[채널 ch1의 메시지 목록]");
+        messageService.getAll().stream()
+                .filter(msg -> msg.getChannelId().equals(ch1.getId()))
+                .forEach(msg -> {
+                    String userName = userService.getById(msg.getUserId()).getName();
+                    System.out.println("내용     : " + msg.getContent());
+                    System.out.println("작성자   : " + userName);
+                    System.out.println("-----------------------------");
+                });
+
+
     }
 }
