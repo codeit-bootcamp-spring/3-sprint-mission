@@ -5,8 +5,8 @@ import java.util.UUID;
 
 public class Message {
     private String text;
-    private final String id;
-    private final String sender;
+    private final UUID id;
+    private final String sendername;
     private final String channel;
     private final Long createdAt;
     private Long updatedAt;
@@ -14,18 +14,18 @@ public class Message {
 
     public Message(String text, User user, Channel channel) {
         this.text = text;
-        this.id = UUID.randomUUID().toString();
-        this.sender = user.getName();
+        this.id = UUID.randomUUID();
+        this.sendername = user.getName();
         this.channel = channel.getName();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
     public String getText() {return text;}
-    public String getSender() {return sender;}
+    public String getSender() {return sendername;}
 
     // Date 타입 포매팅
     public String getCreatedAt() {
@@ -38,7 +38,7 @@ public class Message {
     @Override
     public String toString() {
         return "[channel=" + channel + "] " +
-                "sender=" + sender + " : " +
+                "sender=" + sendername + " : " +
                 "Message=" + text + " " +
                 // 포매팅된 date 사용
                 "[createdAt=" + getCreatedAt() + "]" +
@@ -46,7 +46,7 @@ public class Message {
                 ;
     }
 
-    public void updateById(String id, String text) {
+    public void updateById(UUID id, String text) {
         this.text = text;
     }
     public void updateDateTime() {

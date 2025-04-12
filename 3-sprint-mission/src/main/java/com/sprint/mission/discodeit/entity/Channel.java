@@ -1,30 +1,24 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
-
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.*;
 
 public class Channel {
-    private final String id;
+    private final UUID id;
     private String name;
     private final String maker;
     private final Long createdAt;
     private Long updatedAt;
 
     public Channel(String name, User user) {
-        this.id = UUID.randomUUID().toString();
+        this.id = UUID.randomUUID();
         this.name = name;
         this.maker = user.getName();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
     public String getName() {
@@ -51,7 +45,7 @@ public class Channel {
                 '}';
     }
 
-    public void updateById(String id, String name) {this.name = name;}
+    public void updateById(UUID id, String name) {this.name = name;}
     public void updateDateTime() {this.updatedAt = System.currentTimeMillis();}
 
 }

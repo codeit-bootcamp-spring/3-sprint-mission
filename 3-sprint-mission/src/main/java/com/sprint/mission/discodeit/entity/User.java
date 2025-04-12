@@ -1,23 +1,23 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.UUID;
 import java.text.SimpleDateFormat;
+import java.util.UUID;
 
 public class User {
-    private final String id;
+    private final UUID id;
 //    private final String userid;
     private String name;
     private final Long createdAt;
     private Long updatedAt;
 
     public User(String name) {
-        this.id = UUID.randomUUID().toString();
+        this.id = UUID.randomUUID();
         this.name = name;
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public String getId() {return id;}
+    public UUID getId() {return id;}
     public String getName() {return name;}
 
     // Date 타입 포매팅
@@ -39,7 +39,7 @@ public class User {
                 '}';
     }
 
-    public void updateById(String id, String name) {this.name = name;}
+    public void updateById(UUID id, String name) {this.name = name;}
     public void updateDateTime() {this.updatedAt = System.currentTimeMillis();}
 }
 
