@@ -39,26 +39,20 @@ public class User {
 
     public void setChannelIds(List<UUID> channelIds) {
         this.channelIds = channelIds;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public void setUsername(String username) {
         this.username = username;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
     public Long getCreatedAt() {
         return createdAt;
-    }
-
-    public void setCreatedAt(Long createdAt) {
-        this.createdAt = createdAt;
     }
 
     public Long getUpdatedAt() {

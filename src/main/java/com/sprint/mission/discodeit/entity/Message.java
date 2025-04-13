@@ -43,6 +43,7 @@ public class Message {
 
     public void setMessage(String message) {
         this.message = message;
+        this.updatedAt = System.currentTimeMillis();
     }
 
 
@@ -52,14 +53,11 @@ public class Message {
 
     public void setChannelId(UUID channelId) {
         this.channelId = channelId;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public UUID getId() {
         return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
     }
 
     public Long getCreatedAt() {

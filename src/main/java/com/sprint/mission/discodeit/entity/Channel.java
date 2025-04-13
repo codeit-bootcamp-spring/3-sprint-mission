@@ -37,6 +37,7 @@ public class Channel {
 
     public void setTitle(String title) {
         this.title = title;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public List<Message> getMessages() {
@@ -45,6 +46,7 @@ public class Channel {
 
     public void setMessages(List<Message> messages) {
         this.messages = messages;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public List<UUID> getUsersIds() {
@@ -53,22 +55,16 @@ public class Channel {
 
     public void setUsersIds(List<UUID> usersIds) {
         this.usersIds = usersIds;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
 
     public Long getCreatedAt() {
         return createdAt;
-    }
-
-    public void setCreatedAt(Long createdAt) {
-        this.createdAt = createdAt;
     }
 
     public Long getUpdatedAt() {
