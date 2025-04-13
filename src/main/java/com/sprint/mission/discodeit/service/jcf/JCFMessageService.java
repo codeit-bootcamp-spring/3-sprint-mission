@@ -73,6 +73,8 @@ public class JCFMessageService implements MessageService {
         for (Message message : messages) {
             if (message.getId().equals(messageId)) {
                 message.setMessage(newMessage);
+                // update current time
+                message.setUpdatedAt(System.currentTimeMillis());
             }
         }
     }
