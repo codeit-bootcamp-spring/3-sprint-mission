@@ -105,6 +105,7 @@ public class JCFChannelService implements ChannelService {
         for (Channel channel : data) {
             if (channel.getId().equals(channelId)) {
                 channel.getMessages().add(message);
+                channel.setUpdatedAt(System.currentTimeMillis());
             }
         }
     }
@@ -126,6 +127,7 @@ public class JCFChannelService implements ChannelService {
                 List<UUID> usersIds = channel.getUsersIds();
                 usersIds.add(userId);
                 channel.setUsersIds(usersIds);
+                channel.setUpdatedAt(System.currentTimeMillis());
             }
         }
     }

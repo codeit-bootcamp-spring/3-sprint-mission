@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -92,6 +93,7 @@ public class JCFUserService implements UserService {
                     // 새 메세지 추가
                     channelIds.add(channelId);
                     user.setChannelIds(channelIds);
+                    user.setUpdatedAt(System.currentTimeMillis());
                 }
             }
         }
