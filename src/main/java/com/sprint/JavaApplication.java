@@ -19,8 +19,8 @@ public class JavaApplication {
     private final static Scanner sc = new Scanner(System.in);
     private static List<User> users = new ArrayList<>();
 
-    public static List<Channel> channels = ChannelRepository.getChannel();
-    public static List<Message> messages = new ArrayList<>();
+    private static List<Channel> channels = ChannelRepository.getChannel();
+    private static List<Message> messages = new ArrayList<>();
 
 
     private static final UserService jCFUserService = new JCFUserService(users);
