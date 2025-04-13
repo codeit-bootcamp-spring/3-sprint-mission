@@ -19,20 +19,14 @@ public class JavaApplication {
     private final static Scanner sc = new Scanner(System.in);
     private static List<User> users = new ArrayList<>();
 
-    private static List<Channel> channels = ChannelRepository.getChannel();
-    private static List<Message> messages = new ArrayList<>();
+    public static List<Channel> channels = ChannelRepository.getChannel();
+    public static List<Message> messages = new ArrayList<>();
 
 
     private static final UserService jCFUserService = new JCFUserService(users);
     private static final ChannelService jCFChannelService = new JCFChannelService(channels);
     private static final MessageService jcfMessageService = new JCFMessageService();
 
-    public static void login(int loginNumber, List<User> users) {
-        users.stream()
-                .filter(user -> user.getNumber() == loginNumber)
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("해당 번호의 유저가 존재하지 않습니다: "));
-    }
 
     private static void handleUserMenu(User user) {
         while (true) {
@@ -65,7 +59,7 @@ public class JavaApplication {
                     System.out.println("변경하실 프로필 번호를 입력하세요.");
                     jCFUserService.outputAllUsersInfo();
                     int loginNumber = Integer.parseInt(sc.nextLine());
-                    login(loginNumber, users);
+                    jCFUserService.login(loginNumber, users);
                     user = jCFUserService.changeUser(loginNumber);
                 }
                 case 7 -> {
@@ -157,7 +151,7 @@ public class JavaApplication {
     private static void inputDefaultUser(User user) {
 
         int loginNumber = Integer.parseInt(sc.nextLine());
-        login(loginNumber, users);
+        jCFUserService.login(loginNumber, users);
         System.out.println(user.getUsername() + "님 반갑습니다 ");
     }
 
@@ -186,19 +180,14 @@ public class JavaApplication {
             System.out.println("1.내정보\t2.채널정보\t3.메시지\t4.로그아웃");
             int num = Integer.parseInt(sc.nextLine());
 
-            if (num == 1) {
-                handleUserMenu(user);
-            }
-            if (num == 2) {
-                handleChannelMenu(channelNumber, channels);
-            }
-            if (num == 3) {
-                handleMessageMenu(user);
-
-            }
-            if (num == 4) {
-                System.out.println("Discodeit을 종료합니다. 감사합니다.");
-                break;
+            switch (num) {
+                case 1 -> handleUserMenu(user);
+                case 2 -> handleChannelMenu(channelNumber, channels);
+                case 3 -> handleMessageMenu(user);
+                case 4 -> {
+                    System.out.println("Discodeit을 종료합니다. 감사합니다.");
+                    return;
+                }
             }
 
         }

@@ -67,5 +67,12 @@ public class JCFUserService implements UserService {
         return users.stream().filter(user1 -> user1.getNumber() == userNumber).findFirst().orElse(null);
     }
 
+    public void login(int loginNumber, List<User> users) {
+        users.stream()
+                .filter(user -> user.getNumber() == loginNumber)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("해당 번호의 유저가 존재하지 않습니다: "));
+    }
+
 
 }
