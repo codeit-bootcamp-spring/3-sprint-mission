@@ -3,19 +3,36 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
-    private final Map<UUID, Channel> data = new HashMap<>();
+    private final Map<UUID, Channel> data;
+    private final UserService userService;
+
+    public JCFChannelService(UserService userService) {
+        this.data = new HashMap<>();
+        this.userService = userService;
+    }
+
 
     // 등록
     @Override
-    public Channel createChannel(Channel channel) {
+    public Channel createChannel(String content, UUID userId) {
+        try {
+            userService.getUser(userId);
+        } catch (NoSuchElementException e) {
+            throw e;
+        }
+
+        Channel channel = new Channel(content, userId);
         data.put(channel.getId(), channel);
+
         return channel;
     }
 
@@ -34,10 +51,7 @@ public class JCFChannelService implements ChannelService {
     // 이름 수정
     @Override
     public Channel updateChannel(Channel channel, String newName) {
-        if (newName != null && !newName.isEmpty()) {
-            channel.updateName(newName);
-        }
-        data.put(channel.getId(), channel);
+        channel.updateName(newName);
         return channel;
     }
 

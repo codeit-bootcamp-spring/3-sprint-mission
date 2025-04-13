@@ -1,41 +1,45 @@
 package com.sprint.mission.discodeit.entity;
 
 
+import java.util.UUID;
+
 public class Message extends Common {
-    private final User user;
-    private final Channel channel;
+    private final UUID userId;
+    private final UUID channelId;
     private String content;
 
-    public Message(User user, Channel channel, String content) {
+    public Message(UUID userId, UUID channelId, String content) {
         super();
-        this.user = user;
-        this.channel = channel;
+        this.userId = userId;
+        this.channelId = channelId;
         this.content = content;
     }
 
-    public User getUser() {
-        return user;
+    public UUID getUserId() {
+        return userId;
     }
 
-    public Channel getChannel() {
-        return channel;
+    public UUID getChannelId() {
+        return channelId;
     }
 
     public String getContent() {
         return content;
     }
 
-    public void updateContent(String content) {
-        this.content = content;
-        super.updateUpdatedAt();
+    public void updateContent(String newContent) {
+        if (newContent != null && !newContent.isEmpty()) {
+            this.content = newContent;
+            super.updateUpdatedAt();
+        }
     }
 
     @Override
     public String toString() {
         return "Message{" +
                 "content='" + getContent() + '\'' +
-                ", user='" + getUser().getName() + '\'' +
-                ", channel='" + getChannel().getName() + '\'' +
+                ", user='" + getUserId() + '\'' +
+                ", channel='" + getChannelId() + '\'' +
                 ", id='" + getId() + '\'' +
                 ", createdAt='" + getCreatedAt() + '\'' +
                 ", updatedAt='" + getUpdatedAt() + '\'' +
