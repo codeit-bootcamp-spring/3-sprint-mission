@@ -29,7 +29,7 @@ public class JavaApplication {
         MessageService messageService = new JCFMessageService();
 
         UserMenu userMenu = new UserMenu(sc, userService, users);
-        ChannelMenu channelMenu = new ChannelMenu(sc, channelService, channels);
+        ChannelMenu channelMenu = new ChannelMenu(sc, channelService);
         MessageMenu messageMenu = new MessageMenu(sc, messageService);
 
         User user = userService.inputUserName();
@@ -44,13 +44,9 @@ public class JavaApplication {
         channelService.outputAllChannelInfo();
         System.out.println("들어가실 채널 번호를 선택해 주세요.");
         int channelNumber = Integer.parseInt(sc.nextLine());
+        channelService.selectChannel(channelNumber);
 
         while (true) {
-            if (channels.isEmpty()) {
-                System.out.println("현재 채널이 존재하지 않습니다. DisCodeit을 종료합니다.");
-                break;
-            }
-
             System.out.println("원하는 기능을 입력 해 주세요.");
             System.out.println("1. 내 정보\t2. 채널 정보\t3. 메시지\t4. 로그아웃");
             int choice = Integer.parseInt(sc.nextLine());
@@ -59,13 +55,8 @@ public class JavaApplication {
                 case 1 -> {
                     userMenu.run(user);
                 }
-
                 case 2 -> {
-                    Channel selectedChannel = channelMenu.run(channelNumber);
-
-                    if (selectedChannel != null) {
-                        channelNumber = selectedChannel.getChannelNumber();
-                    }
+                    channelMenu.run();
                 }
                 case 3 -> {
                     messageMenu.run();

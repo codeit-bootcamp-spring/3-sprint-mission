@@ -9,6 +9,7 @@ import java.util.Map;
 public class JCFChannelService implements ChannelService {
 
     private final Map<Integer, Channel> channelMap;
+    private Channel currentChannel;
 
     public JCFChannelService(List<Channel> channels) {
         this.channelMap = new HashMap<>();
@@ -32,19 +33,19 @@ public class JCFChannelService implements ChannelService {
         }
     }
 
-    public void updateChannelName(String oldName, String newName) {
+    public void updateChannelName(Channel currentChannel, String newName) {
         for (Channel channel : channelMap.values()) {
-            if (channel.getChannelName().equals(oldName)) {
+            if (channel.getChannelNumber() == (currentChannel.getChannelNumber())) {
                 channel.updateChannel(newName);
                 break;
             }
         }
     }
 
-    public void deleteChannelName(String channelName) {
+    public void deleteChannelName(Channel currentChannel) {
         Integer findChannelKey = null;
         for (Map.Entry<Integer, Channel> entry : channelMap.entrySet()) {
-            if (entry.getValue().getChannelName().equals(channelName)) {
+            if (entry.getValue().getChannelNumber() == (currentChannel.getChannelNumber())) {
                 findChannelKey = entry.getKey();
                 break;
             }
@@ -61,5 +62,18 @@ public class JCFChannelService implements ChannelService {
 
     public Channel changeChannel(int channelNumber) {
         return channelMap.getOrDefault(channelNumber, null);
+    }
+
+    public void selectChannel(int channelNumber) {
+        Channel channel = channelMap.get(channelNumber);
+        if (channel != null) {
+            currentChannel = channel;
+        } else {
+            System.out.println("유효하지 않은 채널 번호입니다.");
+        }
+    }
+
+    public Channel getCurrentChannel() {
+        return currentChannel;
     }
 }
