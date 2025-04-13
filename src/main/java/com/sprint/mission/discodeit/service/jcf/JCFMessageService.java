@@ -24,6 +24,7 @@ public class JCFMessageService implements MessageService {
     private final ChannelService channelService;
     private final Map<UUID,List<Message>> data;
 
+
     public JCFMessageService(ChannelService channelService) {
         this.data = new HashMap<>();
         this.channelService = channelService;
@@ -81,7 +82,6 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void deleteMessageById(UUID messageId) {
-
         UUID channelId = findMessageByMessageId(messageId).getChannelId();
         List<Message> messages = data.get(channelId);
 
@@ -95,9 +95,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void deleteMessagesByChannelId(UUID channelId) {
-        if (data.containsKey(channelId)) {
-            data.remove(channelId);
-        }
+        data.remove(channelId);
     }
 
 }

@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -10,7 +9,6 @@ import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -101,7 +99,7 @@ public class JavaApplication {
 
 //        단건 조회
         System.out.println("**채널 단건 조회(danielChannelId)");
-        System.out.println("방 이름: " + channelService.findChannelsById(danielChannelId).getTitle());
+        System.out.println("방 이름: " + channelService.findChannelById(danielChannelId).getTitle());
 
 //        다건 조회
         System.out.println("\n**채널 다건 조회");
@@ -115,13 +113,13 @@ public class JavaApplication {
 
 //        수정 데이터 조회
         System.out.println("**수정 데이터 조회");
-        System.out.println("변경 후: "+channelService.findChannelsById(danielChannelId).getTitle());
+        System.out.println("변경 후: "+channelService.findChannelById(danielChannelId).getTitle());
 
 //        삭제, 삭제 확인
         System.out.println("\n**채널 삭제(hannah's channel)");
         channelService.deleteChannel(hannahChannelId);
         System.out.println("**삭제 확인");
-        System.out.println("채널 조회 결과: "+channelService.findChannelsById(hannahChannelId));
+        System.out.println("채널 조회 결과: "+channelService.findChannelById(hannahChannelId));
 
 
         System.out.println("\n\n-----------------------------------Message 테스트 시작-----------------------------------");
@@ -168,7 +166,7 @@ public class JavaApplication {
         System.out.println("\n1. message 추가: \"I hope this works fine.. please\"  ");
         UUID testMessageId = messageService.createMessage(danielId, danielChannelId, "I hope this works fine.. please");
         System.out.println("2. channel의 메세지 확인");
-        channelService.findChannelsById(danielChannelId)
+        channelService.findChannelById(danielChannelId)
                 .getMessages()
                 .forEach(message -> System.out.println(userService.findUserById(message.getSenderId()).getUsername() + " : " + message.getMessage()));
 
@@ -177,7 +175,7 @@ public class JavaApplication {
         System.out.println("1. 메세지 삭제(daniel : I hope this works fine.. please)");
         messageService.deleteMessageById(testMessageId);
         System.out.println("2. 삭제 후 채널 메세지");
-        channelService.findChannelsById(danielChannelId)
+        channelService.findChannelById(danielChannelId)
                 .getMessages()
                 .forEach(message -> System.out.println(userService.findUserById(message.getSenderId()).getUsername() + " : " + message.getMessage()));
 
@@ -194,7 +192,7 @@ public class JavaApplication {
         System.out.println("\n1. 채널 삭제");
         channelService.deleteChannel(danielChannelId);
 
-        Channel channelResult = channelService.findChannelsById(danielChannelId);
+        Channel channelResult = channelService.findChannelById(danielChannelId);
         Message messageResult = messageService.findMessageByMessageId(danielMessageId);
 
         System.out.println("2. 삭제한 체널과 메세지 조회");

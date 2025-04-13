@@ -23,6 +23,6 @@ public interface UserService {
     List<User> findAllUsers();
     void updateUsername(UUID userId,String newName);
     void deleteUser(UUID userId);
-    void addChannel(UUID userId, UUID channelId);
+    void addChannelInUser(UUID userId, UUID channelId);
     List<UUID> findChannelIdsById(UUID userId);
 }
