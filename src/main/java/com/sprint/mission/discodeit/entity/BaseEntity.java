@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.UUID;
 
-// 공통으로 들어갈 변수들
 public abstract class BaseEntity {
     private final UUID id;
     private final long createdAt;

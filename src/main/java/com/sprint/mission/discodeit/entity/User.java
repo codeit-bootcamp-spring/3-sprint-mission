@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -27,9 +28,10 @@ public class User extends BaseEntity {
 
     @Override
     public String toString() {
-        return "User{name = " + userName +
-                ", channelIds = " + channelIds +
-                ", createdAt = " + getCreatedAt() +
-                ", updatedAt = " + getUpdatedAt() + '}';
+        return "User{name='" + userName + '\'' +
+                ", channelIds=" + channelIds +
+                ", createdAt=" + new Date(getCreatedAt()) +
+                ", updatedAt=" + new Date(getUpdatedAt()) +
+                '}';
     }
 }

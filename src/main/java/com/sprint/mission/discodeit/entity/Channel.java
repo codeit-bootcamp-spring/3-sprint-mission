@@ -38,10 +38,12 @@ public class Channel extends BaseEntity {
 
     @Override
     public String toString() {
-        return "Channel{" + "channelName=" + channelName +
+        return "Channel{" +
+                "channelName='" + channelName + '\'' +
                 ", userIds=" + userIds +
                 ", messageIds=" + messageIds +
-                ", createdAt=" + getCreatedAt() +
-                ", updatedAt=" + getUpdatedAt() + '}';
+                ", createdAt=" + new Date(getCreatedAt()) +
+                ", updatedAt=" + new Date(getUpdatedAt()) +
+                '}';
     }
 }
