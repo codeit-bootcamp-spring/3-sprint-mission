@@ -31,14 +31,7 @@ public class JavaApplication {
         UserMenu userMenu = new UserMenu(sc, userService, users);
         ChannelMenu channelMenu = new ChannelMenu(sc, channelService);
         MessageMenu messageMenu = new MessageMenu(sc, messageService);
-
-        User user = userService.inputUserName();
-        users.add(user);
-        System.out.println("로그인 하실 프로필 번호를 입력해 주세요.");
-        userService.outputAllUsersInfo();
-        int loginNumber = Integer.parseInt(sc.nextLine());
-        userService.login(loginNumber, users);
-        System.out.println(user.getUsername() + "님 반갑습니다.");
+        userMenu.loginUser();
 
         System.out.println("모든 채널 정보를 출력합니다.");
         channelService.outputAllChannelInfo();
@@ -53,7 +46,7 @@ public class JavaApplication {
 
             switch (choice) {
                 case 1 -> {
-                    userMenu.run(user);
+                    userMenu.run();
                 }
                 case 2 -> {
                     channelMenu.run();
