@@ -2,18 +2,23 @@ package com.sprint.mission.discodeit.entity;
 
 import java.text.SimpleDateFormat;
 import java.util.UUID;
+import java.util.List;
 
 public class Channel {
     private final UUID id;
+    private int number;
     private String name;
-    private final String maker;
+    private final User maker;
+    private List<User> users;
     private final Long createdAt;
     private Long updatedAt;
 
     public Channel(String name, User user) {
         this.id = UUID.randomUUID();
+        this.number = 0;
         this.name = name;
-        this.maker = user.getName();
+        this.maker = user;
+        this.users = null;
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
     }
@@ -24,6 +29,8 @@ public class Channel {
     public String getName() {
         return name;
     }
+    public List<User> getUsers() {return users;}
+    public int getNumber() {return number;}
 
     // Date 타입 포매팅
     public String getCreatedAt() {
@@ -38,13 +45,15 @@ public class Channel {
         return "Channel{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
-                ", maker='" + maker + '\'' +
+                ", maker='" + maker.getName() + '\'' +
                 // 포매팅된 date 사용
                 ", createdAt=" + getCreatedAt() +
                 ", updatedAt=" + getUpdatedAt() +
                 '}';
     }
 
+    public void addUsers(List<User> users) {this.users.addAll(users);}
+    public void removeUsers(List<User> users) {this.users.removeAll(users);}
     public void updateById(UUID id, String name) {this.name = name;}
     public void updateDateTime() {this.updatedAt = System.currentTimeMillis();}
 
