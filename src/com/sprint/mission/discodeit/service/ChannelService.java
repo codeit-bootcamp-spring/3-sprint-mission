@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ChannelService {
     Channel addChannel(String channelName, String channelDesc, User user);
-    void UpdateChannel(String channelName, String channelDescription);
+    void UpdateChannel(Channel channel, String channelName, String channelDescription);
     void deleteChannel(Channel channel);
 
     void printAllChannels();

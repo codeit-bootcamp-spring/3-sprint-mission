@@ -21,20 +21,20 @@ public class JCFMessageService implements MessageService {
         long now = System.currentTimeMillis();
         Message message = new Message(messages.size() + 1,user.getName(),txtMsg,now,now);
         messages.add(message);
-        System.out.print("\n ▶ [메세지 등록 완료]");
-        System.out.println(" ▶ 메세지 번호 : " + message.getMsgNumber() + "     ▶ 등록시간 : " + message.getCreatedAt());
-
     }
 
     @Override
-    public void updateMsg(Message message,String newMsg) {
-        message.setTextMsg(newMsg);
+    public void updateMsg(User user, Message message,String newMsg) {
+        String resetColor = "\u001B[0m";
+        String setColorYellow = "\u001B[33m";
+        message.setTextMsg(newMsg + setColorYellow + "      *** [" + user.getName() + "] 에 의해 수정됨" + resetColor);
         message.setUpdatedAt(System.currentTimeMillis());
     }
 
-    public void deleteMessage(Message message){
-        message.setTextMsg("*deleted");
-        message.setAuthor("*deleted");
+    public void deleteMessage(User user, Message message){
+        String resetColor = "\u001B[0m";
+        String setColorRed = "\u001B[31m";
+        message.setTextMsg(setColorRed + " - ////// " + user.getName() + " 사용자에 의해 삭제됨 ////// -" +message.getUpdatedAt() + resetColor);
         message.setUpdatedAt(System.currentTimeMillis());
     }
     public Message findMessageByNum(int num){
@@ -46,11 +46,15 @@ public class JCFMessageService implements MessageService {
     }
     public void printAllMessages() {
         System.out.println("<< 입력된 전체 메세지 >>");
-        System.out.println("번호 | 사용자 : 메세지");
-        messages.forEach(m -> System.out.println(m.getMsgNumber() + "    | " + m.getAuthor() + " : " + m.getTextMsg() + "  |   " + m.getCreatedAt() + "    |   " + m.getUpdatedAt() + "    |    " + m.getId()));
-        System.out.println("");
+        System.out.println("번호 | 사용자       : 메세지");
+        messages.forEach(m -> System.out.printf("%4d | %-10s: %s \n       생성일 : %s    수정일 : %s    UUID : %s\n",m.getMsgNumber(),m.getAuthor(),m.getTextMsg(),m.getCreatedAt(),m.getUpdatedAt(),m.getId()));
+        System.out.println();
+    }
+    public void printOneMessage(int msgNum){
+        Message message = findMessageByNum(msgNum);
+        System.out.printf("%4d | %-10s: %s \n       생성일 : %s    수정일 : %s    UUID : %s\n", message.getMsgNumber(),message.getAuthor(),message.getTextMsg(),message.getCreatedAt(),message.getUpdatedAt(),message.getId() );
     }
     public List<Message> getMessagesList() {
-        return new ArrayList<>(messages);
+        return messages;
     }
 }

@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 
@@ -13,6 +12,7 @@ public class JCFChannelService implements ChannelService {
     private final List<Channel> channels = new ArrayList<>();
     public JCFChannelService(){
         channels.add(new Channel("ch01","default Channel","관리자",1744036548250L,1744036548250L));
+
     }
     // 채널 생성 메서드
     @Override
@@ -26,14 +26,18 @@ public class JCFChannelService implements ChannelService {
     };
     // 채널 수정 메서드
     @Override
-    public void UpdateChannel(String channelName, String channelDescription){
-
-
+    public void UpdateChannel(Channel channel, String channelName, String channelDescription){
+        long now = System.currentTimeMillis();
+        channel.setChannelName(channelName);
+        channel.setChannelDescription(channelDescription);
+        channel.setUpdatedAt(now);
+        System.out.print("\n ▶ [채널 정보 수정 완료]");
+        System.out.println(channel);
     };
     // 채널 삭제 메서드
     @Override
     public void deleteChannel(Channel channel){
-
+        channels.remove(channel);
     };
     // 전체채널목록 출력 메서드
     @Override
@@ -49,9 +53,6 @@ public class JCFChannelService implements ChannelService {
         return List.of();
     }
 
-    ;
-    //List<Channel> getAllChannels(){};
-
     @Override // 이름으로 채널 검색 메서드. 채널객체를 return
     public Channel findChannelByName(String name){
         for (Channel channel : channels) {
@@ -60,5 +61,5 @@ public class JCFChannelService implements ChannelService {
             }
         }
         return null; // 없으면 null
-    };
+    }
 }

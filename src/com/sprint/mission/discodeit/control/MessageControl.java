@@ -1,21 +1,15 @@
-package com.sprint.mission.discodeit.menu;
+package com.sprint.mission.discodeit.control;
 
 import com.sprint.mission.discodeit.JavaApplication;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.jcf.JCFUserService;
 
 import java.util.List;
-import java.util.Scanner;
 
 public class MessageControl extends JavaApplication {
     private static final JCFUserService userService = new JCFUserService();
-    private static final JCFChannelService channelService = new JCFChannelService();
-    private static final Scanner scanner = new Scanner(System.in);
-    private static User currentUser;
-    private static Channel currentChannel;
     public static void menuMessageMng(User currentUser, Channel currentChannel){       // 1 메세지 관리 메서드
         while (true) {
             System.out.println(" *******************************************************\n"
@@ -66,7 +60,7 @@ public class MessageControl extends JavaApplication {
                     if(inputMsgNum <= messages.size()) {
                         System.out.println(" ▶ [" + inputMsgNum + "]번 메세지는 아래와 같습니다.");
                         System.out.println("번호 | 사용자 : 메세지 ( 생성시각 / 수정시각 )");
-                        System.out.println(currentChannel.messageService().findMessageByNum(inputMsgNum));
+                        currentChannel.messageService().printOneMessage(inputMsgNum);
                         break;}
                     System.out.println(" ▶ 잘못된 입력입니다. 상위메뉴로 돌아갑니다.");
 
@@ -83,8 +77,8 @@ public class MessageControl extends JavaApplication {
 
                         System.out.print("수정할 새로운 메세지를 입력해 주세요.\n >> ");
                         String newMessage = scanner.nextLine();
-                        currentChannel.messageService().updateMsg(currentMsg, newMessage);
-                        System.out.println("기존 내용을 [" + newMessage + "] 로 수정하였습니다.");
+                        currentChannel.messageService().updateMsg(currentUser,currentMsg, newMessage);
+                        System.out.println("기존 내용을 [" + currentMsg.getTextMsg() + "] 로 수정하였습니다.");
                         break;}
                     System.out.println(" ▶ 잘못된 입력입니다. 상위메뉴로 돌아갑니다.");
                     break;
@@ -103,14 +97,14 @@ public class MessageControl extends JavaApplication {
                         System.out.println(" ▶ 잘못된 입력입니다. 이전 메뉴로 돌아갑니다.");
                         break;
                     }else if(deleteConfirm.equals("삭제")) {
-                        currentChannel.messageService().deleteMessage(currentMsg);
+                        currentChannel.messageService().deleteMessage(currentUser,currentMsg);
                         System.out.println("메세지가 삭제되었습니다.");
                     }else{
                         System.out.println(" ▶ 잘못된 입력입니다. 사용자 삭제를 취소합니다.");
                     }
                     break;
                 case 6:               // 1_6 현재 채널 변경
-                    currentChannel = verifyChannel();
+                    currentChannel = ChannelControl.verifyChannel();
                     break;
                 case 7:               // 1_7 현재 사용자 변경
                     System.out.print(" ▶ 어떤 사용자로 로그인할까요?");

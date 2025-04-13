@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
-
 public class JCFUserService implements UserService {
     private final List<User> users = new ArrayList<>();
     // 테스트용 초기 더미 데이터 입력
@@ -62,15 +61,11 @@ public class JCFUserService implements UserService {
         return null; // 없으면 null 리턴
     }
 
-
-
-
-
     // 유틸 메서드: 모든 사용자 출력
     public void printAllUsers(){
         System.out.println("  □ □ □ 전체 사용자 목록 □ □ □ \n  사용자이름   |   사용자생성시간   | 사용자정보 수정시간 |   사용자UUID");
         users.forEach(u -> System.out.println("  " + u.getName() + "       |   " + u.getCreatedAt() + "   |   " + u.getUpdatedAt() + "    |   " + u.getId()));
-        System.out.println("");
+        System.out.println();
     }
     public List<User> getUserslist() {
         return users;

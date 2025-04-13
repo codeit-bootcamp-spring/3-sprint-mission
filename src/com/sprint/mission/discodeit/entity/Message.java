@@ -29,12 +29,22 @@ public class Message {
     public String getTextMsg() {return textMsg;}
 
     public String getCreatedAt() {
-        String formatedTime = new SimpleDateFormat("HH:mm:ss").format(createdAt);
+        String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(createdAt);
         return formatedTime;}
     public String getUpdatedAt() {
-        String formatedTime = new SimpleDateFormat("HH:mm:ss").format(updatedAt);
+        String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(updatedAt);
         return formatedTime;}
     public void setUpdatedAt(long updatedAt) {
         this.updatedAt = updatedAt;}
+    @Override
+    public String toString() {
+        String result;
+        if(getCreatedAt().equals(getUpdatedAt())){
+            result = msgNumber + "    | " + author + " : " + textMsg + "  (" + getCreatedAt() + ") : " + getId();
+        } else {
+            result = msgNumber + "    | " + author + " : " + textMsg + "  (" + getCreatedAt() + " / " + getUpdatedAt() + ") : " + getId();
+        }
+        return result;
+    }
 }
 

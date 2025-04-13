@@ -28,11 +28,11 @@ public class Channel {
 
     public UUID getId() {return id;}
     public String getCreatedAt() {
-        String formatedTime = new SimpleDateFormat("HH:mm:ss").format(createdAt);
+        String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(createdAt);
         return formatedTime;}
 
     public String getUpdatedAt() {
-        String formatedTime = new SimpleDateFormat("HH:mm:ss").format(updatedAt);
+        String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(updatedAt);
         return formatedTime;}
     public void setUpdatedAt(long updatedAt) {this.updatedAt = updatedAt;}
 
@@ -45,4 +45,15 @@ public class Channel {
     public String getChannelCreater() {return channelCreater;}
 
     public JCFMessageService messageService() {return messageService;}
+    @Override
+    public String toString() {
+        String result;
+        if(getCreatedAt().equals(getUpdatedAt())){
+            result = "채널명 : " + channelName + "   개설자 : " + channelCreater + "   채널설명 : " + channelDescription + "   개설일자 : " + getCreatedAt() + "   UUID : " + getId();
+        } else {
+            result = "채널명 : " + channelName + "   개설자 : " + channelCreater + "   채널설명 : " + channelDescription + "   개설일자 : " + getCreatedAt() + " 수정일자 : " + getUpdatedAt() + "   UUID : " + getId();
+        }
+        return result;
+    }
 }
+
