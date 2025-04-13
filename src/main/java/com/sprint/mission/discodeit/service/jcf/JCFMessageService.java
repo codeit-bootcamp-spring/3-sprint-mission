@@ -1,28 +1,51 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class JCFMessageService implements MessageService {
-    private final Map<UUID, Message> data = new HashMap<>();
+    private final Map<UUID, Message> data;
+    private final ChannelService channelService;
+    private final UserService userService;
+
+    public JCFMessageService(ChannelService channelService, UserService userService) {
+        this.data = new HashMap<>();
+        this.channelService = channelService;
+        this.userService = userService;
+    }
 
     // 등록
     @Override
-    public Message createMessage(Message message) {
+    public Message createMessage(String content, UUID channelId, UUID userId) {
+        try {
+            channelService.getChannel(channelId);
+            userService.getUser(userId);
+        } catch (NoSuchElementException e) {
+            throw e;
+        }
+
+        Message message = new Message(userId, channelId, content);
         data.put(message.getId(), message);
+
         return message;
     }
 
     // 단건 조회
     @Override
     public Message getMessage(UUID id) {
-        return data.get(id);
+        Message messageNullable = this.data.get(id);
+
+        return Optional.ofNullable(messageNullable)
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + id + " not found"));
     }
 
     // 전체 조회
@@ -31,21 +54,10 @@ public class JCFMessageService implements MessageService {
         return new ArrayList<>(data.values());
     }
 
-    // 채널로 조회
-    @Override
-    public List<Message> getMessagesByChannel(UUID channelId) {
-        return data.values().stream()
-                .filter(message -> message.getChannel().getId().equals(channelId))
-                .collect(Collectors.toList());
-    }
-
     // 이름 수정
     @Override
     public Message updateMessage(Message message, String newContent) {
-        if (newContent != null && !newContent.isEmpty()) {
-            message.updateContent(newContent);
-        }
-        data.put(message.getId(), message);
+        message.updateContent(newContent);
         return message;
     }
 

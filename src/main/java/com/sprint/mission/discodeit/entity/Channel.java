@@ -1,34 +1,27 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.UUID;
 
 public class Channel extends Common{
     private String name;
-    private List<User> members = new ArrayList<User>();
+    private final UUID userId;
 
-    public Channel(String name, User user) {
+    public Channel(String name, UUID userId) {
         super();
         this.name = name;
-        this.members.add(user);
+        this.userId = userId;
     }
 
     public String getName() {
         return name;
     }
 
-    public List<User> getMembers() {
-        return members;
-    }
-
-    public void updateName(String name){
-        this.name = name;
-        super.updateUpdatedAt();
-    }
-
-    public void updateMembers(List<User> members) {
-        this.members = members;
-        super.updateUpdatedAt();
+    public void updateName(String newName) {
+        if (newName != null && !newName.isEmpty()) {
+            this.name = newName;
+            super.updateUpdatedAt();
+        }
     }
 
     @Override

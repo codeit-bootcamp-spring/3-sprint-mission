@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
-    Channel createChannel(Channel channel);
+    Channel createChannel(String content, UUID userId);
     Channel getChannel(UUID id);
     List<Channel> getAllChannels();
     Channel updateChannel(Channel channel, String newName);

@@ -13,9 +13,11 @@ public class User extends Common{
         return name;
     }
 
-    public void updateName(String name) {
-        this.name = name;
-        super.updateUpdatedAt();
+    public void updateName(String newName) {
+        if (newName != null && !newName.isEmpty()) {
+            this.name = newName;
+            super.updateUpdatedAt();
+        }
     }
 
     @Override
