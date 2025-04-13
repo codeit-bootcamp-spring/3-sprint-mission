@@ -3,13 +3,11 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.jcf
@@ -23,6 +21,7 @@ import java.util.stream.Collectors;
  * 2025. 4. 3.        doungukkim       최초 생성
  */
 public class JCFChannelService implements ChannelService {
+    private static final String DEFAULT_CHANNEL_NAME = "'s channel";
     private final List<Channel> data;
     private MessageService messageService;
     private UserService userService;
@@ -36,15 +35,21 @@ public class JCFChannelService implements ChannelService {
         this.userService = userService;
     }
 
+
     @Override
     public UUID createChannel(UUID userId) {
+        // early return
+        if (userService.findUserById(userId) == null) {
+            return null;
+        }
         Channel channel = new Channel(userId);
         String username = userService.findUserById(userId).getUsername();
-        channel.setTitle(username + "'s channel");
+        // add title
+        channel.setTitle(username + DEFAULT_CHANNEL_NAME);
         // add new channel
         data.add(channel);
         // add channelId in User
-        userService.addChannel(userId, channel.getId());
+        userService.addChannelInUser(userId, channel.getId());
 
         return channel.getId();
     }
@@ -52,25 +57,19 @@ public class JCFChannelService implements ChannelService {
     @Override
     public List<Channel> findChannelsByUserId(UUID userId) {
         List<Channel> result = new ArrayList<>();
-        for (Channel channel : data) {
-            for (int i = 0; i < channel.getUsersIds().size(); i++) {
-                if (channel.getUsersIds().get(i).equals(userId)) {
-                    result.add(channel);
-                }
-            }
-
+        List<UUID> channelIds = userService.findChannelIdsById(userId);
+        for (UUID channelId : channelIds) {
+            result.add(findChannelById(channelId));
         }
         return result;
     }
 
     @Override
-    public Channel findChannelsById(UUID channelId) {
-        for (Channel channel : data) {
-            if (channel.getId().equals(channelId)) {
-                return channel;
-            }
-        }
-        return null;
+    public Channel findChannelById(UUID channelId) {
+        return data.stream()
+                .filter(channel -> channel.getId().equals(channelId))
+                .findFirst()
+                .orElse(null);
     }
 
 
@@ -89,16 +88,18 @@ public class JCFChannelService implements ChannelService {
         }
     }
 
+
     @Override
     public void deleteChannel(UUID channelId) {
-        for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getId().equals(channelId)) {
+        for (Channel channel : data) {
+            if (channel.getId().equals(channelId)) {
                 messageService.deleteMessagesByChannelId(channelId);
-                data.remove(i);
+                data.remove(channel);
                 break;
             }
         }
     }
+
 
     @Override
     public void addMessageInChannel(UUID channelId, Message message) {
@@ -111,12 +112,10 @@ public class JCFChannelService implements ChannelService {
     }
 
 
-    @Override
+
     public void deleteMessageInChannel(UUID messageId) {
         for (Channel channel : data) {
-            for (int i = 0; i < channel.getMessages().size(); i++) {
-                channel.getMessages().removeIf(message -> message.getId().equals(messageId));
-            }
+            channel.getMessages().removeIf(message -> message.getId().equals(messageId));
         }
     }
 

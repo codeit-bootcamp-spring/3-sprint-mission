@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -9,7 +9,6 @@ import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -18,190 +17,186 @@ import java.util.stream.Collectors;
  * fileName       : JavaApplication
  * author         : doungukkim
  * date           : 2025. 4. 3.
- * description    :
+ * description    : 결과 확인
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2025. 4. 3.        doungukkim       최초 생성
+ * 2025. 4. 5.        doungukkim       message의 map 결과 할 수 있게 수정
+ * 2025. 4. 5.        doungukkim       심화 코드 작성, 결과 추가
  */
 public class JavaApplication {
-    private static UserService userService = new JCFUserService();
-    private static ChannelService channelService = new JCFChannelService();
-    private static MessageService messageService = new JCFMessageService(channelService);
+    private static final UserService userService;
+    public static final MessageService messageService;
+    public static ChannelService channelService;
+
+    static {
+        // 1. 구현체 먼저 생성
+        JCFChannelService jcfChannelService = new JCFChannelService();
+        JCFUserService jcfUserService = new JCFUserService(jcfChannelService);
+        JCFMessageService jcfMessageService = new JCFMessageService(jcfChannelService);
+
+        // 2. 순환 의존 setter
+        jcfChannelService.setMessageService(jcfMessageService, jcfUserService);
+
+        // 3. 인터페이스로 노출
+        channelService = jcfChannelService;
+        messageService = jcfMessageService;
+        userService = jcfUserService;
+    }
 
     public static void main(String[] args) {
-        System.out.println("-----------------------------------User 관련 함수 테스트 시작-----------------------------------");
-//        등록 + id 변수에 저장
-        System.out.println("-- 등록 --");
+
+        System.out.println("-----------------------------------User 테스트 시작-----------------------------------");
+//        등록
+        System.out.println("**등록");
         UUID danielId = userService.registerUser("daniel");
         UUID johnId = userService.registerUser("john");
         UUID jackId = userService.registerUser("jack");
         UUID paulId = userService.registerUser("paul");
 
-        // 체널에 등록될 유저 객체
-        List<User> userDaniel = userService.findUserByUsername(danielId);
-        List<User> userJack = userService.findUserByUsername(jackId);
-        List<User> userJohn = userService.findUserByUsername(johnId);
-        List<User> multipleUsers = List.of(
-                userService.findUserByUsername(johnId).get(0),
-                userService.findUserByUsername(danielId).get(0)
-        );
-
-
 //        단건 조회
-        System.out.println("\n--단건 조회(john의 id)--");
-        userService.findUserByUsername(johnId).stream().forEach(user -> System.out.println("["+user.getUsername()+"]"));
+        System.out.println("**단건 조회(john)");
+        System.out.println("["+userService.findUserById(johnId).getUsername()+"]");
 
 //        다건 조회
-        System.out.println("\n--다건 조회--");
+        System.out.println("\n**다건 조회");
         String joinedUsers = userService.findAllUsers().stream()
                 .map(user -> user.getUsername())
                 .collect(Collectors.joining(", ", "[", "]"));
         System.out.println(joinedUsers);
 
 //        수정
-        System.out.println("\n--이름 수정(jack -> hannah)--");
+        System.out.println("\n**이름 수정(jack -> hannah)");
         userService.updateUsername(jackId,"hannah");
+        UUID hannahId = jackId;
 
 //        수정 데이터 조회
-        System.out.println("\n--수정 데이터 조회(jack의 아이디)--");
+        System.out.println("**수정 데이터 조회");
+        System.out.print("변경 전 이름: [jack]\n변경 후 이름: ");
+        System.out.println("["+userService.findUserById(jackId).getUsername()+"]");
 
-        List<User> temp = userService.findUserByUsername(jackId);
-        if (temp.isEmpty()) {
-            System.out.println("조회 결과 없음");
-        } else {
-            System.out.println("변경 전 이름: [jack]");
-            System.out.println("변경 후 이름: "+temp.stream().map(user -> user.getUsername()).collect(Collectors.toList()));
-        }
-        System.out.println("\n--수정 확인(jack 있는지 확인)--");
-        String namesInList = userService.findAllUsers().stream()
+        System.out.print("\n**수정 확인(jack)\n수정 전: [daniel, john, jack, paul]\n수정 후: ");
+        System.out.println(userService.findAllUsers().stream()
                 .map(user -> user.getUsername())
-                .collect(Collectors.joining(", ","[","]"));
-        System.out.println(namesInList);
+                .collect(Collectors.joining(", ","[","]")));
 
-        System.out.println("\n--삭제(paul)--");
+//        삭제
+        System.out.println("\n**삭제(paul)");
         userService.deleteUser(paulId);
-        namesInList = userService.findAllUsers().stream()
-                .map(user -> user.getUsername())
-                .collect(Collectors.joining(", ","[","]"));
-        System.out.println(namesInList);
+//        삭제 확인
+        System.out.println("**삭제 확인");
+        System.out.println("유저 조회 결과: "+userService.findUserById(paulId));
 
-        System.out.println("\n\n-----------------------------------Channel 관련 함수 테스트 시작-----------------------------------");
 
+        System.out.println("\n\n-----------------------------------Channel 테스트 시작-----------------------------------");
 
 //        등록
-        System.out.println("\n--채널 등록--");
-
-
-        // 유저 객체를 이용해 채널 등록
-        // channelId
-        UUID channelDaniel = channelService.createChannel(userDaniel);
-        UUID channelMultipleUsers = channelService.createChannel(multipleUsers);
-        UUID channelHanna = channelService.createChannel(userJack);
-        UUID channelJohn = channelService.createChannel(userJohn);
-
+        System.out.println("\n**채널 등록");
+        UUID danielChannelId = channelService.createChannel(danielId);
+        UUID hannahChannelId = channelService.createChannel(hannahId);
+        channelService.createChannel(johnId);
 
 //        단건 조회
-
-        System.out.println("\n--단건 조회(channelDaniel)--");
-        channelService.findChannelsById(channelDaniel).stream()
-                .map(channel -> channel.getTitle())
-                .forEach(channel-> System.out.println("방 이름: "+channel));
-
-        System.out.println("\n--단건 조회(channelMultipleUsers)--");
-        channelService.findChannelsById(channelMultipleUsers).stream()
-                .map(channel -> channel.getTitle())
-                .forEach(channel-> System.out.println("방 이름: "+channel));
-
-
+        System.out.println("**채널 단건 조회(danielChannelId)");
+        System.out.println("방 이름: " + channelService.findChannelById(danielChannelId).getTitle());
 
 //        다건 조회
-        System.out.println("\n--전체 조회(채널)--");
+        System.out.println("\n**채널 다건 조회");
         channelService.findAllChannel().stream()
                 .map(channel -> channel.getTitle())
                 .forEach(channel-> System.out.println("방 이름: "+channel));
 
 //        수정
-        System.out.println("\n--채널 이름 수정--");
-        channelService.updateChannelName(channelDaniel,"daniel's family channel");
+        System.out.println("\n**채널 이름 수정(daniel's channel => daniel's family channel)");
+        channelService.updateChannelName(danielChannelId,"daniel's family channel");
 
 //        수정 데이터 조회
-        System.out.println("\n--수정 데이터 조회--");
-        System.out.println("변경 전: daniel's channel");
-        System.out.println("변경 후: "+channelService.findChannelsById(channelDaniel).get(0).getTitle());
+        System.out.println("**수정 데이터 조회");
+        System.out.println("변경 후: "+channelService.findChannelById(danielChannelId).getTitle());
 
-//        삭제
-        System.out.println("\n--채널 삭제(hannah)--");
-        System.out.print("삭제 전:");
-        String roomTitles = channelService.findAllChannel().stream()
-                .map(channel -> channel.getTitle())
-                .collect(Collectors.joining(", ", "[", "]"));
-        System.out.println(roomTitles);
-        channelService.deleteChannel(channelHanna);
-
-        System.out.print("삭제 후:");
-        roomTitles= channelService.findAllChannel().stream()
-                .map(channel -> channel.getTitle())
-                .collect(Collectors.joining(", ","[","]"));
-        System.out.println(roomTitles);
+//        삭제, 삭제 확인
+        System.out.println("\n**채널 삭제(hannah's channel)");
+        channelService.deleteChannel(hannahChannelId);
+        System.out.println("**삭제 확인");
+        System.out.println("채널 조회 결과: "+channelService.findChannelById(hannahChannelId));
 
 
-        System.out.println("\n\n-----------------------------------Message 관련 함수 테스트 시작-----------------------------------");
-//      메세지는  지정된 채팅방이 있어야 하고 최소 한명 이상의 유저가 필요하다.
-//      메세지는 userid, channelid, message 필요
-//      create 될 때 메세지가 channel에 추가되어야 한다.
-//      exception 주어진 체널에 유저가 있어야 한다.
+        System.out.println("\n\n-----------------------------------Message 테스트 시작-----------------------------------");
 
 //        등록
         // 방에 있는 유저의 아이디
-        System.out.println("\n--메세지 추가--");
-        UUID danielMessage = messageService.createMessage(danielId, channelDaniel, "hello, I am Daniel");
-        UUID johnMessage = messageService.createMessage(johnId, channelJohn, "What are you doing?");
-        UUID multipleUsersMessage = messageService.createMessage(johnId, channelMultipleUsers, "hello, people I am John");
-
+        System.out.println("\n**메세지 추가");
+        UUID danielMessageId = messageService.createMessage(danielId, danielChannelId, "hello, I am Daniel");
+        UUID hannahMessageId = messageService.createMessage(hannahId, hannahChannelId, "What are you doing?");
+        messageService.createMessage(danielId, danielChannelId, "my favorite sport is baseball!");
 
 //        단건 조회(message)
-        System.out.println("\n--메세지 단건 조회(daniel)--");
-        messageService.findMessageById(danielMessage).forEach(System.out::println);
+        System.out.println("**메세지 단건 조회(daniel)");
+
+        Message msg = messageService.findMessageByMessageId(danielMessageId);
+        System.out.println(userService.findUserById(msg.getSenderId()).getUsername() + " : " + msg.getMessage());
 
 //        다건 조회()
-        System.out.println("\n--메세지 다건 조회--");
-        messageService.findAllMessages().forEach(System.out::println);
+        System.out.println("\n**메세지 다건 조회");
+        messageService.findAllMessages().stream()
+                .forEach(message -> System.out.println(userService.findUserById(message.getSenderId()).getUsername() + " : " + message.getMessage()));
 
 //        수정(message id기준)
-        System.out.println("\n--메세지 수정--");
-        messageService.updateMessage(johnMessage,"Where is tom");
+        System.out.println("\n**메세지 수정(hello, I am Daniel => where is my project?)");
+        messageService.updateMessage(danielMessageId,"where is my project?");
 
 //        수정된 데이터 조회(message)
-        System.out.println("\n--수정 메세지 조회--");
-        System.out.println("수정 전: What are you doing?");
-        messageService.findMessageById(danielMessage).forEach(element-> System.out.println("수정 후: "+element));
+        System.out.println("**수정 메세지 조회");
+        msg = messageService.findMessageByMessageId(danielMessageId);
+        System.out.println(userService.findUserById(msg.getSenderId()).getUsername() + " : " + msg.getMessage());
+
+//        삭제
+        System.out.println("\n**메세지 삭제(What are you doing?))");
+        messageService.deleteMessageById(hannahMessageId);
+
+//        삭제 확인
+        System.out.println("**삭제 확인");
+        System.out.println("메세지 조회 결과: " + messageService.findMessageByMessageId(hannahMessageId));
+
+        System.out.println("\n\n-----------------------------------심화 테스트-----------------------------------");
+
+        System.out.println("\n**시나리오 1 : message등록 => channel에 메세지 등록");
+        // 체널에 메세지 추가
+        System.out.println("\n1. message 추가: \"I hope this works fine.. please\"  ");
+        UUID testMessageId = messageService.createMessage(danielId, danielChannelId, "I hope this works fine.. please");
+        System.out.println("2. channel의 메세지 확인");
+        channelService.findChannelById(danielChannelId)
+                .getMessages()
+                .forEach(message -> System.out.println(userService.findUserById(message.getSenderId()).getUsername() + " : " + message.getMessage()));
 
 
-//    [ ] 삭제
-        System.out.println("\n--메세지 삭제(Hello, people I am John))-");
-        System.out.print("삭제 전: ");
+        System.out.println("\n**시나리오 2 : message삭제 => channel의 메세지 삭제");
+        System.out.println("1. 메세지 삭제(daniel : I hope this works fine.. please)");
+        messageService.deleteMessageById(testMessageId);
+        System.out.println("2. 삭제 후 채널 메세지");
+        channelService.findChannelById(danielChannelId)
+                .getMessages()
+                .forEach(message -> System.out.println(userService.findUserById(message.getSenderId()).getUsername() + " : " + message.getMessage()));
 
-        System.out.println( messageService.findAllMessages().stream()
-                .collect(Collectors.joining(", ", "[", "]")));
+        System.out.println("\n**시나리오 3 : channel추가 => User에 channel 추가");
+        System.out.println("\n**체널 추가(daniel's channel)");
+        channelService.createChannel(danielId);
+        System.out.println("**채널 조회 결과: ");
+        channelService.findChannelsByUserId(danielId).stream().forEach(channel -> System.out.println(channel.getTitle()));
+        System.out.println("**유저 객체에서 채널 조회 결과: ");
+        userService.findChannelIdsById(danielId).stream().forEach(channelId-> System.out.println("체널 id: "+channelId));
 
-        messageService.deleteMessageById(multipleUsersMessage);
-        System.out.print("삭제 후: ");
-        System.out.println(messageService.findAllMessages().stream()
-                .collect(Collectors.joining(", ", "[", "]")));
 
+        System.out.println("\n**시나리오 4 : channel삭제 => channel의 messages 삭제");
+        System.out.println("\n1. 채널 삭제");
+        channelService.deleteChannel(danielChannelId);
 
+        Channel channelResult = channelService.findChannelById(danielChannelId);
+        Message messageResult = messageService.findMessageByMessageId(danielMessageId);
 
+        System.out.println("2. 삭제한 체널과 메세지 조회");
+        System.out.println("채널 조회 결과 : "+channelResult);
+        System.out.println("메세지 조회 결과 : "+messageResult);
     }
-
-//    테스트
-//    [ ] 등록
-//    [ ] 조회(단건, 다건)
-//    [ ] 수정
-//    [ ] 수정된 데이터 조회
-//    [ ] 삭제
-//    [ ] 조회를 통해 삭제되었는지 확인
-
-
-
 }
