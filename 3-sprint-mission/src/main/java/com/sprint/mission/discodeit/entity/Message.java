@@ -10,6 +10,7 @@ public class Message {
     private final Channel channel;
     private final Long createdAt;
     private Long updatedAt;
+    private boolean updated;
 
 
     public Message(String text, User user, Channel channel) {
@@ -19,6 +20,7 @@ public class Message {
         this.channel = channel;
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
+        this.updated = false;
     }
 
     public UUID getId() {
@@ -37,13 +39,23 @@ public class Message {
 
     @Override
     public String toString() {
-        return "[channel=" + channel + "] " +
-                "sender=" + sender + " : " +
-                "Message=" + text + " " +
-                // 포매팅된 date 사용
-                "[createdAt=" + getCreatedAt() + "]" +
-                "[updatedAt=" + getUpdatedAt() + "]"
-                ;
+        if (!this.updated) {
+            return "[channel=" + channel.getName() + "] " +
+                    "sender=" + sender.getName() + " : " +
+                    "Message=" + text + " " +
+                    // 포매팅된 date 사용
+                    "[createdAt=" + getCreatedAt() + "]"
+                    ;
+        } else {
+            return "[channel=" + channel.getName() + "] " +
+                    "sender=" + sender.getName() + " : " +
+                    "Message=" + text + " " +
+                    // 포매팅된 date 사용
+                    "[createdAt=" + getCreatedAt() + "]" +
+                    "[updatedAt=" + getUpdatedAt() + "](수정됨)"
+                    ;
+        }
+
     }
 
     public void updateById(UUID id, String text) {
@@ -52,4 +64,5 @@ public class Message {
     public void updateDateTime() {
         this.updatedAt = System.currentTimeMillis();
     }
+    public void updated() {this.updated = true;}
 }

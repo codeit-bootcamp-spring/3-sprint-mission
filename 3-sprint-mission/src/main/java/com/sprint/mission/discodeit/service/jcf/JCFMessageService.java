@@ -14,7 +14,11 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void create(String text, User user, Channel channel) {
-        this.data.add(new Message(text, user, channel));
+        if (user.getIsLogin()) {
+            this.data.add(new Message(text, user, channel));
+        } else {
+            System.out.println("먼저 로그인하십시오.");
+        }
     }
 
     @Override
@@ -50,6 +54,7 @@ public class JCFMessageService implements MessageService {
                 .forEach(m -> {
                     m.updateById(id, text);
                     m.updateDateTime();
+                    m.updated();
                 });
     }
 

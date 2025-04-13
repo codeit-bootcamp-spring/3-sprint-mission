@@ -37,8 +37,8 @@ public class Channel {
     @Override
     public String toString() {
         return "Channel{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
+//                "id='" + id + '\'' +
+                "name='" + name + '\'' +
                 ", maker='" + maker.getName() + '\'' +
                 // 포매팅된 date 사용
                 ", createdAt=" + getCreatedAt() +
