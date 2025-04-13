@@ -65,7 +65,6 @@ public class JCFUserService implements UserService {
         for (User user : data) {
             if (user.getId().equals(userId)) {
                 user.setUsername(newName);
-                user.setUpdatedAt(System.currentTimeMillis());
             }
         }
     }
@@ -90,7 +89,6 @@ public class JCFUserService implements UserService {
                     // 새 메세지 추가
                     channelIds.add(channelId);
                     user.setChannelIds(channelIds);
-                    user.setUpdatedAt(System.currentTimeMillis());
                 }
             }
         }

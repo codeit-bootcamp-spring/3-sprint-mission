@@ -9,27 +9,26 @@ import java.util.UUID;
  * fileName       : Channel
  * author         : doungukkim
  * date           : 2025. 4. 3.
- * description    :
+ * description    : channel entity
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2025. 4. 3.        doungukkim       최초 생성
  */
 public class Channel {
-    // userid,user2id,messages,title(userid의 방),
     private UUID id;
     private Long createdAt;
     private Long updatedAt;
     private String title;
     private List<Message> messages;
-    private List<User> channelUsers;
+    private List<UUID> usersIds;
 
-    public Channel(List<User> channelUsers) {
+    public Channel(UUID userId) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
-        this.title = channelUsers.get(0).getUsername() + "'s channel";
         this.messages = new ArrayList<>();
-        this.channelUsers = channelUsers;
+        this.usersIds =new ArrayList<>();
+        this.usersIds.add(userId);
     }
 
     public String getTitle() {
@@ -38,6 +37,7 @@ public class Channel {
 
     public void setTitle(String title) {
         this.title = title;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public List<Message> getMessages() {
@@ -46,42 +46,25 @@ public class Channel {
 
     public void setMessages(List<Message> messages) {
         this.messages = messages;
+        this.updatedAt = System.currentTimeMillis();
     }
 
-    public List<User> getChannelUsers() {
-        return channelUsers;
+    public List<UUID> getUsersIds() {
+        return usersIds;
     }
 
-    public void setChannelUsers(List<User> channelUsers) {
-        this.channelUsers = channelUsers;
-    }
-
-    @Override
-    public String toString() {
-        return "Channel{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", \nupdatedAt=" + updatedAt +
-                ", title='" + title + '\'' +
-                ", messages=" + messages +
-                ", channelUsers=" + channelUsers +
-                '}';
+    public void setUsersIds(List<UUID> usersIds) {
+        this.usersIds = usersIds;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
 
     public Long getCreatedAt() {
         return createdAt;
-    }
-
-    public void setCreatedAt(Long createdAt) {
-        this.createdAt = createdAt;
     }
 
     public Long getUpdatedAt() {
@@ -90,5 +73,17 @@ public class Channel {
 
     public void setUpdatedAt(Long updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "Channel{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", title='" + title + '\'' +
+                ", messages=" + messages +
+                ", usersIds=" + usersIds +
+                '}';
     }
 }

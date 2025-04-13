@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -7,7 +9,7 @@ import java.util.UUID;
  * fileName       : User
  * author         : doungukkim
  * date           : 2025. 4. 3.
- * description    :
+ * description    : user entity
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
@@ -18,20 +20,47 @@ public class User {
     private Long createdAt;
     private Long updatedAt;
     private String username;
+    private List<UUID> channelIds;
 
     public User(String username) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.username = username;
-
+        this.channelIds = new ArrayList<>();
     }
 
     public String getUsername() {
         return username;
     }
 
+    public List<UUID> getChannelIds() {
+        return channelIds;
+    }
+
+    public void setChannelIds(List<UUID> channelIds) {
+        this.channelIds = channelIds;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
     public void setUsername(String username) {
         this.username = username;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public Long getCreatedAt() {
+        return createdAt;
+    }
+
+    public Long getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Long updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     @Override
@@ -41,30 +70,7 @@ public class User {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", username='" + username + '\'' +
+                ", channelIds=" + channelIds +
                 '}';
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Long createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }
