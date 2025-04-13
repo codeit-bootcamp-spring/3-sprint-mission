@@ -18,10 +18,11 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public List<Message> read(String id) {
+    public Message read(UUID id) {
         return this.data.stream()
-                .filter(m -> m.getId().contains(id))
-                .collect(Collectors.toList());
+                .filter(m -> m.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 메시지는 존재하지 않습니다."));
     }
 
     @Override
@@ -36,16 +37,16 @@ public class JCFMessageService implements MessageService {
                 .collect(Collectors.toList());
     }
 
-    public List<Message> readBySender(String sender) {
+    public List<Message> readBySender(String sendername) {
         return this.data.stream()
-                .filter(m -> m.getSender().contains(sender))
+                .filter(m -> m.getSender().getName().equals(sendername))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void update(String id, String text) {
+    public void update(UUID id, String text) {
         this.data.stream()
-                .filter(m -> m.getId().contains(id))
+                .filter(m -> m.getId().equals(id))
                 .forEach(m -> {
                     m.updateById(id, text);
                     m.updateDateTime();
@@ -53,7 +54,7 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void delete(String id) {
-        this.data.removeIf(m -> m.getId().contains(id));
+    public void delete(UUID id) {
+        this.data.removeIf(m -> m.getId().equals(id));
     }
 }
