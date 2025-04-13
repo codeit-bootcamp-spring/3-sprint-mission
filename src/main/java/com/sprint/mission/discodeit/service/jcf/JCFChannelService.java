@@ -34,11 +34,11 @@ public class JCFChannelService implements ChannelService {
     }
 
     public void updateChannelName(Channel currentChannel, String newName) {
-        for (Channel channel : channelMap.values()) {
-            if (channel.getChannelNumber() == (currentChannel.getChannelNumber())) {
-                channel.updateChannel(newName);
-                break;
-            }
+        Channel channel = channelMap.get(currentChannel.getChannelNumber());
+        if (channel != null) {
+            channel.updateChannel(newName);
+        } else {
+            System.out.println("해당 채널을 찾을 수 없습니다.");
         }
     }
 
