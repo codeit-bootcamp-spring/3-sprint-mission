@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.entity.Channel;
+
 import java.util.UUID;
 
 /**
@@ -33,19 +35,38 @@ public class TestFileUserService {
     public static void main(String[] args) {
 
         // USER TEST
-        UUID kateId = fileUserService.registerUser("Kate");
-        System.out.println(fileUserService.findUserById(kateId).getUsername() +" : "+ kateId);
+//        UUID kateId = fileUserService.registerUser("Kate");
+//        UUID danielId = fileUserService.registerUser("daniel");
+//        UUID JohnId = fileUserService.registerUser("john");
 
-        fileUserService.updateUsername(kateId,"John");
-        System.out.println(fileUserService.findUserById(kateId).getUsername() +" : "+ kateId);
+//        System.out.println(fileUserService.findUserById(kateId).getUsername() +" : "+ kateId);
 
+//        fileUserService.updateUsername(kateId,"John");
+//        System.out.println(fileUserService.findUserById(kateId).getUsername() +" : "+ kateId);
+//        System.out.println();
+
+//        fileUserService.updateUsername(UUID.fromString("92f24aa0-e1a1-41ce-af2a-0835351c11ad"), "Daniel");
 //        fileUserService.deleteUser(UUID.fromString("ecd01408-3e15-419d-a2f5-afa6deb19f69"));
-
-        fileUserService.deleteUser(kateId);
-
+//        fileUserService.deleteUser(UUID.fromString("66e2deaa-e602-48fb-9805-0f406ab14e90"));
         fileUserService.findAllUsers().forEach(user -> System.out.println(user.getUsername()+" : "+user.getId()));
+        UUID kateId = UUID.fromString("eb26d05d-2679-4d7f-9fbf-7ae13e7ec736");
+        UUID daneilId = UUID.fromString("f62b467b-8363-4131-a631-0954fb262bb1");
+        UUID johnId = UUID.fromString("c4704c92-2532-48e8-8655-125fdbd729e9");
 
         System.out.println("-----------------------------------------------------------------------------------------------------------------------");
+//
+//        UUID channelId = fileChannelService.createChannel(kateId);
+//        fileChannelService.createChannel(kateId);
+//        fileChannelService.createChannel(daneilId);
+//        fileChannelService.createChannel(johnId);
+
+
+//        UUID channelId = UUID.fromString("89ef3724-737b-4640-a502-3e768734f6ee");
+//        System.out.println(fileChannelService.findChannelById(channelId).getTitle());
+//        System.out.println();
+//        fileChannelService.findChannelsByUserId(kateId).forEach(channel -> System.out.println(channel.getTitle()));
+
+        fileChannelService.findAllChannel().forEach(channel -> System.out.println(channel.getTitle()+" : "+channel.getId()));
 
 
 

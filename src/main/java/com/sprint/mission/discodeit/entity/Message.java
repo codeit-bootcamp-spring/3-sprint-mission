@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
@@ -13,7 +14,9 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 3.        doungukkim       최초 생성
  */
-public class Message {
+public class Message implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private UUID id;
     private Long createdAt;
     private Long updatedAt;

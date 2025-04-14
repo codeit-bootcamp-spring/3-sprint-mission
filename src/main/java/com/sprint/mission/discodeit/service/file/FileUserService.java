@@ -25,31 +25,15 @@ import java.util.UUID;
 public class FileUserService{
     FilePathUtil filePathUtil =new FilePathUtil();
 
-//    private final List<User> data;
-    //    private final ChannelService channelService;
-
-//    public FileUserService(ChannelService channelService) {
-//        this.users = new ArrayList<>();
-//        this.channelService = channelService;
-//        this.file = new File("/Users/doungukkim/Desktop/workspace/Codit_Sprint_workspace/codit-organization/some/path/3-sprint-mission/src/main/java/com/sprint/mission/discodeit/service/file/user.txt");
-//    }
-
-
 //    -------------------interface-------------------
 //    UUID registerUser(String username);
 //    User findUserById(UUID userId);
 //    List<User> findAllUsers();
 //    void updateUsername(UUID userId,String newName);
 //    void deleteUser(UUID userId);
-//    void addChannelInUser(UUID userId, UUID channelId); - NOT TESTED
+//    void addChannelInUser(UUID userId, UUID channelId); - TESTED BY FileChannelService.createChannel()
 //    List<UUID> findChannelIdsInId(UUID userId); -NOT TESTED
 //    -------------------------------------------------
-
-
-    // test
-//    public FileUserService() {
-//        this.data = new ArrayList<>();
-//    }
 
 //    @Override
     public UUID registerUser(String username) {
