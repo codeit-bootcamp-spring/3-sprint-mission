@@ -66,6 +66,16 @@
     &quot;assignee&quot;: &quot;Leichtstar&quot;
   }
 }</component>
+  <component name="GitRewordedCommitMessages">
+    <option name="commitMessagesMapping">
+      <RewordedCommitMessageMapping>
+        <option name="originalMessage" value="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인" />
+        <option name="rewordedMessage" value="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인" />
+      </RewordedCommitMessageMapping>
+    </option>
+    <option name="currentCommit" value="1" />
+    <option name="onto" value="82a146a8f4307be6ecf04e42753d99074661b2bf" />
+  </component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/Leichtstar/3-sprint-mission_01.git&quot;,
