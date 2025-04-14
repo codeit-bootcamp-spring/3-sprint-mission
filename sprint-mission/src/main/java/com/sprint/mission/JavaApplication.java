@@ -3,6 +3,9 @@ package com.sprint.mission;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -12,9 +15,9 @@ public class JavaApplication {
 
     public static void main(String[] args) {
         // 구현체의 생성자를 호출해 인스턴스 생성
-        JCFChannelService channelService = new JCFChannelService();
-        JCFUserService userService = new JCFUserService(channelService);
-        JCFMessageService messageService = new JCFMessageService(channelService);
+        ChannelService channelService = new JCFChannelService();
+        UserService userService = new JCFUserService(channelService);
+        MessageService messageService = new JCFMessageService(channelService);
 
         System.out.println("-----------------------------------------------------------------------------------\n");
 

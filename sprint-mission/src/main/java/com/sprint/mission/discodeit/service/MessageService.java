@@ -14,4 +14,5 @@ public interface MessageService {
 
     Message updateMessage(UUID id, String text);
     Message deleteMessage(UUID id);
+
 }

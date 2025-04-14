@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.HashMap;
@@ -9,18 +10,18 @@ import java.util.UUID;
 
 public class JCFUserService implements UserService {
     private final Map<UUID, User> data;
-    private final JCFChannelService jcfChannelService;
+    private final ChannelService channelService;
 
-    public JCFUserService(JCFChannelService jcfChannelService) {
-        this.jcfChannelService = jcfChannelService;
+    public JCFUserService(ChannelService channelService) {
+        this.channelService = channelService;
         this.data = new HashMap<>();
     }
 
     @Override
     public User createUser(String username, UUID channelId) {
-        User user = new User(username, channelId);
+        User user = new User(username);
         data.put(user.getId(), user);
-        jcfChannelService.addUserToChannel(channelId, user.getId());
+        channelService.addUserToChannel(channelId, user.getId());
         return user;
     }
 

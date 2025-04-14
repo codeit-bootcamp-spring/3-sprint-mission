@@ -1,24 +1,27 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class Channel {
+public class Channel implements Serializable {
     // 필드 선언부
+    private static final long serialVersionUID = 1L;
     private final UUID id;
     private final long createdAt;
     private long updatedAt;
     private String channelName;
     private List<UUID> messageList; // 채널에서 받은 메시지 리스트
     private List<UUID> userList;
+
     // 생성자
     public Channel(String channelName) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
+        this.updatedAt = createdAt;
         this.channelName = channelName;
         this.messageList = new ArrayList<>();
-        this.updatedAt = createdAt;
         this.userList = new ArrayList<>();
     }
 
