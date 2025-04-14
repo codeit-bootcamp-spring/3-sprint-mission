@@ -37,7 +37,7 @@ public class JavaApplication {
         JCFMessageService jcfMessageService = new JCFMessageService(jcfChannelService);
 
         // 2. 순환 의존 setter
-        jcfChannelService.setMessageService(jcfMessageService, jcfUserService);
+        jcfChannelService.setService(jcfMessageService, jcfUserService);
 
         // 3. 인터페이스로 노출
         channelService = jcfChannelService;
@@ -185,7 +185,7 @@ public class JavaApplication {
         System.out.println("**채널 조회 결과: ");
         channelService.findChannelsByUserId(danielId).stream().forEach(channel -> System.out.println(channel.getTitle()));
         System.out.println("**유저 객체에서 채널 조회 결과: ");
-        userService.findChannelIdsById(danielId).stream().forEach(channelId-> System.out.println("체널 id: "+channelId));
+        userService.findChannelIdsInId(danielId).stream().forEach(channelId-> System.out.println("체널 id: "+channelId));
 
 
         System.out.println("\n**시나리오 4 : channel삭제 => channel의 messages 삭제");

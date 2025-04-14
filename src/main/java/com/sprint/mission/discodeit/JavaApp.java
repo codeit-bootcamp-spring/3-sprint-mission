@@ -35,7 +35,7 @@ public class JavaApp {
         JCFUserService jcfUserService = new JCFUserService(jcfChannelService);
         JCFMessageService jcfMessageService = new JCFMessageService(jcfChannelService);
 
-        jcfChannelService.setMessageService(jcfMessageService,jcfUserService);
+        jcfChannelService.setService(jcfMessageService,jcfUserService);
 
         channelService = jcfChannelService;
         messageService = jcfMessageService;

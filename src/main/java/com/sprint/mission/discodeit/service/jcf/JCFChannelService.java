@@ -30,7 +30,7 @@ public class JCFChannelService implements ChannelService {
         this.data = new ArrayList<>();
     }
 
-    public void setMessageService(MessageService messageService, UserService userService) {
+    public void setService(MessageService messageService, UserService userService) {
         this.messageService = messageService;
         this.userService = userService;
     }
@@ -57,7 +57,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public List<Channel> findChannelsByUserId(UUID userId) {
         List<Channel> result = new ArrayList<>();
-        List<UUID> channelIds = userService.findChannelIdsById(userId);
+        List<UUID> channelIds = userService.findChannelIdsInId(userId);
         for (UUID channelId : channelIds) {
             result.add(findChannelById(channelId));
         }

@@ -24,5 +24,5 @@ public interface UserService {
     void updateUsername(UUID userId,String newName);
     void deleteUser(UUID userId);
     void addChannelInUser(UUID userId, UUID channelId);
-    List<UUID> findChannelIdsById(UUID userId);
+    List<UUID> findChannelIdsInId(UUID userId);
 }

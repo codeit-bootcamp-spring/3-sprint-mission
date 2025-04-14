@@ -95,7 +95,7 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public List<UUID> findChannelIdsById(UUID userId) {
+    public List<UUID> findChannelIdsInId(UUID userId) {
         for (User user : data) {
             if (user.getId().equals(userId)) {
                 List<UUID> channelIds = user.getChannelIds();
