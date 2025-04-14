@@ -47,4 +47,3 @@ public class Message {
         return result;
     }
 }
-

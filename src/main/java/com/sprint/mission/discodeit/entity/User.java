@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+
 import java.text.SimpleDateFormat;
 import java.util.UUID;
 
@@ -15,17 +16,27 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
-    public UUID getId() {return id;}
-    public String getName() {return name;}
-    public void setName(String name) {this.name = name;}
+    public UUID getId() {
+      return id;
+    }
+    public String getName() {
+      return name;
+    }
+    public void setName(String name) {
+      this.name = name;
+    }
 
     public String getCreatedAt() {
         String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(createdAt);
-        return formatedTime;}
+        return formatedTime;
+    }
     public String getUpdatedAt() {
         String aformatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(updatedAt);
-        return aformatedTime;}
-    public void setUpdatedAt(long updatedAt) {this.updatedAt = updatedAt;}
+        return aformatedTime;
+    }
+    public void setUpdatedAt(long updatedAt) {
+      this.updatedAt = updatedAt;
+    }
 
 @Override
 public String toString() {
@@ -37,7 +48,3 @@ public String toString() {
     }
     return result;
     }
-
-
-
-}

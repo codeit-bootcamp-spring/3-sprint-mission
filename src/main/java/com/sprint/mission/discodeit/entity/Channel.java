@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.jcf.JCFMessageService;
-
 import java.text.SimpleDateFormat;
 import java.util.UUID;
 
@@ -56,4 +55,3 @@ public class Channel {
         return result;
     }
 }
-
