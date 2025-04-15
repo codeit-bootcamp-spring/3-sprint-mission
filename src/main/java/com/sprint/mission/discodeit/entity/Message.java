@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class Message implements Serializable {
@@ -17,10 +19,10 @@ public class Message implements Serializable {
         this.text = text;
         this.sender = sender;
         this.channel = channel;
-        // for fixed unique id
-        this.id = UUID.nameUUIDFromBytes(sender.getName().concat(text).getBytes());
         this.createdAt = Instant.now().getEpochSecond();
         this.updatedAt = Instant.now().getEpochSecond();
+        this.id = UUID.randomUUID();
+
     }
 
     public UUID getId() {
@@ -58,12 +60,18 @@ public class Message implements Serializable {
 
     @Override
     public String toString() {
-        return "Message{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", text='" + text + '\'' +
-                ", sender=" + sender.getName() +
-                '}';
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                .withZone(ZoneId.systemDefault());
+
+        String createdAtFormatted = formatter.format(Instant.ofEpochSecond(createdAt));
+        String updatedAtFormatted = formatter.format(Instant.ofEpochSecond(updatedAt));
+
+        return "💬 Message {\n" +
+                " id         = " + id + "\n" +
+                " createdAt  = " + createdAtFormatted + "\n" +
+                " updatedAt  = " + updatedAtFormatted + "\n" +
+                " text       = '" + text + "'\n" +
+                " sender     = " + sender.getName() + "\n" +
+                "}";
     }
 }

@@ -21,15 +21,16 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void create(User msgUser, Channel channel, String text) {
+    public Message create(User msgUser, Channel channel, String text) {
         boolean isValidUser = this.channelService.getAttendees(channel).stream().anyMatch(user -> user.getId() == msgUser.getId());
         if (isValidUser) {
             Message msg = new Message(text, msgUser, channel);
             this.data.put(msg.getId(), msg);
+            return msg;
         } else {
             System.out.println("Invalid user(" + msgUser.getName() + ") on this channel(" + channel.getName() + ")");
+            return null;
         }
-
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public interface MessageService {
 
-    public void create(User user, Channel channel, String text);
+    public Message create(User user, Channel channel, String text);
 
     public Message read(UUID id);
 
