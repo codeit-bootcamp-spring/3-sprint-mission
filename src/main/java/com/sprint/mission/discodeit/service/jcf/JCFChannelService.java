@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -20,8 +21,9 @@ import java.util.*;
  * -----------------------------------------------------------
  * 2025. 4. 3.        doungukkim       최초 생성
  */
-public class JCFChannelService {
+public class JCFChannelService implements ChannelService{
     private static final String DEFAULT_CHANNEL_NAME = "'s channel";
+    private final JCFChannelRepository jcfChannelRepository = new JCFChannelRepository();
     private final List<Channel> data;
     private MessageService messageService;
     private UserService userService;
@@ -47,7 +49,8 @@ public class JCFChannelService {
         // add title
         channel.setTitle(username + DEFAULT_CHANNEL_NAME);
         // add new channel
-        data.add(channel);
+        jcfChannelRepository.saveChannel(channel);
+//        data.add(channel);
         // add channelId in User
         userService.addChannelInUser(userId, channel.getId());
 
@@ -56,73 +59,82 @@ public class JCFChannelService {
 
     @Override
     public List<Channel> findChannelsByUserId(UUID userId) {
-        List<Channel> result = new ArrayList<>();
+//        List<Channel> result = new ArrayList<>();
         List<UUID> channelIds = userService.findChannelIdsInId(userId);
-        for (UUID channelId : channelIds) {
-            result.add(findChannelById(channelId));
-        }
-        return result;
+        return jcfChannelRepository.findChannelsByUserId(channelIds);
+//        for (UUID channelId : channelIds) {
+//            result.add(findChannelById(channelId));
+//        }
+//        return result;
     }
 
     @Override
     public Channel findChannelById(UUID channelId) {
-        return data.stream()
-                .filter(channel -> channel.getId().equals(channelId))
-                .findFirst()
-                .orElse(null);
+        return jcfChannelRepository.findChannelById(channelId);
+//        return data.stream()
+//                .filter(channel -> channel.getId().equals(channelId))
+//                .findFirst()
+//                .orElse(null);
     }
 
 
     @Override
     public List<Channel> findAllChannel() {
-        return data;
+        return jcfChannelRepository.findAllChannel();
     }
 
     @Override
     public void updateChannelName(UUID id, String title) {
-        for (Channel channel : data) {
-            if (channel.getId().equals(id)) {
-                channel.setTitle(title);
-            }
-        }
+        jcfChannelRepository.updateChannelName(id, title);
+
+//        for (Channel channel : data) {
+//            if (channel.getId().equals(id)) {
+//                channel.setTitle(title);
+//            }
+//        }
     }
 
 
     @Override
     public void deleteChannel(UUID channelId) {
-        for (Channel channel : data) {
-            if (channel.getId().equals(channelId)) {
-                messageService.deleteMessagesByChannelId(channelId);
-                data.remove(channel);
-                break;
-            }
-        }
+        jcfChannelRepository.deleteChannel(channelId);
+//        for (Channel channel : data) {
+//            if (channel.getId().equals(channelId)) {
+//                messageService.deleteMessagesByChannelId(channelId);
+//                data.remove(channel);
+//                break;
+//            }
+//        }
+        messageService.deleteMessagesByChannelId(channelId);
     }
 
 
     @Override
     public void addMessageInChannel(UUID channelId, Message message) {
-        for (Channel channel : data) {
-            if (channel.getId().equals(channelId)) {
-                channel.getMessages().add(message);
-            }
-        }
+        jcfChannelRepository.addMessageInChannel(channelId, message);
+//        for (Channel channel : data) {
+//            if (channel.getId().equals(channelId)) {
+//                channel.getMessages().add(message);
+//            }
+//        }
     }
 
     @Override
     public void deleteMessageInChannel(UUID channelId, UUID messageId) {
-        findChannelById(channelId).getMessages().removeIf(message -> message.getId().equals(messageId));
+        jcfChannelRepository.deleteMessageInChannel(channelId, messageId);
+//        findChannelById(channelId).getMessages().removeIf(message -> message.getId().equals(messageId));
     }
 
     @Override
     public void addUserInChannel(UUID channelId, UUID userId) {
-        for (Channel channel : data) {
-            if (channel.getId().equals(channelId)) {
-                List<UUID> usersIds = channel.getUsersIds();
-                usersIds.add(userId);
-                channel.setUsersIds(usersIds);
-            }
-        }
+        jcfChannelRepository.addUserInChannel(channelId, userId);
+//        for (Channel channel : data) {
+//            if (channel.getId().equals(channelId)) {
+//                List<UUID> usersIds = channel.getUsersIds();
+//                usersIds.add(userId);
+//                channel.setUsersIds(usersIds);
+//            }
+//        }
     }
 }
 
