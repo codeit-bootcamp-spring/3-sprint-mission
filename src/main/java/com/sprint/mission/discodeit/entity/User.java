@@ -81,4 +81,33 @@ public class User implements Serializable {
                 "  age        = " + age + "\n" +
                 "}";
     }
+
+    // REF : https://www.baeldung.com/java-equals-hashcode-contracts
+    @Override
+    public boolean equals(Object o) {
+        if (o == this)
+            return true;
+        if (!(o instanceof User))
+            return false;
+        User other = (User) o;
+        boolean idEquals = (this.id == null && other.id == null)
+                || (this.id != null && this.id.equals(other.id));
+        boolean nameEquals = (this.name == null && other.name == null)
+                || (this.name != null && this.name.equals(other.name));
+        boolean ageEquals = this.age == other.age;
+        return idEquals && nameEquals && ageEquals;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        if (this.id != null) {
+            result = 31 * result + this.id.hashCode();
+        }
+        if (this.name != null) {
+            result = 31 * result + this.name.hashCode();
+        }
+        result = 31 * result + this.age;
+        return result;
+    }
 }

@@ -141,15 +141,17 @@ public class FileChannelService implements ChannelService {
     public User joinChannel(Channel ch, User user) {
         Channel selectedChannel = this.read(ch.getId());
         selectedChannel.getAttendees().addAll(Arrays.asList(user));
-
+        this.create(selectedChannel);
         return user;
     }
 
     @Override
     public User leaveChannel(Channel ch, User user) {
         Channel selectedChannel = this.read(ch.getId());
+        //REF : equals와 hashCode 재정의
         selectedChannel.getAttendees().remove(user);
 
+        this.create(selectedChannel);
         return user;
     }
 
