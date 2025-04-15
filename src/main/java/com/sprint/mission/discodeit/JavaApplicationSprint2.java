@@ -1,6 +1,10 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
 
 public class JavaApplicationSprint2 {
@@ -18,7 +22,7 @@ public class JavaApplicationSprint2 {
 
         System.out.println("🏃🏃🏃Service Start🏃🏃🏃");
         /* user service */
-        FileUserService userService = new FileUserService();
+        UserService userService = new FileUserService();
 
         // User 5명 생성 및 등록
         User user1 = new User("John", 20);
@@ -56,53 +60,53 @@ public class JavaApplicationSprint2 {
                 System.out.println("Get all users after deleting 'John(60)' : " + user.toString())
         );
 
-//        System.out.println("================Channel Log================");
-//        /* Channel service */
-//        JCFChannelService channelService = new JCFChannelService();
-//
-//        // channel 총 3개 생성 및 등록
-//        Channel channel1 = new Channel("chat1", user1);
-//        Channel channel2 = new Channel("chat2", user3);
-//        Channel channel3 = new Channel("chat3", user5);
-//
-//        channelService.create(channel1);
-//        channelService.create(channel2);
-//        channelService.create(channel3);
-//
-//        // Channel 조회 - 전체
-//        channelService.readAll().stream().forEach(ch ->
-//                System.out.println("Get all channels : " + ch.toString())
-//        );
-//        // Channel 조회 - by id
-//        System.out.println("Get by id : " + channelService.read(channel1.getId()).toString());
-//
-//        // Channel 수정
-//        Channel updatedchannel = channelService.update(channel1.getId(), "updated chat1");
-//        System.out.println("Updated channel : " + updatedchannel.toString());
-//
-//        // Channel 삭제
-//        channelService.delete(channel3.getId());
-//
-//        // Channel 삭제 후 결과 조회
-//        channelService.readAll().stream().forEach(ch ->
-//                System.out.println("Get all channels after deleting 'chat3' : " + ch.toString())
-//        );
-//
-//        // Channel 입장
-//        channelService.joinChannel(channel1, user2);
-//        channelService.joinChannel(channel2, user4);
-//        channelService.joinChannel(channel2, user5);
-//
-//        // Channel 퇴장
-//        channelService.leaveChannel(channel2, user3);
-//
-//        // 참가자 리스트
-//        channelService.readAttendees(channel2).stream().forEach(user ->
-//                System.out.println("Get all attendees on channel 2 : " + user.toString())
-//        );
-//
-//        System.out.println("================Message Log================");
-//
+        System.out.println("================Channel Log================");
+        /* Channel service */
+        ChannelService channelService = new FileChannelService();
+
+        // channel 총 3개 생성 및 등록
+        Channel channel1 = new Channel("chat1", user1);
+        Channel channel2 = new Channel("chat2", user3);
+        Channel channel3 = new Channel("chat3", user5);
+
+        channelService.create(channel1);
+        channelService.create(channel2);
+        channelService.create(channel3);
+
+        // Channel 조회 - 전체
+        channelService.readAll().stream().forEach(ch ->
+                System.out.println("Get all channels : " + ch.toString())
+        );
+        // Channel 조회 - by id
+        System.out.println("Get by id : " + channelService.read(channel1.getId()).toString());
+
+        // Channel 수정
+        Channel updatedchannel = channelService.update(channel1.getId(), "updated chat1");
+        System.out.println("Updated channel : " + updatedchannel.toString());
+
+        // Channel 삭제
+        channelService.delete(channel3.getId());
+
+        // Channel 삭제 후 결과 조회
+        channelService.readAll().stream().forEach(ch ->
+                System.out.println("Get all channels after deleting 'chat3' : " + ch.toString())
+        );
+
+        // Channel 입장
+        channelService.joinChannel(channel1, user2);
+        channelService.joinChannel(channel2, user4);
+        channelService.joinChannel(channel2, user5);
+
+        // Channel 퇴장
+        channelService.leaveChannel(channel2, user3);
+
+        // 참가자 리스트
+        channelService.readAttendees(channel2).stream().forEach(user ->
+                System.out.println("Get all attendees on channel 2 : " + user.toString())
+        );
+
+        System.out.println("================Message Log================");
+
 //        /* message service */
 //        JCFMessageService messageService = new JCFMessageService(userService, channelService);
 //

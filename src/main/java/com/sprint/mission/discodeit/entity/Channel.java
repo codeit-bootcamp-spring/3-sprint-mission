@@ -1,11 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class Channel {
+public class Channel implements Serializable {
     private final UUID id;
     private final long createdAt;
     private long updatedAt;
@@ -60,21 +63,28 @@ public class Channel {
     }
 
     // 필드를 수정하는 update 함수를 정의하세요.
-    public void update(String name) {
+    public Channel update(String name) {
         // TODO: add setter method for field
         this.name = name;
         this.updatedAt = Instant.now().getEpochSecond();
+        return this;
     }
 
     @Override
     public String toString() {
-        return "Channel{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", name='" + name + '\'' +
-                ", attendees=" + attendees +
-                ", messages=" + messages +
-                '}';
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                .withZone(ZoneId.systemDefault());
+
+        String createdAtFormatted = formatter.format(Instant.ofEpochSecond(createdAt));
+        String updatedAtFormatted = formatter.format(Instant.ofEpochSecond(updatedAt));
+
+        return "📦 Channel {\n" +
+                "  id         = " + id + "\n" +
+                "  createdAt  = " + createdAtFormatted + "\n" +
+                "  updatedAt  = " + updatedAtFormatted + "\n" +
+                "  name       = '" + name + "'\n" +
+                "  attendees  = " + attendees + "\n" +
+                "  messages   = " + messages + "\n" +
+                "}";
     }
 }
