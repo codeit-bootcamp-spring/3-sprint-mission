@@ -24,75 +24,74 @@ public class JCFMessageService  {
     private final ChannelService channelService;
     private final Map<UUID,List<Message>> data;
 
-
     public JCFMessageService(ChannelService channelService) {
         this.data = new HashMap<>();
         this.channelService = channelService;
     }
-//
-//    @Override
-//    public UUID createMessage(UUID senderId, UUID channelId, String message) {
-//        List<Message> messageList = new ArrayList<>();
-//        Message newMessage = new Message(senderId, channelId, message);
-//        messageList.add(newMessage);
-//
-//        if (data.get(channelId)==null) {
-//            // 체널에 메세지가 없을 때
-//            data.put(channelId, messageList);
-//        } else {
-//            // 채널에 메세지가 있을 때
-//            data.get(channelId).add(newMessage);
-//        }
-//        channelService.addMessageInChannel(channelId, newMessage);
-//
-//        return newMessage.getId();
-//    }
-//
-//    @Override
-//    public List<Message> findAllMessages() {
-//        return data.values().stream().flatMap(List::stream).collect(Collectors.toList());
-//
-//    }
-//
-//    @Override
-//    public Message findMessageByMessageId(UUID messageId) {
-//
-//        List<Message> msgs = data.values().stream().flatMap(List::stream).collect(Collectors.toList());
-//        for (Message msg : msgs) {
-//            if (msg.getId().equals(messageId)) {
-//                return msg;
-//            }
-//        }
-//        return null;
-//    }
-//
-//    @Override
-//    public void updateMessage(UUID messageId, String newMessage) {
-//        UUID channelId = findMessageByMessageId(messageId).getChannelId();
-//        List<Message> messages = data.get(channelId);
-//
-//        for (Message message : messages) {
-//            if (message.getId().equals(messageId)) {
-//                message.setMessage(newMessage);
-//            }
-//        }
-//    }
-//
-//    @Override
-//    public void deleteMessageById(UUID messageId) {
-//        UUID channelId = findMessageByMessageId(messageId).getChannelId();
-//        List<Message> messages = data.get(channelId);
-//
-//        // 비어있는게 아니면 메세지 삭제
-//        messages.removeIf(message -> message.getId().equals(messageId));
-//
-//        // 채널에 있는 메세지 삭제
-//        channelService.deleteMessageInChannel(channelId, messageId);
-//    }
-//
-//    @Override
-//    public void deleteMessagesByChannelId(UUID channelId) {
-//        data.remove(channelId);
-//    }
+
+    @Override
+    public UUID createMessage(UUID senderId, UUID channelId, String message) {
+        List<Message> messageList = new ArrayList<>();
+        Message newMessage = new Message(senderId, channelId, message);
+        messageList.add(newMessage);
+
+        if (data.get(channelId)==null) {
+            // 체널에 메세지가 없을 때
+            data.put(channelId, messageList);
+        } else {
+            // 채널에 메세지가 있을 때
+            data.get(channelId).add(newMessage);
+        }
+        channelService.addMessageInChannel(channelId, newMessage);
+
+        return newMessage.getId();
+    }
+
+    @Override
+    public List<Message> findAllMessages() {
+        return data.values().stream().flatMap(List::stream).collect(Collectors.toList());
+
+    }
+
+    @Override
+    public Message findMessageByMessageId(UUID messageId) {
+
+        List<Message> msgs = data.values().stream().flatMap(List::stream).collect(Collectors.toList());
+        for (Message msg : msgs) {
+            if (msg.getId().equals(messageId)) {
+                return msg;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void updateMessage(UUID messageId, String newMessage) {
+        UUID channelId = findMessageByMessageId(messageId).getChannelId();
+        List<Message> messages = data.get(channelId);
+
+        for (Message message : messages) {
+            if (message.getId().equals(messageId)) {
+                message.setMessage(newMessage);
+            }
+        }
+    }
+
+    @Override
+    public void deleteMessageById(UUID messageId) {
+        UUID channelId = findMessageByMessageId(messageId).getChannelId();
+        List<Message> messages = data.get(channelId);
+
+        // 비어있는게 아니면 메세지 삭제
+        messages.removeIf(message -> message.getId().equals(messageId));
+
+        // 채널에 있는 메세지 삭제
+        channelService.deleteMessageInChannel(channelId, messageId);
+    }
+
+    @Override
+    public void deleteMessagesByChannelId(UUID channelId) {
+        data.remove(channelId);
+    }
 
 }
