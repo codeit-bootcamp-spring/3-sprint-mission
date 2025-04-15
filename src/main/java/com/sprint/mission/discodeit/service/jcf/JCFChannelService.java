@@ -109,16 +109,13 @@ public class JCFChannelService implements ChannelService {
         }
     }
 
-
-
-    public void deleteMessageInChannel(UUID messageId) {
-        for (Channel channel : data) {
-            channel.getMessages().removeIf(message -> message.getId().equals(messageId));
-        }
+    @Override
+    public void deleteMessageInChannel(UUID channelId, UUID messageId) {
+        findChannelById(channelId).getMessages().removeIf(message -> message.getId().equals(messageId));
     }
 
     @Override
-    public void addUserInChannel(UUID userId, UUID channelId) {
+    public void addUserInChannel(UUID channelId, UUID userId) {
         for (Channel channel : data) {
             if (channel.getId().equals(channelId)) {
                 List<UUID> usersIds = channel.getUsersIds();

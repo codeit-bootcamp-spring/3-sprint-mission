@@ -33,7 +33,6 @@ import java.util.UUID;
 
     void addMessageInChannel(UUID channelId, Message message);
 
-    void deleteMessageInChannel(UUID messageId);
-
-    void addUserInChannel(UUID userId, UUID channelId);
+    void deleteMessageInChannel(UUID channelId,UUID messageId);
+    void addUserInChannel(UUID channelId, UUID userId);
 }

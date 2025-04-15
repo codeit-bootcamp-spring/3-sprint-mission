@@ -84,11 +84,10 @@ public class JCFMessageService implements MessageService {
         List<Message> messages = data.get(channelId);
 
         // 비어있는게 아니면 메세지 삭제
-        if(!messages.isEmpty()){
-            messages.removeIf(message -> message.getId().equals(messageId));
-        }
+        messages.removeIf(message -> message.getId().equals(messageId));
+
         // 채널에 있는 메세지 삭제
-        channelService.deleteMessageInChannel(messageId);
+        channelService.deleteMessageInChannel(channelId, messageId);
     }
 
     @Override
