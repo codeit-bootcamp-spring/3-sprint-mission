@@ -18,7 +18,7 @@ import java.util.UUID;
  * 2025. 4. 14.        doungukkim       최초 생성
  */
 public class FilePathUtil {
-    private static final String TO_FILES = "/Users/doungukkim/Desktop/workspace/Codit_Sprint_workspace/codit-organization/some/path/3-sprint-mission/src/main/java/com/sprint/mission/discodeit/files/";
+    private static final String TO_FILES = "/Users/doungukkim/Desktop/workspace/Codit_Sprint_workspace/codit-organization/some/path/3-sprint-mission/src/main/java/com/sprint/mission/discodeit/data/";
 
     private static final Path USER_DIRECTORY = Paths.get(TO_FILES+"user");
     private static final Path CHANNEL_DIRECTORY = Paths.get(TO_FILES+"channel");
