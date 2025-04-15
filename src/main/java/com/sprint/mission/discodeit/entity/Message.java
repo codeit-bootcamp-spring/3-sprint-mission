@@ -2,57 +2,89 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.UUID;
 
-public class Message extends Common {
-	/*
-	 * # Message field
-	 *
-	 * ## Local
-	 * > 메시지가 userId, channelId를 가져서 1:N 구조
-	 * - content
-	 * - userId
-	 * - channelId
-	 *
-	 * ## Common
-	 * - id(UUID)
-	 * - createdAt(최초 생성)
-	 * - updatedAt(생성 직후?, 수정 시)
-	 */
-	private String content;
-	private final UUID userId; // 메시지 주인이 바뀌는 건 요상하니까..? 유저명이 변경돼도 id로 조회하니까 유지될 듯.
-	private final UUID channelId;  // 채널명은 바뀔 수 있겠지만, channelId는 유지될 듯?
+/**
+ * 메시지 정보 관리
+ * <p>
+ * 공통 속성(고유 아이디, 생성/수정 시간) 관리는 {@link Base} 객체에 위임하여 컴포지션 방식으로 구현한다.
+ * <ul>
+ *   <li>메시지 내용</li>
+ *   <li>생성자 id</li>
+ *   <li>채널 id</li>
+ * </ul>
+ */
+public class Message {
 
-	public Message(String content, UUID userId, UUID channelId) {
-		super();
-		this.content = content;
-		this.userId = userId;
-		this.channelId = channelId;
-	}
+  private final Base base;
+  private String content;
+  private final UUID userId;
+  private final UUID channelId;
+  private boolean deleted = false;
 
-	public String getContent() {
-		return content;
-	}
+  // 외부에서 직접 객체 생성 방지.
+  private Message(String content, UUID userId, UUID channelId) {
+    this.base = new Base();
+    this.content = content;
+    this.userId = userId;
+    this.channelId = channelId;
+  }
 
-	public void setContent(String content) {
-		this.content = content;
-	}
+  // 정적 팩토리 메서드로 명시적인 생성
+  public static Message create(String content, UUID userId, UUID channelId) {
+    return new Message(content, userId, channelId);
+  }
 
-	public UUID getUserId() {
-		return userId;
-	}
+  // 메시지 내용 관리
+  public String getContent() {
+    return deleted ? "삭제된 메시지입니다." : content;
+  }
 
-	public UUID getChannelId() {
-		return channelId;
-	}
+  public void updateContent(String content) {
+    if (!deleted) {
+      this.content = content;
+      base.setUpdatedAt();
+    }
+  }
 
-	@Override
-	public String toString() {
-		return "Message{" +
-				"content='" + getContent() + '\'' +
-				", id='" + getId() + '\'' +
-				", userId='" + getUserId() + '\'' +
-				", channelId='" + getChannelId() + '\'' +
-				", createdAt='" + getCreatedAt() + '\'' +
-				", updatedAt='" + getUpdatedAt() + '\'' +
-				'}';
-	}
+  public boolean isDeleted() {
+    return deleted;
+  }
+
+  public void delete() {
+    if (!deleted) {
+      deleted = true;
+      base.setUpdatedAt();
+    }
+  }
+
+  // Base 위임 메서드
+  public UUID getId() {
+    return base.getId();
+  }
+
+  public long getCreatedAt() {
+    return base.getCreatedAt();
+  }
+
+  public long getUpdatedAt() {
+    return base.getUpdatedAt();
+  }
+
+  // 참조 정보 getter
+  public UUID getUserId() {
+    return userId;
+  }
+
+  public UUID getChannelId() {
+    return channelId;
+  }
+
+  @Override
+  public String toString() {
+    return "Message{" +
+        "content='" + content + '\'' +
+        ", userId=" + userId +
+        ", channelId=" + channelId +
+        ", id=" + getId() +
+        '}';
+  }
 }

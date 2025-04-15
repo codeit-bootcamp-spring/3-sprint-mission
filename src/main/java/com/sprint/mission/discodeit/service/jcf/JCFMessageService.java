@@ -2,119 +2,106 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
-
-import java.util.HashMap;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.jcf.JCFChannelService.ChannelNotFoundException;
+import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotFoundException;
+import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotParticipantException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class JCFMessageService implements MessageService {
-	// 메시지 리스트
-	// HashMap은 순서를 보장하지 않는다.
-	private final Map<UUID, Message> data = new HashMap<>();
-	private final JCFUserService userService;
-	private final JCFChannelService channelService;
 
-	// 생성자
-	public JCFMessageService(JCFUserService userService, JCFChannelService channelService) {
-		this.userService = userService;
-		this.channelService = channelService;
-	}
+  private final List<Message> messagesRepository = new ArrayList<>();
+  private final UserService userService;
+  private final ChannelService channelService;
 
-	// 등록
-	@Override
-	public Message create(Message message) {
-		try {
-			// 유저 존재 여부 확인
-			if(userService.read(message.getUserId())==null) {
-				throw new IllegalStateException("유저를 찾을 수 없음: " + message.getUserId());
-			}
+  public JCFMessageService(UserService userService, ChannelService channelService) {
+    this.userService = userService;
+    this.channelService = channelService;
+  }
 
-			// 채널 존재 여부 확인
-			Channel channel = channelService.read(message.getChannelId());
-			if(channel == null) {
-				throw new IllegalStateException("채널을 찾을 수 없음: " + message.getChannelId());
-			}
+  @Override
+  public Message createMessage(String content, UUID userId, UUID channelId) {
+    User user = userService.getUserById(userId)
+        .orElseThrow(() -> new UserNotFoundException(userId));
+    Channel channel = channelService.getChannelById(channelId)
+        .orElseThrow(() -> new ChannelNotFoundException(channelId));
 
-			// 유저가 채널에 참여 중인지 확인
-			boolean isNotParticipant = channel.getParticipants().stream()
-												//.peek(user -> System.out.println("create > isNotParticipant > peek - 참여자 ID: " + user.getId())) // 중간 값 출력 테스트
-												.noneMatch(user -> {
-													// 일치하는 참여자가 없다면 true
-													//System.out.println("participant userId: " + user.getId() + " | 메시지 생성 시 userId: " + message.getUserId());
-													return user.getId().equals(message.getUserId());
-												});
-			if(isNotParticipant) {
-				throw new IllegalStateException("채널 참여자가 아닙니다.");
-			}
+    boolean isNotParticipant = channel.getParticipants().stream()
+        .noneMatch(p -> p.getId().equals(userId));
 
-			data.put(message.getId(), message);
-			return data.get(message.getId());
-		} catch (Exception e) {
-			System.out.println("Unexptexted error: " + e.getMessage());
-			return null;
-		}
-	}
+    if (isNotParticipant) {
+      throw new UserNotParticipantException();
+    }
 
-	// 단건 조회
-	@Override
-	public Message read(UUID uuid) {
-		return data.get(uuid);
-	};
+    Message message = Message.create(content, userId, channelId);
+    messagesRepository.add(message);
+    return message;
+  }
 
-	// 내용을 포함하는 메시지 조회
-	@Override
-	public List<Message> readByContent(String content) {
-		// data에서 content를 포함하는 결과를 담아서 리턴
-		return data.values().stream() // Map의 User 객체들을 Stream으로 변환
-				// 내용이 null이 아니고, content를 포함하는 것만
-				.filter(m -> m.getContent() != null && m.getContent().contains(content))
-				.collect(Collectors.toList()); // List로 반환
-	}
+  @Override
+  public Optional<Message> getMessageById(UUID id) {
+    return findMessageById(id);
+  }
 
-	// 특정 유저의 메시지 조회
-	@Override
-	public List<Message> readByUserId(UUID userId) {
-		// data에서 userId가 일치하는 결과를 리턴
-		return data.values().stream() // Map의 User 객체들을 Stream으로 변환
-				.filter(m -> m.getUserId().equals(userId))
-				.collect(Collectors.toList()); // List로 반환
-	}
+  @Override
+  public List<Message> searchMessages(UUID channelId, UUID userId, String content) {
+    return messagesRepository.stream()
+        .filter(message -> !message.isDeleted())
+        .filter(message ->
+            (channelId == null || message.getChannelId().equals(channelId)) &&
+                (userId == null || message.getUserId().equals(userId)) &&
+                (content == null || message.getContent().contains(content))
+        )
+        .sorted(Comparator.comparingLong(Message::getCreatedAt))
+        .collect(Collectors.toList());
+  }
 
-	// 특정 채널의 메시지 조회
-	@Override
-	public List<Message> readByChannelId(UUID channelId) {
-		// data에서 channelId가 일치하는 결과를 리턴
-		return data.values().stream() // Map의 User 객체들을 Stream으로 변환
-				.filter(m -> m.getChannelId().equals(channelId))
-				.collect(Collectors.toList()); // List로 반환
-	}
+  @Override
+  public List<Message> getChannelMessages(UUID channelId) {
+    return messagesRepository.stream()
+        .filter(m -> !m.isDeleted())
+        .filter(m -> m.getChannelId().equals(channelId))
+        .sorted(Comparator.comparingLong(Message::getCreatedAt))
+        .collect(Collectors.toList());
+  }
 
-	// 특정 채널 && 특정 유저의 메시지 조회
-	@Override
-	public List<Message> readByChannelIdAndUserId(UUID channelId, UUID userId) {
-		// data에서 channelId와 userId가 동시에 일치하는 결과를 리턴
-		return data.values().stream() // Map의 User 객체들을 Stream으로 변환
-				.filter(m -> m.getChannelId().equals(channelId) && m.getUserId().equals(userId))
-				.collect(Collectors.toList()); // List로 반환
-	}
+  @Override
+  public Optional<Message> updateMessageContent(UUID id, String content) {
+    return findMessageById(id)
+        .map(message -> {
+          message.updateContent(content);
+          return message;
+        });
+  }
 
-	// 전체 조회?
-	// List<Message> readAll();
+  @Override
+  public Optional<Message> deleteMessage(UUID id) {
+    return findMessageById(id)
+        .filter(message -> !message.isDeleted())
+        .map(message -> {
+          message.delete();
+          return message;
+        });
+  }
 
-	// 수정
-	@Override
-	public Message update(UUID uuid, String content) {
-		Message target = data.get(uuid);
-		target.setContent(content);
-		return target;
-	}
+  private Optional<Message> findMessageById(UUID id) {
+    return messagesRepository.stream()
+        .filter(m -> m.getId().equals(id))
+        .findFirst();
+  }
 
-	// 삭제
-	@Override
-	public void delete(UUID uuid) {
-		data.remove(uuid);
-	};
+  public static class MessageNotFoundException extends RuntimeException {
+
+    public MessageNotFoundException(UUID messageId) {
+      super("메시지를 찾을 수 없음: " + messageId);
+    }
+  }
 }
