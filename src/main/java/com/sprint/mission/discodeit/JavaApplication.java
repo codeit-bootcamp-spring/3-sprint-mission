@@ -43,7 +43,7 @@ public class JavaApplication {
         //수정
         System.out.println("============== 수정 테스트 ==============");
         Channel updateChannel = new Channel("수정채널", null);
-        jcfChannelService.updateById(channel1.getId(),updateChannel);
+        jcfChannelService.update(channel1.getId(),updateChannel);
 
         //수정된 데이터 조회
         jcfChannelService.readById(channel1.getId());
