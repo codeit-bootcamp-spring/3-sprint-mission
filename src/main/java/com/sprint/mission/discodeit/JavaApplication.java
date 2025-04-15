@@ -2,6 +2,9 @@ package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.jcf.JCFChannelService;
+import com.sprint.mission.discodeit.jcf.JCFMessageService;
+import com.sprint.mission.discodeit.jcf.JCFUserService;
 import com.sprint.mission.discodeit.control.ChannelControl;
 import com.sprint.mission.discodeit.control.MessageControl;
 import com.sprint.mission.discodeit.control.UserControl;
@@ -10,17 +13,24 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class JavaApplication {
+    public static final JCFUserService userService = new JCFUserService();
+    public static final JCFMessageService messageService = new JCFMessageService();
+    public static final JCFChannelService channelService = new JCFChannelService();
+
     public static final Scanner scanner = new Scanner(System.in);
-    public static User currentUser;
-    public static Channel currentChannel;
+    public static final ThreadLocal<User> nowUser = new ThreadLocal<>();
+    public static final ThreadLocal<Channel> nowChannel = new ThreadLocal<>();
 
     public static void main(String[] args) {
-        // 0. 초기 사용자 인증
-        currentUser = UserControl.verifyUser();
-        // 0_1. intro 메세지
+        // 0. intro 메세지
         System.out.println(" ▶ discodeit 메세지 서비스에 연결되었습니다.");
-        // 1. mainmenu 호출
+        // 0_1. 초기 사용자 인증
+        nowUser.set(UserControl.verifyUser());
+        // 1. mainmenu 호출.
         menuMain();
+        nowUser.remove();
+        nowChannel.remove();
+
             //// <<메뉴 트리>>
            ////  메인메뉴 ┬ 1. 채널입장 (채널상 메세지 관리)   ||  메서드 : control.menuMessageMng()
            ////          │    ├ 1_1 메세지 작성          ok
@@ -63,6 +73,21 @@ public class JavaApplication {
         return inputNum;
 }
 
+    public static User verifyUser(){ // 사용자명 입력 >> 없는 사용자 : 사용자 생성 / 있는 사용자 : 이름으로 확인, ID연결
+        System.out.print(" ▶ 사용자명을 입력해 주세요 : ");
+        String username = scanner.nextLine();
+        User user = userService.findUserByName(username);
+        if (user != null) {
+            System.out.println("[" + user.getName() + "] 님 환영합니다." + ", ID: " + user.getId());
+            return user;
+        } else {
+            System.out.println("\n ▶ 존재하지 않는 사용자입니다. 신규 사용자로 등록합니다.");
+            User newUser = userService.createUser(username);
+            System.out.println("\n ▶ 환영합니다 [" + newUser.getName() + "] 님, 새로운 ID가 발급되였습니다.         신규 사용자 UUID : " + newUser.getId());
+            return newUser;
+        }
+    }
+
 
     public static void menuMain(){    // 메인 메뉴 call 메서드. 각 세부 메뉴로 접근하기 위함.
         while (true) {
@@ -77,14 +102,14 @@ public class JavaApplication {
 
             switch (choice) {
                 case 1:         // 채널 입장 : 메세지 관리 메서드 호출
-                    currentChannel = ChannelControl.verifyChannel();
-                    MessageControl.menuMessageMng(currentUser,currentChannel);
+                    nowChannel.set(ChannelControl.joinChannel());
+                    MessageControl.menuMessageMng(nowUser.get(),nowChannel.get());
                     break;
                 case 2:
-                    ChannelControl.menuChannelMng(currentUser);
+                    ChannelControl.menuChannelMng(nowUser.get());
                     break;
                 case 3:         // 사용자 관리 : 사용자 관리 메서드 호출
-                    UserControl.menuUserMng(currentUser);
+                    UserControl.menuUserMng(nowUser.get());
                     break;
                 case 4:
                     System.out.println(" ▶ 프로그램을 종료합니다.");
@@ -92,7 +117,9 @@ public class JavaApplication {
                 default:
                     System.out.println(" ▶ 잘못된 접근입니다. 다시 입력해 주세요");
             }
-            if (choice == 4) {break;}
+            if (choice == 4) {
+                break;
+            }
         }
     }
 }

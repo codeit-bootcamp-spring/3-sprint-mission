@@ -2,28 +2,13 @@ package com.sprint.mission.discodeit.control;
 
 import com.sprint.mission.discodeit.JavaApplication;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.jcf.JCFUserService;
 
 import java.util.InputMismatchException;
 
 public class UserControl extends JavaApplication {
-    private static final JCFUserService userService = new JCFUserService();
+
     // 어플리케이션 최초 실행시 User 신규여부 판별 메서드. 있으면 있는 유저로 로그인 / 없으면 새 유저 생성
-    public static User verifyUser(){ // 사용자명 입력 >> 없는 사용자 : 사용자 생성 / 있는 사용자 : 이름으로 확인, ID연결
-        System.out.print(" ▶ 사용자명을 입력해 주세요 : ");
-        String username = scanner.nextLine();
-        User user = userService.findUserByName(username);
-        if (user != null) {
-            System.out.println("[" + user.getName() + "] 님 환영합니다." + ", ID: " + user.getId());
-            return user;
-        } else {
-            System.out.println("\n ▶ 존재하지 않는 사용자입니다. 신규 사용자로 등록합니다.");
-            User newUser = userService.createUser(username);
-            System.out.println("\n ▶ 환영합니다 [" + newUser.getName() + "] 님, 새로운 ID가 발급되였습니다.\n 신규 사용자 UUID : " + newUser.getId());
-            return newUser;
-        }
-    }
-    // 1_3 사용자 관리 세부메뉴 메서드
+// 1_3 사용자 관리 세부메뉴 메서드
     public static void menuUserMng(User currentUser){       // 1_4 사용자 관리 내부메뉴 메서드
         while (true) {
             System.out.println(" *******************************************************\n"
@@ -54,7 +39,8 @@ public class UserControl extends JavaApplication {
                         String username = scanner.nextLine();
                         if (username.length() == 0) {   // 입력값이 없는경우 상위 메뉴로 이동
                             System.out.println(" ▶ 입력값이 없습니다. 사용자 생성을 취소합니다.\n");
-                            break;}
+                            break;
+                        }
                         User user = userService.findUserByName(username);
                         if (user == null) {                 // 중복 유저명 체크하여 중복유저가 없는경우 사용자 생성
                             User newUser = userService.createUser(username);
@@ -85,11 +71,12 @@ public class UserControl extends JavaApplication {
                         String newName = scanner.nextLine();
                         if(newName.length() ==0) {// 사용자 이름 입력값이 없는경우 상위메뉴로 이동
                             System.out.println(" ▶ 새 이름을 입력하지 않았습니다. 사용자 이름 변경을 취소합니다.");
-                            break;}
+                            break;
+                        }
                         User user = userService.findUserByName(newName);
                         if(user != null){             // 중복값 존재시 재입력
                             System.out.print(" ▶ 이미 존재하는 이름입니다. 다시 입력해 주세요.\n >>> ");
-                        } else{                       // 중복값 미확인시 유저명 변경
+                        } else {                       // 중복값 미확인시 유저명 변경
                             userService.updateUserName(currentUser, newName);
                             break;
                         }
@@ -116,10 +103,10 @@ public class UserControl extends JavaApplication {
                         if (deleteConfirm.length() == 0) {
                             System.out.println(" ▶ 잘못된 입력입니다. 이전 메뉴로 돌아갑니다.");
                             break;
-                        }else if(deleteConfirm.equals("삭제")) {
+                        } else if (deleteConfirm.equals("삭제")) {
                             userService.deleteUser(deleteUser);
                             System.out.println("[" + deleteUser + "] 사용자가 삭제되었습니다.");
-                        }else{
+                        } else {
                             System.out.println(" ▶ 잘못된 입력입니다. 사용자 삭제를 취소합니다.");
                         }
                     }
@@ -157,8 +144,9 @@ public class UserControl extends JavaApplication {
                 default:                   // 1_4 세부메뉴 입력예외처리
                     System.out.println(" ▶ 잘못된 접근입니다. 다시 입력해 주세요");
             }
-            if (choice == 7) {break;}
+            if (choice == 7) {
+                break;
+            }
         }
     }   // 1_3 사용자 관리 세부메뉴 메서드
-
 }

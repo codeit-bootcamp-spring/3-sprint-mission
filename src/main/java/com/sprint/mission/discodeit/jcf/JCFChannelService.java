@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.ArrayList;
@@ -12,13 +11,13 @@ public class JCFChannelService implements ChannelService {
     private final List<Channel> channels = new ArrayList<>();
     public JCFChannelService(){
         channels.add(new Channel("ch01","default Channel","관리자",1744036548250L,1744036548250L));
-
     }
+
     // 채널 생성 메서드
     @Override
-    public Channel addChannel(String channelName, String channelDesc, User user){
+    public Channel addChannel(String channelName, String channelDesc, String createrName) {
         long now = System.currentTimeMillis();
-        Channel channel = new Channel(channelName,channelDesc,user.getName(),now,now);
+        Channel channel = new Channel(channelName,channelDesc,createrName,now,now);
         channels.add(channel);
         System.out.print("\n ▶ [새로운 채널 생성완료]");
         System.out.println(" ▶ 채널명 : " + channel.getChannelName() + "     ▶ 생성시간 : " + channel.getCreatedAt());
@@ -48,10 +47,6 @@ public class JCFChannelService implements ChannelService {
         System.out.println("");
     }
 
-    @Override
-    public List<Channel> getAllChannels() {
-        return List.of();
-    }
 
     @Override // 이름으로 채널 검색 메서드. 채널객체를 return
     public Channel findChannelByName(String name){

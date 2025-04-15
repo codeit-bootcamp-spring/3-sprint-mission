@@ -3,13 +3,11 @@ package com.sprint.mission.discodeit.control;
 import com.sprint.mission.discodeit.JavaApplication;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.jcf.JCFChannelService;
 
 public class ChannelControl extends JavaApplication {
-    private static final JCFChannelService channelService = new JCFChannelService();
 
-    public static Channel verifyChannel(){  // 채널입장시 Channel 신규개설 판별 메서드. 있으면 있는 채널에 참가 / 없으면 없는채널 생성
-        System.out.print(" ▶ 채널명을 입력해 주세요 : ");
+    public static Channel joinChannel(){  // 채널입장시 Channel 신규개설 판별 메서드. 있으면 있는 채널에 참가 / 없으면 없는채널 생성
+                System.out.print(" ▶ 채널명을 입력해 주세요 : ");
         String chanName = scanner.nextLine();
         Channel channel = channelService.findChannelByName(chanName);
         if (channel != null) {
@@ -19,7 +17,7 @@ public class ChannelControl extends JavaApplication {
             System.out.println("\n ▶ 존재하지 않는 채널입니다. 새로운 채널을 개설합니다.");
             System.out.println("\n ▶ 새로운 채널의 설명을 입력해주세요.");
             String chanDesc = scanner.nextLine();
-            Channel newChannel = channelService.addChannel(chanName,chanDesc,currentUser);
+            Channel newChannel = channelService.addChannel(chanName,chanDesc,nowUser.get().getName());
             System.out.println(" ▶ [" + newChannel.getChannelName() + "] 채널에 접속합니다." + "       채널 ID: " + newChannel.getId());
             return newChannel;
         }
@@ -47,10 +45,12 @@ public class ChannelControl extends JavaApplication {
                         if (channel == null) {
                             System.out.println("\n ▶ 새로운 채널의 설명을 입력해주세요.");
                             String chanDesc = scanner.nextLine();
-                            Channel newChan = channelService.addChannel(chanName, chanDesc, currentUser);
+                            Channel newChan = channelService.addChannel(chanName, chanDesc, currentUser.getName());
                             System.out.println("\n ▶ "+newChan.getChannelName()+" 채널 생성에 성공하였습니다.");
                             break;
-                        } else {System.out.println("\n ▶ 이미 존재하는 채널입니다. 다른 이름을 입력해주세요.");}
+                        } else {
+                            System.out.println("\n ▶ 이미 존재하는 채널입니다. 다른 이름을 입력해주세요.");
+                        }
                     }
                     break;
                 case 2:                    // 2_2 채널 이름으로 검색하여 개별 채널 조회
@@ -82,12 +82,12 @@ public class ChannelControl extends JavaApplication {
                                     System.out.print(" >> ");
                                     newName = scanner.nextLine();
                                     if(channelService.findChannelByName(newName) == null){
-                                    if (newName.length() != 0) {
-                                        toRenameChannel.setChannelName(newName);
-                                        break;
-                                    } else {
-                                    System.out.println(" ▶ 잘못된 입력입니다. 다시 입력해 주세요.");
-                                    }
+                                        if (newName.length() != 0) {
+                                            toRenameChannel.setChannelName(newName);
+                                            break;
+                                        } else {
+                                            System.out.println(" ▶ 잘못된 입력입니다. 다시 입력해 주세요.");
+                                        }
                                     } else {
                                         System.out.println(" ▶ 이미 존재하는 채널명입니다. 다시 입력해 주세요.");
                                     }
@@ -146,7 +146,9 @@ public class ChannelControl extends JavaApplication {
                 default:                   // 세부메뉴 입력예외처리
                     System.out.println(" ▶ 잘못된 접근입니다. 다시 입력해 주세요");
             }
-            if (choice == 6) {break;}
+            if (choice == 6) {
+                break;
+            }
         }
 
 

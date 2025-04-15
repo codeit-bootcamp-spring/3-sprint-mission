@@ -1,12 +1,13 @@
 package com.sprint.mission.discodeit.entity;
-
 import com.sprint.mission.discodeit.jcf.JCFMessageService;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.UUID;
 
 
-public class Channel {
+public class Channel implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final UUID id = UUID.randomUUID();
     private long createdAt  = System.currentTimeMillis();
     private long updatedAt;
@@ -14,7 +15,6 @@ public class Channel {
     private String channelDescription;
     private String channelCreater;
 
-    private JCFMessageService messageService;
 
 
     public Channel(String channelName, String channelDescription, String channelCreater, long createdAt, long updatedAt) {
@@ -23,28 +23,43 @@ public class Channel {
         this.channelCreater = channelCreater;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.messageService = new JCFMessageService();
+
+        JCFMessageService.setDefaultBoard(this);
     }
 
-    public UUID getId() {return id;}
+    public UUID getId() {
+        return id;
+    }
     public String getCreatedAt() {
         String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(createdAt);
-        return formatedTime;}
+        return formatedTime;
+    }
 
     public String getUpdatedAt() {
         String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(updatedAt);
-        return formatedTime;}
-    public void setUpdatedAt(long updatedAt) {this.updatedAt = updatedAt;}
+        return formatedTime;
+    }
+    public void setUpdatedAt(long updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
-    public String getChannelName() {return channelName;}
-    public void setChannelName(String channelName) {this.channelName = channelName;}
+    public String getChannelName() {
+        return channelName;
+    }
+    public void setChannelName(String channelName) {
+        this.channelName = channelName;
+    }
 
-    public String getChannelDescription() {return channelDescription;}
-    public void setChannelDescription(String channelDescription) {this.channelDescription = channelDescription;}
+    public String getChannelDescription() {
+        return channelDescription;
+    }
+    public void setChannelDescription(String channelDescription) {
+        this.channelDescription = channelDescription;
+    }
 
-    public String getChannelCreater() {return channelCreater;}
-
-    public JCFMessageService messageService() {return messageService;}
+    public String getChannelCreater() {
+        return channelCreater;
+    }
     @Override
     public String toString() {
         String result;

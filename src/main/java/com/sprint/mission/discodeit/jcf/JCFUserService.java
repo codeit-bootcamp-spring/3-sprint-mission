@@ -70,5 +70,4 @@ public class JCFUserService implements UserService {
     public List<User> getUserslist() {
         return users;
     }
-
 }
