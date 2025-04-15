@@ -3,14 +3,11 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -264,8 +261,8 @@ public class JavaApplication {
         User fromUser5 = userService.readUser(user5.getUserId());
 
 
-        Channel toChannel = channelService.readChannelByName("CodeItBootCamp");
-        Channel toChannel2 = channelService.readChannelByName("Prayer");
+        List<Channel> toChannel = channelService.readChannelByName("CodeItBootCamp");
+        List<Channel> toChannel2 = channelService.readChannelByName("Prayer");
 
 
         // 1. 등록
@@ -341,4 +338,6 @@ public class JavaApplication {
         System.out.println("[ 메세지 삭제 후 전체 메세지 로그 ]");
         messageService.readAllMessages().forEach(allMessage -> System.out.println(allMessage.getMessageContent()));
     }
+
+
 }

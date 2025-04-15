@@ -32,8 +32,10 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel readChannelByName(String name) {
-        return data.get(name);
+    public List<Channel> readChannelByName(String name) {
+        return data.values().stream()
+                .filter(channel -> channel.getChannelName().equalsIgnoreCase(name))
+                .collect(Collectors.toList());
     }
 
     @Override

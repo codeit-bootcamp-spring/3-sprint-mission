@@ -1,15 +1,17 @@
 package com.sprint.mission.discodeit.entity;
 
-// 활동 상태는 login & logout 메서드 생성해서 변환 작업 (Service)
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
+import static java.lang.System.in;
+
 // 사용자 << 공통 필드를 가진 Base 추상화 클래스 상속
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     // 필드 정의
     private final UUID userId;                            // 사용자 고유 식별 번호
     private final long createdAt;                        // 생성일
@@ -19,7 +21,7 @@ public class User {
     private String email;                            // 주소
     private String phoneNumber;                     // 연락처
     private String statusMessage;                  // 상태 메세지
-    private boolean activeStatus;                 // 활동 상태 ( on / off ) | 기본 off
+    private boolean activeStatus;                 // 활동 상태 ( on / off )
 
     // 생성자
 
@@ -137,5 +139,6 @@ public class User {
         SimpleDateFormat uut = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return uut.format(dateU);
     }
+
 
 }

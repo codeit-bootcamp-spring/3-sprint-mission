@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -7,7 +8,9 @@ import java.util.List;
 import java.util.UUID;
 
 // 채널
-public class Channel{
+public class Channel implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     // 필드 정의
     private final UUID channelId;
     private final long createdAt;

@@ -13,7 +13,7 @@ public interface ChannelService {
 
     Channel readChannel(UUID id);                        // 특정 채널 조회
 
-    Channel readChannelByName(String name);
+    List<Channel> readChannelByName(String name);
 
     List<Channel> readChannelByType(String type);              // 특정 이름의 채널 조회
 

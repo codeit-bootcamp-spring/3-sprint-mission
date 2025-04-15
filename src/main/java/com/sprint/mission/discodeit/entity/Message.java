@@ -1,21 +1,25 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
-public class Message {
+public class Message implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     // 필드 정의
     private final UUID messageId;
     private final long createdAt;
     private long updatedAt;
     private User fromUser;                        // 전송할 대상(작성자)
-    private Channel toChannel;                  // 대상 채팅방
+    private List<Channel> toChannel;                  // 대상 채팅방
     private String messageContent;            // 메세지 내용
     private String messageType;             // 메세지 타입(이모지 / 텍스트 등)
 
     // 생성자
-    public Message(String messageContent, String messageType, User fromUser, Channel toChannel, long updatedAt) {
+    public Message(String messageContent, String messageType, User fromUser, List<Channel> toChannel, long updatedAt) {
         this.messageId = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.messageContent = messageContent;
@@ -43,7 +47,7 @@ public class Message {
         return fromUser;
     }
 
-    public Channel getToChannel() {
+    public List<Channel> getToChannel() {
         return toChannel;
     }
 
@@ -62,7 +66,7 @@ public class Message {
         this.fromUser = fromUser;
     }
 
-    public void setToChannel(Channel toChannel) {
+    public void setToChannel(List<Channel> toChannel) {
         this.toChannel = toChannel;
     }
 
