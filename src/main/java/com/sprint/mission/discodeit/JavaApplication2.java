@@ -12,7 +12,7 @@ import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import java.util.*;
 
-public class JavaApplication {
+public class JavaApplication2 {
     static void userCRUDTest(UserService userService) { // UserService 객체를 파라미터로 받음
         // User 생성
         User user1 = userService.createUser("111111-2222222", "Alice", 20, "alice@gmail.com");

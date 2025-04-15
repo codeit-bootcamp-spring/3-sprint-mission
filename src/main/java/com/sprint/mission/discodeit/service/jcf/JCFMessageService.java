@@ -1,64 +1,84 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class JCFMessageService implements MessageService { // 왜 오류가 뜨는지도 모르겠음 ㅠㅠ 그냥 안돼 그냥 안돼 그냥 안돼
-    private final Map<UUID, Message> data = new HashMap<>();;
+public class JCFMessageService implements MessageService {
+    private final Map<UUID, Message> data;
 
-    public JCFMessageService() {} // 문제가 해결이 안돼 ㅠㅠ
+    private final ChannelService channelService;
+    private final UserService userService;
+
+    public JCFMessageService(ChannelService channelService, UserService userService) {
+        this.data = new HashMap<>();
+        this.channelService = channelService;
+        this.userService = userService;
+    }
+
 
     @Override
-    public void createMessage(Message message) {
+    public Message createMessage(String content, UUID channelId, UUID authorId) {
         // 조건문으로 message를 받게 해야 하나? 그냥 보내면 받아야 하잖아
-        this.data.put(message.getId(), message);
-    }
-
-    @Override
-    public Message readMessage(UUID id) { // Q1. 왜 abstract 선언해야해? String content를 불러와야 하나?
-        for (Message msg : data) {
-            if (msg.getId().equals(id)) {
-                return msg;
-            }
+//        Message message = new Message(Content, channelId, authorId);
+//        this.data.put(message.getId(), message);
+//
+//        return message;
+        try {
+            channelService.readChannel(channelId);
+            userService.readUser(authorId);
+        } catch (Exception e) {
+            throw e;
         }
-        return null;
+
+        Message message = new Message(content, channelId, authorId);
+
+        return message;
     }
 
     @Override
-    public List<Message> readMessagesByChannelId(UUID channelId) {
-        return data.values().stream()
-                .filter(message -> message.getChannel().getId().equals(channelId))
-                .collect(Collectors.toList());
+    public Message readMessage(UUID id) {
+        Message messageNullable = this.data.get(id);
+
+        return Optional.ofNullable(messageNullable)
+                .orElseThrow(() -> new NoSuchElementException(id + "ID를 가진 메시지를 찾을 수 없습니다."));
     }
+
+//    @Override
+//    public List<Message> readMessagesByChannelId(UUID channelId) {
+//        return data.values().stream()
+//                .filter(message -> message.getChannelId().equals(channelId))
+//                .collect(Collectors.toList());
+//    }
 
 
     @Override
     public List<Message> readAllMessages() {
-        return new ArrayList<>(data.values()); }
-
+        return this.data.values()
+                .stream()
+                .toList();
     }
+
+
     @Override
-    public Message updateMessage(UUID existId, String newContent) { // 왜 data를 못 받지?
-        Message existContent = data.get(existId); // 해당 id에 맞는 message 가져옴
+    public Message updateMessage(UUID id, String newContent) { // 왜 data를 못 받지?
+        Message messageNullable = this.data.get(id);
+        Message message = Optional.ofNullable(messageNullable)
+                .orElseThrow(() -> new NoSuchElementException(id + "ID를 가진 메시지를 찾을 수 없습니다."));
+        message.updateMessage(newContent);
 
-
-        if (existContent == null) {
-            return null; // 해당 id를 가진 existContent 없음
-        }
-
-        if (newContent != null && !newContent.isBlank()) {
-            existContent.updateContent(newContent);
-            data.put(existId, existContent); // 이게 필요해?
-        }
-
-        return data.get(existId);
+        return message;
     }
 
     @Override
     public void deleteMessage(UUID id) {
+        if (!this.data.containsKey(id)) {
+            throw new NoSuchElementException(id + "ID를 가진 사용자를 찾을 수 없습니다.");
+        }
         this.data.remove(id);
     }
 }

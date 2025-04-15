@@ -1,21 +1,17 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
-public class Base {
-    private UUID id; // Channel CRUD를 위해 UUID가 필요한가?
-    // @CreatedDate 는 Spring 전용
+public class Base implements Serializable {
+    private UUID id;
     private Long createdAt;
-    // @CreatedDate
-    private Long updatedAt;
+    private Long updatedAt; // private를 안해도 되는가?
 
     public Base() {
-    }
-
-    public Base(UUID id, Long createdAt, Long updatedAt) {
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = createdAt;
+        this.createdAt = Instant.now().getEpochSecond();
     }
 
     public UUID getId() { // 이게 왜 이렇게 문제가 많이 일어나지
@@ -30,6 +26,5 @@ public class Base {
         return updatedAt;
     }
 
-    public void updateUpdatedAt() {
-        this.updatedAt = System.currentTimeMillis();
+    public void updateUpdatedAt(Long updatedAt) {}
 }
