@@ -14,10 +14,12 @@ public class JavaApplication {
         Scanner scanner = new Scanner(System.in);
         JCFUserService userService = new JCFUserService();
         JCFMessageService messageService = new JCFMessageService(userService, null);
-        JCFChannelService channelService = new JCFChannelService(messageService, userService);
+        JCFChannelService channelService = new JCFChannelService();
 
         messageService.setChannelService(channelService);
-        userService.addChannelService(channelService);
+        userService.setChannelService(channelService);
+
+        ChannelApplication channelApplication = new ChannelApplication(channelService, userService, messageService);
 
         while (true) {
             System.out.println("\n===== MAIN MENU =====");
@@ -35,10 +37,10 @@ public class JavaApplication {
                         UserMenu.manageUsers(scanner, userService);
                         break;
                     case "2":
-                        ChannelMenu.manageChannels(scanner, channelService, userService);
+                        ChannelMenu.manageChannels(scanner, channelService, channelApplication);
                         break;
                     case "3":
-                        MessageMenu.manageMessages(scanner, messageService, userService, channelService);
+                        MessageMenu.manageMessages(scanner, messageService);
                         break;
                     case "0":
                         System.out.println("종료합니다.");

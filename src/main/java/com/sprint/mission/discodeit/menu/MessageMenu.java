@@ -2,14 +2,12 @@ package com.sprint.mission.discodeit.menu;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 
 import java.util.Scanner;
 import java.util.UUID;
 
 public class MessageMenu {
-    public static void manageMessages(Scanner scanner, JCFMessageService messageService, JCFUserService userService, JCFChannelService channelService) {
+    public static void manageMessages(Scanner scanner, JCFMessageService messageService) {
         while (true) {
             System.out.println("\n===== MESSAGE MENU =====");
             System.out.println("1. 메시지 생성");
@@ -36,8 +34,11 @@ public class MessageMenu {
                     case "2":
                         System.out.print("메시지 ID 입력: ");
                         UUID id = UUID.fromString(scanner.nextLine());
-                        Message find = messageService.getMessage(id);
-                        System.out.println(find != null ? find : "메시지를 찾을 수 없습니다.");
+                        messageService.getMessage(id)
+                                .ifPresentOrElse(
+                                        System.out::println,
+                                        () -> System.out.println("메시지를 찾을 수 없습니다.")
+                                );
                         break;
                     case "3":
                         messageService.getAllMessages().forEach(System.out::println);

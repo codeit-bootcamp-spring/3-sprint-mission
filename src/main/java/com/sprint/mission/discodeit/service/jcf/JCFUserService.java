@@ -8,10 +8,10 @@ import java.util.*;
 
 public class JCFUserService implements UserService {
     private final Map<UUID, User> data = new HashMap<>();
-    private final Set<ChannelService> channelServiceSet = new HashSet<>();
+    private ChannelService channelService; // 복수개 필요가 없으므로 단일로 변경
 
-    public void addChannelService(ChannelService channelService) {
-        channelServiceSet.add(channelService);
+    public void setChannelService(ChannelService channelService) {
+        this.channelService = channelService;
     }
 
     @Override
@@ -21,8 +21,8 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User getUser(UUID userId) {
-        return data.get(userId);
+    public Optional<User> getUser(UUID userId) {
+        return Optional.ofNullable(data.get(userId));
     }
 
     @Override
@@ -32,18 +32,14 @@ public class JCFUserService implements UserService {
 
     @Override
     public void updateUser(UUID userId, String userName) {
-        if (data.containsKey(userId)) {
-            data.get(userId).updateUserName(userName);
-        }
+        getUser(userId).ifPresent(user -> user.updateUserName(userName));
     }
 
     @Override
     public void deleteUser(UUID userId) {
         data.remove(userId);
-        channelServiceSet.forEach(service -> {
-            service.getAllChannels().forEach(channel -> {
-                channel.getUserIds().remove(userId);
-            });
-        });
+        if (channelService != null) {
+            channelService.getAllChannels().forEach(channel -> channel.getUserIds().remove(userId));
+        }
     }
 }

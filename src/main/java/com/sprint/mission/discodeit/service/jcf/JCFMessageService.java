@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -24,8 +23,8 @@ public class JCFMessageService implements MessageService {
         return message;
     }
 
-    public Message getMessage(UUID messageId) {
-        return data.get(messageId);
+    public Optional<Message> getMessage(UUID messageId) {
+        return Optional.ofNullable(data.get(messageId));
     }
 
     public List<Message> getAllMessages() {
@@ -36,10 +35,11 @@ public class JCFMessageService implements MessageService {
         this.channelService = channelService;
     }
 
+    // update 실패 시 피드백 출력
     public void updateMessage(UUID messageId, String message) {
-        if (data.containsKey(messageId)) {
-            data.get(messageId).updateMsgContent(message);
-        }
+        getMessage(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지"))
+                .updateMsgContent(message);
     }
 
     public void deleteMessage(UUID messageId) {
@@ -47,23 +47,19 @@ public class JCFMessageService implements MessageService {
     }
 
     public Message createMessageCheck(String msgContent, UUID senderId, UUID channelId) {
-        User sender = userService.getUser(senderId);
-        if (sender == null) {
-            throw new IllegalArgumentException("존재하지 않는 유저");
-        }
+        userService.getUser(senderId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저"));
 
-        Channel channel = channelService.getChannel(channelId);
-        if (channel == null) {
-            throw new IllegalArgumentException("존재하지 않는 채널");
-        }
+        Channel channel = channelService.getChannel(channelId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널"));
 
         if(!channel.getUserIds().contains(senderId)) {
-            throw new IllegalStateException("채널에 속해있지 않은 유저");
+            throw new SecurityException("채널에 속해있지 않은 유저"); // 권한이 없는 경우이므로 SecurityException으로 수정
         }
 
         Message message = new Message(msgContent, senderId, channelId);
         Message created = createMessage(message);
-        channelService.addMessageToChannel(channelId, created.getId());
+        channelService.addMessageId(channelId, created.getId());
         return created;
     }
 }

@@ -31,8 +31,11 @@ public class UserMenu {
                     case "2":
                         System.out.print("조회할 사용자 ID 입력: ");
                         UUID id = UUID.fromString(scanner.nextLine());
-                        User find = userService.getUser(id);
-                        System.out.println(find != null ? find : "사용자를 찾을 수 없습니다.");
+                        userService.getUser(id)
+                                .ifPresentOrElse(
+                                        System.out::println,
+                                        () -> System.out.println("사용자를 찾을 수 없습니다.")
+                                );
                         break;
                     case "3":
                         userService.getAllUsers().forEach(System.out::println);
