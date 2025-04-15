@@ -1,61 +1,91 @@
 package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class FileUserService implements UserService{
-    private static final String FILE_PATH = "src/main/java/com/sprint.mission/discodeit/users.ser";
-    private final ChannelService channelService;
-    private Map<UUID,User> users;
+ private final Map<UUID, User> users;
+ private static final String fileName = "files/user.ser";
+ private final ChannelService channelService;
 
-    public FileUserService(ChannelService channelService) {
-        this.channelService = channelService;
-        this.users = new HashMap<>();
-    }
+ public FileUserService(ChannelService channelService) {
+     this.users = loadFromFile();
+     this.channelService = channelService;
+ }
+
+ // 파일에서 데이터를 읽어오는 역할
+    private Map<UUID, User> loadFromFile() {
+     File file = new File(fileName);
+
+     if(!file.exists()){
+         return new HashMap<>();
+     }
+
+     try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file)))
+     {
+         return (Map<UUID, User>) in.readObject();
+     }
+     catch(IOException | ClassNotFoundException e)
+     {
+         throw new RuntimeException("파일 로드 실패입니다 : " + e.getMessage(), e);
+     }
+ }
+
+ // 데이터를 파일에 저장하는 역할
+    private void saveToFile() {
+     try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fileName))){
+         out.writeObject(users);
+     }
+     catch (IOException e){
+         throw new RuntimeException("파일 저장 실패입니다." + e.getMessage(), e);
+     }
+ }
 
 
-@Override
+    @Override
 public User createUser(String username, UUID channelId){
-
         User user = new User(username);
         users.put(user.getId(),user);
-        //repo 생성 후 파일에 저장하는 구문추가
+        channelService.addUserToChannel(channelId, user.getId());
+        saveToFile();
         return user;
 }
 
-// readUsers랑 read는 읽어오는 역할만 하기에 파일에 저장할 일은 없는거 같음
+
+    // readUsers랑 read는 읽어오는 역할만 하기에 파일에 저장할 일은 없는거 같음
 @Override
 public Map<UUID, User> readUsers() {
         return users;
     }
 
 @Override
-public User readUser(UUID id) {
-        return users.get(id);
+public  Optional<User> readUser(UUID id) {
+        return Optional.ofNullable(users.get(id));
     }
 
 @Override
 public User updateUser(UUID id,String username) {
         User user = users.get(id);
         user.updateUserName(username);
-        //repo 생성 후 파일에 저장하는 구문추가
+        saveToFile();
         return user;
 }
 
 @Override
 public User deleteUser(UUID id) {
-        //repo 생성 후 파일에 저장하는 구문추가
-        return users.get(id);
+       saveToFile();
+       return users.remove(id);
     }
 }
+
+
+
 

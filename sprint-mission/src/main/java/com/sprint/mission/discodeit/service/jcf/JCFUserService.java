@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFUserService implements UserService {
@@ -33,8 +34,9 @@ public class JCFUserService implements UserService {
 
     // 단건
     @Override
-    public User readUser(UUID id) {
-        return data.get(id);
+    public Optional<User> readUser(UUID id) {
+
+        return Optional.ofNullable(data.get(id));
     }
 
     @Override

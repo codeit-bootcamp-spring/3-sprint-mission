@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
@@ -31,8 +32,9 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message readMessage(UUID id) {
-        return data.get(id);
+    public Optional<Message> readMessage(UUID id) {
+
+        return Optional.ofNullable(data.get(id));
     }
 
     @Override
