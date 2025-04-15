@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
@@ -25,11 +26,14 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void create(Message message,User user,Channel channel) {
-        if(channel.getMembers().contains(user)){
-            data.add(message);
-        }
-        else{
-            System.out.println("Not in channel!");
+        try {
+            if (channel.getMembers().contains(user)) {
+                data.add(message);
+            } else {
+                throw new NoSuchElementException();
+            }
+        }catch (NoSuchElementException e){
+            System.out.println("해당 채널에 존재하지 않는 사용자입니다.");
         }
     }
 
