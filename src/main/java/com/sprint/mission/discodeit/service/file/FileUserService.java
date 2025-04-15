@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.entity.User;
 
@@ -22,8 +23,9 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 14.        doungukkim       최초 생성
  */
-public class FileUserService{
+public class FileUserService implements UserService {
     FilePathUtil filePathUtil =new FilePathUtil();
+
 
 //    -------------------interface-------------------
 //    UUID registerUser(String username);
@@ -35,7 +37,7 @@ public class FileUserService{
 //    List<UUID> findChannelIdsInId(UUID userId); -NOT TESTED
 //    -------------------------------------------------
 
-//    @Override
+    @Override
     public UUID registerUser(String username) {
         User user = new User(username);
 
@@ -52,7 +54,7 @@ public class FileUserService{
     }
 
 
-//    @Override
+    @Override
     public User findUserById(UUID userId) {
         Path path = filePathUtil.getUserFilePath(userId);
         if (!Files.exists(path)) {
@@ -66,7 +68,7 @@ public class FileUserService{
     }
 
 
-//    @Override
+    @Override
     public List<User> findAllUsers() {
         Path userDirectory = filePathUtil.getUserDirectory();
         if (Files.exists(userDirectory)) {
@@ -97,7 +99,7 @@ public class FileUserService{
 
 
 
-//    @Override
+    @Override
     public void updateUsername(UUID userId,String newName) {
         Path path = filePathUtil.getUserFilePath(userId);
         User user;
@@ -123,19 +125,20 @@ public class FileUserService{
         }
     }
 
-//    @Override
+    @Override
     public void deleteUser(UUID userId){
         Path path = filePathUtil.getUserFilePath(userId);
         // 파일 확인
         try {
             Files.delete(path);
+            // ADD: DELETE USER IN CHANNEL
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     // NOT TESTED BECAUSE OF NO EXISTING CHANNELS
-    //    @Override
+    @Override
     public void addChannelInUser(UUID userId, UUID channelId) {
         Path path = filePathUtil.getUserFilePath(userId);
         User user;
@@ -161,7 +164,7 @@ public class FileUserService{
     }
 
     // METHOD NEVER TESTED BECAUSE OF NO EXISTING CHANNELS
-//    @Override
+    @Override
     public List<UUID> findChannelIdsInId(UUID userId) {
         Path path = filePathUtil.getUserFilePath(userId);
         User user;
@@ -184,46 +187,46 @@ public class FileUserService{
 
 
 
-    // original
-    public void save(User user) {
-        try (
-                FileOutputStream fos = new FileOutputStream(filePathUtil.getUserFilePath(user.getId()).toFile());
-                ObjectOutputStream oos = new ObjectOutputStream(fos)
-        ) {
-            oos.writeObject(user);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // original
-    public List<User> load() {
-        Path userDirectory = filePathUtil.getUserDirectory();
-        if (Files.exists(userDirectory)) {
-            try {
-                List<User> list = Files.list(userDirectory)
-                        .filter(path -> path.toString().endsWith(".ser"))
-                        .map(path -> {
-                            try (
-                                    FileInputStream fis = new FileInputStream(path.toFile());
-                                    ObjectInputStream ois = new ObjectInputStream(fis)
-                            ) {
-                                Object data = ois.readObject();
-                                return (User) data;
-                            } catch (IOException | ClassNotFoundException exception) {
-                                throw new RuntimeException(exception);
-                            }
-                        })
-                        .toList();
-
-                return list;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            return new ArrayList<>();
-        }
-    }
+//    // original
+//    public void save(User user) {
+//        try (
+//                FileOutputStream fos = new FileOutputStream(filePathUtil.getUserFilePath(user.getId()).toFile());
+//                ObjectOutputStream oos = new ObjectOutputStream(fos)
+//        ) {
+//            oos.writeObject(user);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+//
+//    // original
+//    public List<User> load() {
+//        Path userDirectory = filePathUtil.getUserDirectory();
+//        if (Files.exists(userDirectory)) {
+//            try {
+//                List<User> list = Files.list(userDirectory)
+//                        .filter(path -> path.toString().endsWith(".ser"))
+//                        .map(path -> {
+//                            try (
+//                                    FileInputStream fis = new FileInputStream(path.toFile());
+//                                    ObjectInputStream ois = new ObjectInputStream(fis)
+//                            ) {
+//                                Object data = ois.readObject();
+//                                return (User) data;
+//                            } catch (IOException | ClassNotFoundException exception) {
+//                                throw new RuntimeException(exception);
+//                            }
+//                        })
+//                        .toList();
+//
+//                return list;
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        } else {
+//            return new ArrayList<>();
+//        }
+//    }
 }
 
 
