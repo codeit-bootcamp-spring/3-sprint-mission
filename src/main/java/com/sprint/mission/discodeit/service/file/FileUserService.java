@@ -88,11 +88,11 @@ public class FileUserService implements UserService {
 
             Files.walk(this.databasePath).filter(Files::isRegularFile)
                     .forEach((path) -> {
-                        try {
-                            // 파일과 연결되는 스트림 생성
-                            FileInputStream fis = new FileInputStream(String.valueOf(path));
-                            // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
-                            ObjectInputStream ois = new ObjectInputStream(fis);
+                        try ( // 파일과 연결되는 스트림 생성
+                              FileInputStream fis = new FileInputStream(String.valueOf(path));
+                              // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
+                              ObjectInputStream ois = new ObjectInputStream(fis);
+                        ) {
                             User user = (User) ois.readObject();
                             users.add(user);
                             //FIXME
@@ -136,19 +136,21 @@ public class FileUserService implements UserService {
 
     @Override
     public boolean delete(UUID id) {
-
         Path filePath = this.databasePath.resolve(String.valueOf(id).concat(".ser"));
-
         try {
-            File file = new File(String.valueOf(filePath));
-            if (file.exists()) {
-                return file.delete();
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+                return true;
             } else {
-                throw new RuntimeException("file does not exist");
+                throw new FileNotFoundException("File does not exist");
             }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return false;
+
     }
 }

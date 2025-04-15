@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class User implements Serializable {
@@ -65,12 +67,18 @@ public class User implements Serializable {
 
     @Override
     public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", name='" + name + '\'' +
-                ", age=" + age +
-                '}';
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                .withZone(ZoneId.systemDefault());
+
+        String createdAtFormatted = formatter.format(Instant.ofEpochSecond(createdAt));
+        String updatedAtFormatted = formatter.format(Instant.ofEpochSecond(updatedAt));
+
+        return "🙋‍♂️ User {\n" +
+                "  id         = " + id + "\n" +
+                "  createdAt  = " + createdAtFormatted + "\n" +
+                "  updatedAt  = " + updatedAtFormatted + "\n" +
+                "  name       = '" + name + "'\n" +
+                "  age        = " + age + "\n" +
+                "}";
     }
 }
