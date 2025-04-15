@@ -47,8 +47,8 @@ public class JCFUserService implements UserService {
                     u.updateStatus(user.getStatus());
                     u.updateUserName(user.getUserName());
                     u.updateFriends(user.getFriends());
-                    u.updateTurnOnHeadset(user.getTurnOnHeadset());
-                    u.updateTurnOnMike(user.getTurnOnMike());
+                    u.updateIsSpeakerOn(user.getIsSpeakerOn());
+                    u.updateIsMikeOn(user.getIsMikeOn());
                 });
     }
 

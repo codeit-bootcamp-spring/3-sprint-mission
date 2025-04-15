@@ -33,7 +33,7 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void updateById(UUID id,Channel channel) {
+    public void update(UUID id,Channel channel) {
         data.stream()
                 .filter(chan -> chan.getId().equals(id))
                 .forEach(chan->{

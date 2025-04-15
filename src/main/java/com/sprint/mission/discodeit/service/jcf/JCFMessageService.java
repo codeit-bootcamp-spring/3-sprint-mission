@@ -31,7 +31,6 @@ public class JCFMessageService implements MessageService {
         else{
             System.out.println("Not in channel!");
         }
-
     }
 
     @Override
