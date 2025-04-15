@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
     private UUID id;
     private long createdAt;
     private long updatedAt;
@@ -43,18 +45,22 @@ public class User {
     }
 
     // 필드를 수정하는 update 함수를 정의하세요.
-    public void update(String name) {
+    public User update(String name) {
         this.updatedAt = Instant.now().getEpochSecond();
 
         //TODO : to check if values are different before update
         this.name = name;
+
+        return this;
     }
 
-    public void update(int age) {
+    public User update(int age) {
         this.updatedAt = Instant.now().getEpochSecond();
 
         //TODO : to check if values are different before update
         this.age = age;
+
+        return this;
     }
 
     @Override
