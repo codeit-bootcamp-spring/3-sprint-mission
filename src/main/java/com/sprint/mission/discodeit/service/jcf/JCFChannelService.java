@@ -60,8 +60,13 @@ public class JCFChannelService implements ChannelService {
         channelMap.put(channel.getChannelNumber(), channel);
     }
 
+
     public Channel changeChannel(int channelNumber) {
-        return channelMap.getOrDefault(channelNumber, null);
+        Channel newChannel = channelMap.get(channelNumber);
+        if (newChannel != null) {
+            currentChannel = newChannel;
+        }
+        return currentChannel;
     }
 
     public void selectChannel(int channelNumber) {
