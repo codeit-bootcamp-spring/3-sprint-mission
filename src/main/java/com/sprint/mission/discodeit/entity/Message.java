@@ -1,19 +1,22 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
-public class Message {
+public class Message implements Serializable {
     private final UUID id;
     private final long createdAt;
     private long updatedAt;
 
     private String text;
     private final User sender;
+    private final Channel channel;
 
-    public Message(String text, User sender) {
+    public Message(String text, User sender, Channel channel) {
         this.text = text;
         this.sender = sender;
+        this.channel = channel;
         // for fixed unique id
         this.id = UUID.nameUUIDFromBytes(sender.getName().concat(text).getBytes());
         this.createdAt = Instant.now().getEpochSecond();
@@ -40,11 +43,17 @@ public class Message {
         return sender;
     }
 
+    public Channel getChannel() {
+        return channel;
+    }
+
     // 필드를 수정하는 update 함수를 정의하세요.
-    public void update(String text) {
+    public Message update(String text) {
         // TODO: add setter method for field
         this.text = text;
         this.updatedAt = Instant.now().getEpochSecond();
+
+        return this;
     }
 
     @Override
