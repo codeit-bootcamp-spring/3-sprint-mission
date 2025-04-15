@@ -1,5 +1,10 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.entity.Message;
+
+import java.util.List;
+import java.util.UUID;
+
 /**
  * packageName    : com.sprint.mission.discodeit.service.file
  * fileName       : FileMessageService
@@ -17,4 +22,15 @@ public class FileMessageService {
     public FileMessageService(FileChannelService fileChannelService) {
         this.fileChannelService = fileChannelService;
     }
+//    -------------------interface-------------------
+
+//    UUID createMessage(UUID senderId, UUID channelId, String message);
+//    List<Message> findAllMessages();
+//    Message findMessageByMessageId(UUID messageId);
+//    void updateMessage(UUID messageId, String newMessage);
+//    void deleteMessageById(UUID messageId);
+//    void deleteMessagesByChannelId(UUID channelId);
+
+//    -------------------------------------------------
+
 }

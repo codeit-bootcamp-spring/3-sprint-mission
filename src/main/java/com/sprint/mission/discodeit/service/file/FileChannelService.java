@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.util.FilePathUtil;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,11 +43,10 @@ public class FileChannelService {
 //    Channel findChannelById(UUID channelId);
 //    List<Channel> findChannelsByUserId(UUID userId);
 //    List<Channel> findAllChannel();
-
 //    void updateChannelName(UUID channelId, String title);
 //    void deleteChannel(UUID channelId);
-//    void addMessageInChannel(UUID channelId, Message message);
-//    void deleteMessageInChannel(UUID messageId);
+//    void addMessageInChannel(UUID channelId, Message message); - NOT TESTED
+//    void deleteMessageInChannel(UUID messageId); - NOT TESTED
 //    void addUserInChannel(UUID userId, UUID channelId);
 //    -------------------------------------------------
 
@@ -149,6 +149,7 @@ public class FileChannelService {
         }
     }
 
+//    @Override
     public List<Channel> findAllChannel() {
         Path directory = filePathUtil.getChannelDirectory();
 
@@ -172,6 +173,108 @@ public class FileChannelService {
                     }).toList();
             return list;
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+//    @Override
+    public void updateChannelName(UUID channelId, String title) {
+        Path path = filePathUtil.getChannelFilePath(channelId);
+        Channel channel;
+        if (Files.exists(path)) {
+            try {
+                ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()));
+                channel = (Channel) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            channel.setTitle(title);
+
+            try{
+                ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()));
+                oos.writeObject(channel);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    //    @Override
+    public void deleteChannel(UUID channelId) {
+        Path path = filePathUtil.getChannelFilePath(channelId);
+        try {
+            Files.delete(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+//    NOT TESTED BECAUSE OF NO EXISTING MESSAGE
+//    @Override
+    public void addMessageInChannel(UUID channelId, Message message) {
+        Path channelPath = filePathUtil.getChannelFilePath(channelId);
+        Path messagePath = filePathUtil.getMessageFilePath(message.getId());
+        Channel channel;
+
+        if (Files.exists(messagePath)) {
+            if (Files.exists(channelPath)) {
+                try {
+                    ObjectInputStream ois = new ObjectInputStream(new FileInputStream(channelPath.toFile()));
+                    channel = (Channel) ois.readObject();
+                    if (!channel.getMessages().contains(message)) {
+                        channel.getMessages().add(message);
+                    }
+                    System.out.println(channel.getMessages().contains(message));
+                } catch (IOException | ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+
+                try{
+                    ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(channelPath.toFile()));
+                    oos.writeObject(channel);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+//    WARNING: THIS DELETES ONLY MESSAGE IN CHANNEL(NOT MESSAGE IN FILE)
+//    NOW TESTED BECAUSE OF NO EXISTING MESSAGES
+//    @Override
+//    MAP<ChannelUUID,List<Message>> data in message
+    public void deleteMessageInChannel(UUID channelId, UUID messageId) {
+        Path channelPath = filePathUtil.getChannelFilePath(channelId);
+        Channel channel;
+
+        if (Files.exists(channelPath)) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(channelPath.toFile()))) {
+
+                channel = (Channel) ois.readObject();
+                channel.getMessages().removeIf(message -> message.getChannelId().equals(messageId));
+
+                try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(channelPath.toFile()))) {
+                    oos.writeObject(channel);
+                }
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+//    @Override
+    public void addUserInChannel(UUID channelId,UUID userId) {
+        Path path = filePathUtil.getChannelFilePath(channelId);
+        Channel channel;
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+            channel = (Channel) ois.readObject();
+            if (!channel.getUsersIds().contains(userId)) {
+                channel.getUsersIds().add(userId);
+            }
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
+                oos.writeObject(channel);
+            }
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }

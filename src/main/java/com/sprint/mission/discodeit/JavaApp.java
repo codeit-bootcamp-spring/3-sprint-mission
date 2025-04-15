@@ -206,7 +206,7 @@ public class JavaApp {
                         sc.nextLine();
                         selectedChannel = getChannelBySelectedNumber(user, sc);
                         if (selectedChannel != null) {
-                            channelService.addUserInChannel(choseUser.getId(), selectedChannel.getId());
+                            channelService.addUserInChannel(selectedChannel.getId(), choseUser.getId());
                         }
                         break;
                     case "2":
