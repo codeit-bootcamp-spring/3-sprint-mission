@@ -3,7 +3,6 @@ import com.sprint.mission.discodeit.service.*;
 import com.sprint.mission.discodeit.service.jcf.*;
 
 import java.util.List;
-import java.util.UUID;
 
 public class JavaApplication {
     public static void main(String[] args) {
