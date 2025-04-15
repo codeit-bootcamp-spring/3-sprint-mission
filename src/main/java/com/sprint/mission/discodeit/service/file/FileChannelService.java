@@ -3,6 +3,9 @@ package com.sprint.mission.discodeit.service.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 
 import java.io.*;
@@ -12,6 +15,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.file
@@ -24,18 +28,15 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 14.        doungukkim       최초 생성
  */
-public class FileChannelService {
+public class FileChannelService implements ChannelService {
     private static final String DEFAULT_CHANNEL_NAME = "'s Channel";
     private final FilePathUtil filePathUtil = new FilePathUtil();
-    private FileUserService fileUserService;
-    private FileMessageService fileMessageService;
+    private UserService userService;
+    private MessageService messageService;
 
-    public FileChannelService() {
-    }
-
-    public void setFileChannelService(FileMessageService fileMessageService, FileUserService fileUserService) {
-        this.fileMessageService = fileMessageService;
-        this.fileUserService = fileUserService;
+    public void setService(MessageService messageService, UserService userService) {
+        this.messageService = messageService;
+        this.userService = userService;
     }
 
 //    -------------------interface-------------------
@@ -50,7 +51,7 @@ public class FileChannelService {
 //    void addUserInChannel(UUID userId, UUID channelId);
 //    -------------------------------------------------
 
-//    @Override
+    @Override
     public UUID createChannel(UUID userId) {
 
         Channel channel = new Channel(userId);
@@ -58,10 +59,10 @@ public class FileChannelService {
         String username;
 
         // 유저 유효성 검사 as early return
-        if (fileUserService.findUserById(userId) == null) {
+        if (userService.findUserById(userId) == null) {
             return null;
         } else{
-            username = fileUserService.findUserById(userId).getUsername();
+            username = userService.findUserById(userId).getUsername();
         }
 
         try (
@@ -72,7 +73,7 @@ public class FileChannelService {
             // add title
             channel.setTitle(username + DEFAULT_CHANNEL_NAME);
             // add channelId in User
-            fileUserService.addChannelInUser(userId, channel.getId());
+            userService.addChannelInUser(userId, channel.getId());
             oos.writeObject(channel);
 
         } catch (IOException e) {
@@ -81,7 +82,7 @@ public class FileChannelService {
         return channel.getId();
     }
 
-//    @Override
+    @Override
     public Channel findChannelById(UUID channelId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
         Channel channel;
@@ -98,7 +99,7 @@ public class FileChannelService {
     }
 
 
-//    @Override
+    @Override
     public List<Channel> findChannelsByUserId(UUID userId) {
         Path userPath = filePathUtil.getUserFilePath(userId);
         User user;
@@ -149,7 +150,7 @@ public class FileChannelService {
         }
     }
 
-//    @Override
+    @Override
     public List<Channel> findAllChannel() {
         Path directory = filePathUtil.getChannelDirectory();
 
@@ -176,7 +177,7 @@ public class FileChannelService {
             throw new RuntimeException(e);
         }
     }
-//    @Override
+    @Override
     public void updateChannelName(UUID channelId, String title) {
         Path path = filePathUtil.getChannelFilePath(channelId);
         Channel channel;
@@ -198,7 +199,7 @@ public class FileChannelService {
         }
     }
 
-    //    @Override
+    @Override
     public void deleteChannel(UUID channelId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
         try {
@@ -209,7 +210,7 @@ public class FileChannelService {
     }
 
 //    NOT TESTED BECAUSE OF NO EXISTING MESSAGE
-//    @Override
+    @Override
     public void addMessageInChannel(UUID channelId, Message message) {
         Path channelPath = filePathUtil.getChannelFilePath(channelId);
         Path messagePath = filePathUtil.getMessageFilePath(message.getId());
@@ -223,7 +224,6 @@ public class FileChannelService {
                     if (!channel.getMessages().contains(message)) {
                         channel.getMessages().add(message);
                     }
-                    System.out.println(channel.getMessages().contains(message));
                 } catch (IOException | ClassNotFoundException e) {
                     throw new RuntimeException(e);
                 }
@@ -240,8 +240,8 @@ public class FileChannelService {
 
 //    WARNING: THIS DELETES ONLY MESSAGE IN CHANNEL(NOT MESSAGE IN FILE)
 //    NOW TESTED BECAUSE OF NO EXISTING MESSAGES
-//    @Override
-//    MAP<ChannelUUID,List<Message>> data in message
+
+    @Override
     public void deleteMessageInChannel(UUID channelId, UUID messageId) {
         Path channelPath = filePathUtil.getChannelFilePath(channelId);
         Channel channel;
@@ -250,7 +250,7 @@ public class FileChannelService {
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(channelPath.toFile()))) {
 
                 channel = (Channel) ois.readObject();
-                channel.getMessages().removeIf(message -> message.getChannelId().equals(messageId));
+                channel.getMessages().removeIf(message -> message.getId().equals(messageId));
 
                 try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(channelPath.toFile()))) {
                     oos.writeObject(channel);
@@ -261,7 +261,7 @@ public class FileChannelService {
         }
     }
 
-//    @Override
+    @Override
     public void addUserInChannel(UUID channelId,UUID userId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
         Channel channel;

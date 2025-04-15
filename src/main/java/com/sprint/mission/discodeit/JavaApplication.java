@@ -5,6 +5,9 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -32,17 +35,16 @@ public class JavaApplication {
 
     static {
         // 1. 구현체 먼저 생성
-        JCFChannelService jcfChannelService = new JCFChannelService();
-        JCFUserService jcfUserService = new JCFUserService(jcfChannelService);
-        JCFMessageService jcfMessageService = new JCFMessageService(jcfChannelService);
-
+        FileChannelService fileChannelService = new FileChannelService();
+        FileUserService fileUserService = new FileUserService();
+        FileMessageService fileMessageService = new FileMessageService(fileChannelService);
         // 2. 순환 의존 setter
-        jcfChannelService.setService(jcfMessageService, jcfUserService);
+        fileChannelService.setService(fileMessageService, fileUserService);
 
         // 3. 인터페이스로 노출
-        channelService = jcfChannelService;
-        messageService = jcfMessageService;
-        userService = jcfUserService;
+        channelService = fileChannelService;
+        messageService = fileMessageService;
+        userService = fileUserService;
     }
 
     public static void main(String[] args) {
