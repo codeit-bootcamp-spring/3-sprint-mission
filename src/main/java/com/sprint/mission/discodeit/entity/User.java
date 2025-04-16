@@ -1,8 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     private static int counter = 1;
     private int number;
     private String username;
@@ -10,14 +13,12 @@ public class User {
     private long createdAt;
     private long updatedAt;
 
-
     public User(String name) {
         this.number = counter++;
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
         this.username = name;
-
     }
 
     public void updateUserName(String username) {
