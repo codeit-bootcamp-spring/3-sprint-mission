@@ -77,7 +77,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public void deleteMessage(UUID id) {
         if (!this.data.containsKey(id)) {
-            throw new NoSuchElementException(id + "ID를 가진 사용자를 찾을 수 없습니다.");
+            throw new NoSuchElementException(id + "ID를 가진 메시지를 찾을 수 없습니다.");
         }
         this.data.remove(id);
     }

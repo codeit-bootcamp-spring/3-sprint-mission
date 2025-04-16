@@ -6,9 +6,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
 
 import java.util.*;
 
@@ -32,7 +32,7 @@ public class JavaApplication2 {
 
         // 모든 User 조회
         List<User> readAllUsers = userService.readAllUsers();
-        System.out.println("유저 조회: " + readAllUsers.size());
+        System.out.println("\n전체 유저 조회: " + readAllUsers.size());
 
         // User 수정
         User updatingUser1 = userService.updateUser(user1.getId(), null,  "alice@naver.com");
@@ -42,14 +42,23 @@ public class JavaApplication2 {
         User updatingUser3 = userService.updateUser(user3.getId(), "Wonder", "steve@yahoo.co.kr");
         System.out.println("user3 name, email 수정: " + String.join(",", updatingUser2.getName(), updatingUser2.getEmail()));
 
+        // 수정 후 User 조회
+        List<User> readUpdatedAllUsers = userService.readAllUsers();
+        System.out.println("\n수정 후 유저 조회: " + readUpdatedAllUsers.size());
+
         // User 삭제
         userService.deleteUser(user1.getId());
         List<User> readUsersAfterDelete = userService.readAllUsers();
-        System.out.println("user1 삭제: " + readUsersAfterDelete.size());
+        System.out.println("\nuser1 삭제: " + readUsersAfterDelete.size());
 //        userService.deleteUser(user2.getId());
 //        System.out.println("user2 삭제: " + readUsersAfterDelete.size());
 //        userService.deleteUser(user3.getId());
 //        System.out.println("user3 삭제: " + readUsersAfterDelete.size());
+
+        // 삭제 후 User 조회
+        List<User> readAfterDeletedAllUsers = userService.readAllUsers();
+        System.out.println("\n삭제 후 유저 조회: " + readAfterDeletedAllUsers.size());
+
 
         System.out.println("User CRUD Test Completed");
     }
@@ -84,6 +93,10 @@ public class JavaApplication2 {
         Channel updatingChannel3 = channelService.updateChannel(channel3.getId(), "어머니",  "위로방");
         System.out.println("channel3 name, description 수정: " + String.join(",", updatingChannel3.getChannelName(), updatingChannel3.getDescription()));
 
+        // 수정 후 Channel 조회
+        List<Channel> readUpdatedAllChannels = channelService.readAllChannels();
+        System.out.println("\n수정 후 채널 조회: " + readUpdatedAllChannels.size());
+
         // User 삭제
         channelService.deleteChannel(channel1.getId());
         List<Channel> readChannelsAfterDelete = channelService.readAllChannels();
@@ -92,6 +105,10 @@ public class JavaApplication2 {
 //        System.out.println("channel2 삭제: " + readChannelsAfterDelete.size());
 //        channelService.deleteChannel(channel3.getId());
 //        System.out.println("channel3 삭제: " + readChannelsAfterDelete.size());
+
+        // 삭제 후 Channel 조회
+        System.out.println("\n삭제 후 채널 조회: " + readUpdatedAllChannels.size());
+
 
         System.out.println("Channel CRUD Test Completed");
     }
@@ -118,7 +135,7 @@ public class JavaApplication2 {
 
         // 모든 Message 조회
         List<Message> readAllMessages = messageService.readAllMessages();
-        System.out.println("채널 조회: " + readAllMessages.size());
+        System.out.println("\n모든 채널 조회: " + readAllMessages);
 
         // Message 수정
         Message updatingMessage1 = messageService.updateMessage(message1.getId(), "나는 너의 모든 것이 좋아");
@@ -128,6 +145,10 @@ public class JavaApplication2 {
         Message updatingMessage3 = messageService.updateMessage(message3.getId(), "나는 너의 모든 면을 사랑해");
         System.out.println("message content 수정: " + String.join(",", updatingMessage3.getContent()));
 
+        // 수정 후 Message 조회
+        List<Message> readUpdatedAllMessages = messageService.readAllMessages();
+        System.out.println("\n수정 후 메시지 조회: " + readUpdatedAllMessages.size());
+
         // Message 삭제
         messageService.deleteMessage(message1.getId());
         List<Message> readMessagesAfterDelete = messageService.readAllMessages();
@@ -136,6 +157,9 @@ public class JavaApplication2 {
 //        System.out.println("message2 삭제: " + readMessagesAfterDelete.size());
 //        messageService.deleteMessage(message3.getId());
 //        System.out.println("message3 삭제: " + readMessagesAfterDelete.size());
+
+        // 삭제 후 삭제 조회
+        System.out.println("\n삭제 후 메시지 조회: " + readUpdatedAllMessages.size());
 
         System.out.println("Message CRUD Test Completed");
     }
@@ -154,20 +178,22 @@ public class JavaApplication2 {
         Message message = messageService.createMessage("다들 좋은 아침입니다.", channel.getId(), author.getId());
         return message;
     }
+
     public static void main(String[] args) {
         // 서비스 초기화
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService();
-        MessageService messageService = new JCFMessageService(channelService, userService);
+        UserService userService = new FileUserService();
+        ChannelService channelService = new FileChannelService();
+        MessageService messageService = new FileMessageService(channelService, userService);
 
         // 테스트
-//        userCRUDTest(userService);
-//        channelCRUDTest(channelService);
-//        messageCRUDTest(messageService);
+        userCRUDTest(userService);
+        channelCRUDTest(channelService);
+        messageCRUDTest(messageService);
 
-        // 셋업
-        User user = setupUser(userService);
-        Channel channel = setupChannel(channelService);
-        setupMessage(messageService, channel, user);
+//        // 셋업
+//        User user = setupUser(userService);
+//        Channel channel = setupChannel(channelService);
+//        setupMessage(messageService, channel, user);
     }
+
 }
