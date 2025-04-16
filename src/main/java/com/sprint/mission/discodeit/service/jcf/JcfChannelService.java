@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JcfChannelService implements ChannelService {
@@ -43,11 +44,11 @@ public class JcfChannelService implements ChannelService {
   }
 
   @Override
-  public Channel getChannelById(UUID channelId) {
+  public Optional<Channel> getChannelById(UUID channelId) {
     return channels.stream()
         .filter(e -> e.getId().equals(channelId))
-        .findFirst()
-        .orElse(null);
+        .findFirst();
+    //.orElse(null);
   }
 
   @Override
@@ -57,10 +58,8 @@ public class JcfChannelService implements ChannelService {
 
   @Override
   public void updateChannelName(UUID channelId, String newChannelName) {
-    Channel channel = getChannelById(channelId);
-    if (channel == null) { // 채널이 존재해야 update가능
-      throw new IllegalArgumentException("해당 채널이 존재하지 않습니다.");
-    }
+    Channel channel = getChannelById(channelId)
+        .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
     if (channel.getChannelName().equals(newChannelName)) {
       throw new IllegalArgumentException("채널 이름이 기존과 동일합니다. 다른 이름을 입력해주세요.");
@@ -85,26 +84,28 @@ public class JcfChannelService implements ChannelService {
 
   @Override
   public void addMember(UUID channelId, UUID userId) {
-    Channel channel = getChannelById(channelId);
-    User user = userService.getUserById(userId);
+    Channel channel = getChannelById(channelId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널 ID입니다."));
+    User user = userService.getUserById(userId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 ID입니다."));
 
-    if (user == null) { // 유저가 없으면 로그만 남기고 종료
-      System.out.println("오류: addMember() 탈퇴한 test02 유저를 채널에 추가 시도 || 존재하지 않은 유저 ID(NULL)입니다. -> " + userId);
-      return;
-    }
     channel.addChannelUser(user);
   }
 
   @Override
   public void removeMember(UUID channelId, UUID userId) {
-    Channel channel = getChannelById(channelId);
-    User user = userService.getUserById(userId);
+    Channel channel = getChannelById(channelId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널 ID입니다."));
+    User user = userService.getUserById(userId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 ID입니다. userId: " + userId));
+
     channel.removeChannelUser(user);
   }
 
   @Override
   public List<User> getChannelMembers(UUID channelId) {
-    Channel channel = getChannelById(channelId);
+    Channel channel = getChannelById(channelId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널 ID입니다."));
     return new ArrayList<>(channel.getChannelUsers());
   }
 
@@ -113,7 +114,7 @@ public class JcfChannelService implements ChannelService {
     channels.removeIf(channel -> channel.getChannelOwner().getId().equals(userId));
   }
 
- @Override
+  @Override
   public void removeUserFromAllChannels(UUID userId) {
     for (Channel channel : channels) {
       channel.getChannelUsers().removeIf(user -> user.getId().equals(userId));

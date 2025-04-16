@@ -26,8 +26,10 @@ public class JcfMessageService implements MessageService {
 
   @Override
   public Message createMessage(UUID channelId, UUID senderId, String content) {
-    Channel channel = channelService.getChannelById(channelId);
-    User sender = userService.getUserById(senderId);
+    Channel channel = channelService.getChannelById(channelId)
+        .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
+    User sender = userService.getUserById(senderId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 ID입니다. senderId: " + senderId));
 
     if (channel == null || sender == null) {
       throw new IllegalArgumentException("채널 또는 유저가 존재하지 않습니다.");
@@ -54,8 +56,8 @@ public class JcfMessageService implements MessageService {
 
   @Override
   public List<Message> getMessagesBySenderInChannel(UUID channelId, UUID senderId) {
-    Channel channel = channelService.getChannelById(channelId);
-    if (channel == null) throw new IllegalArgumentException("채널이 존재하지 않습니다.");
+    Channel channel = channelService.getChannelById(channelId)
+        .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
     if (channel.getChannelUsers().stream().noneMatch(u -> u.getId().equals(senderId)))
       // noneMatch() : 모든 요소들이 주어진 조건을 만족하지 않는지 | 아무도 조건을 만족하지 않아야 true
       throw new IllegalArgumentException("해당 유저는 이 채널의 멤버가 아닙니다.");
@@ -79,8 +81,9 @@ public class JcfMessageService implements MessageService {
 
   @Override
   public List<Message> getMessagesByReceiverInChannel(UUID channelId, UUID receiverId) {
-    Channel channel = channelService.getChannelById(channelId);
-    if (channel == null) throw new IllegalArgumentException("채널이 존재하지 않습니다.");
+    Channel channel = channelService.getChannelById(channelId)
+        .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
+
     if (channel.getChannelUsers().stream().noneMatch(u -> u.getId().equals(receiverId)))
       throw new IllegalArgumentException("해당 유저는 이 채널의 멤버가 아닙니다.");
 
@@ -126,8 +129,8 @@ public class JcfMessageService implements MessageService {
     msg.updateContent(newContent);
   }
 
-  public Message getMessageById(UUID messageId) {
-    return messageMap.get(messageId);
+  public Optional<Message> getMessageById(UUID messageId) {
+    return Optional.ofNullable(messageMap.get(messageId));
   }
 
   @Override
@@ -144,8 +147,8 @@ public class JcfMessageService implements MessageService {
 
   @Override
   public List<Message> getAllMessagesInChannel(UUID channelId, UUID requesterId) {
-    Channel channel = channelService.getChannelById(channelId);
-    if (channel == null) throw new IllegalArgumentException("채널이 존재하지 않습니다.");
+    Channel channel = channelService.getChannelById(channelId)
+        .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
     if (channel.getChannelUsers().stream().noneMatch(u -> u.getId().equals(requesterId)))
       throw new SecurityException("채널에 접근할 수 있는 권한이 없습니다.");
 
@@ -156,13 +159,15 @@ public class JcfMessageService implements MessageService {
   public String formatMessage(Message message) {
     boolean isEdited = !message.getCreatedAt().equals(message.getUpdatedAt());
     long timestamp = isEdited ? message.getUpdatedAt() : message.getCreatedAt();
-
     String formattedDate = DATE_FORMAT.format(new Date(timestamp));
-    User sender = userService.getUserById(message.getSenderId());
-    Channel channel = channelService.getChannelById(message.getChannelId());
-    String channelName = (channel != null) ? channel.getChannelName() : "알 수 없음";
-    String senderName = (sender != null) ? sender.getUsername() : "알 수 없음";
-    String senderEmail = (sender != null && sender.getEmail() != null) ? sender.getEmail() : "이메일 없음";
+
+    Optional<User> senderOpt = userService.getUserById(message.getSenderId());
+    String senderName = senderOpt.map(User::getUsername).orElse("알 수 없음");
+    String senderEmail = senderOpt.map(User::getEmail).orElse("이메일 없음");
+
+    String channelName = channelService.getChannelById(message.getChannelId())
+        .map(Channel::getChannelName)
+        .orElse("알 수 없음");
 
     return String.format("[%s] %s, 보낸사람: %s(%s), 내용: \"%s\"",
         channelName, formattedDate, senderName, senderEmail, message.getContent());
