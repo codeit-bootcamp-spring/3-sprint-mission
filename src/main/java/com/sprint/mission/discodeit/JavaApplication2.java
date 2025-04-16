@@ -24,6 +24,7 @@ import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class JavaApplication2 {
 
@@ -141,9 +142,9 @@ public class JavaApplication2 {
         System.out.println();
 
         // 다형성을 이용한 인스턴스 변경
-        channelService = new JCFChannelService(new ArrayList<>());
-        userService = new JCFUserService(new ArrayList<>());
-        messageService = new JCFMessageService(new ArrayList<>(),userService,channelService);
+        channelService = new JCFChannelService(new CopyOnWriteArrayList<>());
+        userService = new JCFUserService(new CopyOnWriteArrayList<>());
+        messageService = new JCFMessageService(new CopyOnWriteArrayList<>(),userService,channelService);
 
         // 등록
         Channel channel2 = setupChannel(channelService);

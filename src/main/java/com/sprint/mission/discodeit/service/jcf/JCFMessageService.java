@@ -11,14 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class JCFMessageService implements MessageService {
 
-    private final List<Message> data;
+    private final CopyOnWriteArrayList<Message> data;
     private final UserService userService;
     private final ChannelService channelService;
 
-    public JCFMessageService(List<Message> data, UserService userService, ChannelService channelService) {
+    public JCFMessageService(CopyOnWriteArrayList<Message> data, UserService userService, ChannelService channelService) {
         this.data = data;
         this.userService = userService;
         this.channelService = channelService;

@@ -13,12 +13,13 @@ import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class JavaApplication {
     public static void main(String[] args) {
-        ChannelService jcfChannelService = new JCFChannelService(new ArrayList<>());
-        UserService jcfUserService = new JCFUserService(new ArrayList<>());
-        MessageService jcfMessageService = new JCFMessageService(new ArrayList<>(),jcfUserService,jcfChannelService);
+        ChannelService jcfChannelService = new JCFChannelService(new CopyOnWriteArrayList<>());
+        UserService jcfUserService = new JCFUserService(new CopyOnWriteArrayList<>());
+        MessageService jcfMessageService = new JCFMessageService(new CopyOnWriteArrayList<>(),jcfUserService,jcfChannelService);
 
         // ============== JCFChannelService 테스트 ==============
         System.out.println("============== JCFChannelService 테스트 ==============");

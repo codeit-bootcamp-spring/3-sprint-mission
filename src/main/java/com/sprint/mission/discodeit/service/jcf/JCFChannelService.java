@@ -5,12 +5,13 @@ import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class JCFChannelService implements ChannelService {
 
-    private final List<Channel> data;
+    private final CopyOnWriteArrayList<Channel> data;
 
-    public JCFChannelService(List<Channel> channels) {
+    public JCFChannelService(CopyOnWriteArrayList<Channel> channels) {
         this.data=channels;
     }
 
