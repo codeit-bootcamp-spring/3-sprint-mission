@@ -2,9 +2,11 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.common.Period;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class Message extends Period {
+public class Message extends Period implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private User sender;
     private String content;

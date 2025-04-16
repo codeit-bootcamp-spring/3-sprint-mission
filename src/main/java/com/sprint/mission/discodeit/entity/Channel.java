@@ -2,9 +2,11 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.common.Period;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class Channel extends Period {
+public class Channel extends Period implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private User channelAdmin;
     private String name;
@@ -12,10 +14,34 @@ public class Channel extends Period {
     private Set<User> members;
     private List<Message> messages;
 
+    public Channel() {}
+
+    public Channel(User user, String name, String description) {
+        super();
+        this.channelAdmin = user;
+        this.name = name;
+        this.description = description;
+        this.members = new HashSet<>();
+        this.messages = new ArrayList<>();
+        user.getChannels().add(this);
+    }
+
     public void addMember(User user) {
         if (this.members.add(user)) {
             user.getChannels().add(this);
         }
+    }
+
+    public void removeMember(User user) {
+        this.members.remove(user);
+    }
+
+    public void setMembers(Set<User> members) {
+        this.members = members;
+    }
+
+    public void setMessages(List<Message> messages) {
+        this.messages = messages;
     }
 
     public UUID getId() {
@@ -65,15 +91,6 @@ public class Channel extends Period {
         update();
     }
 
-    public Channel(User user, String name, String description) {
-        super();
-        this.channelAdmin = user;
-        this.name = name;
-        this.description = description;
-        this.members = new HashSet<>();
-        this.messages = new ArrayList<>();
-    }
-
     @Override
     public String toString() {
         return "Channel{" +
@@ -86,4 +103,5 @@ public class Channel extends Period {
                 ", updatedAt=" + super.getUpdatedAt() +
                 '}';
     }
+
 }

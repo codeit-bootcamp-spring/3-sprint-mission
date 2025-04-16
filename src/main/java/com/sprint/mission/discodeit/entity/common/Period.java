@@ -1,8 +1,11 @@
 package com.sprint.mission.discodeit.entity.common;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public abstract class Period {
+public abstract class Period implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final UUID id;
     private final Long createdAt;
     private Long updatedAt;
@@ -11,6 +14,12 @@ public abstract class Period {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = this.createdAt;
+    }
+
+    public Period(UUID id, Long createdAt, Long updatedAt) {
+        this.id = id;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public UUID getId() {
