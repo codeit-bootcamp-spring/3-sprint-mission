@@ -2,32 +2,25 @@ package com.sprint.mission.discodeit.menu;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
-import java.util.List;
 import java.util.Scanner;
 
 public class UserMenu {
     private final Scanner sc;
     private final UserService userService;
-    private final List<User> users;
     private User loginUser;
 
-    public UserMenu(Scanner scanner, UserService userService, List<User> users) {
+    public UserMenu(Scanner scanner, UserService userService) {
         this.sc = scanner;
         this.userService = userService;
-        this.users = users;
     }
 
     public void loginUser() {
-        System.out.println("안녕하세요. DisCodeit에 오신 걸 환영합니다.");
-        System.out.println("사용자의 이름을 입력해 주세요.");
-        String name = sc.nextLine();
-        loginUser = new User(name);
-        users.add(loginUser);
+        userService.inputUserName();
 
         System.out.println("로그인 하실 프로필 번호를 입력해 주세요.");
         userService.outputAllUsersInfo();
         int loginNumber = Integer.parseInt(sc.nextLine());
-        userService.login(loginNumber, users);
+        userService.login(loginNumber, null);
         loginUser = userService.changeUser(loginNumber);
 
         System.out.println(loginUser.getUsername() + "님, 반갑습니다.");
@@ -67,7 +60,7 @@ public class UserMenu {
                     System.out.println("변경할 프로필 번호를 입력해 주세요.");
                     userService.outputAllUsersInfo();
                     int loginNumber = Integer.parseInt(sc.nextLine());
-                    userService.login(loginNumber, users);
+                    userService.login(loginNumber, null);
                     loginUser = userService.changeUser(loginNumber);
                 }
                 case 7 -> {
