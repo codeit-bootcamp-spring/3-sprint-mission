@@ -3,12 +3,24 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
+import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
+import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
+import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import java.util.List;
 import java.util.Random;
@@ -34,10 +46,30 @@ import java.util.Random;
 public class JavaApplication_File {
     public static void main(String[] args) {
 
-        // 서비스 구현체 변경 ( JCF >> File )
+//        // Basic Service test
+//        UserRepository userRepository = new FileUserRepository();
+//        ChannelRepository channelRepository = new FileChannelRepository();
+//        MessageRepository messageRepository = new FileMessageRepository();
+//
+//
+//        UserService userService = new BasicUserService(userRepository);
+//        ChannelService channelService = new BasicChannelService(channelRepository);
+//        MessageService messageService = new BasicMessageService(messageRepository);
+
+//        ====================================================================================
+
+        // File Service test
         UserService userService = new FileUserService();
         ChannelService channelService = new FileChannelService();
         MessageService messageService = new FileMessageService();
+
+//        ===============================================================================================
+
+//        // JCF Service test
+//        UserService userService = new JCFUserService();
+//        ChannelService channelService = new JCFChannelService();
+//        MessageService messageService = new JCFMessageService();
+
 
         // ==================================================================================================================
         // Create 테스트
