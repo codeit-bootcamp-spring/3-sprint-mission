@@ -73,6 +73,9 @@ public class FileMessageService implements MessageService {
     @Override
     public Message updateMessage(UUID id, String text) {
         Message message = messages.get(id);
+        if(message==null){
+            throw new IllegalArgumentException("ID가" + id + "인 메시지를 찾을 수 없습니다.");
+        }
         message.updateText(text);
         saveToFile();
         return message;

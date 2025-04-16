@@ -75,6 +75,9 @@ public  Optional<User> readUser(UUID id) {
 @Override
 public User updateUser(UUID id,String username) {
         User user = users.get(id);
+        if(user==null){
+            throw new IllegalArgumentException("ID가" + id + "인 사용자를 찾을 수 없습니다.");
+        }
         user.updateUserName(username);
         saveToFile();
         return user;

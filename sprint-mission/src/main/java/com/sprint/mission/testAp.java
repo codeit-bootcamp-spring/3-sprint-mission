@@ -18,7 +18,7 @@ public class testAp {
     public static void main(String[] args) {
 
 
-
+        //File Test
         ChannelService fileChannelService = new FileChannelService();
         UserService fileUserService = new FileUserService(fileChannelService);
         MessageService fileMessageService = new FileMessageService(fileChannelService);
@@ -31,11 +31,17 @@ public class testAp {
         System.out.println(channel1.getChannelName());
         System.out.println(channel2.getId());
         System.out.println(channel3.getChannelName());
+        System.out.println("--채널 변경 및 삭제--");
+        fileChannelService.updateChannel(channel1.getId(),"나만의 방");
+        fileChannelService.deleteChannel(channel2.getId());
+        fileChannelService.deleteChannel(channel3.getId());
+
 
         System.out.println("---- 유저 생성 ----");
         User user1 = fileUserService.createUser("김현기",channel1.getId());
         System.out.println("---- 메시지 생성 ----");
         Message message1 = fileMessageService.createMessage("안녕하세요~",channel1.getId(),user1.getId());
+
 
         FileChannelRepository fileChannelRepository = new FileChannelRepository();
         fileChannelRepository.save(channel1);

@@ -95,6 +95,9 @@ public class FileChannelService implements ChannelService {
     @Override
     public Channel updateChannel(UUID id, String channelName) {
         Channel channel = channels.get(id);
+        if(channel==null){
+            throw new IllegalArgumentException("ID가" + id + "인 채널을 찾을 수 없습니다.");
+        }
         channel.updateChannelName(channelName);
         saveToFile();
         return channel;
