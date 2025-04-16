@@ -114,4 +114,11 @@ public class JCFUserService implements UserService{
 
     }
 
+    @Override
+    public void removeChannelIdInUsers(UUID channelId) {
+        List<UUID> usersIds = channelService.findChannelById(channelId).getUsersIds();
+        for (UUID id : usersIds) {
+            jcfUserRepository.deleteChannelIdInUser(channelId, id);
+        }
+    }
 }

@@ -74,6 +74,12 @@ public class JCFUserRepository {
         return null;
     }
 
-
+    public void deleteChannelIdInUser(UUID channelId, UUID userId) {
+        for (User user : data) {
+            if (user.getId().equals(userId)) {
+                user.getChannelIds().removeIf(id -> id.equals(channelId));
+            }
+        }
+    }
 
 }

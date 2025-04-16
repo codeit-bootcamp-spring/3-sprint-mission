@@ -281,7 +281,10 @@ public class FileChannelService implements ChannelService {
 
     @Override
     public void deleteChannel(UUID channelId) {
+        userService.removeChannelIdInUsers(channelId);
         fcr.deleteChannel(channelId);
+
+
 
 //        Path path = filePathUtil.getChannelFilePath(channelId);
 //        try {
