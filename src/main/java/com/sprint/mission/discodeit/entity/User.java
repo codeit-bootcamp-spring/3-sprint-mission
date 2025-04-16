@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
     private static int counter = 1;
     private int number;
     private String username;
@@ -44,6 +44,10 @@ public class User implements Serializable {
 
     public int getNumber() {
         return number;
+    }
+
+    public static void setCounter(int newCounter) {
+        counter = newCounter;
     }
 
     @Override

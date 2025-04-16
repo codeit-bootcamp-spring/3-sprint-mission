@@ -22,8 +22,17 @@ public class FileUserService implements UserService {
         users = loadUsers();
         if (users == null) {
             users = new ArrayList<>();
+        } else {
+            int max = 0;
+            for (User user : users) {
+                if (user.getNumber() > max) {
+                    max = user.getNumber();
+                }
+            }
+            User.setCounter(max + 1);
         }
     }
+
 
     @SuppressWarnings("unchecked") //실행은 되는데 무슨 에러떠서 지피티한테 물어보고 추가했습니다 !!
     private List<User> loadUsers() {
