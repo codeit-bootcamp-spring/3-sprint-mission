@@ -25,12 +25,16 @@ import org.junit.jupiter.api.TestInstance;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FileChannelServiceTest {
 
     private FileUserService userService;
     private FileChannelService channelService;
+    private FileUserRepository userRepository;
+    private FileChannelRepository channelRepository;
     private Path dataDir;
     private UUID testUserId;  // 테스트용 사용자 ID
 
@@ -114,9 +118,13 @@ class FileChannelServiceTest {
                     });
         }
 
-        // 새로운 서비스 인스턴스 생성
-        userService = new FileUserService();
-        channelService = new FileChannelService(userService);
+        // Repository 인스턴스 생성
+        userRepository = new FileUserRepository();
+        channelRepository = new FileChannelRepository();
+
+        // Service 인스턴스 생성 (Repository 주입)
+        userService = new FileUserService(userRepository);
+        channelService = new FileChannelService(userService, channelRepository);
 
         // 테스트용 사용자 생성
         User testUser = userService.createUser("테스트사용자", "test@example.com", "password123");
@@ -354,7 +362,7 @@ class FileChannelServiceTest {
         });
 
         // 예외 메시지 검증
-        assertTrue(exception.getMessage().contains("존재하지 않는 사용자"), "적절한 예외 메시지를 포함해야 함");
+        assertTrue(exception.getMessage().contains("존재하지 않는 사용자"), "적절한 예외 메시지(존재하지 않는 사용자)를 포함해야 함");
     }
 
     @Test
@@ -373,7 +381,7 @@ class FileChannelServiceTest {
         });
 
         // 예외 메시지 검증
-        assertTrue(exception.getMessage().contains("존재하지 않는 사용자"), "적절한 예외 메시지를 포함해야 함");
+        assertTrue(exception.getMessage().contains("존재하지 않는 사용자"), "적절한 예외 메시지(존재하지 않는 사용자)를 포함해야 함");
     }
 
     @Test

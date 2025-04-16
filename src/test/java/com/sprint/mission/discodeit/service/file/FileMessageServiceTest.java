@@ -22,6 +22,9 @@ import org.junit.jupiter.api.TestInstance;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FileMessageServiceTest {
@@ -29,6 +32,9 @@ class FileMessageServiceTest {
     private FileUserService userService;
     private FileChannelService channelService;
     private FileMessageService messageService;
+    private FileUserRepository userRepository;
+    private FileChannelRepository channelRepository;
+    private FileMessageRepository messageRepository;
     private Path messageDataDir;
     private Path userDataDir;
     private Path channelDataDir;
@@ -48,9 +54,14 @@ class FileMessageServiceTest {
             Files.createDirectories(channelDataDir);
             Files.createDirectories(messageDataDir);
 
-            // 서비스 초기화 (MessageService는 UserService와 ChannelService에 의존)
-            userService = new FileUserService();
-            channelService = new FileChannelService(userService);
+            // Repository 인스턴스 생성
+            userRepository = new FileUserRepository();
+            channelRepository = new FileChannelRepository();
+            messageRepository = new FileMessageRepository();
+
+            // Service 인스턴스 생성 (Repository 주입)
+            userService = new FileUserService(userRepository);
+            channelService = new FileChannelService(userService, channelRepository);
 
         } catch (IOException e) {
             throw new RuntimeException("테스트 디렉토리 또는 서비스 초기화 실패", e);
@@ -91,8 +102,8 @@ class FileMessageServiceTest {
         clearDirectory(channelDataDir);
         clearDirectory(userDataDir);
 
-        // MessageService 인스턴스 생성
-        messageService = new FileMessageService(userService, channelService);
+        // Service 인스턴스 재생성 (Repository 재사용)
+        messageService = new FileMessageService(userService, channelService, messageRepository);
 
         // 테스트용 사용자 생성
         User testUser = userService.createUser("테스트메시지작성자", "msg@example.com", "password123");
