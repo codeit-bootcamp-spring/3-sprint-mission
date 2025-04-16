@@ -5,43 +5,43 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
  * packageName    : com.sprint.mission.discodeit
- * fileName       : JavaApplication2
+ * fileName       : JavaApplication
  * author         : doungukkim
- * date           : 2025. 4. 15.
- * description    :
+ * date           : 2025. 4. 3.
+ * description    : 결과 확인
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 15.        doungukkim       최초 생성
+ * 2025. 4. 3.        doungukkim       최초 생성
+ * 2025. 4. 5.        doungukkim       message의 map 결과 할 수 있게 수정
+ * 2025. 4. 5.        doungukkim       심화 코드 작성, 결과 추가
  */
-public class JavaApplication2 {
-
+public class JavaApplicationFile {
     private static final UserService userService;
     public static final MessageService messageService;
     public static ChannelService channelService;
 
     static {
         // 1. 구현체 먼저 생성
-        JCFChannelService jcfChannelService = new JCFChannelService();
-        JCFUserService jcfUserService = new JCFUserService(jcfChannelService);
-        JCFMessageService jcfMessageService = new JCFMessageService(jcfChannelService);
-
+        FileChannelService fileChannelService = new FileChannelService();
+        FileUserService fileUserService = new FileUserService(fileChannelService);
+        FileMessageService fileMessageService = new FileMessageService(fileChannelService);
         // 2. 순환 의존 setter
-        jcfChannelService.setService(jcfMessageService, jcfUserService);
+        fileChannelService.setService(fileMessageService, fileUserService);
 
         // 3. 인터페이스로 노출
-        channelService = jcfChannelService;
-        messageService = jcfMessageService;
-        userService = jcfUserService;
+        channelService = fileChannelService;
+        messageService = fileMessageService;
+        userService = fileUserService;
     }
 
     public static void main(String[] args) {

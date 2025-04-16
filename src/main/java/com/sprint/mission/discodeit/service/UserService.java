@@ -25,4 +25,5 @@ public interface UserService {
     void deleteUser(UUID userId);
     void addChannelInUser(UUID userId, UUID channelId);
     List<UUID> findChannelIdsInId(UUID userId);
+    void removeChannelIdInUsers(UUID channelId);
 }

@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.entity.User;
@@ -25,10 +27,13 @@ import java.util.UUID;
  * 2025. 4. 14.        doungukkim       최초 생성
  */
 public class FileUserService implements UserService {
+    private ChannelService channelService;
     FilePathUtil filePathUtil =new FilePathUtil();
     FileUserRepository fur = new FileUserRepository();
 
-
+    public FileUserService(ChannelService channelService) {
+        this.channelService = channelService;
+    }
 //    -------------------interface-------------------
 //    UUID registerUser(String username);
 //    User findUserById(UUID userId);
@@ -194,53 +199,13 @@ public class FileUserService implements UserService {
 //        return user.getChannelIds();
     }
 
-
-
-
-
-
-
-
-//    // original
-//    public void save(User user) {
-//        try (
-//                FileOutputStream fos = new FileOutputStream(filePathUtil.getUserFilePath(user.getId()).toFile());
-//                ObjectOutputStream oos = new ObjectOutputStream(fos)
-//        ) {
-//            oos.writeObject(user);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-//
-//    // original
-//    public List<User> load() {
-//        Path userDirectory = filePathUtil.getUserDirectory();
-//        if (Files.exists(userDirectory)) {
-//            try {
-//                List<User> list = Files.list(userDirectory)
-//                        .filter(path -> path.toString().endsWith(".ser"))
-//                        .map(path -> {
-//                            try (
-//                                    FileInputStream fis = new FileInputStream(path.toFile());
-//                                    ObjectInputStream ois = new ObjectInputStream(fis)
-//                            ) {
-//                                Object data = ois.readObject();
-//                                return (User) data;
-//                            } catch (IOException | ClassNotFoundException exception) {
-//                                throw new RuntimeException(exception);
-//                            }
-//                        })
-//                        .toList();
-//
-//                return list;
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//        } else {
-//            return new ArrayList<>();
-//        }
-//    }
+    @Override
+    public void removeChannelIdInUsers(UUID channelId) {
+        List<UUID> usersIds = channelService.findChannelById(channelId).getUsersIds();
+        for (UUID userId : usersIds) {
+            fur.deleteChannelIdInUser(channelId, userId);
+        }
+    }
 }
 
 

@@ -5,9 +5,6 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -17,34 +14,34 @@ import java.util.stream.Collectors;
 
 /**
  * packageName    : com.sprint.mission.discodeit
- * fileName       : JavaApplication
+ * fileName       : JavaApplication2
  * author         : doungukkim
- * date           : 2025. 4. 3.
- * description    : 결과 확인
+ * date           : 2025. 4. 15.
+ * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 3.        doungukkim       최초 생성
- * 2025. 4. 5.        doungukkim       message의 map 결과 할 수 있게 수정
- * 2025. 4. 5.        doungukkim       심화 코드 작성, 결과 추가
+ * 2025. 4. 15.        doungukkim       최초 생성
  */
-public class JavaApplication {
+public class JavaApplicationJCF {
+
     private static final UserService userService;
     public static final MessageService messageService;
     public static ChannelService channelService;
 
     static {
         // 1. 구현체 먼저 생성
-        FileChannelService fileChannelService = new FileChannelService();
-        FileUserService fileUserService = new FileUserService();
-        FileMessageService fileMessageService = new FileMessageService(fileChannelService);
+        JCFChannelService jcfChannelService = new JCFChannelService();
+        JCFUserService jcfUserService = new JCFUserService(jcfChannelService);
+        JCFMessageService jcfMessageService = new JCFMessageService(jcfChannelService);
+
         // 2. 순환 의존 setter
-        fileChannelService.setService(fileMessageService, fileUserService);
+        jcfChannelService.setService(jcfMessageService, jcfUserService);
 
         // 3. 인터페이스로 노출
-        channelService = fileChannelService;
-        messageService = fileMessageService;
-        userService = fileUserService;
+        channelService = jcfChannelService;
+        messageService = jcfMessageService;
+        userService = jcfUserService;
     }
 
     public static void main(String[] args) {

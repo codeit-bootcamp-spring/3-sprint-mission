@@ -156,5 +156,20 @@ public class FileUserRepository {
         return user.getChannelIds();
     }
 
+    public void deleteChannelIdInUser(UUID channelId, UUID userId) {
+        Path path = filePathUtil.getUserFilePath(userId);
+        User user;
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+            user = (User) ois.readObject();
+            user.getChannelIds().removeIf(id -> id.equals(channelId));
+        } catch (ClassNotFoundException | IOException e) {
+            throw new RuntimeException(e);
+        }
 
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
+            oos.writeObject(user);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
