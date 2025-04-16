@@ -29,6 +29,14 @@ public class FileChannelService implements ChannelService {
                 channelMap.put(channel.getChannelNumber(), channel);
             }
             saveChannels();
+        } else {
+            int max = 0;
+            for (Channel channel : channelMap.values()) {
+                if (channel.getChannelNumber() > max) {
+                    max = channel.getChannelNumber();
+                }
+            }
+            Channel.setCounter(max + 1);
         }
     }
 

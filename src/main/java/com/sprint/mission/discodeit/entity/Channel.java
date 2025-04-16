@@ -46,6 +46,10 @@ public class Channel implements Serializable {
         return updateAt;
     }
 
+    public static void setCounter(int newCounter) {
+        counter = newCounter;
+    }
+
     @Override
     public String toString() {
         return "Channel{" +
