@@ -5,10 +5,15 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFChannelRepository implements ChannelRepository {
-    private final Map<UUID, Channel> channels= new HashMap<>();
+    private final Map<UUID, Channel> channels;
+
+    public JCFChannelRepository() {
+        this.channels = new HashMap<>();
+    }
 
 
     @Override
@@ -17,13 +22,8 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Map<UUID, Channel> readChannels() {
+    public Map<UUID, Channel> load() {
         return channels;
-    }
-
-    @Override
-    public Channel readChannel(UUID id){
-        return channels.get(id);
     }
 
     @Override

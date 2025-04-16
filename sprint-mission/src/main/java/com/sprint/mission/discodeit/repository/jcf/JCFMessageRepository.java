@@ -5,10 +5,15 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFMessageRepository implements MessageRepository {
-    private final Map<UUID, Message> messages = new HashMap<>();
+    private final Map<UUID, Message> messages;
+
+    public JCFMessageRepository() {
+        this.messages = new HashMap<>();
+    }
 
     @Override
     public void save(Message message) {
@@ -16,14 +21,10 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Map<UUID, Message> readMessages() {
+    public Map<UUID, Message> load() {
         return messages;
     }
 
-    @Override
-    public Message readMessage(UUID id){
-        return messages.get(id);
-    }
 
     @Override
     public void deleteMessage(UUID id){

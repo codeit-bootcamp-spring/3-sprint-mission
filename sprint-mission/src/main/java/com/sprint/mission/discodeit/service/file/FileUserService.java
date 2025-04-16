@@ -55,6 +55,7 @@ public User createUser(String username, UUID channelId){
         User user = new User(username);
         users.put(user.getId(),user);
         channelService.addUserToChannel(channelId, user.getId());
+        System.out.println("유저가 생성되었습니다 : " + username);
         saveToFile();
         return user;
 }

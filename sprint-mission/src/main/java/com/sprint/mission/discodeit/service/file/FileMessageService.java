@@ -55,6 +55,7 @@ public class FileMessageService implements MessageService {
         Message newMessage = new Message(text, channelID, userID);
         messages.put(newMessage.getId(), newMessage);
         channelService.addMessageToChannel(channelID, newMessage.getId());
+        System.out.println("메시지 생성 : " + text);
         saveToFile();
         return newMessage;
     }

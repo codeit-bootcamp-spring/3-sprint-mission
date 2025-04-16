@@ -5,10 +5,15 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFUserRepository implements UserRepository {
-    private final Map<UUID, User> users = new HashMap<>();
+    private final Map<UUID, User> users;
+
+    public JCFUserRepository() {
+        this.users = new HashMap<>();
+    }
 
     @Override
     public void save(User user){
@@ -16,13 +21,8 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public Map<UUID, User> readUsers() {
+    public Map<UUID, User> load() {
         return users;
-    }
-
-    @Override
-    public User readUser(UUID id){
-        return users.get(id);
     }
 
     @Override
