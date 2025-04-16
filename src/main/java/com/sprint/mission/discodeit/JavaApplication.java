@@ -6,11 +6,12 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService.ChannelNotFoundException;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService.ParticipantAlreadyExistsException;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService.ParticipantNotFoundException;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService.MessageNotFoundException;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotFoundException;
@@ -31,9 +32,9 @@ public class JavaApplication {
 
   public JavaApplication() {
     // 서비스 초기화
-    this.userService = new JCFUserService();
-    this.channelService = new JCFChannelService();
-    this.messageService = new JCFMessageService(userService, channelService);
+    this.userService = FileUserService.createDefault();
+    this.channelService = FileChannelService.createDefault();
+    this.messageService = FileMessageService.createDefault(userService, channelService);
   }
 
   public void runApplication() {

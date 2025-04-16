@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
@@ -10,9 +12,13 @@ import java.util.UUID;
  *   <li>메시지 내용</li>
  *   <li>생성자 id</li>
  *   <li>채널 id</li>
+ *   <li>삭제 여부</li>
  * </ul>
  */
-public class Message {
+public class Message implements Serializable {
+
+  @Serial
+  private static final long serialVersionUID = 1L;
 
   private final Base base;
   private String content;
@@ -81,10 +87,12 @@ public class Message {
   @Override
   public String toString() {
     return "Message{" +
-        "content='" + content + '\'' +
+        "id=" + getId() +
+        ", createdAt=" + getCreatedAt() +
+        ", updatedAt=" + getUpdatedAt() +
+        ", content='" + content + '\'' +
         ", userId=" + userId +
         ", channelId=" + channelId +
-        ", id=" + getId() +
         '}';
   }
 }

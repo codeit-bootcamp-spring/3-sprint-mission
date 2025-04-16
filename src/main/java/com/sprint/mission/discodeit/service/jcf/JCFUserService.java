@@ -16,9 +16,18 @@ public class JCFUserService implements UserService {
 
   @Override
   public User createUser(String email, String name, String password) {
+    // 이메일 중복 검사
+    validateUserEmail(email);
+
     User user = User.create(email, name, password);
     usersRepository.put(user.getId(), user);
     return user;
+  }
+
+  private void validateUserEmail(String email) {
+    if (usersRepository.values().stream().anyMatch(user -> user.getEmail().equals(email))) {
+      throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+    }
   }
 
   @Override

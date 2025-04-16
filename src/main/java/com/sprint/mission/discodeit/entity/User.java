@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -13,7 +16,10 @@ import java.util.UUID;
  *   <li>참여 채널 목록</li>
  * </ul>
  */
-public class User {
+public class User implements Serializable {
+
+  @Serial
+  private static final long serialVersionUID = 1L;
 
   private final Base base;
   private String email;
@@ -37,6 +43,10 @@ public class User {
   // 사용자 정보 관리
   public String getEmail() {
     return email;
+  }
+
+  public String getPassword() {
+    return password;
   }
 
   public void updatePassword(String password) {
@@ -81,10 +91,13 @@ public class User {
   @Override
   public String toString() {
     return "User{" +
-        "email='" + email + '\'' +
+        "id=" + getId() +
+        ", createdAt=" + getCreatedAt() +
+        ", updatedAt=" + getUpdatedAt() +
+        ", email='" + email + '\'' +
         ", name='" + name + '\'' +
-        ", channels=" + channels.size() +
-        ", id=" + getId() +
+        ", password='" + password + '\'' +
+        ", channels=" + channels +
         '}';
   }
 
@@ -97,11 +110,14 @@ public class User {
       return false;
     }
     User user = (User) o;
-    return getId().equals(user.getId());
+    return Objects.equals(base.getId(), user.getId()) &&
+        Objects.equals(email, user.email) &&
+        Objects.equals(name, user.name) &&
+        Objects.equals(password, user.password);
   }
 
   @Override
   public int hashCode() {
-    return getId().hashCode();
+    return Objects.hash(base.getId(), email, name, password);
   }
 }

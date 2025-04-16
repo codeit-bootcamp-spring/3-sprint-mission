@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -14,7 +16,10 @@ import java.util.UUID;
  *   <li>참여자 목록</li>
  * </ul>
  */
-public class Channel {
+public class Channel implements Serializable {
+
+  @Serial
+  private static final long serialVersionUID = 1L;
 
   private final Base base;
   private final User creator;
@@ -87,10 +92,12 @@ public class Channel {
   @Override
   public String toString() {
     return "Channel{" +
-        "name='" + name + '\'' +
+        "id=" + getId() +
+        ", createdAt=" + getCreatedAt() +
+        ", updatedAt=" + getUpdatedAt() +
+        ", name='" + name + '\'' +
         ", creator=" + creator.getName() +
-        ", participants=" + participants.size() +
-        ", id=" + getId() +
+        ", participants=" + participants +
         '}';
   }
 
