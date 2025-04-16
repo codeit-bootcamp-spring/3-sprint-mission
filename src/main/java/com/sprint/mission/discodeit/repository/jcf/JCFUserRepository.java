@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,31 +18,50 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 15.        doungukkim       최초 생성
  */
-public class JCFUserRepository {
+public class JCFUserRepository implements UserRepository {
 
     private final List<User> data = new ArrayList<>();
 
-    public void save(User user) {
-        data.add(user);
-    }
+//    -------------------interface-------------------
 
+//    UUID saveUser(String username);
+//    User findUserById(UUID userId);
+//    List<User> findAllUsers();
+//    void updateUsernameByIdAndName(UUID userId, String newName);
+//    void deleteUserById(UUID userId);
+//    void addChannelInUserByIdAndChannelId(UUID userId, UUID channelId);
+//    List<UUID> findChannelIdsInId(UUID userId);
+//    void deleteChannelIdInUser(UUID channelId, UUID userId);
+
+//    -------------------------------------------------
+
+    @Override
+    public UUID saveUser(String username) {
+        User user = new User(username);
+        data.add(user);
+        return user.getId();
+    }
+    @Override
     public User findUserById(UUID userId) {
         return data.stream().filter(user -> user.getId().equals(userId)).findAny().orElse(null);
     }
 
+    @Override
     public List<User> findAllUsers() {
         return data;
     }
 
-    public void updateUsername(UUID userId, String newName) {
+
+    @Override
+    public void updateUsernameByIdAndName(UUID userId, String newName) {
         for (User user : data) {
             if (user.getId().equals(userId)) {
                 user.setUsername(newName);
             }
         }
     }
-
-    public void deleteUserByIndex(UUID userId) {
+    @Override
+    public void deleteUserById(UUID userId) {
         for (int i = 0; i < data.size(); i++) {
             if (data.get(i).getId().equals(userId)) {
                 data.remove(i);
@@ -49,8 +69,8 @@ public class JCFUserRepository {
             }
         }
     }
-
-    public void addChannelInUser(UUID userId, UUID channelId) {
+    @Override
+    public void addChannelInUserByIdAndChannelId(UUID userId, UUID channelId) {
         for (User user : data) {
             if (user.getId().equals(userId)) {
                 if(user.getChannelIds()!=null){
@@ -63,7 +83,7 @@ public class JCFUserRepository {
         }
 
     }
-
+    @Override
     public List<UUID> findChannelIdsInId(UUID userId) {
         for (User user : data) {
             if (user.getId().equals(userId)) {
@@ -73,7 +93,7 @@ public class JCFUserRepository {
         }
         return null;
     }
-
+    @Override
     public void deleteChannelIdInUser(UUID channelId, UUID userId) {
         for (User user : data) {
             if (user.getId().equals(userId)) {

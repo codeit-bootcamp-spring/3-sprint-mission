@@ -2,8 +2,10 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
+import com.sprint.mission.discodeit.util.FileSerializer;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -23,10 +25,17 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 15.        doungukkim       최초 생성
  */
-public class FileChannelRepository {
-    FilePathUtil filePathUtil = new FilePathUtil();
+public class FileChannelRepository implements ChannelRepository {
+    FilePathUtil filePathUtil;
+    FileSerializer fileSerializer;
 
-    public boolean saveChannel(Channel channel) {
+    public FileChannelRepository(FilePathUtil filePathUtil, FileSerializer fileSerializer) {
+        this.filePathUtil = filePathUtil;
+        this.fileSerializer = fileSerializer;
+    }
+
+    @Override
+    public void saveChannel(Channel channel) {
         Path path = filePathUtil.getChannelFilePath(channel.getId());
 
         try (
@@ -35,37 +44,18 @@ public class FileChannelRepository {
                 ObjectOutputStream oos = new ObjectOutputStream(fos)) {
 
             oos.writeObject(channel);
-            return true;
         } catch (IOException e) {
-            return false;
+            throw new RuntimeException(e);
         }
-    }
 
+    }
+    @Override
     public Channel findChannelById(UUID channelId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
-        Channel channel;
-
-        try {
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()));
-            channel = (Channel) ois.readObject();
-            return channel;
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        return fileSerializer.readObject(path, Channel.class);
     }
-
-    public List<Channel> findChannelsByUserId(UUID userId) {
-        Path userPath = filePathUtil.getUserFilePath(userId);
-        User user;
-        try {
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(userPath.toFile()));
-            user = (User) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        List<UUID> channelIds = user.getChannelIds();
-
+    @Override
+    public List<Channel> findChannelsByChannelIds(List<UUID> channelIds) {
         // 채널 조회 리스트 생성
         Path channelDirectory = filePathUtil.getChannelDirectory();
         if (Files.exists(channelDirectory)) {
@@ -97,8 +87,8 @@ public class FileChannelRepository {
             return new ArrayList<>();
         }
     }
-
-    public List<Channel> findAllChannel() {
+    @Override
+    public List<Channel> findAllChannels() {
         Path directory = filePathUtil.getChannelDirectory();
 
         if (!Files.exists(directory)) {
@@ -124,29 +114,18 @@ public class FileChannelRepository {
             throw new RuntimeException(e);
         }
     }
-
-    public void updateChannelName(UUID channelId, String title) {
+    @Override
+    public void updateChannelNameById(UUID channelId, String title) {
         Path path = filePathUtil.getChannelFilePath(channelId);
         Channel channel;
         if (Files.exists(path)) {
-            try {
-                ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()));
-                channel = (Channel) ois.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+            channel = fileSerializer.readObject(path, Channel.class);
             channel.setTitle(title);
-
-            try{
-                ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()));
-                oos.writeObject(channel);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            fileSerializer.writeObject(path, channel);
         }
     }
-
-    public void deleteChannel(UUID channelId) {
+    @Override
+    public void deleteChannelById(UUID channelId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
         try {
             Files.delete(path);
@@ -154,7 +133,7 @@ public class FileChannelRepository {
             throw new RuntimeException(e);
         }
     }
-
+    @Override
     public void addMessageInChannel(UUID channelId, Message message) {
         Path channelPath = filePathUtil.getChannelFilePath(channelId);
         Path messagePath = filePathUtil.getMessageFilePath(message.getId());
@@ -172,49 +151,30 @@ public class FileChannelRepository {
                     throw new RuntimeException(e);
                 }
 
-                try{
-                    ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(channelPath.toFile()));
-                    oos.writeObject(channel);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                fileSerializer.writeObject(channelPath, channel);
+
             }
         }
     }
-
+    @Override
     public void deleteMessageInChannel(UUID channelId, UUID messageId) {
         Path channelPath = filePathUtil.getChannelFilePath(channelId);
-        Channel channel;
 
         if (Files.exists(channelPath)) {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(channelPath.toFile()))) {
-
-                channel = (Channel) ois.readObject();
-                channel.getMessages().removeIf(message -> message.getId().equals(messageId));
-
-                try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(channelPath.toFile()))) {
-                    oos.writeObject(channel);
-                }
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+            Channel channel = fileSerializer.readObject(channelPath, Channel.class);
+            channel.getMessages().removeIf(message -> message.getId().equals(messageId));
+            fileSerializer.writeObject(channelPath, channel);
         }
     }
-
+    @Override
     public void addUserInChannel(UUID channelId, UUID userId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
-        Channel channel;
 
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
-            channel = (Channel) ois.readObject();
-            if (!channel.getUsersIds().contains(userId)) {
-                channel.getUsersIds().add(userId);
-            }
-            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
-                oos.writeObject(channel);
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        Channel channel = fileSerializer.readObject(path, Channel.class);
+        if (channel.getUsersIds().contains(userId)) {
+            channel.getUsersIds().add(userId);
         }
+        fileSerializer.writeObject(path, channel);
+
     }
 }

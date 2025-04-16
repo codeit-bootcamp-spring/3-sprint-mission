@@ -7,8 +7,6 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.jcf
@@ -32,20 +30,11 @@ public class JCFMessageService implements MessageService{
         this.channelService = channelService;
     }
 
+
+
     @Override
     public UUID createMessage(UUID senderId, UUID channelId, String message) {
-        List<Message> messages = new ArrayList<>();
-        Message newMessage = new Message(senderId, channelId, message);
-        messages.add(newMessage);
-        jcfMessageRepository.createMessage(messages,channelId, newMessage);
-
-//        if (data.get(channelId)==null) {
-//            // 체널에 메세지가 없을 때
-//            data.put(channelId, messages);
-//        } else {
-//            // 채널에 메세지가 있을 때
-//            data.get(channelId).add(newMessage);
-//        }
+        Message newMessage = jcfMessageRepository.saveMessage(senderId, channelId, message);
         channelService.addMessageInChannel(channelId, newMessage);
 
         return newMessage.getId();
@@ -53,7 +42,7 @@ public class JCFMessageService implements MessageService{
 
     @Override
     public List<Message> findAllMessages() {
-        return jcfMessageRepository.findAllMessage();
+        return jcfMessageRepository.findAllMessages();
 //        return data.values().stream().flatMap(List::stream).collect(Collectors.toList());
     }
 
@@ -67,15 +56,15 @@ public class JCFMessageService implements MessageService{
 //            }
 //        }
 
-        if (jcfMessageRepository.findMessageByMessageId(messageId)!=null) {
-            return jcfMessageRepository.findMessageByMessageId(messageId);
+        if (jcfMessageRepository.findMessageById(messageId)!=null) {
+            return jcfMessageRepository.findMessageById(messageId);
         }
         return null;
     }
 
     @Override
     public void updateMessage(UUID messageId, String newMessage) {
-        jcfMessageRepository.updateMessage(newMessage, messageId);
+        jcfMessageRepository.updateMessage(messageId, newMessage);
 
 //        List<Message> messages = data.get(channelId);
 //

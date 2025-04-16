@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
+import com.sprint.mission.discodeit.util.FileSerializer;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -21,12 +23,18 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 15.        doungukkim       최초 생성
  */
-public class FileUserRepository {
-    FilePathUtil filePathUtil = new FilePathUtil();
+public class FileUserRepository implements UserRepository {
+    FilePathUtil filePathUtil;
+    FileSerializer fileSerializer;
+
+    public FileUserRepository(FilePathUtil filePathUtil, FileSerializer fileSerializer) {
+        this.filePathUtil = filePathUtil;
+        this.fileSerializer = fileSerializer;
+    }
+
+    @Override
     public UUID saveUser(String username) {
         User user = new User(username);
-
-        // save in file
         try (
                 FileOutputStream fos = new FileOutputStream(filePathUtil.getUserFilePath(user.getId()).toFile());
                 ObjectOutputStream oos = new ObjectOutputStream(fos)
@@ -38,21 +46,16 @@ public class FileUserRepository {
 
         return user.getId();
     }
-
-    public User findUserById(Path path) {
-        User user;
+    @Override
+    public User findUserById(UUID userId) {
+        Path path = filePathUtil.getUserFilePath(userId);
 
         if (Files.exists(path)) {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
-                user = (User) ois.readObject();
-                return user;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            return fileSerializer.readObject(path, User.class);
         }
         return null;
     }
-
+    @Override
     public List<User> findAllUsers() {
         Path userDirectory = filePathUtil.getUserDirectory();
         if (Files.exists(userDirectory)) {
@@ -80,96 +83,64 @@ public class FileUserRepository {
             return new ArrayList<>();
         }
     }
-
+    @Override
     public void updateUsernameByIdAndName(UUID userId, String newName) {
         Path path = filePathUtil.getUserFilePath(userId);
-        User user;
+
 
         // 파일 확인
         if (Files.exists(path)) {
             // 역직렬화
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
-                user = (User) ois.readObject();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            User user = fileSerializer.readObject(path, User.class);
 
             // 수정
             user.setUsername(newName);
 
             // 직렬화
-            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
-                oos.writeObject(user);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            fileSerializer.writeObject(path, user);
+
         }
     }
-
+    @Override
     public void deleteUserById(UUID userId) {
         Path path = filePathUtil.getUserFilePath(userId);
         // 파일 확인
         try {
             Files.delete(path);
-            // ADD: DELETE USER IN CHANNEL
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
+    @Override
     public void addChannelInUserByIdAndChannelId(UUID userId, UUID channelId) {
         Path path = filePathUtil.getUserFilePath(userId);
-        User user;
+
         if (Files.exists(path)) {
-            try {
-                ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()));
-                user = (User) ois.readObject();
-            } catch (ClassNotFoundException | IOException e) {
-                throw new RuntimeException(e);
-            }
+            User user = fileSerializer.readObject(path, User.class);
 
             List<UUID> channelIds = user.getChannelIds();
             channelIds.add(channelId);
             user.setChannelIds(channelIds);
 
-            try{
-                ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()));
-                oos.writeObject(user);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            fileSerializer.writeObject(path, user);
         }
     }
-
+    @Override
     public List<UUID> findChannelIdsInId(UUID userId) {
         Path path = filePathUtil.getUserFilePath(userId);
-        User user;
+
         if (!Files.exists(path)) {
             return null;
         }
-        try{
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()));
-            user = (User) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        return user.getChannelIds();
-    }
+        return fileSerializer.readObject(path, User.class).getChannelIds();
 
+    }
+    @Override
     public void deleteChannelIdInUser(UUID channelId, UUID userId) {
         Path path = filePathUtil.getUserFilePath(userId);
-        User user;
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
-            user = (User) ois.readObject();
-            user.getChannelIds().removeIf(id -> id.equals(channelId));
-        } catch (ClassNotFoundException | IOException e) {
-            throw new RuntimeException(e);
-        }
 
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
-            oos.writeObject(user);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        User user = fileSerializer.readObject(path, User.class);
+        user.getChannelIds().removeIf(id -> id.equals(channelId));
+        fileSerializer.writeObject(path, user);
     }
 }

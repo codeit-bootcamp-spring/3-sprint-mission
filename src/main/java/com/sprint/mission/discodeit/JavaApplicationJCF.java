@@ -134,6 +134,7 @@ public class JavaApplicationJCF {
         System.out.println("**메세지 단건 조회(daniel)");
 
         Message msg = messageService.findMessageByMessageId(danielMessageId);
+        System.out.println("조회된 메시지: " + msg);
         System.out.println(userService.findUserById(msg.getSenderId()).getUsername() + " : " + msg.getMessage());
 
 //        다건 조회()

@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.util.FileSerializer;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -29,7 +30,8 @@ import java.util.UUID;
 public class FileUserService implements UserService {
     private ChannelService channelService;
     FilePathUtil filePathUtil =new FilePathUtil();
-    FileUserRepository fur = new FileUserRepository();
+    FileSerializer fileSerializer = new FileSerializer();
+    FileUserRepository fur = new FileUserRepository(filePathUtil,fileSerializer);
 
     public FileUserService(ChannelService channelService) {
         this.channelService = channelService;
@@ -65,8 +67,7 @@ public class FileUserService implements UserService {
 
     @Override
     public User findUserById(UUID userId) {
-        Path path = filePathUtil.getUserFilePath(userId);
-        return fur.findUserById(path);
+        return fur.findUserById(userId);
 
 //        if (Files.exists(path)) {
 //            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
@@ -202,6 +203,7 @@ public class FileUserService implements UserService {
     @Override
     public void removeChannelIdInUsers(UUID channelId) {
         List<UUID> usersIds = channelService.findChannelById(channelId).getUsersIds();
+
         for (UUID userId : usersIds) {
             fur.deleteChannelIdInUser(channelId, userId);
         }

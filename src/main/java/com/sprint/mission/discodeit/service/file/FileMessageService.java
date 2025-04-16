@@ -6,11 +6,8 @@ import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.util.FilePathUtil;
+import com.sprint.mission.discodeit.util.FileSerializer;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,7 +24,8 @@ import java.util.UUID;
  */
 public class FileMessageService implements MessageService {
     public FilePathUtil filePathUtil = new FilePathUtil();
-    public final FileMessageRepository fmr = new FileMessageRepository();
+    public FileSerializer fileSerializer = new FileSerializer();
+    public final FileMessageRepository fmr = new FileMessageRepository(filePathUtil, fileSerializer);
     public ChannelService channelService;
 
     public FileMessageService(FileChannelService fileChannelService) {
@@ -105,7 +103,7 @@ public class FileMessageService implements MessageService {
     }
     @Override
     public Message findMessageByMessageId(UUID messageId) {
-        return fmr.findMessageByMessageId(messageId);
+        return fmr.findMessageById(messageId);
 //        Path path = filePathUtil.getMessageFilePath(messageId);
 //        Message message;
 //
@@ -141,22 +139,12 @@ public class FileMessageService implements MessageService {
 
     @Override
     public void deleteMessageById(UUID messageId){
-//        Path path = filePathUtil.getMessageFilePath(messageId);
         UUID channelId = findMessageByMessageId(messageId).getChannelId();
-        boolean result = fmr.deleteMessageById(messageId);
+        fmr.deleteMessageById(messageId);
 
-        if (result) {
-            // channel 안의 메세지 관리(삭제)
-            channelService.deleteMessageInChannel(channelId, messageId);
-        }
 
-//        try{
-//            Files.delete(path);
-//            // channel 안의 메세지 관리(삭제)
-//            channelService.deleteMessageInChannel(channelId, messageId);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+        // channel 안의 메세지 관리(삭제)
+        channelService.deleteMessageInChannel(channelId, messageId);
 
 
     }
@@ -172,31 +160,11 @@ public class FileMessageService implements MessageService {
 
         List<Message> messages = channelService.findChannelById(channelId).getMessages();
 
+        fmr.deleteMessagesByChannelId(channelId);
         for (Message message : messages) {
-            // 파일 삭제
-            boolean result = fmr.deleteMessagesByPath(filePathUtil.getMessageFilePath(message.getId()));
             // channel에 있는 messageId 삭제
-            if(result){
-                channelService.deleteMessageInChannel(channelId, message.getId());
-            }
+            channelService.deleteMessageInChannel(channelId, message.getId());
         }
-
-
-//        Path path = filePathUtil.getChannelFilePath(channelId);
-//        Channel channel;
-
-//        List<Message> messages = channelService.findChannelById(channelId).getMessages();
-
-//        for (Message message : messages) {
-//            try {
-//                // 파일 삭제
-//                Files.delete(filePathUtil.getMessageFilePath(message.getId()));
-//                // channel에 있는 messageId 삭제
-//                channelService.deleteMessageInChannel(channelId, message.getId());
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
     }
 
 }
