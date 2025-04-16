@@ -15,9 +15,10 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.file.FileChannelService;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -52,16 +53,21 @@ public class JavaApplication2 {
 
     public static void main(String[] args) {
         // 서비스 초기화
-        // TODO Basic*Service 구현체를 초기화하세요.
-        ChannelRepository channelRepository = new JCFChannelRepository();
-        ChannelService channelService = new BasicChannelService(channelRepository);
-        MessageRepository messageRepository = new JCFMessageRepository();
-        MessageService messageService = new BasicMessageService(messageRepository);
-        UserRepository userRepository = new JCFUserRepository();
-        UserService userService = new BasicUserService(userRepository);
+        CopyOnWriteArrayList<Channel> channels = new CopyOnWriteArrayList<>();
+        CopyOnWriteArrayList<User> users = new CopyOnWriteArrayList<>();
+        CopyOnWriteArrayList<Message> messages = new CopyOnWriteArrayList<>();
 
-        // ============== Basic *** Service 테스트 ==============
-        System.out.println("============== Basic *** Service 테스트 ==============");
+        ChannelRepository channelRepository = new JCFChannelRepository(channels);
+        UserRepository userRepository = new JCFUserRepository(users);
+        MessageRepository messageRepository = new JCFMessageRepository(messages,userRepository,channelRepository);
+
+        ChannelService channelService = new BasicChannelService(channelRepository);
+        UserService userService = new BasicUserService(userRepository);
+        MessageService messageService = new BasicMessageService(messageRepository);
+
+
+        // ============== JCF*Repository 테스트 테스트 ==============
+        System.out.println("============== JCF*Repository 테스트 테스트 ==============");
         System.out.println();
 
         // 등록
@@ -70,7 +76,7 @@ public class JavaApplication2 {
         Message message1 = messageCreateTest(messageService,channel1,user1);
         Channel channela = setupChannel(channelService);
         User usera = setupUser(userService);
-        Message messagea = messageCreateTest(messageService,channel1,user1);
+        Message messagea = messageCreateTest(messageService,channela,usera);
 
         //조회(단건)
         System.out.println("============== 조회(단건) 테스트 ==============");
@@ -137,107 +143,26 @@ public class JavaApplication2 {
         System.out.println();
 
         // ====================================================================================================
-        // ==============  *** Service 테스트 ==============
-        System.out.println("============== JCF *** Service 테스트 ==============");
+        // ==============  File*Repository ==============
+        System.out.println("============== File*Repository 테스트 ==============");
         System.out.println();
 
         // 다형성을 이용한 인스턴스 변경
-        channelService = new JCFChannelService(new CopyOnWriteArrayList<>());
-        userService = new JCFUserService(new CopyOnWriteArrayList<>());
-        messageService = new JCFMessageService(new CopyOnWriteArrayList<>(),userService,channelService);
+        channelRepository = new FileChannelRepository();
+        userRepository = new FileUserRepository();
+        messageRepository = new FileMessageRepository();
 
-        // 등록
-        Channel channel2 = setupChannel(channelService);
-        User user2 = setupUser(userService);
-        Message message2 = messageCreateTest(messageService,channel2,user2);
-        Channel channelb = setupChannel(channelService);
-        User userb = setupUser(userService);
-        Message messageb = messageCreateTest(messageService,channel2,user2);
-
-        //조회(단건)
-        System.out.println("============== 조회(단건) 테스트 ==============");
-        System.out.println("CHANNEL");
-        channelService.readById(channel2.getId());
-        System.out.println();
-        System.out.println("USER");
-        userService.readById(user2.getId());
-        System.out.println();
-        System.out.println("MESSAGE");
-        messageService.readById(message2.getId());
-        System.out.println();
-
-        //조회(다건)
-        System.out.println("============== 조회(다건) 테스트 ==============");
-        System.out.println("CHANNEL");
-        channelService.readAll();
-        System.out.println();
-
-        System.out.println("USER");
-        userService.readAll();
-        System.out.println();
-
-        System.out.println("MESSAGE");
-        messageService.readAll();
-        System.out.println();
-
-        //수정
-        System.out.println("============== 수정 테스트 ==============");
-        Channel updateChannel2 = new Channel("수정채널", null);
-        channelService.update(channel2.getId(),updateChannel);
-        User updateUser2 = new User("사용자변경", "qweqwe","1111@gmail.com","010-0000-0000","오프라인",false,false,null);
-        userService.update(user2.getId(),updateUser);
-        Message updateMessage2 = new Message(null,null,"수정된텍스트입니다.");
-        messageService.update(message2.getId(),updateMessage);
-
-
-        //수정된 데이터 조회
-        System.out.println("CHANNEL");
-        channelService.readById(channel2.getId());
-        System.out.println("USER");
-        userService.readById(user2.getId());
-        System.out.println("MESSAGE");
-        messageService.readById(message2.getId());
-        System.out.println();
-
-        //삭제
-        System.out.println("============== 삭제 테스트 ==============");
-        channelService.delete(channel2);
-        userService.delete(user2);
-        messageService.delete(message2);
-
-        //조회를통해 삭제되었는지 확인
-        System.out.println("CHANNEL");
-        channelService.readAll();
-        System.out.println();
-
-        System.out.println("USER");
-        userService.readAll();
-        System.out.println();
-
-        System.out.println("MESSAGE");
-        messageService.readAll();
-        System.out.println();
-
-
-
-        // ====================================================================================================
-        // ==============  *** Service 테스트 ==============
-        System.out.println("============== File *** Service 테스트 ==============");
-        System.out.println();
-
-        // 다형성을 이용한 인스턴스 변경
-        channelService = new FileChannelService();
-        userService = new FileUserService();
-        messageService = new FileMessageService();
-        System.out.println();
+        channelService = new BasicChannelService(channelRepository);
+        userService = new BasicUserService(userRepository);
+        messageService = new BasicMessageService(messageRepository);
 
         // 등록
         Channel channel3 = setupChannel(channelService);
         User user3 = setupUser(userService);
-        Message message3 = messageCreateTest(messageService,channel1,user1);
+        Message message3 = messageCreateTest(messageService,channel3,user3);
         Channel channelc = setupChannel(channelService);
         User userc = setupUser(userService);
-        Message messagec = messageCreateTest(messageService,channel1,user1);
+        Message messagec = messageCreateTest(messageService,channelc,userc);
 
         //조회(단건)
         System.out.println("============== 조회(단건) 테스트 ==============");

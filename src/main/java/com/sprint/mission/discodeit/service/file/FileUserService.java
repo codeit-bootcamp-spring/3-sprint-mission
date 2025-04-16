@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entitiy.User;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.io.*;
@@ -12,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class FileUserService implements UserService {
 
-    private static final String FILE_PATH = "src/main/java/com/sprint/mission/discodeit/service/file/data/users.ser";
+    private static final String FILE_PATH = "src/main/java/com/sprint/mission/discodeit/repository/file/data/users.ser";
 
     @Override
     public void create(User user) {

@@ -1,7 +1,10 @@
-package com.sprint.mission.discodeit.service.file;
+package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entitiy.Channel;
-import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.entitiy.Message;
+import com.sprint.mission.discodeit.entitiy.User;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.service.MessageService;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -9,17 +12,17 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class FileChannelService implements ChannelService {
+public class FileMessageRepository implements MessageRepository {
 
-    private static final String FILE_PATH = "src/main/java/com/sprint/mission/discodeit/repository/file/data/channels.ser";
+    private static final String FILE_PATH = "src/main/java/com/sprint/mission/discodeit/repository/file/data/messages.ser";
 
     @Override
-    public void create(Channel channel) {
-        List<Channel> channels = new ArrayList<>();
+    public void save(Message message,User user,Channel channel) {
+        List<Message> messages = new ArrayList<>();
         try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
             while(true){
                 try {
-                    channels.add((Channel) reader.readObject());
+                    messages.add((Message) reader.readObject());
                 }catch (EOFException e){
                     break;
                 }
@@ -28,10 +31,10 @@ public class FileChannelService implements ChannelService {
             e.printStackTrace();
         }
 
-        channels.add(channel);
+        messages.add(message);
 
         try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){
-            channels.forEach((c)->{
+            messages.forEach((c)->{
                 try {
                     writer.writeObject(c);
                 } catch (IOException e) {
@@ -45,12 +48,12 @@ public class FileChannelService implements ChannelService {
     }
 
     @Override
-    public void readAll() {
+    public void read() {
         try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
             while(true){
                 try {
-                    Channel channel = (Channel) reader.readObject();
-                    System.out.println(channel);
+                    Message message = (Message) reader.readObject();
+                    System.out.println(message);
                 }catch (EOFException e){
                     break;
                 }
@@ -65,9 +68,9 @@ public class FileChannelService implements ChannelService {
         try (ObjectInputStream reader= new ObjectInputStream(new FileInputStream(FILE_PATH))){
             while(true){
                 try {
-                    Channel channel = (Channel) reader.readObject();
-                    if(channel.getId().equals(id)){
-                        System.out.println(channel);
+                    Message message = (Message) reader.readObject();
+                    if(message.getId().equals(id)){
+                        System.out.println(message);
                     }
                 }catch (EOFException e){
                     break;
@@ -79,12 +82,12 @@ public class FileChannelService implements ChannelService {
     }
 
     @Override
-    public void update(UUID id, Channel channel) {
-        List<Channel> channels = new ArrayList<>();
+    public void update(UUID id, Message message) {
+        List<Message> messages = new ArrayList<>();
         try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
             while(true){
                 try {
-                    channels.add((Channel) reader.readObject());
+                    messages.add((Message) reader.readObject());
                 }catch (EOFException e){
                     break;
                 }
@@ -94,14 +97,15 @@ public class FileChannelService implements ChannelService {
         }
 
 
-        channels.stream()
+        messages.stream()
                 .filter((c)->c.getId().equals(id))
-                .forEach((c)->{c.updateChannelName(channel.getChannelName());
+                .forEach((c)->{c.updateText(message.getText());
                     c.updateUpdatedAt(System.currentTimeMillis());
-                    c.updateMembers(channel.getMembers());});
+                    c.updatePicture(message.getPicture());
+                    c.updateEmoticon(message.getEmoticon());});
 
         try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){
-            channels.forEach((c)->{
+            messages.forEach((c)->{
                 try {
                     writer.writeObject(c);
                 } catch (IOException e) {
@@ -115,12 +119,12 @@ public class FileChannelService implements ChannelService {
     }
 
     @Override
-    public void delete(Channel channel) {
-        List<Channel> channels = new ArrayList<>();
+    public void delete(Message message) {
+        List<Message> messages = new ArrayList<>();
         try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
             while(true){
                 try {
-                    channels.add((Channel) reader.readObject());
+                    messages.add((Message) reader.readObject());
                 }catch (EOFException e){
                     break;
                 }
@@ -129,12 +133,12 @@ public class FileChannelService implements ChannelService {
             e.printStackTrace();
         }
 
-        List<Channel> deleteChannels = channels.stream()
-                .filter((c) -> !c.getId().equals(channel.getId()))
+        List<Message> deleteMessages = messages.stream()
+                .filter((c) -> !c.getId().equals(message.getId()))
                 .collect(Collectors.toList());
 
         try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){
-            deleteChannels.forEach((c)->{
+            deleteMessages.forEach((c)->{
                 try {
                     writer.writeObject(c);
                 } catch (IOException e) {

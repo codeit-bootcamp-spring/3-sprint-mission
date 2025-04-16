@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.service.file;
 import com.sprint.mission.discodeit.entitiy.Channel;
 import com.sprint.mission.discodeit.entitiy.Message;
 import com.sprint.mission.discodeit.entitiy.User;
-import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.io.*;
@@ -12,9 +11,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class FileMessageService implements MessageService{
+public class FileMessageService implements MessageService {
 
-    private static final String FILE_PATH = "src/main/java/com/sprint/mission/discodeit/service/file/data/messages.ser";
+    private static final String FILE_PATH = "src/main/java/com/sprint/mission/discodeit/repository/file/data/messages.ser";
 
     @Override
     public void create(Message message,User user,Channel channel) {

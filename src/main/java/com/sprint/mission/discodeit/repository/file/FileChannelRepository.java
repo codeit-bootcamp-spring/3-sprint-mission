@@ -1,6 +1,7 @@
-package com.sprint.mission.discodeit.service.file;
+package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entitiy.Channel;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.io.*;
@@ -9,12 +10,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class FileChannelService implements ChannelService {
+public class FileChannelRepository implements ChannelRepository {
+
 
     private static final String FILE_PATH = "src/main/java/com/sprint/mission/discodeit/repository/file/data/channels.ser";
 
     @Override
-    public void create(Channel channel) {
+    public void save(Channel channel) {
         List<Channel> channels = new ArrayList<>();
         try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
             while(true){
@@ -45,7 +47,7 @@ public class FileChannelService implements ChannelService {
     }
 
     @Override
-    public void readAll() {
+    public void read() {
         try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
             while(true){
                 try {
