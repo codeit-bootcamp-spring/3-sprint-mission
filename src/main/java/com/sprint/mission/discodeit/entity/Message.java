@@ -47,6 +47,10 @@ public class Message implements Serializable {
         return number;
     }
 
+    public static void setCounter(int counter) {
+        Message.counter = counter;
+    }
+
     @Override
     public String toString() {
         return "Message{" +

@@ -20,6 +20,14 @@ public class FileMessageService implements MessageService {
         messages = loadMessages();
         if (messages == null) {
             messages = new ArrayList<>();
+        } else {
+            int max = 0;
+            for (Message message : messages) {
+                if (message.getNumber() > max) {
+                    max = message.getNumber();
+                }
+            }
+            Message.setCounter(max + 1);
         }
     }
 
