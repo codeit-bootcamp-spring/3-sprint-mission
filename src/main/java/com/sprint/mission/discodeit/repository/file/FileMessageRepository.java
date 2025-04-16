@@ -1,7 +1,11 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.util.FilePathUtil;
+import com.sprint.mission.discodeit.util.FileSerializer;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -21,9 +25,16 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 15.        doungukkim       최초 생성
  */
-public class FileMessageRepository {
-    FilePathUtil filePathUtil = new FilePathUtil();
+public class FileMessageRepository implements MessageRepository {
+    FilePathUtil filePathUtil;
+    FileSerializer fileSerializer;
 
+    public FileMessageRepository(FilePathUtil filePathUtil, FileSerializer fileSerializer) {
+        this.filePathUtil = filePathUtil;
+        this.fileSerializer = fileSerializer;
+    }
+
+    @Override
     public Message saveMessage(UUID senderId, UUID channelId, String message) {
         Message msg = new Message(senderId, channelId, message);
         Path path = filePathUtil.getMessageFilePath(msg.getId());
@@ -41,7 +52,7 @@ public class FileMessageRepository {
         }
         return null;
     }
-
+    @Override
     public List<Message> findAllMessages() {
         Path directory = filePathUtil.getMessageDirectory();
 
@@ -67,71 +78,52 @@ public class FileMessageRepository {
         }
         return new ArrayList<>();
     }
-
-    public Message findMessageByMessageId(UUID messageId) {
+    @Override
+    public Message findMessageById(UUID messageId) {
         Path path = filePathUtil.getMessageFilePath(messageId);
-        Message message;
 
         if (Files.exists(path)) {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
-                message = (Message) ois.readObject();
-                return message;
+            return fileSerializer.readObject(path, Message.class);
 
-            } catch (ClassNotFoundException | IOException e) {
-                throw new RuntimeException(e);
-            }
         }
         return null;
     }
-
+    @Override
     public void updateMessage(UUID messageId, String newMessage) {
         Path path = filePathUtil.getMessageFilePath(messageId);
-        Message message;
+
         // 메세지 읽어오기
         if (Files.exists(path)) {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
-                message = (Message) ois.readObject();
-                message.setMessage(newMessage);
-                try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
-                    oos.writeObject(message);
-                }
-            } catch (IOException | ClassNotFoundException exception) {
-                throw new RuntimeException(exception);
-            }
+            Message message = fileSerializer.readObject(path, Message.class);
+            message.setMessage(newMessage);
+            fileSerializer.writeObject(path,message);
+
         }
     }
-
-    public boolean deleteMessageById(UUID messageId) {
+    @Override
+    public void deleteMessageById(UUID messageId) {
         Path path = filePathUtil.getMessageFilePath(messageId);
-        UUID channelId = findMessageByMessageId(messageId).getChannelId();
         try {
             Files.delete(path);
-            return true;
-            // channel 안의 메세지 관리(삭제)
-//            channelService.deleteMessageInChannel(channelId, messageId);
         } catch (IOException e) {
-            return false;
-        }
-    }
-
-    public boolean deleteMessagesByPath(Path path) {
-        try {
-            Files.delete(path);
-            return true;
-        } catch (IOException e) {
-            System.out.println("메세지 삭제 실패");
             throw new RuntimeException(e);
         }
     }
+    @Override
+    public void deleteMessagesByChannelId(UUID channelId) {
+        List<Message> allMessages = findAllMessages();
 
-
-
-
-
-
-
-
-
+        for (Message message : allMessages) {
+            if (message.getChannelId().equals(channelId)) {
+                try {
+                    Files.delete(filePathUtil.getMessageFilePath(message.getId()));
+                } catch (IOException e) {
+                    System.out.println("메세지 삭제 실패");
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
 }
 
 

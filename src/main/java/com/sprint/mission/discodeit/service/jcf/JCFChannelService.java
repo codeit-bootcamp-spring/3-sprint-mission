@@ -61,7 +61,7 @@ public class JCFChannelService implements ChannelService{
     public List<Channel> findChannelsByUserId(UUID userId) {
 //        List<Channel> result = new ArrayList<>();
         List<UUID> channelIds = userService.findChannelIdsInId(userId);
-        return jcfChannelRepository.findChannelsByUserId(channelIds);
+        return jcfChannelRepository.findChannelsByChannelIds(channelIds);
 //        for (UUID channelId : channelIds) {
 //            result.add(findChannelById(channelId));
 //        }
@@ -80,12 +80,12 @@ public class JCFChannelService implements ChannelService{
 
     @Override
     public List<Channel> findAllChannel() {
-        return jcfChannelRepository.findAllChannel();
+        return jcfChannelRepository.findAllChannels();
     }
 
     @Override
     public void updateChannelName(UUID id, String title) {
-        jcfChannelRepository.updateChannelName(id, title);
+        jcfChannelRepository.updateChannelNameById(id, title);
 
 //        for (Channel channel : data) {
 //            if (channel.getId().equals(id)) {
@@ -98,7 +98,7 @@ public class JCFChannelService implements ChannelService{
     @Override
     public void deleteChannel(UUID channelId) {
         userService.removeChannelIdInUsers(channelId);
-        jcfChannelRepository.deleteChannel(channelId);
+        jcfChannelRepository.deleteChannelById(channelId);
 
         messageService.deleteMessagesByChannelId(channelId);
     }

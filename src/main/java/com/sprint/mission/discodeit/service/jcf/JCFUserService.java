@@ -5,11 +5,8 @@ import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.jcf
@@ -38,9 +35,8 @@ public class JCFUserService implements UserService{
     // 등록
     @Override
     public UUID registerUser(String username) {
-        User user = new User(username);
-        jcfUserRepository.save(user);
-        return user.getId();
+        return jcfUserRepository.saveUser(username);
+
     }
 
     // 단건 조회
@@ -59,18 +55,13 @@ public class JCFUserService implements UserService{
     // 수정
     @Override
     public void updateUsername(UUID userId, String newName) {
-        jcfUserRepository.updateUsername(userId, newName);
-//        for (User user : data) {
-//            if (user.getId().equals(userId)) {
-//                user.setUsername(newName);
-//            }
-//        }
+        jcfUserRepository.updateUsernameByIdAndName(userId, newName);
     }
 
 //    삭제
     @Override
     public void deleteUser(UUID userId) {
-        jcfUserRepository.deleteUserByIndex(userId);
+        jcfUserRepository.deleteUserById(userId);
 //        for (int i = 0; i < data.size(); i++) {
 //            if (data.get(i).getId().equals(userId)) {
 //                data.remove(i);
@@ -81,7 +72,7 @@ public class JCFUserService implements UserService{
 
     @Override
     public void addChannelInUser(UUID userId, UUID channelId) {
-        jcfUserRepository.addChannelInUser(userId, channelId);
+        jcfUserRepository.addChannelInUserByIdAndChannelId(userId, channelId);
 //        for (User user : data) {
 //            if (user.getId().equals(userId)) {
 //                if(user.getChannelIds()!=null){

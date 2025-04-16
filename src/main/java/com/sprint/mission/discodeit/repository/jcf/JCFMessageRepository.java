@@ -1,12 +1,10 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.service.MessageService;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -20,24 +18,31 @@ import java.util.stream.Collectors;
  * -----------------------------------------------------------
  * 2025. 4. 15.        doungukkim       최초 생성
  */
-public class JCFMessageRepository {
+public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID, List<Message>> data = new HashMap<>();
 
-    public void createMessage(List<Message> messages, UUID channelId, Message newMessage) {
+    @Override
+    public Message saveMessage(UUID senderId, UUID channelId, String message) {
+        List<Message> messages = new ArrayList<>();
+        Message msg = new Message(senderId, channelId, message);
+        messages.add(msg);
+
         if (data.get(channelId)==null) {
             // 체널에 메세지가 없을 때
             data.put(channelId, messages);
         } else {
             // 채널에 메세지가 있을 때
-            data.get(channelId).add(newMessage);
+            data.get(channelId).add(msg);
         }
+        return msg;
     }
 
-    public List<Message> findAllMessage() {
+    @Override
+    public List<Message> findAllMessages() {
         return data.values().stream().flatMap(List::stream).collect(Collectors.toList());
     }
-
-    public Message findMessageByMessageId(UUID messageId) {
+    @Override
+    public Message findMessageById(UUID messageId) {
         List<Message> msgs = data.values().stream().flatMap(List::stream).collect(Collectors.toList());
         for (Message msg : msgs) {
             if (msg.getId().equals(messageId)) {
@@ -46,9 +51,9 @@ public class JCFMessageRepository {
         }
         return null;
     }
-
-    public void updateMessage(String newMessage, UUID messageId) {
-        UUID channelId = findMessageByMessageId(messageId).getChannelId();
+    @Override
+    public void updateMessage(UUID messageId, String newMessage) {
+        UUID channelId = findMessageById(messageId).getChannelId();
         List<Message> messages = data.get(channelId);
 
         for (Message message : messages) {
@@ -57,16 +62,16 @@ public class JCFMessageRepository {
             }
         }
     }
-
+    @Override
     public void deleteMessageById(UUID messageId) {
-        Message msg = findMessageByMessageId(messageId);
+        Message msg = findMessageById(messageId);
         UUID channelId = msg.getChannelId();
         List<Message> messages = data.get(channelId);
         if (messages != null) {
             messages.removeIf(message -> message.getId().equals(messageId));
         }
     }
-
+    @Override
     public void deleteMessagesByChannelId(UUID channelId) {
         data.remove(channelId);
     }
