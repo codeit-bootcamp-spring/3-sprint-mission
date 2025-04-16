@@ -13,12 +13,13 @@ import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class JavaApplication {
     public static void main(String[] args) {
-        ChannelService jcfChannelService = new JCFChannelService(new ArrayList<>());
-        UserService jcfUserService = new JCFUserService(new ArrayList<>());
-        MessageService jcfMessageService = new JCFMessageService(new ArrayList<>(),jcfUserService,jcfChannelService);
+        ChannelService jcfChannelService = new JCFChannelService(new CopyOnWriteArrayList<>());
+        UserService jcfUserService = new JCFUserService(new CopyOnWriteArrayList<>());
+        MessageService jcfMessageService = new JCFMessageService(new CopyOnWriteArrayList<>(),jcfUserService,jcfChannelService);
 
         // ============== JCFChannelService 테스트 ==============
         System.out.println("============== JCFChannelService 테스트 ==============");
@@ -43,7 +44,7 @@ public class JavaApplication {
         //수정
         System.out.println("============== 수정 테스트 ==============");
         Channel updateChannel = new Channel("수정채널", null);
-        jcfChannelService.updateById(channel1.getId(),updateChannel);
+        jcfChannelService.update(channel1.getId(),updateChannel);
 
         //수정된 데이터 조회
         jcfChannelService.readById(channel1.getId());

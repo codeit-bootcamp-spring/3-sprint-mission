@@ -1,10 +1,14 @@
 package com.sprint.mission.discodeit.entitiy;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class User {
+public class User implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     private UUID id;
     private Long createdAt;
     private Long updatedAt;
@@ -13,18 +17,18 @@ public class User {
     private String email;
     private String phone;
     private String status;
-    private Boolean turnOnMike;
-    private Boolean turnOnHeadset;
+    private Boolean isMikeOn;
+    private Boolean isSpeakerOn;
     private Map<UUID,User> friends;
 
-    public User(String userName, String password, String email, String phone, String status, Boolean turnOnMike, Boolean turnOnHeadset, Map<UUID,User> friends) {
+    public User(String userName, String password, String email, String phone, String status, Boolean isMikeOn, Boolean isSpeakerOn, Map<UUID,User> friends) {
         this.userName = userName;
         this.password = password;
         this.email = email;
         this.phone = phone;
         this.status = status;
-        this.turnOnMike = turnOnMike;
-        this.turnOnHeadset = turnOnHeadset;
+        this.isMikeOn = isMikeOn;
+        this.isSpeakerOn = isSpeakerOn;
         this.friends = friends;
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
@@ -41,8 +45,8 @@ public class User {
                 ", email='" + email + '\'' +
                 ", phone='" + phone + '\'' +
                 ", status='" + status + '\'' +
-                ", turnOnMike=" + turnOnMike +
-                ", turnOnHeadset=" + turnOnHeadset +
+                ", isMikeOn=" + isMikeOn +
+                ", isSpeakerOn=" + isSpeakerOn +
                 ", friends=" + friends +
                 '}';
     }
@@ -79,24 +83,14 @@ public class User {
         return status;
     }
 
-    public Boolean getTurnOnMike() {
-        return turnOnMike;
+    public Boolean getIsMikeOn() {
+        return isMikeOn;
     }
 
-    public Boolean getTurnOnHeadset() {
-        return turnOnHeadset;
-    }
+    public Boolean getIsSpeakerOn() {return isSpeakerOn;}
 
     public Map<UUID,User> getFriends() {
         return friends;
-    }
-
-    public void updateId(UUID id) {
-        this.id = id;
-    }
-
-    public void updateCreatedAt(Long createdAt) {
-        this.createdAt = createdAt;
     }
 
     public void updateUpdatedAt(Long updatedAt) {
@@ -123,12 +117,12 @@ public class User {
         this.status = status;
     }
 
-    public void updateTurnOnMike(Boolean turnOnMike) {
-        this.turnOnMike = turnOnMike;
+    public void updateIsMikeOn(Boolean isMikeOn) {
+        this.isMikeOn = isMikeOn;
     }
 
-    public void updateTurnOnHeadset(Boolean turnOnHeadset) {
-        this.turnOnHeadset = turnOnHeadset;
+    public void updateIsSpeakerOn(Boolean isSpeakerOn) {
+        this.isSpeakerOn = isSpeakerOn;
     }
 
     public void updateFriends(Map<UUID,User> friends) {
