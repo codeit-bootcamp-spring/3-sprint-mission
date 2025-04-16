@@ -1,13 +1,14 @@
 package com.sprint.mission.discodeit.menu;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.jcf.integration.UserIntegration;
 
 import java.util.Scanner;
 import java.util.UUID;
 
 public class UserMenu {
-    public static void manageUsers(Scanner scanner, JCFUserService userService) {
+    public static void manageUsers(Scanner scanner, UserService userService, UserIntegration userIntegration) {
         while (true) {
             System.out.println("\n===== USER MENU =====");
             System.out.println("1. 사용자 등록");
@@ -50,7 +51,7 @@ public class UserMenu {
                     case "5":
                         System.out.print("삭제할 사용자 ID 입력: ");
                         UUID delId = UUID.fromString(scanner.nextLine());
-                        userService.deleteUser(delId);
+                        userIntegration.deleteUser(delId);
                         break;
                     case "0":
                         return;

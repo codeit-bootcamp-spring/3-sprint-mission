@@ -3,23 +3,28 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.menu.ChannelMenu;
 import com.sprint.mission.discodeit.menu.MessageMenu;
 import com.sprint.mission.discodeit.menu.UserMenu;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.jcf.integration.ChannelIntegration;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+import com.sprint.mission.discodeit.service.jcf.integration.MessageIntegration;
+import com.sprint.mission.discodeit.service.jcf.integration.UserIntegration;
 
 import java.util.Scanner;
 
 public class JavaApplication {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        JCFUserService userService = new JCFUserService();
-        JCFMessageService messageService = new JCFMessageService(userService, null);
-        JCFChannelService channelService = new JCFChannelService();
+        UserService userService = new JCFUserService();
+        MessageService messageService = new JCFMessageService();
+        ChannelService channelService = new JCFChannelService();
 
-        messageService.setChannelService(channelService);
-        userService.setChannelService(channelService);
-
-        ChannelApplication channelApplication = new ChannelApplication(channelService, userService, messageService);
+        UserIntegration userIntegration = new UserIntegration(userService, channelService);
+        MessageIntegration messageIntegration = new MessageIntegration(messageService, userService, channelService);
+        ChannelIntegration channelIntegration = new ChannelIntegration(channelService, userService, messageService);
 
         while (true) {
             System.out.println("\n===== MAIN MENU =====");
@@ -34,13 +39,13 @@ public class JavaApplication {
             try {
                 switch (mainChoice) {
                     case "1":
-                        UserMenu.manageUsers(scanner, userService);
+                        UserMenu.manageUsers(scanner, userService, userIntegration);
                         break;
                     case "2":
-                        ChannelMenu.manageChannels(scanner, channelService, channelApplication);
+                        ChannelMenu.manageChannels(scanner, channelService, channelIntegration);
                         break;
                     case "3":
-                        MessageMenu.manageMessages(scanner, messageService);
+                        MessageMenu.manageMessages(scanner, messageService, messageIntegration);
                         break;
                     case "0":
                         System.out.println("종료합니다.");

@@ -1,13 +1,14 @@
 package com.sprint.mission.discodeit.menu;
 
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.jcf.integration.MessageIntegration;
 
 import java.util.Scanner;
 import java.util.UUID;
 
 public class MessageMenu {
-    public static void manageMessages(Scanner scanner, JCFMessageService messageService) {
+    public static void manageMessages(Scanner scanner, MessageService messageService, MessageIntegration messageIntegration) {
         while (true) {
             System.out.println("\n===== MESSAGE MENU =====");
             System.out.println("1. 메시지 생성");
@@ -28,7 +29,7 @@ public class MessageMenu {
                         UUID sender = UUID.fromString(scanner.nextLine());
                         System.out.print("채널 ID: ");
                         UUID ch = UUID.fromString(scanner.nextLine());
-                        Message m = messageService.createMessageCheck(content, sender, ch);
+                        Message m = messageIntegration.createMessage(content, sender, ch);
                         System.out.println("생성된 메시지 ID: " + m.getId());
                         break;
                     case "2":
@@ -53,7 +54,7 @@ public class MessageMenu {
                     case "5":
                         System.out.print("삭제할 메시지 ID 입력: ");
                         UUID delId = UUID.fromString(scanner.nextLine());
-                        messageService.deleteMessage(delId);
+                        messageIntegration.deleteMessage(delId);
                         break;
                     case "0":
                         return;

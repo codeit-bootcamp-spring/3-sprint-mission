@@ -13,8 +13,8 @@ public class User extends BaseEntity {
         this.userName = userName;
     }
 
-    public String getUserName() {
-        return userName;
+    public Set<UUID> getChannelIds() {
+        return channelIds;
     }
 
     public void updateUserName(String userName) {

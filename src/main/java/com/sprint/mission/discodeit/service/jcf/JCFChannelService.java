@@ -28,14 +28,4 @@ public class JCFChannelService implements ChannelService {
     public void deleteChannel(UUID channelId) {
         data.remove(channelId);
     }
-
-    @Override
-    public void addMessageId(UUID channelId, UUID messageId) {
-        getChannel(channelId).ifPresent(channel -> channel.addMessage(messageId));
-    }
-
-    @Override
-    public void addUserId(UUID channelId, UUID userId) {
-        getChannel(channelId).ifPresent(channel -> channel.addUser(userId));
-    }
 }

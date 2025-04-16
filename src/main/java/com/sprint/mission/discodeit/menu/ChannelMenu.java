@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.menu;
 
-import com.sprint.mission.discodeit.ChannelApplication;
+import com.sprint.mission.discodeit.service.jcf.integration.ChannelIntegration;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 
@@ -8,7 +8,7 @@ import java.util.Scanner;
 import java.util.UUID;
 
 public class ChannelMenu {
-    public static void manageChannels(Scanner scanner, ChannelService channelService, ChannelApplication channelApplication) {
+    public static void manageChannels(Scanner scanner, ChannelService channelService, ChannelIntegration channelIntegration) {
         while (true) {
             System.out.println("\n===== CHANNEL MENU =====");
             System.out.println("1. 채널 생성");
@@ -52,14 +52,14 @@ public class ChannelMenu {
                     case "5":
                         System.out.print("삭제할 채널 ID 입력: ");
                         UUID delId = UUID.fromString(scanner.nextLine());
-                        channelApplication.deleteChannel(delId);
+                        channelIntegration.deleteChannel(delId);
                         break;
                     case "6":
                         System.out.print("채널 ID 입력: ");
                         UUID chId = UUID.fromString(scanner.nextLine());
                         System.out.print("사용자 ID 입력: ");
                         UUID userId = UUID.fromString(scanner.nextLine());
-                        channelApplication.addUserToChannel(chId, userId);
+                        channelIntegration.addUserToChannel(chId, userId);
                         break;
                     case "0":
                         return;
