@@ -32,8 +32,4 @@ public class FileSerializer {
             throw new RuntimeException(e);
         }
     }
-
-
-
-
 }

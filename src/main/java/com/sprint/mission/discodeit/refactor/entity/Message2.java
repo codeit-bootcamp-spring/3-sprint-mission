@@ -1,12 +1,11 @@
 package com.sprint.mission.discodeit.refactor.entity;
 
 import java.io.Serializable;
-
 import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.refactor.entity
- * fileName       : Channel2
+ * fileName       : Message2
  * author         : doungukkim
  * date           : 2025. 4. 17.
  * description    :
@@ -15,27 +14,40 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-public class Channel2 implements Serializable {
+public class Message2 implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private UUID id;
     private Long createdAt;
     private Long updatedAt;
-    private String name;
+    private String content;
+    private UUID senderId;
+    private UUID channelId;
 
-
-    public Channel2(String name) {
+    public Message2(UUID senderId, UUID channelId, String content) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
-        this.name = name;
+        this.senderId = senderId;
+        this.channelId = channelId;
+        this.content = content;
     }
 
     public void setUpdatedAt(Long updatedAt) {
         this.updatedAt = updatedAt;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setContent(String content) {
+        this.content = content;
+        setUpdatedAt(System.currentTimeMillis());
+    }
+
+    public void setSenderId(UUID senderId) {
+        this.senderId = senderId;
+        setUpdatedAt(System.currentTimeMillis());
+    }
+
+    public void setChannelId(UUID channelId) {
+        this.channelId = channelId;
         setUpdatedAt(System.currentTimeMillis());
     }
 
@@ -51,17 +63,15 @@ public class Channel2 implements Serializable {
         return updatedAt;
     }
 
-    public String getName() {
-        return name;
+    public String getContent() {
+        return content;
     }
 
-    @Override
-    public String toString() {
-        return "Channel2{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", name='" + name + '\'' +
-                '}';
+    public UUID getSenderId() {
+        return senderId;
+    }
+
+    public UUID getChannelId() {
+        return channelId;
     }
 }

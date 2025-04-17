@@ -83,6 +83,7 @@ public class FileChannelService implements ChannelService {
     public List<Channel> findAllChannel() {
         return fcr.findAllChannels();
     }
+
     @Override
     public void updateChannelName(UUID channelId, String title) {
         fcr.updateChannelNameById(channelId, title);
