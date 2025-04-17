@@ -1,27 +1,18 @@
-package com.sprint.mission.discodeit.service.file;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class FileUserService implements UserService {
+public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
 
-  public FileUserService(UserRepository userRepository) {
+  public BasicUserService(UserRepository userRepository) {
     this.userRepository = userRepository;
-  }
-
-  public static FileUserService from(String filePath) {
-    return new FileUserService(FileUserRepository.from(filePath));
-  }
-
-  public static FileUserService createDefault() {
-    return new FileUserService(FileUserRepository.createDefault());
   }
 
   @Override
@@ -79,14 +70,12 @@ public class FileUserService implements UserService {
   }
 
   public static class UserNotFoundException extends RuntimeException {
-
     public UserNotFoundException(UUID userId) {
       super("유저를 찾을 수 없음: " + userId);
     }
   }
 
   public static class UserNotParticipantException extends RuntimeException {
-
     public UserNotParticipantException() {
       super("채널 참여자가 아닙니다.");
     }

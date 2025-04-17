@@ -59,12 +59,13 @@ public class FileSerReaderTest {
     File file = new File(filePath);
 
     if (file.exists() && file.length() > 0) { // 파일이 존재하고 비어있지 않은 경우
-      ArrayList<Message> messagesData = (ArrayList<Message>) FileSerReader.readObjectFromFile(
+      HashMap<UUID, Message> messagesData = (HashMap<UUID, Message>) FileSerReader.readObjectFromFile(
           filePath);
 
       assertNotNull(messagesData, "파일이 비어있거나 읽을 수 없습니다.");
       assertFalse(messagesData.isEmpty(), "저장된 메시지가 없습니다.");
-      messagesData.forEach(System.out::println);
+      List<Message> messages = messagesData.values().stream().collect(Collectors.toList());
+      messages.forEach(System.out::println);
     } else {
       System.out.println("파일이 존재하지 않거나 비어있습니다: " + filePath);
     }

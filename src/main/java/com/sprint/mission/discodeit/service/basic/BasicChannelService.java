@@ -1,28 +1,20 @@
-package com.sprint.mission.discodeit.service.file;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-public class FileChannelService implements ChannelService {
+public class BasicChannelService implements ChannelService {
 
   private final ChannelRepository channelRepository;
 
-  public FileChannelService(ChannelRepository channelRepository) {
+  public BasicChannelService(ChannelRepository channelRepository) {
     this.channelRepository = channelRepository;
-  }
-
-  public static FileChannelService from(String filePath) {
-    return new FileChannelService(FileChannelRepository.from(filePath));
-  }
-
-  public static FileChannelService createDefault() {
-    return new FileChannelService(FileChannelRepository.createDefault());
   }
 
   @Override
@@ -38,60 +30,62 @@ public class FileChannelService implements ChannelService {
 
   @Override
   public List<Channel> searchChannels(UUID creatorId, String name) {
-    List<Channel> allChannels = channelRepository.findAll();
-    return allChannels.stream()
-        .filter(channel -> creatorId == null || channel.getCreator().getId().equals(creatorId))
-        .filter(channel -> name == null || channel.getName().contains(name))
-        .toList();
+    return channelRepository.findAll().stream()
+        .filter(channel -> (creatorId == null || channel.getCreator().getId().equals(creatorId))
+            && (name == null || channel.getName().contains(name)))
+        .collect(Collectors.toList());
   }
 
   @Override
   public List<Channel> getUserChannels(UUID userId) {
     return channelRepository.findAll().stream()
         .filter(channel -> channel.getParticipants().stream()
-            .anyMatch(user -> user.getId().equals(userId)))
-        .toList();
+            .anyMatch(p -> p.getId().equals(userId)))
+        .collect(Collectors.toList());
   }
 
   @Override
-  public Optional<Channel> updateChannelName(UUID channelId, String name) {
+  public Optional<Channel> updateChannelName(UUID channelId, String newName) {
     return channelRepository.findById(channelId)
         .map(channel -> {
-          channel.updateName(name);
+          channel.updateName(newName);
           return channelRepository.save(channel);
         });
   }
 
   @Override
-  public void addParticipant(UUID channelId, User user) {
+  public void addParticipant(UUID channelId, User user)
+      throws ChannelNotFoundException, ParticipantAlreadyExistsException {
+
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(channelId));
 
-    if (channel.addParticipant(user)) {
-      channelRepository.save(channel);
-    } else {
+    if (!channel.addParticipant(user)) {
       throw new ParticipantAlreadyExistsException(user.getId(), channelId);
     }
+
+    channelRepository.save(channel); // 상태 변경 후 저장
   }
 
   @Override
-  public void removeParticipant(UUID channelId, UUID userId) {
+  public void removeParticipant(UUID channelId, UUID userId)
+      throws ChannelNotFoundException, ParticipantNotFoundException {
+
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(channelId));
 
-    boolean removed = channel.removeParticipant(userId);
-    if (!removed) {
+    if (!channel.removeParticipant(userId)) {
       throw new ParticipantNotFoundException(userId, channelId);
     }
 
-    channelRepository.save(channel);
+    channelRepository.save(channel); // 상태 변경 후 저장
   }
 
   @Override
   public Optional<Channel> deleteChannel(UUID channelId) {
-    Optional<Channel> channel = channelRepository.findById(channelId);
-    channel.ifPresent(c -> channelRepository.deleteById(channelId));
-    return channel;
+    Optional<Channel> deleted = channelRepository.findById(channelId);
+    deleted.ifPresent(channel -> channelRepository.deleteById(channelId));
+    return deleted;
   }
 
   public static class ChannelNotFoundException extends RuntimeException {
