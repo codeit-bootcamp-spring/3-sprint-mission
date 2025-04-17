@@ -3,6 +3,9 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -31,13 +34,18 @@ public class JavaApplication {
   private Message message1, message2, message3;
 
   public JavaApplication() {
-    // 서비스 초기화
-    this.userService = FileUserService.createDefault();
-    this.channelService = FileChannelService.createDefault();
-    this.messageService = FileMessageService.createDefault(userService, channelService);
+    // JCF 서비스 초기화
+    // this.userService = new JCFUserService(new JCFUserRepository());
+    // this.channelService = new JCFChannelService(new JCFChannelRepository());
+    // this.messageService = new JCFMessageService(new JCFMessageRepository(), userService, channelService);
+    // FILE 서비스 초기화
+    this.userService = new FileUserService(FileUserRepository.createDefault());
+    this.channelService = new FileChannelService(FileChannelRepository.createDefault());
+    this.messageService = new FileMessageService(FileMessageRepository.createDefault(), userService,
+        channelService);
   }
 
-  public void runApplication() {
+  public void runApplication() throws InterruptedException {
     System.out.println("[======= Discodeit 애플리케이션 실행 =======]");
 
     createUsers();
@@ -88,11 +96,12 @@ public class JavaApplication {
     addParticipantWithLog(channel1, user4, "개발자 모임 채널에 user4 추가: ");
     addParticipantWithLog(channel2, user5, "취미 공유방 채널에 user5 추가: ");
     addParticipantWithLog(channel3, user1, "주식 정보방 채널에 user1 추가: ");
-
-    System.out.println(channel1);
     Optional<Channel> channelOptional = channelService.getChannelById(channel1.getId());
     if (channelOptional.isPresent()) {
       System.out.println("개발자 모임 채널 참여자 수: " + channelOptional.get().getParticipants().size());
+      System.out.println(channelService.getChannelById(channel1.getId()).get().getParticipants());
+      System.out.println(channelService.getChannelById(channel2.getId()).get().getParticipants());
+      System.out.println(channelService.getChannelById(channel3.getId()).get().getParticipants());
     } else {
       throw new ChannelNotFoundException(channel1.getId());
     }
@@ -257,7 +266,7 @@ public class JavaApplication {
     }
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws InterruptedException {
     JavaApplication app = new JavaApplication();
     app.runApplication();
   }

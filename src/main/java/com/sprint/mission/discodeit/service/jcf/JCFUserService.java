@@ -1,62 +1,56 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class JCFUserService implements UserService {
 
-  private final Map<UUID, User> usersRepository = new HashMap<>();
+  private final UserRepository userRepository;
+
+  public JCFUserService(UserRepository userRepository) {
+    this.userRepository = userRepository;
+  }
 
   @Override
   public User createUser(String email, String name, String password) {
-    // 이메일 중복 검사
     validateUserEmail(email);
-
     User user = User.create(email, name, password);
-    usersRepository.put(user.getId(), user);
-    return user;
+    return userRepository.save(user);
   }
 
   private void validateUserEmail(String email) {
-    if (usersRepository.values().stream().anyMatch(user -> user.getEmail().equals(email))) {
+    userRepository.findByEmail(email).ifPresent(user -> {
       throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
-    }
+    });
   }
 
   @Override
   public Optional<User> getUserById(UUID id) {
-    return Optional.ofNullable(usersRepository.get(id));
+    return userRepository.findById(id);
   }
 
   @Override
   public List<User> searchUsersByName(String name) {
-    return usersRepository.values().stream()
-        .filter(user -> user.getName().contains(name))
-        .collect(Collectors.toList());
+    return userRepository.findByNameContains(name);
   }
 
   @Override
   public Optional<User> getUserByEmail(String email) {
-    return usersRepository.values().stream()
-        .filter(user -> user.getEmail().equals(email))
-        .findFirst(); // 일치하는 결과가 없다면 Optional.empty()
+    return userRepository.findByEmail(email);
   }
 
   @Override
   public List<User> getAllUsers() {
-    return new ArrayList<>(usersRepository.values());
+    return userRepository.findAll();
   }
 
   @Override
   public Optional<User> updateUser(UUID id, String name, String password) {
-    return Optional.ofNullable(usersRepository.get(id))
+    return userRepository.findById(id)
         .map(user -> {
           if (name != null) {
             user.updateName(name);
@@ -64,13 +58,15 @@ public class JCFUserService implements UserService {
           if (password != null) {
             user.updatePassword(password);
           }
-          return user;
+          return userRepository.save(user);
         });
   }
 
   @Override
   public Optional<User> deleteUser(UUID id) {
-    return Optional.ofNullable(usersRepository.remove(id));
+    Optional<User> user = userRepository.findById(id);
+    user.ifPresent(u -> userRepository.deleteById(id));
+    return user;
   }
 
   public static class UserNotFoundException extends RuntimeException {

@@ -7,6 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.UUID;
@@ -24,9 +27,9 @@ class JCFMessageServiceTest {
 
   @BeforeEach
   void setUp() {
-    userService = new JCFUserService();
-    channelService = new JCFChannelService();
-    messageService = new JCFMessageService(userService, channelService);
+    userService = new JCFUserService(new JCFUserRepository());
+    channelService = new JCFChannelService(new JCFChannelRepository());
+    messageService = new JCFMessageService(new JCFMessageRepository(), userService, channelService);
     user = userService.createUser("user1@example.com", "홍길동", "password1");
     channel = channelService.createChannel(user, "개발자 모임");
   }

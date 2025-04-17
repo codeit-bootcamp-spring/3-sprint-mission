@@ -2,14 +2,13 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService.ChannelNotFoundException;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotFoundException;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotParticipantException;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -18,18 +17,23 @@ import java.util.stream.Collectors;
 
 public class JCFMessageService implements MessageService {
 
-  private final List<Message> messagesRepository = new ArrayList<>();
+  private final MessageRepository messageRepository;
   private final UserService userService;
   private final ChannelService channelService;
 
-  public JCFMessageService(UserService userService, ChannelService channelService) {
+  public JCFMessageService(
+      MessageRepository messageRepository,
+      UserService userService,
+      ChannelService channelService
+  ) {
+    this.messageRepository = messageRepository;
     this.userService = userService;
     this.channelService = channelService;
   }
 
   @Override
   public Message createMessage(String content, UUID userId, UUID channelId) {
-    User user = userService.getUserById(userId)
+    userService.getUserById(userId)
         .orElseThrow(() -> new UserNotFoundException(userId));
     Channel channel = channelService.getChannelById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(channelId));
@@ -42,31 +46,29 @@ public class JCFMessageService implements MessageService {
     }
 
     Message message = Message.create(content, userId, channelId);
-    messagesRepository.add(message);
-    return message;
+    return messageRepository.save(message);
   }
 
   @Override
   public Optional<Message> getMessageById(UUID id) {
-    return findMessageById(id);
+    return messageRepository.findById(id);
   }
 
   @Override
   public List<Message> searchMessages(UUID channelId, UUID userId, String content) {
-    return messagesRepository.stream()
+    return messageRepository.findAll().stream()
         .filter(message -> !message.isDeleted())
         .filter(message ->
             (channelId == null || message.getChannelId().equals(channelId)) &&
                 (userId == null || message.getUserId().equals(userId)) &&
-                (content == null || message.getContent().contains(content))
-        )
+                (content == null || message.getContent().contains(content)))
         .sorted(Comparator.comparingLong(Message::getCreatedAt))
         .collect(Collectors.toList());
   }
 
   @Override
   public List<Message> getChannelMessages(UUID channelId) {
-    return messagesRepository.stream()
+    return messageRepository.findAll().stream()
         .filter(m -> !m.isDeleted())
         .filter(m -> m.getChannelId().equals(channelId))
         .sorted(Comparator.comparingLong(Message::getCreatedAt))
@@ -75,27 +77,21 @@ public class JCFMessageService implements MessageService {
 
   @Override
   public Optional<Message> updateMessageContent(UUID id, String content) {
-    return findMessageById(id)
+    return messageRepository.findById(id)
         .map(message -> {
           message.updateContent(content);
-          return message;
+          return messageRepository.save(message);
         });
   }
 
   @Override
   public Optional<Message> deleteMessage(UUID id) {
-    return findMessageById(id)
+    return messageRepository.findById(id)
         .filter(message -> !message.isDeleted())
         .map(message -> {
           message.delete();
-          return message;
+          return messageRepository.save(message);
         });
-  }
-
-  private Optional<Message> findMessageById(UUID id) {
-    return messagesRepository.stream()
-        .filter(m -> m.getId().equals(id))
-        .findFirst();
   }
 
   public static class MessageNotFoundException extends RuntimeException {
