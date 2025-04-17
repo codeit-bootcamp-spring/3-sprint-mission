@@ -1,63 +1,120 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public class Channel extends Common {
-	/*
-	 * # Channel field
-	 *
-	 * ## Local
-	 * - creator (생성자)
-	 * - name (채널명)
-	 * - participants (참여자) // 방보다 유저가 더 많지 않을까
-	 *
-	 * ## Common
-	 * - id(UUID)
-	 * - createdAt(최초 생성)
-	 * - updatedAt(생성 직후?, 수정 시)
-	 */
-	private final User creator;
-	private String name;
-	private List<User> participants = new ArrayList<User>();
+/**
+ * 채널 정보 관리
+ * <p>
+ * 공통 속성(고유 아이디, 생성/수정 시간) 관리는 {@link Base} 객체에 위임하여 컴포지션 방식으로 구현한다.
+ * <ul>
+ *   <li>채널명</li>
+ *   <li>생성자</li>
+ *   <li>참여자 목록</li>
+ * </ul>
+ */
+public class Channel implements Serializable {
 
-	public Channel(User user, String name) {
-		super(); // Common 객체 생성 - id, createdAt, updatedAt
-		this.name = name;
-		this.creator = user; // 생성자 초기화
-		this.participants.add(user); // 생성자를 첫 번째 참여자로!
-	}
+  @Serial
+  private static final long serialVersionUID = 1L;
 
-	public User getCreator() {
-		return creator;
-	}
+  private final Base base;
+  private final User creator;
+  private String name;
+  private List<User> participants = new ArrayList<>();
 
-	public String getName() {
-		return name;
-	}
+  // 외부에서 직접 객체 생성 방지.
+  private Channel(User creator, String name) {
+    this.base = new Base();
+    this.creator = creator;
+    this.name = name;
+    this.participants.add(creator);
+  }
 
-	public void setName(String name) {
-		this.name = name;
-		super.setUpdatedAt(); // 수정 시간 업데이트
-	}
+  // 정적 팩토리 메서드로 명시적인 생성
+  public static Channel create(User creator, String name) {
+    return new Channel(creator, name);
+  }
 
-	public List<User> setParticipants(List<User> participants) {
-		this.participants = participants;
-		return participants;
-	}
+  // 채널 정보 관리
+  public String getName() {
+    return name;
+  }
 
-	public List<User> getParticipants() {
-		return participants;
-	}
+  public void updateName(String name) {
+    this.name = name;
+    base.setUpdatedAt();
+  }
 
-	@Override
-	public String toString() {
-		return "Channel{" +
-				"name='" + getName() + '\'' +
-				", creator='" + getCreator() + '\'' +
-				", participants='" + getParticipants() + '\'' +
-				", createdAt='" + getCreatedAt() + '\'' +
-				", updatedAt='" + getUpdatedAt() + '\'' +
-				'}';
-	}
+  // 참여자 관리
+  public boolean addParticipant(User user) {
+    if (!participants.contains(user)) {
+      participants.add(user);
+      base.setUpdatedAt();
+      return true;
+    }
+    return false;
+  }
+
+  public List<User> getParticipants() {
+    return new ArrayList<>(participants);
+  }
+
+  public boolean removeParticipant(UUID userId) {
+    boolean removed = participants.removeIf(user -> user.getId().equals(userId));
+    if (removed) {
+      base.setUpdatedAt();
+    }
+    return removed;
+  }
+
+  // Base 위임 메서드
+  public UUID getId() {
+    return base.getId();
+  }
+
+  public long getCreatedAt() {
+    return base.getCreatedAt();
+  }
+
+  public long getUpdatedAt() {
+    return base.getUpdatedAt();
+  }
+
+  // 참조 정보 getter
+  public User getCreator() {
+    return creator;
+  }
+
+  @Override
+  public String toString() {
+    return "Channel{" +
+        "id=" + getId() +
+        ", createdAt=" + getCreatedAt() +
+        ", updatedAt=" + getUpdatedAt() +
+        ", name='" + name + '\'' +
+        ", creator=" + creator.getName() +
+        ", participants=" + participants +
+        '}';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Channel channel = (Channel) o;
+    return getId().equals(channel.getId());
+  }
+
+  @Override
+  public int hashCode() {
+    return getId().hashCode();
+  }
 }
