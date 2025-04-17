@@ -22,12 +22,11 @@ import java.util.UUID;
 
 public class JCFUserService implements UserService{
 
-//    private final List<User> data;
+
     private final ChannelService channelService;
     private final JCFUserRepository jcfUserRepository = new JCFUserRepository();
 
     public JCFUserService(ChannelService channelService) {
-//        this.data = new ArrayList<>();
         this.channelService = channelService;
     }
 
@@ -62,28 +61,13 @@ public class JCFUserService implements UserService{
     @Override
     public void deleteUser(UUID userId) {
         jcfUserRepository.deleteUserById(userId);
-//        for (int i = 0; i < data.size(); i++) {
-//            if (data.get(i).getId().equals(userId)) {
-//                data.remove(i);
-//                break;
-//            }
-//        }
+
     }
 
     @Override
     public void addChannelInUser(UUID userId, UUID channelId) {
         jcfUserRepository.addChannelInUserByIdAndChannelId(userId, channelId);
-//        for (User user : data) {
-//            if (user.getId().equals(userId)) {
-//                if(user.getChannelIds()!=null){
-//                    List<UUID> channelIds = user.getChannelIds();
-//                    // 새 메세지 추가
-////                    jcfUserRepository.addChannelInUser(channelIds, channelId, user);
-//                    channelIds.add(channelId);
-//                    user.setChannelIds(channelIds);
-//                }
-//            }
-//        }
+
     }
 
     @Override
@@ -96,12 +80,6 @@ public class JCFUserService implements UserService{
         }
         return channelIdsInId;
 
-//        for (User user : data) {
-//            if (user.getId().equals(userId)) {
-//                List<UUID> channelIds = user.getChannelIds();
-//                return channelIds;
-//            }
-//        }
 
     }
 

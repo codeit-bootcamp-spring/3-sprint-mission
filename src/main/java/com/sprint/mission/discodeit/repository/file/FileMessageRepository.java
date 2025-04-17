@@ -1,9 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
 
@@ -83,7 +81,7 @@ public class FileMessageRepository implements MessageRepository {
         Path path = filePathUtil.getMessageFilePath(messageId);
 
         if (Files.exists(path)) {
-            return fileSerializer.readObject(path, Message.class);
+            return fileSerializer.readFile(path, Message.class);
 
         }
         return null;
@@ -94,9 +92,9 @@ public class FileMessageRepository implements MessageRepository {
 
         // 메세지 읽어오기
         if (Files.exists(path)) {
-            Message message = fileSerializer.readObject(path, Message.class);
+            Message message = fileSerializer.readFile(path, Message.class);
             message.setMessage(newMessage);
-            fileSerializer.writeObject(path,message);
+            fileSerializer.writeFile(path,message);
 
         }
     }

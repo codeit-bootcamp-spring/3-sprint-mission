@@ -10,9 +10,6 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -72,24 +69,13 @@ public class FileChannelService implements ChannelService {
 
     @Override
     public Channel findChannelById(UUID channelId) {
-        Path path = filePathUtil.getChannelFilePath(channelId);
-
-        if (!Files.exists(path)) {
-            return null;
-        }
         return fcr.findChannelById(channelId);
     }
 
 
     @Override
     public List<Channel> findChannelsByUserId(UUID userId) {
-        Path userPath = filePathUtil.getUserFilePath(userId);
-
-        if (!Files.exists(userPath)) {
-            return new ArrayList<>();
-        }
-        List<UUID> channelIds = fileSerializer.readObject(userPath, User.class).getChannelIds();
-
+        List<UUID> channelIds = fileSerializer.readFile(filePathUtil.getUserFilePath(userId), User.class).getChannelIds();
         return fcr.findChannelsByChannelIds(channelIds);
     }
 

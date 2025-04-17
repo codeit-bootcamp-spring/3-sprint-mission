@@ -23,10 +23,9 @@ import java.util.*;
 public class JCFMessageService implements MessageService{
     private final ChannelService channelService;
     private final JCFMessageRepository jcfMessageRepository = new JCFMessageRepository();
-//    private final Map<UUID,List<Message>> data;
+
 
     public JCFMessageService(ChannelService channelService) {
-//        this.data = new HashMap<>();
         this.channelService = channelService;
     }
 
@@ -43,18 +42,11 @@ public class JCFMessageService implements MessageService{
     @Override
     public List<Message> findAllMessages() {
         return jcfMessageRepository.findAllMessages();
-//        return data.values().stream().flatMap(List::stream).collect(Collectors.toList());
     }
 
     @Override
     public Message findMessageByMessageId(UUID messageId) {
 
-//        List<Message> msgs = data.values().stream().flatMap(List::stream).collect(Collectors.toList());
-//        for (Message msg : msgs) {
-//            if (msg.getId().equals(messageId)) {
-//                return msg;
-//            }
-//        }
 
         if (jcfMessageRepository.findMessageById(messageId)!=null) {
             return jcfMessageRepository.findMessageById(messageId);
@@ -65,14 +57,6 @@ public class JCFMessageService implements MessageService{
     @Override
     public void updateMessage(UUID messageId, String newMessage) {
         jcfMessageRepository.updateMessage(messageId, newMessage);
-
-//        List<Message> messages = data.get(channelId);
-//
-//        for (Message message : messages) {
-//            if (message.getId().equals(messageId)) {
-//                message.setMessage(newMessage);
-//            }
-//        }
 
     }
 
@@ -85,12 +69,6 @@ public class JCFMessageService implements MessageService{
         UUID channelId = msg.getChannelId();
         jcfMessageRepository.deleteMessageById(messageId);
 
-//        List<Message> messages = data.get(channelId);
-
-//        if (messages != null) {
-//            deleteMessageById(messageId);
-//            messages.removeIf(message -> message.getId().equals(messageId));
-//        }
 
         Channel channel = channelService.findChannelById(channelId);
         if (channel != null) {
@@ -102,7 +80,6 @@ public class JCFMessageService implements MessageService{
     public void deleteMessagesByChannelId(UUID channelId) {
         jcfMessageRepository.deleteMessagesByChannelId(channelId);
 
-//        data.remove(channelId);
     }
 
 }
