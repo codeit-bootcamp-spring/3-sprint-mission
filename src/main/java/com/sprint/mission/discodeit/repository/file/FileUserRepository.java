@@ -51,7 +51,7 @@ public class FileUserRepository implements UserRepository {
         Path path = filePathUtil.getUserFilePath(userId);
 
         if (Files.exists(path)) {
-            return fileSerializer.readObject(path, User.class);
+            return fileSerializer.readFile(path, User.class);
         }
         return null;
     }
@@ -91,13 +91,13 @@ public class FileUserRepository implements UserRepository {
         // 파일 확인
         if (Files.exists(path)) {
             // 역직렬화
-            User user = fileSerializer.readObject(path, User.class);
+            User user = fileSerializer.readFile(path, User.class);
 
             // 수정
             user.setUsername(newName);
 
             // 직렬화
-            fileSerializer.writeObject(path, user);
+            fileSerializer.writeFile(path, user);
 
         }
     }
@@ -116,13 +116,13 @@ public class FileUserRepository implements UserRepository {
         Path path = filePathUtil.getUserFilePath(userId);
 
         if (Files.exists(path)) {
-            User user = fileSerializer.readObject(path, User.class);
+            User user = fileSerializer.readFile(path, User.class);
 
             List<UUID> channelIds = user.getChannelIds();
             channelIds.add(channelId);
             user.setChannelIds(channelIds);
 
-            fileSerializer.writeObject(path, user);
+            fileSerializer.writeFile(path, user);
         }
     }
     @Override
@@ -132,15 +132,15 @@ public class FileUserRepository implements UserRepository {
         if (!Files.exists(path)) {
             return null;
         }
-        return fileSerializer.readObject(path, User.class).getChannelIds();
+        return fileSerializer.readFile(path, User.class).getChannelIds();
 
     }
     @Override
     public void deleteChannelIdInUser(UUID channelId, UUID userId) {
         Path path = filePathUtil.getUserFilePath(userId);
 
-        User user = fileSerializer.readObject(path, User.class);
+        User user = fileSerializer.readFile(path, User.class);
         user.getChannelIds().removeIf(id -> id.equals(channelId));
-        fileSerializer.writeObject(path, user);
+        fileSerializer.writeFile(path, user);
     }
 }

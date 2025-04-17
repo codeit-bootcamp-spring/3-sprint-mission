@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
 
@@ -52,10 +51,15 @@ public class FileChannelRepository implements ChannelRepository {
     @Override
     public Channel findChannelById(UUID channelId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
-        return fileSerializer.readObject(path, Channel.class);
+
+        if (!Files.exists(path)) {
+            return null;
+        }
+        return fileSerializer.readFile(path, Channel.class);
     }
     @Override
     public List<Channel> findChannelsByChannelIds(List<UUID> channelIds) {
+
         // 채널 조회 리스트 생성
         Path channelDirectory = filePathUtil.getChannelDirectory();
         if (Files.exists(channelDirectory)) {
@@ -119,9 +123,9 @@ public class FileChannelRepository implements ChannelRepository {
         Path path = filePathUtil.getChannelFilePath(channelId);
         Channel channel;
         if (Files.exists(path)) {
-            channel = fileSerializer.readObject(path, Channel.class);
+            channel = fileSerializer.readFile(path, Channel.class);
             channel.setTitle(title);
-            fileSerializer.writeObject(path, channel);
+            fileSerializer.writeFile(path, channel);
         }
     }
     @Override
@@ -151,7 +155,7 @@ public class FileChannelRepository implements ChannelRepository {
                     throw new RuntimeException(e);
                 }
 
-                fileSerializer.writeObject(channelPath, channel);
+                fileSerializer.writeFile(channelPath, channel);
 
             }
         }
@@ -161,20 +165,20 @@ public class FileChannelRepository implements ChannelRepository {
         Path channelPath = filePathUtil.getChannelFilePath(channelId);
 
         if (Files.exists(channelPath)) {
-            Channel channel = fileSerializer.readObject(channelPath, Channel.class);
+            Channel channel = fileSerializer.readFile(channelPath, Channel.class);
             channel.getMessages().removeIf(message -> message.getId().equals(messageId));
-            fileSerializer.writeObject(channelPath, channel);
+            fileSerializer.writeFile(channelPath, channel);
         }
     }
     @Override
     public void addUserInChannel(UUID channelId, UUID userId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
 
-        Channel channel = fileSerializer.readObject(path, Channel.class);
+        Channel channel = fileSerializer.readFile(path, Channel.class);
         if (channel.getUsersIds().contains(userId)) {
             channel.getUsersIds().add(userId);
         }
-        fileSerializer.writeObject(path, channel);
+        fileSerializer.writeFile(path, channel);
 
     }
 }

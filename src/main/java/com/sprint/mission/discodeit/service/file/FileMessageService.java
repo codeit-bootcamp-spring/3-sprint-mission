@@ -142,7 +142,6 @@ public class FileMessageService implements MessageService {
         UUID channelId = findMessageByMessageId(messageId).getChannelId();
         fmr.deleteMessageById(messageId);
 
-
         // channel 안의 메세지 관리(삭제)
         channelService.deleteMessageInChannel(channelId, messageId);
 
