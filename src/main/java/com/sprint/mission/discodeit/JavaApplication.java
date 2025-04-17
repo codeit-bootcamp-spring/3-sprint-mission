@@ -6,6 +6,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -13,39 +16,19 @@ import java.util.UUID;
 
 public class JavaApplication {
     public static void main(String[] args) {
-        // 서비스 초기화
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService(userService);
-        MessageService messageService = new JCFMessageService(channelService, userService);
+        // 서비스 초기화 (File 기반)
+        UserService userService = new FileUserService();
+        ChannelService channelService = new FileChannelService(userService);
+        MessageService messageService = new FileMessageService(channelService, userService);
 
-        // 기존 테스트
-//        handleUser(userService);
-//        handleChannel(channelService);
-//        handleMessage(messageService);
-
-        // 셋업
-        User user = setupUser(userService);
-        Channel channel = setupChannel(channelService, user);
         // 테스트
-        messageCreateTest(messageService, channel, user);
+        User user = handleUser(userService);
+        Channel channel = handleChannel(channelService, user);
+        handleMessage(messageService, channel, user);
     }
 
-    static User setupUser(UserService userService) {
-        User user = userService.createUser("okodee");
-        return user;
-    }
 
-    static Channel setupChannel(ChannelService channelService, User user) {
-        Channel channel = channelService.createChannel("공지방", user.getId());
-        return channel;
-    }
-
-    static void messageCreateTest(MessageService messageService, Channel channel, User user) {
-        Message message = messageService.createMessage("안녕하세요.", channel.getId(), user.getId());
-        System.out.println("메시지 생성: " + message.getId());
-    }
-
-    private static void handleUser(UserService userService) {
+    private static User handleUser(UserService userService) {
         System.out.println("\n=== 유저 ===");
 
         // Create
@@ -61,18 +44,19 @@ public class JavaApplication {
         System.out.println("[수정된 유저]");
         System.out.println(userService.updateUser(user, "updatedUser"));
 
-        // Delete
-        userService.deleteUser(user);
-        System.out.println("[삭제 후 유저 조회]");
-        userService.getAllUsers().forEach(System.out::println);
+//        // Delete
+//        userService.deleteUser(user);
+//        System.out.println("[삭제 후 유저 조회]");
+//        userService.getAllUsers().forEach(System.out::println);
+
+        return user;
     }
 
-    public static void handleChannel(ChannelService channelService) {
+    public static Channel handleChannel(ChannelService channelService, User user) {
         System.out.println("\n=== 채널 ===");
 
         // Create
-        UUID userId = UUID.randomUUID();
-        Channel channel = channelService.createChannel("createdChannel", userId);
+        Channel channel = channelService.createChannel("created channel", user.getId());
 
         // Read
         System.out.println("[채널 단건 조회]");
@@ -82,21 +66,21 @@ public class JavaApplication {
 
         // Update
         System.out.println("[수정된 채널]");
-        System.out.println(channelService.updateChannel(channel, "updatedChannel"));
+        System.out.println(channelService.updateChannel(channel, "updated channel"));
 
-        // Delete
-        channelService.deleteChannel(channel);
-        System.out.println("[삭제 후 채널 조회]");
-        channelService.getAllChannels().forEach(System.out::println);
+//        // Delete
+//        channelService.deleteChannel(channel);
+//        System.out.println("[삭제 후 채널 조회]");
+//        channelService.getAllChannels().forEach(System.out::println);
+
+        return channel;
     }
 
-    public static void handleMessage(MessageService messageService) {
+    public static void handleMessage(MessageService messageService, Channel channel, User user) {
         System.out.println("\n=== 메시지 ===");
 
         // Create
-        UUID channelId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        Message message = messageService.createMessage("created message", channelId, userId);
+        Message message = messageService.createMessage("created message", channel.getId(), user.getId());
 
         // Read
         System.out.println("[메시지 단건 조회]");
