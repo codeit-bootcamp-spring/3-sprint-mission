@@ -28,16 +28,11 @@ public class BasicChannelService implements ChannelService {
             throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
         }
 
-        userService.findById(channel.getChannelMaster()).ifPresent(user -> {
-            // 채널 주인은 채널 생성 시 채널에 입장
-            user.getChannels().add(channel);
-            channel.getUserList().add(user);
-            userService.update(user);
-        });
+        joinChannel(channel);
 
         channelRepository.save(channel);
     }
-
+    
     @Override
     public Optional<Channel> findById(UUID channelId) {
         return channelRepository.findById(channelId);
@@ -129,5 +124,14 @@ public class BasicChannelService implements ChannelService {
 
         userService.update(u.get());
         channelRepository.save(c.get());
+    }
+
+    private void joinChannel(Channel channel) {
+        userService.findById(channel.getChannelMaster()).ifPresent(user -> {
+            // 채널 주인은 채널 생성 시 채널에 입장
+            user.getChannels().add(channel);
+            channel.getUserList().add(user);
+            userService.update(user);
+        });
     }
 }

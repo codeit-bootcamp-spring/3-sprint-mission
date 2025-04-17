@@ -67,36 +67,36 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Gradle.3-sprint-mission [:com.sprint.mission.discodeit.Application.main()].executor": "Run",
-    "Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication.main()].executor": "Run",
-    "Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication2.main()].executor": "Run",
-    "Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication3.main()].executor": "Run",
-    "Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication4.main()].executor": "Run",
-    "Gradle.Build 3-sprint-mission.executor": "Run",
-    "JUnit.com.sprint.mission.discodeit.repository in 3-sprint-mission.main.executor": "Debug",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "한동우-sprint2",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/handongwoo/sprint-mission/3-sprint-mission",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.keymap",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.3-sprint-mission [:com.sprint.mission.discodeit.Application.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication2.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication3.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication4.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Build 3-sprint-mission.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.com.sprint.mission.discodeit.repository in 3-sprint-mission.main.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;한동우-sprint2&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/handongwoo/sprint-mission/3-sprint-mission&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "GitStage.ChangesTree.GroupingKeys": [
-      "directory",
-      "module",
-      "repository"
+  &quot;keyToStringList&quot;: {
+    &quot;GitStage.ChangesTree.GroupingKeys&quot;: [
+      &quot;directory&quot;,
+      &quot;module&quot;,
+      &quot;repository&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Application.JavaApplication2">
     <configuration name="JavaApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.sprint.mission.discodeit.run.JavaApplication" />
@@ -202,6 +202,7 @@
       <workItem from="1744676457925" duration="839000" />
       <workItem from="1744724383547" duration="554000" />
       <workItem from="1744762263190" duration="10137000" />
+      <workItem from="1744852199608" duration="338000" />
     </task>
     <servers />
   </component>

@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -31,13 +29,8 @@ public class FileChannelService implements ChannelService {
 
         // Channel 저장
         data.put(channel.getId(), channel);
-        
-        userService.findById(channel.getChannelMaster()).ifPresent(user -> {
-            // 채널 주인은 채널 생성 시 채널에 입장
-            user.getChannels().add(channel);
-            channel.getUserList().add(user);
-            userService.update(user);
-        });
+
+        joinChannel(channel);
 
         // Channel Data 파일에 저장
         try (FileOutputStream fos = new FileOutputStream(file);
@@ -137,5 +130,14 @@ public class FileChannelService implements ChannelService {
         }
 
         return data;
+    }
+
+    private void joinChannel(Channel channel) {
+        userService.findById(channel.getChannelMaster()).ifPresent(user -> {
+            // 채널 주인은 채널 생성 시 채널에 입장
+            user.getChannels().add(channel);
+            channel.getUserList().add(user);
+            userService.update(user);
+        });
     }
 }
