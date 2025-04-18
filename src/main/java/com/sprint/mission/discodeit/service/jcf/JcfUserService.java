@@ -1,15 +1,15 @@
-package com.sprint.mission.discodeit.service.file;
+package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JcfUserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.List;
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.refactor.service.file
- * fileName       : FileUserService
+ * packageName    : com.sprint.mission.discodeit.refactor.service
+ * fileName       : JcfUserService
  * author         : doungukkim
  * date           : 2025. 4. 17.
  * description    :
@@ -18,32 +18,30 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-public class FileUserService implements UserService {
+public class JcfUserService implements UserService {
 
-    FileUserRepository fur = new FileUserRepository();
+    JcfUserRepository jur = new JcfUserRepository();
 
-    @Override
     public User createUser(String name) {
-        return fur.createUserByName(name);
+        return jur.createUserByName(name);
     }
 
-    @Override
     public User findUserById(UUID userId) {
-        return fur.findUserById(userId);
+        return jur.findUserById(userId);
+
     }
 
-    @Override
     public List<User> findAllUsers() {
-        return fur.findAllUsers();
+        return jur.findAllUsers();
     }
 
-    @Override
     public void updateUser(UUID userId, String name) {
-        fur.updateUserById(userId, name);
+        jur.updateUserById(userId, name);
     }
 
-    @Override
     public void deleteUser(UUID userId) {
-        fur.deleteUserById(userId);
+        jur.deleteUserById(userId);
+
     }
+
 }

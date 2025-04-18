@@ -5,6 +5,7 @@ build/
 !**/src/test/**/build/
 
 ### IntelliJ IDEA ###
+.v1
 .files
 .idea
 .idea/modules.xml

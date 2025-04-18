@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.repository
- * fileName       : MessageRepository
+ * packageName    : com.sprint.mission.discodeit.refactor.repository
+ * fileName       : MessageRepository2
  * author         : doungukkim
  * date           : 2025. 4. 17.
  * description    :
@@ -17,12 +17,9 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 public interface MessageRepository {
-    Message saveMessage(UUID senderId, UUID channelId, String message);
-    List<Message> findAllMessages();
+    Message createMessageByUserIdAndChannelId(UUID senderId, UUID channelId, String content);
     Message findMessageById(UUID messageId);
-    void updateMessage(UUID messageId, String newMessage);
+    List<Message> findAllMessages();
+    void updateMessageById(UUID messageId, String content);
     void deleteMessageById(UUID messageId);
-    void deleteMessagesByChannelId(UUID channelId);
-
-
 }

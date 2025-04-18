@@ -5,7 +5,9 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -13,116 +15,77 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.repository.file
- * fileName       : FileMessageRepository
+ * packageName    : com.sprint.mission.discodeit.refactor.repository.file
+ * fileName       : FileMessageRepository2
  * author         : doungukkim
- * date           : 2025. 4. 15.
+ * date           : 2025. 4. 17.
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 15.        doungukkim       최초 생성
+ * 2025. 4. 17.        doungukkim       최초 생성
  */
 public class FileMessageRepository implements MessageRepository {
-    FilePathUtil filePathUtil;
-    FileSerializer fileSerializer;
-
-    public FileMessageRepository(FilePathUtil filePathUtil, FileSerializer fileSerializer) {
-        this.filePathUtil = filePathUtil;
-        this.fileSerializer = fileSerializer;
-    }
+    FilePathUtil pathUtil = new FilePathUtil();
+    FileSerializer serializer = new FileSerializer();
 
     @Override
-    public Message saveMessage(UUID senderId, UUID channelId, String message) {
-        Message msg = new Message(senderId, channelId, message);
-        Path path = filePathUtil.getMessageFilePath(msg.getId());
-
-        if (!Files.exists(path)) {
-            try (FileOutputStream fos = new FileOutputStream(path.toFile());
-                 ObjectOutputStream oos = new ObjectOutputStream(fos)) {
-
-                oos.writeObject(msg);
-                return msg;
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return null;
+    public Message createMessageByUserIdAndChannelId(UUID senderId, UUID channelId, String content) {
+        Message message = new Message(senderId, channelId, content);
+        Path path = pathUtil.getMessageFilePath(message.getId());
+        serializer.writeFile(path, message);
+        return message;
     }
-    @Override
-    public List<Message> findAllMessages() {
-        Path directory = filePathUtil.getMessageDirectory();
 
-        if (Files.exists(directory)) {
-            try {
-                List<Message> list = Files.list(directory)
-                        .filter(path -> path.toString().endsWith(".ser"))
-                        .map(path -> {
-                            try (
-                                    FileInputStream fis = new FileInputStream(path.toFile());
-                                    ObjectInputStream ois = new ObjectInputStream(fis)
-                            ) {
-                                Object data = ois.readObject();
-                                return (Message) data;
-                            } catch (IOException | ClassNotFoundException exception) {
-                                throw new RuntimeException(exception);
-                            }
-                        }).toList();
-                return list;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return new ArrayList<>();
-    }
     @Override
     public Message findMessageById(UUID messageId) {
-        Path path = filePathUtil.getMessageFilePath(messageId);
-
-        if (Files.exists(path)) {
-            return fileSerializer.readFile(path, Message.class);
-
-        }
-        return null;
+        Path path = pathUtil.getMessageFilePath(messageId);
+        return serializer.readFile(path, Message.class);
     }
+
     @Override
-    public void updateMessage(UUID messageId, String newMessage) {
-        Path path = filePathUtil.getMessageFilePath(messageId);
+    public List<Message> findAllMessages() {
+        Path directory = pathUtil.getMessageDirectory();
 
-        // 메세지 읽어오기
-        if (Files.exists(path)) {
-            Message message = fileSerializer.readFile(path, Message.class);
-            message.setMessage(newMessage);
-            fileSerializer.writeFile(path,message);
+        if (!Files.exists(directory)) {
+            return new ArrayList<>();
+        }
 
+        try {
+            List<Message> list = Files.list(directory)
+                    .filter(path -> path.toString().endsWith(".ser"))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            Object data = ois.readObject();
+                            return (Message) data;
+                        } catch (IOException | ClassNotFoundException exception) {
+                            throw new RuntimeException(exception);
+                        }
+                    }).toList();
+            return list;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void updateMessageById(UUID messageId, String content) {
+        Path path = pathUtil.getMessageFilePath(messageId);
+        Message message = serializer.readFile(path, Message.class);
+        message.setContent(content);
+        serializer.writeFile(path, message);
+    }
+
     @Override
     public void deleteMessageById(UUID messageId) {
-        Path path = filePathUtil.getMessageFilePath(messageId);
-        try {
+        Path path = pathUtil.getMessageFilePath(messageId);
+        try{
             Files.delete(path);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-    @Override
-    public void deleteMessagesByChannelId(UUID channelId) {
-        List<Message> allMessages = findAllMessages();
-
-        for (Message message : allMessages) {
-            if (message.getChannelId().equals(channelId)) {
-                try {
-                    Files.delete(filePathUtil.getMessageFilePath(message.getId()));
-                } catch (IOException e) {
-                    System.out.println("메세지 삭제 실패");
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-    }
 }
-
-
-

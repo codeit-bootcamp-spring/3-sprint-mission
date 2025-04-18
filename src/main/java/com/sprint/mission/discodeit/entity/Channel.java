@@ -1,20 +1,19 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.entity
- * fileName       : Channel
+ * packageName    : com.sprint.mission.discodeit.refactor.entity
+ * fileName       : Channel2
  * author         : doungukkim
- * date           : 2025. 4. 3.
- * description    : channel entity
+ * date           : 2025. 4. 17.
+ * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 3.        doungukkim       최초 생성
+ * 2025. 4. 17.        doungukkim       최초 생성
  */
 public class Channel implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -22,49 +21,27 @@ public class Channel implements Serializable {
     private UUID id;
     private Long createdAt;
     private Long updatedAt;
-    private String title;
-    private List<Message> messages;
-    private List<UUID> usersIds;
+    private String name;
 
-    public Channel(UUID userId) {
+
+    public Channel(String name) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
-        this.messages = new ArrayList<>();
-        this.usersIds =new ArrayList<>();
-        this.usersIds.add(userId);
+        this.name = name;
     }
 
-    public String getTitle() {
-        return title;
+    public void setUpdatedAt(Long updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-        this.updatedAt = System.currentTimeMillis();
-    }
-
-    public List<Message> getMessages() {
-        return messages;
-    }
-
-    public void setMessages(List<Message> messages) {
-        this.messages = messages;
-        this.updatedAt = System.currentTimeMillis();
-    }
-
-    public List<UUID> getUsersIds() {
-        return usersIds;
-    }
-
-    public void setUsersIds(List<UUID> usersIds) {
-        this.usersIds = usersIds;
-        this.updatedAt = System.currentTimeMillis();
+    public void setName(String name) {
+        this.name = name;
+        setUpdatedAt(System.currentTimeMillis());
     }
 
     public UUID getId() {
         return id;
     }
-
 
     public Long getCreatedAt() {
         return createdAt;
@@ -74,19 +51,17 @@ public class Channel implements Serializable {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
+    public String getName() {
+        return name;
     }
 
     @Override
     public String toString() {
-        return "Channel{" +
+        return "Channel2{" +
                 "id=" + id +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", title='" + title + '\'' +
-                ", messages=" + messages +
-                ", usersIds=" + usersIds +
+                ", name='" + name + '\'' +
                 '}';
     }
 }
