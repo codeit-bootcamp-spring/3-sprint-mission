@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
@@ -27,8 +28,9 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel readChannel(UUID id) {
-        return data.get(id);
+    public Optional<Channel> readChannel(UUID id) {
+
+        return Optional.ofNullable(data.get(id));
     }
 
     @Override

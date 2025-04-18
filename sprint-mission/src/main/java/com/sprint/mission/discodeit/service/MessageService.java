@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.entity.Message;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface MessageService {
@@ -10,8 +11,9 @@ public interface MessageService {
 
     Map<UUID, Message> readMessages();
 
-    Message readMessage(UUID id);
+    Optional<Message> readMessage(UUID id);
 
     Message updateMessage(UUID id, String text);
     Message deleteMessage(UUID id);
+
 }
