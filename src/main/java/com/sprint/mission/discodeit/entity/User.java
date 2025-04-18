@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-
 import java.text.SimpleDateFormat;
 import java.util.UUID;
 

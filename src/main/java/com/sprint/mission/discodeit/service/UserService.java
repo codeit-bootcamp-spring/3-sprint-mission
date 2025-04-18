@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
+  
    User createUser(String name);                     // 새로운 유저 생성
    void updateUserName(User user,String name);        // 기존 유저 수정
    void printAllUsers();
