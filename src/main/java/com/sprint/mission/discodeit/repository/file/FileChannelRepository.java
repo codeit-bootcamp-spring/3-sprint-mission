@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.repository.ChannelDefaultRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,8 +19,12 @@ public class FileChannelRepository implements ChannelRepository {
 
     public FileChannelRepository() {
         channelMap = loadChannels();
-        if (channelMap == null) {
+        if (channelMap == null || channelMap.isEmpty()) {
             channelMap = new HashMap<>();
+            for (Channel ch : ChannelDefaultRepository.getChannel()) {
+                channelMap.put(ch.getChannelNumber(), ch);
+            }
+            saveChannels();
         }
     }
 

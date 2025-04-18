@@ -10,6 +10,7 @@ public class JCFChannelRepository implements ChannelRepository {
     private final Map<Integer, Channel> channelMap;
 
     public JCFChannelRepository() {
+
         channelMap = new HashMap<>();
     }
 
