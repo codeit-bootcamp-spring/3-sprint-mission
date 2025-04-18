@@ -23,6 +23,7 @@ public class testAp {
         UserService fileUserService = new FileUserService(fileChannelService);
         MessageService fileMessageService = new FileMessageService(fileChannelService);
 
+
         System.out.println("----채널 생성----");
         Channel channel1 = fileChannelService.createChannel("1번방");
         Channel channel2 = fileChannelService.createChannel("2번방");
