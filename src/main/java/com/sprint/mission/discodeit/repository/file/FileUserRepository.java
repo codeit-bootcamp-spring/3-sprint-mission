@@ -20,6 +20,9 @@ public class FileUserRepository implements UserRepository {
         users = loadUsers();
         if (users == null) {
             users = new ArrayList<>();
+        } else {
+            int max = users.stream().mapToInt(User::getNumber).max().orElse(0);
+            User.setCounter(max + 1);
         }
     }
 

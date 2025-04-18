@@ -20,6 +20,9 @@ public class FileMessageRepository implements MessageRepository {
         messages = loadMessages();
         if (messages == null) {
             messages = new ArrayList<>();
+        } else {
+            int max = messages.stream().mapToInt(Message::getNumber).max().orElse(0);
+            Message.setCounter(max + 1);
         }
     }
 

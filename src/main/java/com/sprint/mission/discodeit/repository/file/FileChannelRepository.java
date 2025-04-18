@@ -25,6 +25,9 @@ public class FileChannelRepository implements ChannelRepository {
                 channelMap.put(ch.getChannelNumber(), ch);
             }
             saveChannels();
+        } else {
+            int max = channelMap.keySet().stream().mapToInt(Integer::intValue).max().orElse(0);
+            Channel.setCounter(max + 1);
         }
     }
 
