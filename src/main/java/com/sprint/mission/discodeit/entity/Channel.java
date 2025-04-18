@@ -50,6 +50,26 @@ public class Channel implements Serializable {
         counter = newCounter;
     }
 
+    public void setNumber(int number) {
+        this.number = number;
+    }
+
+    public void setChannelName(String channelName) {
+        this.channelName = channelName;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdateAt(long updateAt) {
+        this.updateAt = updateAt;
+    }
+
     @Override
     public String toString() {
         return "Channel{" +

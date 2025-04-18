@@ -30,6 +30,26 @@ public class User implements Serializable {
         return username;
     }
 
+    public void setNumber(int number) {
+        this.number = number;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(long updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     public UUID getId() {
         return id;
     }
