@@ -2,6 +2,9 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.exception.NotFoundChannelException;
+import com.sprint.mission.discodeit.exception.NotFoundUserException;
+import com.sprint.mission.discodeit.exception.UserNotInChannelException;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -26,23 +29,20 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public void create(Message message) {
-        // 존재하지 않는 사용자일 때 예외 처리
         if (userService.findById(message.getSenderId()).isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
+            throw new NotFoundUserException();
         }
 
-        // 존재하지 않는 채널일 때 예외 처리
         if (channelService.findById(message.getChannelId()).isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
+            throw new NotFoundChannelException();
         }
 
         Channel foundChannel = channelService.findById(message.getChannelId()).get();
 
         // 메시지를 보낸 user의 mesagesList에 해당 메시지 추가
         userService.findById(message.getSenderId()).ifPresent(user -> {
-            // 해당 채널에 속해 있지 않는 User가 메시지를 보낼 때 예외 처리
             if (!user.getChannels().contains(foundChannel)) {
-                throw new IllegalArgumentException("채널에 사용자가 속해 있지 않습니다.");
+                throw new UserNotInChannelException();
             } else {
                 user.getMessages().add(message);
                 userService.update(user);

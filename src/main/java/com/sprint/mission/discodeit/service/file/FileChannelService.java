@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.exception.NotFoundUserException;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -24,7 +25,7 @@ public class FileChannelService implements ChannelService {
 
         // 존재하지 않는 사용자를 채널 주인으로 설정하는 경우 예외 처리
         if (userService.findById(channel.getChannelMaster()).isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
+            throw new NotFoundUserException();
         }
 
         // Channel 저장

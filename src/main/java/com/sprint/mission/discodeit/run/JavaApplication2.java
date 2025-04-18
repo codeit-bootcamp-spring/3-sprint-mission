@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.run;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.NotFoundChannelException;
+import com.sprint.mission.discodeit.exception.NotFoundUserException;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -228,7 +230,7 @@ public class JavaApplication2 {
         // 삭제된 user를 채널 주인으로 설정하여 채널 생성 시도
         try {
             channelService.save(channel6);
-        } catch (IllegalArgumentException e) {
+        } catch (NotFoundUserException e) {
             System.out.println(e.getMessage());
         }
 
@@ -237,16 +239,16 @@ public class JavaApplication2 {
         // 삭제된 user를 sender로 설정하여 메시지 생성 시도
         try {
             messageService.create(message6);
-        } catch (IllegalArgumentException e) {
+        } catch (NotFoundUserException e) {
             System.out.println(e.getMessage());
         }
 
         Message message7 = new Message("반갑습니다.", user1, channel5);
         System.out.println("----------------------------");
-        // 삭제된 user를 sender로 설정하여 메시지 생성 시도
+
         try {
             messageService.create(message7);
-        } catch (IllegalArgumentException e) {
+        } catch (NotFoundChannelException e) {
             System.out.println(e.getMessage());
         }
     }

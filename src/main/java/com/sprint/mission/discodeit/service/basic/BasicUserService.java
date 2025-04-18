@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.NotFoundUserException;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -48,9 +49,8 @@ public class BasicUserService implements UserService {
         Optional<User> u1 = userRepository.findById(user1.getId());
         Optional<User> u2 = userRepository.findById(user2.getId());
 
-        // 존재하지 않는 사용자인 경우 예외 처리
         if (u1.isEmpty() || u2.isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
+            throw new NotFoundUserException();
         }
 
         // 두 User 각각의 friendList에 추가
@@ -74,7 +74,7 @@ public class BasicUserService implements UserService {
 
         // 존재하지 않는 사용자인 경우 예외 처리
         if (u1.isEmpty() || u2.isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
+            throw new NotFoundUserException();
         }
 
         // 두 User 각각의 friendList에서 제거

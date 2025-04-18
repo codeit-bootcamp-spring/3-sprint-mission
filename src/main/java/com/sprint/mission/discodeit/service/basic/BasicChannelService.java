@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.NotFoundChannelException;
+import com.sprint.mission.discodeit.exception.NotFoundUserException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -25,7 +27,7 @@ public class BasicChannelService implements ChannelService {
     public void save(Channel channel) {
         // 존재하지 않는 사용자를 채널 주인으로 설정하는 경우 예외 처리
         if (userService.findById(channel.getChannelMaster()).isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
+            throw new NotFoundUserException();
         }
 
         joinChannel(channel);
@@ -80,13 +82,12 @@ public class BasicChannelService implements ChannelService {
         Optional<Channel> c = channelRepository.findById(channel.getId());
         Optional<User> u = userService.findById(user.getId());
 
-        // 존재하지 않는 채널일 때 예외 처리
         if (c.isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
+            throw new NotFoundChannelException();
         }
 
         if (u.isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
+            throw new NotFoundUserException();
         }
 
         // Channel의 userList에 해당 user 추가
@@ -108,13 +109,12 @@ public class BasicChannelService implements ChannelService {
         Optional<Channel> c = channelRepository.findById(channel.getId());
         Optional<User> u = userService.findById(user.getId());
 
-        // 존재하지 않는 채널일 때 예외 처리
         if (c.isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
+            throw new NotFoundChannelException();
         }
 
         if (u.isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
+            throw new NotFoundUserException();
         }
 
         // Channel의 userList에 해당 user 추가

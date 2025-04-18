@@ -2,6 +2,9 @@ package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.exception.NotFoundChannelException;
+import com.sprint.mission.discodeit.exception.NotFoundUserException;
+import com.sprint.mission.discodeit.exception.UserNotInChannelException;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -27,12 +30,12 @@ public class FileMessageService implements MessageService {
 
         // 존재하지 않는 사용자를 sender로 설정했을 때 예외 처리
         if (userService.findById(message.getSenderId()).isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
+            throw new NotFoundUserException();
         }
 
         // 존재하지 않는 채널에 메시지를 보낼 때 예외 처리
         if (channelService.findById(message.getChannelId()).isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
+            throw new NotFoundChannelException();
         }
 
         Channel foundChannel = channelService.findById(message.getChannelId()).get();
@@ -41,7 +44,7 @@ public class FileMessageService implements MessageService {
         userService.findById(message.getSenderId()).ifPresent(user -> {
             // 해당 채널에 속해 있지 않는 User가 메시지를 보낼 때 예외 처리
             if (!user.getChannels().contains(foundChannel)) {
-                throw new IllegalArgumentException("채널에 사용자가 속해 있지 않습니다.");
+                throw new UserNotInChannelException();
             } else {
                 user.getMessages().add(message);
                 userService.update(user);
