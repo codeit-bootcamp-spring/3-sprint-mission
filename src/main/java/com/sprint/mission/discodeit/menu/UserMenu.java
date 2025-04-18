@@ -55,6 +55,7 @@ public class UserMenu {
                         System.out.print("유저 ID 입력: ");
                         String id = scanner.next();
                         userService.createUser(name, id);
+
                         System.out.println("유저 등록 ) " + name +"(" + id + ")가 등록되었습니다.");
                         break;
                     case 2:     // 유저 전체 조회
@@ -63,13 +64,13 @@ public class UserMenu {
                     case 3:     // 유저 단일 조회 (userId로 조회)
                         System.out.print("조회할 유저 ID 입력: ");
                         targetUserId = scanner.next();
-                        targetUser = userService.searchUserByUserId(targetUserId);
+                        targetUser = userService.getUserByUserId(targetUserId);
                         System.out.println(targetUser);
                         break;
                     case 4:     // 유저 이름 수정 (userId로 조회)
                         System.out.print("수정할 유저 ID 입력: ");
                         targetUserId = scanner.next();
-                        targetUser = userService.searchUserByUserId(targetUserId);
+                        targetUser = userService.getUserByUserId(targetUserId);
                         scanner.nextLine();
 
                         System.out.print("새로운 유저명 입력: ");
@@ -80,7 +81,7 @@ public class UserMenu {
                     case 5:     // 유저 삭제 (userId로 조회)
                         System.out.print("삭제할 유저 ID 입력: ");
                         targetUserId = scanner.next();
-                        targetUser = userService.searchUserByUserId(targetUserId);
+                        targetUser = userService.getUserByUserId(targetUserId);
                         userService.deleteUser(targetUser.getId());
                         System.out.println("유저 삭제 ) " +targetUser.getUserName() + "(" + targetUser.getUserId()+")가 삭제되었습니다.");
                         break;

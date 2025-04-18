@@ -1,19 +1,22 @@
 package com.sprint.mission.discodeit.entity;
 
-import org.w3c.dom.ls.LSOutput;
-
+import java.io.Serializable;
 import java.util.UUID;
 
-public class BaseEntity {
+public class BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private UUID id;
     private Long createdAt;
     private Long updatedAt;
 
     public BaseEntity() {
-        this.id = UUID.randomUUID();    // UUID 자동생성
+        this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();    // 시간(밀리초 기준)
         this.updatedAt = System.currentTimeMillis();
     }
+
+
 
     public Long getUpdatedAt() {
         return updatedAt;

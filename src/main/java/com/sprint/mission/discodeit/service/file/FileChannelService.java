@@ -1,15 +1,20 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
-public class JCFChannelService implements ChannelService {
-    private final Map<UUID, Channel> data = new HashMap<>();
+public class FileChannelService implements ChannelService {
+    private static final Path FILE_PATH = Paths.get("data/channel.ser");
+    private final Map<UUID, Channel> data = getChannels();
 
     /**
      * 채널명을 인자로 받아 채널을 생성하는 메서드
@@ -29,17 +34,28 @@ public class JCFChannelService implements ChannelService {
         // 채널 생성 및 컬렉션에 추가
         Channel ch = new Channel(channelName);
         data.put(ch.getId(), ch);
+        saveChannels();
         return ch;
     }
 
     /**
-     * 메모리에 저장되어있는 채널 데이터를 리턴하는 메서드
+     * 파일에서 읽어온 채널 데이터를 역직렬화하여 로드하는 메서드
      *
-     * @return 메모리에 저장된 채널데이터
+     * @return 파일에 저장된 채널 데이터
+     * @throws RuntimeException 파일 역직렬화 중 예외가 발생한 경우
      */
     @Override
+    @SuppressWarnings("unchecked")
     public Map<UUID, Channel> getChannels() {
-        return data;
+        if (!Files.exists(FILE_PATH)) {
+            return new HashMap<>();
+        }
+        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_PATH.toFile()))
+        ) {
+            return (Map<UUID, Channel>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -80,17 +96,13 @@ public class JCFChannelService implements ChannelService {
      * @param channel 수정할 대상 채널
      * @param channelName 새로운 채널명
      * @return 수정된 채널
-     * @throws NoSuchElementException 채널이 존재하지 않는 경우
      */
     @Override
     public Channel updateChannel(Channel channel, String channelName) {
-        Channel ch = data.get(channel.getId());
-        // 채널 유효성 체크
-        if (ch == null) {
-            throw new NoSuchElementException("존재하지 않는 채널이므로 수정이 불가합니다.");
-        }
+        Channel ch = getChannelById(channel.getId());
         // 채널 수정
         ch.updateChannelName(channelName);
+        saveChannels();
         return ch;
     }
 
@@ -99,25 +111,29 @@ public class JCFChannelService implements ChannelService {
      *
      * @param id 삭제할 대상 채널 id
      * @return 삭제된 채널
-     * @throws NoSuchElementException 해당 ID의 채널이 존재하지 않는 경우
      */
     @Override
     public Channel deleteChannel(UUID id) {
-        Channel targetChannel = data.get(id);
-        // 채널 유효성 체크
-        if (targetChannel == null) {
-            throw new NoSuchElementException("존재하지 않는 채널이므로 삭제가 불가합니다.");
-        }
+        Channel targetChannel = getChannelById(id);
         // 채널 컬렉션에서 삭제
         data.remove(id);
+        saveChannels();
         return targetChannel;
     }
 
     /**
-     * 채널 데이터를 저장하는 메서드
-     * JCF*Service의 경우 메모리에 저장되어 있으므로 해당 메서드 구현하지 않음
+     * 채널 데이터를 직렬화하여 파일에 저장하는 메서드
+     *
+     * @throws RuntimeException 파일 생성/직렬화 중 예외가 발생한 경우
      */
-    @Override
     public void saveChannels() {
+        try{
+            Files.createDirectories(FILE_PATH.getParent());
+            try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH.toFile()))){
+                oos.writeObject(data);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

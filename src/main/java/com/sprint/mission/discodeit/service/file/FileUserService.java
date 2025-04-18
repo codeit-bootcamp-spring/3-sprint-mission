@@ -1,16 +1,21 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
 
-public class JCFUserService implements UserService {
-    private final Map<UUID, User> data = new HashMap<>();
+public class FileUserService implements UserService {
+    private static final Path FILE_PATH = Paths.get("data/user.ser");
+    private final Map<UUID, User> data = getUsers();
 
     /**
      * 유저명, 유저ID를 인자로 받아 유저를 생성해주는 메서드
@@ -31,17 +36,27 @@ public class JCFUserService implements UserService {
         // 유저 생성 및 컬렉션에 추가
         User user = new User(userName, userId);
         data.put(user.getId(),user);
+        saveUsers();
         return user;
     }
 
     /**
-     * 메모리에 저장되어있는 유저 데이터를 리턴하는 메서드
-     *
-     * @return 메모리에 저장된 유저데이터
+     * 파일에서 읽어온 유저 데이터를 역직렬화하여 로드하는 메서드
+     * @return 읽어온 유저 데이터
+     * @throws RuntimeException 파일을 역직렬화하는 중 에러가 발생한 경우
      */
     @Override
+    @SuppressWarnings("unchecked")
     public Map<UUID, User> getUsers() {
-        return data;
+        if (!Files.exists(FILE_PATH)) {
+            return new HashMap<>();
+        }
+        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_PATH.toFile()))
+        ) {
+            return (Map<UUID, User>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -88,6 +103,7 @@ public class JCFUserService implements UserService {
         User targetUser = getUserById(user.getId());
         // 유저 이름 수정
         targetUser.updateUserName(userName);
+        saveUsers();
         return targetUser;
     }
 
@@ -104,14 +120,23 @@ public class JCFUserService implements UserService {
         targetUser.updateIsActive();
         // 유저 삭제
         data.remove(id);
+        saveUsers();
         return targetUser;
     }
 
     /**
-     * 유저 데이터를 저장하는 메서드
-     * JCF*Service의 경우 메모리에 저장되어 있으므로 해당 메서드 구현하지 않음
+     * 유저 데이터를 직렬화하여 파일에 저장하는 메서드
+     * @throws RuntimeException
      */
     @Override
     public void saveUsers() {
+        try {
+            Files.createDirectories(FILE_PATH.getParent());
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH.toFile()))) {
+                oos.writeObject(data);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("유저 데이터 파일을 저장하는 중 오류가 발생하였습니다.");
+        }
     }
 }

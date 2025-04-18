@@ -1,16 +1,20 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class User extends BaseEntity {
+public class User extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String userName;        // 유저 이름
     private String userId;          // 유저 ID (검색용 유니크값)
     private List<Channel> joinChannelList;      // 유저가 참여중인 채널리스트
     private boolean isActive;   // 활성여부 (탈퇴시 false)
 
     public User(String userName, String userId) {
+        super();
         this.userName = userName;
         this.userId = userId;
         this.joinChannelList = new ArrayList<>();
@@ -65,5 +69,17 @@ public class User extends BaseEntity {
                 ", createdAt=" + new SimpleDateFormat("yy/MM/dd HH:mm:ss").format(getCreatedAt()) +
                 ", updatedAt=" + new SimpleDateFormat("yy/MM/dd HH:mm:ss").format(getUpdatedAt()) +
                 "}\n";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(getId(), user.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getId());
     }
 }

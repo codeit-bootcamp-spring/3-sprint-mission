@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.menu;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.ChatService;
 
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -9,9 +10,11 @@ import java.util.Scanner;
 public class ChannelMenu {
 
     private final ChannelService channelService;
+    private final ChatService chatService;
 
-    public ChannelMenu(ChannelService channelService) {
+    public ChannelMenu(ChannelService channelService, ChatService chatService) {
         this.channelService = channelService;
+        this.chatService = chatService;
     }
 
     public void run(Scanner scanner) {
@@ -59,13 +62,13 @@ public class ChannelMenu {
                     case 3:     // 채널 단일 조회 (채널명으로 조회)
                         System.out.print("조회할 채널 이름 입력: ");
                         targetChNm = scanner.nextLine();
-                        targetCh = channelService.searchChannelByChannelName(targetChNm);
+                        targetCh = channelService.getChannelByChannelName(targetChNm);
                         System.out.println(targetCh);
                         break;
                     case 4:     // 채널 이름 수정
                         System.out.print("수정할 채널명 입력: ");
                         targetChNm = scanner.nextLine();
-                        targetCh = channelService.searchChannelByChannelName(targetChNm);
+                        targetCh = channelService.getChannelByChannelName(targetChNm);
 
                         System.out.print("새로운 채널명 입력: ");
                         String newChNm = scanner.nextLine();
@@ -75,8 +78,8 @@ public class ChannelMenu {
                     case 5:     // 채널 삭제
                         System.out.print("삭제할 채널 이름 입력: ");
                         targetChNm = scanner.nextLine();
-                        targetCh = channelService.searchChannelByChannelName(targetChNm);
-                        channelService.deleteChannel(targetCh.getId());
+                        targetCh = channelService.getChannelByChannelName(targetChNm);
+                        chatService.deleteChannelFromUsers(targetCh.getId());
                         System.out.println("채널 삭제 ) "+ targetCh.getChannelName() +" 삭제되었습니다.");
                         break;
                     case 0:     // 이전 메뉴

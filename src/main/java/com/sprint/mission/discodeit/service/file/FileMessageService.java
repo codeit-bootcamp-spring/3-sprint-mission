@@ -1,17 +1,23 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.MessageService;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
-public class JCFMessageService implements MessageService {
-    private final Map<UUID, Message> data = new HashMap<>();
+
+public class FileMessageService implements MessageService {
+    private static final Path FILE_PATH = Paths.get("data/message.ser");
+    private final Map<UUID, Message> data = getMessages();
 
     /**
      * 주어진 채널, 유저, 메시지내용으로 메시지를 생성하는 메서드
@@ -25,19 +31,29 @@ public class JCFMessageService implements MessageService {
     public Message createMessage(Channel sendChannel, User sendUser, String msgContent) {
         // 메시지 생성
         Message msg = new Message(sendChannel, sendUser, msgContent);
-        // 메시지 컬렉션에 추가
         data.put(msg.getId(), msg);
+        // 파일 저장
+        saveMessages();
         return msg;
     }
 
     /**
-     * 메모리에 저장되어있는 메시지 데이터를 리턴하는 메서드
+     * 파일에서 읽어온 메시지 데이터를 역직렬화하여 로드하는 메서드
      *
-     * @return 메모리에 저장된 메시지데이터
+     * @return 역직렬화된 메시지 데이터
+     * @throws RuntimeException 파일 역직렬화 중 예외가 발생한 경우
      */
     @Override
     public Map<UUID, Message> getMessages() {
-        return data;
+        if (!Files.exists(FILE_PATH)) {
+            return new HashMap<>();
+        }
+        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_PATH.toFile()))
+        ) {
+            return (Map<UUID, Message>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("메시지 데이터 파일을 읽는 중 오류가 발생하였습니다.");
+        }
     }
 
     /**
@@ -85,6 +101,7 @@ public class JCFMessageService implements MessageService {
         Message targetMsg = getMessageById(msg.getId());
         // 메시지 내용 업데이트
         targetMsg.updateMsgContent(msgContent);
+        saveMessages();
         return targetMsg;
     }
 
@@ -98,14 +115,23 @@ public class JCFMessageService implements MessageService {
     public Message deleteMessage(UUID id) {
         Message targetMsg = getMessageById(id);
         targetMsg.deleteMsgContent();
+        saveMessages();
         return targetMsg;
     }
 
     /**
-     * 메시지 데이터를 저장하는 메서드
-     * JCF*Service의 경우 메모리에 저장되어 있으므로 해당 메서드 구현하지 않음
+     * 메시지 데이터를 직렬화하여 파일에 저장하는 메서드
+     *
+     * @throws RuntimeException 파일 생성/직렬화 중 예외가 발생한 경우
      */
-    @Override
     public void saveMessages() {
+        try {
+            Files.createDirectories(FILE_PATH.getParent());
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH.toFile()))) {
+                oos.writeObject(data);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("메시지 데이터 파일을 저장하는 중 오류가 발생하였습니다");
+        }
     }
 }
