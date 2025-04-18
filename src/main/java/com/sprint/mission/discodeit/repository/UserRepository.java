@@ -6,23 +6,20 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.repository
- * fileName       : UserRepository
+ * packageName    : com.sprint.mission.discodeit.refactor.repository.jcf
+ * fileName       : UserRepository2
  * author         : doungukkim
- * date           : 2025. 4. 16.
+ * date           : 2025. 4. 17.
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 16.        doungukkim       최초 생성
+ * 2025. 4. 17.        doungukkim       최초 생성
  */
 public interface UserRepository {
-    UUID saveUser(String username);
+    User createUserByName(String name);
     User findUserById(UUID userId);
     List<User> findAllUsers();
-    void updateUsernameByIdAndName(UUID userId, String newName);
+    void updateUserById(UUID userId, String name);
     void deleteUserById(UUID userId);
-    void addChannelInUserByIdAndChannelId(UUID userId, UUID channelId);
-    List<UUID> findChannelIdsInId(UUID userId);
-    void deleteChannelIdInUser(UUID channelId, UUID userId);
 }

@@ -1,31 +1,25 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 
 import java.util.List;
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.repository
- * fileName       : ChannelRepository
+ * packageName    : com.sprint.mission.discodeit.refactor.repository
+ * fileName       : ChannelRepository2
  * author         : doungukkim
- * date           : 2025. 4. 16.
+ * date           : 2025. 4. 17.
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 16.        doungukkim       최초 생성
+ * 2025. 4. 17.        doungukkim       최초 생성
  */
 public interface ChannelRepository {
-    void saveChannel(Channel channel);
+    Channel createChannelByName(String name);
     Channel findChannelById(UUID channelId);
-    List<Channel> findChannelsByChannelIds(List<UUID> channelIds);
-    List<Channel> findAllChannels();
-    void updateChannelNameById(UUID channelId, String title);
-    void deleteChannelById(UUID channelId);
-    void addMessageInChannel(UUID channelId, Message message);
-    void deleteMessageInChannel(UUID channelId, UUID messageId);
-    void addUserInChannel(UUID channelId, UUID userId);
-
+    List<Channel> findAllChannel();
+    void updateChannel(UUID channelId, String name);
+    void deleteChannel(UUID channelId);
 }
