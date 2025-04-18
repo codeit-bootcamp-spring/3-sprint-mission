@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="b900c68b-a6af-4c3d-bbb2-47c8038ca136" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="3-sprint-mission" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="3-sprint-mission" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="3-sprint-mission" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="Git.Settings">
+    <option name="PUSH_TAGS">
+      <GitPushTagMode>
+        <option name="argument" value="--follow-tags" />
+        <option name="title" value="Current Branch" />
+      </GitPushTagMode>
+    </option>
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="박인규" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Leichtstar&quot;
+  }
+}</component>
+  <component name="GitRewordedCommitMessages">
+    <option name="commitMessagesMapping">
+      <RewordedCommitMessageMapping>
+        <option name="originalMessage" value="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인" />
+        <option name="rewordedMessage" value="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인" />
+      </RewordedCommitMessageMapping>
+    </option>
+    <option name="currentCommit" value="1" />
+    <option name="onto" value="82a146a8f4307be6ecf04e42753d99074661b2bf" />
+  </component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Leichtstar/3-sprint-mission_01.git&quot;,
+    &quot;accountId&quot;: &quot;89eeed5c-9622-43bd-9bda-9299693e6fad&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="2viJdclxlm3xhoIU0tZnu1E0Orn" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.3-sprint-mission_01 [:com.sprint.mission.discodeit.JavaApplication.main()].executor": "Run",
+    "Gradle.3-sprint-mission_01 [clean].executor": "Run",
+    "Gradle.Build 3-sprint-mission_01.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "Merging 박인규-sprint1",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/myGitWs/3-sprint-mission_01/src/com/sprint/mission/discodeit",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.45524544",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "GitStage.ChangesTree.GroupingKeys": [
+      "directory",
+      "module",
+      "repository"
+    ]
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\myGitWs\3-sprint-mission_01\src\main\java" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Application.JavaApplication">
+    <configuration name="JavaApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.sprint.mission.discodeit.JavaApplication" />
+      <module name="3-sprint-mission.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.sprint.mission.discodeit.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="3-sprint-mission_01 [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="clean" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.JavaApplication" />
+        <item itemvalue="Gradle.3-sprint-mission_01 [clean]" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.25659.59" />
+        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.25659.59" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b900c68b-a6af-4c3d-bbb2-47c8038ca136" name="Changes" comment="" />
+      <created>1744622049700</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1744622049700</updated>
+      <workItem from="1744622050868" duration="3599000" />
+      <workItem from="1744632075055" duration="1087000" />
+    </task>
+    <task id="LOCAL-00001" summary="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인">
+      <option name="closed" value="true" />
+      <created>1744624374973</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1744624374973</updated>
+    </task>
+    <task id="LOCAL-00002" summary="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인">
+      <option name="closed" value="true" />
+      <created>1744631891443</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1744631891443</updated>
+    </task>
+    <task id="LOCAL-00003" summary="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인">
+      <option name="closed" value="true" />
+      <created>1744632549425</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1744632549425</updated>
+    </task>
+    <task id="LOCAL-00004" summary="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인">
+      <option name="closed" value="true" />
+      <created>1744632819517</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1744632819517</updated>
+    </task>
+    <task id="LOCAL-00005" summary="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인">
+      <option name="closed" value="true" />
+      <created>1744632845190</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1744632845190</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인" />
+    <option name="LAST_COMMIT_MESSAGE" value="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인" />
+  </component>
+</project>

@@ -39,6 +39,7 @@ bin/
 .vscode/
 
 ### Mac OS ###
+
 .DS_Store
 
 ### 형상 관리 예외 ###
