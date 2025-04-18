@@ -9,23 +9,18 @@ import java.util.UUID;
  * 도메인 모델 별 CRUD(생성, 읽기, 모두 읽기, 수정, 삭제) 기능을 인터페이스로 선언
  * */
 
-//Q.data는 map 타입인데 return은 list 타입으로 하는게좋은가?
 public interface UserService {
 
-    public void create(User user);
+    public User create(String name, int age, String email, String password);
 
-    public User read(UUID id);
+    public User find(UUID userId);
 
-    public List<User> read(String name);
+    public List<User> find(String name);
 
-    public List<User> readAll();
+    public List<User> findAll();
 
-    public User update(UUID id, String name);
+    public User update(UUID userId, String newName, int newAge, String newEmail, String newPassword);
 
-    public User update(UUID id, int age);
-
-    public User update(UUID id, String name, int age);
-
-    public boolean delete(UUID id);
+    public void delete(UUID userId);
 
 }
