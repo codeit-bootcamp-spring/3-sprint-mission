@@ -17,8 +17,12 @@ public class JCFMessageService  implements MessageService {
 
     @Override
     public Message createMessage(UUID userId, UUID channelId, String content) {
-        // 채널의 user 접속 여부 검사
         Channel channel = channelService.getChannel(channelId);
+
+        if (channel == null) {
+            System.out.println("[Message] 존재하지 않는 채널입니다. (channelId: " + channelId + ")");
+            return null;
+        }
         if (!channel.isMember(userId)) {
             System.out.println("[Message] 먼저 채널에 접속해주세요.");
             return null;

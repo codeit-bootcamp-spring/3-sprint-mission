@@ -23,9 +23,7 @@ public class Channel implements Serializable {
     }
 
     // 정적 팩토리 메서드, 객체를 만들지 않고 호출 가능해야 하기 때문에 static으로 선언
-    public static Channel of(String name) {
-        return new Channel(name);
-    }
+    public static Channel of(String name) { return new Channel(name); }
 
     public UUID getId() {
         return id;

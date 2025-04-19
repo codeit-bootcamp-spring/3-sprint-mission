@@ -164,7 +164,7 @@ public class JavaApplication {
     }
 
     private void createMessage() {
-        System.out.println("[Message] 유효성 검사");
+        System.out.println("\n[Message] 유효성 검사 후 메시지 생성");
         messages = Stream.of(
                         messageService.createMessage(users.get(0).getId(), channels.get(0).getId(), "안녕하세요!"),
                         messageService.createMessage(users.get(2).getId(), channels.get(0).getId(), "반갑습니다!"),

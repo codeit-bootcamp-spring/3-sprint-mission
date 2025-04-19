@@ -12,17 +12,12 @@ import java.util.UUID;
 public class JCFUserRepository implements UserRepository {
 
     @Override
-    public void init() {
-
-    }
-
-    @Override
     public void save(User user) {
 
     }
 
     @Override
-    public User loadByIndex(String name) {
+    public User loadByName(String name) {
         return null;
     }
 
@@ -34,6 +29,11 @@ public class JCFUserRepository implements UserRepository {
     @Override
     public List<User> loadAll() {
         return List.of();
+    }
+
+    @Override
+    public void update(UUID id, String name) {
+
     }
 
     @Override
