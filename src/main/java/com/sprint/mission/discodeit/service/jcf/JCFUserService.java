@@ -40,7 +40,7 @@ public class JCFUserService implements UserService {
     @Override
     public List<User> find(String name) {
         List<User> matchedUsers = new ArrayList<>();
-        for (Map.Entry<UUID, User> entry : data.entrySet()) {
+        for (Map.Entry<UUID, User> entry : this.data.entrySet()) {
             if ((entry.getValue().getName()).equals(name)) {
                 matchedUsers.add(entry.getValue());
             }
