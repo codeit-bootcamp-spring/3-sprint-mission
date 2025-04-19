@@ -52,6 +52,7 @@ public class JCFChannelService implements ChannelService {
         if (!this.data.containsKey(channelId)) {
             throw new NoSuchElementException("Channel with id " + channelId + " not found");
         }
+
         this.data.remove(channelId);
     }
 
@@ -68,7 +69,27 @@ public class JCFChannelService implements ChannelService {
         Channel channelNullable = this.data.get(channelId);
         Channel channel = Optional.ofNullable(channelNullable).orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
 
+        try {
+            this.userService.find(userId);
+        } catch (NoSuchElementException e) {
+            throw e;
+        }
+
         channel.addAttendee(userId);
+    }
+
+    @Override
+    public void removeAttendeeToChannel(UUID channelId, UUID userId) {
+        Channel channelNullable = this.data.get(channelId);
+        Channel channel = Optional.ofNullable(channelNullable).orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+
+        try {
+            this.userService.find(userId);
+        } catch (NoSuchElementException e) {
+            throw e;
+        }
+
+        channel.removeAttendee(userId);
     }
 
     @Override
@@ -80,28 +101,11 @@ public class JCFChannelService implements ChannelService {
             channel.getAttendees().forEach((userId -> {
                 attendees.add(this.userService.find(userId));
             }));
+            
             return attendees;
         } catch (NoSuchElementException e) {
             throw e;
         }
     }
 
-//    @Override
-//    public User joinChannel(Channel ch, User user) {
-//        Channel selectedChannel = this.data.get(ch.getId());
-//        //TODO : 참조변수 추가 방법 체크
-//        selectedChannel.getAttendees().addAll(Arrays.asList(user));
-//
-//        return user;
-//    }
-//
-//    @Override
-//    public User leaveChannel(Channel ch, User user) {
-//        Channel selectedChannel = this.data.get(ch.getId());
-//        //TODO : 참조변수 방법 체크
-//        selectedChannel.getAttendees().remove(user);
-//
-//        return user;
-//    }
-//
 }

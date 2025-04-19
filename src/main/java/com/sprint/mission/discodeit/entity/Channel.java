@@ -67,6 +67,10 @@ public class Channel {
         this.attendees.add(userId);
     }
 
+    public void removeAttendee(UUID userId) {
+        this.attendees.remove(userId);
+    }
+
     public List<UUID> getMessages() {
         return messages;
     }

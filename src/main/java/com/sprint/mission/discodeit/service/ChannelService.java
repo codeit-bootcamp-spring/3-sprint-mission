@@ -25,12 +25,13 @@ public interface ChannelService {
 
     public void addMessageToChannel(UUID channelId, UUID messageId);
 
+    // == joinChannel()
     public void addAttendeeToChannel(UUID channelId, UUID userId);
+
+    // == leaveChannel()
+    public void removeAttendeeToChannel(UUID channelId, UUID userId);
 
     public List<User> findAttendeesByChannel(UUID channelId);
 
-//    public User joinChannel(Channel ch, User user);
-//
-//    public User leaveChannel(Channel ch, User user);
 
 }

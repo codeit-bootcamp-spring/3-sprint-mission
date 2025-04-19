@@ -99,14 +99,19 @@ public class JavaApplication {
                 System.out.println("Get all attendees on channel 2 : " + user.toString())
         );
 
-//        // Channel 입장
-//        channelService.joinChannel(channel1, user2);
-//        channelService.joinChannel(channel2, user4);
-//        channelService.joinChannel(channel2, user5);
-//
-//        // Channel 퇴장
-//        channelService.leaveChannel(channel2, user3);
-//
+        // Channel 입장
+        channelService.addAttendeeToChannel(channel1.getId(), user3.getId());
+        // Channel 입장 후 참가자 리스트
+        channelService.findAttendeesByChannel(channel1.getId()).stream().forEach(user ->
+                System.out.println("Get all attendees on channel 1 after joining : " + user.toString())
+        );
+
+        // Channel 퇴장
+        channelService.removeAttendeeToChannel(channel2.getId(), user4.getId());
+        // Channel 퇴장 후 참가자 리스트
+        channelService.findAttendeesByChannel(channel2.getId()).stream().forEach(user ->
+                System.out.println("Get all attendees on channel 2 after leaving : " + user.toString())
+        );
     }
 
     public static void messageCRUDTest(MessageService messageService) {
