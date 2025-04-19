@@ -63,20 +63,23 @@ public class FileUserRepository implements UserRepository {
                             Object data = ois.readObject();
                             return (User) data;
                         } catch (IOException | ClassNotFoundException exception) {
-                            throw new RuntimeException(exception);
+                            throw new RuntimeException("파일을 읽어오지 못했습니다: FileUserRepository.findAllUsers",exception);
                         }
                     }).toList();
             return list;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("유저들을 리스트로 만드는 과정에 문제 발생: FileChannelRepository.findAllUsers",e);
         }
     }
 
     @Override
     public void updateUserById(UUID userId, String name) {
         Path path = filePathUtil.getUserFilePath(userId);
+        if (!Files.exists(path)) {
+            throw new RuntimeException("파일 없음: fileUserRepository.updateUserById");
+        }
         User user = fileSerializer.readFile(path, User.class);
-
+        user.setUsername(name);
         fileSerializer.writeFile(path, user);
     }
 
@@ -86,7 +89,7 @@ public class FileUserRepository implements UserRepository {
         try{
             Files.delete(path);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("삭제중 오류 발생: FileUserRepository.deleteUserById", e);
         }
     }
 }

@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.repository.jcf.JcfChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -22,14 +23,20 @@ public class JcfChannelService implements ChannelService {
     JcfChannelRepository jcr = new JcfChannelRepository();
 
     @Override
+
     public Channel createChannel(String name) {
+        Objects.requireNonNull(name, "이름 입력 없음: JcfChannelService.createChannel");
         return jcr.createChannelByName(name);
     }
 
     @Override
     public Channel findChannelById(UUID channelId) {
-        return jcr.findChannelById(channelId);
+        Objects.requireNonNull(channelId, "no channel Id: JcfChannelService.findChannelById");
+        Channel result = jcr.findChannelById(channelId);
+        Objects.requireNonNull(result, "No Channel: JcfChannelService.findChannelById");
+        return result;
     }
+
 
     @Override
     public List<Channel> findAllChannel() {
@@ -38,11 +45,14 @@ public class JcfChannelService implements ChannelService {
 
     @Override
     public void updateChannel(UUID channelId, String name) {
+        Objects.requireNonNull(channelId, "no channelId: JcfChannelService.updateChannel");
+        Objects.requireNonNull(name, "no name: JcfChannelService.updateChannel");
         jcr.updateChannel(channelId, name);
     }
 
     @Override
     public void deleteChannel(UUID channelId) {
+        Objects.requireNonNull(channelId, "no channelId: JcfChannelService.deleteChannel");
         jcr.deleteChannel(channelId);
     }
 }

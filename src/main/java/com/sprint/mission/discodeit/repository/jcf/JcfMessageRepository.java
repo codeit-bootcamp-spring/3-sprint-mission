@@ -23,15 +23,8 @@ import java.util.UUID;
 public class JcfMessageRepository implements MessageRepository {
     public final Map<UUID, Message> data = new HashMap<>();
 
-//    Message createMessageUserIdAndChannelId(UUID senderId, UUID channelId, String content);
-//    Message findMessageById(UUID messageId);
-//    List<Message> findAllMessages();
-//    void updateMessageById(UUID messageId, String content);
-//    void deleteMessageById(UUID messageId);
-
     @Override
     public Message createMessageByUserIdAndChannelId(UUID senderId, UUID channelId, String content) {
-
         Message message = new Message(senderId, channelId, content);
         data.put(message.getId(), message);
         return message;
@@ -44,14 +37,15 @@ public class JcfMessageRepository implements MessageRepository {
 
     @Override
     public List<Message> findAllMessages() {
-        data.values().stream().toList();
         return data.values().stream().toList();
     }
 
     @Override
     public void updateMessageById(UUID messageId, String content) {
-        Message message2 = data.get(messageId);
-        message2.setContent(content);
+        if (data.get(messageId) == null) {
+            throw new RuntimeException("no file: JcfMessageRepository.updateMessageById");
+        }
+        data.get(messageId).setContent(content);
     }
 
     @Override

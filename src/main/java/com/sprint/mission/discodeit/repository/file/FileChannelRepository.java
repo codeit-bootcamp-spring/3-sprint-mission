@@ -47,39 +47,39 @@ public class FileChannelRepository implements ChannelRepository {
 
     @Override
     public List<Channel> findAllChannel() {
-        try {
-            Path directory = filePathUtil.getChannelDirectory();
 
-            if (!Files.exists(directory)) {
-                return new ArrayList<>();
-            }
+        Path directory = filePathUtil.getChannelDirectory();
 
-            try {
-                List<Channel> list = Files.list(directory)
-                        .filter(path -> path.toString().endsWith(".ser"))
-                        .map(path -> {
-                            try (
-                                    FileInputStream fis = new FileInputStream(path.toFile());
-                                    ObjectInputStream ois = new ObjectInputStream(fis)
-                            ) {
-                                Object data = ois.readObject();
-                                return (Channel) data;
-                            } catch (IOException | ClassNotFoundException exception) {
-                                throw new RuntimeException(exception);
-                            }
-                        }).toList();
-                return list;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+        if (!Files.exists(directory)) {
+            return new ArrayList<>();
         }
+
+        try {
+            return Files.list(directory)
+                    .filter(path -> path.toString().endsWith(".ser"))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            Object data = ois.readObject();
+                            return (Channel) data;
+                        } catch (IOException | ClassNotFoundException exception) {
+                            throw new RuntimeException("파일을 읽어오지 못했습니다: FileChannelRepository.findAllChannel", exception);
+                        }
+                    }).toList();
+        } catch (IOException e) {
+            throw new RuntimeException("채널들을 리스트로 만드는 과정에 문제 발생: FileChannelRepository.findAllChannel",e);
+        }
+
     }
 
     @Override
     public void updateChannel(UUID channelId, String name) {
         Path path = filePathUtil.getChannelFilePath(channelId);
+        if (!Files.exists(path)) {
+            throw new RuntimeException("파일 없음: FileChannelRepository.updateChannel");
+        }
         Channel channel = fileSerializer.readFile(path, Channel.class);
         channel.setName(name);
         fileSerializer.writeFile(path, channel);
@@ -88,10 +88,11 @@ public class FileChannelRepository implements ChannelRepository {
     @Override
     public void deleteChannel(UUID channelId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
+
         try{
             Files.delete(path);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("삭제중 오류 발생: FileChannelRepository.deleteChannel", e);
         }
     }
 }

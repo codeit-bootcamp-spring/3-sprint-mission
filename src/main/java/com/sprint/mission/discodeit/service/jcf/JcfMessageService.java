@@ -31,41 +31,38 @@ public class JcfMessageService implements MessageService {
     }
 
     public final Map<UUID, Message> data = new HashMap<>();
-    // 추가 void createMessage(String content);
 
     @Override
     public Message createMessage(UUID senderId, UUID channelId, String content) {
-        if (userService.findUserById(senderId) == null) {
-            return null;
-        }
+        Objects.requireNonNull(senderId,"no senderId: JcfMessageService.createMessage" );
+        Objects.requireNonNull(channelId,"채널 id 없음: JcfMessageService.createMessage");
+        Objects.requireNonNull(content,"메세지 내용 없음 JcfMessageService.createMessage");
 
-        if (channelService.findChannelById(channelId) == null) {
-            return null;
-        }
+        Objects.requireNonNull(userService.findUserById(senderId), "no user existing: JcfMessageService.createMessage");
+        Objects.requireNonNull(channelService.findChannelById(channelId), "no channel existing: JcfMessageService.createMessage");
         return jmr.createMessageByUserIdAndChannelId(senderId, channelId, content);
     }
 
-    // 단건    Message findMessageById(UUID messageId);
     @Override
     public Message findMessageById(UUID messageId) {
         return jmr.findMessageById(messageId);
     }
 
-    // 다건    List<Message> findAllMessages();
     @Override
     public List<Message> findAllMessages() {
         return jmr.findAllMessages();
     }
 
-    // 업데이트   void updateMessage(UUID messageId, String content);
     @Override
     public void updateMessage(UUID messageId, String content) {
+        Objects.requireNonNull(messageId, "no messageId: JcfMessageService.updateMessage");
+        Objects.requireNonNull(content, "no content: JcfMessageService.updateMessage");
         jmr.updateMessageById(messageId, content);
     }
 
-    // 삭제    void deleteMessage(UUID messageId);
     @Override
     public void deleteMessage(UUID messageId) {
+        Objects.requireNonNull(messageId, "requre message id: JcfMessageService.deleteMessage");
         jmr.deleteMessageById(messageId);
     }
 

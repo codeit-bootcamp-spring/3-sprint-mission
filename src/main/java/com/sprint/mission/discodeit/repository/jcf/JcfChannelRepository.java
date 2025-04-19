@@ -39,6 +39,9 @@ public class JcfChannelRepository implements ChannelRepository {
     }
 
     public void updateChannel(UUID channelId, String name) {
+        if (data.get(channelId) == null) {
+            throw new RuntimeException("파일 없음: JcfChannelRepository.updateChannel");
+        }
         data.get(channelId).setName(name);
     }
 

@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -33,20 +34,22 @@ public class BasicMessageService implements MessageService{
 
     @Override
     public Message createMessage(UUID senderId, UUID channelId, String content) {
-        if (userService.findUserById(senderId) == null) {
-            return null;
-        }
+        Objects.requireNonNull(senderId,"no senderId: BasicMessageService.createMessage" );
+        Objects.requireNonNull(channelId,"채널 id 없음: BasicMessageService.createMessage");
+        Objects.requireNonNull(content,"메세지 내용 없음 BasicMessageService.createMessage");
 
-        if (channelService.findChannelById(channelId) == null) {
-            return null;
-        }
+        Objects.requireNonNull(userService.findUserById(senderId), "no user existing: createMessage");
+        Objects.requireNonNull(channelService.findChannelById(channelId), "no channel existing: createMessage");
 
         return mr.createMessageByUserIdAndChannelId(senderId, channelId, content);
     }
 
     @Override
     public Message findMessageById(UUID messageId) {
-        return mr.findMessageById(messageId);
+        Objects.requireNonNull(messageId, "no messageId: BasicMessageService.findMessageById");
+        Message messageById = mr.findMessageById(messageId);
+        Objects.requireNonNull(messageById, "no message in DB: BasicMessageService.findMessageById");
+        return messageById;
     }
 
     @Override
@@ -56,11 +59,14 @@ public class BasicMessageService implements MessageService{
 
     @Override
     public void updateMessage(UUID messageId, String content) {
+        Objects.requireNonNull(messageId, "no messageId: BasicMessageService.updateMessage");
+        Objects.requireNonNull(content, "no content: BasicMessageService.updateMessage");
         mr.updateMessageById(messageId, content);
     }
 
     @Override
     public void deleteMessage(UUID messageId) {
+        Objects.requireNonNull(messageId, "require message Id : BasicMessageService.deleteMessage");
         mr.deleteMessageById(messageId);
     }
 
