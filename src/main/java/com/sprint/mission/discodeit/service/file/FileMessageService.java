@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -33,20 +34,22 @@ public class FileMessageService implements MessageService {
 
     @Override
     public Message createMessage(UUID senderId, UUID channelId, String content) {
-        if (userService.findUserById(senderId) == null) {
-            return null;
-        }
+        Objects.requireNonNull(senderId,"no senderId: FileMessageService.createMessage" );
+        Objects.requireNonNull(channelId,"채널 id 없음: FileMessageService.createMessage");
+        Objects.requireNonNull(content,"메세지 내용 없음 FileMessageService.createMessage");
 
-        if (channelService.findChannelById(channelId) == null) {
-            return null;
-        }
+        Objects.requireNonNull(userService.findUserById(senderId), "no user existing: createMessage");
+        Objects.requireNonNull(channelService.findChannelById(channelId), "no channel existing: createMessage");
 
         return fmr.createMessageByUserIdAndChannelId(senderId, channelId, content);
     }
 
     @Override
     public Message findMessageById(UUID messageId) {
-        return fmr.findMessageById(messageId);
+        Objects.requireNonNull(messageId, "no messageId: FileMessageService.findMessageById");
+        Message messageById = fmr.findMessageById(messageId);
+        Objects.requireNonNull(messageById, "no message in DB: FileMessageService.findMessageById");
+        return messageById;
     }
 
     @Override
@@ -56,11 +59,14 @@ public class FileMessageService implements MessageService {
 
     @Override
     public void updateMessage(UUID messageId, String content) {
+        Objects.requireNonNull(messageId, "no messageId: FileMessageService.updateMessage");
+        Objects.requireNonNull(content, "no content: FileMessageService.updateMessage");
         fmr.updateMessageById(messageId, content);
     }
 
     @Override
     public void deleteMessage(UUID messageId) {
+        Objects.requireNonNull(messageId, "require message Id : FileMessageService.deleteMessage");
         fmr.deleteMessageById(messageId);
     }
 }

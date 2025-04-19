@@ -52,7 +52,7 @@ public class FileMessageRepository implements MessageRepository {
         }
 
         try {
-            List<Message> list = Files.list(directory)
+            return Files.list(directory)
                     .filter(path -> path.toString().endsWith(".ser"))
                     .map(path -> {
                         try (
@@ -62,18 +62,20 @@ public class FileMessageRepository implements MessageRepository {
                             Object data = ois.readObject();
                             return (Message) data;
                         } catch (IOException | ClassNotFoundException exception) {
-                            throw new RuntimeException(exception);
+                            throw new RuntimeException("problem with reading: FileMessageRepository.findAllMessages",exception);
                         }
                     }).toList();
-            return list;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("problem with creating List: FileMessageRepository.findAllMessages",e);
         }
     }
 
     @Override
     public void updateMessageById(UUID messageId, String content) {
         Path path = pathUtil.getMessageFilePath(messageId);
+         if (!Files.exists(path)) {
+            throw new RuntimeException("no file: FileMessageRepository.updateMessageById");
+        }
         Message message = serializer.readFile(path, Message.class);
         message.setContent(content);
         serializer.writeFile(path, message);
@@ -85,7 +87,7 @@ public class FileMessageRepository implements MessageRepository {
         try{
             Files.delete(path);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("problem while deleting",e);
         }
     }
 }

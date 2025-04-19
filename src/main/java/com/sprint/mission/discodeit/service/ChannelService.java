@@ -17,9 +17,16 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 public interface ChannelService {
+    //  input == null
     Channel createChannel(String name);
+    //  input == null
+    // channel == null
     Channel findChannelById(UUID channelId);
+    //  channel == null
     List<Channel> findAllChannel();
+    // input  == null
+    // channel == null
     void updateChannel(UUID channelId, String name);
+    // input == null
     void deleteChannel(UUID channelId);
 }

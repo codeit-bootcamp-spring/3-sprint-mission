@@ -37,6 +37,9 @@ public class JcfUserRepository implements UserRepository {
     }
 
     public void updateUserById(UUID userId, String name) {
+        if (data.get(userId) == null) {
+            throw new RuntimeException("파일 없음: JcfChannelRepository.updateChannel");
+        }
         data.get(userId).setUsername(name);
     }
 
