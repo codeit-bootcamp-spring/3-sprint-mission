@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.UserService;
-
-import java.io.*;
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * FileUserService
@@ -31,48 +32,36 @@ import java.util.*;
  *
  */
 public class FileUserService implements UserService {
-    private final FileDataStore<User> store;
-    private final Map<UUID, User> data;
+
+    private final UserRepository userRepository;
 
     public FileUserService() {
-        File dir = new File("data");
-        if (!dir.exists()) dir.mkdirs();
-
-        this.store = new FileDataStore<>("data/users.ser");
-        this.data = store.load();
+        this.userRepository = new FileUserRepository();
     }
 
     @Override
     public User createUser(String name) {
-        User user = new User(name);
-        data.put(user.getId(), user);   // 비즈니스 로직
-        store.save(data);               // 저장 로직
-        return user;
+        return userRepository.save(new User(name));
     }
 
     @Override
     public User getUser(UUID id) {
-        User user = data.get(id);
-        if (user == null) throw new NoSuchElementException("User not found: " + id);
-        return user;
+        return userRepository.findById(id);
     }
 
     @Override
     public List<User> getAllUsers() {
-        return new ArrayList<>(data.values());
+        return userRepository.findAll();
     }
 
     @Override
     public User updateUser(User user, String newName) {
-        user.updateName(newName);   // 비즈니스 로직
-        store.save(data);           // 저장 로직
-        return user;
+        user.updateName(newName);
+        return userRepository.save(user);
     }
 
     @Override
     public User deleteUser(User user) {
-        User removed = data.remove(user.getId());   // 비즈니스 로직
-        store.save(data);                           // 저장 로직
-        return removed;
+        return userRepository.delete(user);
     }
 }
