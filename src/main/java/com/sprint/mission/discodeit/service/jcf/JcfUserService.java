@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.refactor.service
+ * packageName    : com.sprint.mission.discodeit.service
  * fileName       : JcfUserService
  * author         : doungukkim
  * date           : 2025. 4. 17.

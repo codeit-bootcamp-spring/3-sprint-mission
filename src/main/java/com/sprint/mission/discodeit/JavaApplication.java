@@ -51,12 +51,12 @@ public class JavaApplication {
         User user2 = userService.createUser("user2");
         User user3 = userService.createUser("user3");
 
+
         System.out.println("\n[모든 유저 출력]");
         userService.findAllUsers().forEach(u -> System.out.println("- " + u.getUsername()));
 
         System.out.println("\n[단일 유저 조회]");
-        System.out.println("조회된 유저: " + userService.findUserById(UUID.randomUUID()));
-//        System.out.println("조회된 유저: " + userService.findUserById(user1.getId()).getUsername());
+        System.out.println("조회된 유저: " + userService.findUserById(user1.getId()).getUsername());
 
         System.out.println("\n[유저 이름 수정]");
         userService.updateUser(user2.getId(), "new user");

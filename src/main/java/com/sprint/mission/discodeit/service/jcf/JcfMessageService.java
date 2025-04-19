@@ -9,7 +9,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import java.util.*;
 
 /**
- * packageName    : com.sprint.mission.discodeit.refactor.service
+ * packageName    : com.sprint.mission.discodeit.service
  * fileName       : JcfMessageService2
  * author         : doungukkim
  * date           : 2025. 4. 17.

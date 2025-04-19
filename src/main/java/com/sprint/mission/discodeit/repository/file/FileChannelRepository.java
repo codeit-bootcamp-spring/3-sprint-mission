@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.refactor.repository.file
+ * packageName    : com.sprint.mission.discodeit.repository.file
  * fileName       : FileChannelRepository2
  * author         : doungukkim
  * date           : 2025. 4. 17.

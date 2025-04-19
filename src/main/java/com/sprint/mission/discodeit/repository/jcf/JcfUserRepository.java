@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.refactor.repository.jcf
+ * packageName    : com.sprint.mission.discodeit.repository.jcf
  * fileName       : JcfUserRepository2
  * author         : doungukkim
  * date           : 2025. 4. 17.
