@@ -70,6 +70,7 @@ public class JCFMessageService implements MessageService {
     //해당 채널의 메세지들을 다 읽음
     @Override
     public List<Message> findMessagesByChannel(UUID channelId) {
+
         try {
             Channel channel = this.channelService.find(channelId);
             List<UUID> messageIds = channel.getMessages();

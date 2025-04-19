@@ -46,7 +46,7 @@ public class FileMessageService implements MessageService {
 
         try {
             userService.find(message.getUserId());
-            Channel channel = channelService.find(message.getChannelId());
+            Channel channel = this.channelService.find(message.getChannelId());
 
             // 객체를 저장할 파일 path 생성
             Path filePath = this.databasePath.resolve(String.valueOf(message.getId()).concat(".ser"));
@@ -66,7 +66,7 @@ public class FileMessageService implements MessageService {
                 throw new RuntimeException(e);
             }
 
-            channelService.addMessageToChannel(channel.getId(), message.getId());
+            this.channelService.addMessageToChannel(channel.getId(), message.getId());
 
             return message;
         } catch (NoSuchElementException e) {
@@ -134,6 +134,7 @@ public class FileMessageService implements MessageService {
 
     }
 
+    //해당 채널의 메세지들을 다 읽음
     @Override
     public void delete(UUID messageId) {
         // 객체가 저장된 파일 path
@@ -153,7 +154,20 @@ public class FileMessageService implements MessageService {
 
     @Override
     public List<Message> findMessagesByChannel(UUID channelId) {
-        return List.of();
+
+        try {
+            Channel channel = this.channelService.find(channelId);
+            List<UUID> messageIds = channel.getMessages();
+
+            List<Message> messages = new ArrayList<>();
+            messageIds.forEach((messageId) -> {
+                messages.add(this.find(messageId));
+            });
+
+            return messages;
+        } catch (NoSuchElementException e) {
+            throw e;
+        }
     }
 
 }

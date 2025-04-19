@@ -15,7 +15,6 @@ import java.util.*;
 [ ] data 필드를 활용해 생성, 조회, 수정, 삭제하는 메소드를 구현하세요.
 * */
 
-//Q.list에 저장하는게 좋은 방법인가? map은? -> 빠른 검색을 위해 map으로 변경
 public class JCFUserService implements UserService {
     private final Map<UUID, User> data; //database
 
