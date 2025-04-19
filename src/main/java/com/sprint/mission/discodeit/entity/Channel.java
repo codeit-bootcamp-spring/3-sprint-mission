@@ -13,11 +13,11 @@ public class Channel {
     private String name;
     private ChannelType type;
     private String description;
-    private List<User> attendees;
+    private UUID ownerId;
+    private List<UUID> attendees;
     private List<UUID> messages;
 
-    //TODO: messages, attendees 셋팅 필요
-    public Channel(String name, ChannelType type, String description) {
+    public Channel(String name, ChannelType type, String description, UUID ownerId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now().getEpochSecond();
         this.updatedAt = Instant.now().getEpochSecond();
@@ -25,6 +25,7 @@ public class Channel {
         this.name = name;
         this.type = type;
         this.description = description;
+        this.ownerId = ownerId;
         //
         this.attendees = new ArrayList<>();
         this.messages = new ArrayList<>();
@@ -54,16 +55,20 @@ public class Channel {
         return description;
     }
 
-    public List<User> getAttendees() {
+    public UUID getOwnerId() {
+        return ownerId;
+    }
+
+    public List<UUID> getAttendees() {
         return attendees;
+    }
+
+    public void addAttendee(UUID userId) {
+        this.attendees.add(userId);
     }
 
     public List<UUID> getMessages() {
         return messages;
-    }
-
-    public void setAttendees(List<User> attendees) {
-        this.attendees = attendees;
     }
 
     public void addMessage(UUID messageId) {
@@ -85,7 +90,6 @@ public class Channel {
             this.updatedAt = Instant.now().getEpochSecond();
         }
     }
-
 
     @Override
     public String toString() {

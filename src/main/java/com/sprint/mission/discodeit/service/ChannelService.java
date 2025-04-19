@@ -6,13 +6,14 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
 
-    public Channel create(String name, ChannelType type, String description);
+    public Channel create(String name, ChannelType type, String description, UUID ownerId);
 
     public Channel find(UUID channelId);
 
@@ -24,14 +25,12 @@ public interface ChannelService {
 
     public void addMessageToChannel(UUID channelId, UUID messageId);
 
-//    public List<User> getAttendees(Channel ch);
-//
+    public void addAttendeeToChannel(UUID channelId, UUID userId);
+
+    public List<User> findAttendeesByChannel(UUID channelId);
+
 //    public User joinChannel(Channel ch, User user);
 //
 //    public User leaveChannel(Channel ch, User user);
-//
-//    public List<User> readAttendees(Channel ch);
-//
-//    public List<Message> readMessages(Channel ch);
 
 }

@@ -2,21 +2,26 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data; //database
+    private final UserService userService;
 
-    public JCFChannelService() {
+    public JCFChannelService(UserService userService) {
         this.data = new HashMap<>();
+        this.userService = userService;
     }
 
     @Override
-    public Channel create(String name, ChannelType type, String description) {
-        Channel channel = new Channel(name, type, description);
+    public Channel create(String name, ChannelType type, String description, UUID ownerId) {
+        Channel channel = new Channel(name, type, description, ownerId);
         this.data.put(channel.getId(), channel);
+        this.addAttendeeToChannel(channel.getId(), ownerId);
 
         return channel;
     }
@@ -58,12 +63,29 @@ public class JCFChannelService implements ChannelService {
         channel.addMessage(messageId);
     }
 
-    //    @Override
-//    public List<User> getAttendees(Channel ch) {
-//        Channel selected = this.data.get(ch.getId());
-//        return selected.getAttendees();
-//    }
-//
+    @Override
+    public void addAttendeeToChannel(UUID channelId, UUID userId) {
+        Channel channelNullable = this.data.get(channelId);
+        Channel channel = Optional.ofNullable(channelNullable).orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+
+        channel.addAttendee(userId);
+    }
+
+    @Override
+    public List<User> findAttendeesByChannel(UUID channelId) {
+        Channel channelNullable = this.data.get(channelId);
+        Channel channel = Optional.ofNullable(channelNullable).orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+        List<User> attendees = new ArrayList<>();
+        try {
+            channel.getAttendees().forEach((userId -> {
+                attendees.add(this.userService.find(userId));
+            }));
+            return attendees;
+        } catch (NoSuchElementException e) {
+            throw e;
+        }
+    }
+
 //    @Override
 //    public User joinChannel(Channel ch, User user) {
 //        Channel selectedChannel = this.data.get(ch.getId());
@@ -80,12 +102,6 @@ public class JCFChannelService implements ChannelService {
 //        selectedChannel.getAttendees().remove(user);
 //
 //        return user;
-//    }
-//
-//    @Override
-//    public List<User> readAttendees(Channel ch) {
-//        Channel selectedChannel = this.data.get(ch.getId());
-//        return selectedChannel.getAttendees();
 //    }
 //
 }

@@ -70,9 +70,9 @@ public class JavaApplication {
         System.out.println("================Channel Log================");
 
         // channel 총 3개 생성 및 등록
-        channel1 = channelService.create("channel 1", ChannelType.PRIVATE, "This is channel 1");
-        channel2 = channelService.create("channel 2", ChannelType.PUBLIC, "This is channel 2");
-        channel3 = channelService.create("channel 3", ChannelType.PUBLIC, "This is channel 3");
+        channel1 = channelService.create("channel 1", ChannelType.PRIVATE, "This is channel 1", user1.getId());
+        channel2 = channelService.create("channel 2", ChannelType.PUBLIC, "This is channel 2", user4.getId());
+        channel3 = channelService.create("channel 3", ChannelType.PUBLIC, "This is channel 3", user5.getId());
 
 
         // Channel 조회 - 전체
@@ -94,6 +94,11 @@ public class JavaApplication {
                 System.out.println("Get all channels after deleting 'chat3' : " + ch.toString())
         );
 
+        // 참가자 리스트
+        channelService.findAttendeesByChannel(channel2.getId()).stream().forEach(user ->
+                System.out.println("Get all attendees on channel 2 : " + user.toString())
+        );
+
 //        // Channel 입장
 //        channelService.joinChannel(channel1, user2);
 //        channelService.joinChannel(channel2, user4);
@@ -102,11 +107,6 @@ public class JavaApplication {
 //        // Channel 퇴장
 //        channelService.leaveChannel(channel2, user3);
 //
-//        // 참가자 리스트
-//        channelService.readAttendees(channel2).stream().forEach(user ->
-//                System.out.println("Get all attendees on channel 2 : " + user.toString())
-//        );
-
     }
 
     public static void messageCRUDTest(MessageService messageService) {
@@ -169,7 +169,7 @@ public class JavaApplication {
         userCRUDTest(userService);
 
         /* Channel service */
-        ChannelService channelService = new JCFChannelService();
+        ChannelService channelService = new JCFChannelService(userService);
         channelCRUDTest(channelService);
 
         /* message service */
