@@ -7,23 +7,25 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class User implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final Long serialVersionUID = 1L;
     private UUID id;
-    private long createdAt;
-    private long updatedAt;
-
+    private Long createdAt;
+    private Long updatedAt;
+    //
     private String name;
+    private String email;
+    private String password;
     private int age;
 
-
-    public User(String name, int age) {
-        this.name = name;
-        this.age = age;
-        // for fixed unique id
-        this.id = UUID.nameUUIDFromBytes(name.concat(String.valueOf(age)).getBytes());
+    public User(String name, int age, String email, String password) {
+        this.id = UUID.randomUUID();
         this.createdAt = Instant.now().getEpochSecond();
         this.updatedAt = Instant.now().getEpochSecond();
-
+        //
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.age = age;
     }
 
     public UUID getId() {
@@ -42,28 +44,43 @@ public class User implements Serializable {
         return name;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
     public int getAge() {
         return age;
     }
 
-    // 필드를 수정하는 update 함수를 정의하세요.
-    public User update(String name) {
-        this.updatedAt = Instant.now().getEpochSecond();
 
-        //TODO : to check if values are different before update
-        this.name = name;
+    public void update(String name, int age, String email, String password) {
+        boolean anyValueUpdated = false;
+        if (name != null && !name.equals(this.name)) {
+            this.name = name;
+            anyValueUpdated = true;
+        }
+        if (age != 0 && age != this.age) {
+            this.age = age;
+            anyValueUpdated = true;
+        }
+        if (email != null && !email.equals(this.email)) {
+            this.email = email;
+            anyValueUpdated = true;
+        }
+        if (password != null && !password.equals(this.password)) {
+            this.password = password;
+            anyValueUpdated = true;
+        }
 
-        return this;
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now().getEpochSecond();
+        }
     }
 
-    public User update(int age) {
-        this.updatedAt = Instant.now().getEpochSecond();
-
-        //TODO : to check if values are different before update
-        this.age = age;
-
-        return this;
-    }
 
     @Override
     public String toString() {

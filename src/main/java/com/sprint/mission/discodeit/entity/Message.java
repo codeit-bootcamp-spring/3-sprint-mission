@@ -8,54 +8,59 @@ import java.util.UUID;
 
 public class Message implements Serializable {
     private final UUID id;
-    private final long createdAt;
-    private long updatedAt;
+    private final Long createdAt;
+    private Long updatedAt;
+    //
+    private String content;
+    //
+    private final UUID userId;
+    private final UUID channelId;
 
-    private String text;
-    private final User sender;
-    private final Channel channel;
 
-    public Message(String text, User sender, Channel channel) {
-        this.text = text;
-        this.sender = sender;
-        this.channel = channel;
+    public Message(String content, UUID userId, UUID channelId) {
+        this.id = UUID.randomUUID();
         this.createdAt = Instant.now().getEpochSecond();
         this.updatedAt = Instant.now().getEpochSecond();
-        this.id = UUID.randomUUID();
-
+        //
+        this.content = content;
+        this.userId = userId;
+        this.channelId = channelId;
     }
 
     public UUID getId() {
         return id;
     }
 
-    public long getCreatedAt() {
+    public Long getCreatedAt() {
         return createdAt;
     }
 
-    public long getUpdatedAt() {
+    public Long getUpdatedAt() {
         return updatedAt;
     }
 
-    public String getText() {
-        return text;
+    public String getContent() {
+        return content;
     }
 
-    public User getSender() {
-        return sender;
+    public UUID getUserId() {
+        return userId;
     }
 
-    public Channel getChannel() {
-        return channel;
+    public UUID getChannelId() {
+        return channelId;
     }
 
-    // 필드를 수정하는 update 함수를 정의하세요.
-    public Message update(String text) {
-        // TODO: add setter method for field
-        this.text = text;
-        this.updatedAt = Instant.now().getEpochSecond();
+    public void update(String content) {
+        boolean anyValueUpdated = false;
+        if (content != null && !content.equals(this.content)) {
+            this.content = content;
+            anyValueUpdated = true;
+        }
 
-        return this;
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now().getEpochSecond();
+        }
     }
 
     @Override
@@ -70,8 +75,8 @@ public class Message implements Serializable {
                 " id         = " + id + "\n" +
                 " createdAt  = " + createdAtFormatted + "\n" +
                 " updatedAt  = " + updatedAtFormatted + "\n" +
-                " text       = '" + text + "'\n" +
-                " sender     = " + sender.getName() + "\n" +
+                " content       = '" + content + "'\n" +
+                " sender     = " + userId + "\n" +
                 "}";
     }
 }

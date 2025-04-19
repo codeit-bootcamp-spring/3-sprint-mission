@@ -10,33 +10,39 @@ import java.util.UUID;
 
 public class Channel implements Serializable {
     private final UUID id;
-    private final long createdAt;
-    private long updatedAt;
-
+    private final Long createdAt;
+    private Long updatedAt;
+    //
     private String name;
-    private List<User> attendees;
-    private List<Message> messages;
+    private ChannelType type;
+    private String description;
+    private UUID ownerId;
+    private List<UUID> attendees;
+    private List<UUID> messages;
 
-    // Question : attendees는 처음부터 리스트로 받아야하나? 아니면 User로 받고 생성자 안에서 처리해줘야하나?
-    public Channel(String name, User attendee) {
-        // for fixed unique id
-        this.id = UUID.nameUUIDFromBytes(name.concat(attendee.getName()).getBytes());
-        this.name = name;
-        this.attendees = new ArrayList<>();
-        this.attendees.add(attendee);
+    public Channel(String name, ChannelType type, String description, UUID ownerId) {
+        this.id = UUID.randomUUID();
         this.createdAt = Instant.now().getEpochSecond();
         this.updatedAt = Instant.now().getEpochSecond();
+        //
+        this.name = name;
+        this.type = type;
+        this.description = description;
+        this.ownerId = ownerId;
+        //
+        this.attendees = new ArrayList<>();
+        this.messages = new ArrayList<>();
     }
 
     public UUID getId() {
         return id;
     }
 
-    public long getCreatedAt() {
+    public Long getCreatedAt() {
         return createdAt;
     }
 
-    public long getUpdatedAt() {
+    public Long getUpdatedAt() {
         return updatedAt;
     }
 
@@ -44,30 +50,52 @@ public class Channel implements Serializable {
         return name;
     }
 
-    public List<User> getAttendees() {
+    public ChannelType getType() {
+        return type;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public UUID getOwnerId() {
+        return ownerId;
+    }
+
+    public List<UUID> getAttendees() {
         return attendees;
     }
 
-    // Q.updateAttendees? or setAttendees?
-    public void setAttendees(List<User> attendees) {
-        this.attendees = attendees;
+    public void addAttendee(UUID userId) {
+        this.attendees.add(userId);
     }
 
-    public List<Message> getMessages() {
+    public void removeAttendee(UUID userId) {
+        this.attendees.remove(userId);
+    }
+
+    public List<UUID> getMessages() {
         return messages;
     }
 
-    // Q. list로 받는게 맞나??
-    public void setMessages(List<Message> msg) {
-        this.messages = messages;
+    public void addMessage(UUID messageId) {
+        this.messages.add(messageId);
     }
 
-    // 필드를 수정하는 update 함수를 정의하세요.
-    public Channel update(String name) {
-        // TODO: add setter method for field
-        this.name = name;
-        this.updatedAt = Instant.now().getEpochSecond();
-        return this;
+    public void update(String name, String description) {
+        boolean anyValueUpdated = false;
+        if (name != null && !name.equals(this.name)) {
+            this.name = name;
+            anyValueUpdated = true;
+        }
+        if (description != null && !description.equals(this.description)) {
+            this.description = description;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now().getEpochSecond();
+        }
     }
 
     @Override
