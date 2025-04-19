@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserRepository {
-    public void write(User user);
+    public User write(User user);
 
-    public User read(UUID id);
+    public User read(UUID userId);
 
     public List<User> readAll();
 
-    public boolean delete(UUID id);
+    public void delete(UUID userId);
 }

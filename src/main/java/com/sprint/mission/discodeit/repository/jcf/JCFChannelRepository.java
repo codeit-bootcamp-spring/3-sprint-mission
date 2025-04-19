@@ -19,8 +19,8 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel read(UUID id) {
-        return this.data.get(id);
+    public Channel read(UUID channelId) {
+        return this.data.get(channelId);
     }
 
     @Override
@@ -29,8 +29,7 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public boolean delete(UUID id) {
-        this.data.remove(id);
-        return true;
+    public void delete(UUID channelId) {
+        this.data.remove(channelId);
     }
 }

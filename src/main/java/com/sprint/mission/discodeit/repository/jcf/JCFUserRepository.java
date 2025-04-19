@@ -13,14 +13,14 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public void write(User user) {
+    public User write(User user) {
         this.data.put(user.getId(), user);
+        return user;
     }
 
-
     @Override
-    public User read(UUID id) {
-        return this.data.get(id);
+    public User read(UUID userId) {
+        return this.data.get(userId);
     }
 
     @Override
@@ -29,8 +29,7 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public boolean delete(UUID id) {
-        this.data.remove(id);
-        return true;
+    public void delete(UUID userId) {
+        this.data.remove(userId);
     }
 }

@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
 import java.io.*;
@@ -34,12 +32,10 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message write(User user, Channel channel, String text) {
-        Message msg = new Message(text, user, channel);
-//            this.data.put(msg.getId(), msg);
+    public Message write(Message message) {
 
         // 객체를 저장할 파일 path 생성
-        Path filePath = this.databasePath.resolve(String.valueOf(msg.getId()).concat(".ser"));
+        Path filePath = this.databasePath.resolve(String.valueOf(message.getId()).concat(".ser"));
         // 파일 생성
         File myObj = new File(String.valueOf(filePath));
 
@@ -50,18 +46,17 @@ public class FileMessageRepository implements MessageRepository {
                 ObjectOutputStream oos = new ObjectOutputStream(fos);
         ) {
 
-            oos.writeObject(msg);
-
-
-            return msg;
+            oos.writeObject(message);
+            return message;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
     }
 
     @Override
-    public Message read(UUID id) {
-        Path filePath = this.databasePath.resolve(String.valueOf(id).concat(".ser"));
+    public Message read(UUID messageId) {
+        Path filePath = this.databasePath.resolve(String.valueOf(messageId).concat(".ser"));
 
         try (
                 // 파일과 연결되는 스트림 생성
@@ -69,14 +64,12 @@ public class FileMessageRepository implements MessageRepository {
                 // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
                 ObjectInputStream ois = new ObjectInputStream(fis);
         ) {
-
             Message message = (Message) ois.readObject();
-
             return message;
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
     }
 
     @Override
@@ -84,7 +77,6 @@ public class FileMessageRepository implements MessageRepository {
         List<Message> messages = new ArrayList<>();
 
         try {
-
             Files.walk(this.databasePath).filter(Files::isRegularFile)
                     .forEach((path) -> {
                         try ( // 파일과 연결되는 스트림 생성
@@ -94,36 +86,33 @@ public class FileMessageRepository implements MessageRepository {
                         ) {
                             Message message = (Message) ois.readObject();
                             messages.add(message);
-                            //FIXME
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        } catch (ClassNotFoundException e) {
+                        } catch (IOException | ClassNotFoundException e) {
                             throw new RuntimeException(e);
                         }
                     });
+
+            return messages;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        return messages;
     }
 
     @Override
-    public boolean delete(UUID id) {
-        Path filePath = this.databasePath.resolve(String.valueOf(id).concat(".ser"));
+    public void delete(UUID messageId) {
+        // 객체가 저장된 파일 path
+        Path filePath = this.databasePath.resolve(String.valueOf(messageId).concat(".ser"));
+
         try {
             if (Files.exists(filePath)) {
                 Files.delete(filePath);
-                return true;
             } else {
                 throw new FileNotFoundException("File does not exist");
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            System.err.println(e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
+
     }
+    
 }

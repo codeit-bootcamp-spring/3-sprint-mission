@@ -9,11 +9,11 @@ public interface ChannelRepository {
 
     public Channel write(Channel channel);
 
-    public Channel read(UUID id);
+    public Channel read(UUID channelId);
 
     public List<Channel> readAll();
 
-    public boolean delete(UUID id);
+    public void delete(UUID channelId);
 
     // QUESTION : joinChannel, leavelChannel, readAttendees 도 repo에서 작성해야하나???
 }
