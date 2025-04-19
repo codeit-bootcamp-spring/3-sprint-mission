@@ -1,15 +1,19 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class User {
+public class User implements Serializable {
+
     private final UUID userId;
     private String userName;
     private String email;
     private String password;
     private final long createdAt;
     private long updatedAt;
+    private static final long serialVersionUID = 1L;
 
+    // 생성자
     public User(String userName, String email, String password) {
         this.userId = UUID.randomUUID();
         this.userName = userName;
@@ -53,8 +57,8 @@ public class User {
     }
 
     //비밀번호 업데이트
-    public void updatePassword(String password){
-        if(password != null && !password.isEmpty()){
+    public void updatePassword(String password) {
+        if (password != null && !password.isEmpty()) {
             this.password = password;
         }
         this.updatedAt = System.currentTimeMillis();

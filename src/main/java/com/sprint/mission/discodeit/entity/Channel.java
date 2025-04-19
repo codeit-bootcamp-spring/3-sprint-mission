@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public class Channel {
+public class Channel implements Serializable {
 
     private final UUID channelId;
     private String channelName;
@@ -14,6 +15,7 @@ public class Channel {
     private final long createdAt;
     private long updatedAt;
     private final Set<UUID> participants; // 참가자 목록
+    private static final long serialVersionUID = 1L;
 
     // 생성자
     public Channel(String channelName, boolean isPrivate, String password, UUID ownerChannelId) {
@@ -64,6 +66,7 @@ public class Channel {
     public boolean isParticipant(UUID userId) {
         return participants.contains(userId);
     }
+
     public void updateChannelName(String channelName) {
         this.channelName = channelName;
         this.updatedAt = System.currentTimeMillis();
@@ -78,16 +81,17 @@ public class Channel {
         this.password = password;
         this.updatedAt = System.currentTimeMillis();
     }
+
     @Override
     public String toString() {
-        return "Channel{" +
-                "channelId=" + channelId +
-                ", channelName='" + channelName + '\'' +
-                ", isPrivate=" + isPrivate +
-                ", password='" + password + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", ownerChannelId=" + ownerChannelId +
-                '}';
+        return "Channel{"
+                + "channelId=" + channelId
+                + ", channelName='" + channelName + '\''
+                + ", isPrivate=" + isPrivate
+                + ", password='" + password + '\''
+                + ", createdAt=" + createdAt
+                + ", updatedAt=" + updatedAt
+                + ", ownerChannelId=" + ownerChannelId
+                + '}';
     }
 }

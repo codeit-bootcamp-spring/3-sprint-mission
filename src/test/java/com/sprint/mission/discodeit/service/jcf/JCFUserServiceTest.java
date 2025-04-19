@@ -14,14 +14,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 
 class JCFUserServiceTest {
 
     private JCFUserService userService;
+    private JCFUserRepository userRepository;
 
     @BeforeEach
     public void setUp() {
-        this.userService = new JCFUserService();
+        this.userRepository = new JCFUserRepository();
+        this.userService = new JCFUserService(this.userRepository);
     }
 
     @Test
