@@ -6,23 +6,29 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.service
- * fileName       : UserService
+ * packageName    : com.sprint.mission.discodeit.refactor.service
+ * fileName       : UserService2
  * author         : doungukkim
- * date           : 2025. 4. 3.
- * description    : interface of uesr service
+ * date           : 2025. 4. 17.
+ * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 3.        doungukkim       최초 생성
+ * 2025. 4. 17.        doungukkim       최초 생성
  */
 public interface UserService {
-
-    UUID registerUser(String username);
+    // input = null
+    User createUser(String name);
+    // input = null
+    // 찾는 유저가 없다면?
     User findUserById(UUID userId);
+    // 아무 유저도 없다면?
     List<User> findAllUsers();
-    void updateUsername(UUID userId,String newName);
+    // input = null
+    // 찾는 유저가 없다면?
+    void updateUser(UUID userId, String name);
+    // input = null
+    // 삭제할 유저가 없다면?
     void deleteUser(UUID userId);
-    void addChannel(UUID userId, UUID channelId);
-    List<UUID> findChannelIdsById(UUID userId);
+
 }
