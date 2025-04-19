@@ -12,11 +12,11 @@ import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 public class JavaApplication {
-    private static User user1;
-    private static User user2;
-    private static User user3;
-    private static User user4;
-    private static User user5;
+    private static User johnYoung;
+    private static User johnOld;
+    private static User bob;
+    private static User alice;
+    private static User charlie;
     //
     private static Channel channel1;
     private static Channel channel2;
@@ -35,11 +35,17 @@ public class JavaApplication {
         System.out.println("================User Log================");
 
         // User 5명 생성 및 등록
-        user1 = userService.create("John", 20, "john@gmail.com", "1234");
-        user2 = userService.create("John", 60, "johnOld@gmail.com", "1234");
-        user3 = userService.create("Bob", 25, "bob@gmail.com", "1234");
-        user4 = userService.create("Alice", 22, "alice@gmail.com", "1234");
-        user5 = userService.create("Charlie", 28, "charlie@gmail.com", "1234");
+        johnYoung = new User("John", 20, "john@gmail.com", "1234");
+        johnOld = new User("John", 60, "johnOld@gmail.com", "1234");
+        bob = new User("Bob", 25, "bob@gmail.com", "1234");
+        alice = new User("Alice", 22, "alice@gmail.com", "1234");
+        charlie = new User("Charlie", 28, "charlie@gmail.com", "1234");
+
+        userService.create(johnYoung);
+        userService.create(johnOld);
+        userService.create(bob);
+        userService.create(alice);
+        userService.create(charlie);
 
         // User 조회 - 전체
         userService.findAll().stream().forEach(user ->
@@ -50,14 +56,14 @@ public class JavaApplication {
                 System.out.println("Get by name : " + user.toString())
         );
         // User 조회 - by id
-        System.out.println("Get by id : " + userService.find(user4.getId()).toString());
+        System.out.println("Get by id : " + userService.find(alice.getId()).toString());
 
         // User 수정
-        User updatedUser = userService.update(user3.getId(), null, 3, null, null);
+        User updatedUser = userService.update(bob.getId(), null, 3, null, null);
         System.out.println("Updated user : " + updatedUser.toString());
 
         // User 삭제
-        userService.delete(user2.getId());
+        userService.delete(johnOld.getId());
 
         // User 삭제 후 결과 조회
         userService.findAll().stream().forEach(user ->
@@ -70,10 +76,12 @@ public class JavaApplication {
         System.out.println("================Channel Log================");
 
         // channel 총 3개 생성 및 등록
-        channel1 = channelService.create("channel 1", ChannelType.PRIVATE, "This is channel 1", user1.getId());
-        channel2 = channelService.create("channel 2", ChannelType.PUBLIC, "This is channel 2", user4.getId());
-        channel3 = channelService.create("channel 3", ChannelType.PUBLIC, "This is channel 3", user5.getId());
-
+        channel1 = new Channel("channel 1", ChannelType.PRIVATE, "This is channel 1", johnYoung.getId());
+        channel2 = new Channel("channel 2", ChannelType.PUBLIC, "This is channel 2", alice.getId());
+        channel3 = new Channel("channel 3", ChannelType.PUBLIC, "This is channel 3", charlie.getId());
+        channelService.create(channel1);
+        channelService.create(channel2);
+        channelService.create(channel3);
 
         // Channel 조회 - 전체
         channelService.findAll().stream().forEach(ch ->
@@ -100,14 +108,14 @@ public class JavaApplication {
         );
 
         // Channel 입장
-        channelService.addAttendeeToChannel(channel1.getId(), user3.getId());
+        channelService.addAttendeeToChannel(channel1.getId(), bob.getId());
         // Channel 입장 후 참가자 리스트
         channelService.findAttendeesByChannel(channel1.getId()).stream().forEach(user ->
                 System.out.println("Get all attendees on channel 1 after joining : " + user.toString())
         );
 
         // Channel 퇴장
-        channelService.removeAttendeeToChannel(channel2.getId(), user4.getId());
+        channelService.removeAttendeeToChannel(channel2.getId(), alice.getId());
         // Channel 퇴장 후 참가자 리스트
         channelService.findAttendeesByChannel(channel2.getId()).stream().forEach(user ->
                 System.out.println("Get all attendees on channel 2 after leaving : " + user.toString())
@@ -118,17 +126,26 @@ public class JavaApplication {
         System.out.println("================Message Log================");
 
         // 각 User 마다 2개의 Message 생성 및 등록
-        message1 = messageService.create("hello I'am " + user1.getName() + ", this is my first message!", channel1.getId(), user1.getId());
-        message2 = messageService.create("hello I'am " + user1.getName() + ", this is my second message!", channel1.getId(), user1.getId());
+        message1 = new Message("hello I'am " + johnYoung.getName() + ", this is my first message!", johnYoung.getId(), channel1.getId());
+        message2 = new Message("hello I'am " + johnYoung.getName() + ", this is my second message!", johnYoung.getId(), channel1.getId());
 
-        message3 = messageService.create("hello I'am " + user3.getName() + ", this is my first message!", channel1.getId(), user3.getId());
-        message4 = messageService.create("hello I'am " + user3.getName() + ", this is my second message!", channel1.getId(), user3.getId());
+        message3 = new Message("hello I'am " + bob.getName() + ", this is my first message!", bob.getId(), channel1.getId());
+        message4 = new Message("hello I'am " + bob.getName() + ", this is my second message!", bob.getId(), channel1.getId());
 
-        message5 = messageService.create("hello I'am " + user4.getName() + ", this is my first message!", channel2.getId(), user4.getId());
-        message6 = messageService.create("hello I'am " + user4.getName() + ", this is my second message!", channel2.getId(), user4.getId());
+        message5 = new Message("hello I'am " + alice.getName() + ", this is my first message!", alice.getId(), channel2.getId());
+        message6 = new Message("hello I'am " + alice.getName() + ", this is my second message!", alice.getId(), channel2.getId());
 
-        message7 = messageService.create("hello I'am " + user5.getName() + ", this is my first message!", channel2.getId(), user5.getId());
-        message8 = messageService.create("hello I'am " + user5.getName() + ", this is my second message!", channel2.getId(), user5.getId());
+        message7 = new Message("hello I'am " + charlie.getName() + ", this is my first message!", charlie.getId(), channel2.getId());
+        message8 = new Message("hello I'am " + charlie.getName() + ", this is my second message!", charlie.getId(), channel2.getId());
+
+        messageService.create(message1);
+        messageService.create(message2);
+        messageService.create(message3);
+        messageService.create(message4);
+        messageService.create(message5);
+        messageService.create(message6);
+        messageService.create(message7);
+        messageService.create(message8);
 
         // Message 조회 - 전체
         messageService.findAll().stream().forEach(msg ->

@@ -1,9 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-public class User {
+public class User implements Serializable {
+    private static final Long serialVersionUID = 1L;
     private UUID id;
     private Long createdAt;
     private Long updatedAt;
@@ -80,12 +84,47 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", name='" + name + '\'' +
-                ", age=" + age +
-                '}';
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                .withZone(ZoneId.systemDefault());
+
+        String createdAtFormatted = formatter.format(Instant.ofEpochSecond(createdAt));
+        String updatedAtFormatted = formatter.format(Instant.ofEpochSecond(updatedAt));
+
+        return "🙋‍♂️ User {\n" +
+                "  id         = " + id + "\n" +
+                "  createdAt  = " + createdAtFormatted + "\n" +
+                "  updatedAt  = " + updatedAtFormatted + "\n" +
+                "  name       = '" + name + "'\n" +
+                "  age        = " + age + "\n" +
+                "}";
+    }
+
+    // REF : https://www.baeldung.com/java-equals-hashcode-contracts
+    @Override
+    public boolean equals(Object o) {
+        if (o == this)
+            return true;
+        if (!(o instanceof User))
+            return false;
+        User other = (User) o;
+        boolean idEquals = (this.id == null && other.id == null)
+                || (this.id != null && this.id.equals(other.id));
+        boolean nameEquals = (this.name == null && other.name == null)
+                || (this.name != null && this.name.equals(other.name));
+        boolean ageEquals = this.age == other.age;
+        return idEquals && nameEquals && ageEquals;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        if (this.id != null) {
+            result = 31 * result + this.id.hashCode();
+        }
+        if (this.name != null) {
+            result = 31 * result + this.name.hashCode();
+        }
+        result = 31 * result + this.age;
+        return result;
     }
 }

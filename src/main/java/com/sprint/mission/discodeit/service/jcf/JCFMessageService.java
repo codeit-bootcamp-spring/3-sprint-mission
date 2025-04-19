@@ -19,22 +19,23 @@ public class JCFMessageService implements MessageService {
         this.channelService = channelService;
     }
 
+
     @Override
-    public Message create(String content, UUID channelId, UUID authorId) {
-        Channel channel;
+    public Message create(Message message) {
+
         try {
-            userService.find(authorId);
-            channel = channelService.find(channelId);
+            userService.find(message.getUserId());
+            Channel channel = channelService.find(message.getChannelId());
+
+            this.data.put(message.getId(), message);
+
+            channelService.addMessageToChannel(channel.getId(), message.getId());
+
+            return message;
         } catch (NoSuchElementException e) {
             throw e;
         }
 
-        Message message = new Message(content, authorId, channelId);
-        this.data.put(message.getId(), message);
-
-        channelService.addMessageToChannel(channel.getId(), message.getId());
-
-        return message;
     }
 
     @Override
@@ -69,6 +70,7 @@ public class JCFMessageService implements MessageService {
     //해당 채널의 메세지들을 다 읽음
     @Override
     public List<Message> findMessagesByChannel(UUID channelId) {
+
         try {
             Channel channel = this.channelService.find(channelId);
             List<UUID> messageIds = channel.getMessages();
