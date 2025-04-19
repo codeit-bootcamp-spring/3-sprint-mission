@@ -50,7 +50,15 @@ public class JCFChannelService implements ChannelService {
         this.data.remove(channelId);
     }
 
-//    @Override
+    @Override
+    public void addMessageToChannel(UUID channelId, UUID messageId) {
+        Channel channelNullable = this.data.get(channelId);
+        Channel channel = Optional.ofNullable(channelNullable).orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+
+        channel.addMessage(messageId);
+    }
+
+    //    @Override
 //    public List<User> getAttendees(Channel ch) {
 //        Channel selected = this.data.get(ch.getId());
 //        return selected.getAttendees();
@@ -80,17 +88,4 @@ public class JCFChannelService implements ChannelService {
 //        return selectedChannel.getAttendees();
 //    }
 //
-    // QUESTION :  메세지 로직은 MessageService에 있어야하는데?
-//    @Override
-//    public void sendMessage(Channel ch, Message msg) {
-//        Channel selectedChannel = this.data.get(ch.getId());
-//        selectedChannel.getMessages().addAll(Arrays.asList(msg));
-//    }
-//
-//    @Override
-//    public List<Message> readMessages(Channel ch) {
-//        Channel selectedChannel = this.data.get(ch.getId());
-//        return selectedChannel.getMessages();
-//    }
-
 }

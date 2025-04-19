@@ -22,6 +22,8 @@ public interface ChannelService {
 
     public void delete(UUID channelId);
 
+    public void addMessageToChannel(UUID channelId, UUID messageId);
+
 //    public List<User> getAttendees(Channel ch);
 //
 //    public User joinChannel(Channel ch, User user);
@@ -29,9 +31,6 @@ public interface ChannelService {
 //    public User leaveChannel(Channel ch, User user);
 //
 //    public List<User> readAttendees(Channel ch);
-//
-//    // Q. 메세지 로직은 MessageService에 있어야하는데?
-//    public void sendMessage(Channel ch, Message message);
 //
 //    public List<Message> readMessages(Channel ch);
 

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -18,11 +19,20 @@ public class JCFMessageService implements MessageService {
         this.channelService = channelService;
     }
 
-    // TODO : verified user
     @Override
     public Message create(String content, UUID channelId, UUID authorId) {
+        Channel channel;
+        try {
+            userService.find(authorId);
+            channel = channelService.find(channelId);
+        } catch (NoSuchElementException e) {
+            throw e;
+        }
+
         Message message = new Message(content, authorId, channelId);
         this.data.put(message.getId(), message);
+
+        channelService.addMessageToChannel(channel.getId(), message.getId());
 
         return message;
     }
@@ -55,4 +65,25 @@ public class JCFMessageService implements MessageService {
         }
         this.data.remove(messageId);
     }
+
+    //해당 채널의 메세지들을 다 읽음
+    @Override
+    public List<Message> findMessagesByChannel(UUID channelId) {
+        try {
+            Channel channel = this.channelService.find(channelId);
+            List<UUID> messageIds = channel.getMessages();
+
+            List<Message> messages = new ArrayList<>();
+            messageIds.forEach((messageId) -> {
+                messages.add(this.data.get(messageId));
+            });
+
+            return messages;
+
+        } catch (NoSuchElementException e) {
+            throw e;
+        }
+
+    }
+
 }

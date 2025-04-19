@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,7 +14,7 @@ public class Channel {
     private ChannelType type;
     private String description;
     private List<User> attendees;
-    private List<Message> messages;
+    private List<UUID> messages;
 
     //TODO: messages, attendees 셋팅 필요
     public Channel(String name, ChannelType type, String description) {
@@ -24,7 +25,9 @@ public class Channel {
         this.name = name;
         this.type = type;
         this.description = description;
-
+        //
+        this.attendees = new ArrayList<>();
+        this.messages = new ArrayList<>();
     }
 
     public UUID getId() {
@@ -55,7 +58,7 @@ public class Channel {
         return attendees;
     }
 
-    public List<Message> getMessages() {
+    public List<UUID> getMessages() {
         return messages;
     }
 
@@ -63,9 +66,8 @@ public class Channel {
         this.attendees = attendees;
     }
 
-    // Q. list로 받는게 맞나??
-    public void setMessages(List<Message> msg) {
-        this.messages = messages;
+    public void addMessage(UUID messageId) {
+        this.messages.add(messageId);
     }
 
     public void update(String name, String description) {

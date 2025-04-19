@@ -21,4 +21,5 @@ public interface MessageService {
 
     public void delete(UUID messageId);
 
+    public List<Message> findMessagesByChannel(UUID channelId);
 }

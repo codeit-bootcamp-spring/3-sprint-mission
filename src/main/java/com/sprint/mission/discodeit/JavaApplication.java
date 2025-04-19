@@ -137,6 +137,9 @@ public class JavaApplication {
         Message updatedMsg = messageService.update(searchedMsg.getId(), "updated msg");
         System.out.println("Updated message : " + updatedMsg.toString());
 
+        // 특정 channel의 메세지 가져오기
+        messageService.findMessagesByChannel(channel2.getId()).forEach(System.out::println);
+
         // Message 삭제
         messageService.delete(searchedMsg.getId());
 
@@ -149,15 +152,15 @@ public class JavaApplication {
 
     public static void main(String[] args) {
 
-/*
-객체 별
-[ ] 등록
-[ ] 조회(단건, 다건)
-[ ] 수정
-[ ] 수정된 데이터 조회
-[ ] 삭제
-[ ] 조회를 통해 삭제되었는지 확인
-*/
+        /*
+        객체 별
+        [ ] 등록
+        [ ] 조회(단건, 다건)
+        [ ] 수정
+        [ ] 수정된 데이터 조회
+        [ ] 삭제
+        [ ] 조회를 통해 삭제되었는지 확인
+        */
 
         System.out.println("🏃🏃🏃Service Start🏃🏃🏃");
 
