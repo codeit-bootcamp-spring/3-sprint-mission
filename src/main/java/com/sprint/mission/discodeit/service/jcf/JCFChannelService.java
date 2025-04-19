@@ -1,88 +1,111 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data; //database
+    private final UserService userService;
 
-    public JCFChannelService() {
+    public JCFChannelService(UserService userService) {
         this.data = new HashMap<>();
+        this.userService = userService;
     }
 
     @Override
-    public void create(Channel ch) {
-        this.data.put(ch.getId(), ch);
+    public Channel create(String name, ChannelType type, String description, UUID ownerId) {
+        Channel channel = new Channel(name, type, description, ownerId);
+        this.data.put(channel.getId(), channel);
+        this.addAttendeeToChannel(channel.getId(), ownerId);
+
+        return channel;
     }
 
     @Override
-    public Channel read(UUID id) {
-        return this.data.get(id);
+    public Channel find(UUID channelId) {
+        Channel channelNullable = this.data.get(channelId);
+
+        return Optional.ofNullable(channelNullable).orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     }
 
     @Override
-    public List<Channel> readAll() {
+    public List<Channel> findAll() {
         return new ArrayList<>(this.data.values());
     }
 
     @Override
-    public Channel update(UUID id, String name) {
-        Channel selected = this.data.get(id);
-        selected.update(name);
-        return selected;
+    public Channel update(UUID channelId, String newName, String newDescription) {
+        Channel channelNullable = this.data.get(channelId);
+        Channel channel = Optional.ofNullable(channelNullable).orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+        channel.update(newName, newDescription);
+
+        return channel;
     }
 
     @Override
-    public boolean delete(UUID id) {
-        this.data.remove(id);
-        //TODO : update return value
-        return true;
+    public void delete(UUID channelId) {
+        if (!this.data.containsKey(channelId)) {
+            throw new NoSuchElementException("Channel with id " + channelId + " not found");
+        }
+
+        this.data.remove(channelId);
     }
 
     @Override
-    public List<User> getAttendees(Channel ch) {
-        Channel selected = this.data.get(ch.getId());
-        return selected.getAttendees();
+    public void addMessageToChannel(UUID channelId, UUID messageId) {
+        Channel channelNullable = this.data.get(channelId);
+        Channel channel = Optional.ofNullable(channelNullable).orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+
+        channel.addMessage(messageId);
     }
 
     @Override
-    public User joinChannel(Channel ch, User user) {
-        Channel selectedChannel = this.data.get(ch.getId());
-        //TODO : 참조변수 추가 방법 체크
-        selectedChannel.getAttendees().addAll(Arrays.asList(user));
+    public void addAttendeeToChannel(UUID channelId, UUID userId) {
+        Channel channelNullable = this.data.get(channelId);
+        Channel channel = Optional.ofNullable(channelNullable).orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
 
-        return user;
+        try {
+            this.userService.find(userId);
+        } catch (NoSuchElementException e) {
+            throw e;
+        }
+
+        channel.addAttendee(userId);
     }
 
     @Override
-    public User leaveChannel(Channel ch, User user) {
-        Channel selectedChannel = this.data.get(ch.getId());
-        //TODO : 참조변수 방법 체크
-        selectedChannel.getAttendees().remove(user);
+    public void removeAttendeeToChannel(UUID channelId, UUID userId) {
+        Channel channelNullable = this.data.get(channelId);
+        Channel channel = Optional.ofNullable(channelNullable).orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
 
-        return user;
+        try {
+            this.userService.find(userId);
+        } catch (NoSuchElementException e) {
+            throw e;
+        }
+
+        channel.removeAttendee(userId);
     }
 
     @Override
-    public List<User> readAttendees(Channel ch) {
-        Channel selectedChannel = this.data.get(ch.getId());
-        return selectedChannel.getAttendees();
+    public List<User> findAttendeesByChannel(UUID channelId) {
+        Channel channelNullable = this.data.get(channelId);
+        Channel channel = Optional.ofNullable(channelNullable).orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+        List<User> attendees = new ArrayList<>();
+        try {
+            channel.getAttendees().forEach((userId -> {
+                attendees.add(this.userService.find(userId));
+            }));
+            
+            return attendees;
+        } catch (NoSuchElementException e) {
+            throw e;
+        }
     }
-
-    // QUESTION :  메세지 로직은 MessageService에 있어야하는데?
-//    @Override
-//    public void sendMessage(Channel ch, Message msg) {
-//        Channel selectedChannel = this.data.get(ch.getId());
-//        selectedChannel.getMessages().addAll(Arrays.asList(msg));
-//    }
-//
-//    @Override
-//    public List<Message> readMessages(Channel ch) {
-//        Channel selectedChannel = this.data.get(ch.getId());
-//        return selectedChannel.getMessages();
-//    }
 
 }

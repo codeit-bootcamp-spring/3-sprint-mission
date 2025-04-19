@@ -24,61 +24,53 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void create(User user) {
+    public User create(String name, int age, String email, String password) {
+        User user = new User(name, age, email, password);
         this.data.put(user.getId(), user);
+
+        return user;
     }
 
     @Override
-    public User read(UUID id) {
-        return this.data.get(id);
+    public User find(UUID userId) {
+        User userNullable = this.data.get(userId);
+
+        return Optional.ofNullable(userNullable).orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
 
+    // TODO: 예외처리
     @Override
-    public List<User> read(String name) {
-        List<User> matched = new ArrayList<>();
+    public List<User> find(String name) {
+        List<User> matchedUsers = new ArrayList<>();
         for (Map.Entry<UUID, User> entry : data.entrySet()) {
-            if (entry.getValue().getName() == name) {
-                matched.add(entry.getValue());
+            if ((entry.getValue().getName()).equals(name)) {
+                matchedUsers.add(entry.getValue());
             }
         }
 
-        return matched;
+        return matchedUsers;
     }
 
     @Override
-    public List<User> readAll() {
+    public List<User> findAll() {
         return new ArrayList<>(this.data.values());
 //        return this.data.values().stream().toList();
     }
 
     @Override
-    public User update(UUID id, String name) {
-        User selected = this.data.get(id);
-        selected.update(name);
-        return selected;
+    public User update(UUID userId, String newName, int newAge, String newEmail, String newPassword) {
+        User userNullable = this.data.get(userId);
+        User user = Optional.ofNullable(userNullable).orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+        user.update(newName, newAge, newEmail, newPassword);
+
+        return user;
     }
 
     @Override
-    public User update(UUID id, int age) {
-        User selected = this.data.get(id);
-        selected.update(age);
-        return selected;
+    public void delete(UUID userId) {
+        if (!this.data.containsKey(userId)) {
+            throw new NoSuchElementException("User with id " + userId + " not found");
+        }
+        this.data.remove(userId);
     }
-
-    @Override
-    public User update(UUID id, String name, int age) {
-        User selected = this.data.get(id);
-        selected.update(name);
-        selected.update(age);
-        return selected;
-    }
-
-    @Override
-    public boolean delete(UUID id) {
-        this.data.remove(id);
-
-        //TODO : update return value
-        return true;
-    }
-
 }

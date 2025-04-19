@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -21,39 +20,70 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void create(User msgUser, Channel channel, String text) {
-        boolean isValidUser = this.channelService.getAttendees(channel).stream().anyMatch(user -> user.getId() == msgUser.getId());
-        if (isValidUser) {
-            Message msg = new Message(text, msgUser);
-            this.data.put(msg.getId(), msg);
-        } else {
-            System.out.println("Invalid user(" + msgUser.getName() + ") on this channel(" + channel.getName() + ")");
+    public Message create(String content, UUID channelId, UUID authorId) {
+        Channel channel;
+        try {
+            userService.find(authorId);
+            channel = channelService.find(channelId);
+        } catch (NoSuchElementException e) {
+            throw e;
         }
 
+        Message message = new Message(content, authorId, channelId);
+        this.data.put(message.getId(), message);
+
+        channelService.addMessageToChannel(channel.getId(), message.getId());
+
+        return message;
     }
 
     @Override
-    public Message read(UUID id) {
-        return this.data.get(id);
+    public Message find(UUID messageId) {
+        Message messageNullable = this.data.get(messageId);
+
+        return Optional.ofNullable(messageNullable).orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
     }
 
     @Override
-    public List<Message> readAll() {
+    public List<Message> findAll() {
         return new ArrayList<>(this.data.values());
     }
 
     @Override
-    public Message update(UUID id, String text) {
-        Message selected = this.data.get(id);
-        selected.update(text);
-        return selected;
+    public Message update(UUID messageId, String newContent) {
+        Message messageNullable = this.data.get(messageId);
+        Message message = Optional.ofNullable(messageNullable).orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+        message.update(newContent);
+
+        return message;
     }
 
     @Override
-    public boolean delete(UUID id) {
-        this.data.remove(id);
-
-        //TODO : update return value
-        return true;
+    public void delete(UUID messageId) {
+        if (!this.data.containsKey(messageId)) {
+            throw new NoSuchElementException("Message with id " + messageId + " not found");
+        }
+        this.data.remove(messageId);
     }
+
+    //해당 채널의 메세지들을 다 읽음
+    @Override
+    public List<Message> findMessagesByChannel(UUID channelId) {
+        try {
+            Channel channel = this.channelService.find(channelId);
+            List<UUID> messageIds = channel.getMessages();
+
+            List<Message> messages = new ArrayList<>();
+            messageIds.forEach((messageId) -> {
+                messages.add(this.data.get(messageId));
+            });
+
+            return messages;
+
+        } catch (NoSuchElementException e) {
+            throw e;
+        }
+
+    }
+
 }

@@ -5,6 +5,7 @@ package com.sprint.mission.discodeit.service;
  * */
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
@@ -12,27 +13,25 @@ import java.util.UUID;
 
 public interface ChannelService {
 
-    public void create(Channel ch);
+    public Channel create(String name, ChannelType type, String description, UUID ownerId);
 
-    public Channel read(UUID id);
+    public Channel find(UUID channelId);
 
-    public List<Channel> readAll();
+    public List<Channel> findAll();
 
-    public Channel update(UUID id, String name);
+    public Channel update(UUID channelId, String newName, String newDescription);
 
-    public boolean delete(UUID id);
+    public void delete(UUID channelId);
 
-    public List<User> getAttendees(Channel ch);
+    public void addMessageToChannel(UUID channelId, UUID messageId);
 
-    public User joinChannel(Channel ch, User user);
+    // == joinChannel()
+    public void addAttendeeToChannel(UUID channelId, UUID userId);
 
-    public User leaveChannel(Channel ch, User user);
+    // == leaveChannel()
+    public void removeAttendeeToChannel(UUID channelId, UUID userId);
 
-    public List<User> readAttendees(Channel ch);
+    public List<User> findAttendeesByChannel(UUID channelId);
 
-    // Q. 메세지 로직은 MessageService에 있어야하는데?
-//    public void sendMessage(Channel ch, Message message);
-//
-//    public List<Message> readMessages(Channel ch);
 
 }
