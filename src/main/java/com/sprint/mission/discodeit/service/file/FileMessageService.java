@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -13,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class FileMessageService implements MessageService {
@@ -42,18 +42,14 @@ public class FileMessageService implements MessageService {
     }
 
     @Override
-    public Message create(User msgUser, Channel channel, String text) {
+    public Message create(Message message) {
 
-        boolean isValidUser = this.channelService.getAttendees(channel).stream().anyMatch(user -> String.valueOf(user.getId()).equals(String.valueOf(msgUser.getId())));
-
-//        this.channelService.getAttendees(channel).stream().forEach((user) -> System.out.println("attendees :" + user));
-        Message msg = null;
-        if (isValidUser) {
-            msg = new Message(text, msgUser, channel);
-//            this.data.put(msg.getId(), msg);
+        try {
+            userService.find(message.getUserId());
+            Channel channel = channelService.find(message.getChannelId());
 
             // 객체를 저장할 파일 path 생성
-            Path filePath = this.databasePath.resolve(String.valueOf(msg.getId()).concat(".ser"));
+            Path filePath = this.databasePath.resolve(String.valueOf(message.getId()).concat(".ser"));
             // 파일 생성
             File myObj = new File(String.valueOf(filePath));
 
@@ -64,22 +60,25 @@ public class FileMessageService implements MessageService {
                     ObjectOutputStream oos = new ObjectOutputStream(fos);
             ) {
 
-                oos.writeObject(msg);
+                oos.writeObject(message);
 
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        } else {
-            System.out.println("Invalid user(" + msgUser.getName() + ") on this channel(" + channel.getName() + ")");
-        }
 
-        return msg;
+            channelService.addMessageToChannel(channel.getId(), message.getId());
+
+            return message;
+        } catch (NoSuchElementException e) {
+            throw e;
+        }
 
     }
 
     @Override
-    public Message read(UUID id) {
-        Path filePath = this.databasePath.resolve(String.valueOf(id).concat(".ser"));
+    public Message find(UUID messageId) {
+        // 객체가 저장된 파일 path
+        Path filePath = this.databasePath.resolve(String.valueOf(messageId).concat(".ser"));
 
         try (
                 // 파일과 연결되는 스트림 생성
@@ -87,23 +86,19 @@ public class FileMessageService implements MessageService {
                 // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
                 ObjectInputStream ois = new ObjectInputStream(fis);
         ) {
-
             Message message = (Message) ois.readObject();
-
             return message;
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
     }
 
-    //FIXME : need to be readAll(UUID channelId)
     @Override
-    public List<Message> readAll() {
+    public List<Message> findAll() {
         List<Message> messages = new ArrayList<>();
 
         try {
-
             Files.walk(this.databasePath).filter(Files::isRegularFile)
                     .forEach((path) -> {
                         try ( // 파일과 연결되는 스트림 생성
@@ -113,45 +108,52 @@ public class FileMessageService implements MessageService {
                         ) {
                             Message message = (Message) ois.readObject();
                             messages.add(message);
-                            //FIXME
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        } catch (ClassNotFoundException e) {
+                        } catch (IOException | ClassNotFoundException e) {
                             throw new RuntimeException(e);
                         }
                     });
+
+            return messages;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        return messages;
     }
 
     @Override
-    public Message update(UUID id, String text) {
-        Message message = this.read(id);
-        Message updatedMessage = this.create(message.getSender(), message.getChannel(), text);
+    public Message update(UUID messageId, String newContent) {
 
-        return updatedMessage;
+        try {
+            Message message = this.find(messageId);
+            message.update(newContent);
+            this.create(message);
+            return message;
+        } catch (RuntimeException e) {
+            throw e;
+        }
+
     }
 
     @Override
-    public boolean delete(UUID id) {
-        Path filePath = this.databasePath.resolve(String.valueOf(id).concat(".ser"));
+    public void delete(UUID messageId) {
+        // 객체가 저장된 파일 path
+        Path filePath = this.databasePath.resolve(String.valueOf(messageId).concat(".ser"));
+
         try {
             if (Files.exists(filePath)) {
                 Files.delete(filePath);
-                return true;
             } else {
                 throw new FileNotFoundException("File does not exist");
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            System.err.println(e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
 
     }
+
+    @Override
+    public List<Message> findMessagesByChannel(UUID channelId) {
+        return List.of();
+    }
+
 }

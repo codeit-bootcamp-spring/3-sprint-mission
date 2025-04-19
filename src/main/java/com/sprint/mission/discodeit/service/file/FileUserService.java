@@ -15,6 +15,7 @@ public class FileUserService implements UserService {
     private final Path databasePath;
 
     public FileUserService() {
+
         try {
             //  현재디렉토리/data/userDB 디렉토리를 저장할 path로 설정
             this.databasePath = Paths.get(System.getProperty("user.dir"), "data", "userDB");
@@ -29,10 +30,11 @@ public class FileUserService implements UserService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
     }
 
     @Override
-    public void create(User user) {
+    public User create(User user) {
         // 객체를 저장할 파일 path 생성
         Path filePath = this.databasePath.resolve(String.valueOf(user.getId()).concat(".ser"));
         // 파일 생성
@@ -44,17 +46,18 @@ public class FileUserService implements UserService {
                 // 객체를 직렬화할 수 있게 바이트 출력 스트림을 감쌈
                 ObjectOutputStream oos = new ObjectOutputStream(fos);
         ) {
-
             oos.writeObject(user);
-
+            return user;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
     }
 
     @Override
-    public User read(UUID id) {
-        Path filePath = this.databasePath.resolve(String.valueOf(id).concat(".ser"));
+    public User find(UUID userId) {
+        // 객체가 저장된 파일 path
+        Path filePath = this.databasePath.resolve(String.valueOf(userId).concat(".ser"));
 
         try (
                 // 파일과 연결되는 스트림 생성
@@ -62,32 +65,28 @@ public class FileUserService implements UserService {
                 // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
                 ObjectInputStream ois = new ObjectInputStream(fis);
         ) {
-
             User user = (User) ois.readObject();
-
             return user;
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
     }
 
     // TODO : 이름검색을 어떻게 하지? 모든 리스트 읽어서 이름 필터링해서 가져와야하나?
     @Override
-    public List<User> read(String name) {
-        List<User> users = new ArrayList<>();
-
-        return users;
+    public List<User> find(String name) {
+        return List.of();
     }
 
     @Override
-    public List<User> readAll() {
+    public List<User> findAll() {
         List<User> users = new ArrayList<>();
 
         try {
-
             Files.walk(this.databasePath).filter(Files::isRegularFile)
                     .forEach((path) -> {
+
                         try ( // 파일과 연결되는 스트림 생성
                               FileInputStream fis = new FileInputStream(String.valueOf(path));
                               // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
@@ -95,62 +94,49 @@ public class FileUserService implements UserService {
                         ) {
                             User user = (User) ois.readObject();
                             users.add(user);
-                            //FIXME
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        } catch (ClassNotFoundException e) {
+                        } catch (IOException | ClassNotFoundException e) {
                             throw new RuntimeException(e);
                         }
+
                     });
+
+            return users;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        return users;
     }
 
     @Override
-    public User update(UUID id, String name) {
-        User user = this.read(id);
-        User updatedUser = user.update(name);
-        this.create(updatedUser);
-        return user;
+    public User update(UUID userId, String newName, int newAge, String newEmail, String newPassword) {
+
+        try {
+            User user = this.find(userId);
+            user.update(newName, newAge, newEmail, newPassword);
+            this.create(user);
+            
+            return user;
+        } catch (RuntimeException e) {
+            throw e;
+        }
+
     }
 
     @Override
-    public User update(UUID id, int age) {
-        User user = this.read(id);
-        User updatedUser = user.update(age);
-        this.create(updatedUser);
-        return user;
-    }
+    public void delete(UUID userId) {
+        // 객체가 저장된 파일 path
+        Path filePath = this.databasePath.resolve(String.valueOf(userId).concat(".ser"));
 
-    @Override
-    public User update(UUID id, String name, int age) {
-        User user = this.read(id);
-        User nameUpdatedUser = user.update(name);
-        User ageUpdatedUser = nameUpdatedUser.update(age);
-        this.create(ageUpdatedUser);
-        return user;
-    }
-
-    @Override
-    public boolean delete(UUID id) {
-        Path filePath = this.databasePath.resolve(String.valueOf(id).concat(".ser"));
         try {
             if (Files.exists(filePath)) {
                 Files.delete(filePath);
-                return true;
             } else {
                 throw new FileNotFoundException("File does not exist");
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            System.out.println(e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
 
     }
+
 }

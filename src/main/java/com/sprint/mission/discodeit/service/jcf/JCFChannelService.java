@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -18,10 +17,9 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel create(String name, ChannelType type, String description, UUID ownerId) {
-        Channel channel = new Channel(name, type, description, ownerId);
+    public Channel create(Channel channel) {
         this.data.put(channel.getId(), channel);
-        this.addAttendeeToChannel(channel.getId(), ownerId);
+        this.addAttendeeToChannel(channel.getId(), channel.getOwnerId());
 
         return channel;
     }
@@ -96,12 +94,12 @@ public class JCFChannelService implements ChannelService {
     public List<User> findAttendeesByChannel(UUID channelId) {
         Channel channelNullable = this.data.get(channelId);
         Channel channel = Optional.ofNullable(channelNullable).orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
-        List<User> attendees = new ArrayList<>();
         try {
+            List<User> attendees = new ArrayList<>();
             channel.getAttendees().forEach((userId -> {
                 attendees.add(this.userService.find(userId));
             }));
-            
+
             return attendees;
         } catch (NoSuchElementException e) {
             throw e;

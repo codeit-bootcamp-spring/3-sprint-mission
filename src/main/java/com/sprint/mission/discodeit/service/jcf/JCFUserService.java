@@ -24,8 +24,7 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User create(String name, int age, String email, String password) {
-        User user = new User(name, age, email, password);
+    public User create(User user) {
         this.data.put(user.getId(), user);
 
         return user;
