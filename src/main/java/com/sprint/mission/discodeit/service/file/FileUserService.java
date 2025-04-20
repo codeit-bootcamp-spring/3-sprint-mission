@@ -13,7 +13,7 @@ public class FileUserService implements UserService {
     public FileUserService() {
         this.users = fileLoadUsers();
             }
-
+    // 파일 로드 메서드
     private List<User> fileLoadUsers(){
         try (FileInputStream fis = new FileInputStream(userFileName);
         ObjectInputStream ois = new ObjectInputStream(fis)){
@@ -23,13 +23,14 @@ public class FileUserService implements UserService {
             return new ArrayList<>();
         }
     }
-
+    // 파일 세이브 메서드
     private void fileSaveUsers(){
         try(FileOutputStream fos = new FileOutputStream(userFileName);
            ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.writeObject(users);
         } catch (IOException e){
             e.printStackTrace();
+            System.out.println("파일생성에실패하였습니다 ///user.ser");
         }
     }
     @Override       // 유저 생성 메서드 createUser()
@@ -47,12 +48,19 @@ public class FileUserService implements UserService {
         String oldName = user.getName();
         user.setName(newName);
         user.setUpdatedAt(System.currentTimeMillis());
+        fileSaveUsers();
         System.out.println("[" + oldName + "] 사용자의 이름을 [" + user.getName() + "] 으로 변경하였습니다. |   " + user.getUpdatedAt());
     }
 
     @Override
     public boolean deleteUser(String name) {
-        return users.removeIf(user -> user.getName().equals(name));
+        users.remove(findUserByName(name));
+        fileSaveUsers();
+        if(findUserByName(name)==null){
+            return true;
+        } else{
+            return false;
+        }
     }
 
     @Override
@@ -65,7 +73,7 @@ public class FileUserService implements UserService {
         return null; // 없으면 null 리턴
     }
 
-    // 유틸 메서드: 모든 사용자 출력
+    // 모든 사용자 출력
     public void showAllUsers(){
         System.out.println("  □ □ □ 전체 사용자 목록 □ □ □ \n  사용자이름   |   사용자생성시간   | 사용자정보 수정시간 |   사용자UUID");
         users.forEach(u -> System.out.println("  " + u.getName() + "       |   " + u.getCreatedAt() + "   |   " + u.getUpdatedAt() + "    |   " + u.getId()));

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
-import com.sprint.mission.discodeit.jcf.JCFMessageService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -25,6 +26,7 @@ public class Channel implements Serializable {
         this.updatedAt = updatedAt;
 
         JCFMessageService.setDefaultBoard(this);
+        FileMessageService.setDefaultBoard(this);
     }
 
     public UUID getId() {

@@ -32,8 +32,8 @@ public class User implements Serializable {
         return formatedTime;
     }
     public String getUpdatedAt() {
-        String aformatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(updatedAt);
-        return aformatedTime;
+        String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(updatedAt);
+        return formatedTime;
     }
     public void setUpdatedAt(long updatedAt) {
         this.updatedAt = updatedAt;
