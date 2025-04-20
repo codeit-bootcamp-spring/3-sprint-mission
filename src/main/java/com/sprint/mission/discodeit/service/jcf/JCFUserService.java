@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.jcf;
+package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
@@ -32,23 +32,8 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public boolean deleteUser(UUID id) {
-        return users.removeIf(user -> user.getId().equals(id));
-    }
-
-    @Override
     public boolean deleteUser(String name) {
         return users.removeIf(user -> user.getName().equals(name));
-    }
-
-    @Override
-    public User findUserById(UUID id) {
-        for (User user : users) {
-            if (user.getId().equals(id)) {
-                return user; // 일치하는 ID 발견시 user 리턴
-            }
-        }
-        return null; // 없으면 null 리턴
     }
 
     @Override
@@ -62,7 +47,7 @@ public class JCFUserService implements UserService {
     }
 
     // 유틸 메서드: 모든 사용자 출력
-    public void printAllUsers(){
+    public void showAllUsers(){
         System.out.println("  □ □ □ 전체 사용자 목록 □ □ □ \n  사용자이름   |   사용자생성시간   | 사용자정보 수정시간 |   사용자UUID");
         users.forEach(u -> System.out.println("  " + u.getName() + "       |   " + u.getCreatedAt() + "   |   " + u.getUpdatedAt() + "    |   " + u.getId()));
         System.out.println();

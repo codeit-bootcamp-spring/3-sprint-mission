@@ -3,13 +3,11 @@ package com.sprint.mission.discodeit.control;
 import com.sprint.mission.discodeit.JavaApplication;
 import com.sprint.mission.discodeit.entity.User;
 
-import java.util.InputMismatchException;
-
 public class UserControl extends JavaApplication {
 
     // 어플리케이션 최초 실행시 User 신규여부 판별 메서드. 있으면 있는 유저로 로그인 / 없으면 새 유저 생성
 // 1_3 사용자 관리 세부메뉴 메서드
-    public static void menuUserMng(User currentUser){       // 1_4 사용자 관리 내부메뉴 메서드
+    public static User menuUserMng(User currentUser){       // 1_4 사용자 관리 내부메뉴 메서드
         while (true) {
             System.out.println(" *******************************************************\n"
                     + " || 사용자 관리 메뉴입니다. 원하는 기능을 선택하세요. ||\n"
@@ -22,14 +20,7 @@ public class UserControl extends JavaApplication {
                     + " ||      7 > 상위 메뉴로 돌아가기                     ||\n"
                     + " *******************************************************\n");
             System.out.print(" >> ");
-            int choice = -1;
-            try {
-                choice = scanner.nextInt();
-                scanner.nextLine(); // scanner 내부 개행문자 제거
-            } catch (InputMismatchException e){
-                System.out.println("숫자만 입력해 주세요");
-                scanner.nextLine(); // scanner 내부 개행문자 제거
-            }
+            int choice = scanInt();
 
             switch (choice) {
                 case 1:                 // 1_4_1 신규 사용자 생성 메뉴
@@ -37,7 +28,7 @@ public class UserControl extends JavaApplication {
                     while (true) {
                         System.out.print(" ▶ 원하는 사용자명을 입력해 주세요 : ");
                         String username = scanner.nextLine();
-                        if (username.length() == 0) {   // 입력값이 없는경우 상위 메뉴로 이동
+                        if (username.isEmpty()) {   // 입력값이 없는경우 상위 메뉴로 이동
                             System.out.println(" ▶ 입력값이 없습니다. 사용자 생성을 취소합니다.\n");
                             break;
                         }
@@ -66,16 +57,15 @@ public class UserControl extends JavaApplication {
                 case 2:
                     while (true){                    // 1_4_2 사용자 이름 변경 메뉴
                         System.out.println("\n ▶  사용자 이름을 변경합니다.   * 현재 사용자 이름 : [" + currentUser.getName() + "]");
-                        System.out.println(" ▶ 변경할 사용자 이름을 입력해 주세요");
-                        System.out.print(" >> ");
+                        System.out.print(" ▶ 변경할 사용자 이름을 입력해 주세요 \n >> ");
                         String newName = scanner.nextLine();
-                        if(newName.length() ==0) {// 사용자 이름 입력값이 없는경우 상위메뉴로 이동
+                        if(newName.isEmpty()) {// 사용자 이름 입력값이 없는경우 상위메뉴로 이동
                             System.out.println(" ▶ 새 이름을 입력하지 않았습니다. 사용자 이름 변경을 취소합니다.");
                             break;
                         }
                         User user = userService.findUserByName(newName);
                         if(user != null){             // 중복값 존재시 재입력
-                            System.out.print(" ▶ 이미 존재하는 이름입니다. 다시 입력해 주세요.\n >>> ");
+                            System.out.print(" ▶ 이미 존재하는 이름입니다. 다시 입력해 주세요.\n >> ");
                         } else {                       // 중복값 미확인시 유저명 변경
                             userService.updateUserName(currentUser, newName);
                             break;
@@ -85,10 +75,10 @@ public class UserControl extends JavaApplication {
                 case 3:                    // 1_4_3 사용자 삭제 메뉴
                     System.out.println(" ▶ 삭제할 사용자의 이름을 입력해 주세요");
                     System.out.println(" ▶ 현재 등록된 사용자는 아래와 같습니다.");
-                    userService.printAllUsers();
+                    userService.showAllUsers();
                     System.out.print(" >> ");
                     String deleteUser = scanner.nextLine();
-                    if ((deleteUser.length() == 0) || (userService.findUserByName(deleteUser) == null)) {
+                    if ((deleteUser.isEmpty()) || (userService.findUserByName(deleteUser) == null)) {
                         System.out.println(" ▶ 존재하지 않는 사용자이거나 잘못된 입력입니다. 이전 메뉴로 돌아갑니다.");
                     } else if (deleteUser.equals(currentUser.getName())){
                         System.out.println(" ▶ 현재 로그인된 사용자는 삭제할 수 없습니다! 이전 메뉴로 돌아갑니다.");
@@ -97,10 +87,9 @@ public class UserControl extends JavaApplication {
                         System.out.println(" ▶ 입력하신 사용자는 아래와 같습니다.");
                         User userToDel = userService.findUserByName(deleteUser);
                         System.out.println(userToDel);
-                        System.out.println(" ▶ 정말로 삭제할까요? 삭제를 원하시면 [삭제]라고 입력해 주세요");
-                        System.out.print(" >> ");
+                        System.out.println(" ▶ 정말로 삭제할까요? 삭제를 원하시면 [삭제]라고 입력해 주세요.\n >> ");
                         String deleteConfirm = scanner.nextLine();
-                        if (deleteConfirm.length() == 0) {
+                        if (deleteConfirm.isEmpty()) {
                             System.out.println(" ▶ 잘못된 입력입니다. 이전 메뉴로 돌아갑니다.");
                             break;
                         } else if (deleteConfirm.equals("삭제")) {
@@ -114,7 +103,7 @@ public class UserControl extends JavaApplication {
                 case 4:                    // 1_4_4 단일 사용자 정보 출력 메뉴
                     System.out.print(" ▶ 조회할 사용자의 이름을 입력해 주세요.\n >> ");
                     String oneUser = scanner.nextLine();
-                    if ((oneUser.length() == 0) || (userService.findUserByName(oneUser) == null)) {
+                    if ((oneUser.isEmpty()) || (userService.findUserByName(oneUser) == null)) {
                         System.out.println(" ▶ 존재하지 않는 사용자이거나 잘못된 입력입니다. 이전 메뉴로 돌아갑니다.");
                     } else {
                         System.out.println(" ▶ 입력하신 사용자는 아래와 같습니다.");
@@ -124,7 +113,7 @@ public class UserControl extends JavaApplication {
                     break;
                 case 5:                    // 1_4_5 모든 사용자 정보 출력 메뉴
                     System.out.println(" ▶ 모든 사용자 정보를 출력합니다.");
-                    userService.printAllUsers();
+                    userService.showAllUsers();
                     break;
                 case 6:                    // 1_4_6 다른 사용자로 진행
                     System.out.print(" ▶ 어떤 사용자로 로그인할까요?");
@@ -148,5 +137,7 @@ public class UserControl extends JavaApplication {
                 break;
             }
         }
+
+        return currentUser;
     }   // 1_3 사용자 관리 세부메뉴 메서드
 }

@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.jcf;
+package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -20,7 +20,7 @@ public class JCFMessageService implements MessageService {
             list.add(new Message(1, "defaultUser", "defaultMessage", 1744036548250L, 1744036548250L));
             return list;
         });
-    };
+    }
 
 
     @Override

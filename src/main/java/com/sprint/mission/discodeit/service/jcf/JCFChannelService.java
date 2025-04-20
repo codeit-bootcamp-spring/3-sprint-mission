@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.jcf;
+package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -22,7 +22,7 @@ public class JCFChannelService implements ChannelService {
         System.out.print("\n ▶ [새로운 채널 생성완료]");
         System.out.println(" ▶ 채널명 : " + channel.getChannelName() + "     ▶ 생성시간 : " + channel.getCreatedAt());
         return channel;
-    };
+    }
     // 채널 수정 메서드
     @Override
     public void UpdateChannel(Channel channel, String channelName, String channelDescription){
@@ -32,19 +32,19 @@ public class JCFChannelService implements ChannelService {
         channel.setUpdatedAt(now);
         System.out.print("\n ▶ [채널 정보 수정 완료]");
         System.out.println(channel);
-    };
+    }
     // 채널 삭제 메서드
     @Override
     public void deleteChannel(Channel channel){
         channels.remove(channel);
-    };
+    }
     // 전체채널목록 출력 메서드
     @Override
     public void printAllChannels(){
         System.out.println("<< 생성된 전체 채널 >>");
         System.out.println("채널명         | 개설자 | 채널설명(개설시간)");
         channels.forEach(chan -> System.out.println(chan.getChannelName()+"  |  "+chan.getChannelCreater()+"  |  "+chan.getChannelDescription()+"  ("+chan.getCreatedAt() + ")"));
-        System.out.println("");
+        System.out.println();
     }
 
 

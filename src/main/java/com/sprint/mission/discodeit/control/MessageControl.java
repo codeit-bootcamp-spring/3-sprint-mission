@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class MessageControl extends JavaApplication {
-    public static void menuMessageMng(User currentUser, Channel currentChannel){       // 1 메세지 관리 메서드
+    public static User menuMessageMng(User currentUser, Channel currentChannel){       // 1 메세지 관리 메서드
 
         while (true) {
             System.out.println(" *******************************************************\n"
@@ -33,14 +33,11 @@ public class MessageControl extends JavaApplication {
             switch (choice) {
                 case 1:                 // 1_1 메세지 작성
                     System.out.print(" ▶ 새로운 대화를 시작합니다. 대화를 종료하려면 빈 값을 입력해주세요.\n");
-                    currentChannel.getId();
                     while (true){                   //대화메세지를 연속으로 입력받도록 루프
                         int msgDisplaySize;
                         if((messages.size()) < 5){
                             msgDisplaySize=0;
-                            System.out.println("5이하의메세지크기");
                         } else {
-                            System.out.println("5이상의메세지크기");
                             msgDisplaySize = messages.size() - 5
                             ;
                         }
@@ -51,7 +48,7 @@ public class MessageControl extends JavaApplication {
 
                         System.out.print(" >> ");
                         String txtMsg = scanner.nextLine();
-                        if (txtMsg.length()!=0) {
+                        if (!txtMsg.isEmpty()) {
 
                             messageService.uploadMsg(channelId, currentUser.getName(), txtMsg);
                         } else {
@@ -106,7 +103,7 @@ public class MessageControl extends JavaApplication {
 
                     System.out.print(" ▶ 정말로 삭제할까요? 삭제를 원하시면 [삭제]라고 입력해 주세요.\n >> ");
                     String deleteConfirm = scanner.nextLine();
-                    if (deleteConfirm.length() == 0) {
+                    if (deleteConfirm.isEmpty()) {
                         System.out.println(" ▶ 잘못된 입력입니다. 이전 메뉴로 돌아갑니다.");
                         break;
                     } else if (deleteConfirm.equals("삭제")) {
@@ -117,7 +114,7 @@ public class MessageControl extends JavaApplication {
                     }
                     break;
                 case 6:               // 1_6 현재 채널 변경
-                    currentChannel = ChannelControl.joinChannel();
+                    currentChannel = ChannelControl.joinChannel(currentUser);
                     break;
                 case 7:               // 1_7 현재 사용자 변경
                     System.out.print(" ▶ 어떤 사용자로 로그인할까요?");
@@ -141,5 +138,6 @@ public class MessageControl extends JavaApplication {
                 break;
             }
         }
+    return currentUser;
     } // 1 메세지 관리 메서드
 }

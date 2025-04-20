@@ -2,9 +2,9 @@ package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.jcf.JCFMessageService;
-import com.sprint.mission.discodeit.jcf.JCFUserService;
+import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
+import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
+import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 import com.sprint.mission.discodeit.control.ChannelControl;
 import com.sprint.mission.discodeit.control.MessageControl;
 import com.sprint.mission.discodeit.control.UserControl;
@@ -18,18 +18,15 @@ public class JavaApplication {
     public static final JCFChannelService channelService = new JCFChannelService();
 
     public static final Scanner scanner = new Scanner(System.in);
-    public static final ThreadLocal<User> nowUser = new ThreadLocal<>();
-    public static final ThreadLocal<Channel> nowChannel = new ThreadLocal<>();
 
     public static void main(String[] args) {
+        User currentUser;
         // 0. intro 메세지
         System.out.println(" ▶ discodeit 메세지 서비스에 연결되었습니다.");
         // 0_1. 초기 사용자 인증
-        nowUser.set(UserControl.verifyUser());
+        currentUser = UserControl.verifyUser();
         // 1. mainmenu 호출.
-        menuMain();
-        nowUser.remove();
-        nowChannel.remove();
+        menuMain(currentUser);
 
             //// <<메뉴 트리>>
            ////  메인메뉴 ┬ 1. 채널입장 (채널상 메세지 관리)   ||  메서드 : control.menuMessageMng()
@@ -89,7 +86,8 @@ public class JavaApplication {
     }
 
 
-    public static void menuMain(){    // 메인 메뉴 call 메서드. 각 세부 메뉴로 접근하기 위함.
+    public static void menuMain(User nowUser){    // 메인 메뉴 call 메서드. 각 세부 메뉴로 접근하기 위함.
+        Channel nowChannel = null;
         while (true) {
             System.out.println(" ▶ 원하는 메뉴를 선택해 주세요.");
             System.out.println("**********************************************\n"
@@ -102,14 +100,14 @@ public class JavaApplication {
 
             switch (choice) {
                 case 1:         // 채널 입장 : 메세지 관리 메서드 호출
-                    nowChannel.set(ChannelControl.joinChannel());
-                    MessageControl.menuMessageMng(nowUser.get(),nowChannel.get());
+                    nowChannel = ChannelControl.joinChannel(nowUser);
+                    nowUser = MessageControl.menuMessageMng(nowUser,nowChannel);
                     break;
                 case 2:
-                    ChannelControl.menuChannelMng(nowUser.get());
+                    ChannelControl.menuChannelMng(nowUser);
                     break;
                 case 3:         // 사용자 관리 : 사용자 관리 메서드 호출
-                    UserControl.menuUserMng(nowUser.get());
+                    nowUser = UserControl.menuUserMng(nowUser);
                     break;
                 case 4:
                     System.out.println(" ▶ 프로그램을 종료합니다.");
