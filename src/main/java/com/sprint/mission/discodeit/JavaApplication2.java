@@ -6,6 +6,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
@@ -23,10 +26,30 @@ public class JavaApplication2 {
     private List<Channel> channels;
     private List<Message> messages;
 
-    public JavaApplication2() {
-        userService = new FileUserService();
-        channelService = new FileChannelService(userService);
-        messageService = new FileMessageService(userService, channelService);
+    public JavaApplication2 (
+            UserService userService,
+            ChannelService channelService,
+            MessageService messageService
+    ) {
+        this.userService    = userService;
+        this.channelService = channelService;
+        this.messageService = messageService;
+    }
+
+    public static JavaApplication2 createFileApp() {
+        System.out.println("\n------- File App -------");
+        FileUserService u = new FileUserService();
+        FileChannelService c = new FileChannelService(u);
+        FileMessageService m = new FileMessageService(u, c);
+        return new JavaApplication2(u, c, m);
+    }
+
+    public static JavaApplication2 createBasicApp() {
+        System.out.println("\n------- Basic App -------");
+        BasicUserService u = new BasicUserService();
+        BasicChannelService c = new BasicChannelService(u);
+        BasicMessageService m = new BasicMessageService(u, c);
+        return new JavaApplication2(u, c, m);
     }
 
     public void run() {
@@ -35,13 +58,6 @@ public class JavaApplication2 {
         testMessageServices();
     }
 
-    /**
-     * UserService를 테스트하는 로직
-     * 1. user 생성 후 전체 user 조회
-     * 2. 단일 user 조회
-     * 3. user 정보 수정
-     * 4. user 삭제
-     */
     private void testUserServices() {
         createUser();
         getAllUsers();
@@ -50,15 +66,6 @@ public class JavaApplication2 {
         deleteUser();
     }
 
-    /**
-     * ChannelService를 테스트하는 로직
-     * 1. channel 생성 후 전체 channel 조회
-     * 2. 단일 channel 조회
-     * 3. channel 정보 수정
-     * 4. channel 삭제
-     * 5. channel 접속
-     * 6. channel 탈퇴
-     */
     private void testChannelServices() {
         createChannel();
         getAllChannels();
@@ -69,14 +76,6 @@ public class JavaApplication2 {
         leaveChannel();
     }
 
-    /**
-     * MessageService를 테스트하는 로직
-     * 1. message 생성 후 전체 message 조회
-     * 2. 단일 message 조회
-     * 3. channel별 message 조회
-     * 4. message 수정
-     * 5. message 삭제
-     */
     private void testMessageServices() {
         createMessage();
         getAllMessages();
@@ -92,7 +91,8 @@ public class JavaApplication2 {
         users = names.stream()
                 .map(name -> {
                     try {
-                        return userService.createUser(name);
+                        User created = userService.createUser(name);
+                        return userService.getUser(created.getId());
                     } catch (IllegalArgumentException e) {
                         System.out.println(e.getMessage());
                         return null;
@@ -133,7 +133,8 @@ public class JavaApplication2 {
         channels = channelNames.stream()
                 .map(name -> {
                     try {
-                        return channelService.createChannel(name);
+                        Channel created = channelService.createChannel(name);
+                        return channelService.getChannel(created.getId());
                     } catch (IllegalArgumentException e) {
                         System.out.println(e.getMessage());
                         return null;
@@ -223,12 +224,13 @@ public class JavaApplication2 {
     }
 
     private void deleteMessage() {
-        System.out.println("\n[Message] 삭제 후 전체 메시지 조회");
+        System.out.println("\n[Message] 메시지 삭제 후 전체 메시지 조회");
         messageService.deleteMessage(messages.get(1).getId());
         messageService.getAllMessages().forEach(System.out::println);
     }
 
     public static void main(String[] args) {
-        new JavaApplication2().run();
+        JavaApplication2.createFileApp().run();
+        JavaApplication2.createBasicApp().run();
     }
 }

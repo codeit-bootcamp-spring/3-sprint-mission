@@ -14,5 +14,5 @@ public interface ChannelService {
     void joinChannel(UUID userId, UUID channelId);
     void leaveChannel(UUID userId, UUID channelId);
     void deleteChannel(UUID id);
-    boolean existsById(UUID id);
+    boolean existsById(UUID id); // JavaApplicationd에서 사용됨
 }

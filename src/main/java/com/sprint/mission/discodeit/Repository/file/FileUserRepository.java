@@ -16,11 +16,6 @@ public class FileUserRepository implements UserRepository {
         clearFile();
     }
 
-    /**
-     * user의 id 값으로 {id}.ser 파일 생성
-     *
-     * @param user
-     */
     @Override
     public void save(User user) {
         try (
