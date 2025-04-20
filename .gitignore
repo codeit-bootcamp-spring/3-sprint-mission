@@ -45,3 +45,4 @@ bin/
 .idea
 ...
 /src/main/generated/
+*.ser

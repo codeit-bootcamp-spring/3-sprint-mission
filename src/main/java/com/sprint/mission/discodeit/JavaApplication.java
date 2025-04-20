@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.factory.ServiceFactory;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.jcf.JcfMessageService;
 
 import java.util.HashMap;
@@ -21,11 +22,8 @@ public class JavaApplication {
     UserService userService = ServiceFactory.getUserService();
     ChannelService channelService = ServiceFactory.getChannelService();
 
-//    JcfUserService userService = new JcfUserService();
-//    JcfChannelService channelService = new JcfChannelService(userService);
-//    userService.setChannelService(channelService);
-
-    JcfMessageService messageService = new JcfMessageService(userService, channelService);
+    //JcfMessageService messageService = new JcfMessageService(userService, channelService);
+    FileMessageService messageService = new FileMessageService(userService, channelService);
 
     //  유저 생성
     User test01 = userService.createUser("test01", "test01@.com");
