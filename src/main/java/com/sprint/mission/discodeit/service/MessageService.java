@@ -7,6 +7,10 @@ import java.util.UUID;
 
 public interface MessageService { // 메시지에 대한 서비스 인터페이스
     Message create(UUID userId, UUID channelId, String content); // 메시지 생성
+
+    // 메시지 생성 (내용 + 채널ID + 작성자ID)
+    Message create(String content, UUID channelId, UUID authorId);
+
     Message findById(UUID id); // ID로 메시지 조회
     List<Message> findAll(); // 모든 메시지 조회
     Message update(UUID id, String newContent); // 메시지 내용 수정
