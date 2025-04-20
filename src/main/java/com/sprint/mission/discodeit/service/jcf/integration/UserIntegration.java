@@ -14,8 +14,13 @@ public class UserIntegration {
         this.channelService = channelService;
     }
 
+    // 비즈니스 로직
     public void deleteUser(UUID userId) {
         userService.deleteUser(userId);
-        channelService.getAllChannels().forEach(channel -> channel.getUserIds().remove(userId));
+        channelService.getAllChannels().forEach(channel -> {
+            if (channel.getUserIds().remove(userId)) {
+                channelService.updateChannel(channel);
+            }
+        });
     }
 }

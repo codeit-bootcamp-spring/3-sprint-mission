@@ -19,7 +19,8 @@ public class ChannelIntegration {
         this.messageService = messageService;
     }
 
-        public void addUserToChannel(UUID channelId, UUID userId) {
+    // 비즈니스 로직: 채널에 사용자 추가
+    public void addUserToChannel(UUID channelId, UUID userId) {
         Channel channel = channelService.getChannel(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널"));
 
@@ -28,8 +29,12 @@ public class ChannelIntegration {
 
         user.addChannel(channelId);
         channel.addUser(userId);
+
+        userService.updateUser(user);
+        channelService.updateChannel(channel);
     }
 
+    // 비즈니스 로직
     public void deleteChannel(UUID channelId) {
         Channel channel = channelService.getChannel(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널"));
@@ -39,7 +44,10 @@ public class ChannelIntegration {
         }
 
         for (UUID userId : channel.getUserIds()) {
-            userService.getUser(userId).ifPresent(user -> user.getChannelIds().remove(channelId));
+            userService.getUser(userId).ifPresent(user -> {
+                user.getChannelIds().remove(channelId);
+                userService.updateUser(user);
+            });
         }
 
         channelService.deleteChannel(channelId);

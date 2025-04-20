@@ -1,16 +1,19 @@
-package com.sprint.mission.discodeit.service.file;
+package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.*;
 
-public class FileMessageService implements MessageService {
-    private Path directory;
+public class FileMessageRepository implements MessageRepository {
+    private final Path directory;
+
+    public FileMessageRepository(Path directory) {
+        this.directory = directory;
+        initDirectory();
+    }
 
     private void initDirectory() {
         try {
@@ -22,32 +25,26 @@ public class FileMessageService implements MessageService {
         }
     }
 
-    public FileMessageService(Path directory) {
-        this.directory = directory;
-        initDirectory();
+    private Path resolvePath(UUID id) {
+        return directory.resolve(id.toString().concat(".ser"));
     }
 
-    private Path resolvePath(UUID messageId) {
-        return directory.resolve(messageId.toString().concat(".ser"));
-    }
-
-    // 저장 로직
-    private void saveFile(Message message) {
+    private Message saveFile(Message message) {
         try (
                 FileOutputStream fos = new FileOutputStream(resolvePath(message.getId()).toFile());
                 ObjectOutputStream oos = new ObjectOutputStream(fos)
         ) {
             oos.writeObject(message);
+            return message;
         } catch (IOException e) {
             throw new RuntimeException("메시지 저장 실패: " + e);
         }
     }
 
-    // 저장 로직
-    private Optional<Message> loadFile(UUID messageId) {
-        if (Files.exists(resolvePath(messageId))) {
+    private Optional<Message> loadFile(UUID id) {
+        if (Files.exists(resolvePath(id))) {
             try (
-                    FileInputStream fis = new FileInputStream(resolvePath(messageId).toFile());
+                    FileInputStream fis = new FileInputStream(resolvePath(id).toFile());
                     ObjectInputStream ois = new ObjectInputStream(fis)
             ) {
                 return Optional.of((Message) ois.readObject());
@@ -59,22 +56,18 @@ public class FileMessageService implements MessageService {
         }
     }
 
-    // 비즈니스 로직
     @Override
-    public Message createMessage(Message message) {
-        saveFile(message);
-        return message;
+    public Message save(Message message) {
+        return saveFile(message);
     }
 
-    // 비즈니스 로직
     @Override
-    public Optional<Message> getMessage(UUID messageId) {
-        return loadFile(messageId);
+    public Optional<Message> findById(UUID id) {
+        return loadFile(id);
     }
 
-    // 비즈니스 로직
     @Override
-    public List<Message> getAllMessages() {
+    public List<Message> findAll() {
         if (Files.exists(directory)) {
             try {
                 return Files.list(directory)
@@ -86,7 +79,7 @@ public class FileMessageService implements MessageService {
                             ) {
                                 return (Message) ois.readObject();
                             } catch (IOException | ClassNotFoundException e) {
-                                throw new RuntimeException("메시지 파일 로딩 실패: " + path, e);
+                                return null;
                             }
                         })
                         .filter(Objects::nonNull)
@@ -99,22 +92,12 @@ public class FileMessageService implements MessageService {
         }
     }
 
-    // 비즈니스 로직
     @Override
-    public void updateMessage(UUID messageId, String msgContent) {
-        getMessage(messageId).ifPresent(m -> {
-            m.updateMsgContent(msgContent);
-            saveFile(m);
-        });
-    }
-
-    // 비즈니스 로직
-    @Override
-    public void deleteMessage(UUID messageId) {
+    public void deleteById(UUID id) {
         try {
-            Files.deleteIfExists(resolvePath(messageId));
+            Files.deleteIfExists(resolvePath(id));
         } catch (IOException e) {
-            throw new RuntimeException("메시지 삭제 실패: " + messageId, e);
+            throw new RuntimeException("메시지 삭제 실패: " + id, e);
         }
     }
 }

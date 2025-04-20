@@ -46,7 +46,10 @@ public class UserMenu {
                         UUID updateId = UUID.fromString(scanner.nextLine());
                         System.out.print("새 이름 입력: ");
                         String newName = scanner.nextLine();
-                        userService.updateUser(updateId, newName);
+                        userService.getUser(updateId).ifPresent(u -> {
+                            u.updateUserName(newName);
+                            userService.updateUser(u);
+                        });
                         break;
                     case "5":
                         System.out.print("삭제할 사용자 ID 입력: ");

@@ -47,7 +47,10 @@ public class ChannelMenu {
                         UUID upId = UUID.fromString(scanner.nextLine());
                         System.out.print("새 이름 입력: ");
                         String newName = scanner.nextLine();
-                        channelService.updateChannel(upId, newName);
+                        channelService.getChannel(upId).ifPresent(c -> {
+                            c.updateChannelName(newName);
+                            channelService.updateChannel(c);
+                        });
                         break;
                     case "5":
                         System.out.print("삭제할 채널 ID 입력: ");
