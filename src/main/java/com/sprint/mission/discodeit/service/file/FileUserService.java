@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.io.*;
@@ -8,20 +9,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-//File IO를 통한 데이터 영속화
-//[ ]  다음의 조건을 만족하는 서비스 인터페이스의 구현체를 작성하세요.
-//
-//[ ]  클래스 패키지명: com.sprint.mission.discodeit.service.file
-//
-//[ ]  클래스 네이밍 규칙: File[인터페이스 이름]
-//
-//        [ ]  JCF 대신 FileIO와 객체 직렬화를 활용해 메소드를 구현하세요. // 이게 JCF의 기능도 겸하는 걸 만들라는 거지?
-//
-//객체 직렬화/역직렬화 가이드
-//
-//[ ]  Application에서 서비스 구현체를 File*Service로 바꾸어 테스트해보세요.
-
 public class FileUserService implements UserService {
+
     private static final String FILE_PATH = "src/main/java/com/sprint/mission/discodeit/service/file/data/user.txt";
     private final Path path = Paths.get(FILE_PATH);
 
@@ -32,7 +21,7 @@ public class FileUserService implements UserService {
     }
 
     // 직렬화 : 생성
-    public void saveUsers(List<User> users) { // 객체 직렬화
+    public void saveUsers(List<User> users) throws RuntimeException { // 객체 직렬화
         try ( // 길 뚫어주고
               FileOutputStream userFOS = new FileOutputStream(FILE_PATH); // file 주소를 어떻게 설정할까
               ObjectOutputStream userOOS = new ObjectOutputStream(userFOS);
@@ -52,18 +41,18 @@ public class FileUserService implements UserService {
             return new ArrayList<>();
         }
 
-            try (
-                    ObjectInputStream userOIS = new ObjectInputStream(new FileInputStream(FILE_PATH));
-            ) {
-                for (User user : (List<User>) userOIS.readObject()) {
-                    users.add(user);
-                }
-
-                return users;
-            } catch (IOException | ClassNotFoundException | ClassCastException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
+        try (
+                ObjectInputStream userOIS = new ObjectInputStream(new FileInputStream(FILE_PATH))
+        ) {
+            for (User user : (List<User>) userOIS.readObject()) {
+                users.add(user);
             }
+
+            return users;
+        } catch (IOException | ClassNotFoundException | ClassCastException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -80,7 +69,7 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public User readUser(UUID id) { // R
+    public User foundUser(UUID id) { // R
         List<User> users = loadUsers(path); // 유저 리스트 역직렬화 // 객체 하나하나 역직렬화 아님
 
         for (User user : users) {

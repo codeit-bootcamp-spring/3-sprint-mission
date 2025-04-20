@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class JCFMessageService implements MessageService {
     private final Map<UUID, Message> data;
@@ -30,7 +29,7 @@ public class JCFMessageService implements MessageService {
 //        return message;
         try {
             channelService.readChannel(channelId);
-            userService.readUser(authorId);
+            userService.foundUser(authorId);
         } catch (Exception e) {
             throw e;
         }

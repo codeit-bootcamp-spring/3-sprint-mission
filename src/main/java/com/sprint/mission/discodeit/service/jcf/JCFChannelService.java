@@ -20,10 +20,10 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel readChannel(UUID id) {
-        Channel channelNullable = this.data.get(id);
+    public Channel readChannel(UUID channelId) {
+        Channel channelNullable = this.data.get(channelId);
         return Optional.ofNullable(channelNullable)
-                .orElseThrow(() -> new NoSuchElementException(id + "ID를 가진 채널이 존재하지 않습니다."));
+                .orElseThrow(() -> new NoSuchElementException(channelId + "ID를 가진 채널이 존재하지 않습니다."));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void deleteChannel(UUID id) { // D
         if (!this.data.containsKey(id)) {
-            throw new NoSuchElementException(id + "ID를 가진 사용자를 찾을 수 없습니다.");
+            throw new NoSuchElementException(id + "ID를 가진 채널을 찾을 수 없습니다.");
         }
         this.data.remove(id);
     };

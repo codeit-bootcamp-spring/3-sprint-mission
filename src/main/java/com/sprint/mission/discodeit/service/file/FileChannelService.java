@@ -18,7 +18,6 @@ public class FileChannelService implements ChannelService {
         this.data = new HashMap<>();
     }
 
-    // 직렬화 : 생성
     public void saveChannel(List<Channel> channels) { // 객체 직렬화
         try ( // 길 뚫어주고
               FileOutputStream channel = new FileOutputStream(FILE_PATH); // file 주소를 어떻게 설정할까

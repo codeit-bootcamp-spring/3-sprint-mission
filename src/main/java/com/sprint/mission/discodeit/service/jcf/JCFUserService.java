@@ -22,7 +22,7 @@ public class JCFUserService implements UserService { // 왜 abstract를 해야�
     }
 
     @Override
-    public User readUser(UUID id) { // R
+    public User foundUser(UUID id) { // R
         User userNullable = this.data.get(id);
 
         return Optional.ofNullable(userNullable)
