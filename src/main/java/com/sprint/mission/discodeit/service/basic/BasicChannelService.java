@@ -1,23 +1,17 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.Repository.ChannelRepository;
-import com.sprint.mission.discodeit.Repository.file.FileChannelRepository;
-import com.sprint.mission.discodeit.Repository.jcf.JCFChannelRepository;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.List;
 import java.util.UUID;
 
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
-    private final UserService userService;
 
-    public BasicChannelService(BasicUserService u) {
-//        channelRepository = new JCFChannelRepository();
-        channelRepository = new FileChannelRepository();
-        userService = u;
+    public BasicChannelService(ChannelRepository chRepo) {
+        channelRepository = chRepo;
     }
 
     @Override
@@ -69,14 +63,14 @@ public class BasicChannelService implements ChannelService {
     public void joinChannel(UUID userId, UUID channelId) {
         Channel ch = getChannel(channelId);
         if (ch != null) {
-            ch.join(userId);
-            System.out.println("[Channel] 채널에 접속했습니다.");
+            channelRepository.join(userId, channelId);
         }
     }
 
     @Override
     public void leaveChannel(UUID userId, UUID channelId) {
-        if (getChannel(channelId) == null || userService.getUser(userId) == null) {
+        Channel ch = getChannel(channelId);
+        if (ch == null || !ch.isMember(userId)) {
             System.out.println("[Channel] 유효하지 않은 채널 혹은 사용자입니다.");
         } else {
             getChannel(channelId).leave(userId);

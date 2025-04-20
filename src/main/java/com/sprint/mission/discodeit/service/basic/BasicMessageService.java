@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.Repository.MessageRepository;
-import com.sprint.mission.discodeit.Repository.file.FileMessageRepository;
-import com.sprint.mission.discodeit.Repository.jcf.JCFMessageRepository;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -17,9 +15,8 @@ public class BasicMessageService implements MessageService {
     private final UserService userService;
     private final ChannelService channelService;
 
-    public BasicMessageService(BasicUserService u, BasicChannelService c) {
-//        messageRepository = new JCFMessageRepository();
-        messageRepository = new FileMessageRepository();
+    public BasicMessageService(MessageRepository msgRepo, UserService u, ChannelService c) {
+        messageRepository = msgRepo;
         userService = u;
         channelService = c;
     }

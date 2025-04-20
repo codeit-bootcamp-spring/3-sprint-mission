@@ -56,7 +56,6 @@ public class JCFChannelService implements ChannelService {
         Channel channel = getChannel(channelId);
         if (channel != null) {
             channel.join(userId);
-            System.out.println("[Channel] 채널에 접속했습니다.");
         }
     }
 

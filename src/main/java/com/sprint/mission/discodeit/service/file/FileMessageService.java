@@ -28,7 +28,7 @@ public class FileMessageService implements MessageService {
             Channel ch = channelService.getChannel(channelId);
             if (userService.getUser(userId) == null || ch == null) {
                 throw new IllegalArgumentException("[Message] 유효하지 않은 userId 혹은 channelId가 존재합니다. " +
-                        "(userId: " + userId + ", channelId: " + channelId);
+                        "(userId: " + userId + ", channelId: " + channelId + ")");
             }
 
             if (!ch.isMember(userId)) {

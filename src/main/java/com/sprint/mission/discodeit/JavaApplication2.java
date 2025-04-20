@@ -1,5 +1,14 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.Repository.ChannelRepository;
+import com.sprint.mission.discodeit.Repository.MessageRepository;
+import com.sprint.mission.discodeit.Repository.UserRepository;
+import com.sprint.mission.discodeit.Repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.Repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.Repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.Repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.Repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.Repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -9,9 +18,6 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
 
 import java.util.List;
 import java.util.Objects;
@@ -26,30 +32,26 @@ public class JavaApplication2 {
     private List<Channel> channels;
     private List<Message> messages;
 
-    public JavaApplication2 (
+    public JavaApplication2(
             UserService userService,
             ChannelService channelService,
             MessageService messageService
     ) {
-        this.userService    = userService;
+        this.userService = userService;
         this.channelService = channelService;
         this.messageService = messageService;
     }
 
-    public static JavaApplication2 createFileApp() {
-        System.out.println("\n------- File App -------");
-        FileUserService u = new FileUserService();
-        FileChannelService c = new FileChannelService(u);
-        FileMessageService m = new FileMessageService(u, c);
-        return new JavaApplication2(u, c, m);
-    }
+    public static JavaApplication2 createApp(
+            UserRepository userRepo,
+            ChannelRepository channelRepo,
+            MessageRepository messageRepo
+    ) {
+        UserService userService = new BasicUserService(userRepo);
+        ChannelService channelService = new BasicChannelService(channelRepo);
+        MessageService messageService = new BasicMessageService(messageRepo, userService, channelService);
 
-    public static JavaApplication2 createBasicApp() {
-        System.out.println("\n------- Basic App -------");
-        BasicUserService u = new BasicUserService();
-        BasicChannelService c = new BasicChannelService(u);
-        BasicMessageService m = new BasicMessageService(u, c);
-        return new JavaApplication2(u, c, m);
+        return new JavaApplication2(userService, channelService, messageService);
     }
 
     public void run() {
@@ -230,7 +232,20 @@ public class JavaApplication2 {
     }
 
     public static void main(String[] args) {
-        JavaApplication2.createFileApp().run();
-        JavaApplication2.createBasicApp().run();
+        System.out.println("\n------- File Repo Test -------");
+        JavaApplication2 fileApp = JavaApplication2.createApp(
+                new FileUserRepository(),
+                new FileChannelRepository(),
+                new FileMessageRepository()
+        );
+        fileApp.run();
+
+        System.out.println("\n------- JCF Repo Test -------");
+        JavaApplication2 jcfApp = JavaApplication2.createApp(
+                new JCFUserRepository(),
+                new JCFChannelRepository(),
+                new JCFMessageRepository()
+        );
+        jcfApp.run();
     }
 }
