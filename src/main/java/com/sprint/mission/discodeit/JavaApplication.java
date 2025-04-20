@@ -3,8 +3,20 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JcfChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JcfMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JcfUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.service.factory.ServiceFactory;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.jcf.JcfMessageService;
@@ -16,14 +28,31 @@ import java.util.UUID;
 
 public class JavaApplication {
   public static void main(String[] args) {
-    //JcfUserServiceUsingMap userService = new JcfUserServiceUsingMap();
+    // JCF*Repository  구현체를 활용하여 테스트
+//    UserRepository userRepo = new JcfUserRepository();
+//    ChannelRepository channelRepo = new JcfChannelRepository();
+//    MessageRepository messageRepo = new JcfMessageRepository();
 
-    ServiceFactory.initializeServices();
-    UserService userService = ServiceFactory.getUserService();
-    ChannelService channelService = ServiceFactory.getChannelService();
+    // File*Repository 구현체를 활용하여 테스트
+    UserRepository userRepo = new FileUserRepository();
+    ChannelRepository channelRepo = new FileChannelRepository();
+    MessageRepository messageRepo = new FileMessageRepository();
+
+    // Service 구현체 생성
+    BasicUserService userService = new BasicUserService(userRepo);
+    BasicChannelService channelService = new BasicChannelService(channelRepo, userService);
+    BasicMessageService messageService = new BasicMessageService(messageRepo, userService, channelService);
+
+    // 순환 참조 setter 주입
+    userService.setChannelService(channelService);
+
+    // sprint1 mission - 팩토리메서드
+//    ServiceFactory.initializeServices();
+//    UserService userService = ServiceFactory.getUserService();
+//    ChannelService channelService = ServiceFactory.getChannelService();
 
     //JcfMessageService messageService = new JcfMessageService(userService, channelService);
-    FileMessageService messageService = new FileMessageService(userService, channelService);
+    //FileMessageService messageService = new FileMessageService(userService, channelService);
 
     //  유저 생성
     User test01 = userService.createUser("test01", "test01@.com");
