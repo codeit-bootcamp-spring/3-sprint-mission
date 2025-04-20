@@ -18,6 +18,12 @@ public class JCFMessageService implements MessageService {
         data.put(message.getId(), message);
         return message;
     }
+    @Override
+    public Message create(String content, UUID channelId, UUID authorId) {
+        Message message = new Message(authorId, channelId, content); // 기존 생성자 활용
+        data.put(message.getId(), message);
+        return message;
+    }
 
     @Override
     public Message findById(UUID id) {

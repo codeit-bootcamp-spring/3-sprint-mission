@@ -1,8 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class User { // 사용자 도메인 클래스 (고유 ID, 이름, 생성/수정 시간 포함)
+public class User implements Serializable { // 직렬화를 위해 Serializable 구현
+    private static final long serialVersionUID = 1L; // 클래스 버전 식별자
+
     private final UUID id; // 고유 사용자 ID
     private final long createdAt; // 생성 시간
     private long updatedAt; // 마지막 수정 시간
@@ -16,31 +19,41 @@ public class User { // 사용자 도메인 클래스 (고유 ID, 이름, 생성/
         this.name = name;
     }
 
+    // 사용자 이름, 수정 시간 함께 업데이트
+    public void updateName(String name) {
+        this.name = name;                                   // 사용자 이름 업데이트
+        this.updatedAt = System.currentTimeMillis();        // 수정 시간 업데이트
+    }
+
+    // 사용자 이름만 업데이트
+    public void setName(String newName) {
+        this.name = newName;
+    }
+
+    // 수정 시간만 변경하고 다른 필드는 그대로 유지
+    public void updateUpdatedAt() { // 수정되었을 때 '마지막 수정 시간'을 갱신
+        this.updatedAt = System.currentTimeMillis();
+    }
+
     // Getter 메서드
-    public UUID getId() { // 사용자 ID 반환
+    public UUID getId() {
         return id;
     }
 
-    public long getCreatedAt() { // 생성 시간 반환
+    public long getCreatedAt() {
         return createdAt;
     }
 
-    public long getUpdatedAt() { // 수정 시간 반환
+    public long getUpdatedAt() {
         return updatedAt;
     }
 
-    public String getName() { // 사용자 이름 반환
+    public String getName() {
         return name;
     }
 
-    // Update 메서드
-    public void updateName(String name) { // 사용자 이름 수정
-        this.name = name;
-        this.updatedAt = System.currentTimeMillis(); // 수정 시간 갱신
-    }
-
     @Override
-    public String toString() { // 사용자 객체를 문자열로 반환
+    public String toString() {
         return "User{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
