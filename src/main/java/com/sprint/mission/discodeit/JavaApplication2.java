@@ -18,6 +18,9 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 
 import java.util.List;
 import java.util.Objects;
@@ -41,6 +44,15 @@ public class JavaApplication2 {
         this.channelService = channelService;
         this.messageService = messageService;
     }
+
+    public static JavaApplication2 createFileServiceApp() {
+        UserService userService = new FileUserService();
+        ChannelService channelService = new FileChannelService(userService);
+        MessageService messageService = new FileMessageService(userService, channelService);
+
+        return new JavaApplication2(userService, channelService, messageService);
+    }
+
 
     public static JavaApplication2 createApp(
             UserRepository userRepo,
@@ -232,7 +244,11 @@ public class JavaApplication2 {
     }
 
     public static void main(String[] args) {
-        System.out.println("\n------- File Repo Test -------");
+        System.out.println("\n------- FileService & FileRepo Test -------");
+        JavaApplication2 fileServiceApp = JavaApplication2.createFileServiceApp();
+        fileServiceApp.run();
+
+        System.out.println("\n------- BasicService & FileRepo Test -------");
         JavaApplication2 fileApp = JavaApplication2.createApp(
                 new FileUserRepository(),
                 new FileChannelRepository(),
@@ -240,7 +256,7 @@ public class JavaApplication2 {
         );
         fileApp.run();
 
-        System.out.println("\n------- JCF Repo Test -------");
+        System.out.println("\n------- BasicService & JCFRepo Test -------");
         JavaApplication2 jcfApp = JavaApplication2.createApp(
                 new JCFUserRepository(),
                 new JCFChannelRepository(),
