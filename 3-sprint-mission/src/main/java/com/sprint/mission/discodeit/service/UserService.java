@@ -8,10 +8,14 @@ import java.util.UUID;
 import com.sprint.mission.discodeit.entity.User;
 
 public interface UserService {
-    void create() throws IOException;
-    User read(String userid);
-    List<User> readAll();
+    User create() throws IOException;
+    User find(UUID id);
+    User findByUserId(String userid);
+    List<User> findByName(String name);
+    List<User> findAll();
+    User update(UUID id) throws IOException;
+    void delete(UUID id);
+    // Login, Logout 메소드
     User login() throws IOException;
     void logout(User user);
-    void delete(User user);
 }
