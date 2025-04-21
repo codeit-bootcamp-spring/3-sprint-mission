@@ -12,5 +12,5 @@ public interface UserService {
     User getUserByName(String name);
     void updateUser(UUID id, String name);
     void deleteUser(UUID id);
-    boolean existsById(UUID id);
+    boolean existsById(UUID id); // JavaApplicationd에서 사용됨
 }
