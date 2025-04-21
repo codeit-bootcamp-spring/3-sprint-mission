@@ -5,4 +5,8 @@
 build
 
 .idea/
+*.dat
+*.ser
+app/
+out/
 

@@ -11,4 +11,3 @@ plugins {
 }
 
 rootProject.name = '3-sprint-mission'
-include('app')
