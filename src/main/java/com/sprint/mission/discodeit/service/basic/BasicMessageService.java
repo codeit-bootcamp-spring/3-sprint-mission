@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -6,22 +6,22 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService.ChannelNotFoundException;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotFoundException;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotParticipantException;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService.ChannelNotFoundException;
+import com.sprint.mission.discodeit.service.basic.BasicUserService.UserNotFoundException;
+import com.sprint.mission.discodeit.service.basic.BasicUserService.UserNotParticipantException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class JCFMessageService implements MessageService {
+public class BasicMessageService implements MessageService {
 
   private final MessageRepository messageRepository;
   private final UserService userService;
   private final ChannelService channelService;
 
-  public JCFMessageService(
+  public BasicMessageService(
       MessageRepository messageRepository,
       UserService userService,
       ChannelService channelService
