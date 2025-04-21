@@ -9,6 +9,6 @@ public interface MessageService {
     Message create(UUID userId, UUID channelId, String content);
     Message findById(UUID id);
     List<Message> findAll();
-    void update(UUID id, String newContent);
-    void delete(UUID id);
+    Message update(UUID id, String newContent);
+    Message delete(UUID id);
 }
