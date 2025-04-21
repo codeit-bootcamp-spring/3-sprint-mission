@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.jcf;
+package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -26,7 +26,7 @@ public class JCFMessageService implements MessageService {
 
 
     @Override // 메시지 등록 기능 (Map에 저장)
-    public void create(Message message) {
+    public Message create(Message message) {
         // 유저와 채널이 존재하는지 검증
         if (userService.getById(message.getUserId()) == null) {
             throw new IllegalArgumentException("존재하지 않는 유저입니다.");
@@ -37,6 +37,7 @@ public class JCFMessageService implements MessageService {
         }
 
         data.put(message.getId(), message);
+        return message;
     }
 
     @Override // 메시지를 ID로 조회하는 기능
@@ -50,8 +51,9 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override  // 메시지를 수정하는 기능
-    public void update(Message message) {
+    public Message update(Message message) {
         data.put(message.getId(), message);
+        return message;
     }
 
     @Override // 메시지를 삭제하는 기능

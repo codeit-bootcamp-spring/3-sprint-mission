@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.jcf.*;
 import com.sprint.mission.discodeit.service.*;
+import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
+import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
+import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 public class ServiceFactory {
 
