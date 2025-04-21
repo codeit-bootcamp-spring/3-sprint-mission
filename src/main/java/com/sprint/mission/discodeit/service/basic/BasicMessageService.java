@@ -30,7 +30,7 @@ public class BasicMessageService implements MessageService {
       throw new IllegalArgumentException("Channel not found: " + channelId);
     }
 
-    // Create and save message
+
     Message message = new Message(userId, channelId, content);
     messageRepository.save(message);
     return message;
