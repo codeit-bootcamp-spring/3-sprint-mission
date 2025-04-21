@@ -32,16 +32,21 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void update(UUID id, String newUsername) {
+    public User update(UUID id, String newUsername) {
         User user = userRepository.findById(id);
         if (user != null) {
             user.updateUsername(newUsername);
-            userRepository.save(user); // 수정된 값 저장
+            userRepository.save(user);
         }
+        return user;
     }
 
     @Override
-    public void delete(UUID id) {
-        userRepository.delete(id);
+    public User delete(UUID id) {
+        User user = userRepository.findById(id);
+        if (user != null) {
+            userRepository.delete(id);
+        }
+        return user;
     }
 }

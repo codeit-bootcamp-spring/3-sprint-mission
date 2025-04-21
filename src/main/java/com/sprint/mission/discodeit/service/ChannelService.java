@@ -9,6 +9,6 @@ public interface ChannelService {
     Channel create(String name);
     Channel findById(UUID id);
     List<Channel> findAll();
-    void update(UUID id, String newName);
-    void delete(UUID id);
+    Channel update(UUID id, String newName); // 수정된 리턴 타입
+    Channel delete(UUID id);                 // 수정된 리턴 타입
 }

@@ -16,9 +16,7 @@ public class BasicUserService implements UserService {
 
   @Override
   public User create(String username) {
-    // Create a new user entity
     User user = new User(username);
-    // Save user using repository
     userRepository.save(user);
     return user;
   }
@@ -34,16 +32,21 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public void update(UUID id, String newUsername) {
+  public User update(UUID id, String newUsername) {
     User user = userRepository.findById(id);
     if (user != null) {
       user.updateUsername(newUsername);
       userRepository.save(user);
     }
+    return user;
   }
 
   @Override
-  public void delete(UUID id) {
-    userRepository.delete(id);
+  public User delete(UUID id) {
+    User user = userRepository.findById(id);
+    if (user != null) {
+      userRepository.delete(id);
+    }
+    return user;
   }
 }

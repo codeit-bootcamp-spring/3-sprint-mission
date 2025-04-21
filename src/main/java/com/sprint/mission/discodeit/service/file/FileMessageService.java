@@ -10,17 +10,15 @@ import java.util.List;
 import java.util.UUID;
 
 public class FileMessageService implements MessageService {
-  private MessageRepository messageRepository = null;
+  private final MessageRepository messageRepository;
   private final UserService userService;
   private final ChannelService channelService;
 
-  public FileMessageService(MessageRepository messageRepository, UserService userService,
-      ChannelService channelService) {
-    this.messageRepository = messageRepository; // ← 이게 정답!
+  public FileMessageService(MessageRepository messageRepository, UserService userService, ChannelService channelService) {
+    this.messageRepository = messageRepository;
     this.userService = userService;
     this.channelService = channelService;
   }
-
 
   @Override
   public Message create(UUID userId, UUID channelId, String content) {
@@ -48,16 +46,21 @@ public class FileMessageService implements MessageService {
   }
 
   @Override
-  public void update(UUID id, String newContent) {
+  public Message update(UUID id, String newContent) {
     Message message = messageRepository.findById(id);
     if (message != null) {
       message.updateContent(newContent);
       messageRepository.save(message);
     }
+    return message;
   }
 
   @Override
-  public void delete(UUID id) {
-    messageRepository.delete(id);
+  public Message delete(UUID id) {
+    Message message = messageRepository.findById(id);
+    if (message != null) {
+      messageRepository.delete(id);
+    }
+    return message;
   }
 }

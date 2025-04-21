@@ -33,18 +33,23 @@ public class FileUserService implements UserService {
   }
 
   @Override
-  public void update(UUID id, String newUsername) {
+  public User update(UUID id, String newUsername) {
     User user = data.get(id);
     if (user != null) {
       user.updateUsername(newUsername);
       saveToFile();
     }
+    return user;
   }
 
   @Override
-  public void delete(UUID id) {
-    data.remove(id);
-    saveToFile();
+  public User delete(UUID id) {
+    User user = data.get(id);
+    if (user != null) {
+      data.remove(id);
+      saveToFile();
+    }
+    return user;
   }
 
   private void saveToFile() {

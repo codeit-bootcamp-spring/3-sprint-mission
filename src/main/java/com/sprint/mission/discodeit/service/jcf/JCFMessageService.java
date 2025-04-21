@@ -47,16 +47,21 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void update(UUID id, String newContent) {
+    public Message update(UUID id, String newContent) {
         Message message = messageRepository.findById(id);
         if (message != null) {
             message.updateContent(newContent);
             messageRepository.save(message);
         }
+        return message;
     }
 
     @Override
-    public void delete(UUID id) {
-        messageRepository.delete(id);
+    public Message delete(UUID id) {
+        Message message = messageRepository.findById(id);
+        if (message != null) {
+            messageRepository.delete(id);
+        }
+        return message;
     }
 }

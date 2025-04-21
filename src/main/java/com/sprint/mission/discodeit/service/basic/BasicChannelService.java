@@ -34,16 +34,22 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public void update(UUID id, String newName) {
+  public Channel update(UUID id, String newName) {
     Channel channel = channelRepository.findById(id);
     if (channel != null) {
       channel.updateName(newName);
       channelRepository.save(channel);
     }
+    return channel;
   }
 
   @Override
-  public void delete(UUID id) {
-    channelRepository.delete(id);
+  public Channel delete(UUID id) {
+    Channel channel = channelRepository.findById(id);
+    if (channel != null) {
+      channelRepository.delete(id);
+    }
+    return channel;
   }
+
 }
