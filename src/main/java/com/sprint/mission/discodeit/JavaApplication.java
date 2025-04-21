@@ -36,7 +36,6 @@ public class JavaApplication {
     private static final JcfChannelRepository channelRepository = new JcfChannelRepository();
     private static final JcfMessageRepository messageRepository = new JcfMessageRepository();
 
-    // File 기반 저장소 사용하려면 위 3줄 주석 처리하고 아래 주석 해제
 //    private static final FileUserRepository userRepository = new FileUserRepository();
 //    private static final FileChannelRepository channelRepository = new FileChannelRepository();
 //    private static final FileMessageRepository messageRepository = new FileMessageRepository();

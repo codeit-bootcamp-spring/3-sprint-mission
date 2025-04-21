@@ -44,7 +44,7 @@ public class FileUserService implements UserService {
 
     @Override
     public void updateUser(UUID userId, String name) {
-        Objects.requireNonNull(userId, "채널 아이디 입력 없음: FileUserService.updateUser");
+        Objects.requireNonNull(userId, "user 아이디 입력 없음: FileUserService.updateUser");
         Objects.requireNonNull(name, "이름 입력 없음: FileUserService.updateUser");
         fur.updateUserById(userId, name);
     }
