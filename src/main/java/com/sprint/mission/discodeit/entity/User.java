@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.UUID;
 
 public class User implements Serializable {
-    private static final long serialVersionUID = 1L;
 
     private static int counter = 1;
     private int number;
