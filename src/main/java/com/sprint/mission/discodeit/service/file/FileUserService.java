@@ -11,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.UUID;
 
 public class FileUserService implements UserService {
 
@@ -84,10 +85,10 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public void outputOneUserInfo(String name) {
+    public void outputOneUserInfo(UUID uuid) {
         List<User> userName = users
                 .stream()
-                .filter(e -> e.getUsername().equals(name))
+                .filter(e -> e.getId().equals(uuid))
                 .toList();
         System.out.println(userName);
     }

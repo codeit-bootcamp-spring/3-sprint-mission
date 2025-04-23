@@ -43,7 +43,7 @@ public class UserMenu {
                     userService.createNewUserNames(loginUser.getUsername(), newUser);
                 }
                 case 2 -> userService.outputAllUsersInfo();
-                case 3 -> userService.outputOneUserInfo(loginUser.getUsername());
+                case 3 -> userService.outputOneUserInfo(loginUser.getId());
                 case 4 -> {
                     System.out.println("현재 사용자 이름: " + loginUser.getUsername() + ". 변경할 이름을 입력해 주세요.");
                     String updateUserName = sc.nextLine();

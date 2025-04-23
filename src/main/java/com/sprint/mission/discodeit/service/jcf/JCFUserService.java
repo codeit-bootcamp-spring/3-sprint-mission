@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
 import java.util.Scanner;
+import java.util.UUID;
 
 public class JCFUserService implements UserService {
 
@@ -36,10 +37,10 @@ public class JCFUserService implements UserService {
         }
     }
 
-    public void outputOneUserInfo(String name) {
+    public void outputOneUserInfo(UUID uuid) {
         List<User> userName = users
                 .stream()
-                .filter(e -> e.getUsername().equals(name))
+                .filter(e -> e.getId().equals(uuid))
                 .toList();
         System.out.println(userName);
     }

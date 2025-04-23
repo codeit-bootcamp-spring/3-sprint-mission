@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.Scanner;
+import java.util.UUID;
 
 public class BasicUserService implements UserService {
     private final UserRepository userRepo;
@@ -61,9 +62,9 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public void outputOneUserInfo(String name) {
+    public void outputOneUserInfo(UUID uuid) {
         userRepo.findAllUser().stream()
-                .filter(u -> u.getUsername().equals(name))
+                .filter(u -> u.getId().equals(uuid))
                 .forEach(System.out::println);
     }
 
