@@ -6,44 +6,35 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import java.util.*;
 
 public class JCFUserRepository implements UserRepository {
+    private final Map<UUID, User> data;
 
-    // JCF 저장로직 ( 기존 Map 채택 >> map.put()기능 )
-    private final Map<UUID, User> userMap = new HashMap<>();
-
-
-    @Override
-    public void save(User user) {
-        userMap.put(user.getUserId(), user);
+    public JCFUserRepository() {
+        this.data = new HashMap<>();
     }
 
     @Override
-    public void saveAll(List<User> users) {
-        // 현재 목록 초기화
-        userMap.clear();
-        // 새로 저장
-        for (User user : users) {
-            userMap.put(user.getUserId(), user);
-        }
+    public User save(User user) {
+        this.data.put(user.getUserId(), user);
+        return user;
     }
 
     @Override
-    public List<User> loadAll() {
-        return new ArrayList<>(userMap.values());
+    public Optional<User> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
-    public User loadById(UUID id) {
-        return userMap.get(id);
+    public List<User> findAll() {
+        return this.data.values().stream().toList();
     }
 
     @Override
-    public List<User> loadByName(String name) {
-        List<User> result = new ArrayList<>();
-        for (User user : userMap.values()) {
-            if (user.getUserName().equals(name)) {
-                result.add(user);
-            }
-        }
-        return result;
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        this.data.remove(id);
     }
 }

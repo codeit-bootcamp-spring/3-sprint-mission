@@ -1,83 +1,52 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
 
     public BasicChannelService(ChannelRepository channelRepository) {
-        if (channelRepository == null) {
-            throw new NullPointerException("channelRepository is null");
-        }
         this.channelRepository = channelRepository;
     }
 
     @Override
-    public void createChannel(Channel channel) {
-        if (channel == null) {
-            throw new IllegalArgumentException("Channel cannot be null");
-        }
-        if (channel.getChannelName() == null || channel.getChannelName().isBlank()) {
-            throw new IllegalArgumentException("ChannelName cannot be null or blank");
-        }
-
-        channelRepository.save(channel);
-    }
-
-
-    @Override
-    public Channel readChannel(UUID id) {
-        return channelRepository.loadById(id);
+    public Channel create(ChannelType type, String name, String category) {
+        Channel channel = new Channel(type, name, category);
+        return channelRepository.save(channel);
     }
 
     @Override
-    public List<Channel> readChannelByName(String name) {
-        return channelRepository.loadByName(name);
+    public Channel find(UUID channelId) {
+        return channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     }
 
     @Override
-    public List<Channel> readChannelByType(String type) {
-        return channelRepository.loadByType(type);
+    public List<Channel> findAll() {
+        return channelRepository.findAll();
     }
 
     @Override
-    public List<Channel> readAllChannels() {
-        return channelRepository.loadAll();
+    public Channel update(UUID channelId, String newName, String newCategory) {
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+        channel.update(newName, newCategory);
+        return channelRepository.save(channel);
     }
 
     @Override
-    public Channel updateChannel(UUID id, Channel channel) {
-        if (id == null) {
-            throw new IllegalArgumentException("ID cannot be null");
+    public void delete(UUID channelId) {
+        if (!channelRepository.existsById(channelId)) {
+            throw new NoSuchElementException("Channel with id " + channelId + " not found");
         }
-        if (channel == null) {
-            throw new IllegalArgumentException("Channel cannot be null");
-        }
-        if (channel.getChannelName() == null || channel.getChannelName().isBlank()) {
-            throw new IllegalArgumentException("ChannelName cannot be null or blank");
-        }
-
-        channelRepository.save(channel);
-        return channel;
-    }
-
-    @Override
-    public boolean deleteChannel(UUID id) {
-        if (id == null) {
-            throw new IllegalArgumentException("ID cannot be null");
-        }
-        List<Channel> channels = channelRepository.loadAll();
-        boolean removed = channels.removeIf(channel -> channel.getChannelId().equals(id));
-        if (removed) {
-            // 삭제 완료 시
-            channelRepository.saveAll(channels);
-            return true;
-        }
-        return false;
+        channelRepository.deleteById(channelId);
     }
 }
+

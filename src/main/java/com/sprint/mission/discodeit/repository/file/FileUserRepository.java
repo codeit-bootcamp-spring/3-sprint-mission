@@ -4,95 +4,95 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class FileUserRepository implements UserRepository {
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
 
-    private static final String USER_FILE_REPOSITORY_PATH = "src/main/java/com/sprint/mission/discodeit/repository/data/User.txt";
-    File file = new File(USER_FILE_REPOSITORY_PATH);
-
-    // 저장
-    @Override
-    public void save(User user) {
-
-        // 방어 코드
-        if (!file.exists()) {
+    public FileUserRepository() {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", User.class.getSimpleName());
+        if (Files.notExists(DIRECTORY)) {
             try {
-                file.createNewFile();
+                Files.createDirectories(DIRECTORY);
             } catch (IOException e) {
-                e.printStackTrace();
-                return;
+                throw new RuntimeException(e);
             }
         }
+    }
 
-        // 객체 직렬화( 저장 )
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
+    }
+
+    @Override
+    public User save(User user) {
+        Path path = resolvePath(user.getUserId());
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
             oos.writeObject(user);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-
+        return user;
     }
 
-    // 전체 저장
-
-
     @Override
-    public void saveAll(List<User> users) {
-
-        // 방어 코드
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return;
+    public Optional<User> findById(UUID id) {
+        User userNullable = null;
+        Path path = resolvePath(id);
+        if (Files.exists(path)) {
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                userNullable = (User) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
             }
         }
+        return Optional.ofNullable(userNullable);
+    }
 
-        // 객체 직렬화 ( 전체 저장 )
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
-            oos.writeObject(users);
+    @Override
+    public List<User> findAll() {
+        try {
+            return Files.list(DIRECTORY)
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (User) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
-
-    // 전체 정보 불러오기
     @Override
-    public List<User> loadAll() {
-
-        // 역직렬화 ( 불러오기 )
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (List<User>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
+    public boolean existsById(UUID id) {
+        Path path = resolvePath(id);
+        return Files.exists(path);
     }
 
-    // 단일 정보 불러오기( ID )
     @Override
-    public User loadById(UUID id) {
-        List<User> users = loadAll();
-        for (User user : users) {
-            if (user.getUserId().equals(id)) {
-                return user;
-            }
+    public void deleteById(UUID id) {
+        Path path = resolvePath(id);
+        try {
+            Files.delete(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return null;
-    }
-
-    // 정보 불러오기 ( Name )
-    @Override
-    public List<User> loadByName(String name) {
-        List<User> users = loadAll();
-        for (User user : users) {
-            if (user.getUserName().equals(name)) {
-                return users;
-            }
-        }
-        return null;
     }
 }
