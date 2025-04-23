@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.Repository.file;
 
 import com.sprint.mission.discodeit.Repository.MessageRepository;
 import com.sprint.mission.discodeit.entity.Message;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Repository
 public class FileMessageRepository implements MessageRepository {
     private static final String DIR = "data/messages/";
 
