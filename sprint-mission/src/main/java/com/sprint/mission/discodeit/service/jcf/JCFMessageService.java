@@ -1,18 +1,20 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
     private final Map<UUID, Message> data;
-    private final JCFChannelService jcfChannelService;
+    private final ChannelService channelService;
 
-    public JCFMessageService(JCFChannelService jcfChannelService) {
-        this.jcfChannelService = jcfChannelService;
+    public JCFMessageService(ChannelService channelService) {
+        this.channelService = channelService;
         this.data = new HashMap<>();
     }
 
@@ -20,7 +22,7 @@ public class JCFMessageService implements MessageService {
     public Message createMessage(String text, UUID channelID, UUID userID) {
         Message newMessage = new Message(text, channelID, userID);
         data.put(newMessage.getId(), newMessage);
-        jcfChannelService.addMessageToChannel(channelID, newMessage.getId());
+        channelService.addMessageToChannel(channelID, newMessage.getId());
         return newMessage;
     }
 
@@ -30,8 +32,9 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message readMessage(UUID id) {
-        return data.get(id);
+    public Optional<Message> readMessage(UUID id) {
+
+        return Optional.ofNullable(data.get(id));
     }
 
     @Override
