@@ -2,49 +2,99 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.file.FileDataStore;
-import java.io.File;
-import java.util.ArrayList;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
 public class FileUserRepository implements UserRepository {
-    private final FileDataStore<User> store;
-    private final Map<UUID, User> data;
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
 
     public FileUserRepository() {
-        File dir = new File("data");
-        if (!dir.exists()) dir.mkdirs();
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", User.class.getSimpleName());
+        if (Files.notExists(DIRECTORY)) {
+            try {
+                Files.createDirectories(DIRECTORY);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
-        this.store = new FileDataStore<>("data/users.ser");
-        this.data = store.load();
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
     }
 
     @Override
     public User save(User user) {
-        data.put(user.getId(), user);
-        store.save(data);
+        Path path = resolvePath(user.getId());
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
+            oos.writeObject(user);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return user;
     }
 
     @Override
-    public User findById(UUID id) {
-        return Optional.ofNullable(data.get(id))
-                .orElseThrow(() -> new NoSuchElementException("User not found: " + id));
+    public Optional<User> findById(UUID id) {
+        User userNullable = null;
+        Path path = resolvePath(id);
+        if (Files.exists(path)) {
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                userNullable = (User) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return Optional.ofNullable(userNullable);
     }
 
     @Override
     public List<User> findAll() {
-        return new ArrayList<>(data.values());
+        try {
+            return Files.list(DIRECTORY)
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (User) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public User delete(User user) {
-        User removed = data.remove(user.getId());
-        store.save(data);
-        return removed;
+    public boolean existsById(UUID id) {
+        Path path = resolvePath(id);
+        return Files.exists(path);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        Path path = resolvePath(id);
+        try {
+            Files.delete(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

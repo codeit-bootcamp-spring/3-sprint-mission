@@ -11,7 +11,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class JCFMessageRepository implements MessageRepository {
-    private final Map<UUID, Message> data = new HashMap<>();
+    private final Map<UUID, Message> data;
+
+    public JCFMessageRepository() {
+        this.data = new HashMap<>();
+    }
 
     @Override
     public Message save(Message message) {
@@ -20,18 +24,22 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message findById(UUID id) {
-        return Optional.ofNullable(data.get(id))
-                .orElseThrow(() -> new NoSuchElementException("Message not found: " + id));
+    public Optional<Message> findById(UUID id) {
+        return Optional.ofNullable(data.get(id));
     }
 
     @Override
     public List<Message> findAll() {
-        return new ArrayList<>(data.values());
+        return this.data.values().stream().toList();
     }
 
     @Override
-    public Message delete(Message message) {
-        return data.remove(message.getId());
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        this.data.remove(id);
     }
 }
