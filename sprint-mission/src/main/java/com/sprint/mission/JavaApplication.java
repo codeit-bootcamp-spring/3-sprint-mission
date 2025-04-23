@@ -59,6 +59,7 @@ public class JavaApplication {
 
         // 테스트
         messageCreateTest(messageService, channel1, user1);
+        
 
 
 
