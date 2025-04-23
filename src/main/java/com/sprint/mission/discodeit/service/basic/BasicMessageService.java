@@ -5,9 +5,11 @@ import com.sprint.mission.discodeit.entitiy.Message;
 import com.sprint.mission.discodeit.entitiy.User;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Service
 public class BasicMessageService implements MessageService {
 
     MessageRepository messageRepository;

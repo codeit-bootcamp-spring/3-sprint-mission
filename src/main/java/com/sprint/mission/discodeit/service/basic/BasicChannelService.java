@@ -3,13 +3,17 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entitiy.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Service
 public class BasicChannelService implements ChannelService {
 
     ChannelRepository channelRepository;
 
+    @Autowired
     public BasicChannelService(ChannelRepository channelRepository) {
         this.channelRepository = channelRepository;
     }
