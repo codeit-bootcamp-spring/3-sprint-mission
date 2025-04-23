@@ -1,69 +1,51 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-// JCF 활용, 데이터를 저장할 수 있는 필드(data)를 final 로 선언, 생성자에서 초기화
-// data 필드를 활용해 생성, 조회, 수정, 삭제하는 메소드를 구현
 public class JCFMessageService implements MessageService {
+    // 메시지 데이터 저장 Map
     private final Map<UUID, Message> data;
 
-    public JCFMessageService(Map<UUID, Message> data) {
+    // 생성자: 데이터 저장용 Map 초기화
+    public JCFMessageService() {
         this.data = new HashMap<>();
     }
 
-
-    // Create Override
+    // 메시지 생성 및 저장
     @Override
-    public void createMessage(Message message) {        // 새로운 메세지 생성
-        data.put(message.getMessageId(), message);
+    public Message create(UUID userId, UUID channelId, String content) {
+        Message message = new Message(userId, channelId, content);
+        data.put(message.getId(), message);
+        return message;
     }
 
-    // Read Override
+    // 메시지 목록 조회
     @Override
-    public Message readMessage(UUID id) {       // 특정 ID를 가진 메세지 조회
+    public List<Message> findAll() {
+        return new ArrayList<>(data.values());
+    }
+    // ID로 메시지 조회
+    @Override
+    public Message findById(UUID id) {
         return data.get(id);
     }
 
-    @Override
-    public List<Message> readMessageByType(String messageType) {        // 중복 가능한 값(타입)에 따른 다중 조회
-        return data.values().stream()       // Stream API
-                .filter(message -> message.getMessageType().equals(messageType))    // 람다식 적용
-                .collect(Collectors.toList());      // List 자료형으로 저장
-    }
 
+    // 메시지 내용 수정
     @Override
-    public List<Message> readAllMessages() {        // 전체 메세지 조회
-        return new ArrayList<>(data.values());
-    }
-
-    // Update Override
-    @Override
-    public Message updateMessage(UUID id, Message message) {
-        if (data.containsKey(id)) {     // 특정 메세지의 ID 탐색 후 정보 수정
-            data.put(id, message);      // 덮어씌우기
-            return message;
+    public void update(UUID id, String newContent) {
+        Message message = data.get(id);
+        if (message != null) {
+            message.updateContent(newContent);
         }
-        return null;
     }
 
-    // Delete Override
+    // 메시지 삭제
     @Override
-    public boolean deleteMessage(UUID id) {     // 특정 ID를 가진 메세지 제거
-        return data.remove(id) != null;
+    public void delete(UUID id) {
+        data.remove(id);
     }
-
-
-
-
-//    // SendMessage Override           << 대기
-//    @Override
-//    public void sendMessage(User fromUser, Channel toChannel, String content, String messageType) {                    // 대상, 장소, 내용      + 추가점 (타임스탬프)
-//
-//    }
 }
