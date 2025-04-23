@@ -24,7 +24,7 @@ public class JavaApplication {
         UserService userService = new BasicUserService(userRepository);
         ChannelService channelService = new BasicChannelService(channelRepository);
         MessageService messageService = new BasicMessageService(
-            messageRepository, userService, channelService
+            messageRepository, userRepository, channelRepository // 수정됨
         );
 
         runTest(userService, channelService, messageService);
@@ -38,12 +38,11 @@ public class JavaApplication {
         UserService userService = new BasicUserService(userRepository);
         ChannelService channelService = new BasicChannelService(channelRepository);
         MessageService messageService = new BasicMessageService(
-            messageRepository, userService, channelService
+            messageRepository, userRepository, channelRepository // 수정됨
         );
 
         runTest(userService, channelService, messageService);
     }
-
     public static void runTest(UserService userService, ChannelService channelService, MessageService messageService) {
         System.out.println("\n========== CREATE ==========");
         User user = userService.create("woody");
