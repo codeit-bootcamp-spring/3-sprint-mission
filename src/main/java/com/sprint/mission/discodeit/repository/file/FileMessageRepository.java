@@ -37,7 +37,8 @@ public class FileMessageRepository implements MessageRepository {
 
     private void saveMessage(Message message) {
         Path messagePath = getMessagePath(message.getMessageId());
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(messagePath.toFile()))) {
+        try (FileOutputStream fos = new FileOutputStream(messagePath.toFile());
+            ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.writeObject(message);
         } catch (IOException e) {
             throw new RuntimeException("메시지 저장 실패: " + message.getMessageId(), e);
@@ -45,7 +46,8 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     private Message loadMessage(Path path) {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+        try (FileInputStream fis = new FileInputStream(path.toFile());
+            ObjectInputStream ois = new ObjectInputStream(fis)) {
             return (Message) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException("메시지 로드 실패: " + path, e);

@@ -37,16 +37,20 @@ public class FileUserRepository implements UserRepository {
     }
 
     private void saveUser(User user) {
+        // 기존 코드에서는 FileOutputStream이 즉시 생성되고 ObjectOutputStream의 생성자에 전달됨. 
+        // 만약 ObjectOutputStream 생성 중 예외가 발생하면, FileOutputStream이 제대로 닫히지 않을 수 있음. 이러면 메모리 누수 및 파일 핸드 고갈 가능성 있음.
         Path userPath = getUserPath(user.getUserId());
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(userPath.toFile()))) {
+        try (FileOutputStream fos = new FileOutputStream(userPath.toFile());
+            ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.writeObject(user);
         } catch (IOException e) {
             throw new RuntimeException("사용자 저장 실패: " + user.getUserId(), e);
         }
-    }
+    } 
 
     private User loadUser(Path path) {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+        try (FileInputStream fis = new FileInputStream(path.toFile());
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
             return (User) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException("사용자 로드 실패: " + path, e);

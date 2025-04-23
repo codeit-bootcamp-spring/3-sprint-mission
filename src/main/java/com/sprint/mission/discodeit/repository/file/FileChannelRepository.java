@@ -36,7 +36,8 @@ public class FileChannelRepository implements ChannelRepository {
 
     private void saveChannel(Channel channel) {
         Path channelPath = getChannelPath(channel.getChannelId());
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(channelPath.toFile()))) {
+        try (FileOutputStream fos = new FileOutputStream(channelPath.toFile());
+            ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.writeObject(channel);
         } catch (IOException e) {
             throw new RuntimeException("채널 저장 실패: " + channel.getChannelId(), e);
@@ -44,7 +45,8 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     private Channel loadChannel(Path path) {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+        try (FileInputStream fis = new FileInputStream(path.toFile());
+            ObjectInputStream ois = new ObjectInputStream(fis)) {
             return (Channel) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException("채널 로드 실패: " + path, e);
