@@ -5,7 +5,9 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 
 import java.io.*;
 import java.util.*;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class FileChannelRepository implements ChannelRepository {
   private final String filePath = "channels.dat";
   private final Map<UUID, Channel> data;

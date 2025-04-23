@@ -5,7 +5,10 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 
 import java.io.*;
 import java.util.*;
+import org.springframework.stereotype.Repository;
 
+
+@Repository
 public class FileUserRepository implements UserRepository {
   private final String filePath = "users.dat";
   private final Map<UUID, User> data;

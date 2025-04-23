@@ -6,7 +6,10 @@ import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
 
+
+@Service
 public class BasicChannelService implements ChannelService {
   private final ChannelRepository channelRepository;
 
