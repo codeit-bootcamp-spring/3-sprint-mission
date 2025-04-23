@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 public class Message implements Serializable {
+    private static final long serialVersionUID = -953021662940755622L;
     private static int counter = 1;
 
     private int number;

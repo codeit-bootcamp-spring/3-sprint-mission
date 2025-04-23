@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 public class Channel implements Serializable {
+    private static final long serialVersionUID = -8345660952343662023L;
     private static int counter = 1;
 
     private int number;
