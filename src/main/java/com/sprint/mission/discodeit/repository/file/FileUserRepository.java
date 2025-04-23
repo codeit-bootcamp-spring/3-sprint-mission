@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.io.FileInputStream;
@@ -14,6 +15,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 
 /**
  * packageName    : com.sprint.mission.discodeit.refactor.repository.file
@@ -26,6 +28,7 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
+//@Primary
 @Repository
 public class FileUserRepository implements UserRepository {
     FilePathUtil filePathUtil = new FilePathUtil();
@@ -33,8 +36,8 @@ public class FileUserRepository implements UserRepository {
 
 
     @Override
-    public User createUserByName(String name) {
-        User user = new User(name);
+    public User createUserByName(String name, String email, String password) {
+        User user = new User(name, email, password );
         Path path = filePathUtil.getUserFilePath(user.getId());
         fileSerializer.writeFile(path, user);
         return user;
@@ -45,6 +48,7 @@ public class FileUserRepository implements UserRepository {
         Path path = filePathUtil.getUserFilePath(userId);
         return fileSerializer.readFile(path, User.class);
     }
+
 
     @Override
     public List<User> findAllUsers() {

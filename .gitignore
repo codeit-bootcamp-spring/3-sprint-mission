@@ -14,6 +14,7 @@ build/
 .springBeans
 .sts4-cache
 bin/
+/data/*.ser
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 

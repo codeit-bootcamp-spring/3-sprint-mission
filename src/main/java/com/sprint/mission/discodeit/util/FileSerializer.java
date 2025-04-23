@@ -19,7 +19,7 @@ import java.nio.file.Path;
 @Component
 public class FileSerializer {
 
-    public <T> T readFile(Path path, Class<T> theClass) {
+    public static <T> T readFile(Path path, Class<T> theClass) {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
             Object object = ois.readObject();
             return theClass.cast(object);
@@ -28,7 +28,7 @@ public class FileSerializer {
         }
     }
 
-    public <T> void writeFile(Path path, T object){
+    public static <T> void writeFile(Path path, T object){
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
             oos.writeObject(object);
         } catch (IOException e) {

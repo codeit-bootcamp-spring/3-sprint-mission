@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,17 +23,13 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-@Service
+@Service("basicMessageService")
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService{
+
     private final UserService userService;
     private final ChannelService channelService;
-    private final MessageRepository mr;
-
-    public BasicMessageService(UserService userService, ChannelService channelService, MessageRepository mr) {
-        this.userService = userService;
-        this.channelService = channelService;
-        this.mr = mr;
-    }
+    private final MessageRepository messageRepository;
 
     @Override
     public Message createMessage(UUID senderId, UUID channelId, String content) {
@@ -43,33 +40,33 @@ public class BasicMessageService implements MessageService{
         Objects.requireNonNull(userService.findUserById(senderId), "no user existing: createMessage");
         Objects.requireNonNull(channelService.findChannelById(channelId), "no channel existing: createMessage");
 
-        return mr.createMessageByUserIdAndChannelId(senderId, channelId, content);
+        return messageRepository.createMessageByUserIdAndChannelId(senderId, channelId, content);
     }
 
     @Override
     public Message findMessageById(UUID messageId) {
         Objects.requireNonNull(messageId, "no messageId: BasicMessageService.findMessageById");
-        Message messageById = mr.findMessageById(messageId);
+        Message messageById = messageRepository.findMessageById(messageId);
         Objects.requireNonNull(messageById, "no message in DB: BasicMessageService.findMessageById");
         return messageById;
     }
 
     @Override
     public List<Message> findAllMessages() {
-        return mr.findAllMessages();
+        return messageRepository.findAllMessages();
     }
 
     @Override
     public void updateMessage(UUID messageId, String content) {
         Objects.requireNonNull(messageId, "no messageId: BasicMessageService.updateMessage");
         Objects.requireNonNull(content, "no content: BasicMessageService.updateMessage");
-        mr.updateMessageById(messageId, content);
+        messageRepository.updateMessageById(messageId, content);
     }
 
     @Override
     public void deleteMessage(UUID messageId) {
         Objects.requireNonNull(messageId, "require message Id : BasicMessageService.deleteMessage");
-        mr.deleteMessageById(messageId);
+        messageRepository.deleteMessageById(messageId);
     }
 
 }

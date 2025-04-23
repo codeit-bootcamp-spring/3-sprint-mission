@@ -25,9 +25,11 @@ public class JcfUserService implements UserService {
 
     JcfUserRepository jur = new JcfUserRepository();
 
-    public User createUser(String name) {
-        Objects.requireNonNull(name, "no name in parameter: JcfUserService.createUser");
-        return jur.createUserByName(name);
+    public User createUser(String username, String email, String password) {
+        Objects.requireNonNull(username, "no name in parameter: JcfUserService.createUser");
+        Objects.requireNonNull(email, "no email in parameter: JcfUserService.createUser");
+        Objects.requireNonNull(password, "no password in parameter: JcfUserService.createUser");
+        return jur.createUserByName(username,email,password);
     }
 
     public User findUserById(UUID userId) {

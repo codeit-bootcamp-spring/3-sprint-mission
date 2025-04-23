@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -21,12 +22,13 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Repository
+@Primary
 public class JcfUserRepository implements UserRepository {
 
     Map<UUID, User> data = new HashMap<>();
 
-    public User createUserByName(String name) {
-        User user = new User(name);
+    public User createUserByName(String username, String email, String password) {
+        User user = new User(username, email, password);
         data.put(user.getId(), user);
         return user;
     }

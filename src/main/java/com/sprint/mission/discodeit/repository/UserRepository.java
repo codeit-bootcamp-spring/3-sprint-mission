@@ -17,7 +17,7 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 public interface UserRepository {
-    User createUserByName(String name);
+    User createUserByName(String username, String email, String password);
     User findUserById(UUID userId);
     List<User> findAllUsers();
     void updateUserById(UUID userId, String name);

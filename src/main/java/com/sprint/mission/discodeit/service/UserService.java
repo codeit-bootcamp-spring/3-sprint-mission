@@ -18,7 +18,7 @@ import java.util.UUID;
  */
 public interface UserService {
     // input = null
-    User createUser(String name);
+    User createUser(String username, String email, String password);
     // input = null
     // 찾는 유저가 없다면?
     User findUserById(UUID userId);
