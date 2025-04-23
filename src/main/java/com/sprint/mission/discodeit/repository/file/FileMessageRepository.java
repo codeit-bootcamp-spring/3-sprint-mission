@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.io.FileInputStream;
@@ -14,6 +15,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 
 /**
  * packageName    : com.sprint.mission.discodeit.refactor.repository.file
@@ -26,6 +28,7 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
+//@Primary
 @Repository
 public class FileMessageRepository implements MessageRepository {
     FilePathUtil pathUtil = new FilePathUtil();
@@ -75,7 +78,7 @@ public class FileMessageRepository implements MessageRepository {
     @Override
     public void updateMessageById(UUID messageId, String content) {
         Path path = pathUtil.getMessageFilePath(messageId);
-         if (!Files.exists(path)) {
+        if (!Files.exists(path)) {
             throw new RuntimeException("no file: FileMessageRepository.updateMessageById");
         }
         Message message = serializer.readFile(path, Message.class);

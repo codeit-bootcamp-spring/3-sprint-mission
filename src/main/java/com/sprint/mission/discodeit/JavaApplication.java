@@ -31,7 +31,6 @@ import java.util.UUID;
  */
 
 public class JavaApplication {
-
     private static final JcfUserRepository userRepository = new JcfUserRepository();
     private static final JcfChannelRepository channelRepository = new JcfChannelRepository();
     private static final JcfMessageRepository messageRepository = new JcfMessageRepository();
@@ -42,13 +41,13 @@ public class JavaApplication {
 
     private static final UserService userService = new BasicUserService(userRepository);
     private static final ChannelService channelService = new BasicChannelService(channelRepository);
-    private static final MessageService messageService = new BasicMessageService(userService, channelService, messageRepository);
+    private static final MessageService messageService = new BasicMessageService(userService,channelService, messageRepository);
 
     public static void main(String[] args) {
         System.out.println("=== User 테스트 ===");
-        User user1 = userService.createUser("user1");
-        User user2 = userService.createUser("user2");
-        User user3 = userService.createUser("user3");
+        User user1 = userService.createUser("user1","user1@user.com","1234");
+        User user2 = userService.createUser("user2","user2@user.com","1234");
+        User user3 = userService.createUser("user3","user3@user.com","1234");
 
 
         System.out.println("\n[모든 유저 출력]");

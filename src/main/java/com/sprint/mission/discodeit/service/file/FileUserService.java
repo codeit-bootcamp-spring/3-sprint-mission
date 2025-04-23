@@ -26,9 +26,11 @@ public class FileUserService implements UserService {
     FileUserRepository fur = new FileUserRepository();
 
     @Override
-    public User createUser(String name) {
-        Objects.requireNonNull(name, "no name in parameter: FileUserService.createUser");
-        return fur.createUserByName(name);
+    public User createUser(String username, String email, String password) {
+        Objects.requireNonNull(username, "no name in parameter: FileUserService.createUser");
+        Objects.requireNonNull(email, "no email in parameter: FileUserService.createUser");
+        Objects.requireNonNull(password, "no password in parameter: FileUserService.createUser");
+        return fur.createUserByName(username, email, password);
     }
 
     @Override
