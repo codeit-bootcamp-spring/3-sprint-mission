@@ -11,12 +11,27 @@ import com.sprint.mission.discodeit.service.UserService;
 
 public class JCFChannelService implements ChannelService {
 
+    private static volatile JCFChannelService instance;
     private final ChannelRepository channelRepository;
     private final UserService userService;
 
-    public JCFChannelService(UserService userService, ChannelRepository channelRepository) {
+    private JCFChannelService(UserService userService, ChannelRepository channelRepository) {
         this.userService = userService;
         this.channelRepository = channelRepository;
+    }
+
+    public static JCFChannelService getInstance(UserService userService, ChannelRepository channelRepository) {
+        JCFChannelService result = instance;
+        if (result == null) {
+            synchronized (JCFChannelService.class) {
+                result = instance;
+                if (result == null) {
+                    result = new JCFChannelService(userService, channelRepository);
+                    instance = result;
+                }
+            }
+        }
+        return result;
     }
 
     @Override

@@ -8,11 +8,28 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
 public class JCFUserService implements UserService {
-
+    // 싱글톤 인스턴스
+    private static volatile JCFUserService instance;
     private final UserRepository userRepository;
 
-    public JCFUserService(UserRepository userRepository) {
+    // private 생성자로 외부 인스턴스화 방지
+    private JCFUserService(UserRepository userRepository) {
         this.userRepository = userRepository;
+    }
+
+    // 팩토리 메서드: 싱글톤 인스턴스 생성 및 반환
+    public static JCFUserService getInstance(UserRepository userRepository) {
+        JCFUserService result = instance;
+        if (result == null) {
+            synchronized (JCFUserService.class) {
+                result = instance;
+                if (result == null) {
+                    result = new JCFUserService(userRepository);
+                    instance = result;
+                }
+            }
+        }
+        return result;
     }
 
     @Override

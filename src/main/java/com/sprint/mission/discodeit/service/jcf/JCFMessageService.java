@@ -11,16 +11,32 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 public class JCFMessageService implements MessageService {
-
+    private static volatile JCFMessageService instance;
     private final MessageRepository messageRepository;
     private final UserService userService;
     private final ChannelService channelService;
 
-    public JCFMessageService(UserService userService, ChannelService channelService, MessageRepository messageRepository) {
+    private JCFMessageService(UserService userService, ChannelService channelService, MessageRepository messageRepository) {
         this.userService = userService;
         this.channelService = channelService;
         this.messageRepository = messageRepository;
     }
+
+    public static JCFMessageService getInstance(UserService userService, ChannelService channelService, MessageRepository messageRepository) {
+        JCFMessageService result = instance;
+        if (result == null) {
+            synchronized (JCFMessageService.class) {
+                result = instance;
+                if (result == null) {
+                    result = new JCFMessageService(userService, channelService, messageRepository);
+                    instance = result;
+                }
+            }
+        }
+        return result;
+    }
+
+    // ... 나머지 메서드들은 동일
 
     @Override
     public Message createMessage(String content, UUID authorId, UUID channelId) {
