@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.util;
 
+import org.springframework.stereotype.Component;
+
 import java.io.*;
 import java.nio.file.Path;
 
@@ -14,6 +16,7 @@ import java.nio.file.Path;
  * -----------------------------------------------------------
  * 2025. 4. 16.        doungukkim       최초 생성
  */
+@Component
 public class FileSerializer {
 
     public <T> T readFile(Path path, Class<T> theClass) {
