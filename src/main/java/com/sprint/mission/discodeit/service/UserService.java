@@ -4,9 +4,9 @@ import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 
 public interface UserService {
-    public User inputUserName();
+    public User registerUser();
 
-    public void createNewUserNames(String oldName, String newName);
+    public void createNewUserNames(String existingName, String newName);
 
     public void outputAllUsersInfo();
 
@@ -17,7 +17,6 @@ public interface UserService {
     public void deleteUserName(int userNumber);
 
     public User changeUser(int userNumber);
-    
 
     public void login(int loginNumber, List<User> users);
 }

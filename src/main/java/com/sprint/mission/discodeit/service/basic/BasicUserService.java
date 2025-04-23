@@ -14,23 +14,42 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User inputUserName() {
+    public User registerUser() {
         System.out.println("안녕하세요. DisCodeit에 오신 걸 환영합니다.");
         System.out.println("사용자의 이름을 입력해 주세요.");
-        String name = sc.nextLine();
-        User newUser = new User(name);
-        userRepo.saveUser(newUser);
-        return newUser;
+
+        while (true) {
+            String name = sc.nextLine();
+            User newUser;
+            boolean isDuplicate = userRepo.findAllUser().stream()
+                    .anyMatch(u -> u.getUsername().equals(name.trim()));
+
+            if (isDuplicate) {
+                System.out.println("이미 존재하는 이름입니다. 다시 입력해주세요.");
+            } else {
+                newUser = new User(name.trim());
+                userRepo.saveUser(newUser);
+                System.out.println("새로운 프로필이 생성되었습니다.");
+                return newUser;
+            }
+        }
+
     }
 
 
     @Override
-    public void createNewUserNames(String oldName, String newName) {
-        if (oldName.equals(newName.trim())) {
-            System.out.println("동일한 프로필은 생성할 수 없습니다.");
+    public void createNewUserNames(String existingName, String newName) {
+        String trimmedNewName = newName.trim();
+
+        boolean isDuplicate = userRepo.findAllUser().stream()
+                .anyMatch(u -> u.getUsername().equals(trimmedNewName));
+
+        if (isDuplicate) {
+            System.out.println("이미 존재하는 이름입니다.");
         } else {
-            User u = new User(newName);
-            userRepo.saveUser(u);
+            User newUser = new User(trimmedNewName);
+            userRepo.saveUser(newUser);
+            System.out.println("새로운 프로필이 생성되었습니다.");
         }
     }
 

@@ -57,7 +57,7 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public User inputUserName() {
+    public User registerUser() {
         System.out.println("안녕하세요. DisCodeit에 오신 걸 환영합니다. 사용자의 이름을 입력 해 주세요.");
         String userName = sc.nextLine();
         User newUser = new User(userName);
@@ -67,8 +67,8 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public void createNewUserNames(String oldName, String newName) {
-        if (oldName.equals(newName.trim())) {
+    public void createNewUserNames(String existingName, String newName) {
+        if (existingName.equals(newName.trim())) {
             System.out.println("동일한 프로필은 생성할 수 없습니다.");
         } else {
             users.add(new User(newName));

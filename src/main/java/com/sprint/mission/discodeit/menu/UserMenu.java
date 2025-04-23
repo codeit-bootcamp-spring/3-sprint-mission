@@ -15,7 +15,7 @@ public class UserMenu {
     }
 
     public void loginUser() {
-        userService.inputUserName();
+        userService.registerUser();
 
         System.out.println("로그인 하실 프로필 번호를 입력해 주세요.");
         userService.outputAllUsersInfo();
