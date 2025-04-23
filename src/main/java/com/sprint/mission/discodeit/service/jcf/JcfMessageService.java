@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.repository.jcf.JcfMessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
@@ -19,6 +20,7 @@ import java.util.*;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
+@Service
 public class JcfMessageService implements MessageService {
     private final UserService userService;
     private final ChannelService channelService;

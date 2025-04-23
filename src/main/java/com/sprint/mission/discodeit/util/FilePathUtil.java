@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.util;
 
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,6 +19,7 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 14.        doungukkim       최초 생성
  */
+@Component
 public class FilePathUtil {
     private static final String TO_FILES = "/Users/doungukkim/Desktop/workspace/Codit_Sprint_workspace/codit-organization/some/path/3-sprint-mission/src/main/java/com/sprint/mission/discodeit/data/";
 

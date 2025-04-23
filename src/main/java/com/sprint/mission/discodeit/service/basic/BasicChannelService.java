@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.v1.service.file.FileChannelService1;
 import com.sprint.mission.discodeit.v1.service.jcf.JCFChannelService1;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +26,7 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  * 2025. 4. 17.        doungukkim       null 확인 로직 추가
  */
+@Service
 public class BasicChannelService implements ChannelService {
 
     private final ChannelRepository cr;
