@@ -7,48 +7,46 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class FileUserService implements UserService {
-    private final Path databasePath;
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
 
     public FileUserService() {
 
-        try {
-            //  현재디렉토리/data/userDB 디렉토리를 저장할 path로 설정
-            this.databasePath = Paths.get(System.getProperty("user.dir"), "data", "userDB");
-            //  지정한 path에 디렉토리 없으면 생성
-            if (!Files.exists(this.databasePath)) {
-                try {
-                    Files.createDirectories(this.databasePath);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+        //  현재디렉토리/data/userDB 디렉토리를 저장할 path로 설정
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", User.class.getSimpleName());
+        //  지정한 path에 디렉토리 없으면 생성
+        if (!Files.exists(this.DIRECTORY)) {
+            try {
+                Files.createDirectories(this.DIRECTORY);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
 
     }
 
+    private Path resolvePath(UUID userId) {
+        return DIRECTORY.resolve(userId + EXTENSION);
+    }
+
+
     @Override
     public User create(User user) {
         // 객체를 저장할 파일 path 생성
-        Path filePath = this.databasePath.resolve(String.valueOf(user.getId()).concat(".ser"));
-        // 파일 생성
-        File myObj = new File(String.valueOf(filePath));
+        Path filePath = resolvePath(user.getId());
 
         try (
                 // 파일과 연결되는 스트림 생성
-                FileOutputStream fos = new FileOutputStream(myObj);
+                FileOutputStream fos = new FileOutputStream(filePath.toFile());
                 // 객체를 직렬화할 수 있게 바이트 출력 스트림을 감쌈
                 ObjectOutputStream oos = new ObjectOutputStream(fos);
         ) {
             oos.writeObject(user);
             return user;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -57,7 +55,7 @@ public class FileUserService implements UserService {
     @Override
     public User find(UUID userId) {
         // 객체가 저장된 파일 path
-        Path filePath = this.databasePath.resolve(String.valueOf(userId).concat(".ser"));
+        Path filePath = resolvePath(userId);
 
         try (
                 // 파일과 연결되는 스트림 생성
@@ -65,8 +63,8 @@ public class FileUserService implements UserService {
                 // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
                 ObjectInputStream ois = new ObjectInputStream(fis);
         ) {
-            User user = (User) ois.readObject();
-            return user;
+            User userNullable = (User) ois.readObject();
+            return Optional.ofNullable(userNullable).orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -84,7 +82,7 @@ public class FileUserService implements UserService {
         List<User> users = new ArrayList<>();
 
         try {
-            Files.walk(this.databasePath).filter(Files::isRegularFile)
+            Files.walk(this.DIRECTORY).filter(Files::isRegularFile)
                     .forEach((path) -> {
 
                         try ( // 파일과 연결되는 스트림 생성
@@ -101,7 +99,7 @@ public class FileUserService implements UserService {
                     });
 
             return users;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -114,10 +112,10 @@ public class FileUserService implements UserService {
             User user = this.find(userId);
             user.update(newName, newAge, newEmail, newPassword);
             this.create(user);
-            
+
             return user;
         } catch (RuntimeException e) {
-            throw e;
+            throw new RuntimeException(e);
         }
 
     }
@@ -125,7 +123,7 @@ public class FileUserService implements UserService {
     @Override
     public void delete(UUID userId) {
         // 객체가 저장된 파일 path
-        Path filePath = this.databasePath.resolve(String.valueOf(userId).concat(".ser"));
+        Path filePath = resolvePath(userId);
 
         try {
             if (Files.exists(filePath)) {
@@ -134,7 +132,7 @@ public class FileUserService implements UserService {
                 throw new FileNotFoundException("File does not exist");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
     }

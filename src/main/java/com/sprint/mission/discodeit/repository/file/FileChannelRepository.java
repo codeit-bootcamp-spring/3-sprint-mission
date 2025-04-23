@@ -9,54 +9,53 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class FileChannelRepository implements ChannelRepository {
-    private final Path databasePath;
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
 
     public FileChannelRepository() {
-
-        try {
-            //  현재디렉토리/data/channelDB 디렉토리를 저장할 path로 설정
-            this.databasePath = Paths.get(System.getProperty("user.dir"), "data", "channelDB");
-            //  지정한 path에 디렉토리 없으면 생성
-            if (!Files.exists(this.databasePath)) {
-                try {
-                    Files.createDirectories(this.databasePath);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+        //  현재디렉토리/data/channelDB 디렉토리를 저장할 path로 설정
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", Channel.class.getSimpleName());
+        //  지정한 path에 디렉토리 없으면 생성
+        if (!Files.exists(this.DIRECTORY)) {
+            try {
+                Files.createDirectories(this.DIRECTORY);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
-
     }
 
+    private Path resolvePath(UUID id) {
+        return this.DIRECTORY.resolve(id + EXTENSION);
+    }
+
+
     @Override
-    public Channel write(Channel channel) {
+    public Channel save(Channel channel) {
         // 객체를 저장할 파일 path 생성
-        Path filePath = this.databasePath.resolve(String.valueOf(channel.getId()).concat(".ser"));
-        // 파일 생성
-        File myObj = new File(String.valueOf(filePath));
+        Path filePath = this.resolvePath(channel.getId());
 
         try (
                 // 파일과 연결되는 스트림 생성
-                FileOutputStream fos = new FileOutputStream(myObj);
+                FileOutputStream fos = new FileOutputStream(filePath.toFile());
                 // 객체를 직렬화할 수 있게 바이트 출력 스트림을 감쌈
                 ObjectOutputStream oos = new ObjectOutputStream(fos);
         ) {
             oos.writeObject(channel);
             return channel;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
     }
 
     @Override
-    public Channel read(UUID channelId) {
-        Path filePath = this.databasePath.resolve(String.valueOf(channelId).concat(".ser"));
+    public Optional<Channel> findById(UUID channelId) {
+        Path filePath = this.resolvePath(channelId);
 
         try (
                 // 파일과 연결되는 스트림 생성
@@ -64,8 +63,8 @@ public class FileChannelRepository implements ChannelRepository {
                 // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
                 ObjectInputStream ois = new ObjectInputStream(fis);
         ) {
-            Channel channel = (Channel) ois.readObject();
-            return channel;
+            Channel channelNullable = (Channel) ois.readObject();
+            return Optional.ofNullable(channelNullable);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -73,11 +72,11 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public List<Channel> readAll() {
+    public List<Channel> findAll() {
         List<Channel> channels = new ArrayList<>();
 
         try {
-            Files.walk(this.databasePath).filter(Files::isRegularFile)
+            Files.list(this.DIRECTORY).filter(Files::isRegularFile)
                     .forEach((path) -> {
 
                         try (   // 파일과 연결되는 스트림 생성
@@ -95,16 +94,21 @@ public class FileChannelRepository implements ChannelRepository {
                     });
 
             return channels;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
     }
 
+    public boolean existsById(UUID id) {
+        Path path = resolvePath(id);
+        return Files.exists(path);
+    }
+
     @Override
-    public void delete(UUID channelId) {
+    public void deleteById(UUID channelId) {
         // 객체가 저장된 파일 path
-        Path filePath = this.databasePath.resolve(String.valueOf(channelId).concat(".ser"));
+        Path filePath = this.resolvePath(channelId);
 
         try {
             if (Files.exists(filePath)) {
@@ -113,7 +117,7 @@ public class FileChannelRepository implements ChannelRepository {
                 throw new FileNotFoundException("File does not exist");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
     }

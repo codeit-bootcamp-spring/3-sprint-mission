@@ -7,6 +7,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class Message implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final UUID id;
     private final Long createdAt;
     private Long updatedAt;

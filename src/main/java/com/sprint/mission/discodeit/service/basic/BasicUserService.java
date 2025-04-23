@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class BasicUserService implements UserService {
@@ -16,12 +17,13 @@ public class BasicUserService implements UserService {
 
     @Override
     public User create(User user) {
-        return this.userRepository.write(user);
+        return this.userRepository.save(user);
     }
 
     @Override
     public User find(UUID userId) {
-        return this.userRepository.read(userId);
+        return this.userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+
     }
 
     @Override
@@ -31,7 +33,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public List<User> findAll() {
-        return this.userRepository.readAll();
+        return this.userRepository.findAll();
     }
 
     @Override
@@ -43,6 +45,9 @@ public class BasicUserService implements UserService {
 
     @Override
     public void delete(UUID userId) {
-        this.userRepository.delete(userId);
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("User with id " + userId + " not found");
+        }
+        this.userRepository.deleteById(userId);
     }
 }

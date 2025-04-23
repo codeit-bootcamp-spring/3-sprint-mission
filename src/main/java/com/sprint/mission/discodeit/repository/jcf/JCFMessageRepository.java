@@ -13,23 +13,28 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message write(Message message) {
+    public Message save(Message message) {
         this.data.put(message.getId(), message);
         return message;
     }
 
     @Override
-    public Message read(UUID messageId) {
-        return this.data.get(messageId);
+    public Optional<Message> findById(UUID messageId) {
+        return Optional.ofNullable(this.data.get(messageId));
     }
 
     @Override
-    public List<Message> readAll() {
+    public List<Message> findAll() {
         return new ArrayList<>(this.data.values());
     }
 
     @Override
-    public void delete(UUID messageId) {
+    public boolean existsById(UUID messageId) {
+        return this.data.containsKey(messageId);
+    }
+
+    @Override
+    public void deleteById(UUID messageId) {
         this.data.remove(messageId);
     }
 }

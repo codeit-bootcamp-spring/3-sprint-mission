@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class BasicChannelService implements ChannelService {
@@ -22,17 +23,17 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel create(Channel channel) {
-        return this.channelRepository.write(channel);
+        return this.channelRepository.save(channel);
     }
 
     @Override
     public Channel find(UUID channelId) {
-        return this.channelRepository.read(channelId);
+        return this.channelRepository.findById(channelId).orElseThrow(() -> new NoSuchElementException());
     }
 
     @Override
     public List<Channel> findAll() {
-        return this.channelRepository.readAll();
+        return this.channelRepository.findAll();
     }
 
     @Override
@@ -45,7 +46,10 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public void delete(UUID channelId) {
-        this.channelRepository.delete(channelId);
+        if (!channelRepository.existsById(channelId)) {
+            throw new NoSuchElementException("Channel with id " + channelId + " not found");
+        }
+        this.channelRepository.deleteById(channelId);
     }
 
     @Override

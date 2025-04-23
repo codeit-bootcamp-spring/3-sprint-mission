@@ -13,23 +13,28 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel write(Channel channel) {
+    public Channel save(Channel channel) {
         this.data.put(channel.getId(), channel);
         return channel;
     }
 
     @Override
-    public Channel read(UUID channelId) {
-        return this.data.get(channelId);
+    public Optional<Channel> findById(UUID channelId) {
+        return Optional.ofNullable(this.data.get(channelId));
     }
 
     @Override
-    public List<Channel> readAll() {
+    public List<Channel> findAll() {
         return new ArrayList<>(this.data.values());
     }
 
     @Override
-    public void delete(UUID channelId) {
+    public boolean existsById(UUID channelId) {
+        return this.data.containsKey(channelId);
+    }
+
+    @Override
+    public void deleteById(UUID channelId) {
         this.data.remove(channelId);
     }
 }

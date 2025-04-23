@@ -13,23 +13,28 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public User write(User user) {
+    public User save(User user) {
         this.data.put(user.getId(), user);
         return user;
     }
 
     @Override
-    public User read(UUID userId) {
-        return this.data.get(userId);
+    public Optional<User> findById(UUID userId) {
+        return Optional.ofNullable(this.data.get(userId));
     }
 
     @Override
-    public List<User> readAll() {
+    public List<User> findAll() {
         return new ArrayList<>(this.data.values());
     }
 
     @Override
-    public void delete(UUID userId) {
+    public boolean existsById(UUID userId) {
+        return this.data.containsKey(userId);
+    }
+
+    @Override
+    public void deleteById(UUID userId) {
         this.data.remove(userId);
     }
 }

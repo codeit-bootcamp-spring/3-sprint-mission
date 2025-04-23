@@ -9,56 +9,56 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class FileUserRepository implements UserRepository {
-    private final Path databasePath;
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
 
     public FileUserRepository() {
 
-        try {
-            //  현재디렉토리/data/userDB 디렉토리를 저장할 path로 설정
-            this.databasePath = Paths.get(System.getProperty("user.dir"), "data", "userDB");
-            //  지정한 path에 디렉토리 없으면 생성
-            if (!Files.exists(this.databasePath)) {
-                try {
-                    Files.createDirectories(this.databasePath);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+        //  현재디렉토리/data/userDB 디렉토리를 저장할 path로 설정
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", User.class.getSimpleName());
+        //  지정한 path에 디렉토리 없으면 생성
+        if (!Files.exists(this.DIRECTORY)) {
+            try {
+                Files.createDirectories(this.DIRECTORY);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
 
     }
 
-    @Override
-    public User write(User user) {
+    private Path resolvePath(UUID id) {
         // 객체를 저장할 파일 path 생성
-        Path filePath = this.databasePath.resolve(String.valueOf(user.getId()).concat(".ser"));
-        // 파일 생성
-        File myObj = new File(String.valueOf(filePath));
+        return this.DIRECTORY.resolve(id + EXTENSION);
+    }
+
+    @Override
+    public User save(User user) {
+        Path filePath = this.resolvePath(user.getId());
 
         try (
                 // 파일과 연결되는 스트림 생성
-                FileOutputStream fos = new FileOutputStream(myObj);
+                FileOutputStream fos = new FileOutputStream(filePath.toFile());
                 // 객체를 직렬화할 수 있게 바이트 출력 스트림을 감쌈
                 ObjectOutputStream oos = new ObjectOutputStream(fos);
         ) {
 
             oos.writeObject(user);
             return user;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
     }
 
     @Override
-    public User read(UUID userId) {
+    public Optional<User> findById(UUID userId) {
         // 객체가 저장된 파일 path
-        Path filePath = this.databasePath.resolve(String.valueOf(userId).concat(".ser"));
+        Path filePath = this.resolvePath(userId);
 
         try (
                 // 파일과 연결되는 스트림 생성
@@ -66,8 +66,9 @@ public class FileUserRepository implements UserRepository {
                 // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
                 ObjectInputStream ois = new ObjectInputStream(fis);
         ) {
-            User user = (User) ois.readObject();
-            return user;
+            User userNullable = (User) ois.readObject();
+
+            return Optional.ofNullable(userNullable);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -75,11 +76,10 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public List<User> readAll() {
+    public List<User> findAll() {
         List<User> users = new ArrayList<>();
-
         try {
-            Files.walk(this.databasePath).filter(Files::isRegularFile)
+            Files.list(this.DIRECTORY).filter(Files::isRegularFile)
                     .forEach((path) -> {
                         try ( // 파일과 연결되는 스트림 생성
                               FileInputStream fis = new FileInputStream(String.valueOf(path));
@@ -93,19 +93,24 @@ public class FileUserRepository implements UserRepository {
                         }
 
                     });
-
             return users;
-        } catch (Exception e) {
+
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
     }
 
     @Override
-    public void delete(UUID userId) {
+    public boolean existsById(UUID id) {
+        Path path = resolvePath(id);
+        return Files.exists(path);
+    }
+    
+    @Override
+    public void deleteById(UUID userId) {
         // 객체가 저장된 파일 path
-        Path filePath = this.databasePath.resolve(String.valueOf(userId).concat(".ser"));
-
+        Path filePath = this.resolvePath(userId);
         try {
             if (Files.exists(filePath)) {
                 Files.delete(filePath);
@@ -113,7 +118,7 @@ public class FileUserRepository implements UserRepository {
                 throw new FileNotFoundException("File does not exist");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
     }

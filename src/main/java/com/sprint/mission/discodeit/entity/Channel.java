@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class Channel implements Serializable {
+    private static final Long serialVersionUID = 1L;
+
     private final UUID id;
     private final Long createdAt;
     private Long updatedAt;

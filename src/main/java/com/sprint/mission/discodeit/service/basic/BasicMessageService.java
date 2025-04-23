@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class BasicMessageService implements MessageService {
@@ -25,17 +26,17 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public Message create(Message message) {
-        return this.messageRepository.write(message);
+        return this.messageRepository.save(message);
     }
 
     @Override
     public Message find(UUID messageId) {
-        return this.messageRepository.read(messageId);
+        return this.messageRepository.findById(messageId).orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
     }
 
     @Override
     public List<Message> findAll() {
-        return this.messageRepository.readAll();
+        return this.messageRepository.findAll();
     }
 
     @Override
@@ -48,7 +49,10 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public void delete(UUID messageId) {
-        this.messageRepository.delete(messageId);
+        if (!messageRepository.existsById(messageId)) {
+            throw new NoSuchElementException("Message with id " + messageId + " not found");
+        }
+        this.messageRepository.deleteById(messageId);
     }
 
     @Override
