@@ -3,12 +3,23 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JcfChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JcfMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JcfUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.service.factory.ServiceFactory;
-import com.sprint.mission.discodeit.service.jcf.JcfChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.jcf.JcfMessageService;
-import com.sprint.mission.discodeit.service.jcf.JcfUserService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,17 +28,31 @@ import java.util.UUID;
 
 public class JavaApplication {
   public static void main(String[] args) {
-    //JcfUserServiceUsingMap userService = new JcfUserServiceUsingMap();
+    // JCF*Repository  구현체를 활용하여 테스트
+//    UserRepository userRepo = new JcfUserRepository();
+//    ChannelRepository channelRepo = new JcfChannelRepository();
+//    MessageRepository messageRepo = new JcfMessageRepository();
 
-    ServiceFactory.initializeServices();
-    UserService userService = ServiceFactory.getUserService();
-    ChannelService channelService = ServiceFactory.getChannelService();
+    // File*Repository 구현체를 활용하여 테스트
+    UserRepository userRepo = new FileUserRepository();
+    ChannelRepository channelRepo = new FileChannelRepository();
+    MessageRepository messageRepo = new FileMessageRepository();
 
-//    JcfUserService userService = new JcfUserService();
-//    JcfChannelService channelService = new JcfChannelService(userService);
-//    userService.setChannelService(channelService);
+    // Service 구현체 생성
+    BasicUserService userService = new BasicUserService(userRepo);
+    BasicChannelService channelService = new BasicChannelService(channelRepo, userService);
+    BasicMessageService messageService = new BasicMessageService(messageRepo, userService, channelService);
 
-    JcfMessageService messageService = new JcfMessageService(userService, channelService);
+    // 순환 참조 setter 주입
+    userService.setChannelService(channelService);
+
+    // sprint1 mission - 팩토리메서드
+//    ServiceFactory.initializeServices();
+//    UserService userService = ServiceFactory.getUserService();
+//    ChannelService channelService = ServiceFactory.getChannelService();
+
+    //JcfMessageService messageService = new JcfMessageService(userService, channelService);
+    //FileMessageService messageService = new FileMessageService(userService, channelService);
 
     //  유저 생성
     User test01 = userService.createUser("test01", "test01@.com");
@@ -35,20 +60,20 @@ public class JavaApplication {
     User test03 = userService.createUser("test03", "test03@.com");
     User test04 = userService.createUser("test04", "test04@.com");
 
-    //개별 유저 조회
-    User testuser01 = userService.getUserById(test01.getId());
-    System.out.println("===개별 User 조회 ===" + "\n" + testuser01);
+    userService.getUserById(test01.getId()).ifPresentOrElse(user -> {
+      System.out.println("===개별 User 조회 ===\n" + user);
 
-    //전체 유저 조회
+      System.out.println("\n=== test01 이름변경 후 조회 ===");
+      userService.updateUserName(user.getId(), "test0101");
+      System.out.println(userService.getUserById(user.getId()).orElse(null));
+    }, () -> {
+      System.out.println("test01 유저를 찾을 수 없습니다.");
+    });
+
     System.out.println("\n=== 전체 유저 조회 ===");
     userService.getAllUsers().forEach(System.out::println);
 
-    //유저 정보 수정 테스트
-    System.out.println("\n=== test01 이름변경 후 조회===");
-    userService.updateUserName(testuser01.getId(), "test0101");
-    System.out.println(userService.getUserById(testuser01.getId()));
-
-    //유저 삭제 후 전체 유저 조회 //  try-catch로 만약 유저가 존재하지 않으면 예외 처리 필요
+// test02 삭제 및 조회
     userService.deleteUser(test02.getId());
     System.out.println("\n=== test02 삭제 후 전체 조회 ===");
     userService.getAllUsers().forEach(System.out::println);
@@ -61,9 +86,11 @@ public class JavaApplication {
     Channel channel2 = channelService.createChannel("2024_Channel", test02);
 
     // 개별 채널 조회
-    Channel testChannel = channelService.getChannelById(channel2.getId());
     System.out.println("\n=== 개별 채널 조회 ===");
-    System.out.println(testChannel);
+    channelService.getChannelById(channel2.getId()).ifPresentOrElse(
+        channel -> System.out.println(channel),
+        () -> System.out.println("해당 채널이 존재하지 않습니다.")
+    );
 
     System.out.println("\n=== 채널 이름(2024_Channel) 수정 후 전체 채널 조회 ===");
     channelService.updateChannelName(channel2.getId(), "2023_channel");
@@ -77,7 +104,11 @@ public class JavaApplication {
 
     // 유저 추가 (test02, test03을 채널에 추가)  & 삭제된 유저는 data에 담을 수 없다.
     System.out.println("\n=== 2025_Channel에 멤버(test02(탈퇴),test03) 추가 ===");
-    channelService.addMember(channel1.getId(), test02.getId()); // test02는 삭제된 유저
+    try {
+      channelService.addMember(channel1.getId(), test02.getId()); // test02는 삭제된 유저
+    } catch (IllegalArgumentException e) {
+      System.out.println("예외 발생: " + e.getMessage());
+    }
     channelService.addMember(channel1.getId(), test03.getId());
 
     // 채널 멤버 조회
@@ -171,18 +202,21 @@ public class JavaApplication {
 
     if (!messages.isEmpty()) {
       UUID messageId = messages.get(0).getId(); // 첫 번째 메시지를 대상으로 수정
-      Message originalMessage = messageService.getMessageById(messageId); // 수정 전 메시지
 
-      if (originalMessage != null) {
+      // 수정 전 메시지 조회
+      messageService.getMessageById(messageId).ifPresent(originalMessage -> {
         String oldContent = originalMessage.getContent(); // 수정 전 내용
 
+        // 메시지 수정
         messageService.updateMessage(messageId, user1.getId(), "안녕하세요 저는 user1입니다. 이름은 john입니다. (수정)");
-        Message updatedMessage = messageService.getMessageById(messageId); // 수정 후 메시지
 
-        System.out.println("메시지 수정 완료");
-        System.out.println("수정 전: \"" + oldContent + "\"");
-        System.out.println("수정 후: \"" + updatedMessage.getContent() + "\"");
-      }
+        // 수정 후 메시지 조회
+        messageService.getMessageById(messageId).ifPresent(updatedMessage -> {
+          System.out.println("메시지 수정 완료");
+          System.out.println("수정 전: \"" + oldContent + "\"");
+          System.out.println("수정 후: \"" + updatedMessage.getContent() + "\"");
+        });
+      });
     } else {
       System.out.println("수정할 메시지가 없습니다.");
     }

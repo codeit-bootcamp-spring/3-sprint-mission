@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.service.factory;
 
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JcfChannelService;
 import com.sprint.mission.discodeit.service.jcf.JcfUserService;
 
@@ -14,8 +16,8 @@ public class ServiceFactory {
   private static ChannelService channelService;
 
   public static void initializeServices() {
-    JcfUserService user = new JcfUserService();  //  먼저 JcfUserService를 비워서 생성한다.
-    channelService = new JcfChannelService(user); // JcfChannelService에 유저서비스를 넣는다.
+    FileUserService user = new FileUserService();  //  먼저 Jcf(File)UserService를 비워서 생성한다.
+    channelService = new FileChannelService(user); // Jcf(File)ChannelService에 유저서비스를 넣는다.
     user.setChannelService(channelService); // 생성된 channelService를 setter로 주입한다.
     userService = user;
   }

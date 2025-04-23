@@ -1,35 +1,48 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.io.*;
+import java.util.*;
 
-public class JcfChannelService implements ChannelService {
-  private final List<Channel> channels = new ArrayList<>();
-
-//  private final JcfUserService userService;
-//  구현체 직접 의존 -> 인터페이스 의존
-//  //JcfChannelService에서 JcfUserService를 의존성으로 추가하고, 그 안에 저장된 유저를 가져온다.
-//  public JcfChannelService(JcfUserService userService) {
-//    this.userService = userService;
-//  }
-
+public class FileChannelService implements ChannelService {
+  private static final String FILE_PATH = "channels.ser";
+  private final Map<UUID, Channel> channelData;
   private final UserService userService;
-  public JcfChannelService(UserService userService) {
+
+  public FileChannelService(UserService userService) {
     this.userService = userService;
+    this.channelData = loadChannelData();
+  }
+
+  private void saveChannelData() {
+    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+      oos.writeObject(channelData);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private Map<UUID, Channel> loadChannelData() {
+    File file = new File(FILE_PATH);
+    if (!file.exists()) {
+      return new HashMap<>();
+    }
+    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+      return (Map<UUID, Channel>) ois.readObject();
+    } catch (IOException | ClassNotFoundException e) {
+      e.printStackTrace();
+      return new HashMap<>();
+    }
   }
 
   @Override
   public Channel createChannel(String channelName, User ownerUser) {
-    boolean isDuplicate = channels.stream()
+    boolean isDuplicate = channelData.values().stream()
         .anyMatch(c -> c.getChannelOwner().getId().equals(ownerUser.getId())
-            // anyMatch() : 최소한 한 개의 요소가 주어진 조건에 만족하는지 | 하나라도 만족하면 true
             && c.getChannelName().equals(channelName));
 
     if (isDuplicate) {
@@ -39,21 +52,19 @@ public class JcfChannelService implements ChannelService {
     List<User> members = new ArrayList<>();
     members.add(ownerUser);
     Channel channel = new Channel(channelName, ownerUser, members);
-    channels.add(channel);
+    channelData.put(channel.getId(), channel);
+    saveChannelData();
     return channel;
   }
 
   @Override
   public Optional<Channel> getChannelById(UUID channelId) {
-    return channels.stream()
-        .filter(e -> e.getId().equals(channelId))
-        .findFirst();
-    //.orElse(null);
+    return Optional.ofNullable(channelData.get(channelId));
   }
 
   @Override
   public List<Channel> getAllChannels() {
-    return new ArrayList<>(channels);
+    return new ArrayList<>(channelData.values());
   }
 
   @Override
@@ -62,24 +73,26 @@ public class JcfChannelService implements ChannelService {
         .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
     if (channel.getChannelName().equals(newChannelName)) {
-      throw new IllegalArgumentException("채널 이름이 기존과 동일합니다. 다른 이름을 입력해주세요.");
+      throw new IllegalArgumentException("채널 이름이 기존과 동일합니다.");
     }
 
-    UUID ownerId = channel.getChannelOwner().getId(); // 채널소유자 기준으로 채널명 중복검사
-    boolean isDuplicate = channels.stream()
+    UUID ownerId = channel.getChannelOwner().getId();
+    boolean isDuplicate = channelData.values().stream()
         .anyMatch(c -> c.getChannelOwner().getId().equals(ownerId)
             && c.getChannelName().equals(newChannelName));
 
     if (isDuplicate) {
       throw new IllegalArgumentException("해당 채널명은 이미 사용 중입니다.");
     }
+
     channel.updateChannelName(newChannelName);
+    saveChannelData();
   }
 
   @Override
   public void deleteChannel(UUID channelId) {
-    //channels.remove(getChannelById(channelId));
-    channels.removeIf(e -> e.getId().equals(channelId));
+    channelData.remove(channelId);
+    saveChannelData();
   }
 
   @Override
@@ -90,6 +103,7 @@ public class JcfChannelService implements ChannelService {
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 ID입니다."));
 
     channel.addChannelUser(user);
+    saveChannelData();
   }
 
   @Override
@@ -97,9 +111,10 @@ public class JcfChannelService implements ChannelService {
     Channel channel = getChannelById(channelId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널 ID입니다."));
     User user = userService.getUserById(userId)
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 ID입니다. userId: " + userId));
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 ID입니다."));
 
     channel.removeChannelUser(user);
+    saveChannelData();
   }
 
   @Override
@@ -111,48 +126,15 @@ public class JcfChannelService implements ChannelService {
 
   @Override
   public void deleteChannelsCreatedByUser(UUID userId) {
-    channels.removeIf(channel -> channel.getChannelOwner().getId().equals(userId));
+    channelData.entrySet().removeIf(entry -> entry.getValue().getChannelOwner().getId().equals(userId));
+    saveChannelData();
   }
 
   @Override
   public void removeUserFromAllChannels(UUID userId) {
-    for (Channel channel : channels) {
+    for (Channel channel : channelData.values()) {
       channel.getChannelUsers().removeIf(user -> user.getId().equals(userId));
     }
+    saveChannelData();
   }
-
-  /*   [refactoring]
-  서비스 계층에서 유저나 채널이 null일 수 있는 경우, Optional<T>를 사용하는 편인가요?
-  CRUD 모든 메서드에 null 체크를 넣는 건 코드가 장황해질 수 있는데, 보통은 어떻게 처리하나요?
-
-  private Optional<Channel> findChannelById(UUID channelId) {
-    return channels.stream()
-        .filter(c -> c.getId().equals(channelId))
-        .findFirst();
-  }
-
- @Override
-  public Channel getChannelById(UUID channelId) {
-    return findChannelById(channelId).orElse(null);
-  }
-
-  ===================================================================================
-  커스텀 예외처리 updateUserName() 에서 null체크 생략 가능
-@Override
-public User getUserById(UUID id) {
-  return data.stream()
-      .filter(e -> e.getId().equals(id))
-      .findFirst()
-      .orElseThrow(() -> new UserNotFoundException(id)); //
-}
-
-public void updateUserName(UUID id, String name) {
-  User user = getUserById(id); // 못 찾으면 여기서 예외 던짐
-//  if (user == null) {
-//    throw new IllegalArgumentException("해당 ID의 유저를 찾을 수 없습니다: " + id);
-//  }
-  user.updateName(name);
-}
-
-   */
 }
