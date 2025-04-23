@@ -27,21 +27,17 @@ public class JavaApplication3 {
         ChannelService channelServiceFile = new BasicChannelService(fileChannelRepo);
         MessageService messageServiceFile = new BasicMessageService(fileMessageRepo);
 
-        UserService userService = userServiceFile;
-        ChannelService channelService = channelServiceFile;
-        MessageService messageService = messageServiceFile;
-
-        UserMenu userMenu = new UserMenu(sc, userService);
-        ChannelMenu channelMenu = new ChannelMenu(sc, channelService);
-        MessageMenu messageMenu = new MessageMenu(sc, messageService);
+        UserMenu userMenu = new UserMenu(sc, userServiceFile);
+        ChannelMenu channelMenu = new ChannelMenu(sc, channelServiceFile);
+        MessageMenu messageMenu = new MessageMenu(sc, messageServiceFile);
 
         userMenu.loginUser();
 
         System.out.println("모든 채널 정보를 출력합니다.");
-        channelService.outputAllChannelInfo();
+        channelServiceFile.outputAllChannelInfo();
         System.out.println("들어가실 채널 번호를 선택해 주세요.");
         int channelNumber = Integer.parseInt(sc.nextLine());
-        channelService.selectChannel(channelNumber);
+        channelServiceFile.selectChannel(channelNumber);
 
         while (true) {
             System.out.println("원하는 기능을 입력 해 주세요.");

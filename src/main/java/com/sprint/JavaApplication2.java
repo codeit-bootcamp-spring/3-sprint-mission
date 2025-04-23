@@ -30,21 +30,17 @@ public class JavaApplication2 {
         ChannelService channelServiceJCF = new BasicChannelService(jcfChannelRepo);
         MessageService messageServiceJCF = new BasicMessageService(jcfMessageRepo);
 
-        UserService userService = userServiceJCF;
-        ChannelService channelService = channelServiceJCF;
-        MessageService messageService = messageServiceJCF;
-
-        UserMenu userMenu = new UserMenu(sc, userService);
-        ChannelMenu channelMenu = new ChannelMenu(sc, channelService);
-        MessageMenu messageMenu = new MessageMenu(sc, messageService);
+        UserMenu userMenu = new UserMenu(sc, userServiceJCF);
+        ChannelMenu channelMenu = new ChannelMenu(sc, channelServiceJCF);
+        MessageMenu messageMenu = new MessageMenu(sc, messageServiceJCF);
 
         userMenu.loginUser();
 
         System.out.println("모든 채널 정보를 출력합니다.");
-        channelService.outputAllChannelInfo();
+        channelServiceJCF.outputAllChannelInfo();
         System.out.println("들어가실 채널 번호를 선택해 주세요.");
         int channelNumber = Integer.parseInt(sc.nextLine());
-        channelService.selectChannel(channelNumber);
+        channelServiceJCF.selectChannel(channelNumber);
 
         while (true) {
             System.out.println("원하는 기능을 입력 해 주세요.");
