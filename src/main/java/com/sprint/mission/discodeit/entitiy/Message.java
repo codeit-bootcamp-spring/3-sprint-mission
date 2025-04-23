@@ -1,15 +1,19 @@
 package com.sprint.mission.discodeit.entitiy;
 
+import lombok.Getter;
+
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
+@Getter
 public class Message implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private UUID id;
-    private Long createdAt;
-    private Long updatedAt;
+    private final Instant createdAt;
+    private Instant updatedAt;
     private String emoticon;
     private String picture;
     private String text;
@@ -19,7 +23,7 @@ public class Message implements Serializable {
         this.picture = picture;
         this.text = text;
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+        this.createdAt = Instant.now();
     }
 
     @Override
@@ -34,27 +38,13 @@ public class Message implements Serializable {
                 '}';
     }
 
-    public UUID getId() {
-        return id;
-    }
 
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
 
     public void updateId(UUID id) {
         this.id = id;
     }
 
-    public void updateCreatedAt(Long createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void updateUpdatedAt(Long updatedAt) {
+    public void updateUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
 
@@ -70,15 +60,5 @@ public class Message implements Serializable {
         this.text = text;
     }
 
-    public String getEmoticon() {
-        return emoticon;
-    }
 
-    public String getPicture() {
-        return picture;
-    }
-
-    public String getText() {
-        return text;
-    }
 }

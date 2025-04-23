@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entitiy.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -42,16 +43,12 @@ public class JCFUserRepository implements UserRepository {
         data.stream()
                 .filter(u->u.getId().equals(id))
                 .forEach((u)->{
-                    u.updateUpdatedAt(System.currentTimeMillis());
+                    u.updateUpdatedAt(Instant.now());
                     u.updateEmail(user.getEmail());
                     u.updateFriends(user.getFriends());
                     u.updatePassword(user.getPassword());
-                    u.updatePhone(user.getPhone());
-                    u.updateStatus(user.getStatus());
                     u.updateUserName(user.getUserName());
                     u.updateFriends(user.getFriends());
-                    u.updateIsSpeakerOn(user.getIsSpeakerOn());
-                    u.updateIsMikeOn(user.getIsMikeOn());
                 });
     }
 

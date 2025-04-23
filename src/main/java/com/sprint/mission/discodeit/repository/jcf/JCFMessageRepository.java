@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -59,7 +60,7 @@ public class JCFMessageRepository implements MessageRepository {
         data.stream()
                 .filter(mess->mess.getId().equals(id))
                 .forEach(mess->{
-                    mess.updateUpdatedAt(System.currentTimeMillis());
+                    mess.updateUpdatedAt(Instant.now());
                     mess.updateEmoticon(message.getEmoticon());
                     mess.updatePicture(message.getPicture());
                     mess.updateText(message.getText());});

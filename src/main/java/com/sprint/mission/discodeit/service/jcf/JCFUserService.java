@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entitiy.User;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -40,16 +41,12 @@ public class JCFUserService implements UserService {
         data.stream()
                 .filter(u->u.getId().equals(id))
                 .forEach((u)->{
-                    u.updateUpdatedAt(System.currentTimeMillis());
+                    u.updateUpdatedAt(Instant.now());
                     u.updateEmail(user.getEmail());
                     u.updateFriends(user.getFriends());
                     u.updatePassword(user.getPassword());
-                    u.updatePhone(user.getPhone());
-                    u.updateStatus(user.getStatus());
                     u.updateUserName(user.getUserName());
                     u.updateFriends(user.getFriends());
-                    u.updateIsSpeakerOn(user.getIsSpeakerOn());
-                    u.updateIsMikeOn(user.getIsMikeOn());
                 });
     }
 

@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -102,7 +103,7 @@ public class FileMessageRepository implements MessageRepository {
         messages.stream()
                 .filter((c)->c.getId().equals(id))
                 .forEach((c)->{c.updateText(message.getText());
-                    c.updateUpdatedAt(System.currentTimeMillis());
+                    c.updateUpdatedAt(Instant.now());
                     c.updatePicture(message.getPicture());
                     c.updateEmoticon(message.getEmoticon());});
 

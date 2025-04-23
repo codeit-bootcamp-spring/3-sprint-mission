@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -102,12 +103,8 @@ public class FileUserRepository implements UserRepository {
                 .forEach((c)->{
                     c.updateUserName(user.getUserName());
                     c.updatePassword(user.getPassword());
-                    c.updateUpdatedAt(System.currentTimeMillis());
+                    c.updateUpdatedAt(Instant.now());
                     c.updateEmail(user.getEmail());
-                    c.updatePhone(user.getPhone());
-                    c.updateStatus(user.getStatus());
-                    c.updateIsMikeOn(user.getIsMikeOn());
-                    c.updateIsSpeakerOn(user.getIsSpeakerOn());
                     c.updateFriends(user.getFriends());
                 });
 

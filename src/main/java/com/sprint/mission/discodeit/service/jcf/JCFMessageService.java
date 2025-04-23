@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -55,7 +56,7 @@ public class JCFMessageService implements MessageService {
         data.stream()
                 .filter(mess->mess.getId().equals(id))
                 .forEach(mess->{
-                    mess.updateUpdatedAt(System.currentTimeMillis());
+                    mess.updateUpdatedAt(Instant.now());
                     mess.updateEmoticon(message.getEmoticon());
                     mess.updatePicture(message.getPicture());
                     mess.updateText(message.getText());});

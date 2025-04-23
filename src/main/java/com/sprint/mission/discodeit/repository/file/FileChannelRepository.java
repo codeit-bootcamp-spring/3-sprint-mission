@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -101,7 +102,7 @@ public class FileChannelRepository implements ChannelRepository {
         channels.stream()
                 .filter((c)->c.getId().equals(id))
                 .forEach((c)->{c.updateChannelName(channel.getChannelName());
-                    c.updateUpdatedAt(System.currentTimeMillis());
+                    c.updateUpdatedAt(Instant.now());
                     c.updateMembers(channel.getMembers());});
 
         try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){

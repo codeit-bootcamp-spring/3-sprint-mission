@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entitiy.User;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -99,7 +100,7 @@ public class FileMessageService implements MessageService {
         messages.stream()
                 .filter((c)->c.getId().equals(id))
                 .forEach((c)->{c.updateText(message.getText());
-                    c.updateUpdatedAt(System.currentTimeMillis());
+                    c.updateUpdatedAt(Instant.now());
                     c.updatePicture(message.getPicture());
                     c.updateEmoticon(message.getEmoticon());});
 

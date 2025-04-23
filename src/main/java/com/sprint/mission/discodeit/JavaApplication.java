@@ -62,9 +62,9 @@ public class JavaApplication {
         System.out.println("============== JCFUserService 테스트 ==============");
         System.out.println();
         //등록
-        User user1 = new User("강문구","aaa","asd@qwe.com","010-0000-0000","다른용무중",false,false,null);
-        User user2 = new User("코드잇","bbb","codeit@qwe.com","010-1111-2222","온라인",true,false,null);
-        User user3 = new User("스프린트","ccc","sprint@qwe.com","010-1234-5678","자리비움",false,true,null);
+        User user1 = new User("강문구","aaa","asd@qwe.com",null);
+        User user2 = new User("코드잇","bbb","codeit@qwe.com",null);
+        User user3 = new User("스프린트","ccc","sprint@qwe.com",null);
 
         jcfUserService.create(user1);
         jcfUserService.create(user2);
@@ -82,7 +82,7 @@ public class JavaApplication {
 
         //수정
         System.out.println("============== 수정 테스트 ==============");
-        jcfUserService.update(user1.getId(),new User("스프링","spring","spring@naver.com","010-9999-9999","온라인",true,true,null));
+        jcfUserService.update(user1.getId(),new User("스프링","spring","spring@naver.com",null));
 
         //수정된 데이터 조회
         jcfUserService.readById(user1.getId());

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entitiy.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -38,7 +39,7 @@ public class JCFChannelService implements ChannelService {
         data.stream()
                 .filter(chan -> chan.getId().equals(id))
                 .forEach(chan->{
-                    chan.updateUpdatedAt(System.currentTimeMillis());
+                    chan.updateUpdatedAt(Instant.now());
                     chan.updateChannelName(channel.getChannelName());
                     chan.updateMembers(channel.getMembers());
                 });

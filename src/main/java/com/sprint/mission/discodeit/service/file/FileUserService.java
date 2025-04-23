@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entitiy.User;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -99,12 +100,8 @@ public class FileUserService implements UserService {
                 .forEach((c)->{
                     c.updateUserName(user.getUserName());
                     c.updatePassword(user.getPassword());
-                    c.updateUpdatedAt(System.currentTimeMillis());
+                    c.updateUpdatedAt(Instant.now());
                     c.updateEmail(user.getEmail());
-                    c.updatePhone(user.getPhone());
-                    c.updateStatus(user.getStatus());
-                    c.updateIsMikeOn(user.getIsMikeOn());
-                    c.updateIsSpeakerOn(user.getIsSpeakerOn());
                     c.updateFriends(user.getFriends());
                 });
 

@@ -30,7 +30,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class JavaApplication2 {
 
     static User setupUser(UserService userService) {
-        User user = new User("woody", "woody1234", "woody@codeit.com","010-1111-1111", "다른용무중", false, false, null);
+        User user = new User("woody", "woody1234", "woody@codeit.com", null);
         userService.create(user);
         return user;
     }
@@ -108,7 +108,7 @@ public class JavaApplication2 {
         System.out.println("============== 수정 테스트 ==============");
         Channel updateChannel = new Channel("수정채널", null);
         channelService.update(channel1.getId(),updateChannel);
-        User updateUser = new User("사용자변경", "qweqwe","1111@gmail.com","010-0000-0000","오프라인",false,false,null);
+        User updateUser = new User("사용자변경", "qweqwe","1111@gmail.com",null);
         userService.update(user1.getId(),updateUser);
         Message updateMessage = new Message(null,null,"수정된텍스트입니다.");
         messageService.update(message1.getId(),updateMessage);
@@ -194,7 +194,7 @@ public class JavaApplication2 {
         System.out.println("============== 수정 테스트 ==============");
         Channel updateChannel3 = new Channel("수정채널", null);
         channelService.update(channel3.getId(),updateChannel);
-        User updateUser3 = new User("사용자변경", "qweqwe","1111@gmail.com","010-0000-0000","오프라인",false,false,null);
+        User updateUser3 = new User("사용자변경", "qweqwe","1111@gmail.com",null);
         userService.update(user3.getId(),updateUser);
         Message updateMessage3 = new Message(null,null,"수정된텍스트입니다.");
         messageService.update(message3.getId(),updateMessage);

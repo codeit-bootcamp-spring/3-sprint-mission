@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entitiy.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -97,7 +98,7 @@ public class FileChannelService implements ChannelService {
         channels.stream()
                 .filter((c)->c.getId().equals(id))
                 .forEach((c)->{c.updateChannelName(channel.getChannelName());
-                    c.updateUpdatedAt(System.currentTimeMillis());
+                    c.updateUpdatedAt(Instant.now());
                     c.updateMembers(channel.getMembers());});
 
         try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){

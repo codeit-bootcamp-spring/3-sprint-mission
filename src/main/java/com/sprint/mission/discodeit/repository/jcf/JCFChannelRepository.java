@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entitiy.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -40,7 +41,7 @@ public class JCFChannelRepository implements ChannelRepository {
         data.stream()
                 .filter(chan -> chan.getId().equals(id))
                 .forEach(chan->{
-                    chan.updateUpdatedAt(System.currentTimeMillis());
+                    chan.updateUpdatedAt(Instant.now());
                     chan.updateChannelName(channel.getChannelName());
                     chan.updateMembers(channel.getMembers());
                 });
