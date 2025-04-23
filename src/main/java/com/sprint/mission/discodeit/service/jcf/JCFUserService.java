@@ -1,18 +1,15 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFUserService implements UserService {
-    private final List<User> users = new ArrayList<>();
-    // 테스트용 초기 더미 데이터 입력
-    public JCFUserService() {
-        users.add(new User("희동이" , 1744036538250L , 1744036538250L));
-        users.add(new User("고길동" , 1744036738250L , 1744071238250L));
-        users.add(new User("도우너" , 1744036938250L , 1744036538250L));
-    }
+    private final UserRepository userRepository = new JCFUserRepository();
+    private final List<User> users = userRepository.getUserslist();
 
     @Override       // 유저 생성 메서드 createUser()
     public User createUser(String name) {
@@ -32,8 +29,8 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public boolean deleteUser(String name) {
-        return users.removeIf(user -> user.getName().equals(name));
+    public void deleteUser(String name) {
+        users.removeIf(user -> user.getName().equals(name));
     }
 
     @Override

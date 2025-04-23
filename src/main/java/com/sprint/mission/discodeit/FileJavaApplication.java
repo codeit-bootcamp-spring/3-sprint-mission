@@ -14,7 +14,6 @@ import java.util.Scanner;
 
 public class FileJavaApplication {
     public static final FileUserService fuserService = new FileUserService();
-    public static final FileMessageService fmessageService = new FileMessageService();
     public static final FileChannelService fchannelService = new FileChannelService();
 
     public static final Scanner scanner = new Scanner(System.in);

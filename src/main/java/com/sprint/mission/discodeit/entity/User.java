@@ -1,13 +1,15 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.UUID;
 
 public class User implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
     private final UUID id = UUID.randomUUID();
-    private long createdAt  = System.currentTimeMillis();
+    private final long createdAt;
     private long updatedAt;
     private String name;
 
@@ -28,12 +30,10 @@ public class User implements Serializable {
     }
 
     public String getCreatedAt() {
-        String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(createdAt);
-        return formatedTime;
+        return new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(createdAt);
     }
     public String getUpdatedAt() {
-        String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(updatedAt);
-        return formatedTime;
+        return new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(updatedAt);
     }
     public void setUpdatedAt(long updatedAt) {
         this.updatedAt = updatedAt;

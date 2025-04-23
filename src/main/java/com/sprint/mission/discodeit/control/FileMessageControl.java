@@ -4,11 +4,13 @@ import com.sprint.mission.discodeit.FileJavaApplication;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
 
 import java.util.List;
 import java.util.UUID;
 
 public class FileMessageControl extends FileJavaApplication {
+    public static final FileMessageService messageService = new FileMessageService();
     public static User menuMessageMng(User currentUser, Channel currentChannel){       // 1 메세지 관리 메서드
 
         while (true) {
@@ -28,29 +30,21 @@ public class FileMessageControl extends FileJavaApplication {
             int inputMsgNum;
             Message currentMsg;
             UUID channelId = currentChannel.getId();
-            List<Message> messages = fmessageService.getMessagesList(channelId);
-            System.out.println(messages.size());
+            List<Message> messages = messageService.getMessagesList(channelId);
+            System.out.println(messages);
             switch (choice) {
                 case 1:                 // 1_1 메세지 작성
                     System.out.print(" ▶ 새로운 대화를 시작합니다. 대화를 종료하려면 빈 값을 입력해주세요.\n");
                     while (true){                   //대화메세지를 연속으로 입력받도록 루프
-                        int msgDisplaySize;
-                        if((messages.size()) < 5){
-                            msgDisplaySize=0;
-                        } else {
-                            msgDisplaySize = messages.size() - 5
-                            ;
-                        }
-                        System.out.println("번호 | 사용자명     : 메세지(생성일/수정일)");
-                        for (int i = msgDisplaySize ; i < messages.size(); i++) {
-                            fmessageService.printOneMessage(channelId,i+1);
-                        }
+
+                        int msgDisplaySize = 5;     // 메세지 입력시 상단에 표시될 최근 메세지 수 (1 이상으로 할 것)
+                        displayLatestMessages(msgDisplaySize, messages);
 
                         System.out.print(" >> ");
                         String txtMsg = scanner.nextLine();
                         if (!txtMsg.isEmpty()) {
 
-                            fmessageService.uploadMsg(channelId, currentUser.getName(), txtMsg);
+                            messageService.createMsg(channelId, currentUser.getName(), txtMsg);
                         } else {
                             System.out.println(" ▶ 메세지 입력을 종료합니다");
                             break;
@@ -60,7 +54,7 @@ public class FileMessageControl extends FileJavaApplication {
 
                 case 2:               //1_2 전체 메세지 조회
                     System.out.println(" ▶ 채널에 등록된 모든 메세지를 조회합니다.\n ");
-                    fmessageService.printAllMessages(channelId);
+                    messageService.printAllMessages(channelId);
                     break;
                 case 3:               //1_3 단건 메세지 조회
                     System.out.println(" ▶ 조회할 메세지의 번호를 입력해 주세요");
@@ -68,7 +62,7 @@ public class FileMessageControl extends FileJavaApplication {
                     if(inputMsgNum <= messages.size()) {
                         System.out.println(" ▶ [" + inputMsgNum + "]번 메세지는 아래와 같습니다.");
                         System.out.println("번호 | 사용자 : 메세지 ( 생성시각 / 수정시각 )");
-                        fmessageService.printOneMessage(channelId,inputMsgNum);
+                        messageService.printOneMessage(channelId,inputMsgNum);
                         break;
                     }
                     System.out.println(" ▶ 잘못된 입력입니다. 상위메뉴로 돌아갑니다.");
@@ -76,17 +70,17 @@ public class FileMessageControl extends FileJavaApplication {
                     break;
                 case 4:               // 1_4 메세지 수정
                     System.out.println(" ▶ 현재 등록된 메세지는 아래와 같습니다.");
-                    fmessageService.printAllMessages(channelId);
+                    messageService.printAllMessages(channelId);
                     System.out.println(" ▶ 수정할 메세지의 번호를 입력해 주세요");
                     inputMsgNum = scanInt(); // 숫자 입력 메서드 호출
                     if(inputMsgNum <= messages.size()) {
-                        currentMsg = fmessageService.findMessageByNum(channelId,inputMsgNum);
+                        currentMsg = messageService.findMessageByNum(channelId,inputMsgNum);
                         System.out.println(" ▶ [" + inputMsgNum + "]번 메세지는 아래와 같습니다.");
                         System.out.println(currentMsg.getTextMsg());
 
                         System.out.print("수정할 새로운 메세지를 입력해 주세요.\n >> ");
                         String newMessage = scanner.nextLine();
-                        fmessageService.updateMsg(currentUser.getName(),currentMsg, newMessage);
+                        messageService.updateMsg(currentChannel.getId(),currentUser.getName(),currentMsg, newMessage);
                         System.out.println("기존 내용을 [" + currentMsg.getTextMsg() + "] 로 수정하였습니다.");
                         break;
                     }
@@ -94,10 +88,10 @@ public class FileMessageControl extends FileJavaApplication {
                     break;
                 case 5:               // 1_5 메세지 삭제
                     System.out.println(" ▶ 현재 등록된 메세지는 아래와 같습니다.");
-                    fmessageService.printAllMessages(channelId);
+                    messageService.printAllMessages(channelId);
                     System.out.println(" ▶ 삭제할 메세지의 번호를 입력해 주세요");
                     inputMsgNum = scanInt(); // 숫자 입력 메서드 호출
-                    currentMsg = fmessageService.findMessageByNum(channelId,inputMsgNum);
+                    currentMsg = messageService.findMessageByNum(channelId,inputMsgNum);
                     System.out.println(" ▶ [" + inputMsgNum + "]번 메세지는 아래와 같습니다.");
                     System.out.println(currentMsg.getTextMsg());
 
@@ -107,7 +101,7 @@ public class FileMessageControl extends FileJavaApplication {
                         System.out.println(" ▶ 잘못된 입력입니다. 이전 메뉴로 돌아갑니다.");
                         break;
                     } else if (deleteConfirm.equals("삭제")) {
-                        fmessageService.deleteMessage(currentUser.getName(),currentMsg);
+                        messageService.deleteMessage(currentChannel.getId(), currentUser.getName(), currentMsg);
                         System.out.println("메세지가 삭제되었습니다.");
                     } else {
                         System.out.println(" ▶ 잘못된 입력입니다. 사용자 삭제를 취소합니다.");
@@ -140,4 +134,18 @@ public class FileMessageControl extends FileJavaApplication {
         }
     return currentUser;
     } // 1 메세지 관리 메서드
+    private static void displayLatestMessages(int num, List<Message> messages){
+        int msgDisplaySize;
+        if((messages.size()) < 5){
+            msgDisplaySize=0;
+        } else {
+            msgDisplaySize = messages.size() - 5
+            ;
+        }
+        System.out.println("번호 | 사용자명     : 메세지(생성일/수정일)");
+        for (int i = msgDisplaySize ; i < messages.size(); i++) {
+            System.out.println(messages.get(i));
+        }
+    }
 }
+

@@ -22,7 +22,7 @@ public class ChannelControl extends JavaApplication {
             System.out.println("\n ▶ 새로운 채널의 설명을 입력해주세요.");
             String chanDesc = scanner.nextLine();
 
-            Channel newChannel = channelService.addChannel(chanName,chanDesc,nowUser.getName());
+            Channel newChannel = channelService.createChannel(chanName,chanDesc,nowUser.getName());
             System.out.println(" ▶ [" + newChannel.getChannelName() + "] 채널에 접속합니다." + "       채널 ID: " + newChannel.getId());
 
             return newChannel;
@@ -53,7 +53,7 @@ public class ChannelControl extends JavaApplication {
                         if (channel == null) {
                             System.out.println("\n ▶ 새로운 채널의 설명을 입력해주세요.");
                             String chanDesc = scanner.nextLine();
-                            Channel newChan = channelService.addChannel(chanName, chanDesc, currentUser.getName());
+                            Channel newChan = channelService.createChannel(chanName, chanDesc, currentUser.getName());
 
                             System.out.println("\n ▶ "+newChan.getChannelName()+" 채널 생성에 성공하였습니다.");
 

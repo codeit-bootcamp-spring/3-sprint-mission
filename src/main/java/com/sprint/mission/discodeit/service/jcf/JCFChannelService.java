@@ -1,21 +1,21 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
-import java.util.ArrayList;
+
 import java.util.List;
 
 public class JCFChannelService implements ChannelService {
+    ChannelRepository channelRepository = new JCFChannelRepository();
     // 초기 채널 입력
-    private final List<Channel> channels = new ArrayList<>();
-    public JCFChannelService(){
-        channels.add(new Channel("ch01","default Channel","관리자",1744036548250L,1744036548250L));
-    }
+    private final List<Channel> channels = channelRepository.getChannelsList();
 
     // 채널 생성 메서드
     @Override
-    public Channel addChannel(String channelName, String channelDesc, String createrName) {
+    public Channel createChannel(String channelName, String channelDesc, String createrName) {
         long now = System.currentTimeMillis();
         Channel channel = new Channel(channelName,channelDesc,createrName,now,now);
         channels.add(channel);
@@ -46,8 +46,6 @@ public class JCFChannelService implements ChannelService {
         channels.forEach(chan -> System.out.println(chan.getChannelName()+"  |  "+chan.getChannelCreater()+"  |  "+chan.getChannelDescription()+"  ("+chan.getCreatedAt() + ")"));
         System.out.println();
     }
-
-
     @Override // 이름으로 채널 검색 메서드. 채널객체를 return
     public Channel findChannelByName(String name){
         for (Channel channel : channels) {

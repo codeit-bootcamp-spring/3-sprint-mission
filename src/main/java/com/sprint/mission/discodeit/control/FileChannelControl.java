@@ -22,7 +22,7 @@ public class FileChannelControl extends FileJavaApplication {
             System.out.println("\n ▶ 새로운 채널의 설명을 입력해주세요.");
             String chanDesc = scanner.nextLine();
 
-            Channel newChannel = fchannelService.addChannel(chanName,chanDesc,nowUser.getName());
+            Channel newChannel = fchannelService.createChannel(chanName,chanDesc,nowUser.getName());
             System.out.println(" ▶ [" + newChannel.getChannelName() + "] 채널에 접속합니다." + "       채널 ID: " + newChannel.getId());
 
             return newChannel;
@@ -53,7 +53,7 @@ public class FileChannelControl extends FileJavaApplication {
                         if (channel == null) {
                             System.out.println("\n ▶ 새로운 채널의 설명을 입력해주세요.");
                             String chanDesc = scanner.nextLine();
-                            Channel newChan = fchannelService.addChannel(chanName, chanDesc, currentUser.getName());
+                            Channel newChan = fchannelService.createChannel(chanName, chanDesc, currentUser.getName());
 
                             System.out.println("\n ▶ "+newChan.getChannelName()+" 채널 생성에 성공하였습니다.");
 

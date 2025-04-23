@@ -24,9 +24,6 @@ public class Channel implements Serializable {
         this.channelCreater = channelCreater;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-
-        JCFMessageService.setDefaultBoard(this);
-        FileMessageService.setDefaultBoard(this);
     }
 
     public UUID getId() {

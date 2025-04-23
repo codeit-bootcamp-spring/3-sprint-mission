@@ -50,7 +50,7 @@ public class MessageControl extends JavaApplication {
                         String txtMsg = scanner.nextLine();
                         if (!txtMsg.isEmpty()) {
 
-                            messageService.uploadMsg(channelId, currentUser.getName(), txtMsg);
+                            messageService.createMsg(channelId, currentUser.getName(), txtMsg);
                         } else {
                             System.out.println(" ▶ 메세지 입력을 종료합니다");
                             break;
@@ -86,7 +86,7 @@ public class MessageControl extends JavaApplication {
 
                         System.out.print("수정할 새로운 메세지를 입력해 주세요.\n >> ");
                         String newMessage = scanner.nextLine();
-                        messageService.updateMsg(currentUser.getName(),currentMsg, newMessage);
+                        messageService.updateMsg(currentChannel.getId(),currentUser.getName(),currentMsg, newMessage);
                         System.out.println("기존 내용을 [" + currentMsg.getTextMsg() + "] 로 수정하였습니다.");
                         break;
                     }
@@ -107,7 +107,7 @@ public class MessageControl extends JavaApplication {
                         System.out.println(" ▶ 잘못된 입력입니다. 이전 메뉴로 돌아갑니다.");
                         break;
                     } else if (deleteConfirm.equals("삭제")) {
-                        messageService.deleteMessage(currentUser.getName(),currentMsg);
+                        messageService.deleteMessage(currentChannel.getId(),currentUser.getName(),currentMsg);
                         System.out.println("메세지가 삭제되었습니다.");
                     } else {
                         System.out.println(" ▶ 잘못된 입력입니다. 사용자 삭제를 취소합니다.");
