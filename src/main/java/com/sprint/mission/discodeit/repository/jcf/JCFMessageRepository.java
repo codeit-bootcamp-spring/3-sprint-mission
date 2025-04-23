@@ -11,8 +11,29 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
 public class JCFMessageRepository implements MessageRepository {
-
+    private static JCFMessageRepository instance;
     private final Map<UUID, Message> data = new HashMap<>();
+
+    private JCFMessageRepository() {}
+
+    public static JCFMessageRepository getInstance() {
+        if (instance == null) {
+            instance = new JCFMessageRepository();
+        }
+        return instance;
+    }
+
+    // 테스트용 메서드
+    public static void clearInstance() {
+        if (instance != null) {
+            instance.clearData();
+            instance = null;
+        }
+    }
+
+    public void clearData() {
+        data.clear();
+    }
 
     @Override
     public Message save(Message message) {

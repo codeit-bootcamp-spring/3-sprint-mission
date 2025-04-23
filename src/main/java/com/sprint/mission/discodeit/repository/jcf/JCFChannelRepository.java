@@ -10,8 +10,29 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 
 public class JCFChannelRepository implements ChannelRepository {
-
+    private static JCFChannelRepository instance;
     private final Map<UUID, Channel> data = new HashMap<>();
+
+    private JCFChannelRepository() {}
+
+    public static JCFChannelRepository getInstance() {
+        if (instance == null) {
+            instance = new JCFChannelRepository();
+        }
+        return instance;
+    }
+
+    // 테스트용 메서드
+    public static void clearInstance() {
+        if (instance != null) {
+            instance.clearData();
+            instance = null;
+        }
+    }
+
+    public void clearData() {
+        data.clear();
+    }
 
     @Override
     public Channel save(Channel channel) {
