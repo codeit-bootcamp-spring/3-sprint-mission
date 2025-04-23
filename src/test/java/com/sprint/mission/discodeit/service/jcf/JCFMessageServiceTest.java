@@ -36,12 +36,16 @@ class JCFMessageServiceTest {
 
     @BeforeEach
     public void setUp() {
-        this.userRepository = new JCFUserRepository();
-        this.userService = new JCFUserService(this.userRepository);
-        this.channelRepository = new JCFChannelRepository();
-        this.channelService = new JCFChannelService(this.userService, this.channelRepository);
-        this.messageRepository = new JCFMessageRepository();
-        this.messageService = new JCFMessageService(this.userService, this.channelService, this.messageRepository);
+        JCFUserRepository.clearInstance();
+        JCFChannelRepository.clearInstance();
+        JCFMessageRepository.clearInstance();
+        
+        this.userRepository = JCFUserRepository.getInstance();
+        this.userService = JCFUserService.getInstance(this.userRepository);
+        this.channelRepository = JCFChannelRepository.getInstance();
+        this.channelService = JCFChannelService.getInstance(this.userService, this.channelRepository);
+        this.messageRepository = JCFMessageRepository.getInstance();
+        this.messageService = JCFMessageService.getInstance(this.userService, this.channelService, this.messageRepository);
 
         testAuthor = userService.createUser("testAuthor", "author@test.com", "password");
         testChannel = channelService.createChannel("TestChannel", false, "", testAuthor.getUserId());

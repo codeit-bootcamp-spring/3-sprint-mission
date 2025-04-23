@@ -22,19 +22,23 @@ import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 
 class JCFChannelServiceTest {
 
-    private JCFChannelService channelService;
+    private JCFUserRepository userRepository;
     private JCFUserService userService;
     private JCFChannelRepository channelRepository;
-    private JCFUserRepository userRepository;
+    private JCFChannelService channelService;
     private User testOwner;
     private Channel testChannel;
 
     @BeforeEach
     public void setUp() {
-        this.userRepository = new JCFUserRepository();
-        this.userService = new JCFUserService(this.userRepository);
-        this.channelRepository = new JCFChannelRepository();
-        this.channelService = new JCFChannelService(this.userService, this.channelRepository);
+        JCFUserRepository.clearInstance();
+        JCFChannelRepository.clearInstance();
+        
+        this.userRepository = JCFUserRepository.getInstance();
+        this.userService = JCFUserService.getInstance(this.userRepository);
+        this.channelRepository = JCFChannelRepository.getInstance();
+        this.channelService = JCFChannelService.getInstance(this.userService, this.channelRepository);
+        
         testOwner = userService.createUser("testOwner", "owner@test.com", "password");
         testChannel = channelService.createChannel("TestChannel", false, "", testOwner.getUserId());
     }
