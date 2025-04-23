@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class JCFMessageService implements MessageService {
 
@@ -22,37 +23,32 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public List<Message> getChannelMessages(Channel channel) {
-        return channelService.getChannel(channel.getId()).getMessages();
+        Channel ch = channelService.getChannel(channel.getId())
+                .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다: " + channel.getId()));
+        return ch.getMessages();
     }
 
     @Override
     public boolean deleteMessage(Channel channel, Message message, User user) {
-        boolean result = false;
-        List<Message> messages = channelService.getChannel(channel.getId()).getMessages();
-        User findUser = userService.getUser(user.getId());
-        for (Message m : messages) {
-            if(m.getId().equals(message.getId())) {
-                if (findUser.getId().equals(message.getSender().getId())) {
-                    messages.remove(m);
-                    result = true;
-                    System.out.println("(" + m.getContent() + ") 메세지가 삭제되었습니다.");
-                    break;
-                }else {
-                    System.out.println("본인이 작성한 메세지만 삭제할 수 있습니다.");
-                }
-            }
+        Channel foundChannel = channelService.getChannel(channel.getId())
+                .orElseThrow(() -> new NoSuchElementException("채널을 찾을 수 없습니다."));
+
+        List<Message> messages = foundChannel.getMessages();
+
+        User findUser = userService.getUser(user.getId())
+                .orElseThrow(() -> new NoSuchElementException("유저를 찾을 수 없습니다."));
+
+        boolean result = messages.removeIf(m ->
+                m.getId().equals(message.getId()) && m.getSender().getId().equals(findUser.getId())
+        );
+
+        if (result) {
+            System.out.println("(" + message.getContent() + ") 메세지가 삭제되었습니다.");
+        } else {
+            System.out.println("본인이 작성한 메세지만 삭제할 수 있습니다.");
         }
+
         return result;
     }
 
-    @Override
-    public boolean sendMessage(Message message, Channel channel) {
-        if (channelService.getChannel(channel.getId()) != null) {
-            channelService.getChannel(channel.getId()).getMessages().add(message);
-            return true;
-        } else {
-            System.out.println("채널이 존재 하지 않습니다.");
-            return false;
-        }
-    }
 }

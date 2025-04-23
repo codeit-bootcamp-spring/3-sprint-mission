@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface UserService {
@@ -12,7 +13,7 @@ public interface UserService {
 
     public User createUser(User user);
 
-    public User getUser(UUID id);
+    public Optional<User> getUser(UUID id);
 
     public List<User> getAllUsers();
 
@@ -20,6 +21,5 @@ public interface UserService {
 
     public boolean deleteUser(UUID id);
 
-    public boolean joinChannel(Channel channel, User user);
 
 }

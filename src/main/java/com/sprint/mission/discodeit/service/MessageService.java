@@ -12,5 +12,4 @@ public interface MessageService {
 
     public boolean deleteMessage(Channel channel, Message message, User user);
 
-    public boolean sendMessage(Message message, Channel channel);
 }
