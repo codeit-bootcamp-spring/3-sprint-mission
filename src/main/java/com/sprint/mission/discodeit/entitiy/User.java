@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.entitiy;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -9,13 +11,15 @@ import java.util.Map;
 import java.util.UUID;
 
 @Getter
+@Setter
+@NoArgsConstructor
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private UUID id;
     private UUID profileId;
-    private final Instant createdAt;
+    private Instant createdAt;
     private Instant updatedAt;
     private String userName;
     private String password;
@@ -42,25 +46,5 @@ public class User implements Serializable {
                 ", email='" + email + '\'' +
                 ", friends=" + friends +
                 '}';
-    }
-
-    public void updateUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public void updateUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public void updatePassword(String password) {
-        this.password = password;
-    }
-
-    public void updateEmail(String email) {
-        this.email = email;
-    }
-
-    public void updateFriends(Map<UUID,User> friends) {
-        this.friends = friends;
     }
 }

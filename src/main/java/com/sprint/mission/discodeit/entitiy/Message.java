@@ -1,27 +1,37 @@
 package com.sprint.mission.discodeit.entitiy;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Getter
+@Setter
+@NoArgsConstructor
 public class Message implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private UUID id;
-    private final Instant createdAt;
+    private Instant createdAt;
     private Instant updatedAt;
-    private String emoticon;
-    private String picture;
+    private UUID channelId;
+    private UUID authorId;
+    private List<UUID> attachmentIds;
     private String text;
+    private BinaryContent binaryContent;
 
-    public Message(String emoticon, String picture, String text) {
-        this.emoticon = emoticon;
-        this.picture = picture;
+    public Message(UUID channelId, UUID authorId, List<UUID> attachmentIds, String text, BinaryContent binaryContent) {
+        this.channelId = channelId;
+        this.authorId = authorId;
+        this.attachmentIds = attachmentIds;
         this.text = text;
+        this.binaryContent = binaryContent;
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
     }
@@ -32,33 +42,11 @@ public class Message implements Serializable {
                 "id=" + id +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", emoticon='" + emoticon + '\'' +
-                ", picture='" + picture + '\'' +
+                ", channelId=" + channelId +
+                ", authorId=" + authorId +
+                ", attachmentIds=" + attachmentIds +
                 ", text='" + text + '\'' +
+                ", binaryContent=" + binaryContent +
                 '}';
     }
-
-
-
-    public void updateId(UUID id) {
-        this.id = id;
-    }
-
-    public void updateUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public void updateEmoticon(String emoticon) {
-        this.emoticon = emoticon;
-    }
-
-    public void updatePicture(String picture) {
-        this.picture = picture;
-    }
-
-    public void updateText(String text) {
-        this.text = text;
-    }
-
-
 }
