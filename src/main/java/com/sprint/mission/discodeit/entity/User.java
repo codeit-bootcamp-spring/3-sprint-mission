@@ -10,18 +10,19 @@ import java.util.UUID;
 /**
  * 사용자 정보 관리
  * <p>
- * 공통 속성(고유 아이디, 생성/수정 시간) 관리는 {@link Base} 객체에 위임하여 컴포지션 방식으로 구현한다.
  * <ul>
- *   <li>사용자 계정 정보 (email, password, name)</li>
+ *   <li>AuditInfo (id, createdAt, updatedAt)</li>
+ *   <li>사용자 계정 정보 (email, name, password)</li>
  *   <li>참여 채널 목록</li>
  * </ul>
  */
 public class User implements Serializable {
 
   @Serial
-  private static final long serialVersionUID = 1L;
-
-  private final Base base;
+  private static final long serialVersionUID = 8019397210486307690L;
+  private final UUID id;
+  private final long createdAt;
+  private long updatedAt;
   private String email;
   private String password;
   private String name;
@@ -29,7 +30,9 @@ public class User implements Serializable {
 
   // 외부에서 직접 객체 생성 방지.
   private User(String email, String name, String password) {
-    this.base = new Base();
+    this.id = UUID.randomUUID();
+    this.createdAt = System.currentTimeMillis();
+    this.updatedAt = this.createdAt;
     this.email = email;
     this.password = password;
     this.name = name;
@@ -41,6 +44,22 @@ public class User implements Serializable {
   }
 
   // 사용자 정보 관리
+  public UUID getId() {
+    return id;
+  }
+
+  public long getCreatedAt() {
+    return createdAt;
+  }
+
+  public long getUpdatedAt() {
+    return updatedAt;
+  }
+
+  public void setUpdatedAt() {
+    this.updatedAt = System.currentTimeMillis();
+  }
+
   public String getEmail() {
     return email;
   }
@@ -51,7 +70,7 @@ public class User implements Serializable {
 
   public void updatePassword(String password) {
     this.password = password;
-    base.setUpdatedAt();
+    setUpdatedAt();
   }
 
   public String getName() {
@@ -60,14 +79,14 @@ public class User implements Serializable {
 
   public void updateName(String name) {
     this.name = name;
-    base.setUpdatedAt();
+    setUpdatedAt();
   }
 
   // 채널 정보 관리
   public void addChannel(Channel channel) {
     if (!channels.contains(channel)) {
       this.channels.add(channel);
-      base.setUpdatedAt();
+      setUpdatedAt();
     }
   }
 
@@ -75,25 +94,12 @@ public class User implements Serializable {
     return new ArrayList<>(channels);
   }
 
-  // Base 위임 메서드
-  public UUID getId() {
-    return base.getId();
-  }
-
-  public long getCreatedAt() {
-    return base.getCreatedAt();
-  }
-
-  public long getUpdatedAt() {
-    return base.getUpdatedAt();
-  }
-
   @Override
   public String toString() {
     return "User{" +
-        "id=" + getId() +
-        ", createdAt=" + getCreatedAt() +
-        ", updatedAt=" + getUpdatedAt() +
+        "id=" + id +
+        ", createdAt=" + createdAt +
+        ", updatedAt=" + updatedAt +
         ", email='" + email + '\'' +
         ", name='" + name + '\'' +
         ", password='" + password + '\'' +
@@ -110,7 +116,7 @@ public class User implements Serializable {
       return false;
     }
     User user = (User) o;
-    return Objects.equals(base.getId(), user.getId()) &&
+    return Objects.equals(id, user.id) &&
         Objects.equals(email, user.email) &&
         Objects.equals(name, user.name) &&
         Objects.equals(password, user.password);
@@ -118,6 +124,6 @@ public class User implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(base.getId(), email, name, password);
+    return Objects.hash(id, email, name, password);
   }
 }

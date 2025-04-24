@@ -9,8 +9,8 @@ import java.util.UUID;
 /**
  * 채널 정보 관리
  * <p>
- * 공통 속성(고유 아이디, 생성/수정 시간) 관리는 {@link Base} 객체에 위임하여 컴포지션 방식으로 구현한다.
  * <ul>
+ *   <li>AuditInfo (id, createdAt, updatedAt)</li>
  *   <li>채널명</li>
  *   <li>생성자</li>
  *   <li>참여자 목록</li>
@@ -19,16 +19,19 @@ import java.util.UUID;
 public class Channel implements Serializable {
 
   @Serial
-  private static final long serialVersionUID = 1L;
-
-  private final Base base;
+  private static final long serialVersionUID = 4947061877205205272L;
+  private final UUID id;
+  private final long createdAt;
+  private long updatedAt;
   private final User creator;
   private String name;
   private List<User> participants = new ArrayList<>();
 
   // 외부에서 직접 객체 생성 방지.
   private Channel(User creator, String name) {
-    this.base = new Base();
+    this.id = UUID.randomUUID();
+    this.createdAt = System.currentTimeMillis();
+    this.updatedAt = this.createdAt;
     this.creator = creator;
     this.name = name;
     this.participants.add(creator);
@@ -40,20 +43,36 @@ public class Channel implements Serializable {
   }
 
   // 채널 정보 관리
+  public UUID getId() {
+    return id;
+  }
+
+  public long getCreatedAt() {
+    return createdAt;
+  }
+
+  public long getUpdatedAt() {
+    return updatedAt;
+  }
+
+  public void setUpdatedAt() {
+    this.updatedAt = System.currentTimeMillis();
+  }
+
   public String getName() {
     return name;
   }
 
   public void updateName(String name) {
     this.name = name;
-    base.setUpdatedAt();
+    setUpdatedAt();
   }
 
   // 참여자 관리
   public boolean addParticipant(User user) {
     if (!participants.contains(user)) {
       participants.add(user);
-      base.setUpdatedAt();
+      setUpdatedAt();
       return true;
     }
     return false;
@@ -66,22 +85,9 @@ public class Channel implements Serializable {
   public boolean removeParticipant(UUID userId) {
     boolean removed = participants.removeIf(user -> user.getId().equals(userId));
     if (removed) {
-      base.setUpdatedAt();
+      setUpdatedAt();
     }
     return removed;
-  }
-
-  // Base 위임 메서드
-  public UUID getId() {
-    return base.getId();
-  }
-
-  public long getCreatedAt() {
-    return base.getCreatedAt();
-  }
-
-  public long getUpdatedAt() {
-    return base.getUpdatedAt();
   }
 
   // 참조 정보 getter
@@ -92,9 +98,9 @@ public class Channel implements Serializable {
   @Override
   public String toString() {
     return "Channel{" +
-        "id=" + getId() +
-        ", createdAt=" + getCreatedAt() +
-        ", updatedAt=" + getUpdatedAt() +
+        "id=" + id +
+        ", createdAt=" + createdAt +
+        ", updatedAt=" + updatedAt +
         ", name='" + name + '\'' +
         ", creator=" + creator.getName() +
         ", participants=" + participants +

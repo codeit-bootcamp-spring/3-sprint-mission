@@ -7,8 +7,8 @@ import java.util.UUID;
 /**
  * 메시지 정보 관리
  * <p>
- * 공통 속성(고유 아이디, 생성/수정 시간) 관리는 {@link Base} 객체에 위임하여 컴포지션 방식으로 구현한다.
  * <ul>
+ *   <li>AuditInfo (id, createdAt, updatedAt)</li>
  *   <li>메시지 내용</li>
  *   <li>생성자 id</li>
  *   <li>채널 id</li>
@@ -18,9 +18,10 @@ import java.util.UUID;
 public class Message implements Serializable {
 
   @Serial
-  private static final long serialVersionUID = 1L;
-
-  private final Base base;
+  private static final long serialVersionUID = 5091331492371241399L;
+  private final UUID id;
+  private final long createdAt;
+  private long updatedAt;
   private String content;
   private final UUID userId;
   private final UUID channelId;
@@ -28,7 +29,9 @@ public class Message implements Serializable {
 
   // 외부에서 직접 객체 생성 방지.
   private Message(String content, UUID userId, UUID channelId) {
-    this.base = new Base();
+    this.id = UUID.randomUUID();
+    this.createdAt = System.currentTimeMillis();
+    this.updatedAt = this.createdAt;
     this.content = content;
     this.userId = userId;
     this.channelId = channelId;
@@ -39,7 +42,23 @@ public class Message implements Serializable {
     return new Message(content, userId, channelId);
   }
 
-  // 메시지 내용 관리
+  // 메시지 정보 관리
+  public UUID getId() {
+    return id;
+  }
+
+  public long getCreatedAt() {
+    return createdAt;
+  }
+
+  public long getUpdatedAt() {
+    return updatedAt;
+  }
+
+  public void setUpdatedAt() {
+    this.updatedAt = System.currentTimeMillis();
+  }
+
   public String getContent() {
     return deleted ? "삭제된 메시지입니다." : content;
   }
@@ -47,7 +66,7 @@ public class Message implements Serializable {
   public void updateContent(String content) {
     if (!deleted) {
       this.content = content;
-      base.setUpdatedAt();
+      setUpdatedAt();
     }
   }
 
@@ -58,21 +77,8 @@ public class Message implements Serializable {
   public void delete() {
     if (!deleted) {
       deleted = true;
-      base.setUpdatedAt();
+      setUpdatedAt();
     }
-  }
-
-  // Base 위임 메서드
-  public UUID getId() {
-    return base.getId();
-  }
-
-  public long getCreatedAt() {
-    return base.getCreatedAt();
-  }
-
-  public long getUpdatedAt() {
-    return base.getUpdatedAt();
   }
 
   // 참조 정보 getter
@@ -87,9 +93,9 @@ public class Message implements Serializable {
   @Override
   public String toString() {
     return "Message{" +
-        "id=" + getId() +
-        ", createdAt=" + getCreatedAt() +
-        ", updatedAt=" + getUpdatedAt() +
+        "id=" + id +
+        ", createdAt=" + createdAt +
+        ", updatedAt=" + updatedAt +
         ", content='" + content + '\'' +
         ", userId=" + userId +
         ", channelId=" + channelId +
