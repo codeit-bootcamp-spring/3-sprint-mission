@@ -23,8 +23,6 @@ public interface UserRepository {
     List<User> findAllUsers();
     void updateUserById(UUID userId, String name);
     void deleteUserById(UUID userId);
-
     boolean isUniqueUsername(String username);
-
     boolean isUniqueEmail(String email);
 }

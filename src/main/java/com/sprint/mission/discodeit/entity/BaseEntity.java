@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -18,7 +19,7 @@ import java.util.UUID;
  * 2025. 4. 23.        doungukkim       최초 생성
  */
 @Getter
-public abstract class BaseEntity {
+public abstract class BaseEntity implements Serializable {
     protected Instant createdAt;
     @Setter
     protected Instant updatedAt;

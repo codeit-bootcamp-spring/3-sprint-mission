@@ -29,7 +29,7 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-@Primary
+//@Primary
 @Repository
 @RequiredArgsConstructor
 public class FileUserRepository implements UserRepository {
@@ -70,7 +70,7 @@ public class FileUserRepository implements UserRepository {
         }
 
         try {
-            List<User> list = Files.list(directory)
+            return Files.list(directory)
                     .filter(path -> path.toString().endsWith(".ser"))
                     .map(path -> {
                         try (
@@ -83,7 +83,6 @@ public class FileUserRepository implements UserRepository {
                             throw new RuntimeException("파일을 읽어오지 못했습니다: FileUserRepository.findAllUsers",exception);
                         }
                     }).toList();
-            return list;
         } catch (IOException e) {
             throw new RuntimeException("유저들을 리스트로 만드는 과정에 문제 발생: FileChannelRepository.findAllUsers",e);
         }

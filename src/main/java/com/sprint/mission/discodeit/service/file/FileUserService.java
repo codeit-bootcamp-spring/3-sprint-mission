@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.service.file;
 
-import com.sprint.mission.discodeit.Dto.UserCreateDto;
+import com.sprint.mission.discodeit.Dto.user.UserCreateDto;
+import com.sprint.mission.discodeit.Dto.user.UserFindDto;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.file.FileUserBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserStatusRepository;
@@ -9,6 +11,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -28,11 +31,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileUserService implements UserService {
 
+
     private final FileUserRepository fileUserRepository;
     private final FileUserBinaryContentRepository fileUserBinaryContentRepository;
     private final FileUserStatusRepository fileUserStatusRepository;
-
-
 
 
     // 이미지 저장 로직 추가
@@ -52,7 +54,7 @@ public class FileUserService implements UserService {
             User result = fileUserRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword());
             fileUserStatusRepository.createUserStatus(result.getId());
             return result;
-        } else{
+        } else {
             // 이미지 처리 있음
             UUID binaryContentId = fileUserBinaryContentRepository.createBinaryContent(userCreateDto.getImage()).getId();
             User result = fileUserRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword(), binaryContentId);
@@ -63,16 +65,53 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public User findUserById(UUID userId) {
+    public UserFindDto findUserById(UUID userId) {
         Objects.requireNonNull(userId, "User 아이디 입력 없음: FileUserService.findUserById");
-        User result = fileUserRepository.findUserById(userId);
-        Objects.requireNonNull(result, "찾는 User 없음: FileUserService.findUserById");
-        return result;
+        User user = fileUserRepository.findUserById(userId);
+        Objects.requireNonNull(user, "찾는 User 없음: FileUserService.findUserById");
+        // 온라인 확인 로직
+        // 마지막 접속 시간이 현재 시간으로부터 5분 이내이면 현재 접속 중인 유저로 간주합니다.
+        UserStatus userStatus = fileUserStatusRepository.findUserStatusByUserId(userId);
+
+
+        if (userStatus == null) {
+            throw new RuntimeException("userStatus is null");
+        }
+
+        boolean online = fileUserStatusRepository.isOnline(userStatus.getId());
+
+
+        UserFindDto userFindDto = new UserFindDto(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
+                user.getUsername(), user.getEmail(), user.getProfileId(), online);
+
+        return userFindDto;
     }
 
     @Override
-    public List<User> findAllUsers() {
-        return fileUserRepository.findAllUsers();
+    public List<UserFindDto> findAllUsers() {
+        List<UserStatus> allUserStatus = fileUserStatusRepository.findAllUserStatus();
+        List<User> users = fileUserRepository.findAllUsers();
+
+        List<UserFindDto> userFindDtos = new ArrayList<>();
+
+        // userDto를 (users + online)으로 매핑
+        for (int i =0;i<users.size();i++) {
+            if (allUserStatus.get(i) == null) {
+                throw new RuntimeException("userStatus is null");
+            }
+            boolean online = fileUserStatusRepository.isOnline(allUserStatus.get(i).getId());
+
+            userFindDtos.add(new UserFindDto(
+                    users.get(i).getId(),
+                    users.get(i).getCreatedAt(),
+                    users.get(i).getUpdatedAt(),
+                    users.get(i).getUsername(),
+                    users.get(i).getEmail(),
+                    users.get(i).getProfileId(),
+                    online));
+        }
+
+        return userFindDtos;
     }
 
     @Override
