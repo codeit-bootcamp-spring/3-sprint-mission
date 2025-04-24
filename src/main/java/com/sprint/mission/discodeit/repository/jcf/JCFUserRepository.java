@@ -1,10 +1,12 @@
-package com.sprint.mission.discodeit.Repository.jcf;
+package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.Repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.entity.User;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository("jcfUserRepository")
 public class JCFUserRepository implements UserRepository {
     private final Map<UUID, User> users = new HashMap<>();
 

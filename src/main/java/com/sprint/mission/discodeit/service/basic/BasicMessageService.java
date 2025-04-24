@@ -1,34 +1,33 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.Repository.MessageRepository;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
-@Service
 public class BasicMessageService implements MessageService {
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
-    private final UserService userService;
-    private final ChannelService channelService;
 
-    public BasicMessageService(MessageRepository msgRepo, UserService u, ChannelService c) {
-        messageRepository = msgRepo;
-        userService = u;
-        channelService = c;
+    public BasicMessageService(MessageRepository messageRepository, UserRepository userRepository, ChannelRepository channelRepository) {
+        this.messageRepository = messageRepository;
+        this.userRepository   = userRepository;
+        this.channelRepository = channelRepository;
     }
 
     @Override
     public Message createMessage(UUID userId, UUID channelId, String content) {
         try {
-            Channel ch = channelService.getChannel(channelId);
-            if (userService.getUser(userId) == null || ch == null) {
-                throw new IllegalArgumentException("[Message] 유효하지 않은 userId 혹은 동일한 채널명이 존재합니다. (userId: " + userId + ", channelId: " + channelId);
+            Channel ch = channelRepository.loadById(channelId);
+            if (userRepository.loadById(userId) == null || ch == null) {
+                throw new IllegalArgumentException("[Message] 유효하지 않은 userId 혹은 채널명이 존재합니다. (userId: " + userId + ", channelId: " + channelId);
             }
 
             if (!ch.isMember(userId)) {

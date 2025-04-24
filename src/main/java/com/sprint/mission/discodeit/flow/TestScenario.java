@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit;
+package com.sprint.mission.discodeit.flow;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -6,14 +6,12 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-@Component
-public class TestLogic {
+public class TestScenario {
     private final UserService userService;
     private final ChannelService channelService;
     private final MessageService messageService;
@@ -22,7 +20,7 @@ public class TestLogic {
     private List<Channel> channels;
     private List<Message> messages;
 
-    public TestLogic (
+    public TestScenario(
             UserService userService,
             ChannelService channelService,
             MessageService messageService

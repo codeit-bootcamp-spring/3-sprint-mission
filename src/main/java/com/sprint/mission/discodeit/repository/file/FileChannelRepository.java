@@ -1,7 +1,7 @@
-package com.sprint.mission.discodeit.Repository.file;
+package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.Repository.ChannelRepository;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-@Repository
+@Repository("fileChannelRepository")
 public class FileChannelRepository implements ChannelRepository {
     private static final String DIR = "data/channels/";
 

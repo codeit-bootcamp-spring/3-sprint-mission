@@ -1,13 +1,15 @@
-package com.sprint.mission.discodeit.Repository.jcf;
+package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.Repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.entity.Message;
+import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@Repository("jcfMessageRepository")
 public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID, Message> messages = new HashMap<>();
 

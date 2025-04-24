@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit;
+package com.sprint.mission.discodeit.flow;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
@@ -6,23 +6,23 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TestRunner implements CommandLineRunner {
-    private final TestLogic fileTestLogic;
-    private final TestLogic basicTestLogic;
+    private final TestScenario fileTestScenario;
+    private final TestScenario jcfTestScenario;
 
     public TestRunner(
-            @Qualifier("fileTest") TestLogic fileTestLogic,
-            @Qualifier("jfcTest")  TestLogic jfcTestLogic
+            @Qualifier("fileTest") TestScenario fileTestScenario,
+            @Qualifier("jcfTest") TestScenario jcfTestScenario
     ) {
-        this.fileTestLogic  = fileTestLogic;
-        this.basicTestLogic = jfcTestLogic;
+        this.fileTestScenario = fileTestScenario;
+        this.jcfTestScenario = jcfTestScenario;
     }
 
     @Override
     public void run(String... args) {
         System.out.println("\n------- BasicService & FileRepo Test -------");
-        fileTestLogic.run();
+        fileTestScenario.run();
 
         System.out.println("\n------- BasicService & JCFRepo Test -------");
-        basicTestLogic.run();
+        jcfTestScenario.run();
     }
 }
