@@ -19,7 +19,7 @@ import java.util.*;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Repository
-//@Primary
+@Primary
 public class JcfUserRepository implements UserRepository {
 
     Map<UUID, User> data = new HashMap<>();
@@ -59,6 +59,9 @@ public class JcfUserRepository implements UserRepository {
     @Override
     public boolean isUniqueUsername(String username) {
         List<User> list = data.values().stream().toList();
+        if (list.isEmpty()) {
+            return true;
+        }
         for (User user : list) {
             if (user.getUsername().equals(username)) {
                 return false;
@@ -70,6 +73,9 @@ public class JcfUserRepository implements UserRepository {
     @Override
     public boolean isUniqueEmail(String email) {
         List<User> list = data.values().stream().toList();
+        if (list.isEmpty()) {
+            return true;
+        }
         for (User user : list) {
             if (user.getEmail().equals(email)) {
                 return false;

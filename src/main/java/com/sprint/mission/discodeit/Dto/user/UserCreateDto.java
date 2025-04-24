@@ -1,8 +1,6 @@
-package com.sprint.mission.discodeit.Dto;
+package com.sprint.mission.discodeit.Dto.user;
 
 import lombok.Getter;
-
-import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto

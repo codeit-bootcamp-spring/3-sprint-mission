@@ -1,8 +1,9 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.Dto.UserCreateDto;
+import com.sprint.mission.discodeit.Dto.user.UserCreateDto;
+import com.sprint.mission.discodeit.Dto.user.UserFindDto;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.jcf.JcfBinaryContentRepostory;
 import com.sprint.mission.discodeit.repository.jcf.JcfUserRepository;
 import com.sprint.mission.discodeit.repository.jcf.JcfUserStatusRepository;
@@ -10,6 +11,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -27,7 +29,8 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
-public class JcfUserService implements UserService {
+public class JcfUserService implements UserService
+{
 
     private final JcfUserRepository jcfUserRepository;
     private final JcfUserStatusRepository jcfUserStatusRepository;
@@ -60,15 +63,50 @@ public class JcfUserService implements UserService {
 
     }
 
-    public User findUserById(UUID userId) {
+    public UserFindDto findUserById(UUID userId) {
         Objects.requireNonNull(userId, "User 아이디 입력 없음: JcfUserService.findUserById");
-        User result = jcfUserRepository.findUserById(userId);
-        Objects.requireNonNull(result, "찾는 User 없음: JcfUserService.findUserById");
-        return result;
+        User user = jcfUserRepository.findUserById(userId);
+        Objects.requireNonNull(user, "찾는 User 없음: JcfUserService.findUserById");
+
+        // 온라인 확인 로직
+        // 마지막 접속 시간이 현재 시간으로부터 5분 이내이면 현재 접속 중인 유저로 간주합니다.
+        UserStatus userStatus = jcfUserStatusRepository.findUserStatusByUserId(userId);
+        if (userStatus == null) {
+            throw new RuntimeException("userStatus is null");
+        }
+        boolean online = jcfUserStatusRepository.isOnline(userStatus.getId());
+
+
+        UserFindDto userFindDto = new UserFindDto(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
+                user.getUsername(), user.getEmail(), user.getProfileId(), online);
+
+        return userFindDto;
     }
 
-    public List<User> findAllUsers() {
-        return jcfUserRepository.findAllUsers();
+    public List<UserFindDto> findAllUsers() {
+        List<UserStatus> allUserStatus = jcfUserStatusRepository.findAllUserStatus();
+        List<User> users = jcfUserRepository.findAllUsers();
+
+        List<UserFindDto> userFindDtos = new ArrayList<>();
+
+        // userDto를 users + online으로 매핑
+        for (int i =0;i<users.size();i++) {
+            if (allUserStatus.get(i) == null) {
+                throw new RuntimeException("userStatus n users are not 1:1");
+            }
+            boolean online = jcfUserStatusRepository.isOnline(allUserStatus.get(i).getId());
+
+            userFindDtos.add(new UserFindDto(
+                    users.get(i).getId(),
+                    users.get(i).getCreatedAt(),
+                    users.get(i).getUpdatedAt(),
+                    users.get(i).getUsername(),
+                    users.get(i).getEmail(),
+                    users.get(i).getProfileId(),
+                    online));
+        }
+
+        return userFindDtos;
     }
 
     public void updateUser(UUID userId, String name) {

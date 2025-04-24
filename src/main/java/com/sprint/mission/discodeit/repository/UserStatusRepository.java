@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository;
 import com.sprint.mission.discodeit.entity.UserStatus;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -23,4 +24,8 @@ public interface UserStatusRepository {
     boolean isOnline(UUID userStatusId);
 
     UserStatus createUserStatus(UUID userId);
+
+    UserStatus findUserStatusByUserId(UUID userId);
+
+    List<UserStatus> findAllUserStatus();
 }

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.Dto.UserCreateDto;
+import com.sprint.mission.discodeit.Dto.user.UserCreateDto;
+import com.sprint.mission.discodeit.Dto.user.UserFindDto;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
@@ -19,18 +20,9 @@ import java.util.UUID;
  */
 public interface UserService {
 
-    // username, email unique check
-    // UserStatus 생성
     User createUser(UserCreateDto userCreateDto);
-
-    // username, email unique check
-    // BinaryContent 생성
-    // result에 BinaryContent의 UUID 저장
-    // UserStatus 생성
-//    User createUser(String username, String email, String password, byte[] image);
-
-    User findUserById(UUID userId);
-    List<User> findAllUsers();
+    UserFindDto findUserById(UUID userId);
+    List<UserFindDto> findAllUsers();
     void updateUser(UUID userId, String name);
     void deleteUser(UUID userId);
 

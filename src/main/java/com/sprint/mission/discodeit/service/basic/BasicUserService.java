@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.Dto.UserCreateDto;
-import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.Dto.user.UserCreateDto;
+import com.sprint.mission.discodeit.Dto.user.UserFindDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -35,6 +37,7 @@ public class BasicUserService  implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
+
 
     @Override
     public User createUser(UserCreateDto userCreateDto) {
@@ -68,16 +71,51 @@ public class BasicUserService  implements UserService {
  */
 
     @Override
-    public User findUserById(UUID userId) {
+    public UserFindDto findUserById(UUID userId) {
         Objects.requireNonNull(userId, "User 아이디 입력 없음: BasicUserService.findUserById");
-        User result = userRepository.findUserById(userId);
-        Objects.requireNonNull(result, "찾는 User 없음: BasicUserService.findUserById");
-        return result;
+        User user = userRepository.findUserById(userId);
+        Objects.requireNonNull(user, "찾는 User 없음: BasicUserService.findUserById");
+
+        UserStatus userStatus = userStatusRepository.findUserStatusByUserId(userId);
+
+        if (userStatus == null) {
+            throw new RuntimeException("userStatus is null");
+        }
+
+        boolean online = userStatusRepository.isOnline(userStatus.getId());
+
+
+        UserFindDto userFindDto = new UserFindDto(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
+                user.getUsername(), user.getEmail(), user.getProfileId(), online);
+
+        return userFindDto;
     }
 
+
     @Override
-    public List<User> findAllUsers() {
-        return userRepository.findAllUsers();
+    public List<UserFindDto> findAllUsers() {
+        List<User> users = userRepository.findAllUsers();
+        List<UserFindDto> userFindDtos = new ArrayList<>();
+
+        // userDto를 users + online으로 매핑
+        for (User user : users) {
+            UserStatus status = userStatusRepository.findUserStatusByUserId(user.getId());
+            boolean online = false;
+            if (status != null) {
+                online = userStatusRepository.isOnline(status.getId());
+            }
+
+            userFindDtos.add(new UserFindDto(
+                    user.getId(),
+                    user.getCreatedAt(),
+                    user.getUpdatedAt(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getProfileId(),
+                    online));
+        }
+
+        return userFindDtos;
     }
 
     @Override

@@ -1,27 +1,19 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.Dto.UserCreateDto;
+import com.sprint.mission.discodeit.Dto.user.UserCreateDto;
+import com.sprint.mission.discodeit.Dto.user.UserFindDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.jcf.JcfChannelRepository;
-import com.sprint.mission.discodeit.repository.jcf.JcfMessageRepository;
-import com.sprint.mission.discodeit.repository.jcf.JcfUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JcfUserStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.basic.BasicChannelService;
-import com.sprint.mission.discodeit.service.basic.BasicMessageService;
-import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.beans.beancontext.BeanContext;
+import java.util.List;
 
 @SpringBootApplication
 public class DiscodeitApplication {
@@ -34,7 +26,6 @@ public class DiscodeitApplication {
 		UserService userService = context.getBean("basicUserService", UserService.class);
 		ChannelService channelService = context.getBean("basicChannelService", ChannelService.class);
 		MessageService messageService = context.getBean("basicMessageService", MessageService.class);
-
 
 		byte[] image1 = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 		byte[] image2 = new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -51,7 +42,7 @@ public class DiscodeitApplication {
 
 
 		System.out.println("\n[모든 유저 출력]");
-		userService.findAllUsers().forEach(u -> System.out.println("- " + u.getUsername()));
+		userService.findAllUsers().forEach(u -> System.out.println("- " + u.getUsername()+" online "+u.isOnline()));
 
 		System.out.println("\n[단일 유저 조회]");
 		System.out.println("조회된 유저: " + userService.findUserById(user1.getId()).getUsername());
@@ -70,6 +61,10 @@ public class DiscodeitApplication {
 		System.out.println(user1.getProfileId());
 		System.out.println(user2.getProfileId());
 		System.out.println(user3.getProfileId());
+
+
+
+
 
 		System.out.println("\n\n=== Channel 테스트 ===");
 		Channel ch1 = channelService.createChannel("test channel 1");
