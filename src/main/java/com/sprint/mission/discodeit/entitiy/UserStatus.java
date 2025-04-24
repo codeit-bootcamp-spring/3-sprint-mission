@@ -9,22 +9,21 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 public class UserStatus {
+
     private UUID id;
     private Instant createdAt;
     private Instant updatedAt;
     private UUID userId;
-    private Instant lastSeen;
 
     public UserStatus(UUID userId) {
         this.userId = userId;
         this.id = UUID.randomUUID();
-        this.lastSeen = Instant.now();
         this.createdAt = Instant.now();
     }
 
     public Boolean IsOnline(){
         Instant now = Instant.now();
-        if(now.minusSeconds(300).isAfter(lastSeen)){
+        if(now.minusSeconds(300).isAfter(updatedAt)){
             return false;
         }else{
             return true;
@@ -38,7 +37,6 @@ public class UserStatus {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", userId=" + userId +
-                ", lastSeen=" + lastSeen +
                 '}';
     }
 }
