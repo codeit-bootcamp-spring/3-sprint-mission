@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
+import com.sprint.mission.discodeit.entity.ReadStatus;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -14,8 +16,21 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 23.        doungukkim       최초 생성
  */
+// 채널별로 객체 생성
 public interface ReadStatusRepository {
     Instant readingTime(UUID readStatusId);
+
+    UUID saveReadStatus(UUID userId, UUID channelId);
+
+    ReadStatus findReadStatusById(UUID readStatusId);
+
+    ReadStatus findReadStatusByUserId(UUID userId);
+
+    ReadStatus findReadStatusByChannelId(UUID channelId);
+
+    void deleteReadStatus(UUID readStatusId);
+
+
 
 
 }

@@ -3,7 +3,9 @@ package com.sprint.mission.discodeit.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -21,23 +23,34 @@ import java.util.UUID;
 // [ ] 수정 불가능한 도메인 모델로 간주합니다. 따라서 updatedAt 필드는 정의하지 않습니다.
 // [ ] User, Message 도메인 모델과의 의존 관계 방향성을 잘 고려하여 id 참조 필드를 추가하세요.
 @Getter
-public class BinaryContent {
+public class BinaryContent implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     private final UUID id;
     private final Instant createdAt;
     private Instant updatedAt;
-    private String image;
+    private byte[] image;
 
 
-
-    public BinaryContent(String image) {
+    public BinaryContent(byte[] image) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.image = image;
-
     }
 
-    public void setImage(String image) {
+    public void setImage(byte[] image) {
         this.image = image;
         this.updatedAt = Instant.now();
+    }
+
+    @Override
+    public String toString() {
+        return "BinaryContent{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", image=" + Arrays.toString(image) +
+                '}';
     }
 }

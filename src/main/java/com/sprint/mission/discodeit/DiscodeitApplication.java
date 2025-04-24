@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.Dto.UserCreateDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -17,6 +18,7 @@ import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.beans.beancontext.BeanContext;
@@ -27,7 +29,6 @@ public class DiscodeitApplication {
 
 
 	public static void main(String[] args) {
-//		SpringApplication.run(DiscodeitApplication.class, args);
 		ApplicationContext context = SpringApplication.run(DiscodeitApplication.class, args);
 
 		UserService userService = context.getBean("basicUserService", UserService.class);
@@ -35,10 +36,18 @@ public class DiscodeitApplication {
 		MessageService messageService = context.getBean("basicMessageService", MessageService.class);
 
 
+		byte[] image1 = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+		byte[] image2 = new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+		UserCreateDto userCreateDto1 = new UserCreateDto("user1", "user1@user.com", "1234", image1);
+		UserCreateDto userCreateDto2 = new UserCreateDto("user2","user2@user.com","1234");
+		UserCreateDto userCreateDto3 = new UserCreateDto("user3", "user3@user.com", "1234");
+
 		System.out.println("=== User 테스트 ===");
-		User user1 = userService.createUser("user1","user1@user.com","1234");
-		User user2 = userService.createUser("user2","user2@user.com","1234");
-		User user3 = userService.createUser("user3","user3@user.com","1234");
+
+		User user1 = userService.createUser(userCreateDto1);
+		User user2 = userService.createUser(userCreateDto2);
+		User user3 = userService.createUser(userCreateDto3);
 
 
 		System.out.println("\n[모든 유저 출력]");
@@ -57,6 +66,10 @@ public class DiscodeitApplication {
 		System.out.println("\n[최종 유저 목록]");
 		userService.findAllUsers().forEach(u -> System.out.println("- " + u.getUsername()));
 
+		System.out.println("\n\n=== User profileId 테스트 ===");
+		System.out.println(user1.getProfileId());
+		System.out.println(user2.getProfileId());
+		System.out.println(user3.getProfileId());
 
 		System.out.println("\n\n=== Channel 테스트 ===");
 		Channel ch1 = channelService.createChannel("test channel 1");
@@ -99,6 +112,7 @@ public class DiscodeitApplication {
 
 		System.out.println("\n[최종 메시지 목록]");
 		messageService.findAllMessages().forEach(m -> System.out.println("- " + m.getContent()));
+
 
 	}
 

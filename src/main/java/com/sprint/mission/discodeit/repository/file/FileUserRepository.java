@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
@@ -28,25 +29,35 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-//@Primary
+@Primary
 @Repository
+@RequiredArgsConstructor
 public class FileUserRepository implements UserRepository {
-    FilePathUtil filePathUtil = new FilePathUtil();
-    FileSerializer fileSerializer = new FileSerializer();
+    private final FilePathUtil filePathUtil;
+
 
 
     @Override
     public User createUserByName(String name, String email, String password) {
         User user = new User(name, email, password );
         Path path = filePathUtil.getUserFilePath(user.getId());
-        fileSerializer.writeFile(path, user);
+        FileSerializer.writeFile(path, user);
         return user;
     }
 
     @Override
+    public User createUserByName(String name, String email, String password, UUID binaryContentId) {
+        User user = new User(name, email, password,binaryContentId);
+        Path path = filePathUtil.getUserFilePath(user.getId());
+        FileSerializer.writeFile(path, user);
+        return user;
+    }
+
+
+    @Override
     public User findUserById(UUID userId) {
         Path path = filePathUtil.getUserFilePath(userId);
-        return fileSerializer.readFile(path, User.class);
+        return FileSerializer.readFile(path, User.class);
     }
 
 
@@ -84,9 +95,9 @@ public class FileUserRepository implements UserRepository {
         if (!Files.exists(path)) {
             throw new RuntimeException("파일 없음: fileUserRepository.updateUserById");
         }
-        User user = fileSerializer.readFile(path, User.class);
+        User user = FileSerializer.readFile(path, User.class);
         user.setUsername(name);
-        fileSerializer.writeFile(path, user);
+        FileSerializer.writeFile(path, user);
     }
 
     @Override
@@ -97,5 +108,34 @@ public class FileUserRepository implements UserRepository {
         } catch (IOException e) {
             throw new RuntimeException("삭제중 오류 발생: FileUserRepository.deleteUserById", e);
         }
+    }
+
+    @Override
+    public boolean isUniqueUsername(String username) {
+        List<User> users = findAllUsers();
+        if (users.isEmpty()) {
+            return true;
+        }
+        for (User user : users) {
+            if (user.getUsername().equals(username)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isUniqueEmail(String email) {
+        List<User> users = findAllUsers();
+        if (users.isEmpty()) {
+            return true;
+        }
+
+        for (User user : users) {
+            if (user.getEmail().equals(email)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
