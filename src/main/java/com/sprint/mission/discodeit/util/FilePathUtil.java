@@ -82,7 +82,7 @@ private static final String TO_FILES = "data/";
         return USER_STATUS_DIRECTORY.resolve(userStatusId + TO_SER);
     }
 
-    public Path getBinaryContent() {
+    public Path getBinaryContentDirectory() {
         return BINARY_CONTENT_DIRECTORY;
     }
 

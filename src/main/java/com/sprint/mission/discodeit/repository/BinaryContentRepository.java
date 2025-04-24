@@ -18,4 +18,7 @@ import java.util.UUID;
 public interface BinaryContentRepository {
     BinaryContent createBinaryContent(byte[] image);
 
+    //    BinaryContent findBinaryContentByUserId(UUID userId);
+    BinaryContent updateImage(UUID profileId, byte[] image);
+
 }

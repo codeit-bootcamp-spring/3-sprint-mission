@@ -20,8 +20,18 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Getter
-public class User extends BaseEntity implements Serializable {
+public class User
+        extends BaseEntity
+        implements Serializable {
     private static final long serialVersionUID = 1L;
+//
+//    protected Instant createdAt;
+//    protected Instant updatedAt;
+//    protected UUID id;
+
+
+
+
     private String username;
     private String password;
     private String email;
@@ -32,13 +42,26 @@ public class User extends BaseEntity implements Serializable {
         this.username = username;
         this.email = email;
         this.password = password;
+
+//
+//        this.createdAt = Instant.now();
+//        this.updatedAt = Instant.now();
+//        this.id = UUID.randomUUID();
+//
     }
 
     public User(String username, String password, String email, UUID profileId) {
+        super();
         this.username = username;
         this.password = password;
         this.email = email;
         this.profileId = profileId;
+
+//
+//        this.createdAt = Instant.now();
+//        this.updatedAt = Instant.now();
+//        this.id = UUID.randomUUID();
+
     }
 
     public void setPassword(String password) {

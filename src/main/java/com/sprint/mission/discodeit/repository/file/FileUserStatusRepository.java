@@ -34,7 +34,7 @@ import java.util.stream.Stream;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-//@Primary
+@Primary
 @Repository
 @RequiredArgsConstructor
 public class FileUserStatusRepository implements UserStatusRepository {
@@ -54,7 +54,6 @@ public class FileUserStatusRepository implements UserStatusRepository {
         if (!Files.exists(path)) {
             throw new RuntimeException("UserStatus 파일 없음: " + path.toAbsolutePath());
         }
-        System.out.println(FileSerializer.readFile(path,UserStatus.class).getUserId());
         UserStatus userStatus = FileSerializer.readFile(path, UserStatus.class);
         Instant lastLoginTime = userStatus.getUpdatedAt();
         Duration duration = Duration.between(lastLoginTime, Instant.now());

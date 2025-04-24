@@ -15,19 +15,19 @@ import lombok.Getter;
  */
 
 @Getter
-public class UserCreateDto {
+public class UserCreateRequest {
     private String username;
     private String email;
     private String password;
     private byte[] image;
 
-    public UserCreateDto(String username, String email, String password) {
+    public UserCreateRequest(String username, String email, String password) {
         this.username = username;
         this.email = email;
         this.password = password;
     }
 
-    public UserCreateDto(String username, String email, String password, byte[] image) {
+    public UserCreateRequest(String username, String email, String password, byte[] image) {
         this.username = username;
         this.email = email;
         this.password = password;

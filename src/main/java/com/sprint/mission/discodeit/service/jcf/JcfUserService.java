@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.Dto.user.UserCreateDto;
-import com.sprint.mission.discodeit.Dto.user.UserFindDto;
+import com.sprint.mission.discodeit.Dto.user.ProfileUploadRequest;
+import com.sprint.mission.discodeit.Dto.user.ProfileUploadResponse;
+import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.Dto.user.UserFindResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.jcf.JcfBinaryContentRepostory;
@@ -38,7 +40,7 @@ public class JcfUserService implements UserService
 
 
 
-    public User createUser(UserCreateDto userCreateDto) {
+    public User createUser(UserCreateRequest userCreateDto) {
         Objects.requireNonNull(userCreateDto.getUsername(), "no name in parameter: BasicUserService.createUser");
         Objects.requireNonNull(userCreateDto.getEmail(), "no email in parameter: BasicUserService.createUser");
         Objects.requireNonNull(userCreateDto.getPassword(), "no password in parameter: BasicUserService.createUser");
@@ -63,7 +65,7 @@ public class JcfUserService implements UserService
 
     }
 
-    public UserFindDto findUserById(UUID userId) {
+    public UserFindResponse findUserById(UUID userId) {
         Objects.requireNonNull(userId, "User 아이디 입력 없음: JcfUserService.findUserById");
         User user = jcfUserRepository.findUserById(userId);
         Objects.requireNonNull(user, "찾는 User 없음: JcfUserService.findUserById");
@@ -77,17 +79,17 @@ public class JcfUserService implements UserService
         boolean online = jcfUserStatusRepository.isOnline(userStatus.getId());
 
 
-        UserFindDto userFindDto = new UserFindDto(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
+        UserFindResponse userFindDto = new UserFindResponse(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
                 user.getUsername(), user.getEmail(), user.getProfileId(), online);
 
         return userFindDto;
     }
 
-    public List<UserFindDto> findAllUsers() {
+    public List<UserFindResponse> findAllUsers() {
         List<UserStatus> allUserStatus = jcfUserStatusRepository.findAllUserStatus();
         List<User> users = jcfUserRepository.findAllUsers();
 
-        List<UserFindDto> userFindDtos = new ArrayList<>();
+        List<UserFindResponse> userFindDtos = new ArrayList<>();
 
         // userDto를 users + online으로 매핑
         for (int i =0;i<users.size();i++) {
@@ -96,7 +98,7 @@ public class JcfUserService implements UserService
             }
             boolean online = jcfUserStatusRepository.isOnline(allUserStatus.get(i).getId());
 
-            userFindDtos.add(new UserFindDto(
+            userFindDtos.add(new UserFindResponse(
                     users.get(i).getId(),
                     users.get(i).getCreatedAt(),
                     users.get(i).getUpdatedAt(),
@@ -107,6 +109,12 @@ public class JcfUserService implements UserService
         }
 
         return userFindDtos;
+    }
+
+    // 완성 필요
+    @Override
+    public ProfileUploadResponse updateImage(ProfileUploadRequest request) {
+        return null;
     }
 
     public void updateUser(UUID userId, String name) {

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
@@ -22,7 +23,7 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-//@Primary
+@Primary
 @Repository
 @RequiredArgsConstructor
 public class FileUserBinaryContentRepository implements BinaryContentRepository {
@@ -33,6 +34,19 @@ public class FileUserBinaryContentRepository implements BinaryContentRepository 
         BinaryContent binaryContent = new BinaryContent(image);
         Path path = filePathUtil.getBinaryContentFilePath(binaryContent.getId());
         FileSerializer.writeFile(path,binaryContent);
+        return binaryContent;
+    }
+
+
+    @Override
+    public BinaryContent updateImage(UUID profileId, byte[] image) {
+        Path path = filePathUtil.getBinaryContentFilePath(profileId);
+        if (!Files.exists(path)) {
+            return null;
+        }
+        BinaryContent binaryContent = FileSerializer.readFile(path, BinaryContent.class);
+        binaryContent.setImage(image);
+        FileSerializer.writeFile(path, binaryContent);
         return binaryContent;
     }
 }

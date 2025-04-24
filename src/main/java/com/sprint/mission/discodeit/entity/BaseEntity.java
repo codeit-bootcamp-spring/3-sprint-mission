@@ -20,6 +20,7 @@ import java.util.UUID;
  */
 @Getter
 public abstract class BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
     protected Instant createdAt;
     @Setter
     protected Instant updatedAt;
