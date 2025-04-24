@@ -2,10 +2,10 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService.ChannelNotFoundException;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotFoundException;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotParticipantException;
@@ -14,28 +14,30 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 
+@Service
 public class JCFMessageService implements MessageService {
 
-  private final MessageRepository messageRepository;
-  private final UserService userService;
-  private final ChannelService channelService;
+  private final JCFMessageRepository messageRepository;
+  private final JCFUserRepository userRepository;
+  private final JCFChannelRepository channelRepository;
 
   public JCFMessageService(
-      MessageRepository messageRepository,
-      UserService userService,
-      ChannelService channelService
+      JCFMessageRepository messageRepository,
+      JCFUserRepository userRepository,
+      JCFChannelRepository channelRepository
   ) {
     this.messageRepository = messageRepository;
-    this.userService = userService;
-    this.channelService = channelService;
+    this.userRepository = userRepository;
+    this.channelRepository = channelRepository;
   }
 
   @Override
   public Message createMessage(String content, UUID userId, UUID channelId) {
-    userService.getUserById(userId)
+    userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(userId));
-    Channel channel = channelService.getChannelById(channelId)
+    Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(channelId));
 
     boolean isNotParticipant = channel.getParticipants().stream()

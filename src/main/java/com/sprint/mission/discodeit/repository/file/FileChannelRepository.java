@@ -14,14 +14,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class FileChannelRepository implements ChannelRepository {
 
-  private final String FILE_PATH;
+  private static final String FILE_PATH = "data/channels.ser";
+  private final String filePath;
   private Map<UUID, Channel> channels = new HashMap<>();
 
+  private FileChannelRepository() {
+    this.filePath = FILE_PATH;
+    loadData();
+  }
+
   private FileChannelRepository(String filePath) {
-    this.FILE_PATH = filePath;
+    this.filePath = filePath;
     loadData();
   }
 
@@ -30,7 +38,7 @@ public class FileChannelRepository implements ChannelRepository {
   }
 
   public static FileChannelRepository createDefault() {
-    return new FileChannelRepository("data/channels.ser");
+    return new FileChannelRepository();
   }
 
   @Override
@@ -62,7 +70,7 @@ public class FileChannelRepository implements ChannelRepository {
 
   @SuppressWarnings("unchecked")
   private void loadData() {
-    File file = new File(FILE_PATH);
+    File file = new File(filePath);
     if (!file.exists() || file.length() == 0) {
       createDataFile();
       return;
@@ -79,7 +87,7 @@ public class FileChannelRepository implements ChannelRepository {
   }
 
   private void saveData() {
-    File file = new File(FILE_PATH);
+    File file = new File(filePath);
     try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
       oos.writeObject(channels);
     } catch (IOException e) {
@@ -88,7 +96,7 @@ public class FileChannelRepository implements ChannelRepository {
   }
 
   private void createDataFile() {
-    File file = new File(FILE_PATH);
+    File file = new File(filePath);
     File parentDir = file.getParentFile();
     if (parentDir != null && !parentDir.exists()) {
       parentDir.mkdirs();

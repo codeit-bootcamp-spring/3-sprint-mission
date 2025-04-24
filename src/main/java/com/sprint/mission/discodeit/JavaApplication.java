@@ -3,6 +3,9 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;
@@ -36,12 +39,16 @@ public class JavaApplication {
   public static void main(String[] args) {
     // 서비스 초기화 - JCF 리포지토리 사용
     System.out.println("=== JCF 리포지토리를 사용한 테스트 ===");
-    UserService userService = new BasicUserService(new JCFUserRepository());
-    ChannelService channelService = new BasicChannelService(new JCFChannelRepository());
+    UserRepository JCFUserRepository = new JCFUserRepository();
+    ChannelRepository JCFChannelRepository = new JCFChannelRepository();
+    MessageRepository JCFMessageRepository = new JCFMessageRepository();
+
+    UserService userService = new BasicUserService(JCFUserRepository);
+    ChannelService channelService = new BasicChannelService(JCFChannelRepository);
     MessageService messageService = new BasicMessageService(
-        new JCFMessageRepository(),
-        userService,
-        channelService);
+        JCFMessageRepository,
+        JCFUserRepository,
+        JCFChannelRepository);
 
     // 셋업
     User user = setupUser(userService);
@@ -51,13 +58,17 @@ public class JavaApplication {
 
     // 서비스 초기화 - File 리포지토리 사용
     System.out.println("\n=== File 리포지토리를 사용한 테스트 ===");
-    UserService fileUserService = new BasicUserService(FileUserRepository.createDefault());
+    UserRepository fileUserRepository = FileUserRepository.createDefault();
+    ChannelRepository fileChannelRepository = FileChannelRepository.createDefault();
+    MessageRepository fileMessageRepository = FileMessageRepository.createDefault();
+
+    UserService fileUserService = new BasicUserService(fileUserRepository);
     ChannelService fileChannelService = new BasicChannelService(
-        FileChannelRepository.createDefault());
+        fileChannelRepository);
     MessageService fileMessageService = new BasicMessageService(
-        FileMessageRepository.createDefault(),
-        fileUserService,
-        fileChannelService);
+        fileMessageRepository,
+        fileUserRepository,
+        fileChannelRepository);
 
     // 셋업
     User fileUser = setupUser(fileUserService);

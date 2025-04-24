@@ -2,18 +2,19 @@ package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
 
+@Service
 public class FileChannelService implements ChannelService {
 
-  private final ChannelRepository channelRepository;
+  private final FileChannelRepository channelRepository;
 
-  public FileChannelService(ChannelRepository channelRepository) {
+  public FileChannelService(FileChannelRepository channelRepository) {
     this.channelRepository = channelRepository;
   }
 

@@ -2,18 +2,20 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 
+@Service
 public class JCFChannelService implements ChannelService {
 
-  private final ChannelRepository channelRepository;
+  private final JCFChannelRepository channelRepository;
 
-  public JCFChannelService(ChannelRepository channelRepository) {
+  public JCFChannelService(JCFChannelRepository channelRepository) {
     this.channelRepository = channelRepository;
   }
 

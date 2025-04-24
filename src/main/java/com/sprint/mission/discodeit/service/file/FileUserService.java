@@ -1,18 +1,19 @@
 package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
 
+@Service
 public class FileUserService implements UserService {
 
-  private final UserRepository userRepository;
+  private final FileUserRepository userRepository;
 
-  public FileUserService(UserRepository userRepository) {
+  public FileUserService(FileUserRepository userRepository) {
     this.userRepository = userRepository;
   }
 

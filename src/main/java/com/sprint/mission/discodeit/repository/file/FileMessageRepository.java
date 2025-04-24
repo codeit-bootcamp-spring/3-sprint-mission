@@ -14,14 +14,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class FileMessageRepository implements MessageRepository {
 
-  private final String FILE_PATH;
+  private static final String FILE_PATH = "data/messages.ser";
+  private final String filePath;
   private Map<UUID, Message> messages = new HashMap<>();
 
+  private FileMessageRepository() {
+    this.filePath = FILE_PATH;
+    loadData();
+  }
+
   private FileMessageRepository(String filePath) {
-    this.FILE_PATH = filePath;
+    this.filePath = filePath;
     loadData();
   }
 
@@ -30,7 +38,7 @@ public class FileMessageRepository implements MessageRepository {
   }
 
   public static FileMessageRepository createDefault() {
-    return new FileMessageRepository("data/messages.ser");
+    return new FileMessageRepository();
   }
 
   @Override
@@ -62,7 +70,7 @@ public class FileMessageRepository implements MessageRepository {
 
   @SuppressWarnings("unchecked")
   private void loadData() {
-    File file = new File(FILE_PATH);
+    File file = new File(filePath);
     if (!file.exists() || file.length() == 0) {
       createDataFile();
       return;
@@ -79,7 +87,7 @@ public class FileMessageRepository implements MessageRepository {
   }
 
   private void saveData() {
-    File file = new File(FILE_PATH);
+    File file = new File(filePath);
     try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
       oos.writeObject(messages);
     } catch (IOException e) {
@@ -88,7 +96,7 @@ public class FileMessageRepository implements MessageRepository {
   }
 
   private void createDataFile() {
-    File file = new File(FILE_PATH);
+    File file = new File(filePath);
     File parentDir = file.getParentFile();
     if (parentDir != null && !parentDir.exists()) {
       parentDir.mkdirs();

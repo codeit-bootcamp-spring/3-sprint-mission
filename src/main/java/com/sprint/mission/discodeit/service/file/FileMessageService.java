@@ -2,45 +2,51 @@ package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.file.FileChannelService.ChannelNotFoundException;
 import com.sprint.mission.discodeit.service.file.FileUserService.UserNotFoundException;
 import com.sprint.mission.discodeit.service.file.FileUserService.UserNotParticipantException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
 
+@Service
 public class FileMessageService implements MessageService {
 
-  private final MessageRepository messageRepository;
-  private final UserService userService;
-  private final ChannelService channelService;
+  private final FileMessageRepository messageRepository;
+  private final FileUserRepository userRepository;
+  private final FileChannelRepository channelRepository;
 
-  public FileMessageService(MessageRepository messageRepository,
-      UserService userService,
-      ChannelService channelService) {
+  public FileMessageService(FileMessageRepository messageRepository,
+      FileUserRepository userRepository,
+      FileChannelRepository channelRepository) {
     this.messageRepository = messageRepository;
-    this.userService = userService;
-    this.channelService = channelService;
+    this.userRepository = userRepository;
+    this.channelRepository = channelRepository;
   }
 
-  public static FileMessageService from(UserService userService, ChannelService channelService, String filePath) {
-    return new FileMessageService(FileMessageRepository.from(filePath), userService, channelService);
+  public static FileMessageService from(FileUserRepository userRepository,
+      FileChannelRepository channelRepository,
+      String filePath) {
+    return new FileMessageService(FileMessageRepository.from(filePath), userRepository,
+        channelRepository);
   }
 
-  public static FileMessageService createDefault(UserService userService, ChannelService channelService) {
-    return new FileMessageService(FileMessageRepository.createDefault(), userService, channelService);
+  public static FileMessageService createDefault(FileUserRepository userRepository,
+      FileChannelRepository channelRepository) {
+    return new FileMessageService(FileMessageRepository.createDefault(), userRepository,
+        channelRepository);
   }
 
   @Override
   public Message createMessage(String content, UUID userId, UUID channelId) {
-    userService.getUserById(userId)
+    userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(userId));
-    Channel channel = channelService.getChannelById(channelId)
+    Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(channelId));
 
     boolean isNotParticipant = channel.getParticipants().stream()
@@ -63,11 +69,11 @@ public class FileMessageService implements MessageService {
   public List<Message> searchMessages(UUID channelId, UUID userId, String content) {
     // 채널/사용자 존재 여부 검증 (필요 시)
     if (channelId != null) {
-      channelService.getChannelById(channelId)
+      channelRepository.findById(channelId)
           .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelId));
     }
     if (userId != null) {
-      userService.getUserById(userId)
+      userRepository.findById(userId)
           .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
     }
 

@@ -1,17 +1,19 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
 
+@Service
 public class JCFUserService implements UserService {
 
-  private final UserRepository userRepository;
+  private final JCFUserRepository userRepository;
 
-  public JCFUserService(UserRepository userRepository) {
+  public JCFUserService(JCFUserRepository userRepository) {
     this.userRepository = userRepository;
   }
 

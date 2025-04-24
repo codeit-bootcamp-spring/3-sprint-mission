@@ -14,14 +14,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class FileUserRepository implements UserRepository {
 
-  private final String FILE_PATH;
+  private static final String FILE_PATH = "data/users.ser";
+  private final String filePath;
   private Map<UUID, User> users = new HashMap<>();
 
+  public FileUserRepository() {
+    this.filePath = FILE_PATH;
+    loadData();
+  }
+
   private FileUserRepository(String filePath) {
-    this.FILE_PATH = filePath;
+    this.filePath = filePath;
     loadData();
   }
 
@@ -30,7 +38,7 @@ public class FileUserRepository implements UserRepository {
   }
 
   public static FileUserRepository createDefault() {
-    return new FileUserRepository("data/users.ser");
+    return new FileUserRepository();
   }
 
   @Override
@@ -78,7 +86,7 @@ public class FileUserRepository implements UserRepository {
 
   @SuppressWarnings("unchecked")
   private void loadData() {
-    File file = new File(FILE_PATH);
+    File file = new File(filePath);
     if (!file.exists() || file.length() == 0) {
       createDataFile();
       return;
@@ -95,7 +103,7 @@ public class FileUserRepository implements UserRepository {
   }
 
   private void saveData() {
-    File file = new File(FILE_PATH);
+    File file = new File(filePath);
     try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
       oos.writeObject(users);
     } catch (IOException e) {
@@ -104,7 +112,7 @@ public class FileUserRepository implements UserRepository {
   }
 
   private void createDataFile() {
-    File file = new File(FILE_PATH);
+    File file = new File(filePath);
     File parentDir = file.getParentFile();
     if (parentDir != null && !parentDir.exists()) {
       parentDir.mkdirs();
