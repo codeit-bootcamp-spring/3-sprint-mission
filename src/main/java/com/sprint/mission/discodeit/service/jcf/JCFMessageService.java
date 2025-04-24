@@ -1,69 +1,45 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFMessageService implements MessageService {
+    // 저장 로직
     private final Map<UUID, Message> data = new HashMap<>();
-    private final UserService userService;
-    private ChannelService channelService;
 
-    public JCFMessageService(UserService userService, ChannelService channelService) {
-        this.userService = userService;
-        this.channelService = channelService;
-    }
-
+    @Override
     public Message createMessage(Message message) {
+        // 저장 로직
         data.put(message.getId(), message);
         return message;
     }
 
-    public Message getMessage(UUID messageId) {
-        return data.get(messageId);
+    @Override
+    public Optional<Message> getMessage(UUID messageId) {
+        // 저장 로직
+        return Optional.ofNullable(data.get(messageId));
     }
 
+    @Override
     public List<Message> getAllMessages() {
+        // 저장 로직
         return new ArrayList<>(data.values());
     }
 
-    public void setChannelService(JCFChannelService channelService) {
-        this.channelService = channelService;
-    }
-
+    // update 실패 시 피드백 출력
+    @Override
     public void updateMessage(UUID messageId, String message) {
-        if (data.containsKey(messageId)) {
-            data.get(messageId).updateMsgContent(message);
-        }
+        // 비즈니스 로직 + 저장 로직
+        getMessage(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지"))
+                .updateMsgContent(message);
     }
 
+    @Override
     public void deleteMessage(UUID messageId) {
+        // 저장 로직
         data.remove(messageId);
-    }
-
-    public Message createMessageCheck(String msgContent, UUID senderId, UUID channelId) {
-        User sender = userService.getUser(senderId);
-        if (sender == null) {
-            throw new IllegalArgumentException("존재하지 않는 유저");
-        }
-
-        Channel channel = channelService.getChannel(channelId);
-        if (channel == null) {
-            throw new IllegalArgumentException("존재하지 않는 채널");
-        }
-
-        if(!channel.getUserIds().contains(senderId)) {
-            throw new IllegalStateException("채널에 속해있지 않은 유저");
-        }
-
-        Message message = new Message(msgContent, senderId, channelId);
-        Message created = createMessage(message);
-        channelService.addMessageToChannel(channelId, created.getId());
-        return created;
     }
 }
