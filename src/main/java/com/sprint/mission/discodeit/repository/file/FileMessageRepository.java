@@ -102,10 +102,8 @@ public class FileMessageRepository implements MessageRepository {
 
         messages.stream()
                 .filter((c)->c.getId().equals(id))
-                .forEach((c)->{c.updateText(message.getText());
-                    c.updateUpdatedAt(Instant.now());
-                    c.updatePicture(message.getPicture());
-                    c.updateEmoticon(message.getEmoticon());});
+                .forEach((c)->{c.setText(message.getText());
+                    c.setUpdatedAt(Instant.now());});
 
         try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){
             messages.forEach((c)->{

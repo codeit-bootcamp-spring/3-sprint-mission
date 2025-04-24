@@ -101,9 +101,9 @@ public class FileChannelRepository implements ChannelRepository {
 
         channels.stream()
                 .filter((c)->c.getId().equals(id))
-                .forEach((c)->{c.updateChannelName(channel.getChannelName());
-                    c.updateUpdatedAt(Instant.now());
-                    c.updateMembers(channel.getMembers());});
+                .forEach((c)->{c.setChannelName(channel.getChannelName());
+                    c.setUpdatedAt(Instant.now());
+                    c.setMembers(channel.getMembers());});
 
         try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){
             channels.forEach((c)->{
