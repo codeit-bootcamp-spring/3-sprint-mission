@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.service.ChannelService;
 
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepo;
-    private Channel currentChannel;
 
     public BasicChannelService(ChannelRepository channelRepo) {
         this.channelRepo = channelRepo;
@@ -51,13 +50,12 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel changeChannel(int channelNumber) {
-        currentChannel = channelRepo.findChannel(channelNumber);
-        return currentChannel;
+        return channelRepo.findChannel(channelNumber);
     }
 
     @Override
     public void selectChannel(int channelNumber) {
-        currentChannel = channelRepo.findChannel(channelNumber);
+        Channel currentChannel = channelRepo.findChannel(channelNumber);
         if (currentChannel == null) {
             System.out.println("유효하지 않은 채널 번호입니다.");
         }
@@ -65,6 +63,6 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel getCurrentChannel() {
-        return currentChannel;
+        return null;
     }
 }

@@ -1,5 +1,6 @@
 package com.sprint;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.menu.ChannelMenu;
 import com.sprint.mission.discodeit.menu.MessageMenu;
 import com.sprint.mission.discodeit.menu.UserMenu;
@@ -28,7 +29,6 @@ public class JavaApplication3 {
         MessageService messageServiceFile = new BasicMessageService(fileMessageRepo);
 
         UserMenu userMenu = new UserMenu(sc, userServiceFile);
-        ChannelMenu channelMenu = new ChannelMenu(sc, channelServiceFile);
         MessageMenu messageMenu = new MessageMenu(sc, messageServiceFile);
 
         userMenu.loginUser();
@@ -37,7 +37,14 @@ public class JavaApplication3 {
         channelServiceFile.outputAllChannelInfo();
         System.out.println("들어가실 채널 번호를 선택해 주세요.");
         int channelNumber = Integer.parseInt(sc.nextLine());
-        channelServiceFile.selectChannel(channelNumber);
+        Channel selectedChannel = channelServiceFile.changeChannel(channelNumber);
+
+        if (selectedChannel == null) {
+            System.out.println("유효하지 않은 채널 번호입니다. 프로그램을 종료합니다.");
+            return;
+        }
+
+        ChannelMenu channelMenu = new ChannelMenu(sc, channelServiceFile, selectedChannel);
 
         while (true) {
             System.out.println("원하는 기능을 입력 해 주세요.");

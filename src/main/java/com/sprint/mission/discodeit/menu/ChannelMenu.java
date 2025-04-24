@@ -7,17 +7,18 @@ import java.util.Scanner;
 public class ChannelMenu {
     private final Scanner sc;
     private final ChannelService channelService;
+    private Channel currentChannel;
 
-    public ChannelMenu(Scanner scanner, ChannelService channelService) {
+    public ChannelMenu(Scanner scanner, ChannelService channelService, Channel currentChannel) {
         this.sc = scanner;
         this.channelService = channelService;
+        this.currentChannel = currentChannel;
     }
 
     public void run() {
         while (true) {
             System.out.println("1. 채널 생성\t2. 현재 채널 정보 출력\t3. 모든 채널 정보 출력\t4. 채널 이름 수정\t5. 채널 삭제\t6. 채널 변경\t7. 이전 메뉴");
             int n = Integer.parseInt(sc.nextLine());
-            Channel currentChannel = channelService.getCurrentChannel();
 
             switch (n) {
                 case 1 -> {
@@ -42,14 +43,20 @@ public class ChannelMenu {
                         System.out.println("정상적으로 채널이 삭제됐습니다. 변경하실 채널 번호를 입력해주세요.");
                         channelService.outputAllChannelInfo();
                         int newChannelNumber = Integer.parseInt(sc.nextLine());
-                        channelService.changeChannel(newChannelNumber);
+                        currentChannel = channelService.changeChannel(newChannelNumber);
+                        if (currentChannel == null) {
+                            System.out.println("유효하지 않은 채널 번호입니다.");
+                        }
                     }
                 }
                 case 6 -> {
                     System.out.println("변경하실 채널 번호를 입력해주세요.");
                     channelService.outputAllChannelInfo();
                     int newChannelNumber = Integer.parseInt(sc.nextLine());
-                    channelService.changeChannel(newChannelNumber);
+                    currentChannel = channelService.changeChannel(newChannelNumber);
+                    if (currentChannel == null) {
+                        System.out.println("유효하지 않은 채널 번호입니다.");
+                    }
                 }
                 case 7 -> {
                     return;
