@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -20,6 +21,7 @@ public class BasicMessageService implements MessageService {
     //
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     // @RequiredArgsConstructor로 대체되었다.
 //    public BasicMessageService(MessageRepository messageRepository, ChannelRepository channelRepository, UserRepository userRepository) {
@@ -37,7 +39,7 @@ public class BasicMessageService implements MessageService {
             throw new NoSuchElementException("Author not found with id " + authorId);
         }
 
-        Message message = new Message(content, channelId, authorId);
+        Message message = new Message(content, channelId, authorId, );
         return messageRepository.save(message);
     }
 

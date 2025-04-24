@@ -32,7 +32,7 @@ public class UserStatus {
 
 
     /*마지막 접속이 현재시간기점으로 5분이 지났으면 true를 아니면 false를 리턴*/
-    public boolean isActive() {
+    public boolean isOnline() {
         return lastActiveAt.isAfter(Instant.now().minus(Duration.ofMinutes(5)));
     }
 
