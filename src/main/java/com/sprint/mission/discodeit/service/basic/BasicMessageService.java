@@ -2,11 +2,11 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.exception.ChannelException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.basic.BasicChannelService.ChannelNotFoundException;
 import com.sprint.mission.discodeit.service.basic.BasicUserService.UserNotFoundException;
 import com.sprint.mission.discodeit.service.basic.BasicUserService.UserNotParticipantException;
 import java.util.Comparator;
@@ -34,12 +34,13 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public Message createMessage(String content, UUID userId, UUID channelId) {
+  public Message createMessage(String content, UUID userId, UUID channelId)
+      throws ChannelException {
     userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(userId));
 
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new ChannelNotFoundException(channelId));
+        .orElseThrow(() -> ChannelException.notFound(channelId));
 
     boolean isNotParticipant = channel.getParticipants().stream()
         .noneMatch(p -> p.getId().equals(userId));

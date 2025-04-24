@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.ChannelException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
@@ -57,30 +58,23 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public void addParticipant(UUID channelId, User user)
-      throws ChannelNotFoundException, ParticipantAlreadyExistsException {
+      throws ChannelException {
 
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new ChannelNotFoundException(channelId));
-
-    if (!channel.addParticipant(user)) {
-      throw new ParticipantAlreadyExistsException(user.getId(), channelId);
-    }
-
-    channelRepository.save(channel); // 상태 변경 후 저장
+        .orElseThrow(() -> ChannelException.notFound(channelId));
+    channel.addParticipant(user);
+    user.addChannel(channel);
+    channelRepository.save(channel);
   }
 
   @Override
   public void removeParticipant(UUID channelId, UUID userId)
-      throws ChannelNotFoundException, ParticipantNotFoundException {
+      throws ChannelException {
 
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new ChannelNotFoundException(channelId));
-
-    if (!channel.removeParticipant(userId)) {
-      throw new ParticipantNotFoundException(userId, channelId);
-    }
-
-    channelRepository.save(channel); // 상태 변경 후 저장
+        .orElseThrow(() -> ChannelException.notFound(channelId));
+    channel.removeParticipant(userId);
+    channelRepository.save(channel);
   }
 
   @Override
@@ -88,26 +82,5 @@ public class BasicChannelService implements ChannelService {
     Optional<Channel> deleted = channelRepository.findById(channelId);
     deleted.ifPresent(channel -> channelRepository.deleteById(channelId));
     return deleted;
-  }
-
-  public static class ChannelNotFoundException extends RuntimeException {
-
-    public ChannelNotFoundException(UUID channelId) {
-      super("채널을 찾을 수 없음: " + channelId);
-    }
-  }
-
-  public static class ParticipantAlreadyExistsException extends RuntimeException {
-
-    public ParticipantAlreadyExistsException(UUID userId, UUID channelId) {
-      super("이미 채널에 참여 중인 사용자입니다. [UserID: " + userId + ", ChannelID: " + channelId + "]");
-    }
-  }
-
-  public static class ParticipantNotFoundException extends RuntimeException {
-
-    public ParticipantNotFoundException(UUID userId, UUID channelId) {
-      super("채널에서 사용자를 찾을 수 없습니다. [UserID: " + userId + ", ChannelID: " + channelId + "]");
-    }
   }
 }

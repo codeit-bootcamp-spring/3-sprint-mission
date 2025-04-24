@@ -2,11 +2,11 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.exception.ChannelException;
 import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
 import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
 import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService.ChannelNotFoundException;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotFoundException;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotParticipantException;
 import java.util.Comparator;
@@ -34,11 +34,12 @@ public class JCFMessageService implements MessageService {
   }
 
   @Override
-  public Message createMessage(String content, UUID userId, UUID channelId) {
+  public Message createMessage(String content, UUID userId, UUID channelId)
+      throws ChannelException {
     userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(userId));
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new ChannelNotFoundException(channelId));
+        .orElseThrow(() -> ChannelException.notFound(channelId));
 
     boolean isNotParticipant = channel.getParticipants().stream()
         .noneMatch(p -> p.getId().equals(userId));

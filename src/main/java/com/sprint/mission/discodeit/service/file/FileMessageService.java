@@ -2,11 +2,11 @@ package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.exception.ChannelException;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.file.FileChannelService.ChannelNotFoundException;
 import com.sprint.mission.discodeit.service.file.FileUserService.UserNotFoundException;
 import com.sprint.mission.discodeit.service.file.FileUserService.UserNotParticipantException;
 import java.util.List;
@@ -43,11 +43,12 @@ public class FileMessageService implements MessageService {
   }
 
   @Override
-  public Message createMessage(String content, UUID userId, UUID channelId) {
+  public Message createMessage(String content, UUID userId, UUID channelId)
+      throws ChannelException {
     userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(userId));
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new ChannelNotFoundException(channelId));
+        .orElseThrow(() -> ChannelException.notFound(channelId));
 
     boolean isNotParticipant = channel.getParticipants().stream()
         .noneMatch(p -> p.getId().equals(userId));

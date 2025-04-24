@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.exception.ChannelException;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -69,25 +70,26 @@ public class Channel implements Serializable {
   }
 
   // 참여자 관리
-  public boolean addParticipant(User user) {
-    if (!participants.contains(user)) {
-      participants.add(user);
-      setUpdatedAt();
-      return true;
+  public void addParticipant(User user) throws ChannelException {
+    if (participants.contains(user)) {
+      throw ChannelException.participantAlreadyExists(user.getId(), this.getId());
     }
-    return false;
+    participants.add(user);
+    setUpdatedAt();
   }
 
   public List<User> getParticipants() {
     return new ArrayList<>(participants);
   }
 
-  public boolean removeParticipant(UUID userId) {
-    boolean removed = participants.removeIf(user -> user.getId().equals(userId));
-    if (removed) {
-      setUpdatedAt();
-    }
-    return removed;
+  public void removeParticipant(UUID userId) throws ChannelException {
+    User participantToRemove = participants.stream()
+        .filter(user -> user.getId().equals(userId))
+        .findFirst()
+        .orElseThrow(() -> ChannelException.participantNotFound(userId, this.getId()));
+
+    participants.remove(participantToRemove);
+    setUpdatedAt();
   }
 
   // 참조 정보 getter

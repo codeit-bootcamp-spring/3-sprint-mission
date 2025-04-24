@@ -2,9 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService.ChannelNotFoundException;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService.ParticipantAlreadyExistsException;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService.ParticipantNotFoundException;
+import com.sprint.mission.discodeit.exception.ChannelException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,22 +57,20 @@ public interface ChannelService {
    *
    * @param channelId 채널 ID
    * @param user      추가할 사용자
-   * @throws ChannelNotFoundException          존재하지 않는 채널
-   * @throws ParticipantAlreadyExistsException 중복 참여 시도 오류
+   * @throws com.sprint.mission.discodeit.exception.ChannelException
    */
   void addParticipant(UUID channelId, User user)
-      throws ChannelNotFoundException, ParticipantAlreadyExistsException;
+      throws ChannelException;
 
   /**
    * 채널에서 참여자를 제거한다
    *
    * @param channelId 채널 ID
    * @param userId    제거할 사용자 ID
-   * @throws ChannelNotFoundException     존재하지 않는 채널
-   * @throws ParticipantNotFoundException 존재하지 않는 참여자
+   * @throws com.sprint.mission.discodeit.exception.ChannelException
    */
   void removeParticipant(UUID channelId, UUID userId)
-      throws ChannelNotFoundException, ParticipantNotFoundException;
+      throws ChannelException;
 
   /**
    * 채널을 삭제한다
