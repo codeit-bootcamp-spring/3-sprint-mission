@@ -29,7 +29,7 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-//@Primary
+@Primary
 @Repository
 @RequiredArgsConstructor
 public class FileUserRepository implements UserRepository {
@@ -46,8 +46,8 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public User createUserByName(String name, String email, String password, UUID binaryContentId) {
-        User user = new User(name, email, password,binaryContentId);
+    public User createUserByName(String name, String email, String password, UUID profileId) {
+        User user = new User(name, email, password, profileId);
         Path path = filePathUtil.getUserFilePath(user.getId());
         FileSerializer.writeFile(path, user);
         return user;
@@ -57,6 +57,10 @@ public class FileUserRepository implements UserRepository {
     @Override
     public User findUserById(UUID userId) {
         Path path = filePathUtil.getUserFilePath(userId);
+
+        if (!Files.exists(path)) {
+            throw new RuntimeException("nothing exists");
+        }
         return FileSerializer.readFile(path, User.class);
     }
 
@@ -86,6 +90,17 @@ public class FileUserRepository implements UserRepository {
         } catch (IOException e) {
             throw new RuntimeException("유저들을 리스트로 만드는 과정에 문제 발생: FileChannelRepository.findAllUsers",e);
         }
+    }
+
+    @Override
+    public void updateProfileIdById(UUID userId, UUID profileId) {
+        Path path = filePathUtil.getUserFilePath(userId);
+        if (!Files.exists(path)) {
+            return;
+        }
+        User user = FileSerializer.readFile(path, User.class);
+        user.setProfileId(profileId);
+        FileSerializer.writeFile(path, user);
     }
 
     @Override

@@ -19,7 +19,7 @@ import java.util.UUID;
  */
 @Getter
 @Setter
-public class UserFindDto {
+public class UserFindResponse {
     private UUID id;
     private Instant createdAt;
     private Instant updatedAt;
@@ -29,7 +29,7 @@ public class UserFindDto {
     private boolean isOnline;
 
 
-    public UserFindDto(UUID id, Instant createdAt, Instant updatedAt, String username, String email, UUID profileId, boolean isOnline) {
+    public UserFindResponse(UUID id, Instant createdAt, Instant updatedAt, String username, String email, UUID profileId, boolean isOnline) {
 
         this.id = id;
         this.createdAt = createdAt;

@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.service.file;
 
-import com.sprint.mission.discodeit.Dto.user.UserCreateDto;
-import com.sprint.mission.discodeit.Dto.user.UserFindDto;
+import com.sprint.mission.discodeit.Dto.user.ProfileUploadRequest;
+import com.sprint.mission.discodeit.Dto.user.ProfileUploadResponse;
+import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.Dto.user.UserFindResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.file.FileUserBinaryContentRepository;
@@ -39,7 +41,7 @@ public class FileUserService implements UserService {
 
     // 이미지 저장 로직 추가
     @Override
-    public User createUser(UserCreateDto userCreateDto) {
+    public User createUser(UserCreateRequest userCreateDto) {
         Objects.requireNonNull(userCreateDto.getUsername(), "no name in parameter: BasicUserService.createUser");
         Objects.requireNonNull(userCreateDto.getEmail(), "no email in parameter: BasicUserService.createUser");
         Objects.requireNonNull(userCreateDto.getPassword(), "no password in parameter: BasicUserService.createUser");
@@ -65,7 +67,7 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public UserFindDto findUserById(UUID userId) {
+    public UserFindResponse findUserById(UUID userId) {
         Objects.requireNonNull(userId, "User 아이디 입력 없음: FileUserService.findUserById");
         User user = fileUserRepository.findUserById(userId);
         Objects.requireNonNull(user, "찾는 User 없음: FileUserService.findUserById");
@@ -81,18 +83,18 @@ public class FileUserService implements UserService {
         boolean online = fileUserStatusRepository.isOnline(userStatus.getId());
 
 
-        UserFindDto userFindDto = new UserFindDto(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
+        UserFindResponse userFindDto = new UserFindResponse(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
                 user.getUsername(), user.getEmail(), user.getProfileId(), online);
 
         return userFindDto;
     }
 
     @Override
-    public List<UserFindDto> findAllUsers() {
+    public List<UserFindResponse> findAllUsers() {
         List<UserStatus> allUserStatus = fileUserStatusRepository.findAllUserStatus();
         List<User> users = fileUserRepository.findAllUsers();
 
-        List<UserFindDto> userFindDtos = new ArrayList<>();
+        List<UserFindResponse> userFindDtos = new ArrayList<>();
 
         // userDto를 (users + online)으로 매핑
         for (int i =0;i<users.size();i++) {
@@ -101,7 +103,7 @@ public class FileUserService implements UserService {
             }
             boolean online = fileUserStatusRepository.isOnline(allUserStatus.get(i).getId());
 
-            userFindDtos.add(new UserFindDto(
+            userFindDtos.add(new UserFindResponse(
                     users.get(i).getId(),
                     users.get(i).getCreatedAt(),
                     users.get(i).getUpdatedAt(),
@@ -112,6 +114,12 @@ public class FileUserService implements UserService {
         }
 
         return userFindDtos;
+    }
+
+    // 완성 필요
+    @Override
+    public ProfileUploadResponse updateImage(ProfileUploadRequest request) {
+        return null;
     }
 
     @Override

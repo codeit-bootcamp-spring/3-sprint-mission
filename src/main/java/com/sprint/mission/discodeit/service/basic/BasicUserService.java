@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.Dto.user.UserCreateDto;
-import com.sprint.mission.discodeit.Dto.user.UserFindDto;
+import com.sprint.mission.discodeit.Dto.user.ProfileUploadRequest;
+import com.sprint.mission.discodeit.Dto.user.ProfileUploadResponse;
+import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.Dto.user.UserFindResponse;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -12,8 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -39,8 +40,9 @@ public class BasicUserService  implements UserService {
     private final BinaryContentRepository binaryContentRepository;
 
 
+
     @Override
-    public User createUser(UserCreateDto userCreateDto) {
+    public User createUser(UserCreateRequest userCreateDto) {
         Objects.requireNonNull(userCreateDto.getUsername(), "no name in parameter: BasicUserService.createUser");
         Objects.requireNonNull(userCreateDto.getEmail(), "no email in parameter: BasicUserService.createUser");
         Objects.requireNonNull(userCreateDto.getPassword(), "no password in parameter: BasicUserService.createUser");
@@ -57,8 +59,8 @@ public class BasicUserService  implements UserService {
             return result;
         } else{
             // 이미지 처리 있음
-            UUID binaryContentId = binaryContentRepository.createBinaryContent(userCreateDto.getImage()).getId();
-            User result = userRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword(), binaryContentId);
+            UUID profileId = binaryContentRepository.createBinaryContent(userCreateDto.getImage()).getId();
+            User result = userRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword(), profileId);
             userStatusRepository.createUserStatus(result.getId());
             return result;
         }
@@ -66,12 +68,10 @@ public class BasicUserService  implements UserService {
 
     }
 
-/*
-     이미지만 저장하는 로직 추가(BinaryContent 객체 생성)
- */
+
 
     @Override
-    public UserFindDto findUserById(UUID userId) {
+    public UserFindResponse findUserById(UUID userId) {
         Objects.requireNonNull(userId, "User 아이디 입력 없음: BasicUserService.findUserById");
         User user = userRepository.findUserById(userId);
         Objects.requireNonNull(user, "찾는 User 없음: BasicUserService.findUserById");
@@ -85,7 +85,7 @@ public class BasicUserService  implements UserService {
         boolean online = userStatusRepository.isOnline(userStatus.getId());
 
 
-        UserFindDto userFindDto = new UserFindDto(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
+        UserFindResponse userFindDto = new UserFindResponse(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
                 user.getUsername(), user.getEmail(), user.getProfileId(), online);
 
         return userFindDto;
@@ -93,9 +93,9 @@ public class BasicUserService  implements UserService {
 
 
     @Override
-    public List<UserFindDto> findAllUsers() {
+    public List<UserFindResponse> findAllUsers() {
         List<User> users = userRepository.findAllUsers();
-        List<UserFindDto> userFindDtos = new ArrayList<>();
+        List<UserFindResponse> userFindDtos = new ArrayList<>();
 
         // userDto를 users + online으로 매핑
         for (User user : users) {
@@ -105,7 +105,7 @@ public class BasicUserService  implements UserService {
                 online = userStatusRepository.isOnline(status.getId());
             }
 
-            userFindDtos.add(new UserFindDto(
+            userFindDtos.add(new UserFindResponse(
                     user.getId(),
                     user.getCreatedAt(),
                     user.getUpdatedAt(),
@@ -116,6 +116,42 @@ public class BasicUserService  implements UserService {
         }
 
         return userFindDtos;
+    }
+
+/*
+    update
+    [ ] 선택적으로 프로필 이미지를 대체할 수 있습니다.
+    [ ] DTO를 활용해 파라미터를 그룹화합니다.
+        수정 대상 객체의 id 파라미터, 수정할 값 파라미터
+ */
+
+    @Override
+    public ProfileUploadResponse updateImage(ProfileUploadRequest request) {
+        UUID userId = request.getUserId();
+        byte[] newImage = request.getImage();
+        User user = userRepository.findUserById(userId);
+        UUID profileId = findUserById(userId).getProfileId();
+
+
+        if (profileId == null) {
+            // 없음 객체 생성
+            // binary content 생성
+            BinaryContent binaryContent = binaryContentRepository.createBinaryContent(newImage);
+            // 프로필 아이디 유저에 추가
+            userRepository.updateProfileIdById(userId, binaryContent.getId());
+
+            user = userRepository.findUserById(userId);
+        } else{
+            // binary content 프로필 변경
+            binaryContentRepository.updateImage(profileId, newImage);
+        }
+        return new ProfileUploadResponse(
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getProfileId());
     }
 
     @Override

@@ -1,19 +1,18 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.Dto.user.UserCreateDto;
-import com.sprint.mission.discodeit.Dto.user.UserFindDto;
+import com.sprint.mission.discodeit.Dto.user.ProfileUploadRequest;
+import com.sprint.mission.discodeit.Dto.user.ProfileUploadResponse;
+import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.Dto.user.UserFindResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.jcf.JcfUserStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
-
-import java.util.List;
 
 @SpringBootApplication
 public class DiscodeitApplication {
@@ -30,9 +29,9 @@ public class DiscodeitApplication {
 		byte[] image1 = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 		byte[] image2 = new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-		UserCreateDto userCreateDto1 = new UserCreateDto("user1", "user1@user.com", "1234", image1);
-		UserCreateDto userCreateDto2 = new UserCreateDto("user2","user2@user.com","1234");
-		UserCreateDto userCreateDto3 = new UserCreateDto("user3", "user3@user.com", "1234");
+		UserCreateRequest userCreateDto1 = new UserCreateRequest("user1", "user1@user.com", "1234", image1);
+		UserCreateRequest userCreateDto2 = new UserCreateRequest("user2", "user2@user.com", "1234", image2);
+		UserCreateRequest userCreateDto3 = new UserCreateRequest("user3", "user3@user.com", "1234");
 
 		System.out.println("=== User 테스트 ===");
 
@@ -62,7 +61,24 @@ public class DiscodeitApplication {
 		System.out.println(user2.getProfileId());
 		System.out.println(user3.getProfileId());
 
+		UserFindResponse user2Response = userService.findUserById(user2.getId());
+		UserFindResponse user3Response = userService.findUserById(user3.getId());
 
+		System.out.println("user2Response.getProfileId() = " + user2Response.getProfileId());
+		System.out.println("user3Response.getProfileId() = " + user3Response.getProfileId());
+
+		System.out.println("\n\n=== User profileId update 테스트 ===");
+		ProfileUploadRequest profileUploadRequest = new ProfileUploadRequest(user2.getId(), image2);
+		ProfileUploadRequest profileUploadRequest2 = new ProfileUploadRequest(user3.getId(), image1);
+
+		userService.updateImage(profileUploadRequest);
+		userService.updateImage(profileUploadRequest2);
+
+		user2Response = userService.findUserById(user2.getId());
+		user3Response = userService.findUserById(user3.getId());
+
+		System.out.println("user2Response.getProfileId() = " + user2Response.getProfileId());
+		System.out.println("user3Response.getProfileId() = " + user3Response.getProfileId());
 
 
 

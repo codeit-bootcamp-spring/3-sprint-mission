@@ -20,7 +20,7 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-@Primary
+//@Primary
 @Repository
 public class JcfBinaryContentRepostory implements BinaryContentRepository {
     Map<UUID, BinaryContent> data = new HashMap<>();
@@ -30,5 +30,19 @@ public class JcfBinaryContentRepostory implements BinaryContentRepository {
         BinaryContent binaryContent = new BinaryContent(image);
         data.put(binaryContent.getId(), binaryContent);
         return binaryContent;
+    }
+
+    // 완성 필요
+//    @Override
+//    public BinaryContent findBinaryContentByUserId(UUID userId) {
+//
+//        return null;
+//    }
+
+    // 완성 필요
+
+    @Override
+    public BinaryContent updateImage(UUID profileId, byte[] image) {
+        return null;
     }
 }
