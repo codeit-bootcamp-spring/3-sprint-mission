@@ -3,17 +3,19 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
 
-    public BasicChannelService(ChannelRepository chRepo) {
-        channelRepository = chRepo;
-    }
+//    public BasicChannelService(ChannelRepository chRepo) {
+//        channelRepository = chRepo;
+//    }
 
     @Override
     public Channel createChannel(String name) {

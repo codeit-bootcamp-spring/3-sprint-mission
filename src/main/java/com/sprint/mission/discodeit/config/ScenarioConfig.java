@@ -50,7 +50,7 @@ public class ScenarioConfig {
             @Qualifier("fileUserRepository") UserRepository userRepository,
             @Qualifier("fileChannelRepository") ChannelRepository channelRepository
     ) {
-        return new BasicMessageService(messageRepository, userRepository, channelRepository);
+        return new BasicMessageService(userRepository, channelRepository, messageRepository);
     }
 
     @Bean("jcfMessageService")
@@ -59,7 +59,7 @@ public class ScenarioConfig {
             @Qualifier("jcfUserRepository") UserRepository userRepository,
             @Qualifier("jcfChannelRepository") ChannelRepository channelRepository
     ) {
-        return new BasicMessageService(messageRepository, userRepository, channelRepository);
+        return new BasicMessageService(userRepository, channelRepository, messageRepository);
     }
 
     @Bean("fileTest")

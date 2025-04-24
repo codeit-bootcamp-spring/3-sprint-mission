@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 
+@Getter
 public class Channel implements Serializable {
     private final UUID id;
     private final Long createdAt;
@@ -24,25 +27,6 @@ public class Channel implements Serializable {
 
     // 정적 팩토리 메서드, 객체를 만들지 않고 호출 가능해야 하기 때문에 static으로 선언
     public static Channel of(String name) { return new Channel(name); }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Set<UUID> getMembers() {
-        return members;
-    }
 
     public void join(UUID userId) {
         members.add(userId);

@@ -61,7 +61,7 @@ public class JavaApplication2 {
     ) {
         UserService userService = new BasicUserService(userRepo);
         ChannelService channelService = new BasicChannelService(channelRepo);
-        MessageService messageService = new BasicMessageService(messageRepo, userRepo, channelRepo);
+        MessageService messageService = new BasicMessageService(userRepo, channelRepo, messageRepo);
 
         return new JavaApplication2(userService, channelService, messageService);
     }
