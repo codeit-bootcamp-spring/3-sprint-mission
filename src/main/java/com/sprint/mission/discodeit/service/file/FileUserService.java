@@ -1,154 +1,103 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.dto.CreateBinaryContentRequest;
+import com.sprint.mission.discodeit.dto.CreateUserRequest;
+import com.sprint.mission.discodeit.dto.FindUserRequest;
+import com.sprint.mission.discodeit.dto.UpdateUserRequest;
+import com.sprint.mission.discodeit.entitiy.BinaryContent;
 import com.sprint.mission.discodeit.entitiy.User;
+import com.sprint.mission.discodeit.entitiy.UserStatus;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sun.jdi.request.DuplicateRequestException;
 
 import java.io.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class FileUserService implements UserService {
 
-    private static final String FILE_PATH = "src/main/java/com/sprint/mission/discodeit/repository/file/data/users.ser";
+    UserRepository userRepository;
+    UserStatusRepository userStatusRepository;
+    BinaryContentRepository binaryContentRepository;
 
     @Override
-    public void create(User user) {
-        List<User> users = new ArrayList<>();
-        try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
-            while(true){
-                try {
-                    users.add((User) reader.readObject());
-                }catch (EOFException e){
-                    break;
-                }
-            }
-        } catch (IOException | ClassNotFoundException e) {
+    public User create(CreateUserRequest request) {
+        User user = new User(request.username(), request.password(), request.email(), null);
+        //중복검사후 아닐경우 save
+        try{
+            if(!userRepository.duplicateCheck(user)){
+                userRepository.save(user);
+                userStatusRepository.save(new UserStatus(user.getId()));
+                return user;
+            }else
+                throw new DuplicateRequestException();
+        }catch (DuplicateRequestException e){
             e.printStackTrace();
         }
 
-        users.add(user);
+    }
 
-        try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){
-            users.forEach((c)->{
-                try {
-                    writer.writeObject(c);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+    @Override
+    public User create(CreateUserRequest userRequest, CreateBinaryContentRequest binaryContentRequest) {
+        User user = create(userRequest);
+        BinaryContent binaryContent = new BinaryContent(binaryContentRequest.contentType(), binaryContentRequest.content());
+        binaryContentRepository.save(binaryContent);
+        return user;
+    }
+
+    @Override
+    public List<FindUserRequest> findAll() {
+        List<User> userList = userRepository.read();
+        List<FindUserRequest> findUserRequestList = new ArrayList<>();
+        findUserRequestList = userList.stream()
+                .map(user->new FindUserRequest(user.getId(),user.getProfileId(),user.getCreatedAt(),user.getUpdatedAt(),user.getUsername(),user.getEmail(),user.getFriends(),userStatusRepository.readById(user.getId()).get()))
+                .toList();
+        return findUserRequestList;
+    }
+
+    @Override
+    public FindUserRequest find(UUID id) {
+        Optional<User> user = userRepository.readById(id);
+        try {
+            if (user.isPresent()) {
+                FindUserRequest findUserRequest = new FindUserRequest(user.get().getId(), user.get().getProfileId(), user.get().getCreatedAt(), user.get().getUpdatedAt(), user.get().getUsername(), user.get().getEmail(), user.get().getFriends(), userStatusRepository.readById(user.get().getId()).get());
+                return findUserRequest;
+            } else {
+                throw new ClassNotFoundException();
+            }
+        }catch (ClassNotFoundException e){
+            System.out.println("존재하지 않는 id 입니다.");;
         }
     }
 
     @Override
-    public void readAll() {
-        try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
-            while(true){
-                try {
-                    User user = (User) reader.readObject();
-                    System.out.println(user);
-                }catch (EOFException e){
-                    break;
-                }
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+    public void update(UpdateUserRequest request) {
+        User user = new User(request.username(), request.password(), request.email(), request.friends());
+        userRepository.update(request.id(), user);
     }
 
     @Override
-    public void readById(UUID id) {
-        try (ObjectInputStream reader= new ObjectInputStream(new FileInputStream(FILE_PATH))){
-            while(true){
-                try {
-                    User user = (User) reader.readObject();
-                    if(user.getId().equals(id)){
-                        System.out.println(user);
-                    }
-                }catch (EOFException e){
-                    break;
-                }
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void update(UUID id, User user) {
-        List<User> users = new ArrayList<>();
-        try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
-            while(true){
-                try {
-                    users.add((User) reader.readObject());
-                }catch (EOFException e){
-                    break;
-                }
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-
-        users.stream()
-                .filter((c)->c.getId().equals(id))
-                .forEach((c)->{
-                    c.updateUserName(user.getUserName());
-                    c.updatePassword(user.getPassword());
-                    c.updateUpdatedAt(Instant.now());
-                    c.updateEmail(user.getEmail());
-                    c.updateFriends(user.getFriends());
-                });
-
-        try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){
-            users.forEach((c)->{
-                try {
-                    writer.writeObject(c);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void update(UpdateUserRequest request,CreateBinaryContentRequest binaryContentRequest) {
+        update(request);
+        BinaryContent binaryContent = new BinaryContent(binaryContentRequest.contentType(), binaryContentRequest.content());
+        if(binaryContentRepository.readById(request.id()).isEmpty()){
+            binaryContentRepository.save(binaryContent);
+        } else{
+            binaryContentRepository.update(request.id(), binaryContent);
         }
     }
 
     @Override
     public void delete(User user) {
-        List<User> users = new ArrayList<>();
-        try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
-            while(true){
-                try {
-                    users.add((User) reader.readObject());
-                }catch (EOFException e){
-                    break;
-                }
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        List<User> deleteUsers = users.stream()
-                .filter((c) -> !c.getId().equals(user.getId()))
-                .collect(Collectors.toList());
-
-        try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){
-            deleteUsers.forEach((c)->{
-                try {
-                    writer.writeObject(c);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        userStatusRepository.delete(userStatusRepository.readById(user.getId()).get());
+        binaryContentRepository.delete(binaryContentRepository.readById(user.getId()).get());
+        userRepository.delete(user);
     }
 }
