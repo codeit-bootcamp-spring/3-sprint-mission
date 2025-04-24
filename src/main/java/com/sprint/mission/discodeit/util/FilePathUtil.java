@@ -21,14 +21,17 @@ import java.util.UUID;
  */
 @Component
 public class FilePathUtil {
-    private static final String TO_FILES = "/Users/doungukkim/Desktop/workspace/Codit_Sprint_workspace/codit-organization/some/path/3-sprint-mission/src/main/java/com/sprint/mission/discodeit/data/";
-
+//        private static final String TO_FILES = "/Users/doungukkim/Desktop/workspace/Codit_Sprint_workspace/codit-organization/some/path/3-sprint-mission/src/main/java/com/sprint/mission/discodeit/data/";
+private static final String TO_FILES = "data/";
     private static final Path USER_DIRECTORY = Paths.get(TO_FILES+"user");
     private static final Path CHANNEL_DIRECTORY = Paths.get(TO_FILES+"channel");
     private static final Path MESSAGE_DIRECTORY = Paths.get(TO_FILES+"message");
+    private static final Path USER_STATUS_DIRECTORY = Paths.get(TO_FILES + "userStatus");
+    private static final Path BINARY_CONTENT_DIRECTORY = Paths.get(TO_FILES + "binaryContent");
+
     private static final String TO_SER = ".ser";
 
-    private static final Path[] DIRECTORIES = {USER_DIRECTORY, CHANNEL_DIRECTORY, MESSAGE_DIRECTORY};
+    private static final Path[] DIRECTORIES = {USER_DIRECTORY, CHANNEL_DIRECTORY, MESSAGE_DIRECTORY, USER_STATUS_DIRECTORY,BINARY_CONTENT_DIRECTORY};
 
     public FilePathUtil() {
         for (Path directory : DIRECTORIES) {
@@ -70,6 +73,24 @@ public class FilePathUtil {
     public Path getMessageFilePath(UUID messageId) {
         return MESSAGE_DIRECTORY.resolve(messageId + TO_SER);
     }
+
+    public Path getUserStatusDirectory() {
+        return USER_STATUS_DIRECTORY;
+    }
+
+    public Path getUserStatusFilePath(UUID userStatusId) {
+        return USER_STATUS_DIRECTORY.resolve(userStatusId + TO_SER);
+    }
+
+    public Path getBinaryContent() {
+        return BINARY_CONTENT_DIRECTORY;
+    }
+
+    public Path getBinaryContentFilePath(UUID binaryContentId) {
+        return BINARY_CONTENT_DIRECTORY.resolve(binaryContentId + TO_SER);
+    }
+
+
 
 
 }

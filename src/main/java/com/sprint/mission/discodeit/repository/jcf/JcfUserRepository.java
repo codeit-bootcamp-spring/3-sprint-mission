@@ -5,10 +5,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * packageName    : com.sprint.mission.discodeit.repository.jcf
@@ -22,7 +19,7 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Repository
-@Primary
+//@Primary
 public class JcfUserRepository implements UserRepository {
 
     Map<UUID, User> data = new HashMap<>();
@@ -32,6 +29,14 @@ public class JcfUserRepository implements UserRepository {
         data.put(user.getId(), user);
         return user;
     }
+
+    public User createUserByName(String username, String email, String password, UUID binaryContentId) {
+        User user = new User(username, email, password, binaryContentId);
+        data.put(user.getId(), user);
+        return user;
+    }
+
+
     public User findUserById(UUID userId) {
         return data.get(userId);
     }
@@ -49,5 +54,27 @@ public class JcfUserRepository implements UserRepository {
 
     public void deleteUserById(UUID userId) {
         data.remove(userId);
+    }
+
+    @Override
+    public boolean isUniqueUsername(String username) {
+        List<User> list = data.values().stream().toList();
+        for (User user : list) {
+            if (user.getUsername().equals(username)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isUniqueEmail(String email) {
+        List<User> list = data.values().stream().toList();
+        for (User user : list) {
+            if (user.getEmail().equals(email)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

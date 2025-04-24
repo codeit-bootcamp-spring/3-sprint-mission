@@ -18,8 +18,13 @@ import java.util.UUID;
  */
 public interface UserRepository {
     User createUserByName(String username, String email, String password);
+    User createUserByName(String username, String email, String password, UUID binaryContentId);
     User findUserById(UUID userId);
     List<User> findAllUsers();
     void updateUserById(UUID userId, String name);
     void deleteUserById(UUID userId);
+
+    boolean isUniqueUsername(String username);
+
+    boolean isUniqueEmail(String email);
 }
