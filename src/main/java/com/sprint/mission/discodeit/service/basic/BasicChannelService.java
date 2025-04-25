@@ -5,17 +5,21 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Service
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     //
     private final UserService userService;
 
+    @Autowired
     public BasicChannelService(ChannelRepository channelRepository, UserService userService) {
         this.channelRepository = channelRepository;
         this.userService = userService;
