@@ -23,7 +23,7 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-@Primary
+//@Primary
 @Repository("jcfUserStatusRepository")
 public class JcfUserStatusRepository implements UserStatusRepository {
     Map<UUID, UserStatus> data = new HashMap<>();
@@ -66,5 +66,12 @@ public class JcfUserStatusRepository implements UserStatusRepository {
     @Override
     public List<UserStatus> findAllUserStatus() {
         return data.values().stream().toList();
+    }
+
+    // 추가 예정
+
+    @Override
+    public void deleteUserStatusById(UUID userStatusId) {
+        data.remove(userStatusId);
     }
 }

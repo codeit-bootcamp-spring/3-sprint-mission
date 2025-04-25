@@ -28,4 +28,6 @@ public interface UserStatusRepository {
     UserStatus findUserStatusByUserId(UUID userId);
 
     List<UserStatus> findAllUserStatus();
+
+    void deleteUserStatusById(UUID userStatusId);
 }

@@ -38,6 +38,7 @@ public class FileUserService implements UserService {
     private final FileUserRepository fileUserRepository;
     private final FileBinaryContentRepository fileUserBinaryContentRepository;
     private final FileUserStatusRepository fileUserStatusRepository;
+    private final FileBinaryContentRepository fileBinaryContentRepository;
 
 
     // 이미지 저장 로직 추가
@@ -155,6 +156,24 @@ public class FileUserService implements UserService {
     @Override
     public void deleteUser(UUID userId) {
         Objects.requireNonNull(userId, "no user Id: FileUserService.deleteUser");
+        User user = fileUserRepository.findUserById(userId);
+        if (user == null) {
+            throw new RuntimeException("잘못된 유저아이디");
+        }
+
+        // UserStatus 삭제
+        UserStatus userStatus = fileUserStatusRepository.findUserStatusByUserId(userId);
+        if (userStatus == null) {
+            throw new RuntimeException("no userStatus");
+        }
+
+        // BinaryContent 삭제
+        if (user.getProfileId() != null) {
+            fileBinaryContentRepository.deleteBinaryContentById(user.getProfileId());
+        }
+
+        fileUserStatusRepository.deleteUserStatusById(userStatus.getId());
+        // User 삭제
         fileUserRepository.deleteUserById(userId);
     }
 }

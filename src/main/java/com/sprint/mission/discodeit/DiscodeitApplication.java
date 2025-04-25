@@ -4,15 +4,17 @@ import com.sprint.mission.discodeit.Dto.user.ProfileUploadRequest;
 import com.sprint.mission.discodeit.Dto.user.ProfileUploadResponse;
 import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.Dto.user.UserFindResponse;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
+
+import java.util.UUID;
 
 @SpringBootApplication
 public class DiscodeitApplication {
@@ -25,6 +27,11 @@ public class DiscodeitApplication {
 		UserService userService = context.getBean("basicUserService", UserService.class);
 		ChannelService channelService = context.getBean("basicChannelService", ChannelService.class);
 		MessageService messageService = context.getBean("basicMessageService", MessageService.class);
+//		BinaryContentRepository binaryContentRepository = context.getBean("fileBinaryContentRepository", BinaryContentRepository.class);
+//		BinaryContentRepository binaryContentRepository = context.getBean("jcfBinaryContentRepository", BinaryContentRepository.class);
+		UserStatusRepository userStatusRepository = context.getBean("fileUserStatusRepository", UserStatusRepository.class);
+//		UserStatusRepository userStatusRepository = context.getBean("jcfUserStatusRepository", UserStatusRepository.class);
+
 
 		byte[] image1 = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 		byte[] image2 = new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -47,8 +54,12 @@ public class DiscodeitApplication {
 		System.out.println("조회된 유저: " + userService.findUserById(user1.getId()).getUsername());
 
 		System.out.println("\n[유저 이름 수정]");
-		userService.updateUser(user2.getId(), "new user");
-		System.out.println("수정 결과: " + userService.findUserById(user2.getId()).getUsername());
+		userService.updateUser(user1.getId(), "new user");
+		System.out.println("수정 결과: " + userService.findUserById(user1.getId()).getUsername());
+
+		System.out.println("\n삭제 예정 user1 관련 객체 id(호출 후 data에서 확인)");
+		System.out.println("user1의 profileId = " + user1.getProfileId());
+		System.out.println("user1의 userStatusId = " + userStatusRepository.findUserStatusByUserId(user1.getId()).getId());
 
 		System.out.println("\n[유저 삭제]");
 		userService.deleteUser(user1.getId());

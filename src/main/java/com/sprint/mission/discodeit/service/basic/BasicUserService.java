@@ -15,10 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic
@@ -154,9 +151,32 @@ public class BasicUserService  implements UserService {
         userRepository.updateUserById(userId, name);
     }
 
+    /*
+        [ ] 관련된 도메인도 같이 삭제합니다.
+            BinaryContent(프로필), UserStatus
+     */
     @Override
     public void deleteUser(UUID userId) {
         Objects.requireNonNull(userId, "no user Id: BasicUserService.deleteUser");
+
+        User user = userRepository.findUserById(userId);
+        if (user == null) {
+            throw new RuntimeException("잘못된 유저아이디");
+        }
+
+        // UserStatus 삭제
+        UserStatus userStatus = userStatusRepository.findUserStatusByUserId(userId);
+        if (userStatus == null) {
+            throw new RuntimeException("no userStatus");
+        }
+        userStatusRepository.deleteUserStatusById(userStatus.getId());
+
+        // BinaryContent 삭제
+        if (user.getProfileId() != null) {
+            binaryContentRepository.deleteBinaryContentById(user.getProfileId());
+
+        }
+        // User 삭제
         userRepository.deleteUserById(userId);
     }
 }
