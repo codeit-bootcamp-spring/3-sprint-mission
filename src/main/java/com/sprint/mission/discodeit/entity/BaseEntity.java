@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 public abstract class BaseEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -571597392321654385L;
 
     private final UUID id;
     private final long createdAt;

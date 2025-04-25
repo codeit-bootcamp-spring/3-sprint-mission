@@ -24,13 +24,10 @@ public class ChannelIntegration {
         Channel channel = channelService.getChannel(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널"));
 
-        User user = userService.getUser(userId)
+        userService.getUser(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저"));
 
-        user.addChannel(channelId);
         channel.addUser(userId);
-
-        userService.updateUser(user);
         channelService.updateChannel(channel);
     }
 
@@ -41,13 +38,6 @@ public class ChannelIntegration {
 
         for (UUID messageId : channel.getMessageIds()) {
             messageService.deleteMessage(messageId);
-        }
-
-        for (UUID userId : channel.getUserIds()) {
-            userService.getUser(userId).ifPresent(user -> {
-                user.getChannelIds().remove(channelId);
-                userService.updateUser(user);
-            });
         }
 
         channelService.deleteChannel(channelId);

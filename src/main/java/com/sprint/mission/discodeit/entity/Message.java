@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.UUID;
 
 public class Message extends BaseEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 5140283631663474458L;
     private String msgContent;
     private final UUID senderId;
     private final UUID channelId;

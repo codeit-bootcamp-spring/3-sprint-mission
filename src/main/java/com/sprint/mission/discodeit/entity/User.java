@@ -7,16 +7,11 @@ import java.util.Set;
 import java.util.UUID;
 
 public class User extends BaseEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -1421022282607757997L;
     private String userName;
-    private final Set<UUID> channelIds = new HashSet<>();
 
     public User(String userName) {
         this.userName = userName;
-    }
-
-    public Set<UUID> getChannelIds() {
-        return channelIds;
     }
 
     public void updateUserName(String userName) {
@@ -24,14 +19,9 @@ public class User extends BaseEntity implements Serializable {
         updateTime();
     }
 
-    public void addChannel(UUID channelId) {
-        channelIds.add(channelId);
-    }
-
     @Override
     public String toString() {
         return "User{name='" + userName + '\'' +
-                ", channelIds=" + channelIds +
                 ", createdAt=" + new Date(getCreatedAt()) +
                 ", updatedAt=" + new Date(getUpdatedAt()) +
                 '}';

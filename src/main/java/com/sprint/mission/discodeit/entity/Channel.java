@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.*;
 
 public class Channel extends BaseEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 3253334103732539416L;
     private String channelName;
     private final Set<UUID> userIds = new HashSet<>();
     private final List<UUID> messageIds = new ArrayList<>();
