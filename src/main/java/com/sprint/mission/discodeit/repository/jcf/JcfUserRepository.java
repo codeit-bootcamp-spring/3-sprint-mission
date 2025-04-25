@@ -19,7 +19,7 @@ import java.util.*;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Repository
-//@Primary
+@Primary
 public class JcfUserRepository implements UserRepository {
 
     Map<UUID, User> data = new HashMap<>();
@@ -36,10 +36,10 @@ public class JcfUserRepository implements UserRepository {
         return user;
     }
 
-    // 완성 필요
     @Override
     public void updateProfileIdById(UUID userId, UUID profileId) {
-
+        User user = data.get(userId);
+        user.setProfileId(profileId);
     }
 
     public User findUserById(UUID userId) {

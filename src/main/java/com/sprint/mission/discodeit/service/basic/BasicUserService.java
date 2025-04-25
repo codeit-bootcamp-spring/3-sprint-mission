@@ -64,8 +64,6 @@ public class BasicUserService  implements UserService {
             userStatusRepository.createUserStatus(result.getId());
             return result;
         }
-
-
     }
 
 
@@ -118,12 +116,7 @@ public class BasicUserService  implements UserService {
         return userFindDtos;
     }
 
-/*
-    update
-    [ ] 선택적으로 프로필 이미지를 대체할 수 있습니다.
-    [ ] DTO를 활용해 파라미터를 그룹화합니다.
-        수정 대상 객체의 id 파라미터, 수정할 값 파라미터
- */
+
 
     @Override
     public ProfileUploadResponse updateImage(ProfileUploadRequest request) {

@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.Dto.user.ProfileUploadRequest;
 import com.sprint.mission.discodeit.Dto.user.ProfileUploadResponse;
 import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.Dto.user.UserFindResponse;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.jcf.JcfBinaryContentRepostory;
@@ -86,39 +87,60 @@ public class JcfUserService implements UserService
     }
 
     public List<UserFindResponse> findAllUsers() {
-        List<UserStatus> allUserStatus = jcfUserStatusRepository.findAllUserStatus();
         List<User> users = jcfUserRepository.findAllUsers();
-
         List<UserFindResponse> userFindDtos = new ArrayList<>();
 
-        // userDto를 users + online으로 매핑
-        for (int i =0;i<users.size();i++) {
-            if (allUserStatus.get(i) == null) {
-                throw new RuntimeException("userStatus n users are not 1:1");
+        // userDto를 (users + online)으로 매핑
+        for (User user : users) {
+            UserStatus status = jcfUserStatusRepository.findUserStatusByUserId(user.getId());
+            boolean online = false;
+            if (status != null) {
+                online = jcfUserStatusRepository.isOnline(status.getId());
             }
-            boolean online = jcfUserStatusRepository.isOnline(allUserStatus.get(i).getId());
 
             userFindDtos.add(new UserFindResponse(
-                    users.get(i).getId(),
-                    users.get(i).getCreatedAt(),
-                    users.get(i).getUpdatedAt(),
-                    users.get(i).getUsername(),
-                    users.get(i).getEmail(),
-                    users.get(i).getProfileId(),
+                    user.getId(),
+                    user.getCreatedAt(),
+                    user.getUpdatedAt(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getProfileId(),
                     online));
         }
 
         return userFindDtos;
     }
 
-    // 완성 필요
     @Override
     public ProfileUploadResponse updateImage(ProfileUploadRequest request) {
-        return null;
+        UUID userId = request.getUserId();
+        byte[] newImage = request.getImage();
+        User user = jcfUserRepository.findUserById(userId);
+        UUID profileId = findUserById(userId).getProfileId();
+
+
+        if (profileId == null) {
+            // 없음 객체 생성
+            // binary content 생성
+            BinaryContent binaryContent = jcfBinaryContentRepostory.createBinaryContent(newImage);
+            // 프로필 아이디 유저에 추가
+            jcfUserRepository.updateProfileIdById(userId, binaryContent.getId());
+
+            user = jcfUserRepository.findUserById(userId);
+        } else {
+            // binary content 프로필 변경
+            jcfBinaryContentRepostory.updateImage(profileId, newImage);
+        }
+        return new ProfileUploadResponse(
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getProfileId());
     }
 
     public void updateUser(UUID userId, String name) {
-
         Objects.requireNonNull(userId, "채널 아이디 입력 없음: JcfUserService.updateUser");
         Objects.requireNonNull(name, "이름 입력 없음: JcfUserService.updateUser");
         jcfUserRepository.updateUserById(userId, name);
