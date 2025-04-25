@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -7,14 +9,23 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class User implements Serializable {
+    @Getter
     private static final Long serialVersionUID = 1L;
-    private UUID id;
-    private Long createdAt;
+    //
+    @Getter
+    private final UUID id;
+    @Getter
+    private final Long createdAt;
+    @Getter
     private Long updatedAt;
     //
+    @Getter
     private String name;
+    @Getter
     private String email;
+    @Getter
     private String password;
+    @Getter
     private int age;
 
     public User(String name, int age, String email, String password) {
@@ -27,35 +38,6 @@ public class User implements Serializable {
         this.password = password;
         this.age = age;
     }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
 
     public void update(String name, int age, String email, String password) {
         boolean anyValueUpdated = false;

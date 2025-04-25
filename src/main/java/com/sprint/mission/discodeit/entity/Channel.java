@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -9,17 +11,27 @@ import java.util.List;
 import java.util.UUID;
 
 public class Channel implements Serializable {
+    @Getter
     private static final Long serialVersionUID = 1L;
-
+    //
+    @Getter
     private final UUID id;
+    @Getter
     private final Long createdAt;
+    @Getter
     private Long updatedAt;
     //
+    @Getter
     private String name;
+    @Getter
     private ChannelType type;
+    @Getter
     private String description;
+    @Getter
     private UUID ownerId;
+    @Getter
     private List<UUID> attendees;
+    @Getter
     private List<UUID> messages;
 
     public Channel(String name, ChannelType type, String description, UUID ownerId) {
@@ -36,48 +48,12 @@ public class Channel implements Serializable {
         this.messages = new ArrayList<>();
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public ChannelType getType() {
-        return type;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public UUID getOwnerId() {
-        return ownerId;
-    }
-
-    public List<UUID> getAttendees() {
-        return attendees;
-    }
-
     public void addAttendee(UUID userId) {
         this.attendees.add(userId);
     }
 
     public void removeAttendee(UUID userId) {
         this.attendees.remove(userId);
-    }
-
-    public List<UUID> getMessages() {
-        return messages;
     }
 
     public void addMessage(UUID messageId) {
