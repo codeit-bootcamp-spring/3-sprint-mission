@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -101,11 +102,11 @@ public class Channel implements Serializable {
       return false;
     }
     Channel channel = (Channel) o;
-    return getId().equals(channel.getId());
+    return Objects.equals(id, channel.id);
   }
 
   @Override
   public int hashCode() {
-    return getId().hashCode();
+    return Objects.hash(id);
   }
 }
