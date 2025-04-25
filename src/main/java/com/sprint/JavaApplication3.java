@@ -1,6 +1,5 @@
 package com.sprint;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.menu.ChannelMenu;
 import com.sprint.mission.discodeit.menu.MessageMenu;
 import com.sprint.mission.discodeit.menu.UserMenu;
@@ -24,30 +23,18 @@ public class JavaApplication3 {
         FileChannelRepository fileChannelRepo = new FileChannelRepository();
         FileMessageRepository fileMessageRepo = new FileMessageRepository();
 
-        UserService userServiceFile = new BasicUserService(fileUserRepo);
-        ChannelService channelServiceFile = new BasicChannelService(fileChannelRepo);
-        MessageService messageServiceFile = new BasicMessageService(fileMessageRepo);
+        UserService userService = new BasicUserService(fileUserRepo);
+        ChannelService channelService = new BasicChannelService(fileChannelRepo);
+        MessageService messageService = new BasicMessageService(fileMessageRepo);
 
-        UserMenu userMenu = new UserMenu(sc, userServiceFile);
-        MessageMenu messageMenu = new MessageMenu(sc, messageServiceFile);
+        UserMenu userMenu = new UserMenu(sc, userService);
+        ChannelMenu channelMenu = new ChannelMenu(sc, channelService);
+        MessageMenu messageMenu = new MessageMenu(sc, messageService);
 
         userMenu.loginUser();
 
-        System.out.println("모든 채널 정보를 출력합니다.");
-        channelServiceFile.outputAllChannelInfo();
-        System.out.println("들어가실 채널 번호를 선택해 주세요.");
-        int channelNumber = Integer.parseInt(sc.nextLine());
-        Channel selectedChannel = channelServiceFile.getChannelByNumber(channelNumber);
-
-        if (selectedChannel == null) {
-            System.out.println("유효하지 않은 채널 번호입니다. 프로그램을 종료합니다.");
-            return;
-        }
-
-        ChannelMenu channelMenu = new ChannelMenu(sc, channelServiceFile, selectedChannel);
-
         while (true) {
-            System.out.println("원하는 기능을 입력 해 주세요.");
+            System.out.println("\n원하는 기능을 입력해 주세요.");
             System.out.println("1. 내 정보\t2. 채널 정보\t3. 메시지\t4. 로그아웃");
             int choice = Integer.parseInt(sc.nextLine());
 
