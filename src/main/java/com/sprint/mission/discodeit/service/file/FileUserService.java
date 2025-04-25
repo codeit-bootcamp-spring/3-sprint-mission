@@ -124,7 +124,7 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public void login(int loginNumber, List<User> usersList) {
+    public void login(int loginNumber) {
         users.stream()
                 .filter(u -> u.getNumber() == loginNumber)
                 .findFirst()

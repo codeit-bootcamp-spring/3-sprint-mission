@@ -68,7 +68,7 @@ public class JCFUserService implements UserService {
         return users.stream().filter(user1 -> user1.getNumber() == userNumber).findFirst().orElse(null);
     }
 
-    public void login(int loginNumber, List<User> ignore) {
+    public void login(int loginNumber) {
         users.stream()
                 .filter(user -> user.getNumber() == loginNumber)
                 .findFirst()

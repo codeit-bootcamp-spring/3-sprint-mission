@@ -20,7 +20,7 @@ public class UserMenu {
         System.out.println("로그인 하실 프로필 번호를 입력해 주세요.");
         userService.outputAllUsersInfo();
         int loginNumber = Integer.parseInt(sc.nextLine());
-        userService.login(loginNumber, null);
+        userService.login(loginNumber);
         loginUser = userService.changeUser(loginNumber);
 
         System.out.println(loginUser.getUsername() + "님, 반갑습니다.");
@@ -60,7 +60,7 @@ public class UserMenu {
                     System.out.println("변경할 프로필 번호를 입력해 주세요.");
                     userService.outputAllUsersInfo();
                     int loginNumber = Integer.parseInt(sc.nextLine());
-                    userService.login(loginNumber, null);
+                    userService.login(loginNumber);
                     loginUser = userService.changeUser(loginNumber);
                 }
                 case 7 -> {

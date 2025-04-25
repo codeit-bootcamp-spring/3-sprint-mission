@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -90,7 +89,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public void login(int loginNumber, List<User> ignore) {
+    public void login(int loginNumber) {
         if (userRepo.findUser(loginNumber) == null) {
             throw new RuntimeException("해당 번호의 유저가 존재하지 않습니다");
         }

@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.User;
-import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
@@ -19,5 +18,5 @@ public interface UserService {
 
     public User changeUser(int userNumber);
 
-    public void login(int loginNumber, List<User> users);
+    public void login(int loginNumber);
 }
