@@ -14,7 +14,7 @@ public interface ChannelService {
 
     public void createNewChannel(String channelName);
 
-    public Channel changeChannel(int channelNumber);
+    public Channel getChannelByNumber(int channelNumber);
 
     public void selectChannel(int channelNumber);
 

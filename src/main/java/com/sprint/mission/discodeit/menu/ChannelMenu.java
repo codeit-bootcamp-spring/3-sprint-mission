@@ -43,7 +43,7 @@ public class ChannelMenu {
                         System.out.println("정상적으로 채널이 삭제됐습니다. 변경하실 채널 번호를 입력해주세요.");
                         channelService.outputAllChannelInfo();
                         int newChannelNumber = Integer.parseInt(sc.nextLine());
-                        currentChannel = channelService.changeChannel(newChannelNumber);
+                        currentChannel = channelService.getChannelByNumber(newChannelNumber);
                         if (currentChannel == null) {
                             System.out.println("유효하지 않은 채널 번호입니다.");
                         }
@@ -53,7 +53,7 @@ public class ChannelMenu {
                     System.out.println("변경하실 채널 번호를 입력해주세요.");
                     channelService.outputAllChannelInfo();
                     int newChannelNumber = Integer.parseInt(sc.nextLine());
-                    currentChannel = channelService.changeChannel(newChannelNumber);
+                    currentChannel = channelService.getChannelByNumber(newChannelNumber);
                     if (currentChannel == null) {
                         System.out.println("유효하지 않은 채널 번호입니다.");
                     }

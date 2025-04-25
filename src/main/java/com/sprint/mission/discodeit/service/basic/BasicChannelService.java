@@ -49,7 +49,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel changeChannel(int channelNumber) {
+    public Channel getChannelByNumber(int channelNumber) {
         return channelRepo.findChannel(channelNumber);
     }
 

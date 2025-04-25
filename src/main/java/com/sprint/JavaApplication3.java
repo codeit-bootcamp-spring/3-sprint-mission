@@ -37,7 +37,7 @@ public class JavaApplication3 {
         channelServiceFile.outputAllChannelInfo();
         System.out.println("들어가실 채널 번호를 선택해 주세요.");
         int channelNumber = Integer.parseInt(sc.nextLine());
-        Channel selectedChannel = channelServiceFile.changeChannel(channelNumber);
+        Channel selectedChannel = channelServiceFile.getChannelByNumber(channelNumber);
 
         if (selectedChannel == null) {
             System.out.println("유효하지 않은 채널 번호입니다. 프로그램을 종료합니다.");
