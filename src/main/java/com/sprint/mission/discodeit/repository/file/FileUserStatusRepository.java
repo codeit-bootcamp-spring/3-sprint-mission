@@ -34,8 +34,8 @@ import java.util.stream.Stream;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-//@Primary
-@Repository
+@Primary
+@Repository("fileUserStatusRepository")
 @RequiredArgsConstructor
 public class FileUserStatusRepository implements UserStatusRepository {
     private final FilePathUtil filePathUtil;
@@ -126,5 +126,22 @@ public class FileUserStatusRepository implements UserStatusRepository {
         } catch (IOException e) {
             throw new RuntimeException("userState를 리스트로 만드는 과정에 문제 발생: FileUserStatusRepository.findAllUsers",e);
         }
+    }
+
+    @Override
+    public void deleteUserStatusById(UUID userStatusId) {
+        Objects.requireNonNull(userStatusId, "userStatus입력 없음: FileUserStatusRepository.deleteUserStatusById");
+        Path path = filePathUtil.getUserStatusFilePath(userStatusId);
+
+        if (!Files.exists(path)) {
+            throw new RuntimeException("삭제 하려는 유저상태 없음");
+        }
+
+        try{
+            Files.delete(path);
+        } catch (IOException e) {
+            throw new RuntimeException("삭제중 오류 발생"+e);
+        }
+
     }
 }

@@ -148,8 +148,26 @@ public class JcfUserService implements UserService
 
     public void deleteUser(UUID userId) {
         Objects.requireNonNull(userId, "no user Id: JcfUserService.deleteUser");
-        jcfUserRepository.deleteUserById(userId);
 
+        User user = jcfUserRepository.findUserById(userId);
+        if (user == null) {
+            throw new RuntimeException("잘못된 유저아이디");
+        }
+
+        // UserStatus 삭제
+        UserStatus userStatus = jcfUserStatusRepository.findUserStatusByUserId(userId);
+        if (userStatus == null) {
+            throw new RuntimeException("no userStatus");
+        }
+
+        // BinaryContent 삭제
+        if (user.getProfileId() != null) {
+            jcfBinaryContentRepostory.deleteBinaryContentById(user.getProfileId());
+        }
+
+        jcfUserStatusRepository.deleteUserStatusById(userStatus.getId());
+        // User 삭제
+        jcfUserRepository.deleteUserById(userId);
     }
 
 }

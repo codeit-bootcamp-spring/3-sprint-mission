@@ -29,7 +29,7 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-//@Primary
+@Primary
 @Repository
 @RequiredArgsConstructor
 public class FileUserRepository implements UserRepository {
