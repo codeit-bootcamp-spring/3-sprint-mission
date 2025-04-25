@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import java.util.Arrays;
 import java.util.List;
 
-public class ChannelDefaultRepository {
+public class DefaultChannelFactory {
     public static List<Channel> getChannel() {
         return Arrays.asList(
                 new Channel("코드잇 스프린트:스프링 백엔드 3기"),

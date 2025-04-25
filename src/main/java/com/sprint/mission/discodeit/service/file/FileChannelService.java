@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.repository.ChannelDefaultRepository;
+import com.sprint.mission.discodeit.repository.DefaultChannelFactory;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,7 +24,7 @@ public class FileChannelService implements ChannelService {
 
         if (channelMap == null || channelMap.isEmpty()) {
             channelMap = new HashMap<>();
-            List<Channel> defaultChannels = ChannelDefaultRepository.getChannel();
+            List<Channel> defaultChannels = DefaultChannelFactory.getChannel();
             for (Channel channel : defaultChannels) {
                 channelMap.put(channel.getChannelNumber(), channel);
             }
