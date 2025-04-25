@@ -26,9 +26,9 @@ import java.util.UUID;
  * 2025. 4. 24.        doungukkim       최초 생성
  */
 
-@Repository("fileBinaryContentRepository")
+@Primary
+@Repository
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "repository.mode", havingValue = "file")
 public class FileBinaryContentRepository implements BinaryContentRepository {
     private final FilePathUtil filePathUtil;
 

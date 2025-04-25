@@ -30,10 +30,9 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-
+@Primary
 @Repository
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "repository.mode", havingValue = "file")
 public class FileUserRepository implements UserRepository {
     private final FilePathUtil filePathUtil;
 

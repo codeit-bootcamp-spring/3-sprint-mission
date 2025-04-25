@@ -28,7 +28,6 @@ import java.util.UUID;
 @Primary
 @Service("basicMessageService")
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "service.mode", havingValue = "basic")
 public class BasicMessageService implements MessageService{
 
     private final UserService userService;

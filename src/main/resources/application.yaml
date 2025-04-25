@@ -1,18 +1,2 @@
-spring:
-  main:
-    allow-bean-definition-overriding: true
-  profiles:
-    active: default
-
-logging:
-  level:
-    org.springframework.boot.autoconfigure.condition: DEBUG
-
 server:
   port: 8080
-
-service:
-  mode: file
-
-repository:
-  mode: file

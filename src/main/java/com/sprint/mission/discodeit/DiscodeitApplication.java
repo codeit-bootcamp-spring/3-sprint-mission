@@ -1,21 +1,23 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.Dto.user.ProfileUploadRequest;
-import com.sprint.mission.discodeit.Dto.user.ProfileUploadResponse;
-import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.Dto.user.UserFindResponse;
+import com.sprint.mission.discodeit.Dto.authService.LoginRequest;
+import com.sprint.mission.discodeit.Dto.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.Dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.Dto.user.*;
+import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
-import java.util.UUID;
+import java.util.HashSet;
+import java.util.Set;
 
 @SpringBootApplication
 public class DiscodeitApplication {
@@ -23,9 +25,10 @@ public class DiscodeitApplication {
 	public static void main(String[] args) {
 		ApplicationContext context = SpringApplication.run(DiscodeitApplication.class, args);
 
-		UserService userService = context.getBean(UserService.class);
-		ChannelService channelService = context.getBean(ChannelService.class);
-		MessageService messageService = context.getBean(MessageService.class);
+		UserService userService = context.getBean("basicUserService", UserService.class);
+		ChannelService channelService = context.getBean("basicChannelService", ChannelService.class);
+		MessageService messageService = context.getBean("basicMessageService", MessageService.class);
+		AuthService authService = context.getBean(AuthService.class);
 
 		BinaryContentRepository binaryContentRepository = context.getBean(BinaryContentRepository.class);
 		UserStatusRepository userStatusRepository = context.getBean(UserStatusRepository.class);
@@ -65,7 +68,7 @@ public class DiscodeitApplication {
 		System.out.println("\n[최종 유저 목록]");
 		userService.findAllUsers().forEach(u -> System.out.println("- " + u.getUsername()));
 
-		System.out.println("\n\n=== User profileId 테스트 ===");
+		System.out.println("\n [User profileId]");
 		System.out.println(user1.getProfileId());
 		System.out.println(user2.getProfileId());
 		System.out.println(user3.getProfileId());
@@ -76,7 +79,7 @@ public class DiscodeitApplication {
 		System.out.println("user2Response.getProfileId() = " + user2Response.getProfileId());
 		System.out.println("user3Response.getProfileId() = " + user3Response.getProfileId());
 
-		System.out.println("\n\n=== User profileId update 테스트 ===");
+		System.out.println("\n\nUser profileId update");
 		ProfileUploadRequest profileUploadRequest = new ProfileUploadRequest(user2.getId(), image2);
 		ProfileUploadRequest profileUploadRequest2 = new ProfileUploadRequest(user3.getId(), image1);
 
@@ -89,12 +92,28 @@ public class DiscodeitApplication {
 		System.out.println("user2Response.getProfileId() = " + user2Response.getProfileId());
 		System.out.println("user3Response.getProfileId() = " + user3Response.getProfileId());
 
+		System.out.println("\n[유저 로그인]");
+		LoginRequest loginRequest = new LoginRequest(user2.getUsername(), user2.getPassword());
+		User logedInUser = authService.login(loginRequest);
+		System.out.println(logedInUser.getUsername() + " :" + logedInUser.getId());
+
+
+
+
 
 
 		System.out.println("\n\n=== Channel 테스트 ===");
-		Channel ch1 = channelService.createChannel("test channel 1");
-		Channel ch2 = channelService.createChannel("test channel 2");
-		Channel ch3 = channelService.createChannel("test channel 3");
+		Set<User> users = new HashSet<>();
+		users.add(user2);
+		users.add(user3);
+
+		PrivateChannelCreateRequest privateChannelCreateRequest = new PrivateChannelCreateRequest(users);
+		PublicChannelCreateRequest publicChannelCreateRequest1 = new PublicChannelCreateRequest(users, "fists public channel", "two users in a channel");
+		PublicChannelCreateRequest publicChannelCreateRequest2 = new PublicChannelCreateRequest(users, "Second public channel", "two users in a channel");
+
+		Channel ch1 = channelService.createChannel(publicChannelCreateRequest1);
+		Channel ch2 = channelService.createChannel(privateChannelCreateRequest);
+		Channel ch3 = channelService.createChannel(publicChannelCreateRequest2);
 
 		System.out.println("\n[모든 채널 출력]");
 		channelService.findAllChannel().forEach(c -> System.out.println("- " + c.getName()));

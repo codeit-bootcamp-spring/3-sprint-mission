@@ -22,11 +22,27 @@ import java.util.UUID;
 public class Channel extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     private String name;
-
+    private ChannelType type;
+    private String description;
 
     public Channel(String name) {
         super();
         this.name = name;
+        this.description = "";
+    }
+
+    public Channel() {
+        super();
+        this.name = "";
+        this.description = "";
+        this.type = ChannelType.PRIVATE;
+    }
+
+    public Channel(String name, String description) {
+        super();
+        this.name = name;
+        this.description = description;
+        this.type = ChannelType.PUBLIC;
     }
 
     public void setName(String name) {

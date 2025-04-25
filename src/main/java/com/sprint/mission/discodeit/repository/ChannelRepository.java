@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,6 +19,8 @@ import java.util.UUID;
  */
 public interface ChannelRepository {
     Channel createChannelByName(String name);
+    Channel createPrivateChannelByName();
+    Channel createPublicChannelByName(String name, String description);
     Channel findChannelById(UUID channelId);
     List<Channel> findAllChannel();
     void updateChannel(UUID channelId, String name);
