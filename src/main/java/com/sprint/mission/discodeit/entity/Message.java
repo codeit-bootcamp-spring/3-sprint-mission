@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -23,18 +24,18 @@ public class Message implements Serializable {
   private static final long serialVersionUID = 5091331492371241399L;
   // 메시지 정보 관리
   private final UUID id;
-  private final long createdAt;
-  private long updatedAt;
+  private final Instant createdAt;
+  private Instant updatedAt;
   private String content;
   // 참조 정보 getter
   private final UUID userId;
   private final UUID channelId;
-  private Long deletedAt;
+  private Instant deletedAt;
 
   // 외부에서 직접 객체 생성 방지.
   private Message(String content, UUID userId, UUID channelId) {
     this.id = UUID.randomUUID();
-    this.createdAt = System.currentTimeMillis();
+    this.createdAt = Instant.now();
     this.updatedAt = this.createdAt;
     this.content = content;
     this.userId = userId;
@@ -47,7 +48,7 @@ public class Message implements Serializable {
   }
 
   public void setUpdatedAt() {
-    this.updatedAt = System.currentTimeMillis();
+    this.updatedAt = Instant.now();
   }
 
   public String getContent() {
@@ -63,7 +64,7 @@ public class Message implements Serializable {
 
   public void delete() {
     if (deletedAt == null) {
-      deletedAt = System.currentTimeMillis();
+      deletedAt = Instant.now();
       setUpdatedAt();
     }
   }

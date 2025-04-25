@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,8 +25,8 @@ public class User implements Serializable {
   private static final long serialVersionUID = 8019397210486307690L;
   // 사용자 정보 관리
   private final UUID id;
-  private final long createdAt;
-  private long updatedAt;
+  private final Instant createdAt;
+  private Instant updatedAt;
   private String email;
   private String password;
   private String name;
@@ -34,7 +35,7 @@ public class User implements Serializable {
   // 외부에서 직접 객체 생성 방지.
   private User(String email, String name, String password) {
     this.id = UUID.randomUUID();
-    this.createdAt = System.currentTimeMillis();
+    this.createdAt = Instant.now();
     this.updatedAt = this.createdAt;
     this.email = email;
     this.password = password;
@@ -47,7 +48,7 @@ public class User implements Serializable {
   }
 
   public void setUpdatedAt() {
-    this.updatedAt = System.currentTimeMillis();
+    this.updatedAt = Instant.now();
   }
 
   public void updatePassword(String password) {

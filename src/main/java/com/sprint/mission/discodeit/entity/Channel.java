@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import com.sprint.mission.discodeit.exception.ChannelException;
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -25,8 +26,8 @@ public class Channel implements Serializable {
   private static final long serialVersionUID = 4947061877205205272L;
   // 채널 정보 관리
   private final UUID id;
-  private final long createdAt;
-  private long updatedAt;
+  private final Instant createdAt;
+  private Instant updatedAt;
   // 참조 정보 getter
   private final User creator;
   private String name;
@@ -35,7 +36,7 @@ public class Channel implements Serializable {
   // 외부에서 직접 객체 생성 방지.
   private Channel(User creator, String name) {
     this.id = UUID.randomUUID();
-    this.createdAt = System.currentTimeMillis();
+    this.createdAt = Instant.now();
     this.updatedAt = this.createdAt;
     this.creator = creator;
     this.name = name;
@@ -48,7 +49,7 @@ public class Channel implements Serializable {
   }
 
   public void setUpdatedAt() {
-    this.updatedAt = System.currentTimeMillis();
+    this.updatedAt = Instant.now();
   }
 
   public void updateName(String name) {

@@ -34,7 +34,7 @@ public class MessageTest {
           () -> assertThat(message.getUserId()).as("작성자 ID가 올바르게 설정되어야 함").isEqualTo(user.getId()),
           () -> assertThat(message.getChannelId()).as("채널 ID가 올바르게 설정되어야 함")
               .isEqualTo(channel.getId()),
-          () -> assertThat(message.getCreatedAt()).as("생성 시간이 올바르게 설정되어야 함").isPositive(),
+          () -> assertThat(message.getCreatedAt()).as("생성 시간이 올바르게 설정되어야 함").isNotNull(),
           () -> assertThat(message.getUpdatedAt())
               .as("최초 수정 시간은 생성 시간과 동일해야 함")
               .isEqualTo(message.getCreatedAt())

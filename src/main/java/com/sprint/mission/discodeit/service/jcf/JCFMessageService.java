@@ -7,8 +7,6 @@ import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
 import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
 import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotFoundException;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotParticipantException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +35,7 @@ public class JCFMessageService implements MessageService {
   public Message createMessage(String content, UUID userId, UUID channelId)
       throws ChannelException {
     userRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException(userId));
+        .orElseThrow(() -> ChannelException.notFound(userId));
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> ChannelException.notFound(channelId));
 
@@ -45,7 +43,7 @@ public class JCFMessageService implements MessageService {
         .noneMatch(p -> p.getId().equals(userId));
 
     if (isNotParticipant) {
-      throw new UserNotParticipantException();
+      throw ChannelException.participantNotFound(userId, channelId);
     }
 
     Message message = Message.create(content, userId, channelId);
@@ -65,7 +63,7 @@ public class JCFMessageService implements MessageService {
             (channelId == null || m.getChannelId().equals(channelId)) &&
                 (userId == null || m.getUserId().equals(userId)) &&
                 (content == null || m.getContent().contains(content)))
-        .sorted(Comparator.comparingLong(Message::getCreatedAt))
+        .sorted(Comparator.comparing(Message::getCreatedAt))
         .collect(Collectors.toList());
   }
 
@@ -74,7 +72,7 @@ public class JCFMessageService implements MessageService {
     return messageRepository.findAll().stream()
         .filter(m -> m.getDeletedAt() == null)
         .filter(m -> m.getChannelId().equals(channelId))
-        .sorted(Comparator.comparingLong(Message::getCreatedAt))
+        .sorted(Comparator.comparing(Message::getCreatedAt))
         .collect(Collectors.toList());
   }
 
@@ -95,12 +93,5 @@ public class JCFMessageService implements MessageService {
           m.delete();
           return messageRepository.save(m);
         });
-  }
-
-  public static class MessageNotFoundException extends RuntimeException {
-
-    public MessageNotFoundException(UUID messageId) {
-      super("메시지를 찾을 수 없음: " + messageId);
-    }
   }
 }

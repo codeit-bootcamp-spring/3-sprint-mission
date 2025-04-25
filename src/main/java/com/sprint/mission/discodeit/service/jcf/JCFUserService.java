@@ -70,18 +70,4 @@ public class JCFUserService implements UserService {
     user.ifPresent(u -> userRepository.deleteById(id));
     return user;
   }
-
-  public static class UserNotFoundException extends RuntimeException {
-
-    public UserNotFoundException(UUID userId) {
-      super("유저를 찾을 수 없음: " + userId);
-    }
-  }
-
-  public static class UserNotParticipantException extends RuntimeException {
-
-    public UserNotParticipantException() {
-      super("채널 참여자가 아닙니다.");
-    }
-  }
 }
