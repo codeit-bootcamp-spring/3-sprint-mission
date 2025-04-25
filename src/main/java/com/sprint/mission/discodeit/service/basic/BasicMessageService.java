@@ -6,6 +6,8 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,8 +25,10 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
+@Primary
 @Service("basicMessageService")
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "service.mode", havingValue = "basic")
 public class BasicMessageService implements MessageService{
 
     private final UserService userService;

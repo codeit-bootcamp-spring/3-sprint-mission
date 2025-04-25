@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
@@ -28,11 +30,13 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-@Primary
+
 @Repository
+@RequiredArgsConstructor
+@ConditionalOnProperty(name = "repository.mode", havingValue = "file")
 public class FileMessageRepository implements MessageRepository {
-    FilePathUtil pathUtil = new FilePathUtil();
-    FileSerializer serializer = new FileSerializer();
+    private final FilePathUtil pathUtil;
+    private final FileSerializer serializer;
 
     @Override
     public Message createMessageByUserIdAndChannelId(UUID senderId, UUID channelId, String content) {

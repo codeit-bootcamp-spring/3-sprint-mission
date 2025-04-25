@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,13 +33,13 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "service.mode", havingValue = "file")
 public class FileUserService implements UserService {
 
 
     private final FileUserRepository fileUserRepository;
-    private final FileBinaryContentRepository fileUserBinaryContentRepository;
-    private final FileUserStatusRepository fileUserStatusRepository;
     private final FileBinaryContentRepository fileBinaryContentRepository;
+    private final FileUserStatusRepository fileUserStatusRepository;
 
 
     // 이미지 저장 로직 추가
@@ -60,7 +61,7 @@ public class FileUserService implements UserService {
             return result;
         } else {
             // 이미지 처리 있음
-            UUID binaryContentId = fileUserBinaryContentRepository.createBinaryContent(userCreateDto.getImage()).getId();
+            UUID binaryContentId = fileBinaryContentRepository.createBinaryContent(userCreateDto.getImage()).getId();
             User result = fileUserRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword(), binaryContentId);
             fileUserStatusRepository.createUserStatus(result.getId());
             return result;
@@ -128,14 +129,14 @@ public class FileUserService implements UserService {
         if (profileId == null) {
             // 없음 객체 생성
             // binary content 생성
-            BinaryContent binaryContent = fileUserBinaryContentRepository.createBinaryContent(newImage);
+            BinaryContent binaryContent = fileBinaryContentRepository.createBinaryContent(newImage);
             // 프로필 아이디 유저에 추가
             fileUserRepository.updateProfileIdById(userId, binaryContent.getId());
 
             user = fileUserRepository.findUserById(userId);
         } else{
             // binary content 프로필 변경
-            fileUserBinaryContentRepository.updateImage(profileId, newImage);
+            fileBinaryContentRepository.updateImage(profileId, newImage);
         }
         return new ProfileUploadResponse(
                 user.getCreatedAt(),

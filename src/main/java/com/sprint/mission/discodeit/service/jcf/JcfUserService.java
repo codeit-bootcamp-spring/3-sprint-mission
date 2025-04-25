@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.repository.jcf.JcfUserRepository;
 import com.sprint.mission.discodeit.repository.jcf.JcfUserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,14 +33,11 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
-public class JcfUserService implements UserService
-{
-
+@ConditionalOnProperty(name = "service.mode", havingValue = "jcf")
+public class JcfUserService implements UserService {
     private final JcfUserRepository jcfUserRepository;
     private final JcfUserStatusRepository jcfUserStatusRepository;
     private final JcfBinaryContentRepostory jcfBinaryContentRepostory;
-
-
 
     public User createUser(UserCreateRequest userCreateDto) {
         Objects.requireNonNull(userCreateDto.getUsername(), "no name in parameter: BasicUserService.createUser");
