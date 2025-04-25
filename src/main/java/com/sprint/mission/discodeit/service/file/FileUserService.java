@@ -4,9 +4,10 @@ import com.sprint.mission.discodeit.Dto.user.ProfileUploadRequest;
 import com.sprint.mission.discodeit.Dto.user.ProfileUploadResponse;
 import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.Dto.user.UserFindResponse;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.file.FileUserBinaryContentRepository;
+import com.sprint.mission.discodeit.repository.file.FileBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
@@ -35,7 +36,7 @@ public class FileUserService implements UserService {
 
 
     private final FileUserRepository fileUserRepository;
-    private final FileUserBinaryContentRepository fileUserBinaryContentRepository;
+    private final FileBinaryContentRepository fileUserBinaryContentRepository;
     private final FileUserStatusRepository fileUserStatusRepository;
 
 
@@ -63,7 +64,6 @@ public class FileUserService implements UserService {
             fileUserStatusRepository.createUserStatus(result.getId());
             return result;
         }
-
     }
 
     @Override
@@ -91,35 +91,58 @@ public class FileUserService implements UserService {
 
     @Override
     public List<UserFindResponse> findAllUsers() {
-        List<UserStatus> allUserStatus = fileUserStatusRepository.findAllUserStatus();
         List<User> users = fileUserRepository.findAllUsers();
-
         List<UserFindResponse> userFindDtos = new ArrayList<>();
 
         // userDto를 (users + online)으로 매핑
-        for (int i =0;i<users.size();i++) {
-            if (allUserStatus.get(i) == null) {
-                throw new RuntimeException("userStatus is null");
+        for (User user : users) {
+            UserStatus status = fileUserStatusRepository.findUserStatusByUserId(user.getId());
+            boolean online = false;
+            if (status != null) {
+                online = fileUserStatusRepository.isOnline(status.getId());
             }
-            boolean online = fileUserStatusRepository.isOnline(allUserStatus.get(i).getId());
 
             userFindDtos.add(new UserFindResponse(
-                    users.get(i).getId(),
-                    users.get(i).getCreatedAt(),
-                    users.get(i).getUpdatedAt(),
-                    users.get(i).getUsername(),
-                    users.get(i).getEmail(),
-                    users.get(i).getProfileId(),
+                    user.getId(),
+                    user.getCreatedAt(),
+                    user.getUpdatedAt(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getProfileId(),
                     online));
         }
 
         return userFindDtos;
     }
 
-    // 완성 필요
+
     @Override
     public ProfileUploadResponse updateImage(ProfileUploadRequest request) {
-        return null;
+        UUID userId = request.getUserId();
+        byte[] newImage = request.getImage();
+        User user = fileUserRepository.findUserById(userId);
+        UUID profileId = findUserById(userId).getProfileId();
+
+
+        if (profileId == null) {
+            // 없음 객체 생성
+            // binary content 생성
+            BinaryContent binaryContent = fileUserBinaryContentRepository.createBinaryContent(newImage);
+            // 프로필 아이디 유저에 추가
+            fileUserRepository.updateProfileIdById(userId, binaryContent.getId());
+
+            user = fileUserRepository.findUserById(userId);
+        } else{
+            // binary content 프로필 변경
+            fileUserBinaryContentRepository.updateImage(profileId, newImage);
+        }
+        return new ProfileUploadResponse(
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getProfileId());
     }
 
     @Override
