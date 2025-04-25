@@ -37,9 +37,9 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User update(UUID userId, String newName, int newAge, String newEmail, String newPassword) {
+    public User update(UUID userId, String newName, int newAge, String newEmail, String newPassword, UUID profileId) {
         User user = this.find(userId);
-        user.update(newName, newAge, newEmail, newPassword);
+        user.update(newName, newAge, newEmail, newPassword, profileId);
         return this.create(user);
     }
 

@@ -106,11 +106,11 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public User update(UUID userId, String newName, int newAge, String newEmail, String newPassword) {
+    public User update(UUID userId, String newName, int newAge, String newEmail, String newPassword, UUID newProfileId) {
 
         try {
             User user = this.find(userId);
-            user.update(newName, newAge, newEmail, newPassword);
+            user.update(newName, newAge, newEmail, newPassword, newProfileId);
             this.create(user);
 
             return user;

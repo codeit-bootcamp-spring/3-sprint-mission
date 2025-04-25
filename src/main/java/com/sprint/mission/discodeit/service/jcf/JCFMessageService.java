@@ -51,10 +51,10 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message update(UUID messageId, String newContent) {
+    public Message update(UUID messageId, String newContent, List<UUID> attachmentIds) {
         Message messageNullable = this.data.get(messageId);
         Message message = Optional.ofNullable(messageNullable).orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
-        message.update(newContent);
+        message.update(newContent, attachmentIds);
 
         return message;
     }

@@ -38,9 +38,9 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Message update(UUID messageId, String newContent) {
+    public Message update(UUID messageId, String newContent, List<UUID> attachmentIds) {
         Message message = this.find(messageId);
-        message.update(newContent);
+        message.update(newContent, attachmentIds);
 
         return this.create(message);
     }

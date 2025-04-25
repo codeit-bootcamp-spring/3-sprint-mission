@@ -14,6 +14,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
+import java.util.Arrays;
+import java.util.UUID;
+
 @SpringBootApplication
 public class DiscodeitApplication {
 
@@ -34,7 +37,7 @@ public class DiscodeitApplication {
     }
 
     static void messageCreateTest(MessageService messageService, Channel channel, User author) {
-        message = new Message("안녕하세요. 저는 " + author.getName() + " 입니다.", author.getId(), channel.getId());
+        message = new Message("안녕하세요. 저는 " + author.getName() + " 입니다.", author.getId(), channel.getId(), Arrays.asList(UUID.randomUUID(), UUID.randomUUID()));
         messageService.create(message);
         System.out.println("메시지 생성: " + message.toString());
     }

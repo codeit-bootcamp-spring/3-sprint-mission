@@ -18,7 +18,7 @@ public interface MessageService {
 
     public List<Message> findAll();
 
-    public Message update(UUID messageId, String newContent);
+    public Message update(UUID messageId, String newContent, List<UUID> attachmentIds);
 
     public void delete(UUID messageId);
 

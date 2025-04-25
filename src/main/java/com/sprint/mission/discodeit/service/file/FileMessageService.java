@@ -120,11 +120,11 @@ public class FileMessageService implements MessageService {
     }
 
     @Override
-    public Message update(UUID messageId, String newContent) {
+    public Message update(UUID messageId, String newContent, List<UUID> attachmentIds) {
 
         try {
             Message message = this.find(messageId);
-            message.update(newContent);
+            message.update(newContent, attachmentIds);
             this.create(message);
             return message;
         } catch (RuntimeException e) {

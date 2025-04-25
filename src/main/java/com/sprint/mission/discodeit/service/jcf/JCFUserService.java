@@ -56,10 +56,10 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User update(UUID userId, String newName, int newAge, String newEmail, String newPassword) {
+    public User update(UUID userId, String newName, int newAge, String newEmail, String newPassword, UUID profileId) {
         User userNullable = this.data.get(userId);
         User user = Optional.ofNullable(userNullable).orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-        user.update(newName, newAge, newEmail, newPassword);
+        user.update(newName, newAge, newEmail, newPassword, null);
 
         return user;
     }

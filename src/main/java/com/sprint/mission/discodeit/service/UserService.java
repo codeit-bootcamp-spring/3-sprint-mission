@@ -19,7 +19,7 @@ public interface UserService {
 
     public List<User> findAll();
 
-    public User update(UUID userId, String newName, int newAge, String newEmail, String newPassword);
+    public User update(UUID userId, String newName, int newAge, String newEmail, String newPassword, UUID profileId);
 
     public void delete(UUID userId);
 
