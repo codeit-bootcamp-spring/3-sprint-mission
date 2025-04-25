@@ -25,7 +25,7 @@ public class DiscodeitApplication {
     private static Message message;
 
     static User setupUser(UserService userService) {
-        user = new User("냥냥이", 20, "woody@codeit.com", "woody1234");
+        user = new User("냥냥이", "woody@codeit.com", "woody1234");
 
         return userService.create(user);
     }

@@ -25,13 +25,11 @@ public class User implements Serializable {
     private String email;
     @Getter
     private String password;
-    @Getter
-    private int age;
     //
     @Getter
     private UUID profileId; // BinaryContent의 id
 
-    public User(String name, int age, String email, String password) {
+    public User(String name, String email, String password) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
@@ -39,17 +37,12 @@ public class User implements Serializable {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.age = age;
     }
 
-    public void update(String name, int age, String email, String password, UUID profileId) {
+    public void update(String name, String email, String password, UUID profileId) {
         boolean anyValueUpdated = false;
         if (name != null && !name.equals(this.name)) {
             this.name = name;
-            anyValueUpdated = true;
-        }
-        if (age != 0 && age != this.age) {
-            this.age = age;
             anyValueUpdated = true;
         }
         if (email != null && !email.equals(this.email)) {
@@ -85,7 +78,6 @@ public class User implements Serializable {
                 "  createdAt  = " + createdAtFormatted + "\n" +
                 "  updatedAt  = " + updatedAtFormatted + "\n" +
                 "  name       = '" + name + "'\n" +
-                "  age        = " + age + "\n" +
                 "}";
     }
 
@@ -101,8 +93,8 @@ public class User implements Serializable {
                 || (this.id != null && this.id.equals(other.id));
         boolean nameEquals = (this.name == null && other.name == null)
                 || (this.name != null && this.name.equals(other.name));
-        boolean ageEquals = this.age == other.age;
-        return idEquals && nameEquals && ageEquals;
+
+        return idEquals && nameEquals;
     }
 
     @Override
@@ -114,7 +106,6 @@ public class User implements Serializable {
         if (this.name != null) {
             result = 31 * result + this.name.hashCode();
         }
-        result = 31 * result + this.age;
         return result;
     }
 }

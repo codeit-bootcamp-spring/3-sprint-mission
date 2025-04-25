@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+
 @Service
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
@@ -37,9 +38,9 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User update(UUID userId, String newName, int newAge, String newEmail, String newPassword, UUID profileId) {
+    public User update(UUID userId, String newName, String newEmail, String newPassword, UUID profileId) {
         User user = this.find(userId);
-        user.update(newName, newAge, newEmail, newPassword, profileId);
+        user.update(newName, newEmail, newPassword, profileId);
         return this.create(user);
     }
 
