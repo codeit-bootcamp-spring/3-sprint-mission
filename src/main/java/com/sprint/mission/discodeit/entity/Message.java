@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 public class Message implements Serializable {
@@ -26,9 +27,11 @@ public class Message implements Serializable {
     private final UUID userId;
     @Getter
     private final UUID channelId;
+    @Getter
+    private List<UUID> attachmentIds;  // BinaryContent의 id
 
 
-    public Message(String content, UUID userId, UUID channelId) {
+    public Message(String content, UUID userId, UUID channelId, List<UUID> attachmentIds) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
@@ -36,12 +39,18 @@ public class Message implements Serializable {
         this.content = content;
         this.userId = userId;
         this.channelId = channelId;
+        this.attachmentIds = attachmentIds;
     }
 
-    public void update(String content) {
+    public void update(String content, List<UUID> attachmentIds) {
         boolean anyValueUpdated = false;
         if (content != null && !content.equals(this.content)) {
             this.content = content;
+            anyValueUpdated = true;
+        }
+
+        if (attachmentIds != null && !attachmentIds.equals(this.attachmentIds)) {
+            this.attachmentIds = attachmentIds;
             anyValueUpdated = true;
         }
 

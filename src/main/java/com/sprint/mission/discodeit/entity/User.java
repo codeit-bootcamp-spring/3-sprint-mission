@@ -27,6 +27,9 @@ public class User implements Serializable {
     private String password;
     @Getter
     private int age;
+    //
+    @Getter
+    private UUID profileId; // BinaryContent의 id
 
     public User(String name, int age, String email, String password) {
         this.id = UUID.randomUUID();
@@ -39,7 +42,7 @@ public class User implements Serializable {
         this.age = age;
     }
 
-    public void update(String name, int age, String email, String password) {
+    public void update(String name, int age, String email, String password, UUID profileId) {
         boolean anyValueUpdated = false;
         if (name != null && !name.equals(this.name)) {
             this.name = name;
@@ -55,6 +58,10 @@ public class User implements Serializable {
         }
         if (password != null && !password.equals(this.password)) {
             this.password = password;
+            anyValueUpdated = true;
+        }
+        if (profileId != null && !profileId.equals(this.profileId)) {
+            this.profileId = profileId;
             anyValueUpdated = true;
         }
 
