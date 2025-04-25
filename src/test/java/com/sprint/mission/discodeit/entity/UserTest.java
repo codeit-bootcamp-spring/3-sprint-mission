@@ -18,13 +18,22 @@ class UserTest {
     @Test
     @DisplayName("유저가 생성되면 기본 정보가 올바르게 설정되어야 한다")
     void shouldCreateUserWithDefaultInfo() {
+      // given
+      String email = "test@test.com";
+      String name = "길동쓰";
+      String password = "pwd123";
+
       // when
-      User user = UserFixture.createDefaultUser();
+      User user = UserFixture.createCustomUser(email, name, password);
 
       // then
       assertAll(
           "유저 기본 정보 검증",
-          () -> assertThat(user.getId()).as("유저 ID는 null이 아니어야 함").isNotNull()
+          () -> assertThat(user.getId()).as("유저 ID는 null이 아니어야 함").isNotNull(),
+          () -> assertThat(user.getEmail()).as("이메일이 올바르게 설정되어야 함").isEqualTo(email),
+          () -> assertThat(user.getName()).as("이름이 올바르게 설정되어야 함").isEqualTo(name),
+          () -> assertThat(user.getPassword()).as("비밀번호가 올바르게 설정되어야 함").isEqualTo(password),
+          () -> assertThat(user.getCreatedAt()).as("생성 시간이 올바르게 설정되어야 함").isPositive()
       );
     }
   }

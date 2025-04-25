@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.Getter;
 
 /**
  * 채널 정보 관리
@@ -17,13 +18,16 @@ import java.util.UUID;
  *   <li>참여자 목록</li>
  * </ul>
  */
+@Getter
 public class Channel implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 4947061877205205272L;
+  // 채널 정보 관리
   private final UUID id;
   private final long createdAt;
   private long updatedAt;
+  // 참조 정보 getter
   private final User creator;
   private String name;
   private List<User> participants = new ArrayList<>();
@@ -43,25 +47,8 @@ public class Channel implements Serializable {
     return new Channel(creator, name);
   }
 
-  // 채널 정보 관리
-  public UUID getId() {
-    return id;
-  }
-
-  public long getCreatedAt() {
-    return createdAt;
-  }
-
-  public long getUpdatedAt() {
-    return updatedAt;
-  }
-
   public void setUpdatedAt() {
     this.updatedAt = System.currentTimeMillis();
-  }
-
-  public String getName() {
-    return name;
   }
 
   public void updateName(String name) {
@@ -90,11 +77,6 @@ public class Channel implements Serializable {
 
     participants.remove(participantToRemove);
     setUpdatedAt();
-  }
-
-  // 참조 정보 getter
-  public User getCreator() {
-    return creator;
   }
 
   @Override

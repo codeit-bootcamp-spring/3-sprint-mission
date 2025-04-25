@@ -60,11 +60,11 @@ public class JCFMessageService implements MessageService {
   @Override
   public List<Message> searchMessages(UUID channelId, UUID userId, String content) {
     return messageRepository.findAll().stream()
-        .filter(message -> !message.isDeleted())
-        .filter(message ->
-            (channelId == null || message.getChannelId().equals(channelId)) &&
-                (userId == null || message.getUserId().equals(userId)) &&
-                (content == null || message.getContent().contains(content)))
+        .filter(m -> m.getDeletedAt() == null)
+        .filter(m ->
+            (channelId == null || m.getChannelId().equals(channelId)) &&
+                (userId == null || m.getUserId().equals(userId)) &&
+                (content == null || m.getContent().contains(content)))
         .sorted(Comparator.comparingLong(Message::getCreatedAt))
         .collect(Collectors.toList());
   }
@@ -72,7 +72,7 @@ public class JCFMessageService implements MessageService {
   @Override
   public List<Message> getChannelMessages(UUID channelId) {
     return messageRepository.findAll().stream()
-        .filter(m -> !m.isDeleted())
+        .filter(m -> m.getDeletedAt() == null)
         .filter(m -> m.getChannelId().equals(channelId))
         .sorted(Comparator.comparingLong(Message::getCreatedAt))
         .collect(Collectors.toList());
@@ -90,10 +90,10 @@ public class JCFMessageService implements MessageService {
   @Override
   public Optional<Message> deleteMessage(UUID id) {
     return messageRepository.findById(id)
-        .filter(message -> !message.isDeleted())
-        .map(message -> {
-          message.delete();
-          return messageRepository.save(message);
+        .filter(m -> m.getDeletedAt() == null)
+        .map(m -> {
+          m.delete();
+          return messageRepository.save(m);
         });
   }
 

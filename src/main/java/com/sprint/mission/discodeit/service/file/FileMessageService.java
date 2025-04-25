@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.exception.ChannelException;
+import com.sprint.mission.discodeit.exception.UserException;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;
@@ -67,21 +68,23 @@ public class FileMessageService implements MessageService {
   }
 
   @Override
-  public List<Message> searchMessages(UUID channelId, UUID userId, String content) {
+  public List<Message> searchMessages(UUID channelId, UUID userId, String content)
+      throws ChannelException, UserException {
     // 채널/사용자 존재 여부 검증 (필요 시)
     if (channelId != null) {
       channelRepository.findById(channelId)
-          .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelId));
+          .orElseThrow(() -> ChannelException.notFound(channelId));
     }
     if (userId != null) {
       userRepository.findById(userId)
-          .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+          .orElseThrow(() -> UserException.notFound(userId));
     }
 
     return messageRepository.findAll().stream()
-        .filter(message -> channelId == null || message.getChannelId().equals(channelId))
-        .filter(message -> userId == null || message.getUserId().equals(userId))
-        .filter(message -> content == null || message.getContent().contains(content))
+        .filter(m ->
+            (channelId == null || m.getChannelId().equals(channelId)) &&
+                (userId == null || m.getUserId().equals(userId)) &&
+                (content == null || m.getContent().contains(content)))
         .toList();
   }
 

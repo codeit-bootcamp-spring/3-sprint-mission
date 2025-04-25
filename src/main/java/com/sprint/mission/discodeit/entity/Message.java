@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.UUID;
+import lombok.Getter;
 
 /**
  * 메시지 정보 관리
@@ -15,17 +16,20 @@ import java.util.UUID;
  *   <li>삭제 여부</li>
  * </ul>
  */
+@Getter
 public class Message implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 5091331492371241399L;
+  // 메시지 정보 관리
   private final UUID id;
   private final long createdAt;
   private long updatedAt;
   private String content;
+  // 참조 정보 getter
   private final UUID userId;
   private final UUID channelId;
-  private boolean deleted = false;
+  private Long deletedAt;
 
   // 외부에서 직접 객체 생성 방지.
   private Message(String content, UUID userId, UUID channelId) {
@@ -42,52 +46,26 @@ public class Message implements Serializable {
     return new Message(content, userId, channelId);
   }
 
-  // 메시지 정보 관리
-  public UUID getId() {
-    return id;
-  }
-
-  public long getCreatedAt() {
-    return createdAt;
-  }
-
-  public long getUpdatedAt() {
-    return updatedAt;
-  }
-
   public void setUpdatedAt() {
     this.updatedAt = System.currentTimeMillis();
   }
 
   public String getContent() {
-    return deleted ? "삭제된 메시지입니다." : content;
+    return deletedAt != null ? "삭제된 메시지입니다." : content;
   }
 
   public void updateContent(String content) {
-    if (!deleted) {
+    if (deletedAt == null) {
       this.content = content;
       setUpdatedAt();
     }
   }
 
-  public boolean isDeleted() {
-    return deleted;
-  }
-
   public void delete() {
-    if (!deleted) {
-      deleted = true;
+    if (deletedAt == null) {
+      deletedAt = System.currentTimeMillis();
       setUpdatedAt();
     }
-  }
-
-  // 참조 정보 getter
-  public UUID getUserId() {
-    return userId;
-  }
-
-  public UUID getChannelId() {
-    return channelId;
   }
 
   @Override

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.Getter;
 
 /**
  * 사용자 정보 관리
@@ -16,10 +17,12 @@ import java.util.UUID;
  *   <li>참여 채널 목록</li>
  * </ul>
  */
+@Getter
 public class User implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 8019397210486307690L;
+  // 사용자 정보 관리
   private final UUID id;
   private final long createdAt;
   private long updatedAt;
@@ -43,38 +46,13 @@ public class User implements Serializable {
     return new User(email, name, password);
   }
 
-  // 사용자 정보 관리
-  public UUID getId() {
-    return id;
-  }
-
-  public long getCreatedAt() {
-    return createdAt;
-  }
-
-  public long getUpdatedAt() {
-    return updatedAt;
-  }
-
   public void setUpdatedAt() {
     this.updatedAt = System.currentTimeMillis();
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public String getPassword() {
-    return password;
   }
 
   public void updatePassword(String password) {
     this.password = password;
     setUpdatedAt();
-  }
-
-  public String getName() {
-    return name;
   }
 
   public void updateName(String name) {
