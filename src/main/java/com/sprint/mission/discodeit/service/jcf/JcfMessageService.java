@@ -5,6 +5,8 @@ import com.sprint.mission.discodeit.repository.jcf.JcfMessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,16 +23,12 @@ import java.util.*;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Service
+@ConditionalOnProperty(name = "service.mode", havingValue = "jcf")
+@RequiredArgsConstructor
 public class JcfMessageService implements MessageService {
     private final UserService userService;
     private final ChannelService channelService;
-
-    JcfMessageRepository jmr = new JcfMessageRepository();
-
-    public JcfMessageService(UserService userService, ChannelService channelService) {
-        this.userService = userService;
-        this.channelService = channelService;
-    }
+    private final JcfMessageRepository jcfMessageRepository;
 
     public final Map<UUID, Message> data = new HashMap<>();
 
@@ -42,30 +40,30 @@ public class JcfMessageService implements MessageService {
 
         Objects.requireNonNull(userService.findUserById(senderId), "no user existing: JcfMessageService.createMessage");
         Objects.requireNonNull(channelService.findChannelById(channelId), "no channel existing: JcfMessageService.createMessage");
-        return jmr.createMessageByUserIdAndChannelId(senderId, channelId, content);
+        return jcfMessageRepository.createMessageByUserIdAndChannelId(senderId, channelId, content);
     }
 
     @Override
     public Message findMessageById(UUID messageId) {
-        return jmr.findMessageById(messageId);
+        return jcfMessageRepository.findMessageById(messageId);
     }
 
     @Override
     public List<Message> findAllMessages() {
-        return jmr.findAllMessages();
+        return jcfMessageRepository.findAllMessages();
     }
 
     @Override
     public void updateMessage(UUID messageId, String content) {
         Objects.requireNonNull(messageId, "no messageId: JcfMessageService.updateMessage");
         Objects.requireNonNull(content, "no content: JcfMessageService.updateMessage");
-        jmr.updateMessageById(messageId, content);
+        jcfMessageRepository.updateMessageById(messageId, content);
     }
 
     @Override
     public void deleteMessage(UUID messageId) {
         Objects.requireNonNull(messageId, "requre message id: JcfMessageService.deleteMessage");
-        jmr.deleteMessageById(messageId);
+        jcfMessageRepository.deleteMessageById(messageId);
     }
 
 }

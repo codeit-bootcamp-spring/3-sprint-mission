@@ -10,8 +10,17 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.repository.file.FileBinaryContentRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserStatusRepository;
+import com.sprint.mission.discodeit.repository.jcf.JcfBinaryContentRepostory;
+import com.sprint.mission.discodeit.repository.jcf.JcfUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JcfUserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -28,14 +37,21 @@ import java.util.*;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
+
 @Service("basicUserService")
 @RequiredArgsConstructor
-@Primary
+@ConditionalOnProperty(name = "service.mode", havingValue = "basic")
 public class BasicUserService  implements UserService {
     private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
-    private final BinaryContentRepository binaryContentRepository;
 
+    private final FileUserStatusRepository fileUserStatusRepository;
+    private final JcfUserStatusRepository jcfUserStatusRepository;
+
+    private final FileBinaryContentRepository fileBinaryContentRepository;
+    private final JcfBinaryContentRepostory jcfBinaryContentRepostory;
+
+    private final UserStatusRepository userStatusRepository = jcfUserStatusRepository;
+    private final BinaryContentRepository binaryContentRepository =jcfBinaryContentRepostory;
 
 
     @Override

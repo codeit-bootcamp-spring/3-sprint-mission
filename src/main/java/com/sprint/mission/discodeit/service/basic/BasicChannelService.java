@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -23,9 +24,10 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  * 2025. 4. 17.        doungukkim       null 확인 로직 추가
  */
-@Service("basicChannelService")
-@RequiredArgsConstructor
 @Primary
+@Service("basicChannelService")
+@ConditionalOnProperty(name = "service.mode", havingValue = "basic")
+@RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
 
     private final ChannelRepository channelRepository;
