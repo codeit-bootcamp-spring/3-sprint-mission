@@ -17,9 +17,9 @@ public class Channel implements Serializable {
     @Getter
     private final UUID id;
     @Getter
-    private final Long createdAt;
+    private final Instant createdAt;
     @Getter
-    private Long updatedAt;
+    private Instant updatedAt;
     //
     @Getter
     private String name;
@@ -36,8 +36,8 @@ public class Channel implements Serializable {
 
     public Channel(String name, ChannelType type, String description, UUID ownerId) {
         this.id = UUID.randomUUID();
-        this.createdAt = Instant.now().getEpochSecond();
-        this.updatedAt = Instant.now().getEpochSecond();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         //
         this.name = name;
         this.type = type;
@@ -72,7 +72,7 @@ public class Channel implements Serializable {
         }
 
         if (anyValueUpdated) {
-            this.updatedAt = Instant.now().getEpochSecond();
+            this.updatedAt = Instant.now();
         }
     }
 
@@ -81,8 +81,8 @@ public class Channel implements Serializable {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                 .withZone(ZoneId.systemDefault());
 
-        String createdAtFormatted = formatter.format(Instant.ofEpochSecond(createdAt));
-        String updatedAtFormatted = formatter.format(Instant.ofEpochSecond(updatedAt));
+        String createdAtFormatted = formatter.format(createdAt);
+        String updatedAtFormatted = formatter.format(updatedAt);
 
         return "📦 Channel {\n" +
                 "  id         = " + id + "\n" +

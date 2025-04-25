@@ -15,9 +15,9 @@ public class Message implements Serializable {
     @Getter
     private final UUID id;
     @Getter
-    private final Long createdAt;
+    private final Instant createdAt;
     @Getter
-    private Long updatedAt;
+    private Instant updatedAt;
     //
     @Getter
     private String content;
@@ -30,8 +30,8 @@ public class Message implements Serializable {
 
     public Message(String content, UUID userId, UUID channelId) {
         this.id = UUID.randomUUID();
-        this.createdAt = Instant.now().getEpochSecond();
-        this.updatedAt = Instant.now().getEpochSecond();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         //
         this.content = content;
         this.userId = userId;
@@ -46,7 +46,7 @@ public class Message implements Serializable {
         }
 
         if (anyValueUpdated) {
-            this.updatedAt = Instant.now().getEpochSecond();
+            this.updatedAt = Instant.now();
         }
     }
 
@@ -55,8 +55,8 @@ public class Message implements Serializable {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                 .withZone(ZoneId.systemDefault());
 
-        String createdAtFormatted = formatter.format(Instant.ofEpochSecond(createdAt));
-        String updatedAtFormatted = formatter.format(Instant.ofEpochSecond(updatedAt));
+        String createdAtFormatted = formatter.format(createdAt);
+        String updatedAtFormatted = formatter.format(updatedAt);
 
         return "💬 Message {\n" +
                 " id         = " + id + "\n" +

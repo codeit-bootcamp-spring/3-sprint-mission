@@ -15,9 +15,9 @@ public class User implements Serializable {
     @Getter
     private final UUID id;
     @Getter
-    private final Long createdAt;
+    private final Instant createdAt;
     @Getter
-    private Long updatedAt;
+    private Instant updatedAt;
     //
     @Getter
     private String name;
@@ -30,8 +30,8 @@ public class User implements Serializable {
 
     public User(String name, int age, String email, String password) {
         this.id = UUID.randomUUID();
-        this.createdAt = Instant.now().getEpochSecond();
-        this.updatedAt = Instant.now().getEpochSecond();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         //
         this.name = name;
         this.email = email;
@@ -59,7 +59,8 @@ public class User implements Serializable {
         }
 
         if (anyValueUpdated) {
-            this.updatedAt = Instant.now().getEpochSecond();
+            this.updatedAt = Instant.now();
+
         }
     }
 
@@ -69,8 +70,8 @@ public class User implements Serializable {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                 .withZone(ZoneId.systemDefault());
 
-        String createdAtFormatted = formatter.format(Instant.ofEpochSecond(createdAt));
-        String updatedAtFormatted = formatter.format(Instant.ofEpochSecond(updatedAt));
+        String createdAtFormatted = formatter.format(createdAt);
+        String updatedAtFormatted = formatter.format(updatedAt);
 
         return "🙋‍♂️ User {\n" +
                 "  id         = " + id + "\n" +
