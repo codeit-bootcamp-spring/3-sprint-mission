@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.Dto.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.Dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.jcf.JcfChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -23,17 +25,22 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Service
-@ConditionalOnProperty(name = "service.mode", havingValue = "jcf")
 @RequiredArgsConstructor
 public class JcfChannelService implements ChannelService {
     private final JcfChannelRepository jcfChannelRepository;
 
-    @Override
 
-    public Channel createChannel(String name) {
-        Objects.requireNonNull(name, "이름 입력 없음: JcfChannelService.createChannel");
-        return jcfChannelRepository.createChannelByName(name);
+    // empty
+    @Override
+    public Channel createChannel(PrivateChannelCreateRequest request) {
+        return null;
     }
+    // empty
+    @Override
+    public Channel createChannel(PublicChannelCreateRequest request) {
+        return null;
+    }
+
 
     @Override
     public Channel findChannelById(UUID channelId) {

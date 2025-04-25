@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.Dto.user.ProfileUploadRequest;
-import com.sprint.mission.discodeit.Dto.user.ProfileUploadResponse;
+import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadRequest;
+import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadResponse;
 import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.Dto.user.UserFindResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -12,7 +12,6 @@ import com.sprint.mission.discodeit.repository.jcf.JcfUserRepository;
 import com.sprint.mission.discodeit.repository.jcf.JcfUserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -33,7 +32,6 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "service.mode", havingValue = "jcf")
 public class JcfUserService implements UserService {
     private final JcfUserRepository jcfUserRepository;
     private final JcfUserStatusRepository jcfUserStatusRepository;

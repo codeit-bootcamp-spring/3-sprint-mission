@@ -2,6 +2,7 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
@@ -24,11 +25,27 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Repository
-@ConditionalOnProperty(name = "repository.mode", havingValue = "jcf")
+//@Primary
 public class JcfChannelRepository implements ChannelRepository {
 
     Map<UUID, Channel> data = new HashMap<>();
 
+
+    @Override
+    public Channel createPrivateChannelByName() {
+        Channel channel = new Channel();
+        data.put(channel.getId(), channel);
+        return channel;
+    }
+
+    @Override
+    public Channel createPublicChannelByName(String name, String description) {
+        Channel channel = new Channel(name, description);
+        data.put(channel.getId(), channel);
+        return channel;
+    }
+
+    // 삭제 예정
     public Channel createChannelByName(String name) {
         Channel channel = new Channel(name);
         data.put(channel.getId(), channel);

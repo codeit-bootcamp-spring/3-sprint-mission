@@ -23,7 +23,6 @@ import java.util.*;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Service
-@ConditionalOnProperty(name = "service.mode", havingValue = "jcf")
 @RequiredArgsConstructor
 public class JcfMessageService implements MessageService {
     private final UserService userService;

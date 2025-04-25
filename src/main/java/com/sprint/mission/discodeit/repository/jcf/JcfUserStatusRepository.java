@@ -24,8 +24,8 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-@ConditionalOnProperty(name = "repository.mode", havingValue = "jcf")
-@Repository("jcfUserStatusRepository")
+//@Primary
+@Repository
 public class JcfUserStatusRepository implements UserStatusRepository {
     Map<UUID, UserStatus> data = new HashMap<>();
 

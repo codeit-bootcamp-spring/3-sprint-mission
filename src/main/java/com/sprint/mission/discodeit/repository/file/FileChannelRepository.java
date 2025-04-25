@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
@@ -29,27 +30,42 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-
+@Primary
 @Repository
-@ConditionalOnProperty(name = "repository.mode", havingValue = "file")
 @RequiredArgsConstructor
 public class FileChannelRepository implements ChannelRepository {
     private final FilePathUtil filePathUtil;
-    private final FileSerializer fileSerializer;
 
 
+    @Override
+    public Channel createPrivateChannelByName() {
+        Channel channel = new Channel();
+        Path path = filePathUtil.getChannelFilePath(channel.getId());
+        FileSerializer.writeFile(path,channel);
+        return channel;
+    }
+
+    @Override
+    public Channel createPublicChannelByName(String name, String description) {
+        Channel channel = new Channel(name, description);
+        Path path = filePathUtil.getChannelFilePath(channel.getId());
+        FileSerializer.writeFile(path,channel);
+        return channel;
+    }
+
+    // 삭제 예정
     @Override
     public Channel createChannelByName(String name) {
         Channel channel = new Channel(name);
         Path path = filePathUtil.getChannelFilePath(channel.getId());
-        fileSerializer.writeFile(path,channel);
+        FileSerializer.writeFile(path,channel);
         return channel;
     }
 
     @Override
     public Channel findChannelById(UUID channelId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
-        return fileSerializer.readFile(path, Channel.class);
+        return FileSerializer.readFile(path, Channel.class);
 
     }
 
@@ -88,9 +104,9 @@ public class FileChannelRepository implements ChannelRepository {
         if (!Files.exists(path)) {
             throw new RuntimeException("파일 없음: FileChannelRepository.updateChannel");
         }
-        Channel channel = fileSerializer.readFile(path, Channel.class);
+        Channel channel = FileSerializer.readFile(path, Channel.class);
         channel.setName(name);
-        fileSerializer.writeFile(path, channel);
+        FileSerializer.writeFile(path, channel);
     }
 
     @Override

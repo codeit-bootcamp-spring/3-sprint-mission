@@ -36,9 +36,9 @@ import java.util.stream.Stream;
  * 2025. 4. 24.        doungukkim       최초 생성
  */
 
-@Repository("fileUserStatusRepository")
+@Primary
+@Repository
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "repository.mode", havingValue = "file")
 public class FileUserStatusRepository implements UserStatusRepository {
     private final FilePathUtil filePathUtil;
 

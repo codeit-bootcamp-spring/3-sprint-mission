@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.Dto.user;
+package com.sprint.mission.discodeit.Dto.userStatus;
 
 import lombok.Getter;
 import lombok.Setter;

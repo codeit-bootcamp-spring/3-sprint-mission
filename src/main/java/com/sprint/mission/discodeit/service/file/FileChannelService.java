@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.Dto.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.Dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
@@ -24,15 +27,19 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "service.mode", havingValue = "file")
-
 public class FileChannelService implements ChannelService {
     private final FileChannelRepository fileChannelRepository;
+//    private final FileReadStatusRepository FileReadStatusRepository;
 
+    // empty
     @Override
-    public Channel createChannel(String name) {
-        Objects.requireNonNull(name, "이름을 입력 없음: FileChannelService.createChannel");
-        return fileChannelRepository.createChannelByName(name);
+    public Channel createChannel(PrivateChannelCreateRequest request) {
+        return null;
+    }
+    // empty
+    @Override
+    public Channel createChannel(PublicChannelCreateRequest request) {
+        return null;
     }
 
     @Override

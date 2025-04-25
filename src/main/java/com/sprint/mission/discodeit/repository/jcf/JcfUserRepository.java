@@ -20,7 +20,7 @@ import java.util.*;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Repository
-@ConditionalOnProperty(name = "repository.mode", havingValue = "jcf")
+//@Primary
 public class JcfUserRepository implements UserRepository {
 
     Map<UUID, User> data = new HashMap<>();
