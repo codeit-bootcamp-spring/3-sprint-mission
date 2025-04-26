@@ -95,11 +95,17 @@ public class User implements Serializable {
       return false;
     }
     User user = (User) o;
-    return Objects.equals(id, user.id);
+    return Objects.equals(id, user.id) &&
+        Objects.equals(email, user.email) &&
+        Objects.equals(name, user.name) &&
+        Objects.equals(password, user.password) &&
+        Objects.equals(createdAt, user.createdAt) &&
+        Objects.equals(updatedAt, user.updatedAt) &&
+        Objects.equals(channels, user.channels);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id);
+    return Objects.hash(id, email, name, password, createdAt, updatedAt, channels);
   }
 }

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.exception.ChannelException;
+import com.sprint.mission.discodeit.common.exception.ChannelException;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
@@ -102,11 +102,16 @@ public class Channel implements Serializable {
       return false;
     }
     Channel channel = (Channel) o;
-    return Objects.equals(id, channel.id);
+    return Objects.equals(id, channel.id) &&
+        Objects.equals(name, channel.name) &&
+        Objects.equals(createdAt, channel.createdAt) &&
+        Objects.equals(updatedAt, channel.updatedAt) &&
+        Objects.equals(creator, channel.creator) &&
+        Objects.equals(participants, channel.participants);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id);
+    return Objects.hash(id, name, createdAt, updatedAt, creator, participants);
   }
 }

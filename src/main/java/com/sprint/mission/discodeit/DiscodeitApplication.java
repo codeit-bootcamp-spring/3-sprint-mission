@@ -27,61 +27,80 @@ public class DiscodeitApplication {
   public static void main(String[] args) {
     SpringApplication.run(DiscodeitApplication.class, args);
 
-    // 서비스 초기화 - JCF 리포지토리 사용
+    // JCF 리포지토리 테스트 실행
     System.out.println("=== JCF 리포지토리를 사용한 테스트 ===");
-    UserRepository JCFUserRepository = new JCFUserRepository();
-    ChannelRepository JCFChannelRepository = new JCFChannelRepository();
-    MessageRepository JCFMessageRepository = new JCFMessageRepository();
+    initializeAndTest(new JCFUserRepository(), new JCFChannelRepository(),
+        new JCFMessageRepository());
 
-    UserService userService = new BasicUserService(JCFUserRepository);
-    ChannelService channelService = new BasicChannelService(JCFChannelRepository);
-    MessageService messageService = new BasicMessageService(
-        JCFMessageRepository,
-        JCFUserRepository,
-        JCFChannelRepository);
+    // File 리포지토리 테스트 실행
+    System.out.println("\n=== File 리포지토리를 사용한 테스트 ===");
+    initializeAndTest(
+        FileUserRepository.createDefault(),
+        FileChannelRepository.createDefault(),
+        FileMessageRepository.createDefault()
+    );
+  }
 
-    // 셋업
+  /**
+   * 리포지토리를 초기화하고 테스트 실행
+   */
+  private static void initializeAndTest(UserRepository userRepository,
+      ChannelRepository channelRepository,
+      MessageRepository messageRepository) {
+    // 서비스 초기화
+    UserService userService = new BasicUserService(userRepository);
+    ChannelService channelService = new BasicChannelService(channelRepository);
+    MessageService messageService = new BasicMessageService(messageRepository, userRepository,
+        channelRepository);
+
+    // 테스트 데이터 생성
     User user = setupUser(userService);
     Channel channel = setupChannel(channelService, user);
-    // 테스트
+
+    // 메시지 생성 테스트
     messageCreateTest(messageService, channel, user);
 
-    // 서비스 초기화 - File 리포지토리 사용
-    System.out.println("\n=== File 리포지토리를 사용한 테스트 ===");
-    UserRepository fileUserRepository = FileUserRepository.createDefault();
-    ChannelRepository fileChannelRepository = FileChannelRepository.createDefault();
-    MessageRepository fileMessageRepository = FileMessageRepository.createDefault();
-
-    UserService fileUserService = new BasicUserService(fileUserRepository);
-    ChannelService fileChannelService = new BasicChannelService(
-        fileChannelRepository);
-    MessageService fileMessageService = new BasicMessageService(
-        fileMessageRepository,
-        fileUserRepository,
-        fileChannelRepository);
-
-    // 셋업
-    User fileUser = setupUser(fileUserService);
-    Channel fileChannel = setupChannel(fileChannelService, fileUser);
-    // 테스트
-    messageCreateTest(fileMessageService, fileChannel, fileUser);
+    // 테스트 결과 출력
+    printTestResults(userService, channelService, messageService);
   }
 
-
+  /**
+   * 사용자 설정
+   */
   private static User setupUser(UserService userService) {
-    User user = userService.createUser("woody", "woody@codeit.com", "woody1234");
-    return user;
+    return userService.createUser("woody", "woody@codeit.com", "woody1234");
   }
 
+  /**
+   * 채널 설정
+   */
   private static Channel setupChannel(ChannelService channelService, User creator) {
-    Channel channel = channelService.createChannel(creator, "공지");
-    return channel;
+    return channelService.createChannel(creator, "공지");
   }
 
+  /**
+   * 메시지 생성 테스트
+   */
   private static void messageCreateTest(MessageService messageService, Channel channel,
       User author) {
     Message message = messageService.createMessage("안녕하세요.", author.getId(), channel.getId());
-    System.out.println("메시지 생성: " + message.getId());
+    System.out.println("메시지 생성 성공: " + message.getId());
   }
 
+  /**
+   * 테스트 완료 후 엔터티 전체 출력
+   */
+  private static void printTestResults(UserService userService, ChannelService channelService,
+      MessageService messageService) {
+    System.out.println("\n=== 테스트 결과 ===");
+
+    System.out.println("모든 사용자:");
+    userService.getAllUsers().forEach(System.out::println);
+
+    System.out.println("\n모든 채널:");
+    channelService.searchChannels(null, null).forEach(System.out::println);
+
+    System.out.println("\n모든 메시지:");
+    messageService.searchMessages(null, null, null).forEach(System.out::println);
+  }
 }

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -79,5 +80,27 @@ public class Message implements Serializable {
         ", userId=" + userId +
         ", channelId=" + channelId +
         '}';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Message message = (Message) o;
+    return Objects.equals(id, message.id) &&
+        Objects.equals(content, message.content) &&
+        Objects.equals(userId, message.userId) &&
+        Objects.equals(channelId, message.channelId) &&
+        Objects.equals(createdAt, message.createdAt) &&
+        Objects.equals(updatedAt, message.updatedAt);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, content, userId, channelId, createdAt, updatedAt);
   }
 }

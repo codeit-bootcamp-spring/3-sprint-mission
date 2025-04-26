@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.common.exception.ChannelException;
+import com.sprint.mission.discodeit.common.exception.UserException;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.exception.ChannelException;
-import com.sprint.mission.discodeit.exception.UserException;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;

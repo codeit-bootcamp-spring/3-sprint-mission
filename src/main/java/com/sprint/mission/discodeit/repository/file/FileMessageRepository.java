@@ -2,16 +2,10 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
+import com.sprint.mission.discodeit.repository.storage.FileStorage;
+import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
+import com.sprint.mission.discodeit.repository.storage.IndexManager;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Repository;
@@ -20,17 +14,23 @@ import org.springframework.stereotype.Repository;
 public class FileMessageRepository implements MessageRepository {
 
   private static final String FILE_PATH = "data/messages.ser";
-  private final String filePath;
-  private Map<UUID, Message> messages = new HashMap<>();
+  private static final String INDEX_PATH = "data/messages.ser.idx";
+
+  private final FileStorage fileStorage;
+  private final IndexManager indexManager;
 
   private FileMessageRepository() {
-    this.filePath = FILE_PATH;
-    loadData();
+    try {
+      this.fileStorage = new FileStorageImpl(FILE_PATH);
+      this.indexManager = new IndexManager(INDEX_PATH);
+    } catch (Exception e) {
+      throw new RuntimeException("FileMessageRepository 초기화 실패: " + e.getMessage(), e);
+    }
   }
 
   private FileMessageRepository(String filePath) {
-    this.filePath = filePath;
-    loadData();
+    this.fileStorage = new FileStorageImpl(filePath);
+    this.indexManager = new IndexManager(filePath + ".idx");
   }
 
   public static FileMessageRepository from(String filePath) {
@@ -43,69 +43,42 @@ public class FileMessageRepository implements MessageRepository {
 
   @Override
   public Message save(Message message) {
-    loadData();
-    messages.put(message.getId(), message);
-    saveData();
+    Long existingPosition = indexManager.getPosition(message.getId());
+    if (existingPosition != null) {
+      // 기존 메시지 업데이트
+      fileStorage.updateObject(existingPosition, message);
+    } else {
+      // 새로운 메시지 저장
+      long newPosition = fileStorage.saveObject(message);
+      indexManager.addEntry(message.getId(), newPosition);
+      indexManager.saveIndex();
+    }
     return message;
   }
 
   @Override
   public Optional<Message> findById(UUID id) {
-    loadData();
-    return Optional.ofNullable(messages.get(id));
+    Long position = indexManager.getPosition(id);
+    if (position == null) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable((Message) fileStorage.readObject(position));
   }
 
   @Override
   public List<Message> findAll() {
-    loadData();
-    return new ArrayList<>(messages.values());
+    return fileStorage.readAll().stream()
+        .map(obj -> (Message) obj)
+        .toList();
   }
 
   @Override
   public void deleteById(UUID id) {
-    loadData();
-    messages.remove(id);
-    saveData();
-  }
-
-  @SuppressWarnings("unchecked")
-  private void loadData() {
-    File file = new File(filePath);
-    if (!file.exists() || file.length() == 0) {
-      createDataFile();
-      return;
-    }
-
-    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-      Object obj = ois.readObject();
-      if (obj instanceof Map<?, ?> map) {
-        messages = (Map<UUID, Message>) map;
-      }
-    } catch (IOException | ClassNotFoundException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void saveData() {
-    File file = new File(filePath);
-    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
-      oos.writeObject(messages);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void createDataFile() {
-    File file = new File(filePath);
-    File parentDir = file.getParentFile();
-    if (parentDir != null && !parentDir.exists()) {
-      parentDir.mkdirs();
-    }
-
-    try {
-      file.createNewFile();
-    } catch (IOException e) {
-      e.printStackTrace();
+    Long position = indexManager.getPosition(id);
+    if (position != null) {
+      fileStorage.deleteObject(position);
+      indexManager.removeEntry(id);
+      indexManager.saveIndex();
     }
   }
 }

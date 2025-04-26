@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.common.exception.ChannelException;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.ChannelException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,7 +57,7 @@ public interface ChannelService {
    *
    * @param channelId 채널 ID
    * @param user      추가할 사용자
-   * @throws com.sprint.mission.discodeit.exception.ChannelException
+   * @throws ChannelException
    */
   void addParticipant(UUID channelId, User user)
       throws ChannelException;
@@ -67,7 +67,7 @@ public interface ChannelService {
    *
    * @param channelId 채널 ID
    * @param userId    제거할 사용자 ID
-   * @throws com.sprint.mission.discodeit.exception.ChannelException
+   * @throws ChannelException
    */
   void removeParticipant(UUID channelId, UUID userId)
       throws ChannelException;
