@@ -16,6 +16,9 @@ import org.junit.jupiter.api.Test;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -24,15 +27,25 @@ class JCFMessageServiceTest {
     private JCFMessageService messageService;
     private UserService userService;
     private ChannelService channelService;
+    private JCFUserRepository userRepository;
+    private JCFChannelRepository channelRepository;
+    private JCFMessageRepository messageRepository;
     private User testAuthor;
     private Channel testChannel;
     private Message testMessage;
 
     @BeforeEach
     public void setUp() {
-        this.userService = new JCFUserService();
-        this.channelService = new JCFChannelService(this.userService);
-        this.messageService = new JCFMessageService(this.userService, this.channelService);
+        JCFUserRepository.clearInstance();
+        JCFChannelRepository.clearInstance();
+        JCFMessageRepository.clearInstance();
+        
+        this.userRepository = JCFUserRepository.getInstance();
+        this.userService = JCFUserService.getInstance(this.userRepository);
+        this.channelRepository = JCFChannelRepository.getInstance();
+        this.channelService = JCFChannelService.getInstance(this.userService, this.channelRepository);
+        this.messageRepository = JCFMessageRepository.getInstance();
+        this.messageService = JCFMessageService.getInstance(this.userService, this.channelService, this.messageRepository);
 
         testAuthor = userService.createUser("testAuthor", "author@test.com", "password");
         testChannel = channelService.createChannel("TestChannel", false, "", testAuthor.getUserId());

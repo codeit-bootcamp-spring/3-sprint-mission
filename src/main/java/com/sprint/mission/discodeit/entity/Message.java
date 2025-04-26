@@ -1,14 +1,17 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class Message {
+public class Message implements Serializable {
+
     private final UUID messageId;
     private String content;
     private final UUID authorId;
     private final UUID channelId;
     private final long createdAt;
     private long updatedAt;
+    private static final long serialVersionUID = 1L;
 
     // 생성자
     public Message(String content, UUID authorId, UUID channelId) {
@@ -44,6 +47,7 @@ public class Message {
             this.updatedAt = System.currentTimeMillis(); // 수정 시간 갱신
         }
     }
+
     @Override
     public String toString() {
         return "Message [messageId=" + messageId + ", content=" + content + ", authorId=" + authorId + ", channelId="

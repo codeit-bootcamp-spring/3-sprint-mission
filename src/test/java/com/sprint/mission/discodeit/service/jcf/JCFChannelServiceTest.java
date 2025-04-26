@@ -17,18 +17,28 @@ import org.junit.jupiter.api.Test;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 
 class JCFChannelServiceTest {
 
-    private JCFChannelService channelService;
+    private JCFUserRepository userRepository;
     private JCFUserService userService;
+    private JCFChannelRepository channelRepository;
+    private JCFChannelService channelService;
     private User testOwner;
     private Channel testChannel;
 
     @BeforeEach
     public void setUp() {
-        this.userService = new JCFUserService();
-        this.channelService = new JCFChannelService(this.userService);
+        JCFUserRepository.clearInstance();
+        JCFChannelRepository.clearInstance();
+        
+        this.userRepository = JCFUserRepository.getInstance();
+        this.userService = JCFUserService.getInstance(this.userRepository);
+        this.channelRepository = JCFChannelRepository.getInstance();
+        this.channelService = JCFChannelService.getInstance(this.userService, this.channelRepository);
+        
         testOwner = userService.createUser("testOwner", "owner@test.com", "password");
         testChannel = channelService.createChannel("TestChannel", false, "", testOwner.getUserId());
     }

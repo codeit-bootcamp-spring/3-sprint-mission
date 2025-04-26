@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.file;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,33 +10,17 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
-public class JCFMessageService implements MessageService {
-    private static volatile JCFMessageService instance;
+public class FileMessageService implements MessageService {
+
     private final MessageRepository messageRepository;
     private final UserService userService;
     private final ChannelService channelService;
 
-    private JCFMessageService(UserService userService, ChannelService channelService, MessageRepository messageRepository) {
+    public FileMessageService(UserService userService, ChannelService channelService, MessageRepository messageRepository) {
         this.userService = userService;
         this.channelService = channelService;
         this.messageRepository = messageRepository;
     }
-
-    public static JCFMessageService getInstance(UserService userService, ChannelService channelService, MessageRepository messageRepository) {
-        JCFMessageService result = instance;
-        if (result == null) {
-            synchronized (JCFMessageService.class) {
-                result = instance;
-                if (result == null) {
-                    result = new JCFMessageService(userService, channelService, messageRepository);
-                    instance = result;
-                }
-            }
-        }
-        return result;
-    }
-
-    // ... 나머지 메서드들은 동일
 
     @Override
     public Message createMessage(String content, UUID authorId, UUID channelId) {
@@ -72,19 +56,18 @@ public class JCFMessageService implements MessageService {
     @Override
     public void updateMessage(UUID messageId, String updatedContent) {
         Message message = messageRepository.findById(messageId);
-        if (message != null) {
-            message.updateContent(updatedContent);
-            messageRepository.save(message);
-        } else {
-            throw new IllegalArgumentException("존재하지 않는 메시지 ID입니다.");
+        if (message == null) {
+            throw new IllegalArgumentException("존재하지 않는 메시지입니다");
         }
+        message.updateContent(updatedContent);
+        messageRepository.save(message);
     }
 
     @Override
     public void deleteMessage(UUID messageId) {
         Message message = messageRepository.findById(messageId);
         if (message == null) {
-            throw new IllegalArgumentException("존재하지 않는 메시지 ID입니다.");
+            throw new IllegalArgumentException("존재하지 않는 메시지입니다");
         }
         messageRepository.deleteById(messageId);
     }

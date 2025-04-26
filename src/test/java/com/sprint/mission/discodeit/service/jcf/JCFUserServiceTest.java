@@ -14,14 +14,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 
 class JCFUserServiceTest {
 
     private JCFUserService userService;
+    private JCFUserRepository userRepository;
 
     @BeforeEach
     public void setUp() {
-        this.userService = new JCFUserService();
+        // 싱글톤 인스턴스와 데이터를 모두 초기화
+        JCFUserRepository.clearInstance();
+        this.userRepository = JCFUserRepository.getInstance();
+        this.userRepository.clearData();  // 명시적으로 데이터도 초기화
+        this.userService = JCFUserService.getInstance(this.userRepository);
     }
 
     @Test
@@ -137,7 +143,7 @@ class JCFUserServiceTest {
         // Given
         User userToDelete = userService.createUser("deleteMe", "delete@me.com", "pass");
         UUID userId = userToDelete.getUserId();
-        userService.createUser("keepMe", "keep@me.com", "pass");
+        User userToKeep = userService.createUser("keepMe", "keep@me.com", "pass");
 
         // When
         userService.deleteUser(userId);
