@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.exception;
+package com.sprint.mission.discodeit.common.exception;
 
 import java.util.UUID;
 
