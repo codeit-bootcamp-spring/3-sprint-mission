@@ -20,9 +20,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class FileStorageImplTest {
 
@@ -63,6 +68,13 @@ class FileStorageImplTest {
     Channel channel = ChannelFixture.createDefaultChannel();
     User creator = channel.getCreator();
     return MessageFixture.createCustomMessage(content, creator, channel);
+  }
+
+  private static Stream<Arguments> provideMessages() {
+    return Stream.of(
+        Arguments.of(List.of("감자", "왕감자", "대홍단감자")),
+        Arguments.of(List.of("첫 번째 메시지", "두 번째 메시지", "특별한 메시지"))
+    );
   }
 
   @Test
@@ -208,5 +220,34 @@ class FileStorageImplTest {
     } catch (FileException e) {
       assertThat(e.getErrorCode()).isEqualTo(FileException.FILE_READ_ERROR);
     }
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideMessages")
+  @DisplayName("여러 객체 저장 후 모든 반환 위치와 저장 상태 확인")
+  void saveMultipleObjectsAndVerify(List<String> messageContents) {
+    // given
+    List<Message> objects = messageContents.stream()
+        .map(content -> MessageFixture.createCustomMessage(content,
+            UserFixture.createDefaultUser(), ChannelFixture.createDefaultChannel()))
+        .toList();
+
+    // when
+    List<Long> positions = objects.stream()
+        .map(fileStorage::saveObject)
+        .toList();
+
+    List<Object> storedObjects = fileStorage.readAll();
+
+    // then
+    assertAll(
+        () -> assertThat(positions).hasSize(objects.size()),
+        () -> assertThat(storedObjects).containsAll(objects),
+        () -> {
+          for (int i = 0; i < positions.size(); i++) {
+            assertThat(fileStorage.readObject(positions.get(i))).isEqualTo(objects.get(i));
+          }
+        }
+    );
   }
 }

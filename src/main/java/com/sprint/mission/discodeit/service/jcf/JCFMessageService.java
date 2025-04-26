@@ -39,10 +39,7 @@ public class JCFMessageService implements MessageService {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> ChannelException.notFound(channelId));
 
-    boolean isNotParticipant = channel.getParticipants().stream()
-        .noneMatch(p -> p.getId().equals(userId));
-
-    if (isNotParticipant) {
+    if (channel.isNotParticipant(userId)) {
       throw ChannelException.participantNotFound(userId, channelId);
     }
 

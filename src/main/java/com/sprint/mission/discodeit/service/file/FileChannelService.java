@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,11 +41,9 @@ public class FileChannelService implements ChannelService {
 
   @Override
   public List<Channel> searchChannels(UUID creatorId, String name) {
-    List<Channel> allChannels = channelRepository.findAll();
-    return allChannels.stream()
-        .filter(channel -> creatorId == null || channel.getCreator().getId().equals(creatorId))
-        .filter(channel -> name == null || channel.getName().contains(name))
-        .toList();
+    return channelRepository.findAll().stream()
+        .filter(channel -> channel.matchesFilter(creatorId, name))
+        .collect(Collectors.toList());
   }
 
   @Override

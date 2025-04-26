@@ -81,6 +81,21 @@ public class Channel implements Serializable {
     setUpdatedAt();
   }
 
+  public boolean isParticipant(UUID userId) {
+    return participants.stream()
+        .anyMatch(participant -> participant.getId().equals(userId));
+  }
+
+  public boolean isNotParticipant(UUID userId) {
+    return !isParticipant(userId);
+  }
+
+  public boolean matchesFilter(UUID creatorId, String name) {
+    boolean matchesCreator = (creatorId == null || this.creator.getId().equals(creatorId));
+    boolean matchesName = (name == null || this.name.contains(name));
+    return matchesCreator && matchesName;
+  }
+
   @Override
   public String toString() {
     return "Channel{" +

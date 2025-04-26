@@ -32,8 +32,7 @@ public class BasicChannelService implements ChannelService {
   @Override
   public List<Channel> searchChannels(UUID creatorId, String name) {
     return channelRepository.findAll().stream()
-        .filter(channel -> (creatorId == null || channel.getCreator().getId().equals(creatorId))
-            && (name == null || channel.getName().contains(name)))
+        .filter(channel -> channel.matchesFilter(creatorId, name))
         .collect(Collectors.toList());
   }
 

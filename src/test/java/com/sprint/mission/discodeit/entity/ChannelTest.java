@@ -12,6 +12,8 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ChannelTest {
 
@@ -126,6 +128,25 @@ class ChannelTest {
           }
       );
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"감자", "왕감자", "고구마"})
+    @DisplayName("채널 이름 수정 테스트 여러 데이터")
+    void shouldUpdateNameAndTimestampParameterized(String newName) {
+      // given
+      Channel channel = ChannelFixture.createDefaultChannel();
+      Instant originalUpdatedAt = channel.getUpdatedAt();
+
+      // when
+      channel.updateName(newName);
+
+      // then
+      assertAll(
+          () -> assertThat(channel.getName()).isEqualTo(newName),
+          () -> assertThat(channel.getUpdatedAt()).isAfterOrEqualTo(originalUpdatedAt)
+      );
+    }
+
 
     @Test
     @DisplayName("새로운 참여자 추가 시 참여자 목록이 올바르게 갱신되어야 한다")
