@@ -49,6 +49,4 @@ public class Channel extends BaseEntity implements Serializable {
         this.name = name;
         this.updatedAt = Instant.now();
     }
-
-
 }

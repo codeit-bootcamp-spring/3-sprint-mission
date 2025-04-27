@@ -1,13 +1,13 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.Dto.channel.ChannelFindResponse;
+import com.sprint.mission.discodeit.Dto.channel.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.Dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.Dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,6 +33,16 @@ public class FileChannelService implements ChannelService {
 
     // empty
     @Override
+    public List<ChannelFindResponse> findAllByUserId(UUID userId) {
+        return List.of();
+    }
+    // empty
+    @Override
+    public ChannelFindResponse findChannel(UUID channelId) {
+        return null;
+    }
+    // empty
+    @Override
     public Channel createChannel(PrivateChannelCreateRequest request) {
         return null;
     }
@@ -55,11 +65,10 @@ public class FileChannelService implements ChannelService {
         return fileChannelRepository.findAllChannel();
     }
 
+    // empty
     @Override
-    public void updateChannel(UUID channelId, String name) {
-        Objects.requireNonNull(channelId, "채널 아이디 입력 없음: FileChannelService.updateChannel");
-        Objects.requireNonNull(name, "이름 입력 없음: FileChannelService.updateChannel");
-        fileChannelRepository.updateChannel(channelId, name);
+    public void updateChannelName(ChannelUpdateRequest request) {
+
     }
 
     @Override

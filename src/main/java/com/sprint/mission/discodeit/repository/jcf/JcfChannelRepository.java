@@ -30,7 +30,6 @@ public class JcfChannelRepository implements ChannelRepository {
 
     Map<UUID, Channel> data = new HashMap<>();
 
-
     @Override
     public Channel createPrivateChannelByName() {
         Channel channel = new Channel();
@@ -45,21 +44,17 @@ public class JcfChannelRepository implements ChannelRepository {
         return channel;
     }
 
-    // 삭제 예정
-    public Channel createChannelByName(String name) {
-        Channel channel = new Channel(name);
-        data.put(channel.getId(), channel);
-        return channel;
-    }
-
+    @Override
     public Channel findChannelById(UUID channelId) {
         return data.get(channelId);
     }
 
+    @Override
     public List<Channel> findAllChannel() {
         return data.values().stream().toList();
     }
 
+    @Override
     public void updateChannel(UUID channelId, String name) {
         if (data.get(channelId) == null) {
             throw new RuntimeException("파일 없음: JcfChannelRepository.updateChannel");
@@ -67,6 +62,7 @@ public class JcfChannelRepository implements ChannelRepository {
         data.get(channelId).setName(name);
     }
 
+    @Override
     public void deleteChannel(UUID channelId) {
         data.remove(channelId);
     }

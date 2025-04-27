@@ -8,6 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -28,6 +32,19 @@ import java.util.*;
 public class FileReadStatusRepository implements ReadStatusRepository {
     private final FilePathUtil filePathUtil;
 
+    // working
+    @Override
+    public void deleteReadStatusById(UUID readStatusId) {
+        Path path = filePathUtil.getReadStatusFilePath(readStatusId);
+
+        try{
+            Files.delete(path);
+        } catch (IOException e) {
+            throw new RuntimeException("ReadStats 삭제 실패: FileReadStatusRepository.deleteReadStatusById",e);
+        }
+
+    }
+
     @Override
     public ReadStatus createReadStatusByUserId(UUID userId, UUID channelId) {
         ReadStatus readStatus = new ReadStatus(userId, channelId);
@@ -46,5 +63,42 @@ public class FileReadStatusRepository implements ReadStatusRepository {
             readStatusList.add(readStatus);
         }
         return readStatusList;
+    }
+
+    @Override
+    public List<ReadStatus> findReadStatusesByChannelId(UUID channelId) {
+        Path directory = filePathUtil.getReadStatusDirectory();
+
+        if (!Files.exists(directory)) {
+            return Collections.emptyList();
+        }
+
+        List<ReadStatus> readStatusList;
+        try {
+            readStatusList = Files.list(directory)
+                    .filter(path -> path.toString().endsWith(".ser"))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            Object data = ois.readObject();
+                            return (ReadStatus) data;
+                        } catch (IOException | ClassNotFoundException exception) {
+                            throw new RuntimeException("파일을 읽어오지 못했습니다: FileReadStatusRepository.findReadStatusByChannelId", exception);
+                        }
+                    }).toList();
+        } catch (IOException e) {
+            throw new RuntimeException("리스트로 만드는 과정에 문제 발생: FileReadStatusRepository.findReadStatusByChannelId",e);
+        }
+
+        List<ReadStatus> selectedReadStatuses = new ArrayList<>();
+        for (ReadStatus readStatus : readStatusList) {
+            if (readStatus.getChannelId().equals(channelId)) {
+                selectedReadStatuses.add(readStatus);
+            }
+        }
+
+        return selectedReadStatuses;
     }
 }

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
@@ -15,6 +16,7 @@ import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,6 +39,44 @@ import java.util.UUID;
 public class FileMessageRepository implements MessageRepository {
     private final FilePathUtil pathUtil;
     private final FileSerializer serializer;
+
+
+
+    @Override
+    public List<Message> findMessagesByChanenlId(UUID channelId) {
+        Path directory = pathUtil.getMessageDirectory();
+
+        if (!Files.exists(directory)) {
+            return Collections.emptyList();
+        }
+
+        List<Message> messageList;
+        try {
+            messageList = Files.list(directory)
+                    .filter(path -> path.toString().endsWith(".ser"))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            Object data = ois.readObject();
+                            return (Message) data;
+                        } catch (IOException | ClassNotFoundException exception) {
+                            throw new RuntimeException("파일을 읽어오지 못했습니다: FileReadStatusRepository.findReadStatusByChannelId", exception);
+                        }
+                    }).toList();
+        } catch (IOException e) {
+            throw new RuntimeException("리스트로 만드는 과정에 문제 발생: FileReadStatusRepository.findReadStatusByChannelId",e);
+        }
+
+        List<Message> selectedMessage = new ArrayList<>();
+        for (Message message : messageList) {
+            if (message.getChannelId().equals(channelId)) {
+                selectedMessage.add(message);
+            }
+        }
+        return selectedMessage;
+    }
 
     @Override
     public Message createMessageByUserIdAndChannelId(UUID senderId, UUID channelId, String content) {

@@ -1,12 +1,13 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.Dto.channel.ChannelFindResponse;
+import com.sprint.mission.discodeit.Dto.channel.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.Dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.Dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.jcf.JcfChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,6 +31,16 @@ public class JcfChannelService implements ChannelService {
     private final JcfChannelRepository jcfChannelRepository;
 
 
+    // empty
+    @Override
+    public List<ChannelFindResponse> findAllByUserId(UUID userId) {
+        return List.of();
+    }
+    // empty
+    @Override
+    public ChannelFindResponse findChannel(UUID channelId) {
+        return null;
+    }
     // empty
     @Override
     public Channel createChannel(PrivateChannelCreateRequest request) {
@@ -56,11 +67,10 @@ public class JcfChannelService implements ChannelService {
         return jcfChannelRepository.findAllChannel();
     }
 
+    // empty
     @Override
-    public void updateChannel(UUID channelId, String name) {
-        Objects.requireNonNull(channelId, "no channelId: JcfChannelService.updateChannel");
-        Objects.requireNonNull(name, "no name: JcfChannelService.updateChannel");
-        jcfChannelRepository.updateChannel(channelId, name);
+    public void updateChannelName(ChannelUpdateRequest request) {
+
     }
 
     @Override

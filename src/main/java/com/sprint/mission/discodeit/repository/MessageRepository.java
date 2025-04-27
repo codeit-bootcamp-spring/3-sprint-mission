@@ -22,4 +22,5 @@ public interface MessageRepository {
     List<Message> findAllMessages();
     void updateMessageById(UUID messageId, String content);
     void deleteMessageById(UUID messageId);
+    List<Message> findMessagesByChanenlId(UUID channelId);
 }
