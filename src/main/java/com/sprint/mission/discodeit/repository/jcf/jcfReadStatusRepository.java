@@ -24,6 +24,11 @@ public class jcfReadStatusRepository implements ReadStatusRepository{
     Map<UUID, ReadStatus> data = new HashMap<>();
 
     @Override
+    public void deleteReadStatusById(UUID readStatusId) {
+        data.remove(readStatusId);
+    }
+
+    @Override
     public ReadStatus createReadStatusByUserId(UUID userId, UUID channelId) {
         ReadStatus readStatus = new ReadStatus(userId, channelId);
         data.put(readStatus.getId(), readStatus);
@@ -40,6 +45,15 @@ public class jcfReadStatusRepository implements ReadStatusRepository{
             readStatusList.add(readStatus);
         }
         data.putAll(localData);
+        return readStatusList;
+    }
+
+    @Override
+    public List<ReadStatus> findReadStatusesByChannelId(UUID channelId) {
+        List<ReadStatus> readStatusList = data.values()
+                .stream()
+                .filter(readStatus -> readStatus.getChannelId().equals(channelId))
+                .toList();
         return readStatusList;
     }
 }

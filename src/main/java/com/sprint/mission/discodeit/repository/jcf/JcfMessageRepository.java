@@ -29,6 +29,13 @@ public class JcfMessageRepository implements MessageRepository {
     public final Map<UUID, Message> data = new HashMap<>();
 
     @Override
+    public List<Message> findMessagesByChanenlId(UUID channelId) {
+        return data.values().stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .toList();
+    }
+
+    @Override
     public Message createMessageByUserIdAndChannelId(UUID senderId, UUID channelId, String content) {
         Message message = new Message(senderId, channelId, content);
         data.put(message.getId(), message);

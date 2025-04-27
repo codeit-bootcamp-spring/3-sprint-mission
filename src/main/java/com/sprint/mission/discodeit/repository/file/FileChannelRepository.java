@@ -16,6 +16,7 @@ import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,20 +54,10 @@ public class FileChannelRepository implements ChannelRepository {
         return channel;
     }
 
-    // 삭제 예정
-    @Override
-    public Channel createChannelByName(String name) {
-        Channel channel = new Channel(name);
-        Path path = filePathUtil.getChannelFilePath(channel.getId());
-        FileSerializer.writeFile(path,channel);
-        return channel;
-    }
-
     @Override
     public Channel findChannelById(UUID channelId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
         return FileSerializer.readFile(path, Channel.class);
-
     }
 
     @Override
@@ -75,7 +66,7 @@ public class FileChannelRepository implements ChannelRepository {
         Path directory = filePathUtil.getChannelDirectory();
 
         if (!Files.exists(directory)) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
 
         try {

@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.Dto.channel.ChannelFindResponse;
+import com.sprint.mission.discodeit.Dto.channel.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.Dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.Dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -19,18 +21,20 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 public interface ChannelService {
-    // 삭제예정
-    //    Channel createChannel(String name);
 
     Channel createChannel(PrivateChannelCreateRequest request);
     Channel createChannel(PublicChannelCreateRequest request);
-
 
     Channel findChannelById(UUID channelId);
 
     List<Channel> findAllChannel();
 
-    void updateChannel(UUID channelId, String name);
+    ChannelFindResponse findChannel(UUID channelId);
+
+    List<ChannelFindResponse> findAllByUserId(UUID userId);
+
+    void updateChannelName(ChannelUpdateRequest request);
 
     void deleteChannel(UUID channelId);
+
 }

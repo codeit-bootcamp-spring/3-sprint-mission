@@ -18,7 +18,6 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 public interface ChannelRepository {
-    Channel createChannelByName(String name);
     Channel createPrivateChannelByName();
     Channel createPublicChannelByName(String name, String description);
     Channel findChannelById(UUID channelId);

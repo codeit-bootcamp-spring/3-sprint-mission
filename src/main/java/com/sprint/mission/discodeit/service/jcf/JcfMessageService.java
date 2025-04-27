@@ -31,6 +31,7 @@ public class JcfMessageService implements MessageService {
 
     public final Map<UUID, Message> data = new HashMap<>();
 
+
     @Override
     public Message createMessage(UUID senderId, UUID channelId, String content) {
         Objects.requireNonNull(senderId,"no senderId: JcfMessageService.createMessage" );
