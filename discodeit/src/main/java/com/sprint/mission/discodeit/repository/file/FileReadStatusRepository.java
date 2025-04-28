@@ -41,6 +41,13 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
+    public List<ReadStatus> findAllByUserId(UUID userId){
+        return readStatusData.values()
+                .stream()
+                .filter(readStatus -> readStatus.getUserId().equals(userId)).toList();
+    }
+
+    @Override
     public ReadStatus save(ReadStatus readStatus){
         readStatusData.put(readStatus.getId().toString(), readStatus);
         FileioUtil.save(this.path, readStatusData);

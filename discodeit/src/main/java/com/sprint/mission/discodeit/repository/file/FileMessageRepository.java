@@ -48,10 +48,6 @@ public class FileMessageRepository implements MessageRepository {
         return Optional.ofNullable(messageData.get(id.toString()));
     }
 
-    @Override
-    public List<Message> findAll() {
-        return messageData.values().stream().toList();
-    }
 
     @Override
     public List<Message> findAllByChannelId(UUID channelId) {

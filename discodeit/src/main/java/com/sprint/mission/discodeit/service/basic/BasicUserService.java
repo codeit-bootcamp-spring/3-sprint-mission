@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -51,8 +52,14 @@ public class BasicUserService implements UserService {
                     return binaryContentRepository.save(binaryContent).getId();
                 })
                 .orElse(null);
-        User newUser = new User(request.username(),request.email(),request.password(),nullableProfileId);
-        return userRepository.save(newUser);
+        User user = new User(request.username(),request.email(),request.password(),nullableProfileId);
+        User newUser = userRepository.save(user);
+
+        Instant now = Instant.now();
+        UserStatus userStatus = new UserStatus(newUser.getId(),now);
+        userStatusRepository.save(userStatus);
+
+        return newUser;
     }
 
 
@@ -90,8 +97,7 @@ public class BasicUserService implements UserService {
                 .orElse(null);
 
         String newPassword = updateUserRequest.newPassword();
-        // nullableProfileId를 넣어야하는데 왜 안들어가지? 다른거 해보고 반드시 다시 와서 확인할것
-        user.update(updateUserRequest.newUsername(), updateUserRequest.newEmail(), updateUserRequest.newPassword());
+        user.update(updateUserRequest.newUsername(), updateUserRequest.newEmail(), updateUserRequest.newPassword(),nullableProfileId);
         return userRepository.save(user);
     }
 

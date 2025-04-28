@@ -1,40 +1,49 @@
-package com.sprint.mission.discodeit.repository.jcf;
-
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-
+//package com.sprint.mission.discodeit.repository.jcf;
+//
+//import com.sprint.mission.discodeit.entity.Channel;
+//import com.sprint.mission.discodeit.repository.ChannelRepository;
+//import org.springframework.stereotype.Repository;
+//
 //import java.util.*;
 //
+//@Repository
 //public class JCFChannelRepository implements ChannelRepository {
-//    private final Map<UUID, Channel> data;
+//    private final Map<UUID, Channel> channelData;
 //
 //    public JCFChannelRepository() {
-//        this.data = new HashMap<>();
+//        this.channelData = new HashMap<>();
 //    }
 //
 //    @Override
 //    public Channel save(Channel channel) {
-//        this.data.put(channel.getId(), channel);
+//        this.channelData.put(channel.getId(), channel);
 //        return channel;
 //    }
 //
 //    @Override
 //    public Optional<Channel> findById(UUID id) {
-//        return Optional.ofNullable(this.data.get(id));
+//        return Optional.ofNullable(this.channelData.get(id));
 //    }
 //
 //    @Override
 //    public List<Channel> findAll() {
-//        return this.data.values().stream().toList();
+//        return this.channelData.values().stream().toList();
+//    }
+//
+//    @Override
+//    public List<Channel> findAllByUserId(UUID userId) {
+//        return this.channelData.values().stream()
+//                .filter(channel -> channel.getParicipantIds().equals(userId))
+//                .toList();
 //    }
 //
 //    @Override
 //    public boolean existsById(UUID id) {
-//        return this.data.containsKey(id);
+//        return this.channelData.containsKey(id);
 //    }
 //
 //    @Override
 //    public void deleteById(UUID id) {
-//        this.data.remove(id);
+//        this.channelData.remove(id);
 //    }
 //}

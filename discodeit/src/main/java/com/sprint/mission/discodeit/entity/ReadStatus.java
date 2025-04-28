@@ -27,8 +27,13 @@ public class ReadStatus {  // 사용자가 채널 별 마지막으로 메시지�
     }
 
     public void update(Instant lastReadAt) {
+        boolean anyValueUpdated = false;
         if(lastReadAt != null && !lastReadAt.equals(this.lastReadAt)){
             this.lastReadAt = lastReadAt;
+            anyValueUpdated = true;
+        }
+
+        if(anyValueUpdated){
             this.updatedAt = Instant.now();
         }
 

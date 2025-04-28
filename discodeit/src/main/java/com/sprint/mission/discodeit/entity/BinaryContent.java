@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class BinaryContent {
+public class BinaryContent implements java.io.Serializable{
     private UUID id;
     private Instant createdAt;
 
@@ -18,7 +18,6 @@ public class BinaryContent {
     public BinaryContent(String fileName, BinaryContentType type, Long filesize, byte[] bytes) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-
         this.fileName = fileName;
         this.type = type;
         this.filesize = filesize;
