@@ -6,13 +6,13 @@ import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
+@RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
-
-    public BasicUserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Override
     public User create(String username, String email, String password) {
