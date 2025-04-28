@@ -65,6 +65,7 @@ public class FileChannelService implements ChannelService {
         return fileChannelRepository.findAllChannel();
     }
 
+
     // empty
     @Override
     public void updateChannelName(ChannelUpdateRequest request) {

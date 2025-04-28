@@ -1,12 +1,14 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.Dto.message.MessageAttachmentsCreateRequest;
+import com.sprint.mission.discodeit.Dto.message.MessageCreateRequest;
+import com.sprint.mission.discodeit.Dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,6 +33,29 @@ public class FileMessageService implements MessageService {
     private final UserService userService;
     private final ChannelService channelService;
 
+    // empty
+    @Override
+    public void updateMessage(MessageUpdateRequest request) {
+
+    }
+
+    // empty
+    @Override
+    public List<Message> findAllByChannelId(UUID channelId) {
+        return List.of();
+    }
+
+    // empty
+    @Override
+    public Message createMessage(MessageCreateRequest request) {
+        return null;
+    }
+    // empty
+    @Override
+    public Message createMessage(MessageAttachmentsCreateRequest request) {
+        return null;
+    }
+
 
     @Override
     public Message createMessage(UUID senderId, UUID channelId, String content) {
@@ -41,7 +66,7 @@ public class FileMessageService implements MessageService {
         Objects.requireNonNull(userService.findUserById(senderId), "no user existing: createMessage");
         Objects.requireNonNull(channelService.findChannelById(channelId), "no channel existing: createMessage");
 
-        return fileMessageRepository.createMessageByUserIdAndChannelId(senderId, channelId, content);
+        return fileMessageRepository.createMessageWithContent(senderId, channelId, content);
     }
 
     @Override
@@ -57,6 +82,7 @@ public class FileMessageService implements MessageService {
         return fileMessageRepository.findAllMessages();
     }
 
+    // legacy
     @Override
     public void updateMessage(UUID messageId, String content) {
         Objects.requireNonNull(messageId, "no messageId: FileMessageService.updateMessage");
@@ -64,6 +90,7 @@ public class FileMessageService implements MessageService {
         fileMessageRepository.updateMessageById(messageId, content);
     }
 
+    // this has to be updated
     @Override
     public void deleteMessage(UUID messageId) {
         Objects.requireNonNull(messageId, "require message Id : FileMessageService.deleteMessage");

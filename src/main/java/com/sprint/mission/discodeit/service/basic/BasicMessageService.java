@@ -1,18 +1,22 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.Dto.message.MessageAttachmentsCreateRequest;
+import com.sprint.mission.discodeit.Dto.message.MessageCreateRequest;
+import com.sprint.mission.discodeit.Dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic
@@ -30,21 +34,55 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService{
 
-    private final UserService userService;
-    private final ChannelService channelService;
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
+    private final BinaryContentRepository binaryContentRepository;
+//    private final BinaryContentRepository binaryContentRepository;
 
 
+
+    @Override
+    public List<Message> findAllByChannelId(UUID channelId) {
+        return Optional.ofNullable(messageRepository.findMessagesByChannelId(channelId)).orElse(Collections.emptyList());
+    }
+
+    // message
+    @Override
+    public Message createMessage(MessageCreateRequest request) {
+        Channel channel = Optional.ofNullable(channelRepository.findChannelById(request.getChannelId())).orElseThrow(() -> new RuntimeException("채널 없음: BasicMessageService.createMessage"));
+        User user = Optional.ofNullable(userRepository.findUserById(request.getSenderId())).orElseThrow(() -> new RuntimeException("유저 없음: BasicMessageService.createMessage"));
+        String content = Optional.ofNullable(request.getContent()).orElseThrow(()->new RuntimeException("메세지 없음: BasicMessageService.createMessage"));
+
+        return messageRepository.createMessageWithContent(user.getId(), channel.getId(), content);
+    }
+
+    // binary content
+    @Override
+    public Message createMessage(MessageAttachmentsCreateRequest request) {
+        Channel channel = Optional.ofNullable(channelRepository.findChannelById(request.getChannelId())).orElseThrow(() -> new RuntimeException("채널 없음: BasicMessageService.createMessage"));
+        User user = Optional.ofNullable(userRepository.findUserById(request.getSenderId())).orElseThrow(() -> new RuntimeException("유저 없음: BasicMessageService.createMessage"));
+        List<byte[]> attachments = Optional.ofNullable(request.getAttachments()).orElseThrow(() -> new RuntimeException("첨부 파일 없음: BasicMessageService.createMessage"));
+
+        List<UUID> attachmentIds = attachments.stream()
+                .map(attachment -> binaryContentRepository.createBinaryContent(attachment).getId())
+                .toList();
+
+        return messageRepository.createMessageWithAttachments(user.getId(), channel.getId(), attachmentIds);
+    }
+
+
+    // legacy
     @Override
     public Message createMessage(UUID senderId, UUID channelId, String content) {
         Objects.requireNonNull(senderId,"no senderId: BasicMessageService.createMessage" );
         Objects.requireNonNull(channelId,"채널 id 없음: BasicMessageService.createMessage");
         Objects.requireNonNull(content,"메세지 내용 없음 BasicMessageService.createMessage");
 
-        Objects.requireNonNull(userService.findUserById(senderId), "no user existing: createMessage");
-        Objects.requireNonNull(channelService.findChannelById(channelId), "no channel existing: createMessage");
+        Objects.requireNonNull(userRepository.findUserById(senderId), "no user existing: createMessage");
+        Objects.requireNonNull(channelRepository.findChannelById(channelId), "no channel existing: createMessage");
 
-        return messageRepository.createMessageByUserIdAndChannelId(senderId, channelId, content);
+        return messageRepository.createMessageWithContent(senderId, channelId, content);
     }
 
     @Override
@@ -60,6 +98,7 @@ public class BasicMessageService implements MessageService{
         return messageRepository.findAllMessages();
     }
 
+    // legacy
     @Override
     public void updateMessage(UUID messageId, String content) {
         Objects.requireNonNull(messageId, "no messageId: BasicMessageService.updateMessage");
@@ -67,10 +106,28 @@ public class BasicMessageService implements MessageService{
         messageRepository.updateMessageById(messageId, content);
     }
 
+
+    @Override
+    public void updateMessage(MessageUpdateRequest request) {
+        messageRepository.updateMessageById(
+                Optional.ofNullable(request.getMessageId()).orElseThrow(() -> new IllegalArgumentException("trouble with messageId : BasicMessageService.updateMessage")),
+                Optional.ofNullable(request.getContent()).orElseThrow(()-> new IllegalArgumentException("trouble with content : BasicMessageService.updateMessage"))
+        );
+    }
+
+
     @Override
     public void deleteMessage(UUID messageId) {
-        Objects.requireNonNull(messageId, "require message Id : BasicMessageService.deleteMessage");
+        Optional.ofNullable(messageId).orElseThrow(() -> new RuntimeException("require message Id : BasicMessageService.deleteMessage"));
+        // attachments 삭제
+        List<UUID> attachmentIds = messageRepository.findMessageById(messageId).getAttachmentIds();
+        for (UUID attachmentId : attachmentIds) {
+            binaryContentRepository.deleteBinaryContentById(attachmentId);
+        }
+
         messageRepository.deleteMessageById(messageId);
     }
+
+
 
 }

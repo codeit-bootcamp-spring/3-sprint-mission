@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.Dto.channel.ChannelFindResponse;
 import com.sprint.mission.discodeit.Dto.channel.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.Dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.Dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.Dto.message.MessageAttachmentsCreateRequest;
+import com.sprint.mission.discodeit.Dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.Dto.user.*;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -16,6 +18,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -35,6 +38,14 @@ public class DiscodeitApplication {
 		UserStatusRepository userStatusRepository = context.getBean(UserStatusRepository.class);
 
 		System.out.println("\n=== findAllByUserId 테스트 ===");
+
+		byte[] image = {1, 2, 3, 4};
+		byte[] image1 = {1, 2, 3, 4, 5};
+
+		List<byte[]> images = new ArrayList<>();
+		images.add(image);
+		images.add(image1);
+
 
 // 1. 유저 생성
 		User user1 = userService.createUser(new UserCreateRequest("user1", "user1@email.com", "1234"));
@@ -72,35 +83,58 @@ public class DiscodeitApplication {
 			}
 			System.out.println();
 		}
+//
+//		System.out.println("이름 업데이트");
+//		ChannelUpdateRequest channelUpdateRequest = new ChannelUpdateRequest(publicChannel.getId(), "new name for test update");
+//		ChannelUpdateRequest channelUpdateRequest1 = new ChannelUpdateRequest(privateChannelUser1.getId(), "new name for test update");
+//		channelService.updateChannelName(channelUpdateRequest);
+//		channelService.updateChannelName(channelUpdateRequest1);
+//
+//		System.out.println("\n=== 채널 삭제 테스트 ===");
+//
+//		// 1. 삭제 대상 채널 ID
+//		UUID deleteTargetChannelId = privateChannelUser1.getId();
+//
+//		// 2. 삭제 실행
+//		System.out.println("Deleting Channel: " + deleteTargetChannelId);
+//		channelService.deleteChannel(deleteTargetChannelId);
+//
+//		// 3. 삭제 검증
+//		ChannelFindResponse deletedChannelResponse = null;
+//		try {
+//			deletedChannelResponse = channelService.findChannel(deleteTargetChannelId);
+//		} catch (Exception e) {
+//			System.out.println("삭제 확인: 채널을 찾을 수 없습니다. (정상)");
+//		}
 
-		System.out.println("이름 업데이트");
-		ChannelUpdateRequest channelUpdateRequest = new ChannelUpdateRequest(publicChannel.getId(), "new name for test update");
-		ChannelUpdateRequest channelUpdateRequest1 = new ChannelUpdateRequest(privateChannelUser1.getId(), "new name for test update");
-		channelService.updateChannelName(channelUpdateRequest);
-		channelService.updateChannelName(channelUpdateRequest1);
+//		if (deletedChannelResponse == null) {
+//			System.out.println("채널 삭제 성공: " + deleteTargetChannelId);
+//		} else {
+//			System.out.println("채널 삭제 실패: " + deleteTargetChannelId);
+//		}
 
-		System.out.println("\n=== 채널 삭제 테스트 ===");
 
-		// 1. 삭제 대상 채널 ID
-		UUID deleteTargetChannelId = privateChannelUser1.getId();
+		MessageCreateRequest messageCreateRequest = new MessageCreateRequest(user1.getId(), publicChannel.getId(), "first message");
+		MessageAttachmentsCreateRequest messageAttachmentsCreateRequest =
+				new MessageAttachmentsCreateRequest(user1.getId(), publicChannel.getId(), images);
+		messageService.createMessage(messageCreateRequest);
+		Message message1 = messageService.createMessage(messageAttachmentsCreateRequest);
 
-		// 2. 삭제 실행
-		System.out.println("Deleting Channel: " + deleteTargetChannelId);
-		channelService.deleteChannel(deleteTargetChannelId);
+		messageService.findAllMessages().forEach(message -> System.out.println(
+				"messageId "+message.getId()+
+				"\nchannelId "+message.getChannelId()+
+				"\nattachment "+message.getAttachmentIds()+
+				"\ncontent "+ message.getContent()+"\n\n"));
 
-		// 3. 삭제 검증
-		ChannelFindResponse deletedChannelResponse = null;
-		try {
-			deletedChannelResponse = channelService.findChannel(deleteTargetChannelId);
-		} catch (Exception e) {
-			System.out.println("삭제 확인: 채널을 찾을 수 없습니다. (정상)");
-		}
+		channelService.findAllByUserId(user1.getId())
+				.forEach(channelFindResponse ->
+						System.out.println(channelFindResponse.getType()+" \nchannelId "+
+								channelFindResponse.getChannel().getId()+" \nuserIds "+
+								channelFindResponse.getUserIds()+" \nrecentMessageTime "+
+								channelFindResponse.getRecentMessageTime()+"\n\n"));
 
-		if (deletedChannelResponse == null) {
-			System.out.println("채널 삭제 성공: " + deleteTargetChannelId);
-		} else {
-			System.out.println("채널 삭제 실패: " + deleteTargetChannelId);
-		}
+		messageService.deleteMessage(message1.getId());
+
 
 	}
 

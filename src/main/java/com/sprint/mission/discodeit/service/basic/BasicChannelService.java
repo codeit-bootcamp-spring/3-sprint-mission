@@ -137,11 +137,6 @@ public class BasicChannelService implements ChannelService {
     }
 
 
-
-
-    // update
-    // delete
-
     @Override
     public Channel createChannel(PrivateChannelCreateRequest request) {
         Objects.requireNonNull(request, "채널 입력 없음");
@@ -223,7 +218,7 @@ public class BasicChannelService implements ChannelService {
             readStatusRepository.deleteReadStatusById(readStatus.getId());
         }
 
-        List<Message> targetMessages = Optional.ofNullable(messageRepository.findMessagesByChanenlId(channelId)).orElse(Collections.emptyList());
+        List<Message> targetMessages = Optional.ofNullable(messageRepository.findMessagesByChannelId(channelId)).orElse(Collections.emptyList());
         for (Message targetMessage : targetMessages) {
             messageRepository.deleteMessageById(targetMessage.getId());
         }
