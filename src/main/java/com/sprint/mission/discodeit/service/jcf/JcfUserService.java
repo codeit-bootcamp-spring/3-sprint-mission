@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.repository.jcf.JcfUserRepository;
 import com.sprint.mission.discodeit.repository.jcf.JcfUserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
+@Profile("jcf")
 public class JcfUserService implements UserService {
     private final JcfUserRepository jcfUserRepository;
     private final JcfUserStatusRepository jcfUserStatusRepository;

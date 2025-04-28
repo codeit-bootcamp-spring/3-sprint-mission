@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -19,6 +20,7 @@ import java.util.*;
  * 2025. 4. 24.        doungukkim       최초 생성
  */
 //@Primary
+@Profile("jcf")
 @Repository
 public class JcfBinaryContentRepostory implements BinaryContentRepository {
     private final Map<UUID, BinaryContent> data = new HashMap<>();

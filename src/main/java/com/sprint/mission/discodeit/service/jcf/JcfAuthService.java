@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,7 +26,8 @@ import java.util.Optional;
  */
 @RequiredArgsConstructor
 @Service
-@ConditionalOnProperty(name = "service.mode", havingValue = "jcf")
+@Profile("jcf")
+//@ConditionalOnProperty(name = "service.mode", havingValue = "jcf")
 public class JcfAuthService implements AuthService {
     private final UserRepository userRepository;
 
