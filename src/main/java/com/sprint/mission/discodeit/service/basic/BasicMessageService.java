@@ -1,35 +1,68 @@
-//package com.sprint.mission.discodeit.service.basic;
-//
-//import com.sprint.mission.discodeit.entity.Message;
-//import com.sprint.mission.discodeit.repository.MessageRepository;
-//import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
-//import com.sprint.mission.discodeit.service.MessageService;
-//
-//import java.util.List;
-//import java.util.Map;
-//import java.util.UUID;
-//import java.util.concurrent.ConcurrentHashMap;
-//
-//public class BasicMessageService implements MessageService {
-//    private Map<UUID, List<Message>> channelMsgBoard = new ConcurrentHashMap<>();
-//    private final MessageRepository messageRepository;
-//
-//    public BasicMessageService(MessageRepository messageRepository){
-//        this.messageRepository = messageRepository;
-//        this.channelMsgBoard = messageRepository.loadMessageBoard();
-//    }
-//    public BasicMessageService() {
-//        this.messageRepository = new FileMessageRepository();
-//        this.channelMsgBoard = messageRepository.loadMessageBoard();
-//        messageRepository.saveMessageBoard(channelMsgBoard);
-//    }
-//    public void saveMessageBoard(){
-//        messageRepository.saveMessageBoard(channelMsgBoard);
-//    }
-//    public Map<UUID, List<Message>> getChannelMsgBoard() {
-//        return channelMsgBoard;
-//    }
-//    public void setChannelMsgBoard(Map<UUID, List<Message>> channelMsgBoard) {
-//        this.channelMsgBoard = channelMsgBoard;
-//    }
-//}
+package com.sprint.mission.discodeit.service.basic;
+
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.MessageService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
+@Service
+public class BasicMessageService implements MessageService {
+    private final MessageRepository messageRepository;
+    //
+    private final ChannelRepository channelRepository;
+    private final UserRepository userRepository;
+
+    @Autowired
+    public BasicMessageService(MessageRepository messageRepository, ChannelRepository channelRepository, UserRepository userRepository) {
+        this.messageRepository = messageRepository;
+        this.channelRepository = channelRepository;
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public Message create(String content, UUID channelId, UUID authorId) {
+        if (!channelRepository.existsById(channelId)) {
+            throw new NoSuchElementException("Channel not found with id " + channelId);
+        }
+        if (!userRepository.existsById(authorId)) {
+            throw new NoSuchElementException("Author not found with id " + authorId);
+        }
+
+        Message message = new Message(content, channelId, authorId);
+        return messageRepository.save(message);
+    }
+
+    @Override
+    public Message find(UUID messageId) {
+        return messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+    }
+
+    @Override
+    public List<Message> findAll() {
+        return messageRepository.findAll();
+    }
+
+    @Override
+    public Message update(UUID messageId, String newContent) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+        message.update(newContent);
+        return messageRepository.save(message);
+    }
+
+    @Override
+    public void delete(UUID messageId) {
+        if (!messageRepository.existsById(messageId)) {
+            throw new NoSuchElementException("Message with id " + messageId + " not found");
+        }
+        messageRepository.deleteById(messageId);
+    }
+}

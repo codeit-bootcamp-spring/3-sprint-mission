@@ -2,59 +2,101 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
+@Repository
 public class FileMessageRepository implements MessageRepository {
-    private static Map<UUID, List<Message>> channelMsgBoard = new ConcurrentHashMap<>();
-    private static final String MESSAGE_FILE_PATH = "src/files/";
-    private static final String MESSAGE_FILE_PRIMER = "message_";
-    private static final String MESSAGE_FILE_TAIL = ".ser";
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
 
     public FileMessageRepository() {
-    }
-    // 파일 로드 메서드
-    @Override
-    public List<Message> getMessages(UUID channelId) {
-        if (!channelMsgBoard.containsKey(channelId)) {
-            channelMsgBoard.put(channelId, fileLoadMessages(channelId));
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", Message.class.getSimpleName());
+        if (Files.notExists(DIRECTORY)) {
+            try {
+                Files.createDirectories(DIRECTORY);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
-        return channelMsgBoard.get(channelId);
+    }
+
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
     }
 
     @Override
-    public void saveMessages(UUID channelId, List<Message> messages) {
-        channelMsgBoard.put(channelId, messages);
-        String filePath = getFilePath(channelId);
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
-            oos.writeObject(messages);
+    public Message save(Message message) {
+        Path path = resolvePath(message.getId());
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
+            oos.writeObject(message);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        return message;
+    }
+
+    @Override
+    public Optional<Message> findById(UUID id) {
+        Message messageNullable = null;
+        Path path = resolvePath(id);
+        if (Files.exists(path)) {
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                messageNullable = (Message) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return Optional.ofNullable(messageNullable);
+    }
+
+    @Override
+    public List<Message> findAll() {
+        try {
+            return Files.list(DIRECTORY)
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (Message) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private List<Message> fileLoadMessages (UUID channelId) {
-        String filePath = getFilePath(channelId);
-        File file = new File(filePath);
-        if (!file.exists() || file.length() == 0) {
-            return new ArrayList<>();
-        }
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (List<Message>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
+    @Override
+    public boolean existsById(UUID id) {
+        Path path = resolvePath(id);
+        return Files.exists(path);
     }
 
-    private String getFilePath(UUID channelId) {
-        String filePath = MESSAGE_FILE_PATH + MESSAGE_FILE_PRIMER + channelId.toString() + MESSAGE_FILE_TAIL;
-        return filePath;
+    @Override
+    public void deleteById(UUID id) {
+        Path path = resolvePath(id);
+        try {
+            Files.delete(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

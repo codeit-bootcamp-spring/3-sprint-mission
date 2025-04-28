@@ -1,52 +1,82 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serial;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.UUID;
 
 public class User implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
-    private final UUID id = UUID.randomUUID();
-    private final long createdAt;
-    private long updatedAt;
-    private String name;
+    private static final long serialVersionUID = 5020789657574048869L;
 
-    public User(String name, long createdAt, long updatedAt) {
-        this.name = name;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+    private UUID id;
+    private Long createdAt;
+    private Long updatedAt;
+    //
+    private String username;
+    private String email;
+    private String password;
+
+    public User(String username, String email, String password) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now().getEpochSecond();
+        //
+        this.username = username;
+        this.email = email;
+        this.password = password;
     }
 
     public UUID getId() {
         return id;
     }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
+
+    public Long getCreatedAt() {
+        return createdAt;
     }
 
-    public String getCreatedAt() {
-        return new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(createdAt);
+    public Long getUpdatedAt() {
+        return updatedAt;
     }
-    public String getUpdatedAt() {
-        return new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(updatedAt);
+
+    public String getUsername() {
+        return username;
     }
-    public void setUpdatedAt(long updatedAt) {
-        this.updatedAt = updatedAt;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void update(String newUsername, String newEmail, String newPassword) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now().getEpochSecond();
+        }
     }
 
     @Override
     public String toString() {
-        String result;
-        if(getCreatedAt().equals(getUpdatedAt())){
-            result = "\n 사용자 이름 : " + name + "\n 생성일 : " + getCreatedAt() + "\n 사용자 UUID : " + id + "\n";
-        } else {
-            result = "\n 사용자 이름 : " + name + "\n 생성일 : " + getCreatedAt() + "\n 수정일 : " + getUpdatedAt() + "\n 사용자 UUID : " + id + "\n";
-        }
-        return result;
-        }
+        return "User{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                '}';
+    }
 }

@@ -1,10 +1,17 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.User;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
+@Repository
 public interface UserRepository {
-    List<User> getUserslist();
-    void saveUsersList();
+    User save(User user);
+    Optional<User> findById(UUID id);
+    List<User> findAll();
+    boolean existsById(UUID id);
+    void deleteById(UUID id);
 }

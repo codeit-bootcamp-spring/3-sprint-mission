@@ -2,20 +2,41 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+//@Repository
 public class JCFChannelRepository implements ChannelRepository {
-    private final List<Channel> channels = new ArrayList<>();
-    // 초기 채널 입력
-    public JCFChannelRepository(){
-        channels.add(new Channel("ch01","default Channel","관리자",1744036548250L,1744036548250L));
+    private final Map<UUID, Channel> data;
+
+    public JCFChannelRepository() {
+        this.data = new HashMap<>();
     }
-    // 채널 목록 반환
-    public List<Channel> getChannelsList() {
-        return channels;
+
+    @Override
+    public Channel save(Channel channel) {
+        this.data.put(channel.getId(), channel);
+        return channel;
     }
-    public void fileSaveChannels(){
+
+    @Override
+    public Optional<Channel> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
+    }
+
+    @Override
+    public List<Channel> findAll() {
+        return this.data.values().stream().toList();
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        this.data.remove(id);
     }
 }
