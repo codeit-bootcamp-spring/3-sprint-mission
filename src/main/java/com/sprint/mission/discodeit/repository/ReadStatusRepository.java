@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,11 +20,16 @@ import java.util.UUID;
 // 채널별로 객체 생성
 public interface ReadStatusRepository {
 
-    ReadStatus createReadStatusByUserId(UUID userId, UUID channelId);
-    List<ReadStatus> createReadStatusByUserId(List<UUID> userIds, UUID channelId);
+    ReadStatus createByUserId(UUID userId, UUID channelId);
+    List<ReadStatus> createByUserId(List<UUID> userIds, UUID channelId);
     List<ReadStatus> findReadStatusesByChannelId(UUID channelId);
     void deleteReadStatusById(UUID readStatusId);
 
+    ReadStatus findById(UUID readStatusId);
+
+    List<ReadStatus> findAllByUserId(UUID userId);
+
+    void updateUpdatedTime(UUID readStatusId, Instant newTime);
 
 
 }

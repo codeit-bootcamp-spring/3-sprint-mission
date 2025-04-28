@@ -57,6 +57,9 @@ public class FileChannelRepository implements ChannelRepository {
     @Override
     public Channel findChannelById(UUID channelId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
+        if (!Files.exists(path)) {
+            return null;
+        }
         return FileSerializer.readFile(path, Channel.class);
     }
 

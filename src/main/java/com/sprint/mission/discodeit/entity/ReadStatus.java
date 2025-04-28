@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -27,4 +28,8 @@ public class ReadStatus extends BaseEntity {
         this.channelId = channelId;
     }
 
+    @Override
+    public void setUpdatedAt(Instant updatedAt) {
+        super.setUpdatedAt(updatedAt);
+    }
 }
