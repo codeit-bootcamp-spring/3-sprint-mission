@@ -8,8 +8,8 @@ public class ChannelException extends BusinessException {
   public static final String PARTICIPANT_ALREADY_EXISTS = "C002";
   public static final String PARTICIPANT_NOT_FOUND = "C003";
 
-  public ChannelException(String message, String errorCode) {
-    super(message, errorCode);
+  public ChannelException(String errorCode, String message) {
+    super(errorCode, message);
   }
 
   public static ChannelException notFound(UUID channelId) {

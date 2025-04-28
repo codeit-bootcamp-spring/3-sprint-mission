@@ -6,8 +6,8 @@ public class MessageException extends BusinessException {
 
   public static final String MESSAGE_NOT_FOUND = "M001";
 
-  public MessageException(String message, String errorCode) {
-    super(message, errorCode);
+  public MessageException(String errorCode, String message) {
+    super(errorCode, message);
   }
 
   public static MessageException notFound(UUID messageId) {

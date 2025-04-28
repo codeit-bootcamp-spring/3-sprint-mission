@@ -8,8 +8,8 @@ public class UserException extends BusinessException {
   public static final String USER_NOT_PARTICIPANT = "U002";
   public static final String DUPLICATE_EMAIL = "U003";
 
-  public UserException(String message, String errorCode) {
-    super(message, errorCode);
+  public UserException(String errorCode, String message) {
+    super(errorCode, message);
   }
 
   public static UserException notFound(UUID userId) {
