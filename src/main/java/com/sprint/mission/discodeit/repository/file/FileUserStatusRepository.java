@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
@@ -36,11 +38,69 @@ import java.util.stream.Stream;
  * 2025. 4. 24.        doungukkim       최초 생성
  */
 
-@Primary
+//@Primary
 @Repository
 @RequiredArgsConstructor
 public class FileUserStatusRepository implements UserStatusRepository {
     private final FilePathUtil filePathUtil;
+
+    @Override
+    public void updateByUserId(UUID userId, Instant newTime) {
+        Path directory = filePathUtil.getUserStatusDirectory();
+
+        if (!Files.exists(directory)) {
+            return ;
+        }
+
+        UserStatus newUserStatus;
+        try (Stream<Path> paths = Files.list(directory)) {
+            newUserStatus = paths
+                    .filter(e -> e.toString().endsWith(".ser"))
+                    .map(path -> {
+                        try {
+                            UserStatus userStatus = FileSerializer.readFile(path, UserStatus.class);
+                            return userStatus;
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .filter(userStatus -> userStatus.getUserId().equals(userId))
+                    .findFirst()
+                    .orElse(null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        if (newUserStatus == null) {
+            return;
+        }
+
+        Path savePath = filePathUtil.getUserStatusFilePath(newUserStatus.getId());
+        newUserStatus.setUpdatedAt(newTime);
+
+        FileSerializer.writeFile(savePath, newUserStatus);
+    }
+
+    @Override
+    public void update(UUID userStatusId, Instant newTime) {
+        Path path = filePathUtil.getUserStatusFilePath(userStatusId);
+
+        UserStatus userStatus = FileSerializer.readFile(path, UserStatus.class);
+
+        userStatus.setUpdatedAt(newTime);
+        FileSerializer.writeFile(path, userStatus);
+    }
+
+    @Override
+    public UserStatus findById(UUID userStatusId) {
+        Path path = filePathUtil.getUserStatusFilePath(userStatusId);
+
+        if (!Files.exists(path)) {
+            return null;
+        }
+        return FileSerializer.readFile(path, UserStatus.class);
+    }
 
     // 추가 필요
     @Override
@@ -131,7 +191,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     @Override
-    public void deleteUserStatusById(UUID userStatusId) {
+    public void deleteById(UUID userStatusId) {
         Objects.requireNonNull(userStatusId, "userStatus입력 없음: FileUserStatusRepository.deleteUserStatusById");
         Path path = filePathUtil.getUserStatusFilePath(userStatusId);
 

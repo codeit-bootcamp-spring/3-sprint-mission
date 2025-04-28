@@ -171,7 +171,7 @@ public class FileUserService implements UserService {
             fileBinaryContentRepository.deleteBinaryContentById(user.getProfileId());
         }
 
-        fileUserStatusRepository.deleteUserStatusById(userStatus.getId());
+        fileUserStatusRepository.deleteById(userStatus.getId());
         // User 삭제
         fileUserRepository.deleteUserById(userId);
     }

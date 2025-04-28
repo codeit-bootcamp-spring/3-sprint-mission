@@ -8,10 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * packageName    : com.sprint.mission.discodeit.repository.jcf
@@ -24,10 +21,31 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-//@Primary
+@Primary
 @Repository
 public class JcfUserStatusRepository implements UserStatusRepository {
     Map<UUID, UserStatus> data = new HashMap<>();
+
+    @Override
+    public void updateByUserId(UUID userId, Instant newTime) {
+        UserStatus userStatus = data.values().stream().filter(us -> us.getUserId().equals(userId))
+                .findFirst().orElse(null);
+        if (userStatus == null) {
+            return;
+        }
+        userStatus.setUpdatedAt(newTime);
+    }
+
+    @Override
+    public void update(UUID userStatusId, Instant newTime) {
+        UserStatus userStatus = data.get(userStatusId);
+        userStatus.setUpdatedAt(newTime);
+    }
+
+    @Override
+    public UserStatus findById(UUID userStatusId) {
+        return data.get(userStatusId);
+    }
 
     // 추가 필요
     @Override
@@ -72,7 +90,7 @@ public class JcfUserStatusRepository implements UserStatusRepository {
     // 추가 예정
 
     @Override
-    public void deleteUserStatusById(UUID userStatusId) {
+    public void deleteById(UUID userStatusId) {
         data.remove(userStatusId);
     }
 }

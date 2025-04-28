@@ -161,7 +161,7 @@ public class JcfUserService implements UserService {
             jcfBinaryContentRepostory.deleteBinaryContentById(user.getProfileId());
         }
 
-        jcfUserStatusRepository.deleteUserStatusById(userStatus.getId());
+        jcfUserStatusRepository.deleteById(userStatus.getId());
         // User 삭제
         jcfUserRepository.deleteUserById(userId);
     }

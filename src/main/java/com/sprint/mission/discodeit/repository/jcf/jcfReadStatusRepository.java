@@ -23,7 +23,7 @@ import java.util.*;
  * -----------------------------------------------------------
  * 2025. 4. 26.        doungukkim       최초 생성
  */
-//@Primary
+@Primary
 @Repository
 public class jcfReadStatusRepository implements ReadStatusRepository{
 

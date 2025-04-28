@@ -9,6 +9,8 @@ import com.sprint.mission.discodeit.Dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.Dto.user.*;
 import com.sprint.mission.discodeit.Dto.userStatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.Dto.userStatus.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateRequest;
+import com.sprint.mission.discodeit.Dto.userStatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -31,21 +33,15 @@ public class DiscodeitApplication {
 		MessageService messageService = context.getBean("basicMessageService", MessageService.class);
 		AuthService authService = context.getBean(AuthService.class);
 		ReadStatusService readStatusService = context.getBean("basicReadStatusService", ReadStatusService.class);
+		UserStatusService userStatusService = context.getBean("basicUserStatusService", UserStatusService.class);
+
 
 		BinaryContentRepository binaryContentRepository = context.getBean(BinaryContentRepository.class);
 		UserStatusRepository userStatusRepository = context.getBean(UserStatusRepository.class);
 
-		System.out.println("\n=== findAllByUserId 테스트 ===");
-
-		byte[] image = {1, 2, 3, 4};
-		byte[] image1 = {1, 2, 3, 4, 5};
-
-		List<byte[]> images = new ArrayList<>();
-		images.add(image);
-		images.add(image1);
+		// 빈 주입------------------------------------------------------------------------------------------------------------
+		System.out.println("Start Test ====>");
 
 
-
-
-
+	}
 }
