@@ -77,9 +77,9 @@ public class BasicChannelService implements ChannelService {
     public List<User> findAttendeesByChannel(UUID channelId) {
         Channel channel = this.find(channelId);
         List<User> attendees = new ArrayList<>();
-        channel.getAttendees().forEach((userId -> {
-            attendees.add(this.userService.find(userId));
-        }));
+//        channel.getAttendees().forEach((userId -> {
+//            attendees.add(this.userService.find(userId).userId());
+//        }));
 
         return attendees;
     }

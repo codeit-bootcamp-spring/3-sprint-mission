@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.UUID;
 
 public class User implements Serializable {
@@ -37,6 +38,18 @@ public class User implements Serializable {
         this.name = name;
         this.email = email;
         this.password = password;
+    }
+
+    public User(String name, String email, String password, UUID profileId) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+        //
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        //
+        this.profileId = profileId;
     }
 
     public void update(String name, String email, String password, UUID profileId) {
@@ -93,19 +106,14 @@ public class User implements Serializable {
                 || (this.id != null && this.id.equals(other.id));
         boolean nameEquals = (this.name == null && other.name == null)
                 || (this.name != null && this.name.equals(other.name));
+        boolean emailEquals = (this.email == null && other.email == null)
+                || (this.email != null && this.email.equals(other.email));
 
-        return idEquals && nameEquals;
+        return idEquals && nameEquals && emailEquals;
     }
 
     @Override
     public int hashCode() {
-        int result = 17;
-        if (this.id != null) {
-            result = 31 * result + this.id.hashCode();
-        }
-        if (this.name != null) {
-            result = 31 * result + this.name.hashCode();
-        }
-        return result;
+        return Objects.hash(this.id, this.email, this.name);
     }
 }
