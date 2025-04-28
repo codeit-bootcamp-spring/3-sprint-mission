@@ -34,7 +34,6 @@ public class ChannelFindResponse {
     }
 
     public ChannelFindResponse(Channel channel, Instant recentMessageTime, List<UUID> userIds) {
-
         this.channel = channel;
         this.recentMessageTime = recentMessageTime;
         this.userIds = userIds;

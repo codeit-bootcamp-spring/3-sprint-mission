@@ -52,7 +52,7 @@ public class JcfBinaryContentRepostory implements BinaryContentRepository {
 
     // 추가 필요
     @Override
-    public void deleteBinaryContentById(UUID profileId) {
-        data.remove(profileId);
+    public void deleteBinaryContentById(UUID attachmentId) {
+        data.remove(attachmentId);
     }
 }

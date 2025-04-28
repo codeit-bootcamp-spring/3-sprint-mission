@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -25,14 +26,27 @@ public class Message extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     private final UUID senderId;
     private UUID channelId;
-    private Set<String> userIds;
+    private List<UUID> attachmentIds;
     private String content;
+
 
     public Message(UUID senderId, UUID channelId, String content) {
         super();
         this.senderId = senderId;
         this.channelId = channelId;
         this.content = content;
+    }
+
+    public Message(UUID senderId, UUID channelId, List<UUID> attachmentIds) {
+        super();
+        this.senderId = senderId;
+        this.channelId = channelId;
+        this.attachmentIds = attachmentIds;
+    }
+
+    public void setAttachmentIds(List<UUID> attachmentIds) {
+        this.attachmentIds = attachmentIds;
+        this.updatedAt = Instant.now();
     }
 
     public void setContent(String content) {

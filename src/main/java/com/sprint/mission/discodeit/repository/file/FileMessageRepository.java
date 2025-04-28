@@ -38,12 +38,29 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileMessageRepository implements MessageRepository {
     private final FilePathUtil pathUtil;
-    private final FileSerializer serializer;
+
+//    private final FileSerializer serializer;
 
 
 
     @Override
-    public List<Message> findMessagesByChanenlId(UUID channelId) {
+    public Message createMessageWithAttachments(UUID userId, UUID channelId, List<UUID> attachments) {
+        Message message = new Message(userId, channelId, attachments);
+        Path path = pathUtil.getMessageFilePath(message.getId());
+        FileSerializer.writeFile(path, message);
+        return message;
+    }
+
+    @Override
+    public Message createMessageWithContent(UUID senderId, UUID channelId, String content) {
+        Message message = new Message(senderId, channelId, content);
+        Path path = pathUtil.getMessageFilePath(message.getId());
+        FileSerializer.writeFile(path, message);
+        return message;
+    }
+
+    @Override
+    public List<Message> findMessagesByChannelId(UUID channelId) {
         Path directory = pathUtil.getMessageDirectory();
 
         if (!Files.exists(directory)) {
@@ -78,18 +95,12 @@ public class FileMessageRepository implements MessageRepository {
         return selectedMessage;
     }
 
-    @Override
-    public Message createMessageByUserIdAndChannelId(UUID senderId, UUID channelId, String content) {
-        Message message = new Message(senderId, channelId, content);
-        Path path = pathUtil.getMessageFilePath(message.getId());
-        serializer.writeFile(path, message);
-        return message;
-    }
+
 
     @Override
     public Message findMessageById(UUID messageId) {
         Path path = pathUtil.getMessageFilePath(messageId);
-        return serializer.readFile(path, Message.class);
+        return FileSerializer.readFile(path, Message.class);
     }
 
     @Override
@@ -125,9 +136,9 @@ public class FileMessageRepository implements MessageRepository {
         if (!Files.exists(path)) {
             throw new RuntimeException("no file: FileMessageRepository.updateMessageById");
         }
-        Message message = serializer.readFile(path, Message.class);
+        Message message = FileSerializer.readFile(path, Message.class);
         message.setContent(content);
-        serializer.writeFile(path, message);
+        FileSerializer.writeFile(path, message);
     }
 
     @Override

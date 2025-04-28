@@ -21,6 +21,6 @@ public interface BinaryContentRepository {
     //    BinaryContent findBinaryContentByUserId(UUID userId);
     BinaryContent updateImage(UUID profileId, byte[] image);
 
-    void deleteBinaryContentById(UUID profileId);
+    void deleteBinaryContentById(UUID attachmentId);
 
 }

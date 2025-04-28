@@ -54,14 +54,14 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
-    public void deleteBinaryContentById(UUID profileId) {
-        Path path = filePathUtil.getBinaryContentFilePath(profileId);
+    public void deleteBinaryContentById(UUID attachmentId) {
+        Path path = filePathUtil.getBinaryContentFilePath(attachmentId);
         // 잘못된 id 받음
         if (!Files.exists(path)) {
             throw new RuntimeException("삭제하려는 프로필 없음");
         }
         // profile 없음
-        if (profileId == null) {
+        if (attachmentId == null) {
             return;
         }
 

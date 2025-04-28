@@ -28,18 +28,26 @@ import java.util.UUID;
 public class JcfMessageRepository implements MessageRepository {
     public final Map<UUID, Message> data = new HashMap<>();
 
+    // working on it
     @Override
-    public List<Message> findMessagesByChanenlId(UUID channelId) {
-        return data.values().stream()
-                .filter(message -> message.getChannelId().equals(channelId))
-                .toList();
+    public Message createMessageWithAttachments(UUID userId, UUID channelId, List<UUID> attachments) {
+        Message message = new Message(userId, channelId, attachments);
+        data.put(message.getId(), message);
+        return message;
     }
 
     @Override
-    public Message createMessageByUserIdAndChannelId(UUID senderId, UUID channelId, String content) {
+    public Message createMessageWithContent(UUID senderId, UUID channelId, String content) {
         Message message = new Message(senderId, channelId, content);
         data.put(message.getId(), message);
         return message;
+    }
+
+    @Override
+    public List<Message> findMessagesByChannelId(UUID channelId) {
+        return data.values().stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .toList();
     }
 
     @Override
