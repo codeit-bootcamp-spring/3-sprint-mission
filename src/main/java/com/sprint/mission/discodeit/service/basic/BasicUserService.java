@@ -170,7 +170,7 @@ public class BasicUserService  implements UserService {
         if (userStatus == null) {
             throw new RuntimeException("no userStatus");
         }
-        userStatusRepository.deleteUserStatusById(userStatus.getId());
+        userStatusRepository.deleteById(userStatus.getId());
 
         // BinaryContent 삭제
         if (user.getProfileId() != null) {

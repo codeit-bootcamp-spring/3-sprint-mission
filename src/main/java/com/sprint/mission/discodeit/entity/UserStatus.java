@@ -34,6 +34,11 @@ public class UserStatus extends BaseEntity implements Serializable {
     }
 
     @Override
+    public void setUpdatedAt(Instant updatedAt) {
+        super.setUpdatedAt(updatedAt);
+    }
+
+    @Override
     public String toString() {
         return "UserStatus{" +
                 "userId=" + userId +
