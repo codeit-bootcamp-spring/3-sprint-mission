@@ -7,11 +7,33 @@ import java.util.UUID;
 
 public interface MessageRepository {
 
-  Message save(Message message);
-
+  /**
+   * 메시지 객체의 고유 아이디로 조회
+   *
+   * @param id UUID
+   * @return Optional<Message>
+   */
   Optional<Message> findById(UUID id);
 
+  /**
+   * 모든 메시지 조회
+   *
+   * @return List<Message>
+   */
   List<Message> findAll();
 
+  /**
+   * 메시지 저장
+   *
+   * @param message Message
+   * @return Message
+   */
+  Message save(Message message);
+
+  /**
+   * 메시지 객체의 고유 아이디로 삭제
+   *
+   * @param id UUID
+   */
   void deleteById(UUID id);
 }
