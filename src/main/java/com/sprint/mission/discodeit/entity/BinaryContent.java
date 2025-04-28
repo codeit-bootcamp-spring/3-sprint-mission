@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -30,17 +29,17 @@ public class BinaryContent implements Serializable {
     private final UUID id;
     private final Instant createdAt;
     private Instant updatedAt;
-    private byte[] image;
+    private byte[] attachment;
 
 
     public BinaryContent(byte[] image) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.image = image;
+        this.attachment = image;
     }
 
-    public void setImage(byte[] image) {
-        this.image = image;
+    public void setAttachment(byte[] attachment) {
+        this.attachment = attachment;
         this.updatedAt = Instant.now();
     }
 
@@ -50,7 +49,7 @@ public class BinaryContent implements Serializable {
                 "id=" + id +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", image=" + Arrays.toString(image) +
+                ", image=" + Arrays.toString(attachment) +
                 '}';
     }
 }

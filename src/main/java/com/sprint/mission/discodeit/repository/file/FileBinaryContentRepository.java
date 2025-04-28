@@ -5,13 +5,14 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -26,11 +27,40 @@ import java.util.UUID;
  * 2025. 4. 24.        doungukkim       최초 생성
  */
 
-//@Primary
+@Primary
 @Repository
 @RequiredArgsConstructor
 public class FileBinaryContentRepository implements BinaryContentRepository {
     private final FilePathUtil filePathUtil;
+
+    @Override
+    public BinaryContent findById(UUID attachmentId) {
+        Path path = filePathUtil.getBinaryContentFilePath(attachmentId);
+        if (!Files.exists(path)) {
+            return null;
+        }
+
+        return FileSerializer.readFile(path, BinaryContent.class);
+    }
+
+
+    @Override
+    public List<BinaryContent> findAllByIds(List<UUID> attachmentIds) {
+
+        List<BinaryContent> selectedAttachments = new ArrayList<>();
+
+        for (UUID attachmentId : attachmentIds) {
+            Path path = filePathUtil.getBinaryContentFilePath(attachmentId);
+
+            if (!Files.exists(path)) {
+                throw new RuntimeException("no binary content matches with attachmentIs");
+            }
+
+            selectedAttachments.add(FileSerializer.readFile(path, BinaryContent.class));
+        }
+        return selectedAttachments;
+    }
+
 
     @Override
     public BinaryContent createBinaryContent(byte[] image) {
@@ -48,7 +78,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
             return null;
         }
         BinaryContent binaryContent = FileSerializer.readFile(path, BinaryContent.class);
-        binaryContent.setImage(image);
+        binaryContent.setAttachment(image);
         FileSerializer.writeFile(path, binaryContent);
         return binaryContent;
     }

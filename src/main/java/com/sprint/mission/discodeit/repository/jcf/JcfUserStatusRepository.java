@@ -21,7 +21,7 @@ import java.util.*;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-@Primary
+//@Primary
 @Repository
 public class JcfUserStatusRepository implements UserStatusRepository {
     Map<UUID, UserStatus> data = new HashMap<>();
