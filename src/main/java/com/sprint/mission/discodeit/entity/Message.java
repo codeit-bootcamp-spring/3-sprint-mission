@@ -1,84 +1,63 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
 public class Message implements Serializable {
-    private static final long serialVersionUID = -953021662940755622L;
-    private static int counter = 1;
+    private static final long serialVersionUID = 1L;
 
-    private int number;
     private UUID id;
-    private long createdAt;
-    private long updateAt;
-    private String message;
+    private Long createdAt;
+    private Long updatedAt;
+    //
+    private String content;
+    //
+    private UUID channelId;
+    private UUID authorId;
 
-    public Message(String message) {
-        this.number = counter++;
+    public Message(String content, UUID channelId, UUID authorId) {
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updateAt = System.currentTimeMillis();
-        this.message = message;
-    }
-
-    public void updateMessage(String message) {
-        this.number = counter++;
-        this.message = message;
-        this.updateAt = System.currentTimeMillis();
+        this.createdAt = Instant.now().getEpochSecond();
+        //
+        this.content = content;
+        this.channelId = channelId;
+        this.authorId = authorId;
     }
 
     public UUID getId() {
         return id;
     }
 
-    public long getCreatedAt() {
+    public Long getCreatedAt() {
         return createdAt;
     }
 
-    public long getUpdateAt() {
-        return updateAt;
+    public Long getUpdatedAt() {
+        return updatedAt;
     }
 
-    public String getMessage() {
-        return message;
+    public String getContent() {
+        return content;
     }
 
-    public int getNumber() {
-        return number;
+    public UUID getChannelId() {
+        return channelId;
     }
 
-    public static void setCounter(int counter) {
-        Message.counter = counter;
+    public UUID getAuthorId() {
+        return authorId;
     }
 
-    public void setNumber(int number) {
-        this.number = number;
-    }
+    public void update(String newContent) {
+        boolean anyValueUpdated = false;
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            anyValueUpdated = true;
+        }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public void setCreatedAt(long createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void setUpdateAt(long updateAt) {
-        this.updateAt = updateAt;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    @Override
-    public String toString() {
-        return "Message{" +
-                "number=" + number +
-                ", id=" + id +
-                ", createdAt=" + createdAt +
-                ", updateAt=" + updateAt +
-                ", message='" + message + '\'' +
-                '}';
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now().getEpochSecond();
+        }
     }
 }

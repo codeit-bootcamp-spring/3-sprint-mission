@@ -1,83 +1,70 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
 public class User implements Serializable {
-    private static final long serialVersionUID = 2047441161413796353L;
+    private static final long serialVersionUID = 1L;
 
-    private static int counter = 1;
-    private int number;
-    private String username;
     private UUID id;
-    private long createdAt;
-    private long updatedAt;
+    private Long createdAt;
+    private Long updatedAt;
+    //
+    private String username;
+    private String email;
+    private String password;
 
-    public User(String name) {
-        this.number = counter++;
+    public User(String username, String email, String password) {
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = System.currentTimeMillis();
-        this.username = name;
-    }
-
-    public void updateUserName(String username) {
+        this.createdAt = Instant.now().getEpochSecond();
+        //
         this.username = username;
-        this.updatedAt = System.currentTimeMillis();
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setNumber(int number) {
-        this.number = number;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public void setCreatedAt(long createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void setUpdatedAt(long updatedAt) {
-        this.updatedAt = updatedAt;
+        this.email = email;
+        this.password = password;
     }
 
     public UUID getId() {
         return id;
     }
 
-    public long getCreatedAt() {
+    public Long getCreatedAt() {
         return createdAt;
     }
 
-    public long getUpdatedAt() {
+    public Long getUpdatedAt() {
         return updatedAt;
     }
 
-    public int getNumber() {
-        return number;
+    public String getUsername() {
+        return username;
     }
 
-    public static void setCounter(int newCounter) {
-        counter = newCounter;
+    public String getEmail() {
+        return email;
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "number=" + number +
-                ", username='" + username + '\'' +
-                ", id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
+    public String getPassword() {
+        return password;
+    }
+
+    public void update(String newUsername, String newEmail, String newPassword) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now().getEpochSecond();
+        }
     }
 }

@@ -2,47 +2,42 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 public class JCFUserRepository implements UserRepository {
-
-    private final List<User> users;
+    private final Map<UUID, User> data;
 
     public JCFUserRepository() {
-        users = new ArrayList<>();
+        this.data = new HashMap<>();
     }
 
     @Override
-    public void saveUser(User user) {
-        users.add(user);
+    public User save(User user) {
+        this.data.put(user.getId(), user);
+        return user;
     }
 
     @Override
-    public void updateUser(User user) {
-        for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).getNumber() == user.getNumber()) {
-                users.set(i, user);
-                break;
-            }
-        }
+    public Optional<User> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
-    public void deleteUser(int userNumber) {
-        users.removeIf(user -> user.getNumber() == userNumber);
+    public List<User> findAll() {
+        return this.data.values().stream().toList();
     }
 
     @Override
-    public User findUser(int userNumber) {
-        return users.stream()
-                .filter(user -> user.getNumber() == userNumber)
-                .findFirst()
-                .orElse(null);
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
     }
 
     @Override
-    public List<User> findAllUser() {
-        return users;
+    public void deleteById(UUID id) {
+        this.data.remove(id);
     }
 }
