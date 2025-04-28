@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,7 +25,7 @@ import java.util.Optional;
  */
 @RequiredArgsConstructor
 @Service
-//@ConditionalOnProperty(name = "service.mode", havingValue = "file")
+@Profile("file")
 public class FileAuthService implements AuthService {
     private final UserRepository userRepository;
 

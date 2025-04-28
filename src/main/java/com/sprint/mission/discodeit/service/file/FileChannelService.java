@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Service
+@Profile("file")
 @RequiredArgsConstructor
 public class FileChannelService implements ChannelService {
     private final FileChannelRepository fileChannelRepository;

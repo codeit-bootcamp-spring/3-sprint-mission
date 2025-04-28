@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
@@ -23,6 +24,7 @@ import java.util.*;
  */
 //@Primary
 @Repository
+@Profile("jcf")
 public class JcfUserStatusRepository implements UserStatusRepository {
     Map<UUID, UserStatus> data = new HashMap<>();
 

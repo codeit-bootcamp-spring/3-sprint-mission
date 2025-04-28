@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.util.FileSerializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.io.FileInputStream;
@@ -37,8 +38,8 @@ import java.util.stream.Stream;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-
-@Primary
+//@Primary
+@Profile("file")
 @Repository
 @RequiredArgsConstructor
 public class FileUserStatusRepository implements UserStatusRepository {

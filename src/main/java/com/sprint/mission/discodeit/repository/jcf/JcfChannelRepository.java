@@ -6,12 +6,14 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
 
 /**
  * packageName    : com.sprint.mission.discodeit.refactor.repository
@@ -24,8 +26,9 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-@Repository
 //@Primary
+@Repository
+@Profile("jcf")
 public class JcfChannelRepository implements ChannelRepository {
 
     Map<UUID, Channel> data = new HashMap<>();

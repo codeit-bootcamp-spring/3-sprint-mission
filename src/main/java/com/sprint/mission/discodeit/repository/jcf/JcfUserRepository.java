@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -19,8 +20,9 @@ import java.util.*;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-@Repository
 //@Primary
+@Repository
+@Profile("jcf")
 public class JcfUserRepository implements UserRepository {
 
     Map<UUID, User> data = new HashMap<>();

@@ -1,8 +1,7 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.UserStatus;
 
 import java.util.List;
 import java.util.UUID;

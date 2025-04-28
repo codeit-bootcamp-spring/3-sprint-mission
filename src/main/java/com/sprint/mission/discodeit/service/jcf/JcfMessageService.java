@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -26,6 +27,7 @@ import java.util.*;
  */
 @Service
 @RequiredArgsConstructor
+@Profile("jcf")
 public class JcfMessageService implements MessageService {
     private final UserService userService;
     private final ChannelService channelService;

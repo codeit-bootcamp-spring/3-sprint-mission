@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.nio.file.Files;
@@ -25,6 +26,7 @@ import java.util.*;
  */
 //@Primary
 @Repository
+@Profile("jcf")
 public class jcfReadStatusRepository implements ReadStatusRepository{
 
     Map<UUID, ReadStatus> data = new HashMap<>();
