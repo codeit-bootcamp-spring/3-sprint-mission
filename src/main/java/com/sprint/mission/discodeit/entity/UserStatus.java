@@ -31,7 +31,6 @@ public class UserStatus extends BaseEntity implements Serializable {
     public UserStatus(UUID userId) {
         super();
         this.userId = userId;
-
     }
 
     @Override

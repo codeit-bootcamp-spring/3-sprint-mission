@@ -147,7 +147,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.createPrivateChannelByName();
         // readstatus 생성
         System.out.println("BasicChannelService.createChannel");
-        readStatusRepository.createReadStatusByUserId(userIds, channel.getId())
+        readStatusRepository.createByUserId(userIds, channel.getId())
                 .forEach(e -> System.out.println("readStatus :" + e.getId()));
         System.out.println();
 
@@ -168,7 +168,7 @@ public class BasicChannelService implements ChannelService {
 
         // readstatus 생성
         System.out.println("BasicChannelService.createChannel");
-        readStatusRepository.createReadStatusByUserId(userIds, channel.getId())
+        readStatusRepository.createByUserId(userIds, channel.getId())
                 .forEach(e -> System.out.println("readStatus :" + e.getId()));
         System.out.println();
 

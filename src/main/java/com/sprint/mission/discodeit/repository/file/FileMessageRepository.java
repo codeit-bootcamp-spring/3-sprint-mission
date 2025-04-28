@@ -39,8 +39,6 @@ import java.util.UUID;
 public class FileMessageRepository implements MessageRepository {
     private final FilePathUtil pathUtil;
 
-//    private final FileSerializer serializer;
-
 
 
     @Override
