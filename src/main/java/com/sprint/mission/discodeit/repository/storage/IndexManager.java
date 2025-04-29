@@ -20,6 +20,12 @@ public class IndexManager {
     this.indexFile = new File(indexPath);
 
     try {
+      // 폴더가 없으면 생성
+      if (!indexFile.getParentFile().exists() && !indexFile.getParentFile().mkdirs()) {
+        throw FileException.readError(indexFile.getParentFile(),
+            new IOException("상위 디렉토리를 생성할 수 없습니다."));
+      }
+
       // 파일 없을 경우 생성
       if (!indexFile.exists()) {
         createNewIndexFile();
@@ -42,9 +48,6 @@ public class IndexManager {
   }
 
   private void createNewIndexFile() throws IOException {
-    if (!indexFile.getParentFile().exists() && !indexFile.getParentFile().mkdirs()) {
-      throw new IOException("상위 디렉토리를 생성할 수 없습니다: " + indexFile.getParentFile().getAbsolutePath());
-    }
     if (!indexFile.createNewFile()) {
       throw new IOException("빈 인덱스 파일을 생성할 수 없습니다: " + indexFile.getAbsolutePath());
     }

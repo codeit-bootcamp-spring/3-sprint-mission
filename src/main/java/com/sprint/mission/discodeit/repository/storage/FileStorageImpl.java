@@ -17,8 +17,13 @@ public class FileStorageImpl implements FileStorage {
   private final List<Long> positions = new ArrayList<>();
 
   public FileStorageImpl(String filePath) throws FileException {
+    this.file = new File(filePath);
     try {
-      this.file = new File(filePath);
+      // 폴더가 없으면 생성
+      if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
+        throw FileException.writeError(file.getParentFile(),
+            new IOException("상위 디렉토리를 생성할 수 없습니다."));
+      }
       if (!file.exists()) {
         file.createNewFile();
       }
