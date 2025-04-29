@@ -67,8 +67,6 @@ public class DiscodeitApplication {
         Channel channel = setupChannel(channelService);
         // 테스트
         messageCreateTest(messageService, channel, user);
-
-
     }
 
 //
