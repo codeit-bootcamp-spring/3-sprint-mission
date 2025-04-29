@@ -23,7 +23,7 @@ public interface ReadStatusRepository {
     ReadStatus createByUserId(UUID userId, UUID channelId);
     List<ReadStatus> createByUserId(List<UUID> userIds, UUID channelId);
     List<ReadStatus> findReadStatusesByChannelId(UUID channelId);
-    void deleteReadStatusById(UUID readStatusId);
+    void deleteReadStatusById(UUID readStatusId); // file, jcf : throw exception
 
     ReadStatus findById(UUID readStatusId);
 

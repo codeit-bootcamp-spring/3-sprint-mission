@@ -46,9 +46,9 @@ public class BasicMessageService implements MessageService{
     // message
     @Override
     public MessageCreateResponse createMessage(MessageCreateRequest request) {
-        Channel channel = Optional.ofNullable(channelRepository.findChannelById(request.channelId())).orElseThrow(() -> new RuntimeException("채널 없음: BasicMessageService.createMessage"));
-        User user = Optional.ofNullable(userRepository.findUserById(request.senderId())).orElseThrow(() -> new RuntimeException("유저 없음: BasicMessageService.createMessage"));
-        String content = Optional.ofNullable(request.content()).orElseThrow(()->new RuntimeException("메세지 없음: BasicMessageService.createMessage"));
+        Channel channel = Optional.ofNullable(channelRepository.findChannelById(request.channelId())).orElseThrow(() -> new IllegalStateException("채널 없음: BasicMessageService.createMessage"));
+        User user = Optional.ofNullable(userRepository.findUserById(request.senderId())).orElseThrow(() -> new IllegalStateException("유저 없음: BasicMessageService.createMessage"));
+        String content = Optional.ofNullable(request.content()).orElseThrow(()->new IllegalArgumentException("메세지 없음: BasicMessageService.createMessage"));
 
         Message message = messageRepository.createMessageWithContent(user.getId(), channel.getId(), content);
 
@@ -62,9 +62,9 @@ public class BasicMessageService implements MessageService{
     // binary content
     @Override
     public MessageAttachmentsCreateResponse createMessage(MessageAttachmentsCreateRequest request) {
-        Channel channel = Optional.ofNullable(channelRepository.findChannelById(request.channelId())).orElseThrow(() -> new RuntimeException("채널 없음: BasicMessageService.createMessage"));
-        User user = Optional.ofNullable(userRepository.findUserById(request.senderId())).orElseThrow(() -> new RuntimeException("유저 없음: BasicMessageService.createMessage"));
-        List<byte[]> attachments = Optional.ofNullable(request.attachments()).orElseThrow(() -> new RuntimeException("첨부 파일 없음: BasicMessageService.createMessage"));
+        Channel channel = Optional.ofNullable(channelRepository.findChannelById(request.channelId())).orElseThrow(() -> new IllegalStateException("채널 없음: BasicMessageService.createMessage"));
+        User user = Optional.ofNullable(userRepository.findUserById(request.senderId())).orElseThrow(() -> new IllegalStateException("유저 없음: BasicMessageService.createMessage"));
+        List<byte[]> attachments = Optional.ofNullable(request.attachments()).orElseThrow(() -> new IllegalArgumentException("첨부 파일 없음: BasicMessageService.createMessage"));
 
         List<UUID> attachmentIds = attachments.stream()
                 .map(attachment -> binaryContentRepository.createBinaryContent(attachment).getId())
@@ -82,9 +82,8 @@ public class BasicMessageService implements MessageService{
     @Override
     public Message findMessageById(UUID messageId) {
         Objects.requireNonNull(messageId, "no messageId: BasicMessageService.findMessageById");
-        Message messageById = messageRepository.findMessageById(messageId);
-        Objects.requireNonNull(messageById, "no message in DB: BasicMessageService.findMessageById");
-        return messageById;
+        return Optional.ofNullable(messageRepository.findMessageById(messageId))
+                .orElseThrow(() -> new IllegalStateException("no message in DB: BasicMessageService.findMessageById"));
     }
 
     @Override
@@ -104,14 +103,15 @@ public class BasicMessageService implements MessageService{
 
     @Override
     public void deleteMessage(UUID messageId) {
-        Optional.ofNullable(messageId).orElseThrow(() -> new RuntimeException("require message Id : BasicMessageService.deleteMessage"));
+        Optional.ofNullable(messageId).orElseThrow(() -> new IllegalArgumentException("require message Id : BasicMessageService.deleteMessage"));
         // attachments 삭제
-        List<UUID> attachmentIds = messageRepository.findMessageById(messageId).getAttachmentIds();
-        for (UUID attachmentId : attachmentIds) {
-            binaryContentRepository.deleteBinaryContentById(attachmentId);
+        List<UUID> attachmentIds = Optional.ofNullable(messageRepository.findMessageById(messageId).getAttachmentIds()).orElse(null);
+        if (attachmentIds != null) {
+            for (UUID attachmentId : attachmentIds) {
+                binaryContentRepository.deleteBinaryContentById(attachmentId); // throw exception if deletion fails
+            }
         }
-
-        messageRepository.deleteMessageById(messageId);
+        messageRepository.deleteMessageById(messageId);  // throw exception
     }
 
 

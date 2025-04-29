@@ -56,6 +56,9 @@ public class jcfReadStatusRepository implements ReadStatusRepository{
 
     @Override
     public void deleteReadStatusById(UUID readStatusId) {
+        if (!data.containsKey(readStatusId)) {
+            throw new IllegalStateException("no readstatus to delete");
+        }
         data.remove(readStatusId);
     }
 
@@ -81,10 +84,9 @@ public class jcfReadStatusRepository implements ReadStatusRepository{
 
     @Override
     public List<ReadStatus> findReadStatusesByChannelId(UUID channelId) {
-        List<ReadStatus> readStatusList = data.values()
+        return data.values()
                 .stream()
                 .filter(readStatus -> readStatus.getChannelId().equals(channelId))
                 .toList();
-        return readStatusList;
     }
 }

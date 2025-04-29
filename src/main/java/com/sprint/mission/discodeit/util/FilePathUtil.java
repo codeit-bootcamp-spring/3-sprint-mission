@@ -21,7 +21,7 @@ import java.util.UUID;
  */
 @Component
 public class FilePathUtil {
-private static final String TO_FILES = "data/";
+private static final String TO_FILES = "src/main/java/com/sprint/mission/data/";
     private static final Path USER_DIRECTORY = Paths.get(TO_FILES+"user");
     private static final Path CHANNEL_DIRECTORY = Paths.get(TO_FILES+"channel");
     private static final Path MESSAGE_DIRECTORY = Paths.get(TO_FILES+"message");
@@ -78,24 +78,18 @@ private static final String TO_FILES = "data/";
         return USER_STATUS_DIRECTORY;
     }
 
-    public Path getUserStatusFilePath(UUID userStatusId) {
-        return USER_STATUS_DIRECTORY.resolve(userStatusId + TO_SER);
-    }
+    public Path getUserStatusFilePath(UUID userStatusId) {return USER_STATUS_DIRECTORY.resolve(userStatusId + TO_SER);}
 
     public Path getBinaryContentDirectory() {
         return BINARY_CONTENT_DIRECTORY;
     }
 
-    public Path getBinaryContentFilePath(UUID binaryContentId) {
-        return BINARY_CONTENT_DIRECTORY.resolve(binaryContentId + TO_SER);
-    }
+    public Path getBinaryContentFilePath(UUID binaryContentId) {return BINARY_CONTENT_DIRECTORY.resolve(binaryContentId + TO_SER);}
 
     public Path getReadStatusDirectory() {
         return READ_STATUS_DIRECTORY;
     }
 
-    public Path getReadStatusFilePath(UUID readStatusId) {
-        return READ_STATUS_DIRECTORY.resolve(readStatusId + TO_SER);
-    }
+    public Path getReadStatusFilePath(UUID readStatusId) {return READ_STATUS_DIRECTORY.resolve(readStatusId + TO_SER);}
 
 }

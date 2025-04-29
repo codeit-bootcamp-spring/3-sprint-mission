@@ -34,36 +34,34 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     public ReadStatusCreateResponse create(ReadStatusCreateRequest request) {
         ReadStatus readStatus = readStatusRepository.createByUserId(
-                Optional.ofNullable(request.userId()).orElseThrow(() -> new RuntimeException("truoble with userId: BasicReadStatusService.create")),
-                Optional.ofNullable(request.channelId()).orElseThrow(() -> new RuntimeException("truoble with channelId: BasicReadStatusService.create"))
+                Objects.requireNonNull(request.userId(), "trouble with userId: BasicReadStatusService.create"),
+                Objects.requireNonNull(request.channelId(), "trouble with channelId: BasicReadStatusService.create")
         );
         return new ReadStatusCreateResponse(readStatus.getId(), readStatus.getUserId(), readStatus.getChannelId());
     }
 
     @Override
     public ReadStatus findById(UUID readStatusId) {
-        Objects.requireNonNull(readStatusId, "readStatusId param is null");
-      return  Optional.ofNullable(readStatusRepository.findById(readStatusId)).orElseThrow(() -> new RuntimeException("no read status to find"));
-
+      return  Optional.ofNullable(readStatusRepository.findById(readStatusId)).orElseThrow(() -> new IllegalStateException("no read status to find"));
     }
 
     @Override
     public List<ReadStatus> findAllByUserId(UUID userId) {
-        Objects.requireNonNull(userId, "userId 없음: BasicReadStatusService.findAllByUserId");
-        return readStatusRepository.findAllByUserId(userId);
+        return Optional.ofNullable(readStatusRepository.findAllByUserId(userId))
+                .orElseThrow(()->new IllegalStateException("userId로 찾을 수 없음: BasicReadStatusService.findAllByUserId"));
     }
 
     @Override
     public void update(ReadStatusUpdateRequest request) {
         readStatusRepository.updateUpdatedTime(
-                Optional.ofNullable(request.readStatusId()).orElseThrow(() -> new RuntimeException("No readStatusId")),
-                Optional.ofNullable(request.newTime()).orElseThrow(() -> new RuntimeException("No time in request"))
+                Objects.requireNonNull(request.readStatusId(), "No readStatusId"),
+                Objects.requireNonNull(request.newTime(), "no time in request")
         );
     }
 
     @Override
     public void delete(UUID readStatusId) {
-        Objects.requireNonNull(readStatusId, "no readstatusId to delete");
+        Objects.requireNonNull(readStatusId, "no readStatusId to delete");
         readStatusRepository.deleteReadStatusById(readStatusId);
     }
 }

@@ -42,12 +42,15 @@ public class BasicUserService  implements UserService {
 
     @Override
     public UserCreateResponse create(UserCreateRequest userCreateRequest) {
-        Objects.requireNonNull(userCreateRequest.getUsername(), "no name in parameter: BasicUserService.createUser");
-        Objects.requireNonNull(userCreateRequest.getEmail(), "no email in parameter: BasicUserService.createUser");
-        Objects.requireNonNull(userCreateRequest.getPassword(), "no password in parameter: BasicUserService.createUser");
+        Objects.requireNonNull(userCreateRequest.getUsername(), "no name in parameter: BasicUserService.create");
+        Objects.requireNonNull(userCreateRequest.getEmail(), "no email in parameter: BasicUserService.create");
+        Objects.requireNonNull(userCreateRequest.getPassword(), "no password in parameter: BasicUserService.create");
 
-        if ((!userRepository.isUniqueUsername(userCreateRequest.getUsername())) || (!userRepository.isUniqueEmail(userCreateRequest.getEmail()))) {
-            throw new RuntimeException("not unique username or email");
+        boolean usernameNotUnique = !userRepository.isUniqueUsername(userCreateRequest.getUsername());
+        boolean emailNotUnique = !userRepository.isUniqueEmail(userCreateRequest.getEmail());
+
+        if ((usernameNotUnique) || (emailNotUnique)) {
+            throw new IllegalStateException("not unique username or email");
         }
 
         // 이미지 여부 확인
@@ -84,39 +87,36 @@ public class BasicUserService  implements UserService {
     @Override
     public UserFindResponse findUserById(UUID userId) {
         Objects.requireNonNull(userId, "User 아이디 입력 없음: BasicUserService.findUserById");
-        User user = userRepository.findUserById(userId);
-        Objects.requireNonNull(user, "찾는 User 없음: BasicUserService.findUserById");
+        User user = userRepository.findUserById(userId); // throw
 
-        UserStatus userStatus = userStatusRepository.findUserStatusByUserId(userId);
+        UserStatus userStatus = Optional.ofNullable(userStatusRepository.findUserStatusByUserId(userId)).orElseThrow(() -> new IllegalStateException("userStatus is null"));
 
-        if (userStatus == null) {
-            throw new RuntimeException("userStatus is null");
-        }
+        boolean online = userStatusRepository.isOnline(userStatus.getId()); // throw
 
-        boolean online = userStatusRepository.isOnline(userStatus.getId());
-
-
-        UserFindResponse userFindDto = new UserFindResponse(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
-                user.getUsername(), user.getEmail(), user.getProfileId(), online);
-
-        return userFindDto;
+        return new UserFindResponse(
+                user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getProfileId(),
+                online);
     }
 
 
     @Override
     public List<UserFindResponse> findAllUsers() {
-        List<User> users = userRepository.findAllUsers();
-        List<UserFindResponse> userFindDtos = new ArrayList<>();
+        List<User> users = userRepository.findAllUsers(); // emptyList
+        List<UserFindResponse> userFindResponses = new ArrayList<>();
 
-        // userDto를 users + online으로 매핑
+        // user fields + online 으로 response 생성
         for (User user : users) {
-            UserStatus status = userStatusRepository.findUserStatusByUserId(user.getId());
-            boolean online = false;
-            if (status != null) {
-                online = userStatusRepository.isOnline(status.getId());
-            }
+            UserStatus userStatus = Optional.ofNullable(userStatusRepository.findUserStatusByUserId(user.getId()))
+                    .orElseThrow(() -> new RuntimeException("user does not have a userStatus")); // userStatus has to exist (user:userStatus = 1:1)
 
-            userFindDtos.add(new UserFindResponse(
+            boolean online = userStatusRepository.isOnline(userStatus.getId());
+
+            userFindResponses.add(new UserFindResponse(
                     user.getId(),
                     user.getCreatedAt(),
                     user.getUpdatedAt(),
@@ -125,18 +125,17 @@ public class BasicUserService  implements UserService {
                     user.getProfileId(),
                     online));
         }
-
-        return userFindDtos;
+        return userFindResponses;
     }
 
 
-
+    // optional to update image
     @Override
     public ProfileUploadResponse updateImage(ProfileUploadRequest request) {
-        UUID userId = request.userId();
-        byte[] newImage = request.image();
-        User user = userRepository.findUserById(userId);
-        UUID profileId = findUserById(userId).profileId();
+        UUID userId = Optional.ofNullable(request.userId()).orElseThrow(() -> new IllegalArgumentException("no userId in request"));
+        byte[] newImage = Optional.ofNullable(request.image()).orElseThrow(() -> new IllegalArgumentException("no image in request"));
+        User user = userRepository.findUserById(userId); // throw
+        UUID profileId = userRepository.findUserById(userId).getProfileId(); // throw
 
 
         if (profileId == null) {
@@ -144,12 +143,12 @@ public class BasicUserService  implements UserService {
             // binary content 생성
             BinaryContent binaryContent = binaryContentRepository.createBinaryContent(newImage);
             // 프로필 아이디 유저에 추가
-            userRepository.updateProfileIdById(userId, binaryContent.getId());
+            userRepository.updateProfileIdById(userId, binaryContent.getId()); //throw
 
-            user = userRepository.findUserById(userId);
+            user = userRepository.findUserById(userId); //throw
         } else{
             // binary content 프로필 변경
-            binaryContentRepository.updateImage(profileId, newImage);
+            binaryContentRepository.updateImage(profileId, newImage); // throw
         }
         return new ProfileUploadResponse(
                 user.getCreatedAt(),
@@ -167,32 +166,24 @@ public class BasicUserService  implements UserService {
         userRepository.updateUserById(userId, name);
     }
 
-    /*
-        [ ] 관련된 도메인도 같이 삭제합니다.
-            BinaryContent(프로필), UserStatus
-     */
+
     @Override
     public void deleteUser(UUID userId) {
         Objects.requireNonNull(userId, "no user Id: BasicUserService.deleteUser");
 
-        User user = userRepository.findUserById(userId);
-        if (user == null) {
-            throw new RuntimeException("잘못된 유저아이디");
-        }
+        User user = userRepository.findUserById(userId); // throw
+
+        UserStatus userStatus = Optional.ofNullable(userStatusRepository.findUserStatusByUserId(userId))
+                .orElseThrow(() -> new IllegalArgumentException("no userStatus exist"));
 
         // UserStatus 삭제
-        UserStatus userStatus = userStatusRepository.findUserStatusByUserId(userId);
-        if (userStatus == null) {
-            throw new RuntimeException("no userStatus");
-        }
-        userStatusRepository.deleteById(userStatus.getId());
+        userStatusRepository.deleteById(userStatus.getId()); // throw
 
-        // BinaryContent 삭제
-        if (user.getProfileId() != null) {
-            binaryContentRepository.deleteBinaryContentById(user.getProfileId());
-
+        if (user.getProfileId() != null) { // 프로필 있으면
+            // BinaryContent 삭제
+            binaryContentRepository.deleteBinaryContentById(user.getProfileId()); // throw
         }
         // User 삭제
-        userRepository.deleteUserById(userId);
+        userRepository.deleteUserById(userId); // throw
     }
 }

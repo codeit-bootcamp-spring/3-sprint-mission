@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -16,10 +17,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 
 /**
@@ -99,6 +97,9 @@ public class FileMessageRepository implements MessageRepository {
     @Override
     public Message findMessageById(UUID messageId) {
         Path path = pathUtil.getMessageFilePath(messageId);
+        if (!Files.exists(path)) {
+            return null;
+        }
         return FileSerializer.readFile(path, Message.class);
     }
 
@@ -107,7 +108,7 @@ public class FileMessageRepository implements MessageRepository {
         Path directory = pathUtil.getMessageDirectory();
 
         if (!Files.exists(directory)) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
 
         try {
@@ -131,9 +132,12 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public void updateMessageById(UUID messageId, String content) {
+        Objects.requireNonNull(messageId, "no messageId in param");
+        Objects.requireNonNull(content, "no content in param");
+
         Path path = pathUtil.getMessageFilePath(messageId);
         if (!Files.exists(path)) {
-            throw new RuntimeException("no file: FileMessageRepository.updateMessageById");
+            throw new IllegalStateException("no file: FileMessageRepository.updateMessageById");
         }
         Message message = FileSerializer.readFile(path, Message.class);
         message.setContent(content);
@@ -142,6 +146,7 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public void deleteMessageById(UUID messageId) {
+        Objects.requireNonNull(messageId, "no messageId in param");
         Path path = pathUtil.getMessageFilePath(messageId);
         try{
             Files.delete(path);

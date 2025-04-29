@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
@@ -38,26 +37,25 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelCreateResponse createChannel(PrivateChannelCreateRequest request) {
-        Objects.requireNonNull(request, "채널 입력 없음");
-        List<User> users = request.users();
+        List<User> users = Optional.ofNullable(request.users())
+                .orElseThrow(() -> new IllegalArgumentException("no users in request") );
         List<UUID> userIds = users.stream().map(User::getId).toList();
 
         // channel 생성
         Channel channel = channelRepository.createPrivateChannelByName();
 
-        // readstatus 생성
-        readStatusRepository.createByUserId(userIds, channel.getId())
-                .forEach(e -> System.out.println("readStatus :" + e.getId()));
-        System.out.println();
+        // readStatus 생성
+        readStatusRepository.createByUserId(userIds, channel.getId());
 
         return new ChannelCreateResponse(channel.getId(), channel.getType(), channel.getUpdatedAt());
     }
 
     @Override
     public ChannelCreateResponse createChannel(PublicChannelCreateRequest request) {
-        Objects.requireNonNull(request, "채널 입력 없음");
-        String channelName = Optional.ofNullable(request.getChannelName()).orElse("");
-        String description = Optional.ofNullable(request.getDescription()).orElse("");
+        String channelName = Optional.ofNullable(request.getChannelName())
+                .orElseThrow(() -> new IllegalArgumentException("no name in request"));
+        String description = Optional.ofNullable(request.getDescription())
+                .orElseThrow(() -> new IllegalArgumentException("no description in request"));
 
         List<User> users = request.getUsers();
         List<UUID> userIds = users.stream().map(User::getId).toList();
@@ -65,11 +63,8 @@ public class BasicChannelService implements ChannelService {
         // channel 생성
         Channel channel = channelRepository.createPublicChannelByName(channelName, description);
 
-        // readstatus 생성
-        System.out.println("BasicChannelService.createChannel");
-        readStatusRepository.createByUserId(userIds, channel.getId())
-                .forEach(e -> System.out.println("readStatus :" + e.getId()));
-        System.out.println();
+        // readStatus 생성
+        readStatusRepository.createByUserId(userIds, channel.getId());
 
         return new ChannelCreateResponse(
                 channel.getId(),
@@ -82,13 +77,15 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public List<ChannelFindResponse> findAllByUserId(ChannelFindByUserIdRequest request) {
-        UUID userId = request.userId();
+        UUID userId = Optional.ofNullable(request.userId())
+                .orElseThrow(() -> new IllegalArgumentException("no userId in request"));
+
         List<ChannelFindResponse> response = new ArrayList<>();
-        List<Channel> allChannels = Optional.ofNullable(channelRepository.findAllChannel()).orElse(Collections.emptyList());
+        // 유저가 참가한 방이 없을 수 있음
+        List<Channel> allChannels = channelRepository.findAllChannel();
         List<Message> messageList = messageRepository.findAllMessages();
 
         for (Channel channel : allChannels) {
-
             if (channel.getType().equals(ChannelType.PUBLIC)) {
                 Instant resentPublicMessageTime = messageList.stream()
                         .filter(message -> message.getChannelId().equals(channel.getId()))
@@ -102,7 +99,7 @@ public class BasicChannelService implements ChannelService {
 /*
        -> 가장 마지막에 추가된 메세지의 시간 찾음(public)
        -> readstatus를 channelId를 통해 channelId가 같은 유저들의 id 조회
-       + userIds 속에 parameter userId 있는지 확인
+       ++ userIds 속에 parameter userId 있는지 확인
        ( 채널, 메세지 시간, userIds(참여자들),<= 이중에 파라미터 userId가 있어야 함 )
  */
             if (channel.getType().equals(ChannelType.PRIVATE)) {
@@ -118,7 +115,6 @@ public class BasicChannelService implements ChannelService {
                             .max(Instant::compareTo)
                             .orElse(null);
 
-
                     response.add(new ChannelFindResponse(channel, recentPrivateMessageTime, userIds.stream().toList()));
                 }
             }
@@ -130,7 +126,8 @@ public class BasicChannelService implements ChannelService {
     public ChannelFindResponse find(ChannelFindRequest request) {
         // channelId를 통해 채널을 찾아 추가 - not nullable
         // channelId를 통해 모든 메세지 리스트 생성 - nullable
-        Channel channel = Objects.requireNonNull(channelRepository.findChannelById(request.channelId()), "맞는 채널 없음"); // 채널
+        Channel channel = Optional.ofNullable(channelRepository.findChannelById(request.channelId()))
+                .orElseThrow(() -> new IllegalArgumentException("no channel based on request.channelId")); // 채널
         List<Message> messageList = messageRepository.findAllMessages();
 
 /*
@@ -167,30 +164,26 @@ public class BasicChannelService implements ChannelService {
                     .map(ReadStatus::getUserId)
                     .collect(Collectors.toSet());
 
-
             return new ChannelFindResponse(channel, recentPrivateMessageTime, userIds.stream().toList());
         }
         return null;
     }
 
-    // not a requirement
-    @Override
-    public List<Channel> findAllChannel() {
-        return channelRepository.findAllChannel();
-    }
-
     @Override
     public void update(ChannelUpdateRequest request) {
+        UUID channelId = Optional.ofNullable(request.channelId())
+                .orElseThrow(() -> new IllegalArgumentException("no channelId in request"));
 
-        UUID channelId = request.channelId();
-        String name = request.name();
-        Channel channel = Objects.requireNonNull(channelRepository.findChannelById(channelId), "채널 없음");
+        Channel channel = Optional.ofNullable(channelRepository
+                .findChannelById(channelId)).orElseThrow(() -> new RuntimeException("no channel repository"));
+
         if (channel.getType().equals(ChannelType.PUBLIC)) {
-            // 그럴수 있나? 그래선 안 되는가?
-            Objects.requireNonNull(channelId, "채널 아이디 입력 없음: BasicChannelService.updateChannelName");
-            Objects.requireNonNull(name, "이름 입력 없음: BasicChannelService.updateChannelName");
+            Optional.ofNullable(channelId)
+                    .orElseThrow(() -> new IllegalArgumentException("채널 아이디 입력 없음: BasicChannelService.update"));
+            Optional.ofNullable(request.name())
+                    .orElseThrow(() -> new IllegalArgumentException("이름 입력 없음: BasicChannelService.update"));
 
-            channelRepository.updateChannel(channelId, name);
+            channelRepository.updateChannel(channelId, request.name());
         }
     }
 
@@ -198,16 +191,17 @@ public class BasicChannelService implements ChannelService {
     public void deleteChannel(UUID channelId) {
         Objects.requireNonNull(channelId, "no channelId: BasicChannelService.deleteChannel");
 
-        List<ReadStatus> targetReadStatuses = Optional.ofNullable(readStatusRepository.findReadStatusesByChannelId(channelId)).orElse(Collections.emptyList());
+        // 하나의 객체도 삭제 실패가 없어야 하나?
+        List<ReadStatus> targetReadStatuses = readStatusRepository.findReadStatusesByChannelId(channelId);
         for (ReadStatus readStatus : targetReadStatuses) {
-            readStatusRepository.deleteReadStatusById(readStatus.getId());
+            readStatusRepository.deleteReadStatusById(readStatus.getId()); // file: throw exception  | jcf: no exception
         }
 
-        List<Message> targetMessages = Optional.ofNullable(messageRepository.findMessagesByChannelId(channelId)).orElse(Collections.emptyList());
+        List<Message> targetMessages = messageRepository.findMessagesByChannelId(channelId);
         for (Message targetMessage : targetMessages) {
-            messageRepository.deleteMessageById(targetMessage.getId());
+            messageRepository.deleteMessageById(targetMessage.getId()); // file: throw exception | jcf: no exception
         }
 
-        channelRepository.deleteChannel(channelId);
+        channelRepository.deleteChannel(channelId); // file | jcf : throw exception
     }
 }

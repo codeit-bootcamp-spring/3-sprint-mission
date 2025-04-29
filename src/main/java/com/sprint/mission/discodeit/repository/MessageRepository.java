@@ -18,10 +18,10 @@ import java.util.UUID;
  */
 public interface MessageRepository {
     Message createMessageWithContent(UUID senderId, UUID channelId, String content);
-    Message findMessageById(UUID messageId);
-    List<Message> findAllMessages();
+    Message findMessageById(UUID messageId); // file: null | jcf: null
+    List<Message> findAllMessages(); // file: emptyList | jcf: emptyList
     void updateMessageById(UUID messageId, String content);
-    void deleteMessageById(UUID messageId);
+    void deleteMessageById(UUID messageId); // file, jcf: throw exception
     List<Message> findMessagesByChannelId(UUID channelId);
     Message createMessageWithAttachments(UUID userId, UUID channelId, List<UUID> attachments);
 }

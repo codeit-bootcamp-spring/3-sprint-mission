@@ -54,11 +54,7 @@ public class FileChannelService implements ChannelService {
     // empty
     @Override
     public void update(ChannelUpdateRequest request) {}
-    // empty
-    @Override
-    public List<Channel> findAllChannel() {
-        return List.of();
-    }
+
 
     @Override
     public void deleteChannel(UUID channelId) {
