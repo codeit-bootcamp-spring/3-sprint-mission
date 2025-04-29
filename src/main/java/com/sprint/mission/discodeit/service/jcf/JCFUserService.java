@@ -15,7 +15,6 @@ import java.util.*;
 [ ] data 필드를 활용해 생성, 조회, 수정, 삭제하는 메소드를 구현하세요.
 * */
 
-//Q.list에 저장하는게 좋은 방법인가? map은? -> 빠른 검색을 위해 map으로 변경
 public class JCFUserService implements UserService {
     private final Map<UUID, User> data; //database
 
@@ -24,8 +23,7 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User create(String name, int age, String email, String password) {
-        User user = new User(name, age, email, password);
+    public User create(User user) {
         this.data.put(user.getId(), user);
 
         return user;
@@ -42,7 +40,7 @@ public class JCFUserService implements UserService {
     @Override
     public List<User> find(String name) {
         List<User> matchedUsers = new ArrayList<>();
-        for (Map.Entry<UUID, User> entry : data.entrySet()) {
+        for (Map.Entry<UUID, User> entry : this.data.entrySet()) {
             if ((entry.getValue().getName()).equals(name)) {
                 matchedUsers.add(entry.getValue());
             }

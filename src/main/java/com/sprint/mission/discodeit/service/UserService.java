@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface UserService {
 
-    public User create(String name, int age, String email, String password);
+    public User create(User user);
 
     public User find(UUID userId);
 

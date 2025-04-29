@@ -1,11 +1,16 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class Channel {
+public class Channel implements Serializable {
+    private static final Long serialVersionUID = 1L;
+
     private final UUID id;
     private final Long createdAt;
     private Long updatedAt;
@@ -97,13 +102,19 @@ public class Channel {
 
     @Override
     public String toString() {
-        return "Channel{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", name='" + name + '\'' +
-                ", attendees=" + attendees +
-                ", messages=" + messages +
-                '}';
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                .withZone(ZoneId.systemDefault());
+
+        String createdAtFormatted = formatter.format(Instant.ofEpochSecond(createdAt));
+        String updatedAtFormatted = formatter.format(Instant.ofEpochSecond(updatedAt));
+
+        return "📦 Channel {\n" +
+                "  id         = " + id + "\n" +
+                "  createdAt  = " + createdAtFormatted + "\n" +
+                "  updatedAt  = " + updatedAtFormatted + "\n" +
+                "  name       = '" + name + "'\n" +
+                "  attendees  = " + attendees + "\n" +
+                "  messages   = " + messages + "\n" +
+                "}";
     }
 }

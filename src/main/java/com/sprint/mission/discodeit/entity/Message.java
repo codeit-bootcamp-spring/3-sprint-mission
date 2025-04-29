@@ -1,9 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-public class Message {
+public class Message implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final UUID id;
     private final Long createdAt;
     private Long updatedAt;
@@ -62,12 +67,18 @@ public class Message {
 
     @Override
     public String toString() {
-        return "Message{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", text='" + content + '\'' +
-                ", sender=" + userId +
-                '}';
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                .withZone(ZoneId.systemDefault());
+
+        String createdAtFormatted = formatter.format(Instant.ofEpochSecond(createdAt));
+        String updatedAtFormatted = formatter.format(Instant.ofEpochSecond(updatedAt));
+
+        return "💬 Message {\n" +
+                " id         = " + id + "\n" +
+                " createdAt  = " + createdAtFormatted + "\n" +
+                " updatedAt  = " + updatedAtFormatted + "\n" +
+                " content       = '" + content + "'\n" +
+                " sender     = " + userId + "\n" +
+                "}";
     }
 }

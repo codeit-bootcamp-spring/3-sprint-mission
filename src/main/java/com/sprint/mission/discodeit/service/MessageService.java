@@ -11,7 +11,8 @@ import java.util.UUID;
 
 public interface MessageService {
 
-    public Message create(String content, UUID channelId, UUID authorId);
+    //QUESTION: 객체 생성 후 -> create 함수.  validation과 관계없이 객체 생성을 먼저 하는데 괜찮은가?
+    public Message create(Message message);
 
     public Message find(UUID messageId);
 
