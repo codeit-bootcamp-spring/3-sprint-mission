@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.fixture;
 
-import com.sprint.mission.discodeit.dto.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.Random;
 import java.util.UUID;

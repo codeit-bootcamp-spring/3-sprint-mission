@@ -33,6 +33,15 @@ public interface UserRepository {
   Optional<User> findByName(String name);
 
   /**
+   * 사용자 이름과 비밀번호로 조회 (Auth)
+   *
+   * @param name     사용자 이름
+   * @param password 사용자 비밀번호
+   * @return Optional<User>
+   */
+  Optional<User> findByNameWithPassword(String name, String password);
+
+  /**
    * 모든 사용자 조회
    *
    * @return List<User>
