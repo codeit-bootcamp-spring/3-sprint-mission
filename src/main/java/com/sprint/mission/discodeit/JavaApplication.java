@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.repository.file.*;
 import com.sprint.mission.discodeit.service.*;
-import com.sprint.mission.discodeit.service.file.*;
+import com.sprint.mission.discodeit.service.basic.*;
 
 import java.util.Comparator;
 
@@ -13,9 +15,13 @@ public class JavaApplication {
 
         // 서비스 생성
         // 교체 후 (직접 생성)
-        UserService userService = new FileUserService();
-        ChannelService channelService = new FileChannelService();
-        MessageService messageService = new FileMessageService();
+        UserRepository userRepository = new FileUserRepository();
+        ChannelRepository channelRepository = new FileChannelRepository();
+        MessageRepository messageRepository = new FileMessageRepository();
+
+        UserService userService = new BasicUserService(userRepository);
+        ChannelService channelService = new BasicChannelService(channelRepository);
+        MessageService messageService = new BasicMessageService(messageRepository);
 
 
         runUserServiceTest(userService);
