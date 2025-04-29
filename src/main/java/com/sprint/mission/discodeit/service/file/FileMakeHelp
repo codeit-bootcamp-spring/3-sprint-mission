@@ -1,0 +1,16 @@
+기본 요구사항
+File IO를 통한 데이터 영속화
+[v]  다음의 조건을 만족하는 서비스 인터페이스의 구현체를 작성하세요.
+
+[v]  클래스 패키지명: com.sprint.mission.discodeit.service.file
+
+[v]  클래스 네이밍 규칙: File[인터페이스 이름]
+
+[v]  JCF 대신 FileIO와 객체 직렬화를 활용해 메소드를 구현하세요.
+
+[v]  Application에서 서비스 구현체를 File*Service로 바꾸어 테스트해보세요.
+
+서비스 구현체 분석
+[v] JCF*Service 구현체와 File*Service 구현체를 비교하여 공통점과 차이점을 발견해보세요.
+[v] "비즈니스 로직"과 관련된 코드를 식별해보세요.
+[v] "저장 로직"과 관련된 코드를 식별해보세요.
