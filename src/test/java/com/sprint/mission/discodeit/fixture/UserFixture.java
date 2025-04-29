@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.fixture;
 
-import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.Random;
 import java.util.UUID;
@@ -46,12 +46,11 @@ public class UserFixture {
     return User.create(email, name, password);
   }
 
-  public static User createCustomUser(UserCreateRequest request) {
+  public static User createCustomUser(UserCreateRequest dto) {
     UUID profileImageId = null;
-    if (request.profileImage() != null) {
-      profileImageId = request.profileImage().getId();
+    if (dto.profileImage() != null) {
+      profileImageId = dto.profileImage().getId();
     }
-    return User.create(request.email(), request.name(), request.password(),
-        profileImageId);
+    return User.create(dto.email(), dto.name(), dto.password(), profileImageId);
   }
 }

@@ -1,29 +1,22 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.common.exception.ChannelException;
+import com.sprint.mission.discodeit.common.model.Auditable;
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * 채널 정보 관리
- * <p>
- * <ul>
- *   <li>AuditInfo (id, createdAt, updatedAt)</li>
- *   <li>채널명</li>
- *   <li>생성자</li>
- *   <li>참여자 목록</li>
- * </ul>
- */
 @Getter
-@ToString
-public class Channel implements Serializable {
+@ToString(callSuper = true)
+@Builder(toBuilder = true, access = AccessLevel.PRIVATE)
+public class Channel extends Auditable implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 4947061877205205272L;
@@ -33,55 +26,53 @@ public class Channel implements Serializable {
     PRIVATE
   }
 
-  // 채널 정보 관리
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-
-  // 참조 정보
+  private String description;
   private final User creator;
   private String name;
-  private List<User> participants = new ArrayList<>();
+  private final List<User> participants = new ArrayList<>();
+  private final ChannelType type;
 
-  // 외부에서 직접 객체 생성 방지.
-  private Channel(User creator, String name) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.updatedAt = this.createdAt;
-    this.creator = creator;
-    this.name = name;
+  private Channel(String description, User creator, String name, ChannelType type) {
+    this.description = description != null ? description : "";
+    this.creator = Objects.requireNonNull(creator);
+    this.name = Objects.requireNonNull(name);
+    this.type = type != null ? type : ChannelType.PUBLIC;
     this.participants.add(creator);
   }
 
-  // 정적 팩토리 메서드로 명시적인 생성
-  public static Channel create(User creator, String name) {
-    return new Channel(creator, name);
+  public static Channel create(User creator, String name, String description) {
+    Channel channel = new Channel(description, creator, name, ChannelType.PUBLIC);
+    channel.touch();
+    return channel;
   }
 
-  public static Channel create(User creator, String name, ChannelType PRIVATE) {
-    return new Channel(creator, name);
+  public static Channel createPublic(User creator, String name, String description) {
+    Channel channel = new Channel(description, creator, name, ChannelType.PUBLIC);
+    channel.touch();
+    return channel;
   }
 
-  public void setUpdatedAt() {
-    this.updatedAt = Instant.now();
+  public static Channel createPrivate(User creator, String name, String description) {
+    Channel channel = new Channel(description, creator, name, ChannelType.PRIVATE);
+    channel.touch();
+    return channel;
   }
 
   public void updateName(String name) {
     this.name = name;
-    setUpdatedAt();
+    touch();
   }
 
-  // 참여자 관리
   public void addParticipant(User user) throws ChannelException {
     if (participants.contains(user)) {
       throw ChannelException.participantAlreadyExists(user.getId(), this.getId());
     }
     participants.add(user);
-    setUpdatedAt();
+    touch();
   }
 
   public List<User> getParticipants() {
-    return new ArrayList<>(participants);
+    return List.copyOf(participants);
   }
 
   public void removeParticipant(UUID userId) throws ChannelException {
@@ -91,7 +82,7 @@ public class Channel implements Serializable {
         .orElseThrow(() -> ChannelException.participantNotFound(userId, this.getId()));
 
     participants.remove(participantToRemove);
-    setUpdatedAt();
+    touch();
   }
 
   public boolean isParticipant(UUID userId) {
@@ -118,11 +109,11 @@ public class Channel implements Serializable {
       return false;
     }
     Channel channel = (Channel) o;
-    return Objects.equals(id, channel.id);
+    return Objects.equals(getId(), channel.getId());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id);
+    return Objects.hash(getId());
   }
 }

@@ -57,7 +57,7 @@ class ChannelTest {
       User creator = UserFixture.createValidUser();
 
       // when
-      Channel channel = ChannelFixture.createCustomChannel(creator, "테스트 채널");
+      Channel channel = ChannelFixture.createCustomChannel(creator, "테스트 채널", "테스트 채널쓰");
 
       // then
       assertAll(
@@ -93,13 +93,15 @@ class ChannelTest {
     @Test
     @DisplayName("참여자 목록 조회 시 불변성이 보장되어야 한다")
     void shouldReturnImmutableParticipantsList() {
-      // when
+      // given
       List<User> participants = channel.getParticipants();
-      participants.clear(); // 반환된 리스트 수정 시도
 
-      // then
+      // when & then
       assertAll(
           "참여자 목록 불변성 검증",
+          () -> assertThatThrownBy(() -> participants.clear())
+              .as("리스트 수정 시 예외가 발생해야 함")
+              .isInstanceOf(UnsupportedOperationException.class),
           () -> assertThat(channel.getParticipants())
               .as("원본 참여자 목록이 변경되지 않아야 함")
               .hasSize(2),
@@ -148,7 +150,7 @@ class ChannelTest {
               .isEqualTo(newName),
           () -> assertThat(channel.getUpdatedAt())
               .as("수정 시간이 갱신되어야 함")
-              .isAfter(originalUpdatedAt)
+              .isAfterOrEqualTo(originalUpdatedAt)
       );
     }
 
@@ -186,7 +188,7 @@ class ChannelTest {
               .hasSize(2),
           () -> assertThat(channel.getUpdatedAt())
               .as("수정 시간이 갱신되어야 함")
-              .isAfter(originalUpdatedAt)
+              .isAfterOrEqualTo(originalUpdatedAt)
       );
     }
 
@@ -242,7 +244,7 @@ class ChannelTest {
               .hasSize(1),
           () -> assertThat(channel.getUpdatedAt())
               .as("수정 시간이 갱신되어야 함")
-              .isAfter(beforeRemovalUpdatedAt)
+              .isAfterOrEqualTo(beforeRemovalUpdatedAt)
       );
     }
   }

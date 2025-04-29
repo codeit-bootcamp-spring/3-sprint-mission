@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.data.UserResponse;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 import java.util.Optional;
@@ -23,10 +23,10 @@ public interface UserService {
   /**
    * 새로운 사용자를 생성한다
    *
-   * @param ucr UserCreateRequest
+   * @param dto UserCreateRequest
    * @return 생성된 사용자 객체
    */
-  UserResponse createUser(UserCreateRequest ucr);
+  UserResponse createUser(UserCreateRequest dto);
 
   /**
    * ID로 사용자를 조회한다

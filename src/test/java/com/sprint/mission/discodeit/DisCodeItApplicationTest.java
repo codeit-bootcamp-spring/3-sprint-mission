@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.data.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -103,7 +103,7 @@ public class DisCodeItApplicationTest {
     assertNotNull(user.getId(), "사용자 ID가 생성되어야 합니다.");
 
     // 2. 채널 생성
-    Channel channel = channelService.createChannel(user, "공지");
+    Channel channel = channelService.createChannel(user, "공지", "공지 채널쓰");
     assertNotNull(channel.getId(), "채널 ID가 생성되어야 합니다.");
     assertTrue(channel.getParticipants().contains(user), "채널 생성자가 참여해야 합니다.");
 

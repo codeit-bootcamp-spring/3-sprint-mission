@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.common.model.Auditable;
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -16,70 +16,64 @@ import lombok.ToString;
  * 사용자 정보 관리
  * <p>
  * <ul>
- *   <li>AuditInfo (id, createdAt, updatedAt)</li>
- *   <li>사용자 계정 정보 (email, name, password)</li>
- *   <li>참여 채널 목록</li>
+ * <li>AuditInfo (id, createdAt, updatedAt)</li>
+ * <li>사용자 계정 정보 (email, name, password)</li>
+ * <li>참여 채널 목록</li>
  * </ul>
  */
 @Getter
-@ToString
+@ToString(callSuper = true)
 @Builder(toBuilder = true, access = AccessLevel.PRIVATE)
-public class User implements Serializable {
+public class User extends Auditable implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 8019397210486307690L;
-  // 사용자 정보 관리
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
+  // 사용자 계정 정보
   private final String email;
   private String name;
   private String password;
   private final List<Channel> channels = new ArrayList<>();
   private UUID profileImageId;
 
+  private User(String email, String name, String password, UUID profileImageId) {
+    this.email = email;
+    this.name = name;
+    this.password = password;
+    this.profileImageId = profileImageId;
+  }
+
   public static User create(String email, String name, String password) {
-    return User.builder()
-        .email(email)
-        .name(name)
-        .password(password)
-        .id(UUID.randomUUID())
-        .createdAt(Instant.now())
-        .updatedAt(Instant.now())
-        .build();
+    User user = new User(email, name, password, null);
+    user.touch();
+    return user;
   }
 
   public static User create(String email, String name, String password, UUID profileImageId) {
-    return User.builder()
-        .email(email)
-        .name(name)
-        .password(password)
-        .profileImageId(profileImageId)
-        .id(UUID.randomUUID())
-        .createdAt(Instant.now())
-        .updatedAt(Instant.now())
-        .build();
+    User user = new User(email, name, password, profileImageId);
+    user.touch();
+    return user;
   }
 
-  public void setUpdatedAt() {
-    this.updatedAt = Instant.now();
+  @Override
+  public void touch() {
+    super.touch();
   }
 
   public void updatePassword(String password) {
     this.password = password;
-    setUpdatedAt();
+    touch();
   }
 
   public void updateName(String name) {
     this.name = name;
-    setUpdatedAt();
+    touch();
   }
 
   // 채널 정보 관리
   public void addChannel(Channel channel) {
     if (!channels.contains(channel)) {
       this.channels.add(channel);
-      setUpdatedAt();
+      touch();
     }
   }
 
@@ -89,7 +83,7 @@ public class User implements Serializable {
 
   public void updateProfileImageId(UUID profileImageId) {
     this.profileImageId = profileImageId;
-    setUpdatedAt();
+    touch();
   }
 
   @Override
@@ -101,11 +95,11 @@ public class User implements Serializable {
       return false;
     }
     User user = (User) o;
-    return Objects.equals(id, user.id);
+    return Objects.equals(getId(), user.getId());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id);
+    return Objects.hash(getId());
   }
 }

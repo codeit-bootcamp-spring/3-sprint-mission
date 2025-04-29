@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.common.exception.ChannelException;
+import com.sprint.mission.discodeit.dto.request.ChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -19,8 +20,20 @@ public class BasicChannelService implements ChannelService {
   private final ChannelRepository channelRepository;
 
   @Override
-  public Channel createChannel(User creator, String name) {
-    Channel channel = Channel.create(creator, name);
+  public Channel createChannel(User creator, String name, String description) {
+    Channel channel = Channel.create(creator, name, description);
+    return channelRepository.save(channel);
+  }
+
+  @Override
+  public Channel createPublicChannel(ChannelCreateRequest dto) {
+    Channel channel = Channel.createPublic(dto.creator(), dto.name(), dto.description());
+    return channelRepository.save(channel);
+  }
+
+  @Override
+  public Channel createPrivateChannel(ChannelCreateRequest dto) {
+    Channel channel = Channel.createPrivate(dto.creator(), dto.name(), dto.description());
     return channelRepository.save(channel);
   }
 

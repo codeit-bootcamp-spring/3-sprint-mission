@@ -3,7 +3,10 @@ package com.sprint.mission.discodeit.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.fixture.ChannelFixture;
+import com.sprint.mission.discodeit.fixture.UserFixture;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -46,16 +49,18 @@ class UserTest {
     }
 
     @Test
-    @DisplayName("프로필 이미지 ID를 포함하여 사용자를 생성할 수 있다")
+    @DisplayName("프로필 이미지를 포함하여 사용자를 생성할 수 있다")
     void createWithProfileImage() {
       // given
       String email = "test@example.com";
       String name = "테스트유저";
       String password = "password123";
-      UUID profileImageId = UUID.randomUUID();
+      User user = UserFixture.createCustomUser(new UserCreateRequest(email, name, password, null));
+      BinaryContent profileImage = BinaryContentFixture.createValidProfileImage(user.getId());
+      UUID profileImageId = profileImage.getId();
 
       // when
-      User user = User.create(email, name, password, profileImageId);
+      user.updateProfileImageId(profileImageId);
 
       // then
       assertAll(

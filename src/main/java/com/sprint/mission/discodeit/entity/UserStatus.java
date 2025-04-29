@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.common.model.Auditable;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Duration;
@@ -13,14 +14,14 @@ import lombok.ToString;
  * 사용자의 상태 관리
  * <p>
  * <ul>
- *   <li>AuditInfo (id, createdAt, updatedAt)</li>
- *   <li>사용자 ID</li>
- *   <li>마지막 접속 시간</li>
+ * <li>AuditInfo (id, createdAt, updatedAt)</li>
+ * <li>사용자 ID</li>
+ * <li>마지막 접속 시간</li>
  * </ul>
  */
 @Getter
-@ToString
-public class UserStatus implements Serializable {
+@ToString(callSuper = true)
+public class UserStatus extends Auditable implements Serializable {
 
   @Serial
   private static final long serialVersionUID = -7917996053260213133L;
@@ -28,36 +29,26 @@ public class UserStatus implements Serializable {
   // 마지막 접속 시간이 현재 시간으로부터 5분 이내이면 현재 접속 중인 유저로 간주합니다.
   private static final Duration ACTIVE_DURATION = Duration.ofMinutes(5);
 
-  // 공통 정보
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-
   // 참조 정보
   private final UUID userId;
   private Instant lastActiveAt;
 
   // 외부에서 직접 객체 생성 방지
   private UserStatus(UUID userId) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.updatedAt = this.createdAt;
     this.userId = userId;
-    this.lastActiveAt = this.createdAt;
+    this.lastActiveAt = getCreatedAt(); // 초기값은 생성 시간으로 설정
   }
 
   // 정적 팩토리 메서드로 명시적인 생성
   public static UserStatus create(UUID userId) {
-    return new UserStatus(userId);
-  }
-
-  public void setUpdatedAt() {
-    this.updatedAt = Instant.now();
+    UserStatus userStatus = new UserStatus(userId);
+    userStatus.touch(); // 초기 updatedAt 설정
+    return userStatus;
   }
 
   public void updateLastActiveAt() {
     this.lastActiveAt = Instant.now();
-    setUpdatedAt();
+    touch();
   }
 
   /**
@@ -79,12 +70,12 @@ public class UserStatus implements Serializable {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    UserStatus userStatus = (UserStatus) o;
-    return Objects.equals(id, userStatus.id);
+    UserStatus that = (UserStatus) o;
+    return Objects.equals(getId(), that.getId());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id);
+    return Objects.hash(getId());
   }
 }

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.common.exception.ChannelException;
+import com.sprint.mission.discodeit.dto.request.ChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
@@ -16,7 +17,23 @@ public interface ChannelService {
    * @param name    채널명
    * @return 생성된 채널 객체
    */
-  Channel createChannel(User creator, String name);
+  Channel createChannel(User creator, String name, String description);
+
+  /**
+   * 새로운 공개 채널 생성한다
+   *
+   * @param request ChannelCreateRequest
+   * @return 생성된 채널 객체
+   */
+  Channel createPublicChannel(ChannelCreateRequest request);
+
+  /**
+   * 새로운 비공개 채널을 생성한다
+   *
+   * @param request ChannelCreateRequest
+   * @return 생성된 채널 객체
+   */
+  Channel createPrivateChannel(ChannelCreateRequest request);
 
   /**
    * ID로 채널을 조회한다

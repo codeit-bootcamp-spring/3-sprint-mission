@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.common.exception.UserException;
-import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.data.UserResponse;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -35,17 +35,17 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public UserResponse createUser(UserCreateRequest ucr) {
-    validateUserEmail(ucr.email());
-    validateUserName(ucr.name());
+  public UserResponse createUser(UserCreateRequest dto) {
+    validateUserEmail(dto.email());
+    validateUserName(dto.name());
 
     UUID profileImageId = null;
-    if (ucr.profileImage() != null && ucr.profileImage().getId() != null) {
-      binaryContentRepository.save(ucr.profileImage());
-      profileImageId = ucr.profileImage().getId();
+    if (dto.profileImage() != null && dto.profileImage().getId() != null) {
+      binaryContentRepository.save(dto.profileImage());
+      profileImageId = dto.profileImage().getId();
     }
 
-    User newUser = User.create(ucr.email(), ucr.name(), ucr.password(), profileImageId);
+    User newUser = User.create(dto.email(), dto.name(), dto.password(), profileImageId);
     User user = userRepository.save(newUser);
     userStatusRepository.save(UserStatus.create(user.getId()));
     return toUserResponse(user);

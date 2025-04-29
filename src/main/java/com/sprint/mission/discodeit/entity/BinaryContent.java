@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.common.model.ImmutableAuditable;
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -16,16 +16,16 @@ import lombok.ToString;
  * 수정 불가능한 도메인 모델로 간주하므로 updatedAt 필드는 정의하지 않음
  * <p>
  * <ul>
- *   <li>AuditInfo (id, createdAt)</li>
- *   <li>바이너리 데이터</li>
- *   <li>파일명</li>
- *   <li>MIME 타입</li>
+ * <li>AuditInfo (id, createdAt)</li>
+ * <li>바이너리 데이터</li>
+ * <li>파일명</li>
+ * <li>MIME 타입</li>
  * </ul>
  */
 @Getter
-@ToString
+@ToString(callSuper = true)
 @Builder(toBuilder = true, access = AccessLevel.PRIVATE)
-public class BinaryContent implements Serializable {
+public class BinaryContent extends ImmutableAuditable implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 8121899659000317030L;
@@ -34,10 +34,6 @@ public class BinaryContent implements Serializable {
     PROFILE_IMAGE,          // userId 필수, messageId null
     MESSAGE_ATTACHMENT      // messageId 필수, userId null
   }
-
-  // 공통 정보
-  private final UUID id;
-  private final Instant createdAt;
 
   // 바이너리 데이터 정보
   private final byte[] data;
@@ -49,12 +45,20 @@ public class BinaryContent implements Serializable {
   private final UUID userId;
   private final UUID messageId;
 
+  private BinaryContent(byte[] data, String fileName, String mimeType, ContentType contentType,
+      UUID userId, UUID messageId) {
+    this.data = data;
+    this.fileName = fileName;
+    this.mimeType = mimeType;
+    this.contentType = contentType;
+    this.userId = userId;
+    this.messageId = messageId;
+  }
+
   public static BinaryContent createProfileImage(byte[] data, String fileName, String mimeType,
       UUID userId) {
     Objects.requireNonNull(userId, "컨텐트 생성 시 유저 id는 필수입니다.");
     return BinaryContent.builder()
-        .id(UUID.randomUUID())
-        .createdAt(Instant.now())
         .data(Objects.requireNonNull(data))
         .fileName(Objects.requireNonNull(fileName))
         .mimeType(Objects.requireNonNull(mimeType))
@@ -68,8 +72,6 @@ public class BinaryContent implements Serializable {
       UUID messageId) {
     Objects.requireNonNull(messageId, "컨텐트 생성 시 메시지 id는 필수입니다.");
     return BinaryContent.builder()
-        .id(UUID.randomUUID())
-        .createdAt(Instant.now())
         .data(Objects.requireNonNull(data))
         .fileName(Objects.requireNonNull(fileName))
         .mimeType(Objects.requireNonNull(mimeType))
@@ -88,11 +90,11 @@ public class BinaryContent implements Serializable {
       return false;
     }
     BinaryContent that = (BinaryContent) o;
-    return Objects.equals(id, that.id);
+    return Objects.equals(getId(), that.getId());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id);
+    return Objects.hash(getId());
   }
 }

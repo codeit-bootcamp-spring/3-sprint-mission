@@ -37,7 +37,7 @@ public class TestInitializer {
   }
 
   private static Channel setupChannel(ChannelService channelService, User creator) {
-    return channelService.createChannel(creator, "공지");
+    return channelService.createChannel(creator, "공지", "공지 채널쓰");
   }
 
   private static void messageCreateTest(MessageService messageService, Channel channel,
