@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.User;
 
 import java.util.*;
 
+
 public interface UserRepository {
     User save(User user); // 저장 로직
     Optional<User> findById(UUID userId); // 저장 로직
