@@ -11,6 +11,9 @@ public interface UserRepository {
 
     public Optional<User> findById(UUID userId);
 
+    //TODO : AuthService 검증때문에 이거 필요할것같음
+//    public Optional<User> findByEmail(String userEmail);
+
     public List<User> findAll();
 
     public boolean existsById(UUID id);

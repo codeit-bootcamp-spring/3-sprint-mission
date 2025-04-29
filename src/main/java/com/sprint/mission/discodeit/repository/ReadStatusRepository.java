@@ -15,6 +15,9 @@ public interface ReadStatusRepository {
 
     public List<ReadStatus> findAll();
 
+    //TODO :  이게 필요할거같음!
+//    public  List<Message> findAllByChannelId(UUID channelId);
+
     public boolean existsById(UUID ReadStatusId);
 
     public void deleteById(UUID ReadStatusId);
