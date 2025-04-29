@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.Dto.user.UserCreateResponse;
 import com.sprint.mission.discodeit.Dto.user.UserFindResponse;
 import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadRequest;
 import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadResponse;
@@ -22,7 +23,7 @@ import java.util.UUID;
  */
 public interface UserService {
 
-    User createUser(UserCreateRequest userCreateDto);
+    UserCreateResponse create(UserCreateRequest userCreateDto);
     UserFindResponse findUserById(UUID userId);
     List<UserFindResponse> findAllUsers();
     ProfileUploadResponse updateImage(ProfileUploadRequest request);

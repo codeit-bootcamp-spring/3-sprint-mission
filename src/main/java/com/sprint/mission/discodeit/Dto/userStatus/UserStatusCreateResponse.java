@@ -1,22 +1,17 @@
 package com.sprint.mission.discodeit.Dto.userStatus;
 
-import lombok.Getter;
-
 import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.userStatus
- * fileName       : UserStatusCreatRequest
+ * fileName       : UserStatusCreateResponse
  * author         : doungukkim
- * date           : 2025. 4. 28.
+ * date           : 2025. 4. 29.
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 28.        doungukkim       최초 생성
+ * 2025. 4. 29.        doungukkim       최초 생성
  */
-
-public record UserStatusCreateRequest
-        (UUID userId) {
-
+public record UserStatusCreateResponse(UUID id, UUID userId, boolean isOnline) {
 }

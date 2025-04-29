@@ -13,11 +13,8 @@ import lombok.Getter;
  * -----------------------------------------------------------
  * 2025. 4. 28.        doungukkim       최초 생성
  */
-@Getter
-public class BinaryContentCreateRequest {
-    private byte[] attachment;
 
-    public BinaryContentCreateRequest(byte[] attachment) {
-        this.attachment = attachment;
-    }
+public record BinaryContentCreateRequest(byte[] attachment) {
 }
+
+

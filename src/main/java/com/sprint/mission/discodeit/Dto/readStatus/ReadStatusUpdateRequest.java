@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.Dto.userStatus;
+package com.sprint.mission.discodeit.Dto.readStatus;
 
 import lombok.Getter;
 
@@ -16,13 +16,9 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 28.        doungukkim       최초 생성
  */
-@Getter
-public class ReadStatusUpdateRequest {
-    UUID readStatusId;
-    Instant newTime;
 
-    public ReadStatusUpdateRequest(UUID readStatusId, Instant newTime) {
-        this.readStatusId = readStatusId;
-        this.newTime = newTime;
-    }
+public record ReadStatusUpdateRequest
+        (UUID readStatusId, Instant newTime) {
+
+
 }

@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.Dto.channel.ChannelFindResponse;
-import com.sprint.mission.discodeit.Dto.channel.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.Dto.channel.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.Dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.Dto.channel.*;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -35,22 +32,63 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
 
-    private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
     private final ReadStatusRepository readStatusRepository;
 
+    @Override
+    public ChannelCreateResponse createChannel(PrivateChannelCreateRequest request) {
+        Objects.requireNonNull(request, "채널 입력 없음");
+        List<User> users = request.users();
+        List<UUID> userIds = users.stream().map(User::getId).toList();
 
+        // channel 생성
+        Channel channel = channelRepository.createPrivateChannelByName();
 
+        // readstatus 생성
+        readStatusRepository.createByUserId(userIds, channel.getId())
+                .forEach(e -> System.out.println("readStatus :" + e.getId()));
+        System.out.println();
+
+        return new ChannelCreateResponse(channel.getId(), channel.getType(), channel.getUpdatedAt());
+    }
 
     @Override
-    public List<ChannelFindResponse> findAllByUserId(UUID userId) {
+    public ChannelCreateResponse createChannel(PublicChannelCreateRequest request) {
+        Objects.requireNonNull(request, "채널 입력 없음");
+        String channelName = Optional.ofNullable(request.getChannelName()).orElse("");
+        String description = Optional.ofNullable(request.getDescription()).orElse("");
 
+        List<User> users = request.getUsers();
+        List<UUID> userIds = users.stream().map(User::getId).toList();
+
+        // channel 생성
+        Channel channel = channelRepository.createPublicChannelByName(channelName, description);
+
+        // readstatus 생성
+        System.out.println("BasicChannelService.createChannel");
+        readStatusRepository.createByUserId(userIds, channel.getId())
+                .forEach(e -> System.out.println("readStatus :" + e.getId()));
+        System.out.println();
+
+        return new ChannelCreateResponse(
+                channel.getId(),
+                channel.getType(),
+                channel.getUpdatedAt(),
+                channel.getName(),
+                channel.getDescription()
+        );
+    }
+
+    @Override
+    public List<ChannelFindResponse> findAllByUserId(ChannelFindByUserIdRequest request) {
+        UUID userId = request.userId();
         List<ChannelFindResponse> response = new ArrayList<>();
         List<Channel> allChannels = Optional.ofNullable(channelRepository.findAllChannel()).orElse(Collections.emptyList());
+        List<Message> messageList = messageRepository.findAllMessages();
+
         for (Channel channel : allChannels) {
 
-            List<Message> messageList = messageRepository.findAllMessages();
             if (channel.getType().equals(ChannelType.PUBLIC)) {
                 Instant resentPublicMessageTime = messageList.stream()
                         .filter(message -> message.getChannelId().equals(channel.getId()))
@@ -89,12 +127,11 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelFindResponse findChannel(UUID channelId) {
+    public ChannelFindResponse find(ChannelFindRequest request) {
         // channelId를 통해 채널을 찾아 추가 - not nullable
         // channelId를 통해 모든 메세지 리스트 생성 - nullable
-        Channel channel = Objects.requireNonNull(channelRepository.findChannelById(channelId), "맞는 채널 없음"); // 채널
+        Channel channel = Objects.requireNonNull(channelRepository.findChannelById(request.channelId()), "맞는 채널 없음"); // 채널
         List<Message> messageList = messageRepository.findAllMessages();
-
 
 /*
         -> create에서 참여유저들이 리스트로 들어옴
@@ -109,7 +146,7 @@ public class BasicChannelService implements ChannelService {
         // 1. public
         if (channel.getType().equals(ChannelType.PUBLIC)) {
             Instant resentPublicMessageTime = messageList.stream()
-                    .filter(message -> message.getChannelId().equals(channelId))
+                    .filter(message -> message.getChannelId().equals(request.channelId()))
                     .map(BaseEntity::getUpdatedAt)
                     .max(Instant::compareTo)
                     .orElse(null);
@@ -121,12 +158,12 @@ public class BasicChannelService implements ChannelService {
         if (channel.getType().equals(ChannelType.PRIVATE)) {
 
             Instant recentPrivateMessageTime = messageList.stream()
-                    .filter(message -> message.getChannelId().equals(channelId))
+                    .filter(message -> message.getChannelId().equals(request.channelId()))
                     .map(BaseEntity::getUpdatedAt)
                     .max(Instant::compareTo)
                     .orElse(null);
 
-            Set<UUID> userIds = readStatusRepository.findReadStatusesByChannelId(channelId).stream()
+            Set<UUID> userIds = readStatusRepository.findReadStatusesByChannelId(request.channelId()).stream()
                     .map(ReadStatus::getUserId)
                     .collect(Collectors.toSet());
 
@@ -136,69 +173,17 @@ public class BasicChannelService implements ChannelService {
         return null;
     }
 
-
-    @Override
-    public Channel createChannel(PrivateChannelCreateRequest request) {
-        Objects.requireNonNull(request, "채널 입력 없음");
-        List<User> users = request.getUsers();
-        List<UUID> userIds = users.stream().map(User::getId).toList();
-
-        // channel 생성
-        Channel channel = channelRepository.createPrivateChannelByName();
-        // readstatus 생성
-        System.out.println("BasicChannelService.createChannel");
-        readStatusRepository.createByUserId(userIds, channel.getId())
-                .forEach(e -> System.out.println("readStatus :" + e.getId()));
-        System.out.println();
-
-        return channel;
-    }
-
-    @Override
-    public Channel createChannel(PublicChannelCreateRequest request) {
-        Objects.requireNonNull(request, "채널 입력 없음");
-        String channelName = Optional.ofNullable(request.getChannelName()).orElse("");
-        String description = Optional.ofNullable(request.getDescription()).orElse("");
-
-        List<User> users = request.getUsers();
-        List<UUID> userIds = users.stream().map(User::getId).toList();
-
-        // channel 생성
-        Channel channel = channelRepository.createPublicChannelByName(channelName, description);
-
-        // readstatus 생성
-        System.out.println("BasicChannelService.createChannel");
-        readStatusRepository.createByUserId(userIds, channel.getId())
-                .forEach(e -> System.out.println("readStatus :" + e.getId()));
-        System.out.println();
-
-        return channel;
-    }
-
-    @Override
-    public Channel findChannelById(UUID channelId) {
-        Objects.requireNonNull(channelId, "체널 아이디 입력 없음: BasicChannelService.findChannelById");
-        Channel result = channelRepository.findChannelById(channelId);
-        Objects.requireNonNull(result, "찾는 채널 없음: BasicChannelService.findChannelById");
-        return result;
-    }
-
-
-
+    // not a requirement
     @Override
     public List<Channel> findAllChannel() {
         return channelRepository.findAllChannel();
     }
 
-
-
-
-    // working on it
     @Override
-    public void updateChannelName(ChannelUpdateRequest request) {
+    public void update(ChannelUpdateRequest request) {
 
-        UUID channelId = request.getChannelId();
-        String name = request.getName();
+        UUID channelId = request.channelId();
+        String name = request.name();
         Channel channel = Objects.requireNonNull(channelRepository.findChannelById(channelId), "채널 없음");
         if (channel.getType().equals(ChannelType.PUBLIC)) {
             // 그럴수 있나? 그래선 안 되는가?

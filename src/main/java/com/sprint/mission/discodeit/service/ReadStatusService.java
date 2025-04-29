@@ -1,11 +1,10 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.Dto.userStatus.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.Dto.userStatus.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.Dto.readStatus.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.Dto.readStatus.ReadStatusCreateResponse;
+import com.sprint.mission.discodeit.Dto.readStatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,9 +23,9 @@ import java.util.UUID;
 
 public interface ReadStatusService {
 
-    ReadStatus create(ReadStatusCreateRequest request);
+    ReadStatusCreateResponse create(ReadStatusCreateRequest request);
 
-    Optional<ReadStatus> findById(UUID readStatusId);
+    ReadStatus findById(UUID readStatusId);
 
     List<ReadStatus> findAllByUserId(UUID userId);
 

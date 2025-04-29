@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -28,14 +29,12 @@ public class BasicBinaryContentService implements BinaryContentService {
     //    create
 //[ ] DTO를 활용해 파라미터를 그룹화합니다.
     @Override
-    public BinaryContent create(BinaryContentCreateRequest request) {
-        byte[] attachment = Optional.ofNullable(request.getAttachment()).orElseThrow(() -> new IllegalArgumentException("no request.getAttachment"));
-        return binaryContentRepository.createBinaryContent(attachment);
+    public BinaryContentCreateResponse create(BinaryContentCreateRequest request) {
+        byte[] attachment = Optional.ofNullable(request.attachment()).orElseThrow(() -> new IllegalArgumentException("no request.getAttachment"));
+        BinaryContent binaryContent = binaryContentRepository.createBinaryContent(attachment);
+        return new BinaryContentCreateResponse(binaryContent.getId(), binaryContent.getUpdatedAt(), binaryContent.getAttachment());
     }
 
-    //    find
-//[ ] id로 조회합니다.
-    // working
     public BinaryContent find(UUID attachmentId) {
         Objects.requireNonNull(attachmentId, "no param");
 

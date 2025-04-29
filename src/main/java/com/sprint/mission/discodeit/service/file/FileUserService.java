@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.Dto.user.UserCreateResponse;
 import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadRequest;
 import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadResponse;
 import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
@@ -36,7 +37,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileUserService implements UserService {
 
-
     private final FileUserRepository fileUserRepository;
     private final FileBinaryContentRepository fileBinaryContentRepository;
     private final FileUserStatusRepository fileUserStatusRepository;
@@ -44,7 +44,7 @@ public class FileUserService implements UserService {
 
     // 이미지 저장 로직 추가
     @Override
-    public User createUser(UserCreateRequest userCreateDto) {
+    public UserCreateResponse create(UserCreateRequest userCreateDto) {
         Objects.requireNonNull(userCreateDto.getUsername(), "no name in parameter: BasicUserService.createUser");
         Objects.requireNonNull(userCreateDto.getEmail(), "no email in parameter: BasicUserService.createUser");
         Objects.requireNonNull(userCreateDto.getPassword(), "no password in parameter: BasicUserService.createUser");
@@ -56,15 +56,29 @@ public class FileUserService implements UserService {
         // 이미지 여부 확인
         if (userCreateDto.getImage() == null) {
             // 이미지 처리 없음
-            User result = fileUserRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword());
-            fileUserStatusRepository.createUserStatus(result.getId());
-            return result;
+            User user = fileUserRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword());
+            UserStatus userStatus = fileUserStatusRepository.createUserStatus(user.getId());
+            return new UserCreateResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getPassword(),
+                    user.getEmail(),
+                    user.getProfileId(),
+                    userStatus.getId()
+            );
         } else {
             // 이미지 처리 있음
             UUID binaryContentId = fileBinaryContentRepository.createBinaryContent(userCreateDto.getImage()).getId();
-            User result = fileUserRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword(), binaryContentId);
-            fileUserStatusRepository.createUserStatus(result.getId());
-            return result;
+            User user = fileUserRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword(), binaryContentId);
+            UserStatus userStatus = fileUserStatusRepository.createUserStatus(user.getId());
+            return new UserCreateResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getPassword(),
+                    user.getEmail(),
+                    user.getProfileId(),
+                    userStatus.getId()
+            );
         }
     }
 
@@ -120,10 +134,10 @@ public class FileUserService implements UserService {
 
     @Override
     public ProfileUploadResponse updateImage(ProfileUploadRequest request) {
-        UUID userId = request.getUserId();
-        byte[] newImage = request.getImage();
+        UUID userId = request.userId();
+        byte[] newImage = request.image();
         User user = fileUserRepository.findUserById(userId);
-        UUID profileId = findUserById(userId).getProfileId();
+        UUID profileId = findUserById(userId).profileId();
 
 
         if (profileId == null) {

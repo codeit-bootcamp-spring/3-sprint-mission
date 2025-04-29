@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateRequest;
+import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateResponse;
 import com.sprint.mission.discodeit.Dto.userStatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.UserStatus;
 
@@ -25,7 +26,7 @@ public interface UserStatusService {
 //      [ ] DTO를 활용해 파라미터를 그룹화합니다.
 //      [ ] 관련된 User가 존재하지 않으면 예외를 발생시킵니다.
 //      [ ] 같은 User와 관련된 객체가 이미 존재하면 예외를 발생시킵니다.
-    UserStatus create(UserStatusCreateRequest request);
+    UserStatusCreateResponse create(UserStatusCreateRequest request);
 
     //    find
 //      [ ] id로 조회합니다.

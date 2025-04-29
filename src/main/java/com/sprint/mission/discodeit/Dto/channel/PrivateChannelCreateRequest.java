@@ -21,13 +21,12 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 25.        doungukkim       최초 생성
  */
-@Getter
-public class PrivateChannelCreateRequest {
 
-    List<User> users;
-
+public record PrivateChannelCreateRequest(List<User> users) {
     public PrivateChannelCreateRequest(Set<User>users) {
-        HashSet<User> usersSet = new HashSet<>(users);
-        this.users =  usersSet.stream().toList();
+        this(users.stream().toList());
     }
 }
+
+
+

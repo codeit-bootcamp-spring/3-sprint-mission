@@ -15,14 +15,10 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 28.        doungukkim       최초 생성
  */
-@Getter
-public class MessageUpdateRequest {
-    UUID messageId;
-    String content;
 
-    public MessageUpdateRequest(UUID messageId, String content) {
-        this.messageId = messageId;
-        this.content = content;
-    }
+public record MessageUpdateRequest
+(    UUID messageId,
+    String content) {
+
 
 }

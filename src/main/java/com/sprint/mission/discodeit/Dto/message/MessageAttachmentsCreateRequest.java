@@ -16,16 +16,10 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 28.        doungukkim       최초 생성
  */
-@Getter
-public class MessageAttachmentsCreateRequest {
-    private UUID senderId;
-    private UUID channelId;
-    private List<byte[]> attachments;
 
-    // 첨부파일
-    public MessageAttachmentsCreateRequest(UUID senderId, UUID channelId, List<byte[]> attachments) {
-        this.senderId = senderId;
-        this.channelId = channelId;
-        this.attachments = attachments;
-    }
+public record MessageAttachmentsCreateRequest
+        (UUID senderId,
+         UUID channelId,
+         List<byte[]> attachments) {
+
 }
