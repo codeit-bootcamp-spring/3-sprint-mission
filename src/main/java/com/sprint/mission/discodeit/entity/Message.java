@@ -2,33 +2,36 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.Objects;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
 
 @Getter
 public class Message implements Serializable {
+
+    @Serial
     private static final long serialVersionUID = 5140283631663474458L;
 
     private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
+    private final Instant createdAt;
+    private Instant updatedAt;
     private String msgContent;
-    private final UUID senderId;
+    private final UUID authorId;
     private final UUID channelId;
+    private final List<UUID> attachmentIds = new ArrayList<>();
 
-    public Message(String msgContent, UUID senderId, UUID channelId) {
+    public Message(String msgContent, UUID authorId, UUID channelId) {
         this.id = UUID.randomUUID();
-        this.createdAt = new Date().getTime();
-        this.updatedAt = new Date().getTime();
+        this.createdAt = Instant.now();
+        this.updatedAt = createdAt;
         this.msgContent = msgContent;
-        this.senderId = senderId;
+        this.authorId = authorId;
         this.channelId = channelId;
     }
 
     public void updateTime() {
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
     public void updateMsgContent(String msgContent) {
@@ -40,16 +43,21 @@ public class Message implements Serializable {
         return !Objects.equals(getUpdatedAt(), getCreatedAt());
     }
 
+    public void addAttachment(UUID attachmentId) {
+        this.attachmentIds.add(attachmentId);
+        updateTime();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        long displayTime = isUpdated() ? getUpdatedAt() : getCreatedAt();
-        sb.append("[").append(new Date(displayTime)).append("] ");
+        Instant displayTime = isUpdated() ? getUpdatedAt() : getCreatedAt();
+        sb.append("[").append(Date.from(displayTime)).append("] ");
         sb.append(msgContent);
         if (isUpdated()) {
             sb.append(" (수정됨)");
         }
-        sb.append(" [").append(senderId).append("] ");
+        sb.append(" [").append(authorId).append("] ");
         return sb.toString();
     }
 }
