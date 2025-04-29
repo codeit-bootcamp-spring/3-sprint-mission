@@ -6,9 +6,11 @@ import org.springframework.context.annotation.Configuration;
 
 import java.nio.file.Path;
 
+// Config를 통해 Spring Bean들을 설정하는 클래스
 @Configuration
 public class ApplicationConfiguration {
 
+    // 파일 경로를 Bean으로 등록!
     @Bean
     public Path userFilePath() {
         return Path.of("src/main/java/com/sprint/mission/discodeit/files/users.json");

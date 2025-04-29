@@ -11,6 +11,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 
+
+// 멘토링때 들은 방식대로 파일과 디렉터리 생성/초기화 로직을 분리
 public class FileioUtil {
     // 파일 저장
     public static void init(Path directory) {
