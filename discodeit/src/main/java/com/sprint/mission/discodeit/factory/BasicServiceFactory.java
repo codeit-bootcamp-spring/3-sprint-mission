@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.nio.file.Path;
 
+// Repository 로부터 Service 객체를 만들어 관리하는 Factory
 @Configuration
 public class BasicServiceFactory implements ServiceFactory {
     private UserRepository userRepository;
@@ -27,18 +28,25 @@ public class BasicServiceFactory implements ServiceFactory {
     private ChannelService channelService;
     private MessageService messageService;
 
-    private BasicServiceFactory() {
 
-    }
 
     public BasicServiceFactory(@Qualifier("userFilePath") Path userPath,
                                @Qualifier("channelFilePath") Path channelPath,
-                               @Qualifier("messageFilePath") Path messagePath)
+                               @Qualifier("messageFilePath") Path messagePath,
+                               @Qualifier("readStatusFilePath") Path readStatusPath,
+                               @Qualifier("userStatusFilePath") Path userStatusPath,
+                               @Qualifier("binaryContentFilePath") Path binaryContentPath)
     {
+        // Repository 초기화
         this.userRepository = new FileUserRepository(userPath);
         this.channelRepository = new FileChannelRepository(channelPath);
         this.messageRepository = new FileMessageRepository(messagePath);
+        this.readStatusRepository = new FileReadStatusRepository(readStatusPath);
+        this.userStatusRepository = new FileUserStatusRepository(userStatusPath);
+        this.binaryContentRepository = new FileBinaryContentRepository(binaryContentPath);
 
+
+        // Service 초기화
         this.userService = new BasicUserService(userRepository,userStatusRepository,binaryContentRepository);
         this.messageService = new BasicMessageService(messageRepository,channelRepository,userRepository,binaryContentRepository);
         this.channelService = new BasicChannelService(channelRepository,messageRepository,readStatusRepository,userRepository);

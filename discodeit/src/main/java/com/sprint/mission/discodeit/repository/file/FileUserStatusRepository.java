@@ -5,12 +5,15 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.util.FileioUtil;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+@ConditionalOnProperty(name = "discodeit.repository", havingValue = "file")
 @Repository
 public class FileUserStatusRepository implements UserStatusRepository {
     private Map<String, UserStatus> userStatusData;

@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.channel.CreatePublicChannelRequest;
 import com.sprint.mission.discodeit.dto.message.CreateMessageRequest;
 import com.sprint.mission.discodeit.dto.message.UpdateMessageRequest;
 import com.sprint.mission.discodeit.dto.user.CreateUserRequest;
+import com.sprint.mission.discodeit.dto.user.UpdateUserRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -20,8 +21,15 @@ import java.util.Optional;
 public class DiscodeitApplication {
     static User setupUser(UserService userService) {
         CreateUserRequest request = new CreateUserRequest("woody", "woody@codeit.com", "woody1234");
+        CreateUserRequest request2 = new CreateUserRequest("김현기","kinggusrl3@codeit.com","kinggusrl3");
+        UpdateUserRequest update = new UpdateUserRequest("KHG","kinggusrl3@naver.com","kkk");
         User user = userService.create(request, Optional.empty());
-        System.out.println(" 유저명 : " + user.getUsername());
+        User user2 = userService.create(request2, Optional.empty());
+        System.out.println(" 1번 유저명 : " + user.getUsername());
+        userService.update(user2.getId(),update,Optional.empty() );
+        System.out.println(" 변경된 2번 유저 이메일 조회 : " + user2.getEmail());
+        userService.delete(user2.getId());
+        System.out.println("전체 유저 조회 : " + userService.findAll() );
         return user;
     }
 
@@ -34,10 +42,12 @@ public class DiscodeitApplication {
 
     static void messageCreateTest(MessageService messageService, Channel channel, User author) {
         CreateMessageRequest request = new CreateMessageRequest("안녕하세요, 반갑습니다.", channel.getId(), author.getId());
-        Message message1 = messageService.create(request, new ArrayList<>());
-        System.out.println("메시지 생성 : " + message1.getContent());
-        System.out.println("메시지 생성 시간 : " + message1.getCreatedAt());
-//        messageService.update(message1.getId(),"아아");
+        UpdateMessageRequest updateMessageRequest = new UpdateMessageRequest("곧 점심이네요, 배가 고픕니다.");
+        Message message = messageService.create(request, new ArrayList<>());
+        System.out.println("메시지 생성 : " + message.getContent());
+        System.out.println("메시지 생성 시간 : " + message.getCreatedAt());
+        messageService.update(message.getId(),updateMessageRequest);
+        System.out.println("수정된 메시지 생성 : " + message.getContent());
     }
 
 
@@ -61,6 +71,6 @@ public class DiscodeitApplication {
 
     }
 
-
+//
 
 }

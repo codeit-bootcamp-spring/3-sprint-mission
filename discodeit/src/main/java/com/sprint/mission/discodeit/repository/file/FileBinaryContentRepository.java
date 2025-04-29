@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.util.FileioUtil;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+@ConditionalOnProperty(name = "discodeit.repository", havingValue = "file")
 @Repository
 public class FileBinaryContentRepository implements BinaryContentRepository {
     private Map<String, BinaryContent> binaryContentData;
