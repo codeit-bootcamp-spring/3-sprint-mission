@@ -13,13 +13,9 @@ import lombok.Getter;
  * -----------------------------------------------------------
  * 2025. 4. 25.        doungukkim       최초 생성
  */
-@Getter
-public class LoginRequest {
-    String username;
-    String password;
 
-    public LoginRequest(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
-}
+public record LoginRequest
+    (String username,
+    String password)
+
+{}

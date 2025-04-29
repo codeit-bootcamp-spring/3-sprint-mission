@@ -1,10 +1,8 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.Dto.channel.ChannelFindResponse;
-import com.sprint.mission.discodeit.Dto.channel.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.Dto.channel.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.Dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.Dto.channel.*;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.jcf.JcfChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
@@ -35,44 +33,31 @@ public class JcfChannelService implements ChannelService {
 
     // empty
     @Override
-    public List<ChannelFindResponse> findAllByUserId(UUID userId) {
+    public List<ChannelFindResponse> findAllByUserId(ChannelFindByUserIdRequest request) {
         return List.of();
     }
     // empty
     @Override
-    public ChannelFindResponse findChannel(UUID channelId) {
+    public ChannelFindResponse find(ChannelFindRequest request) {
         return null;
     }
     // empty
     @Override
-    public Channel createChannel(PrivateChannelCreateRequest request) {
+    public ChannelCreateResponse createChannel(PrivateChannelCreateRequest request) {
         return null;
     }
     // empty
     @Override
-    public Channel createChannel(PublicChannelCreateRequest request) {
+    public ChannelCreateResponse createChannel(PublicChannelCreateRequest request) {
         return null;
     }
-
-
+    // empty
     @Override
-    public Channel findChannelById(UUID channelId) {
-        Objects.requireNonNull(channelId, "no channel Id: JcfChannelService.findChannelById");
-        Channel result = jcfChannelRepository.findChannelById(channelId);
-        Objects.requireNonNull(result, "No Channel: JcfChannelService.findChannelById");
-        return result;
-    }
-
-
+    public void update(ChannelUpdateRequest request) {}
+    // empty
     @Override
     public List<Channel> findAllChannel() {
-        return jcfChannelRepository.findAllChannel();
-    }
-
-    // empty
-    @Override
-    public void updateChannelName(ChannelUpdateRequest request) {
-
+        return List.of();
     }
 
     @Override

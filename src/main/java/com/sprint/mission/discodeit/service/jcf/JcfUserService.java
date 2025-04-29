@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.Dto.user.UserCreateResponse;
 import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadRequest;
 import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadResponse;
 import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
@@ -39,7 +40,7 @@ public class JcfUserService implements UserService {
     private final JcfUserStatusRepository jcfUserStatusRepository;
     private final JcfBinaryContentRepostory jcfBinaryContentRepostory;
 
-    public User createUser(UserCreateRequest userCreateDto) {
+    public UserCreateResponse create(UserCreateRequest userCreateDto) {
         Objects.requireNonNull(userCreateDto.getUsername(), "no name in parameter: BasicUserService.createUser");
         Objects.requireNonNull(userCreateDto.getEmail(), "no email in parameter: BasicUserService.createUser");
         Objects.requireNonNull(userCreateDto.getPassword(), "no password in parameter: BasicUserService.createUser");
@@ -51,15 +52,29 @@ public class JcfUserService implements UserService {
         // 이미지 여부 확인
         if (userCreateDto.getImage() == null) {
             // 이미지 처리 없음
-            User result = jcfUserRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword());
-            jcfUserStatusRepository.createUserStatus(result.getId());
-            return result;
+            User user = jcfUserRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword());
+            UserStatus userStatus = jcfUserStatusRepository.createUserStatus(user.getId());
+            return new UserCreateResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getPassword(),
+                    user.getEmail(),
+                    user.getProfileId(),
+                    userStatus.getId()
+            );
         } else{
             // 이미지 처리 있음
             UUID binaryContentId = jcfBinaryContentRepostory.createBinaryContent(userCreateDto.getImage()).getId();
-            User result = jcfUserRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword(), binaryContentId);
-            jcfUserStatusRepository.createUserStatus(result.getId());
-            return result;
+            User user = jcfUserRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword(), binaryContentId);
+            UserStatus userStatus = jcfUserStatusRepository.createUserStatus(user.getId());
+            return new UserCreateResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getPassword(),
+                    user.getEmail(),
+                    user.getProfileId(),
+                    userStatus.getId()
+            );
         }
 
     }
@@ -111,10 +126,10 @@ public class JcfUserService implements UserService {
 
     @Override
     public ProfileUploadResponse updateImage(ProfileUploadRequest request) {
-        UUID userId = request.getUserId();
-        byte[] newImage = request.getImage();
+        UUID userId = request.userId();
+        byte[] newImage = request.image();
         User user = jcfUserRepository.findUserById(userId);
-        UUID profileId = findUserById(userId).getProfileId();
+        UUID profileId = findUserById(userId).profileId();
 
 
         if (profileId == null) {

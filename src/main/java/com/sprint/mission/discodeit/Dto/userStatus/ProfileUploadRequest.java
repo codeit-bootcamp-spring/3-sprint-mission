@@ -16,14 +16,8 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-@Getter
-@Setter
-public class ProfileUploadRequest {
-    private UUID userId;
-    private byte[] image;
-
-    public ProfileUploadRequest(UUID userId, byte[] image) {
-        this.userId = userId;
-        this.image = image;
-    }
+public record ProfileUploadRequest
+     (UUID userId,
+     byte[] image){
 }
+

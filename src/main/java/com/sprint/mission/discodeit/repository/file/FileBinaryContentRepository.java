@@ -28,7 +28,6 @@ import java.util.UUID;
  * 2025. 4. 24.        doungukkim       최초 생성
  */
 
-//@Primary
 @Profile("file")
 @Repository
 @RequiredArgsConstructor

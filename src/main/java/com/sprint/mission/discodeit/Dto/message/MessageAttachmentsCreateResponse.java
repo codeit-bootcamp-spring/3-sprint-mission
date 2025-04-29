@@ -1,25 +1,18 @@
 package com.sprint.mission.discodeit.Dto.message;
 
-import lombok.Getter;
-
 import java.util.List;
 import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.message
- * fileName       : MessageCreateDto
+ * fileName       : MessageAttachmentsCreateResponse
  * author         : doungukkim
- * date           : 2025. 4. 28.
+ * date           : 2025. 4. 29.
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 28.        doungukkim       최초 생성
+ * 2025. 4. 29.        doungukkim       최초 생성
  */
-
-public record MessageCreateRequest
-    (UUID senderId,
-    UUID channelId,
-    String content
-) {
+public record MessageAttachmentsCreateResponse(UUID id, UUID senderId, UUID channelId, List<UUID> attachmentIds) {
 }

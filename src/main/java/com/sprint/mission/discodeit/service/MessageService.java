@@ -1,9 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 
-import com.sprint.mission.discodeit.Dto.message.MessageAttachmentsCreateRequest;
-import com.sprint.mission.discodeit.Dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.Dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.Dto.message.*;
 import com.sprint.mission.discodeit.entity.Message;
 
 import java.util.List;
@@ -23,12 +21,8 @@ import java.util.UUID;
  */
 public interface MessageService {
 
-    // 삭제 예정
-    Message createMessage(UUID senderId, UUID channelId, String content);
-
-
-    Message createMessage(MessageCreateRequest request);
-    Message createMessage(MessageAttachmentsCreateRequest request);
+    MessageCreateResponse createMessage(MessageCreateRequest request);
+    MessageAttachmentsCreateResponse createMessage(MessageAttachmentsCreateRequest request);
 
     Message findMessageById(UUID messageId);
 
@@ -36,11 +30,7 @@ public interface MessageService {
 
     List<Message> findAllMessages();
 
-    // legacy
-    void updateMessage(UUID messageId, String content);
-
     void updateMessage(MessageUpdateRequest request);
-
 
     void deleteMessage(UUID messageId);
 

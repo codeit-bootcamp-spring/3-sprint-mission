@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
-import com.sprint.mission.discodeit.Dto.message.MessageAttachmentsCreateRequest;
-import com.sprint.mission.discodeit.Dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.Dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.Dto.message.*;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -49,27 +47,16 @@ public class FileMessageService implements MessageService {
 
     // empty
     @Override
-    public Message createMessage(MessageCreateRequest request) {
+    public MessageCreateResponse createMessage(MessageCreateRequest request) {
         return null;
     }
     // empty
     @Override
-    public Message createMessage(MessageAttachmentsCreateRequest request) {
+    public MessageAttachmentsCreateResponse createMessage(MessageAttachmentsCreateRequest request) {
         return null;
     }
 
 
-    @Override
-    public Message createMessage(UUID senderId, UUID channelId, String content) {
-        Objects.requireNonNull(senderId, "no senderId: FileMessageService.createMessage");
-        Objects.requireNonNull(channelId, "채널 id 없음: FileMessageService.createMessage");
-        Objects.requireNonNull(content, "메세지 내용 없음 FileMessageService.createMessage");
-
-        Objects.requireNonNull(userService.findUserById(senderId), "no user existing: createMessage");
-        Objects.requireNonNull(channelService.findChannelById(channelId), "no channel existing: createMessage");
-
-        return fileMessageRepository.createMessageWithContent(senderId, channelId, content);
-    }
 
     @Override
     public Message findMessageById(UUID messageId) {
@@ -84,13 +71,6 @@ public class FileMessageService implements MessageService {
         return fileMessageRepository.findAllMessages();
     }
 
-    // legacy
-    @Override
-    public void updateMessage(UUID messageId, String content) {
-        Objects.requireNonNull(messageId, "no messageId: FileMessageService.updateMessage");
-        Objects.requireNonNull(content, "no content: FileMessageService.updateMessage");
-        fileMessageRepository.updateMessageById(messageId, content);
-    }
 
     // this has to be updated
     @Override

@@ -27,12 +27,14 @@ public class ChannelFindResponse {
     private ChannelType type;
     private List<UUID> userIds;
 
+    // public
     public ChannelFindResponse(Channel channel, Instant recentMessageTime) {
         this.channel = channel;
         this.recentMessageTime = recentMessageTime;
         this.type = ChannelType.PUBLIC;
     }
 
+    // private
     public ChannelFindResponse(Channel channel, Instant recentMessageTime, List<UUID> userIds) {
         this.channel = channel;
         this.recentMessageTime = recentMessageTime;

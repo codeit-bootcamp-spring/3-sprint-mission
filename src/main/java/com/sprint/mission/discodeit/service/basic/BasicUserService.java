@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.Dto.user.UserCreateResponse;
 import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadRequest;
 import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadResponse;
 import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
@@ -40,27 +41,41 @@ public class BasicUserService  implements UserService {
 
 
     @Override
-    public User createUser(UserCreateRequest userCreateDto) {
-        Objects.requireNonNull(userCreateDto.getUsername(), "no name in parameter: BasicUserService.createUser");
-        Objects.requireNonNull(userCreateDto.getEmail(), "no email in parameter: BasicUserService.createUser");
-        Objects.requireNonNull(userCreateDto.getPassword(), "no password in parameter: BasicUserService.createUser");
+    public UserCreateResponse create(UserCreateRequest userCreateRequest) {
+        Objects.requireNonNull(userCreateRequest.getUsername(), "no name in parameter: BasicUserService.createUser");
+        Objects.requireNonNull(userCreateRequest.getEmail(), "no email in parameter: BasicUserService.createUser");
+        Objects.requireNonNull(userCreateRequest.getPassword(), "no password in parameter: BasicUserService.createUser");
 
-        if ((!userRepository.isUniqueUsername(userCreateDto.getUsername())) || (!userRepository.isUniqueEmail(userCreateDto.getEmail()))) {
+        if ((!userRepository.isUniqueUsername(userCreateRequest.getUsername())) || (!userRepository.isUniqueEmail(userCreateRequest.getEmail()))) {
             throw new RuntimeException("not unique username or email");
         }
 
         // 이미지 여부 확인
-        if (userCreateDto.getImage() == null) {
+        if (userCreateRequest.getImage() == null) {
             // 이미지 처리 없음
-            User result = userRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword());
-            userStatusRepository.createUserStatus(result.getId());
-            return result;
+            User user = userRepository.createUserByName(userCreateRequest.getUsername(), userCreateRequest.getEmail(), userCreateRequest.getPassword());
+            UserStatus userStatus = userStatusRepository.createUserStatus(user.getId());
+            return new UserCreateResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getPassword(),
+                    user.getEmail(),
+                    user.getProfileId(),
+                    userStatus.getId()
+            );
         } else{
             // 이미지 처리 있음
-            UUID profileId = binaryContentRepository.createBinaryContent(userCreateDto.getImage()).getId();
-            User result = userRepository.createUserByName(userCreateDto.getUsername(), userCreateDto.getEmail(), userCreateDto.getPassword(), profileId);
-            userStatusRepository.createUserStatus(result.getId());
-            return result;
+            UUID profileId = binaryContentRepository.createBinaryContent(userCreateRequest.getImage()).getId();
+            User user = userRepository.createUserByName(userCreateRequest.getUsername(), userCreateRequest.getEmail(), userCreateRequest.getPassword(), profileId);
+            UserStatus userStatus = userStatusRepository.createUserStatus(user.getId());
+            return new UserCreateResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getPassword(),
+                    user.getEmail(),
+                    user.getProfileId(),
+                    userStatus.getId()
+            );
         }
     }
 
@@ -118,10 +133,10 @@ public class BasicUserService  implements UserService {
 
     @Override
     public ProfileUploadResponse updateImage(ProfileUploadRequest request) {
-        UUID userId = request.getUserId();
-        byte[] newImage = request.getImage();
+        UUID userId = request.userId();
+        byte[] newImage = request.image();
         User user = userRepository.findUserById(userId);
-        UUID profileId = findUserById(userId).getProfileId();
+        UUID profileId = findUserById(userId).profileId();
 
 
         if (profileId == null) {

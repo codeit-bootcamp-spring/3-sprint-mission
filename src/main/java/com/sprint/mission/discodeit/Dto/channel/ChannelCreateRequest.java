@@ -1,26 +1,17 @@
 package com.sprint.mission.discodeit.Dto.channel;
 
-import lombok.Getter;
-
 import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.channel
- * fileName       : ChannelUpdateRequest
+ * fileName       : ChannelCreateRequest
  * author         : doungukkim
- * date           : 2025. 4. 27.
+ * date           : 2025. 4. 29.
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 27.        doungukkim       최초 생성
+ * 2025. 4. 29.        doungukkim       최초 생성
  */
-
-public record ChannelUpdateRequest
-        (UUID channelId,
-         String name
-        ) {
-
-
-
+public record ChannelCreateRequest(UUID userId) {
 }

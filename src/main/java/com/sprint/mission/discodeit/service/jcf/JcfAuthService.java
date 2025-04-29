@@ -1,8 +1,11 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.Dto.authService.LoginRequest;
+import com.sprint.mission.discodeit.Dto.authService.LoginResponse;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,21 +33,31 @@ import java.util.Optional;
 //@ConditionalOnProperty(name = "service.mode", havingValue = "jcf")
 public class JcfAuthService implements AuthService {
     private final UserRepository userRepository;
+    private final UserStatusRepository userStatusRepository;
 
 
-    public User login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         Objects.requireNonNull(request, "입력 값 없음");
 
-        String username = Optional.ofNullable(request.getUsername())
+        String username = Optional.ofNullable(request.username())
                 .orElseThrow(() -> new IllegalArgumentException("no name"));
 
-        String password = Optional.ofNullable(request.getPassword())
+        String password = Optional.ofNullable(request.username())
                 .orElseThrow(() -> new IllegalArgumentException("no password"));
 
         List<User> allUsers = userRepository.findAllUsers();
         for (User user : allUsers) {
             if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
-                return user;
+                UserStatus userStatus = userStatusRepository.findUserStatusByUserId(user.getId());
+                return new LoginResponse(
+                        user.getId(),
+                        user.getCreatedAt(),
+                        user.getUpdatedAt(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getProfileId(),
+                        userStatusRepository.isOnline(userStatus.getId())
+                );
             }
         }
         throw new RuntimeException("로그인 시도. 일치하는 유저 없습니다.");

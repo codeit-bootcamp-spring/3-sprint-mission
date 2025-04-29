@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public interface BinaryContentService {
 
     //    create
 //[ ] DTO를 활용해 파라미터를 그룹화합니다.
-    BinaryContent create(BinaryContentCreateRequest request);
+    BinaryContentCreateResponse create(BinaryContentCreateRequest request);
 
     //    find
 //[ ] id로 조회합니다.
