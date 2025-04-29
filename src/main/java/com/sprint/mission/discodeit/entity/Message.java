@@ -1,53 +1,40 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+@Getter
 public class Message implements Serializable {
     private static final long serialVersionUID = 1L;
     private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
-    private String content; // 내용
-    private final UUID senderId; // 보낸 사람의 id
-    private final UUID channelId; // 메시지를 보낸 채널 id
+    private final Instant createdAt;
+    private Instant updatedAt;
+    private String content;
+    private final UUID senderId;
+    private final UUID channelId;
+    private List<UUID> attachmentIds;
 
-    public Message(String content, User user, Channel channel) {
+    public Message(UUID senderId, UUID channelId) {
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.content = content;
-        this.senderId = user.getId();
-        this.channelId = channel.getId();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public UUID getSenderId() {
-        return senderId;
-    }
-
-    public UUID getChannelId() {
-        return channelId;
+        this.createdAt = Instant.now();
+        this.senderId = senderId;
+        this.channelId = channelId;
+        this.attachmentIds = new ArrayList<>();
     }
 
     public void updateContent(String content) {
         this.content = content;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateAttachmentIds(List<UUID> attachmentIds) {
+        this.attachmentIds = attachmentIds;
     }
 
     @Override

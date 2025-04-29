@@ -11,8 +11,8 @@ import java.util.*;
 public class FileChannelService implements ChannelService {
 
     private final UserService userService;
-    private final String fileName = "src/main/java/com/sprint/mission/discodeit/service/file/channels.ser";
-    private final File file = new File(fileName);
+    private final String FILENAME = "src/main/java/com/sprint/mission/discodeit/service/file/channels.ser";
+    private final File file = new File(FILENAME);
 
     public FileChannelService(UserService userService) {
         this.userService = userService;
@@ -80,10 +80,10 @@ public class FileChannelService implements ChannelService {
 
         // 변경된 채널을 채널에 속해있는 User의 채널 리스트에 반영
         userService.findAll().forEach(user -> {
-            List<Channel> channels = user.getChannels();
+            List<UUID> channels = user.getChannels();
             for (int i=0; i<channels.size(); i++) {
-                if (channels.get(i).equals(channel)) {
-                    channels.set(i, channel);
+                if (channels.get(i).equals(channel.getId())) {
+                    channels.set(i, channel.getId());
                 }
             }
             userService.update(user);
@@ -108,9 +108,9 @@ public class FileChannelService implements ChannelService {
 
         // 채널에 속한 User의 channelList에서 해당 채널 삭제
         userService.findAll().forEach(user -> {
-            List<Channel> channels = user.getChannels();
+            List<UUID> channels = user.getChannels();
             for (int i=0; i<channels.size(); i++) {
-                if (channels.get(i).getId().equals(channelId)) {
+                if (channels.get(i).equals(channelId)) {
                     channels.remove(channels.get(i));
                 }
             }
@@ -136,8 +136,8 @@ public class FileChannelService implements ChannelService {
     private void joinChannel(Channel channel) {
         userService.findById(channel.getChannelMaster()).ifPresent(user -> {
             // 채널 주인은 채널 생성 시 채널에 입장
-            user.getChannels().add(channel);
-            channel.getUserList().add(user);
+            user.getChannels().add(channel.getId());
+            channel.getUsers().add(user.getId());
             userService.update(user);
         });
     }

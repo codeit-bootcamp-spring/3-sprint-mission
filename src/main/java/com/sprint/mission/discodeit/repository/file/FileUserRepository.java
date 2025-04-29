@@ -2,14 +2,16 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
+@Repository
 public class FileUserRepository implements UserRepository {
 
-    private final String fileName = "src/main/java/com/sprint/mission/discodeit/repository/file/userRepo.ser";
-    private final File file = new File(fileName);
+    private final String FILENAME = "src/main/java/com/sprint/mission/discodeit/data/userRepo.ser";
+    private final File file = new File(FILENAME);
 
     @Override
     public User save(User user) {
@@ -42,7 +44,7 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public List<User> findByName(String name) {
+    public List<User> findByNameContaining(String name) {
         // 파일에서 읽어오기
         Map<UUID, User> data = loadFile();
 
@@ -52,13 +54,36 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByName(String name) {
+        // 파일에서 읽어오기
+        Map<UUID, User> data = loadFile();
+
+        Optional<User> foundUser = data.values().stream()
+                .filter(user -> user.getName().equals(name))
+                .findFirst();
+
+        return foundUser;
+    }
+
+    @Override
     public Optional<User> findByEmail(String email) {
         // 파일에서 읽어오기
         Map<UUID, User> data = loadFile();
 
-        Optional<User> foundUser = data.entrySet().stream()
-                .filter(entry -> entry.getKey().equals(email))
-                .map(Map.Entry::getValue)
+        Optional<User> foundUser = data.values().stream()
+                .filter(user -> user.getEmail().equals(email))
+                .findFirst();
+
+        return foundUser;
+    }
+
+    @Override
+    public Optional<User> findByNameAndPassword(String name, String password) {
+        // 파일에서 읽어오기
+        Map<UUID, User> data = loadFile();
+
+        Optional<User> foundUser = data.values().stream()
+                .filter(user -> user.getName().equals(name) && user.getPassword().equals(password))
                 .findFirst();
 
         return foundUser;

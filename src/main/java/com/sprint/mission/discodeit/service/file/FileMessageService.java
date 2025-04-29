@@ -15,8 +15,8 @@ import java.util.*;
 public class FileMessageService implements MessageService {
     private final UserService userService;
     private final ChannelService channelService;
-    private final String fileName = "src/main/java/com/sprint/mission/discodeit/service/file/messages.ser";
-    private final File file = new File(fileName);
+    private final String FILENAME = "src/main/java/com/sprint/mission/discodeit/service/file/messages.ser";
+    private final File file = new File(FILENAME);
 
     public FileMessageService(UserService userService, ChannelService channelService) {
         this.userService = userService;
@@ -43,17 +43,17 @@ public class FileMessageService implements MessageService {
         // 메시지를 보낸 user의 mesagesList에 해당 메시지 추가
         userService.findById(message.getSenderId()).ifPresent(user -> {
             // 해당 채널에 속해 있지 않는 User가 메시지를 보낼 때 예외 처리
-            if (!user.getChannels().contains(foundChannel)) {
+            if (!user.getChannels().contains(foundChannel.getId())) {
                 throw new UserNotInChannelException();
             } else {
-                user.getMessages().add(message);
+                user.getMessages().add(message.getId());
                 userService.update(user);
             }
         });
 
         // 메시지를 보낸 channel의 mesagesList에 해당 메시지 추가
         channelService.findById(message.getChannelId()).ifPresent(channel -> {
-            channel.getMessageList().add(message);
+            channel.getMessages().add(message.getId());
             channelService.update(channel);
         });
 
@@ -136,10 +136,10 @@ public class FileMessageService implements MessageService {
 
         // 변경된 메시지를 메시지를 보낸 User의 messageList에 반영
         userService.findAll().forEach(user -> {
-            List<Message> messages = user.getMessages();
+            List<UUID> messages = user.getMessages();
             for (int i=0; i<messages.size(); i++) {
-                if (messages.get(i).equals(message)) {
-                    messages.set(i, message);
+                if (messages.get(i).equals(message.getId())) {
+                    messages.set(i, message.getId());
                 }
             }
             userService.update(user);
@@ -147,10 +147,10 @@ public class FileMessageService implements MessageService {
 
         // 변경된 메시지를 메시지가 있는 Channel의 messageList에 반영
         channelService.findAll().forEach(channel -> {
-            List<Message> messages = channel.getMessageList();
+            List<UUID> messages = channel.getMessages();
             for (int i=0; i<messages.size(); i++) {
-                if (messages.get(i).equals(message)) {
-                    messages.set(i, message);
+                if (messages.get(i).equals(message.getId())) {
+                    messages.set(i, message.getId());
                 }
             }
             channelService.update(channel);
@@ -175,9 +175,9 @@ public class FileMessageService implements MessageService {
 
         // 메시지를 보낸 User의 messageList에서 해당 메시지 삭제
         userService.findAll().forEach(user -> {
-            List<Message> messages = user.getMessages();
+            List<UUID> messages = user.getMessages();
             for (int i=0; i<messages.size(); i++) {
-                if (messages.get(i).getId().equals(messageId)) {
+                if (messages.get(i).equals(messageId)) {
                     messages.remove(messages.get(i));
                 }
             }
@@ -186,9 +186,9 @@ public class FileMessageService implements MessageService {
 
         // 메시지가 있는 Channel의 messageList에서 해당 메시지 삭제
         channelService.findAll().forEach(channel -> {
-            List<Message> messages = channel.getMessageList();
+            List<UUID> messages = channel.getMessages();
             for (int i=0; i<messages.size(); i++) {
-                if (messages.get(i).getId().equals(messageId)) {
+                if (messages.get(i).equals(messageId)) {
                     messages.remove(messages.get(i));
                 }
             }

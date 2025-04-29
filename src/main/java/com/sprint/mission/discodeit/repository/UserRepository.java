@@ -9,8 +9,10 @@ import java.util.UUID;
 public interface UserRepository {
     User save(User user);
     Optional<User> findById(UUID userId);
-    List<User> findByName(String name); // name이 포함된 user 검색
+    List<User> findByNameContaining(String name);
+    Optional<User> findByName(String name);
     Optional<User> findByEmail(String email);
+    Optional<User> findByNameAndPassword(String name, String password);
     List<User> findAll();
     void deleteById(UUID userId);
 }

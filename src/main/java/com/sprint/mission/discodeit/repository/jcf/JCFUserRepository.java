@@ -2,9 +2,11 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
 public class JCFUserRepository implements UserRepository {
     private final Map<UUID, User> data;
 
@@ -30,16 +32,34 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public List<User> findByName(String name) {
+    public List<User> findByNameContaining(String name) {
         return data.values().stream()
                 .filter(user -> user.getName().contains(name))
                 .toList();
     }
 
     @Override
+    public Optional<User> findByName(String name) {
+        Optional<User> foundUser = data.values().stream()
+                .filter(user -> user.getName().equals(name))
+                .findFirst();
+
+        return foundUser;
+    }
+
+    @Override
     public Optional<User> findByEmail(String email) {
         Optional<User> foundUser = data.values().stream()
                 .filter(user -> user.getEmail().equals(email))
+                .findFirst();
+
+        return foundUser;
+    }
+
+    @Override
+    public Optional<User> findByNameAndPassword(String name, String password) {
+        Optional<User> foundUser = data.values().stream()
+                .filter(user -> user.getName().equals(name) && user.getPassword().equals(password))
                 .findFirst();
 
         return foundUser;

@@ -1,114 +1,66 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
-import java.util.*;
+import lombok.Getter;
 
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
+@Getter
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
     private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
-    private String name; // 이름
-    private String email; // 이메일
-    private String password; // 비밀번호
-    private String introduction; // 소개
-    private boolean status; // 접속 여부
-    private List<UUID> friends; // 친구 목록
-    private List<Channel> channels; // 속한 채널 목록
-    private List<Message> messages; // 보낸 메시지
+    private final Instant createdAt;
+    private Instant updatedAt;
+    private String name;
+    private String email;
+    private String password;
+    private UUID profileId;
+    private String introduction;
+    private boolean isLogin;
+    private List<UUID> friends;
+    private List<UUID> channels;
+    private List<UUID> messages;
 
-    public User(String name, String email, String password, String introduction,
-                boolean status, List<UUID> friends, List<Channel> channels, List<Message> messages) {
+    public User() {
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.introduction = introduction;
-        this.status = status;
-        this.friends = friends;
-        this.channels = channels;
-        this.messages = messages;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getIntroduction() {
-        return introduction;
-    }
-
-    public boolean isStatus() {
-        return status;
-    }
-
-    public List<UUID> getFriends() {
-        return friends;
-    }
-
-    public List<Channel> getChannels() {
-        return channels;
-    }
-
-    public List<Message> getMessages() {
-        return messages;
+        this.createdAt = Instant.now();
+        this.isLogin = true;
+        this.friends = new ArrayList<>();
+        this.channels = new ArrayList<>();
+        this.messages = new ArrayList<>();
     }
 
     public void updateName(String name) {
         this.name = name;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
     public void updateEmail(String email) {
         this.email = email;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
     public void updatePassword(String password) {
         this.password = password;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
     public void updateIntroduction(String introduction) {
         this.introduction = introduction;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
-    public void updateStatus(boolean status) {
-        this.status = status;
+    public void updateProfileID(UUID profileId) {
+        this.profileId = profileId;
+        this.updatedAt = Instant.now();
     }
 
-    public void updateFriends(List<UUID> friends) {
-        this.friends = friends;
-    }
-
-    public void updateChannels(List<Channel> channels) {
-        this.channels = channels;
-    }
-
-    public void updateMessages(List<Message> messages) {
-        this.messages = messages;
+    public void updateisLogin(boolean isLogin) {
+        this.isLogin = isLogin;
     }
 
     @Override
@@ -121,10 +73,10 @@ public class User implements Serializable {
                 "  email='" + email + "',\n" +
                 "  password='" + password + "',\n" +
                 "  introduction='" + introduction + "',\n" +
-                "  status=" + status + ",\n" +
+                "  isLogin=" + isLogin + ",\n" +
                 "  friends=" + friends + ",\n" +
-                "  channels=" + channels.stream().map(Channel::getId).toList() + "\n" +
-                "  messages=" + messages.stream().map(Message::getId).toList() + "\n" +
+                "  channels=" + channels.stream().toList() + "\n" +
+                "  messages=" + messages.stream().toList() + "\n" +
                 '}';
     }
 

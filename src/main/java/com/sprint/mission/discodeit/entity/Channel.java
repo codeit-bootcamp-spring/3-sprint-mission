@@ -1,82 +1,56 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.*;
 
+@Getter
 public class Channel implements Serializable {
     private static final long serialVersionUID = 1L;
     private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
-    private String channelName; // 채널명
-    private UUID channelMaster; // 채널 주인
-    private String description; // 채널 설명
-    private final List<User> userList;
-    private final List<Message> messageList;
+    private final Instant createdAt;
+    private Instant updatedAt;
+    private String channelName;
+    private UUID channelMaster;
+    private String description;
+    private boolean isPrivate;
+    private final List<UUID> users;
+    private final List<UUID> messages;
 
-    public Channel(String channelName, User user, String description, List<User> userList, List<Message> messageList) {
+    public Channel() {
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.channelName = channelName;
-        this.channelMaster = user.getId();
-        this.description = description;
-        this.userList = userList;
-        this.messageList = messageList;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public UUID getChannelMaster() {
-        return channelMaster;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public List<User> getUserList() {
-        return userList;
-    }
-
-    public List<Message> getMessageList() {
-        return messageList;
+        this.createdAt = Instant.now();
+        this.users = new ArrayList<>();
+        this.messages = new ArrayList<>();
     }
 
     public void updateChannelName(String channelName) {
         this.channelName = channelName;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
-    public void updateChannelMaster(User user) {
-        this.channelMaster = user.getId();
-        this.updatedAt = System.currentTimeMillis();
+    public void updateChannelMaster(UUID userId) {
+        this.channelMaster = userId;
+        this.updatedAt = Instant.now();
     }
 
     public void updateDescription(String description) {
         this.description = description;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
-    public void updateUserList(User user) {
-        this.userList.add(user);
+    public void updatePrivate(boolean aPrivate) {
+        this.isPrivate = aPrivate;
     }
 
-    public void updateMessageList(Message message) {
-        this.messageList.add(message);
+    public void updateUsers(UUID userId) {
+        this.users.add(userId);
+    }
+
+    public void updateMessages(UUID messageId) {
+        this.messages.add(messageId);
     }
 
     @Override
@@ -88,8 +62,8 @@ public class Channel implements Serializable {
                 "  channelName='" + channelName + "',\n" +
                 "  channelMaster='" + channelMaster + "', \n" +
                 "  description='" + description + "',\n" +
-                "  userList=" + userList.stream().map(User::getId).toList() + ",\n" +
-                "  messageList=" + messageList.stream().map(Message::getId).toList() + "\n" +
+                "  users=" + users.stream().toList() + ",\n" +
+                "  messages=" + messages.stream().toList() + "\n" +
                 '}';
     }
 

@@ -35,6 +35,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="Interface" />
+        <option value="Exception" />
         <option value="Class" />
       </list>
     </option>
@@ -71,37 +73,52 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Gradle.3-sprint-mission [:com.sprint.mission.discodeit.Application.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication2.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication3.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication4.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Build 3-sprint-mission.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.com.sprint.mission.discodeit.repository in 3-sprint-mission.main.executor&quot;: &quot;Debug&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;한동우-sprint2&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/handongwoo/sprint-mission/3-sprint-mission&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.3-sprint-mission [:com.sprint.mission.discodeit.Application.main()].executor": "Run",
+    "Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication.main()].executor": "Run",
+    "Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication2.main()].executor": "Run",
+    "Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication3.main()].executor": "Run",
+    "Gradle.3-sprint-mission [:com.sprint.mission.discodeit.run.JavaApplication4.main()].executor": "Run",
+    "Gradle.Build 3-sprint-mission.executor": "Run",
+    "JUnit.com.sprint.mission.discodeit.repository in 3-sprint-mission.main.executor": "Run",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.DiscodeitApplication.executor": "Run",
+    "git-widget-placeholder": "한동우-sprint3",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/handongwoo/sprint-mission/3-sprint-mission",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "preferences.keymap",
+    "two.files.diff.last.used.folder": "/Users/handongwoo/myWs/04_Spring과_Sprint_Boot/01_Spring_Overview/discodeit",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;GitStage.ChangesTree.GroupingKeys&quot;: [
-      &quot;directory&quot;,
-      &quot;module&quot;,
-      &quot;repository&quot;
+  "keyToStringList": {
+    "GitStage.ChangesTree.GroupingKeys": [
+      "directory",
+      "module",
+      "repository"
     ]
   }
-}</component>
-  <component name="RunManager" selected="JUnit.com.sprint.mission.discodeit.repository in 3-sprint-mission.main">
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.sprint.mission.discodeit.exception" />
+      <recent name="com.sprint.mission.discodeit.repository" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Spring Boot.DiscodeitApplication">
     <configuration name="JavaApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.sprint.mission.discodeit.run.JavaApplication" />
       <module name="3-sprint-mission.main" />
@@ -168,6 +185,13 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="DiscodeitApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="3-sprint-mission.main" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.sprint.mission.discodeit.DiscodeitApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="JUnit.com.sprint.mission.discodeit.repository in 3-sprint-mission.main" />
@@ -206,6 +230,18 @@
       <workItem from="1744859854214" duration="7000" />
       <workItem from="1744943791541" duration="678000" />
       <workItem from="1744951855883" duration="1190000" />
+      <workItem from="1745376532990" duration="4625000" />
+      <workItem from="1745388525016" duration="2660000" />
+      <workItem from="1745396047987" duration="1184000" />
+      <workItem from="1745397446568" duration="4724000" />
+      <workItem from="1745452912451" duration="30540000" />
+      <workItem from="1745539357049" duration="23628000" />
+      <workItem from="1745571657456" duration="2000" />
+      <workItem from="1745653148172" duration="543000" />
+      <workItem from="1745729183233" duration="10025000" />
+      <workItem from="1745800770490" duration="28762000" />
+      <workItem from="1745853162298" duration="1278000" />
+      <workItem from="1745885023341" duration="24374000" />
     </task>
     <servers />
   </component>

@@ -2,14 +2,16 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
+@Repository
 public class FileChannelRepository implements ChannelRepository {
 
-    private final String fileName = "src/main/java/com/sprint/mission/discodeit/repository/file/channelRepo.ser";
-    private final File file = new File(fileName);
+    private final String FILENAME = "src/main/java/com/sprint/mission/discodeit/data/channelRepo.ser";
+    private final File file = new File(FILENAME);
 
     @Override
     public Channel save(Channel channel) {
@@ -42,12 +44,22 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public List<Channel> findByName(String name) {
+    public List<Channel> findByPrivateChannelUserId(UUID userId) {
         // 파일로 부터 읽어오기
         Map<UUID, Channel> data = loadFile();
 
         return data.values().stream()
-                .filter(channel -> channel.getChannelName().contains(name))
+                .filter(channel -> channel.getUsers().contains(userId) && channel.isPrivate())
+                .toList();
+    }
+
+    @Override
+    public List<Channel> findByNameContaining(String name) {
+        // 파일로 부터 읽어오기
+        Map<UUID, Channel> data = loadFile();
+
+        return data.values().stream()
+                .filter(channel -> !channel.isPrivate() && channel.getChannelName().contains(name))
                 .toList();
     }
 

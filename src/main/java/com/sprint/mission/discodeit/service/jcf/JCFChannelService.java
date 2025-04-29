@@ -27,8 +27,8 @@ public class JCFChannelService implements ChannelService {
 
         userService.findById(channel.getChannelMaster()).ifPresent(user -> {
             // 채널 주인은 채널 생성 시 채널에 입장
-            user.getChannels().add(channel);
-            channel.getUserList().add(user);
+            user.getChannels().add(channel.getId());
+            channel.getUsers().add(user.getId());
             userService.update(user);
         });
     }
@@ -61,9 +61,12 @@ public class JCFChannelService implements ChannelService {
 
         if (channel != null) {
             // 채널에 속한 유저의 채널 리스트에서 채널 삭제
-            for (User user: channel.getUserList()) {
-                user.getChannels().removeIf(ch -> ch.getId().equals(channelId));
-                userService.update(user);
+            for (UUID id : channel.getUsers()) {
+                userService.findById(id).ifPresent(user -> {
+                    user.getChannels().removeIf(ch -> ch.equals(channelId));
+                    userService.update(user);
+                });
+
             }
         }
 
