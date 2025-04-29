@@ -1,32 +1,36 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entitiy.Channel;
 import com.sprint.mission.discodeit.entitiy.Message;
 import com.sprint.mission.discodeit.entitiy.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
-public class JCFMessageService implements MessageService {
+public class JCFMessageRepository implements MessageRepository {
 
     private final CopyOnWriteArrayList<Message> data;
-    private final UserService userService;
-    private final ChannelService channelService;
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
 
-    public JCFMessageService(CopyOnWriteArrayList<Message> data, UserService userService, ChannelService channelService) {
+    public JCFMessageRepository(CopyOnWriteArrayList<Message> data, UserRepository userRepository, ChannelRepository channelRepository) {
         this.data = data;
-        this.userService = userService;
-        this.channelService = channelService;
+        this.userRepository = userRepository;
+        this.channelRepository = channelRepository;
     }
 
     @Override
-    public void create(Message message,User user,Channel channel) {
+    public void save(Message message,User user,Channel channel) {
         try {
             if (channel.getMembers().contains(user)) {
                 data.add(message);
@@ -39,7 +43,7 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void readAll() {
+    public void read() {
         data.stream()
                 .forEach(System.out::println);
     }
@@ -65,4 +69,4 @@ public class JCFMessageService implements MessageService {
     public void delete(Message message) {
         data.remove(message);
     }
-}
+    }

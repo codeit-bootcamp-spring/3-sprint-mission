@@ -1,29 +1,31 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.repository.jcf;
 
+import com.sprint.mission.discodeit.entitiy.Message;
 import com.sprint.mission.discodeit.entitiy.User;
-import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.repository.UserRepository;
 
+import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
-public class JCFUserService implements UserService {
+public class JCFUserRepository implements UserRepository {
 
     private final CopyOnWriteArrayList<User> data;
 
-
-    public JCFUserService(CopyOnWriteArrayList<User> data) {
+    public JCFUserRepository(CopyOnWriteArrayList<User> data) {
         this.data = data;
     }
 
-
     @Override
-    public void create(User user) {
+    public void save(User user) {
         data.add(user);
     }
 
     @Override
-    public void readAll() {
+    public void read() {
         data.stream()
                 .forEach(System.out::println);
     }
