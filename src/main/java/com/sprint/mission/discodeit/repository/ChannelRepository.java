@@ -23,5 +23,5 @@ public interface ChannelRepository {
     Channel findChannelById(UUID channelId);
     List<Channel> findAllChannel();
     void updateChannel(UUID channelId, String name);
-    void deleteChannel(UUID channelId);
+    void deleteChannel(UUID channelId); // file | jcf : throw exception
 }

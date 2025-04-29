@@ -19,9 +19,9 @@ import java.util.UUID;
 public interface UserRepository {
     User createUserByName(String username, String email, String password);
     User createUserByName(String username, String email, String password, UUID profileId);
-    User findUserById(UUID userId);
-    List<User> findAllUsers();
-    void updateProfileIdById(UUID userId, UUID profileId);
+    User findUserById(UUID userId); // both : throw
+    List<User> findAllUsers(); // both: emptyList
+    void updateProfileIdById(UUID userId, UUID profileId); // both: throw
     void updateUserById(UUID userId, String name);
     void deleteUserById(UUID userId);
     boolean isUniqueUsername(String username);

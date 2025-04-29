@@ -72,6 +72,9 @@ public class JcfMessageRepository implements MessageRepository {
 
     @Override
     public void deleteMessageById(UUID messageId) {
+        if (!data.containsKey(messageId)) {
+            throw new IllegalStateException("no message to delete");
+        }
         data.remove(messageId);
     }
 }

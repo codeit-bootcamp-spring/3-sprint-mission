@@ -40,6 +40,9 @@ public class JcfUserStatusRepository implements UserStatusRepository {
 
     @Override
     public void update(UUID userStatusId, Instant newTime) {
+        if (!data.containsKey(userStatusId)) {
+            throw new IllegalStateException("any shit to upload");
+        }
         UserStatus userStatus = data.get(userStatusId);
         userStatus.setUpdatedAt(newTime);
     }
@@ -57,7 +60,7 @@ public class JcfUserStatusRepository implements UserStatusRepository {
 
     @Override
     public boolean isOnline(UUID userStatusId) {
-        UserStatus userStatus = data.get(userStatusId);
+        UserStatus userStatus = Optional.ofNullable(data.get(userStatusId)).orElseThrow(() -> new IllegalStateException("no data to find"));
         Instant lastLoginTime = userStatus.getUpdatedAt();
         Duration duration = Duration.between(lastLoginTime, Instant.now());
         return duration.toMinutes() < 5;
@@ -93,6 +96,9 @@ public class JcfUserStatusRepository implements UserStatusRepository {
 
     @Override
     public void deleteById(UUID userStatusId) {
+        if (!data.containsKey(userStatusId)) {
+            throw new IllegalStateException("no userStatus to delete by eid");
+        }
         data.remove(userStatusId);
     }
 }

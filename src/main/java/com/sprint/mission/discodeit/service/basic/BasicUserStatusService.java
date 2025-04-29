@@ -45,7 +45,7 @@ public class BasicUserStatusService implements UserStatusService {
         }
 
         UserStatus userStatus = userStatusRepository.createUserStatus(request.userId());
-        boolean online = userStatusRepository.isOnline(userStatus.getId());
+        boolean online = userStatusRepository.isOnline(userStatus.getId()); // throw
 
         return new UserStatusCreateResponse(userStatus.getId(), userStatus.getUserId(), online);
     }
@@ -67,24 +67,24 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public void update(UserStatusUpdateRequest request) {
-        UUID userStatusId = Optional.ofNullable(request.userStatusId()).orElseThrow(() -> new IllegalArgumentException("no param"));
-        Instant newTime = Optional.ofNullable(request.newTime()).orElseThrow(() -> new IllegalArgumentException("no param"));
-
-        userStatusRepository.update(userStatusId, newTime);
+        userStatusRepository.update(
+                Objects.requireNonNull(request.userStatusId(), "no param"),
+                Objects.requireNonNull(request.newTime(), "no param")
+        );
     }
 
     @Override
     public void updateByUserId(UUID userId, Instant newTime) {
-        Objects.requireNonNull(userId, "no userId in param");
-        Objects.requireNonNull(newTime, "no userId in param");
-
-        userStatusRepository.updateByUserId(userId, newTime);
+        userStatusRepository.updateByUserId(
+                Objects.requireNonNull(userId, "no userId in param"),
+                Objects.requireNonNull(newTime, "no userId in param")
+        );
     }
 
     @Override
     public void delete(UUID userStatusId) {
         Objects.requireNonNull(userStatusId, "no userStatusId");
-        userStatusRepository.deleteById(userStatusId);
+        userStatusRepository.deleteById(userStatusId); // throw
 
     }
 }

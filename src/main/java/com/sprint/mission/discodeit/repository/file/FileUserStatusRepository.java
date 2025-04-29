@@ -21,10 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -85,6 +82,9 @@ public class FileUserStatusRepository implements UserStatusRepository {
     @Override
     public void update(UUID userStatusId, Instant newTime) {
         Path path = filePathUtil.getUserStatusFilePath(userStatusId);
+        if (!Files.exists(path)) {
+            throw new IllegalStateException("any shit to upload");
+        }
 
         UserStatus userStatus = FileSerializer.readFile(path, UserStatus.class);
 
@@ -168,7 +168,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     public List<UserStatus> findAllUserStatus() {
         Path directory = filePathUtil.getUserStatusDirectory();
         if (!Files.exists(directory)) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
 
         try {
@@ -192,7 +192,6 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     @Override
     public void deleteById(UUID userStatusId) {
-        Objects.requireNonNull(userStatusId, "userStatus입력 없음: FileUserStatusRepository.deleteUserStatusById");
         Path path = filePathUtil.getUserStatusFilePath(userStatusId);
 
         if (!Files.exists(path)) {

@@ -110,6 +110,10 @@ public class FileChannelRepository implements ChannelRepository {
     public void deleteChannel(UUID channelId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
 
+        if (!Files.exists(path)) {
+            throw new IllegalStateException("삭제할 파일 없음");
+        }
+
         try{
             Files.delete(path);
         } catch (IOException e) {

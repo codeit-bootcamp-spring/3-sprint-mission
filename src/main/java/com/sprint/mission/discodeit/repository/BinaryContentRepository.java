@@ -20,9 +20,9 @@ public interface BinaryContentRepository {
     BinaryContent createBinaryContent(byte[] image);
 
     //    BinaryContent findBinaryContentByUserId(UUID userId);
-    BinaryContent updateImage(UUID profileId, byte[] image);
+    BinaryContent updateImage(UUID profileId, byte[] image); // both : throw
 
-    void deleteBinaryContentById(UUID attachmentId);
+    void deleteBinaryContentById(UUID attachmentId); // file, jcf : throw exception
 
     BinaryContent findById(UUID attachmentId);
 

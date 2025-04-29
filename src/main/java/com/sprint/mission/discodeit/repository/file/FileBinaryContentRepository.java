@@ -38,6 +38,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     @Override
     public BinaryContent findById(UUID attachmentId) {
         Path path = filePathUtil.getBinaryContentFilePath(attachmentId);
+
         if (!Files.exists(path)) {
             return null;
         }
@@ -77,7 +78,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     public BinaryContent updateImage(UUID profileId, byte[] image) {
         Path path = filePathUtil.getBinaryContentFilePath(profileId);
         if (!Files.exists(path)) {
-            return null;
+            throw new IllegalStateException("no image to update");
         }
         BinaryContent binaryContent = FileSerializer.readFile(path, BinaryContent.class);
         binaryContent.setAttachment(image);

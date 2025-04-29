@@ -16,6 +16,7 @@ import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -72,7 +73,7 @@ public class FileUserRepository implements UserRepository {
         Path directory = filePathUtil.getUserDirectory();
 
         if (!Files.exists(directory)) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
 
         try {
@@ -98,7 +99,7 @@ public class FileUserRepository implements UserRepository {
     public void updateProfileIdById(UUID userId, UUID profileId) {
         Path path = filePathUtil.getUserFilePath(userId);
         if (!Files.exists(path)) {
-            return;
+            throw new IllegalStateException("no user in repository");
         }
         User user = FileSerializer.readFile(path, User.class);
         user.setProfileId(profileId);
@@ -119,6 +120,7 @@ public class FileUserRepository implements UserRepository {
     @Override
     public void deleteUserById(UUID userId) {
         Path path = filePathUtil.getUserFilePath(userId);
+
         try{
             Files.delete(path);
         } catch (IOException e) {

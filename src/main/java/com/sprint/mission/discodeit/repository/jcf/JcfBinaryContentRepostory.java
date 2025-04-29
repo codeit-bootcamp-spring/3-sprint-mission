@@ -57,6 +57,9 @@ public class JcfBinaryContentRepostory implements BinaryContentRepository {
 
     @Override
     public BinaryContent updateImage(UUID profileId, byte[] image) {
+        if (data.get(profileId) == null) {
+            throw new IllegalStateException("no image to update");
+        }
         BinaryContent binaryContent = data.get(profileId);
         binaryContent.setAttachment(image);
         return binaryContent;
@@ -65,6 +68,9 @@ public class JcfBinaryContentRepostory implements BinaryContentRepository {
 
     @Override
     public void deleteBinaryContentById(UUID attachmentId) {
+        if (!data.containsKey(attachmentId)) {
+            throw new IllegalStateException("no data to delete");
+        }
         data.remove(attachmentId);
     }
 }

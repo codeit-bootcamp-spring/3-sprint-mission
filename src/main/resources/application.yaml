@@ -2,4 +2,4 @@ server:
   port: 8080
 
 repository:
-  type: file  # jcf | file
+  type: jcf  # jcf | file

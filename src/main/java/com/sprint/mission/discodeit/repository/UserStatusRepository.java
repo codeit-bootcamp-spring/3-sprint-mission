@@ -21,19 +21,19 @@ public interface UserStatusRepository {
 
     Instant onlineTime(UUID userStatusId);
 
-    boolean isOnline(UUID userStatusId);
+    boolean isOnline(UUID userStatusId); // throw
 
     UserStatus createUserStatus(UUID userId);
 
-    UserStatus findUserStatusByUserId(UUID userId);
+    UserStatus findUserStatusByUserId(UUID userId); // both : null
 
-    List<UserStatus> findAllUserStatus();
+    List<UserStatus> findAllUserStatus(); // emptyList
 
-    void deleteById(UUID userStatusId);
+    void deleteById(UUID userStatusId); // throw
 
     UserStatus findById(UUID userStatusId);
 
-    void update(UUID userStatusId, Instant newTime);
+    void update(UUID userStatusId, Instant newTime); // throw
 
     void updateByUserId(UUID userId, Instant newTime);
 

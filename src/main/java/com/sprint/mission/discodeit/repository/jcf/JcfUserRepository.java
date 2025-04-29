@@ -41,6 +41,9 @@ public class JcfUserRepository implements UserRepository {
 
     @Override
     public void updateProfileIdById(UUID userId, UUID profileId) {
+        if (data.get(userId) == null) {
+            throw new IllegalStateException("no user in repository");
+        }
         User user = data.get(userId);
         user.setProfileId(profileId);
     }
@@ -64,6 +67,9 @@ public class JcfUserRepository implements UserRepository {
     }
 
     public void deleteUserById(UUID userId) {
+        if (!data.containsKey(userId)) {
+            throw new IllegalStateException("no user to delete by given userId");
+        }
         data.remove(userId);
     }
 

@@ -136,9 +136,11 @@ public class DiscodeitApplication {
 //			userStatusService.delete(foundUserStatus.getId());
 //			System.out.println("[UserStatus delete] UserStatus 삭제 완료");
 
-//			// 11. User 삭제
-//			basicUserService.deleteUser(createdUser.id());
-//			System.out.println("[User delete] 사용자 삭제 완료");
+			// 11. User 삭제
+			basicUserService.deleteUser(createdUser.id());
+			System.out.println("[User delete] 사용자 삭제 완료");
+
+
 
 			// 12. 삭제된 User 조회 시도 (예외 발생 예상)
 			try {
@@ -149,7 +151,7 @@ public class DiscodeitApplication {
 
 			// 삭제된 UserStatus 조회 시도 (예외 발생 예상)
 			try {
-				userStatusService.find(foundUserStatus.getId());
+				userStatusService.find(foundUserStatus.getId()); // exception 안 던지게 만든것같음
 			} catch (RuntimeException e) {
 				System.out.println("[UserStatus delete 확인] 삭제된 UserStatus 조회 실패 예상대로 발생: " + e.getMessage());
 			}

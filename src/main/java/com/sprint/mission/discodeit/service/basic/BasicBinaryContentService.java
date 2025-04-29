@@ -36,26 +36,25 @@ public class BasicBinaryContentService implements BinaryContentService {
     public BinaryContent find(UUID attachmentId) {
         Objects.requireNonNull(attachmentId, "no param");
 
-        return Optional.ofNullable(binaryContentRepository
-                        .findById(attachmentId))
-                .orElseThrow(() -> new IllegalArgumentException("no Binary Content matches"));
+        return Optional.ofNullable(binaryContentRepository.findById(attachmentId))
+                .orElseThrow(() -> new IllegalArgumentException("no Binary Content matches")); // file | jcf : no exception
     }
 
 
     public List<BinaryContent> findAllByIdIn(List<UUID> attachmentIds) {
         Objects.requireNonNull(attachmentIds, "no attachmentIds");
         if (attachmentIds.isEmpty()) {
-            throw new RuntimeException("no ids in param");
+            throw new IllegalStateException("no ids in param");
         }
 //        한번에 리스트를 주고 완성된 값을 받는다.
 //        무조건 받은 값이랑 일치하게 받을 때만 return or throw new exception
 
-        // null 확인이 필요한가?: no 정확히 매핑 안돼면 에러가 나오기 때문. attach는 무조건 값을 가지고 있다.
+        // null 확인이 필요한가?: no 정확히 매핑 안되면 에러가 나오기 때문. attach는 무조건 값을 가지고 있다.
         return binaryContentRepository.findAllByIds(attachmentIds);
     }
 
     @Override
     public void delete(UUID attachmentId) {
-        binaryContentRepository.deleteBinaryContentById(attachmentId);
+        binaryContentRepository.deleteBinaryContentById(attachmentId); // file, jcf : throw exception
     }
 }

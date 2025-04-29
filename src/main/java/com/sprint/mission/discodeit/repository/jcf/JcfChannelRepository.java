@@ -67,6 +67,9 @@ public class JcfChannelRepository implements ChannelRepository {
 
     @Override
     public void deleteChannel(UUID channelId) {
+        if (!data.containsKey(channelId)) {
+            throw new IllegalStateException("no data to delete");
+        }
         data.remove(channelId);
     }
 

@@ -38,16 +38,14 @@ public class BasicAuthService implements AuthService {
 
 
     public LoginResponse login(LoginRequest request) {
-        Objects.requireNonNull(request, "입력 값 없음");
-
         String username = Optional.ofNullable(request.username())
                 .orElseThrow(() -> new IllegalArgumentException("no name"));
 
         String password = Optional.ofNullable(request.password())
                 .orElseThrow(() -> new IllegalArgumentException("no password"));
 
-        List<User> allUsers = userRepository.findAllUsers();
-        for (User user : allUsers) {
+        List<User> users = userRepository.findAllUsers();
+        for (User user : users) {
             if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
                 UserStatus userStatus = userStatusRepository.findUserStatusByUserId(user.getId());
                 return new LoginResponse(
