@@ -22,9 +22,9 @@ import java.util.*;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-//@Primary
+
 @Repository
-@Profile("jcf")
+@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
 public class JcfUserStatusRepository implements UserStatusRepository {
     Map<UUID, UserStatus> data = new HashMap<>();
 

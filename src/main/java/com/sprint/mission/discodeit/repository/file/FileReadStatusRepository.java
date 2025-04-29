@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -29,7 +30,7 @@ import java.util.*;
  * 2025. 4. 26.        doungukkim       최초 생성
  */
 
-@Profile("file")
+@ConditionalOnProperty(name = "repository.type", havingValue = "file")
 @Repository
 @RequiredArgsConstructor
 public class FileReadStatusRepository implements ReadStatusRepository {

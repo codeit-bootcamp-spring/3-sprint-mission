@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.basic;
+package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateResponse;
@@ -8,22 +8,25 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.service.basic
- * fileName       : BasicBinaryContentService
+ * packageName    : com.sprint.mission.discodeit.service.file
+ * fileName       : FileBinaryContentService
  * author         : doungukkim
- * date           : 2025. 4. 28.
+ * date           : 2025. 4. 29.
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 28.        doungukkim       최초 생성
+ * 2025. 4. 29.        doungukkim       최초 생성
  */
-@Service("basicBinaryContentService")
+@Service("fileBinaryService")
 @RequiredArgsConstructor
-public class BasicBinaryContentService implements BinaryContentService {
+public class FileBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
@@ -41,16 +44,11 @@ public class BasicBinaryContentService implements BinaryContentService {
                 .orElseThrow(() -> new IllegalArgumentException("no Binary Content matches"));
     }
 
-
     public List<BinaryContent> findAllByIdIn(List<UUID> attachmentIds) {
         Objects.requireNonNull(attachmentIds, "no attachmentIds");
         if (attachmentIds.isEmpty()) {
             throw new RuntimeException("no ids in param");
         }
-//        한번에 리스트를 주고 완성된 값을 받는다.
-//        무조건 받은 값이랑 일치하게 받을 때만 return or throw new exception
-
-        // null 확인이 필요한가?: no 정확히 매핑 안돼면 에러가 나오기 때문. attach는 무조건 값을 가지고 있다.
         return binaryContentRepository.findAllByIds(attachmentIds);
     }
 

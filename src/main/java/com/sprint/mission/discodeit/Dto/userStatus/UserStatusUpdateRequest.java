@@ -18,7 +18,4 @@ import java.util.UUID;
  */
 
 public record UserStatusUpdateRequest(UUID userStatusId, Instant newTime) {
-
-
-
 }

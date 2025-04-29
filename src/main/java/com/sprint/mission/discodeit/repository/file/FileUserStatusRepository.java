@@ -38,8 +38,7 @@ import java.util.stream.Stream;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-//@Primary
-@Profile("file")
+@ConditionalOnProperty(name = "repository.type", havingValue = "file")
 @Repository
 @RequiredArgsConstructor
 public class FileUserStatusRepository implements UserStatusRepository {
