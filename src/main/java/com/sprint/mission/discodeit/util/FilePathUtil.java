@@ -90,7 +90,6 @@ private static final String TO_FILES = "data/";
         return BINARY_CONTENT_DIRECTORY.resolve(binaryContentId + TO_SER);
     }
 
-
     public Path getReadStatusDirectory() {
         return READ_STATUS_DIRECTORY;
     }

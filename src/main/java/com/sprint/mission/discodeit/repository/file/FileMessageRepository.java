@@ -34,8 +34,7 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 
-
-@Profile("file")
+@ConditionalOnProperty(name = "repository.type", havingValue = "file")
 @Repository
 @RequiredArgsConstructor
 public class FileMessageRepository implements MessageRepository {

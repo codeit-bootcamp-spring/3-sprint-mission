@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -19,8 +20,7 @@ import java.util.*;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-//@Primary
-@Profile("jcf")
+@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
 @Repository
 public class JcfBinaryContentRepostory implements BinaryContentRepository {
     private final Map<UUID, BinaryContent> data = new HashMap<>();

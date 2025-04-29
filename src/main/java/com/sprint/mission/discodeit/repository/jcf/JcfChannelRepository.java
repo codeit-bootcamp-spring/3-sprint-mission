@@ -26,9 +26,9 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-//@Primary
+
 @Repository
-@Profile("jcf")
+@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
 public class JcfChannelRepository implements ChannelRepository {
 
     Map<UUID, Channel> data = new HashMap<>();

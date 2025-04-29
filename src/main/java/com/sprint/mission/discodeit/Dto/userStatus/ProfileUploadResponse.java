@@ -26,5 +26,4 @@ public record ProfileUploadResponse
          String email,
          UUID profileId
         ) {
-
 }

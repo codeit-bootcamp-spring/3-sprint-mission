@@ -34,7 +34,7 @@ import java.util.UUID;
  */
 
 
-@Profile("file")
+@ConditionalOnProperty(name = "repository.type", havingValue = "file")
 @Repository
 @RequiredArgsConstructor
 public class FileChannelRepository implements ChannelRepository {

@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.util.FilePathUtil;
 import com.sprint.mission.discodeit.util.FileSerializer;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -24,9 +25,9 @@ import java.util.*;
  * -----------------------------------------------------------
  * 2025. 4. 26.        doungukkim       최초 생성
  */
-//@Primary
+
 @Repository
-@Profile("jcf")
+@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
 public class jcfReadStatusRepository implements ReadStatusRepository{
 
     Map<UUID, ReadStatus> data = new HashMap<>();
