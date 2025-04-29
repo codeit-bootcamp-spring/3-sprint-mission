@@ -35,7 +35,7 @@ public class BasicUserService implements UserService {
                         .findAny();
 
         userNullable.ifPresent((user) -> {
-            throw new UserAlreadyExistsException("이미 존재하는 회원입니다. 유저정보 : " + user.toString());
+            throw new UserAlreadyExistsException(user);
         });
 
         // 1. create user
@@ -80,6 +80,7 @@ public class BasicUserService implements UserService {
     }
 
     // QUESTION : TODO :  업데이트할때도 이메일이랑 아이디 validation check 해야하나? -> 함수로 따로 뺄것.
+    // FIXME : 객체가 업데이트는 되나, 파일이 업데이트안됨. !!!!!
     @Override
     public UserCreateResponse update(UserUpdateRequest updateRequest) {
         // 다른 메소드에서 this.find() 이제 사용 못함. response 타입이 UserResponse로 바뀌어서.
@@ -91,6 +92,7 @@ public class BasicUserService implements UserService {
         // FIXME : 나중에 userStatusRepository 구현체 만들고 넣어줘야함.
         UserStatus userStatus = new UserStatus(user.getId());
 
+        //QUESTION: 이렇게 하면 파일레포일때 파일 업데이트가되나??? -> 안됨. 수정해야함
         return new UserCreateResponse(user, userStatus);
     }
 
@@ -102,7 +104,8 @@ public class BasicUserService implements UserService {
                 orElseThrow(() -> new NoSuchElementException("User with userId " + userId + " not found"));
 
 
-        //TODO : BinaryContentRepository에서 해당 객체 삭제
+        //TODO : BinaryContentRepository에서 해당 객체 삭제,
+        //QUESTION. 해당 user가 BinaryContent를 가지고 있지 않을 수있음!
 //        User profile = this.BinaryContentRepository.findById(user.getProfileId()).
 //                orElseThrow(() -> new NoSuchElementException("BinaryContent with id " + user.getProfileId() + " not found"));
 //        this.BinaryContentRepository.deleteById(profile.getProfileId());

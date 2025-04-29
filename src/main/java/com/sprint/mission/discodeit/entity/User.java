@@ -30,6 +30,7 @@ public class User implements Serializable {
     @Getter
     private UUID profileId; // BinaryContent의 id
 
+    // TODO : UserCreateRequest 로 받아야하나?
     public User(String name, String email, String password) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
@@ -91,6 +92,8 @@ public class User implements Serializable {
                 "  createdAt  = " + createdAtFormatted + "\n" +
                 "  updatedAt  = " + updatedAtFormatted + "\n" +
                 "  name       = '" + name + "'\n" +
+                "  email       = '" + email + "'\n" +
+                "  profileId       = '" + profileId + "'\n" +
                 "}";
     }
 
