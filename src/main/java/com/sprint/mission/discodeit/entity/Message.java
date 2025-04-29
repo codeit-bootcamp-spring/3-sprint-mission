@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.MessageCreateRequest;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -31,17 +32,18 @@ public class Message implements Serializable {
     private List<UUID> attachmentIds;  // BinaryContent의 id
 
 
-    public Message(String content, UUID userId, UUID channelId, List<UUID> attachmentIds) {
+    public Message(MessageCreateRequest createRequest) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         //
-        this.content = content;
-        this.userId = userId;
-        this.channelId = channelId;
-        this.attachmentIds = attachmentIds;
+        this.content = createRequest.content();
+        this.userId = createRequest.userId();
+        this.channelId = createRequest.channelId();
+        this.attachmentIds = createRequest.attachmentIds();
     }
 
+    //QUESTION. updateRequest도 안에 id를 포함할께 아니라 id, 변화될 필드 이렇게 나누는게 나을까?
     public void update(String content, List<UUID> attachmentIds) {
         boolean anyValueUpdated = false;
         if (content != null && !content.equals(this.content)) {
@@ -72,7 +74,9 @@ public class Message implements Serializable {
                 " createdAt  = " + createdAtFormatted + "\n" +
                 " updatedAt  = " + updatedAtFormatted + "\n" +
                 " content       = '" + content + "'\n" +
-                " sender     = " + userId + "\n" +
+                " userId     = " + userId + "\n" +
+                " channelId     = " + channelId + "\n" +
+                " attachmentIds     = " + attachmentIds + "\n" +
                 "}";
     }
 }

@@ -17,42 +17,46 @@ import org.springframework.context.ApplicationContext;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @SpringBootApplication
 public class DiscodeitApplication {
 
-    private static User userCat;
-    private static User userDog;
-    private static Channel channel;
+    private static User 댕댕;
+    private static User 냥냥;
+    private static Channel 댕댕채널1_공개;
+    private static Channel 댕댕채널2_공개;
+    private static Channel 댕댕채널3_비공개;
+    private static Channel 냥냥채널1_비공개;
     private static Message message;
 
     static User setupUser(UserService userService) {
-//        user = new User("냥냥이", "woody@codeit.com", "woody1234");
 
-        // 프로필사진 있는  유저 생성
-        UserCreateResponse 댕댕이CreateResponseWithProfile = userService.create(new UserCreateRequest("댕댕이", "woody@codeit.com", "woody1234", UUID.randomUUID()));
-        userDog = 댕댕이CreateResponseWithProfile.user();
+        // 프로필사진 있는 유저 생성
+        UserCreateResponse 댕댕이유저ResponseWithProfile = userService.create(new UserCreateRequest("댕댕이", "woody@codeit.com", "woody1234", UUID.randomUUID()));
+        댕댕 = 댕댕이유저ResponseWithProfile.user();
+
         System.out.println("----------프로필있는 유저 생성----------");
-        System.out.println(댕댕이CreateResponseWithProfile);
+        System.out.println(댕댕이유저ResponseWithProfile);
 
         // 프로필사진 없는 유저 생성
-        UserCreateResponse 냥냥이CreateResponse = userService.create(new UserCreateRequest("냥냥이", "woody@codeit.com", "woody1234", null));
-        userCat = 냥냥이CreateResponse.user();
+        UserCreateResponse 냥냥이유저Response = userService.create(new UserCreateRequest("냥냥이", "woody@codeit.com", "woody1234", null));
+        냥냥 = 냥냥이유저Response.user();
+
         System.out.println("----------프로필없는 유저 생성----------");
-        System.out.println(냥냥이CreateResponse);
+        System.out.println(냥냥이유저Response);
 
 
         // 테스트
         System.out.println("---------- 유저 findById ----------");
-        System.out.println(userService.find(냥냥이CreateResponse.user().getId()).toString());
+        System.out.println(userService.find(냥냥이유저Response.user().getId()).toString());
         System.out.println("---------- 유저 findAll ----------");
         for (UserResponse userRes : userService.findAll()) {
             System.out.println("name : " + userRes.name());
         }
         System.out.println("---------- 유저 update ----------");
-        UserCreateResponse updatedUserResponse = userService.update(new UserUpdateRequest(댕댕이CreateResponseWithProfile.user().getId(), "댕댕이 진화함", null, null, null));
+        UserCreateResponse updatedUserResponse = userService.update(new UserUpdateRequest(댕댕이유저ResponseWithProfile.user().getId(), "댕댕이 진화함", null, null, null));
         System.out.println(updatedUserResponse.user().getName() + " 로 업데이트 됨");
 
 //        System.out.println("---------- 유저 delete 후 결과 조회 ----------");
@@ -62,22 +66,28 @@ public class DiscodeitApplication {
             System.out.println("name : " + userRes.name());
         }
 
-        return 댕댕이CreateResponseWithProfile.user();
+        return 댕댕이유저ResponseWithProfile.user();
     }
 
     static Channel setupChannel(ChannelService channelService) {
-//        channel = new Channel("공지", ChannelType.PUBLIC, "공개 채널입니다.", user.getId());
 
         // 공개 채널 생성
-        ChannelCreateResponse 댕댕공개채널_CreateResponse = channelService.create(new PublicChannelCreateRequest("댕댕이들의 공개 채널", ChannelType.PUBLIC, "댕댕 공지사항", userDog.getId()));
-        ChannelCreateResponse 댕댕공개채널2_CreateResponse = channelService.create(new PublicChannelCreateRequest("댕댕이들의 공개 채널2", ChannelType.PUBLIC, "댕댕 공지사항2", userDog.getId()));
+        ChannelCreateResponse 댕댕공개채널_CreateResponse = channelService.create(new PublicChannelCreateRequest("댕댕이들의 공개 채널", ChannelType.PUBLIC, "댕댕 공지사항", 댕댕.getId()));
+        ChannelCreateResponse 댕댕공개채널2_CreateResponse = channelService.create(new PublicChannelCreateRequest("댕댕이들의 공개 채널2", ChannelType.PUBLIC, "댕댕 공지사항2", 댕댕.getId()));
+        댕댕채널1_공개 = 댕댕공개채널_CreateResponse.channel();
+        댕댕채널2_공개 = 댕댕공개채널2_CreateResponse.channel();
+
         System.out.println("----------공개 채널 생성----------");
         System.out.println(댕댕공개채널_CreateResponse.toString());
         System.out.println(댕댕공개채널2_CreateResponse.toString());
 
         // 비공개 채널 생성
-        ChannelCreateResponse 냥냥비공개채널_CreateResponse = channelService.create(new PrivateChannelCreateRequest(ChannelType.PRIVATE, userCat.getId()));
-        ChannelCreateResponse 댕댕비공개채널_CreateResponse = channelService.create(new PrivateChannelCreateRequest(ChannelType.PRIVATE, userDog.getId()));
+        ChannelCreateResponse 냥냥비공개채널_CreateResponse = channelService.create(new PrivateChannelCreateRequest(ChannelType.PRIVATE, 냥냥.getId()));
+        ChannelCreateResponse 댕댕비공개채널_CreateResponse = channelService.create(new PrivateChannelCreateRequest(ChannelType.PRIVATE, 댕댕.getId()));
+        냥냥채널1_비공개 = 냥냥비공개채널_CreateResponse.channel();
+        댕댕채널3_비공개 = 댕댕비공개채널_CreateResponse.channel();
+
+
         System.out.println("----------비공개 채널 생성----------");
         System.out.println(냥냥비공개채널_CreateResponse.toString());
         System.out.println(댕댕비공개채널_CreateResponse.toString());
@@ -86,7 +96,7 @@ public class DiscodeitApplication {
         System.out.println("---------- 채널 findById ----------");
         System.out.println(channelService.find(댕댕공개채널_CreateResponse.channel().getId()).toString());
         System.out.println("---------- 채널 findAllByUserId (댕댕이들) ----------");
-        for (ChannelResponse chanRes : channelService.findAllByUserId(userDog.getId())) {
+        for (ChannelResponse chanRes : channelService.findAllByUserId(댕댕.getId())) {
             System.out.println("channel id : " + chanRes.channel().getId() + " channel type : " + chanRes.channel().getType() + " 참석자 리스트(비공개채널일때만) : " + chanRes.attendeesId());
         }
         System.out.println("---------- 채널 update ----------");
@@ -99,17 +109,49 @@ public class DiscodeitApplication {
 
         System.out.println("---------- 채널 delete 후 결과 조회  ----------");
         channelService.delete(댕댕공개채널2_CreateResponse.channel().getId());
-        for (ChannelResponse chanRes : channelService.findAllByUserId(userDog.getId())) {
+        for (ChannelResponse chanRes : channelService.findAllByUserId(댕댕.getId())) {
             System.out.println("channel id : " + chanRes.channel().getId() + "참석자 리스트(비공개채널일때만) : " + chanRes.attendeesId());
         }
 
         return 냥냥비공개채널_CreateResponse.channel();
     }
 
-    static void messageCreateTest(MessageService messageService, Channel channel, User author) {
-        message = new Message("안녕하세요. 저는 " + author.getName() + " 입니다.", author.getId(), channel.getId(), Arrays.asList(UUID.randomUUID(), UUID.randomUUID()));
-        messageService.create(message);
-        System.out.println("메시지 생성: " + message.toString());
+    static void messageCreateTest(MessageService messageService) {
+
+        // '댕댕채널1_공개' 메세지 생성
+        MessageCreateResponse 댕댕이메세지ResponseWithAttachments = messageService.create(new MessageCreateRequest("댕댕이의 메세지예요", 댕댕.getId(), 댕댕채널1_공개.getId(), List.of(UUID.randomUUID(), UUID.randomUUID())));
+        MessageCreateResponse 댕댕이메세지2Response = messageService.create(new MessageCreateRequest("댕댕이의 두번째 메세지예요", 댕댕.getId(), 댕댕채널1_공개.getId(), null));
+
+
+        System.out.println("----------'댕댕채널1_공개' 메세지 생성----------");
+        System.out.println(댕댕이메세지ResponseWithAttachments.message().toString());
+        System.out.println(댕댕이메세지2Response.message().toString());
+
+        // '냥냥채널1_비공개' 메세지 생성
+        MessageCreateResponse 냥냥이메세지ResponseWithAttachments = messageService.create(new MessageCreateRequest("냥냥이의 메세지예요", 냥냥.getId(), 냥냥채널1_비공개.getId(), List.of(UUID.randomUUID(), UUID.randomUUID())));
+        MessageCreateResponse 냥냥이메세지2Response = messageService.create(new MessageCreateRequest("냥냥이의 두번째 메세지예요", 냥냥.getId(), 냥냥채널1_비공개.getId(), null));
+        System.out.println("----------'냥냥채널1_비공개' 메세지 생성----------");
+        System.out.println(냥냥이메세지ResponseWithAttachments.message().toString());
+        System.out.println(냥냥이메세지2Response.message().toString());
+
+
+        // 테스트
+        System.out.println("---------- 메세지 findById ----------");
+        System.out.println(messageService.findById(댕댕이메세지ResponseWithAttachments.message().getId()).toString());
+        System.out.println("---------- 메세지 findAllByChannelId ----------");
+        for (MessageCreateResponse messageResponse : messageService.findAllByChannelId(냥냥채널1_비공개.getId())) {
+            System.out.println(messageResponse.message().toString());
+        }
+        System.out.println("---------- 메세지 update ----------");
+        MessageCreateResponse updatedMessageResponse = messageService.update(new MessageUpdateRequest(냥냥이메세지2Response.message().getId(), "냥냥이의 업데이트된 두번째 메세지예요", null));
+        System.out.println(updatedMessageResponse.message().toString() + " 로 업데이트 됨");
+
+        System.out.println("---------- 메세지 delete 후 결과 조회 ----------");
+        messageService.delete(냥냥이메세지2Response.message().getId());
+        System.out.println("---------- 메세지 findAllByChannelId ----------");
+        for (MessageCreateResponse messageResponse : messageService.findAllByChannelId(냥냥채널1_비공개.getId())) {
+            System.out.println(messageResponse.message().toString());
+        }
     }
 
     public static void main(String[] args) {
@@ -133,9 +175,7 @@ public class DiscodeitApplication {
         // 셋업
         User user = setupUser(userService);
         Channel channel = setupChannel(channelService);
-
-
-//        messageCreateTest(messageService, channel, user);
+        messageCreateTest(messageService);
 
 
         System.out.println("🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️Service End🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️️‍");
