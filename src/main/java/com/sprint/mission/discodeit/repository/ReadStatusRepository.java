@@ -7,18 +7,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ReadStatusRepository {
-    public ReadStatus save(ReadStatus ReadStatus);
+    public ReadStatus save(ReadStatus readStatus);
 
-    public Optional<ReadStatus> findById(UUID ReadStatusId);
+    public Optional<ReadStatus> findById(UUID readStatusId);
 
+    // Q. 이게 언제 필요하지?
     public Optional<ReadStatus> findByChannelId(UUID channelId);
 
     public List<ReadStatus> findAll();
 
-    //TODO :  이게 필요할거같음!
-//    public  List<Message> findAllByChannelId(UUID channelId);
+    public boolean existsById(UUID readStatusId);
 
-    public boolean existsById(UUID ReadStatusId);
-
-    public void deleteById(UUID ReadStatusId);
+    public void deleteById(UUID readStatusId);
 }

@@ -14,6 +14,9 @@ public interface ChannelRepository {
 
     public List<Channel> findAll();
 
+    //TODO :  이게 필요할거같음!
+//    public List<Message> findAllByUserId(UUID userId);
+
     public boolean existsById(UUID channelId);
 
     public void deleteById(UUID channelId);
