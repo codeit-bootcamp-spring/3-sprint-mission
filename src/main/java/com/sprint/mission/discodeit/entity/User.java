@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.Builder;
 import lombok.Getter;
 
 /**
@@ -19,6 +20,7 @@ import lombok.Getter;
  * </ul>
  */
 @Getter
+@Builder
 public class User implements Serializable {
 
   @Serial
@@ -27,24 +29,33 @@ public class User implements Serializable {
   private final UUID id;
   private final Instant createdAt;
   private Instant updatedAt;
-  private String email;
-  private String password;
+  private final String email;
   private String name;
-  private List<Channel> channels = new ArrayList<>();
+  private String password;
+  private final List<Channel> channels = new ArrayList<>();
+  private UUID profileImageId;
 
-  // 외부에서 직접 객체 생성 방지.
-  private User(String email, String name, String password) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.updatedAt = this.createdAt;
-    this.email = email;
-    this.password = password;
-    this.name = name;
+  public static User create(String email, String name, String password) {
+    return User.builder()
+        .email(email)
+        .name(name)
+        .password(password)
+        .id(UUID.randomUUID())
+        .createdAt(Instant.now())
+        .updatedAt(Instant.now())
+        .build();
   }
 
-  // 정적 팩토리 메서드로 명시적인 생성
-  public static User create(String email, String name, String password) {
-    return new User(email, name, password);
+  public static User create(String email, String name, String password, UUID profileImageId) {
+    return User.builder()
+        .email(email)
+        .name(name)
+        .password(password)
+        .profileImageId(profileImageId)
+        .id(UUID.randomUUID())
+        .createdAt(Instant.now())
+        .updatedAt(Instant.now())
+        .build();
   }
 
   public void setUpdatedAt() {
@@ -71,6 +82,11 @@ public class User implements Serializable {
 
   public List<Channel> getChannels() {
     return new ArrayList<>(channels);
+  }
+
+  public void updateProfileImageId(UUID profileImageId) {
+    this.profileImageId = profileImageId;
+    setUpdatedAt();
   }
 
   @Override

@@ -15,7 +15,9 @@ public class TestInitializer {
 
   public static void initializeAndTest(RepositoryBundle bundle) {
     UserService userService = new BasicUserService(
-        bundle.getUserRepository()
+        bundle.getUserRepository(),
+        bundle.getUserStatusRepository(),
+        bundle.getBinaryContentRepository()
     );
     ChannelService channelService = new BasicChannelService(bundle.getChannelRepository());
     MessageService messageService = new BasicMessageService(

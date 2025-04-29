@@ -21,7 +21,7 @@ public class UserStatusTest {
     @DisplayName("유저 생성 시 유저 상태가 올바르게 생성되어야 한다")
     void shouldCreateUserStatus() {
       // given
-      User user = UserFixture.createDefaultUser();
+      User user = UserFixture.createValidUser();
 
       // when
       UserStatus userStatus = UserStatus.create(user.getId());
@@ -46,7 +46,7 @@ public class UserStatusTest {
     void shouldModifyLastActiveAtUsingReflection()
         throws NoSuchFieldException, IllegalAccessException {
       // given
-      User user = UserFixture.createDefaultUser();
+      User user = UserFixture.createValidUser();
       UserStatus userStatus = UserStatus.create(user.getId());
 
       // when

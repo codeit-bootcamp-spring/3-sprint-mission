@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.Builder;
 import lombok.Getter;
 
 /**
@@ -20,10 +21,16 @@ import lombok.Getter;
  * </ul>
  */
 @Getter
+@Builder
 public class BinaryContent implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 8121899659000317030L;
+
+  public enum ContentType {
+    PROFILE_IMAGE,
+    MESSAGE_ATTACHMENT
+  }
 
   // 공통 정보
   private final UUID id;
@@ -34,18 +41,38 @@ public class BinaryContent implements Serializable {
   private final String fileName;
   private final String mimeType;
 
-  // 외부에서 직접 객체 생성 방지
-  private BinaryContent(byte[] data, String fileName, String mimeType) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.data = data;
-    this.fileName = fileName;
-    this.mimeType = mimeType;
+  // 참조 정보
+  private final ContentType contentType;
+  private final UUID userId;
+  private final UUID messageId;
+
+  // 정적 팩토리 메서드
+  public static BinaryContent createProfileImage(byte[] data, String fileName, String mimeType,
+      UUID userId) {
+    return builder()
+        .data(data)
+        .fileName(fileName)
+        .mimeType(mimeType)
+        .contentType(ContentType.PROFILE_IMAGE)
+        .userId(userId)
+        .messageId(null)
+        .id(UUID.randomUUID())
+        .createdAt(Instant.now())
+        .build();
   }
 
-  // 정적 팩토리 메서드로 명시적인 생성
-  public static BinaryContent create(byte[] data, String fileName, String mimeType) {
-    return new BinaryContent(data, fileName, mimeType);
+  public static BinaryContent createMessageAttachment(byte[] data, String fileName, String mimeType,
+      UUID messageId) {
+    return builder()
+        .data(data)
+        .fileName(fileName)
+        .mimeType(mimeType)
+        .contentType(ContentType.MESSAGE_ATTACHMENT)
+        .userId(null)
+        .messageId(messageId)
+        .id(UUID.randomUUID())
+        .createdAt(Instant.now())
+        .build();
   }
 
   @Override
@@ -55,6 +82,9 @@ public class BinaryContent implements Serializable {
         ", createdAt=" + createdAt +
         ", fileName='" + fileName + '\'' +
         ", mimeType='" + mimeType + '\'' +
+        ", contentType=" + contentType +
+        ", userId=" + userId +
+        ", messageId=" + messageId +
         ", dataSize=" + (data != null ? data.length : 0) + " bytes" +
         '}';
   }
@@ -72,11 +102,15 @@ public class BinaryContent implements Serializable {
         Objects.equals(fileName, binaryContent.fileName) &&
         Objects.equals(mimeType, binaryContent.mimeType) &&
         Objects.equals(createdAt, binaryContent.createdAt) &&
-        Objects.deepEquals(data, binaryContent.data);
+        Objects.deepEquals(data, binaryContent.data) &&
+        contentType == binaryContent.contentType &&
+        Objects.equals(userId, binaryContent.userId) &&
+        Objects.equals(messageId, binaryContent.messageId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, fileName, mimeType, createdAt, Objects.hashCode(data));
+    return Objects.hash(id, fileName, mimeType, createdAt, Objects.hashCode(data), contentType,
+        userId, messageId);
   }
 }

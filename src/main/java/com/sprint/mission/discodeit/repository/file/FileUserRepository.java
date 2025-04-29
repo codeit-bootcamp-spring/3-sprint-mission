@@ -13,16 +13,16 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class FileUserRepository implements UserRepository {
 
-  private static final String FILE_PATH = "data/users.ser";
-  private static final String INDEX_PATH = "data/users.ser.idx";
+  private static final String DEFAULT_FILE_PATH = "data/users.ser";
+  private static final String DEFAULT_INDEX_PATH = "data/users.ser.idx";
 
   private final FileStorage fileStorage;
   private final IndexManager indexManager;
 
   private FileUserRepository() {
     try {
-      this.fileStorage = new FileStorageImpl(FILE_PATH);
-      this.indexManager = new IndexManager(INDEX_PATH);
+      this.fileStorage = new FileStorageImpl(DEFAULT_FILE_PATH);
+      this.indexManager = new IndexManager(DEFAULT_INDEX_PATH);
     } catch (Exception e) {
       throw new RuntimeException("FileUserRepository 초기화 실패: " + e.getMessage(), e);
     }
@@ -58,10 +58,9 @@ public class FileUserRepository implements UserRepository {
   }
 
   @Override
-  public List<User> findByNameContains(String name) {
+  public Optional<User> findByName(String name) {
     return findAll().stream()
-        .filter(user -> user.getName().contains(name))
-        .toList();
+        .filter(user -> user.getName().contains(name)).findFirst();
   }
 
   @Override

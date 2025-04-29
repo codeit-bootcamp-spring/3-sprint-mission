@@ -7,6 +7,7 @@ public class UserException extends BusinessException {
   public static final String USER_NOT_FOUND = "U001";
   public static final String USER_NOT_PARTICIPANT = "U002";
   public static final String DUPLICATE_EMAIL = "U003";
+  public static final String DUPLICATE_NAME = "U004";
 
   public UserException(String errorCode, String message) {
     super(errorCode, message);
@@ -22,5 +23,9 @@ public class UserException extends BusinessException {
 
   public static UserException duplicateEmail() {
     return new UserException(DUPLICATE_EMAIL, "이미 사용 중인 이메일입니다.");
+  }
+
+  public static UserException duplicateName() {
+    return new UserException(DUPLICATE_NAME, "이미 사용 중인 이름입니다.");
   }
 }

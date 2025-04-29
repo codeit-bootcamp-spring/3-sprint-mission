@@ -10,8 +10,8 @@ public class ChannelFixture {
 
   public static final String DEFAULT_CHANNEL_NAME = "테스트 채널";
 
-  public static Channel createDefaultChannel() {
-    User creator = UserFixture.createDefaultUser();
+  public static Channel createValidChannel() {
+    User creator = UserFixture.createValidUser();
     return Channel.create(creator, DEFAULT_CHANNEL_NAME);
   }
 

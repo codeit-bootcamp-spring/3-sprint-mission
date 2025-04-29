@@ -61,11 +61,11 @@ class FileStorageImplTest {
   }
 
   private Message createDefaultTestMessage() {
-    return MessageFixture.createDefaultMessage();
+    return MessageFixture.createValidMessage();
   }
 
   private Message createCustomTestMessage(String content) {
-    Channel channel = ChannelFixture.createDefaultChannel();
+    Channel channel = ChannelFixture.createValidChannel();
     User creator = channel.getCreator();
     return MessageFixture.createCustomMessage(content, creator, channel);
   }
@@ -83,7 +83,7 @@ class FileStorageImplTest {
     int threadCount = 10;
     List positions = new CopyOnWriteArrayList<>();
     List expectedUsers = IntStream.range(0, threadCount)
-        .mapToObj(i -> UserFixture.createDefaultUser()).toList(); // 예상 저장 유저 객체 리스트
+        .mapToObj(i -> UserFixture.createValidUser()).toList(); // 예상 저장 유저 객체 리스트
 
     // when
     ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
@@ -229,7 +229,7 @@ class FileStorageImplTest {
     // given
     List<Message> objects = messageContents.stream()
         .map(content -> MessageFixture.createCustomMessage(content,
-            UserFixture.createDefaultUser(), ChannelFixture.createDefaultChannel()))
+            UserFixture.createValidUser(), ChannelFixture.createValidChannel()))
         .toList();
 
     // when

@@ -19,7 +19,7 @@ public class MessageTest {
     @DisplayName("메시지가 생성되면 기본 정보가 올바르게 설정되어야 한다")
     void shouldCreateMessageWithDefaultInfo() {
       // given
-      Channel channel = ChannelFixture.createDefaultChannel();
+      Channel channel = ChannelFixture.createValidChannel();
       User user = channel.getCreator(); // 채널 생성 시 creator는 기본 참여자가 된다.
       String content = "테스트 메시지입니다?";
 

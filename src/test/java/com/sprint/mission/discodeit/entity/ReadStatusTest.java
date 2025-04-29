@@ -19,7 +19,7 @@ public class ReadStatusTest {
     @DisplayName("읽기 상태가 생성되면 기본 정보가 올바르게 설정되어야 한다")
     void shouldCreateReadStatusWithDefaultInfo() {
       // given
-      Channel channel = ChannelFixture.createDefaultChannel();
+      Channel channel = ChannelFixture.createValidChannel();
       User user = channel.getCreator();
 
       // when
@@ -50,7 +50,7 @@ public class ReadStatusTest {
     @DisplayName("마지막 읽은 시간 업데이트 시 시간이 갱신되어야 한다")
     void shouldUpdateLastReadAtAndTimestamp() {
       // given
-      Channel channel = ChannelFixture.createDefaultChannel();
+      Channel channel = ChannelFixture.createValidChannel();
       User user = channel.getCreator();
       ReadStatus readStatus = ReadStatus.create(user.getId(), channel.getId());
       Instant originalLastReadAt = readStatus.getLastReadAt();
@@ -73,7 +73,7 @@ public class ReadStatusTest {
     @DisplayName("수정 시간 업데이트 메서드가 올바르게 동작해야 한다")
     void shouldUpdateTimestamp() {
       // given
-      Channel channel = ChannelFixture.createDefaultChannel();
+      Channel channel = ChannelFixture.createValidChannel();
       User user = channel.getCreator();
       ReadStatus readStatus = ReadStatus.create(user.getId(), channel.getId());
       Instant originalUpdatedAt = readStatus.getUpdatedAt();

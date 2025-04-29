@@ -2,6 +2,9 @@ package com.sprint.mission.discodeit.repository.storage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.fixture.UserFixture;
@@ -12,41 +15,16 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class FileStorageImplTest_mock {
 
+  @Mock
   private FileStorage fileStorage;
-
-  @BeforeEach
-  void setUp() {
-    fileStorage = Mockito.mock(FileStorage.class);
-  }
-
-  private void mockSaveObject(Serializable obj, long position) {
-    Mockito.when(fileStorage.saveObject(obj)).thenReturn(position);
-  }
-
-  private void mockReadAll(List<Object> objects) {
-    Mockito.when(fileStorage.readAll()).thenReturn(objects);
-  }
-
-  private void mockUpdateObject(long position, Serializable updatedObj,
-      List<Object> updatedObjects) {
-    Mockito.doAnswer(invocation -> {
-      Mockito.when(fileStorage.readAll()).thenReturn(updatedObjects);
-      return null;
-    }).when(fileStorage).updateObject(position, updatedObj);
-  }
-
-  private void mockDeleteObject(long position, List<Object> afterDelete) {
-    Mockito.doAnswer(invocation -> {
-      Mockito.when(fileStorage.readAll()).thenReturn(afterDelete);
-      return null;
-    }).when(fileStorage).deleteObject(position);
-  }
 
   @Test
   void shouldHandleConcurrentAccess() throws Exception {
@@ -55,10 +33,10 @@ class FileStorageImplTest_mock {
     List<Long> positions = new CopyOnWriteArrayList<>();
     List<Serializable> savedObjects = Collections.synchronizedList(new CopyOnWriteArrayList<>());
 
-    User defaultUser = UserFixture.createDefaultUser();
+    User defaultUser = UserFixture.createValidUser();
 
     // Mock 동작 설정
-    Mockito.when(fileStorage.saveObject(Mockito.any(Serializable.class)))
+    when(fileStorage.saveObject(any(Serializable.class)))
         .thenAnswer(invocation -> {
           synchronized (savedObjects) {
             Serializable obj = invocation.getArgument(0);
@@ -102,8 +80,8 @@ class FileStorageImplTest_mock {
     long mockPosition = 0L;
     List<Object> mockStoredObjects = List.of(obj);
 
-    mockSaveObject(obj, mockPosition);
-    mockReadAll(mockStoredObjects);
+    when(fileStorage.saveObject(obj)).thenReturn(mockPosition);
+    when(fileStorage.readAll()).thenReturn(mockStoredObjects);
 
     // when
     long position = fileStorage.saveObject(obj);
@@ -123,8 +101,8 @@ class FileStorageImplTest_mock {
     Serializable obj = "Object 1";
     long position = 0L;
 
-    mockSaveObject(obj, position);
-    Mockito.when(fileStorage.readObject(position)).thenReturn(obj);
+    when(fileStorage.saveObject(obj)).thenReturn(position);
+    when(fileStorage.readObject(position)).thenReturn(obj);
 
     // when
     fileStorage.saveObject(obj);
@@ -144,9 +122,12 @@ class FileStorageImplTest_mock {
     List<Object> initialObjects = List.of(obj);
     List<Object> updatedObjects = List.of(updatedObj);
 
-    mockSaveObject(obj, position);
-    mockReadAll(initialObjects);
-    mockUpdateObject(position, updatedObj, updatedObjects);
+    when(fileStorage.saveObject(obj)).thenReturn(position);
+    when(fileStorage.readAll()).thenReturn(initialObjects);
+    doAnswer(invocation -> {
+      when(fileStorage.readAll()).thenReturn(updatedObjects);
+      return null;
+    }).when(fileStorage).updateObject(position, updatedObj);
 
     // when
     fileStorage.saveObject(obj);
@@ -171,10 +152,13 @@ class FileStorageImplTest_mock {
     List<Object> afterSave = List.of(obj1, obj2);
     List<Object> afterDelete = List.of(obj1);
 
-    mockSaveObject(obj1, position1);
-    mockSaveObject(obj2, position2);
-    mockReadAll(afterSave);
-    mockDeleteObject(position2, afterDelete);
+    when(fileStorage.saveObject(obj1)).thenReturn(position1);
+    when(fileStorage.saveObject(obj2)).thenReturn(position2);
+    when(fileStorage.readAll()).thenReturn(afterSave);
+    doAnswer(invocation -> {
+      when(fileStorage.readAll()).thenReturn(afterDelete);
+      return null;
+    }).when(fileStorage).deleteObject(position2);
 
     // when
     fileStorage.saveObject(obj1);
@@ -198,12 +182,12 @@ class FileStorageImplTest_mock {
     List<Object> initialData = List.of(obj1, obj2);
     List<Object> optimizedData = List.of(obj1, obj2);
 
-    mockSaveObject(obj1, 0L);
-    mockSaveObject(obj2, 1L);
-    mockReadAll(initialData);
+    when(fileStorage.saveObject(obj1)).thenReturn(0L);
+    when(fileStorage.saveObject(obj2)).thenReturn(1L);
+    when(fileStorage.readAll()).thenReturn(initialData);
 
-    Mockito.doAnswer(invocation -> {
-      Mockito.when(fileStorage.readAll()).thenReturn(optimizedData);
+    doAnswer(invocation -> {
+      when(fileStorage.readAll()).thenReturn(optimizedData);
       return null;
     }).when(fileStorage).optimize();
 

@@ -1,24 +1,35 @@
 package com.sprint.mission.discodeit.repository.factory;
 
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 
 public class RepositoryBundle {
 
   private final UserRepository userRepository;
+  private final UserStatusRepository userStatusRepository;
   private final ChannelRepository channelRepository;
   private final MessageRepository messageRepository;
+  private final BinaryContentRepository binaryContentRepository;
 
-  public RepositoryBundle(UserRepository userRepository,
-      ChannelRepository channelRepository, MessageRepository messageRepository) {
+  public RepositoryBundle(UserRepository userRepository, UserStatusRepository userStatusRepository,
+      ChannelRepository channelRepository, MessageRepository messageRepository,
+      BinaryContentRepository binaryContentRepository) {
     this.userRepository = userRepository;
+    this.userStatusRepository = userStatusRepository;
     this.channelRepository = channelRepository;
     this.messageRepository = messageRepository;
+    this.binaryContentRepository = binaryContentRepository;
   }
 
   public UserRepository getUserRepository() {
     return userRepository;
+  }
+
+  public UserStatusRepository getUserStatusRepository() {
+    return userStatusRepository;
   }
 
   public ChannelRepository getChannelRepository() {
@@ -27,5 +38,9 @@ public class RepositoryBundle {
 
   public MessageRepository getMessageRepository() {
     return messageRepository;
+  }
+
+  public BinaryContentRepository getBinaryContentRepository() {
+    return binaryContentRepository;
   }
 }

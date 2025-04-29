@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
@@ -31,10 +30,9 @@ public class JCFUserRepository implements UserRepository {
   }
 
   @Override
-  public List<User> findByNameContains(String name) {
+  public Optional<User> findByName(String name) {
     return users.values().stream()
-        .filter(user -> user.getName().contains(name))
-        .collect(Collectors.toList());
+        .filter(user -> user.getName().contains(name)).findFirst();
   }
 
   @Override

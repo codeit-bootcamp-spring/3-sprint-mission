@@ -28,9 +28,9 @@ public interface UserRepository {
    * 사용자 이름으로 조회
    *
    * @param name 사용자 이름
-   * @return List<User>
+   * @return Optional<User>
    */
-  List<User> findByNameContains(String name);
+  Optional<User> findByName(String name);
 
   /**
    * 모든 사용자 조회

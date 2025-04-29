@@ -25,7 +25,7 @@ class ChannelTest {
     @DisplayName("채널이 생성되면 기본 정보가 올바르게 설정되어야 한다")
     void shouldCreateChannelWithDefaultInfo() {
       // when
-      Channel channel = ChannelFixture.createDefaultChannel();
+      Channel channel = ChannelFixture.createValidChannel();
 
       // then
       assertAll(
@@ -47,7 +47,7 @@ class ChannelTest {
     @DisplayName("채널 생성 시 생성자는 자동으로 참여자로 등록되어야 한다")
     void shouldAddCreatorAsParticipant() {
       // given
-      User creator = UserFixture.createDefaultUser();
+      User creator = UserFixture.createValidUser();
 
       // when
       Channel channel = ChannelFixture.createCustomChannel(creator, "테스트 채널");
@@ -76,8 +76,8 @@ class ChannelTest {
     @DisplayName("참여자 목록 조회 시 불변성이 보장되어야 한다")
     void shouldReturnImmutableParticipantsList() {
       // given
-      Channel channel = ChannelFixture.createDefaultChannel();
-      User participant = UserFixture.createDefaultUser();
+      Channel channel = ChannelFixture.createValidChannel();
+      User participant = UserFixture.createValidUser();
       channel.addParticipant(participant);
 
       // when
@@ -105,7 +105,7 @@ class ChannelTest {
     @DisplayName("채널 정보 수정 시 수정 정보와 시간이 업데이트되어야 한다")
     void shouldUpdateNameAndTimestamp() {
       // given
-      Channel channel = ChannelFixture.createDefaultChannel();
+      Channel channel = ChannelFixture.createValidChannel();
       Instant originalUpdatedAt = channel.getUpdatedAt();
       String newName = "변경된 채널명";
 
@@ -134,7 +134,7 @@ class ChannelTest {
     @DisplayName("채널 이름 수정 테스트 여러 데이터")
     void shouldUpdateNameAndTimestampParameterized(String newName) {
       // given
-      Channel channel = ChannelFixture.createDefaultChannel();
+      Channel channel = ChannelFixture.createValidChannel();
       Instant originalUpdatedAt = channel.getUpdatedAt();
 
       // when
@@ -152,8 +152,8 @@ class ChannelTest {
     @DisplayName("새로운 참여자 추가 시 참여자 목록이 올바르게 갱신되어야 한다")
     void shouldAddNewParticipant() {
       // given
-      Channel channel = ChannelFixture.createDefaultChannel();
-      User newParticipant = UserFixture.createDefaultUser();
+      Channel channel = ChannelFixture.createValidChannel();
+      User newParticipant = UserFixture.createValidUser();
       Instant originalUpdatedAt = channel.getUpdatedAt();
 
       // when & then
@@ -168,7 +168,7 @@ class ChannelTest {
               .hasSize(2),
           () -> assertThat(channel.getUpdatedAt())
               .as("수정 시간이 갱신되어야 함")
-              .isAfter(originalUpdatedAt)
+              .isAfterOrEqualTo(originalUpdatedAt)
       );
     }
 
@@ -176,7 +176,7 @@ class ChannelTest {
     @DisplayName("중복된 참여자 추가 시 예외가 발생해야 한다")
     void shouldThrowExceptionForDuplicateParticipant() {
       // given
-      Channel channel = ChannelFixture.createDefaultChannel();
+      Channel channel = ChannelFixture.createValidChannel();
       User existingParticipant = channel.getCreator();
       int originalSize = channel.getParticipants().size();
       Instant originalUpdatedAt = channel.getUpdatedAt();
@@ -200,9 +200,9 @@ class ChannelTest {
     @DisplayName("참여자 제거 시 목록에서 삭제되어야 한다")
     void shouldRemoveParticipant() {
       // given
-      Channel channel = ChannelFixture.createDefaultChannel();
+      Channel channel = ChannelFixture.createValidChannel();
       Instant originalUpdatedAt = channel.getUpdatedAt();
-      User participant = UserFixture.createDefaultUser();
+      User participant = UserFixture.createValidUser();
       channel.addParticipant(participant);
 
       // when

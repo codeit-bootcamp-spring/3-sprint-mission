@@ -13,16 +13,16 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class FileMessageRepository implements MessageRepository {
 
-  private static final String FILE_PATH = "data/messages.ser";
-  private static final String INDEX_PATH = "data/messages.ser.idx";
+  private static final String DEFAULT_FILE_PATH = "data/messages.ser";
+  private static final String DEFAULT_INDEX_PATH = "data/messages.ser.idx";
 
   private final FileStorage fileStorage;
   private final IndexManager indexManager;
 
   private FileMessageRepository() {
     try {
-      this.fileStorage = new FileStorageImpl(FILE_PATH);
-      this.indexManager = new IndexManager(INDEX_PATH);
+      this.fileStorage = new FileStorageImpl(DEFAULT_FILE_PATH);
+      this.indexManager = new IndexManager(DEFAULT_INDEX_PATH);
     } catch (Exception e) {
       throw new RuntimeException("FileMessageRepository 초기화 실패: " + e.getMessage(), e);
     }

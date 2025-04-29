@@ -8,8 +8,8 @@ public class MessageFixture {
 
   public static final String DEFAULT_MESSAGE_CONTENT = "테스트 메시지입니다.";
 
-  public static Message createDefaultMessage() {
-    Channel channel = ChannelFixture.createDefaultChannel();
+  public static Message createValidMessage() {
+    Channel channel = ChannelFixture.createValidChannel();
     User user = channel.getCreator();
 
     return Message.create(DEFAULT_MESSAGE_CONTENT, user.getId(), channel.getId());

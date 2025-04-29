@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,8 +27,10 @@ public class BinaryContentTest {
       String mimeType = "image/png";
 
       // when
-      BinaryContent content1 = BinaryContent.create(data, fileName, mimeType);
-      BinaryContent content2 = BinaryContent.create(data, fileName, mimeType);
+      BinaryContent content1 = BinaryContentFixture.createCustomMessageAttachment(data, fileName,
+          mimeType, UUID.randomUUID());
+      BinaryContent content2 = BinaryContentFixture.createCustomMessageAttachment(data, fileName,
+          mimeType, UUID.randomUUID());
 
       // then
       assertAll(

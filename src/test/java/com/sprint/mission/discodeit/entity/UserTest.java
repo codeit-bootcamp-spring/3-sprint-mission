@@ -47,10 +47,12 @@ class UserTest {
     @DisplayName("유저 정보 수정 시 수정 정보와 시간이 업데이트되어야 한다")
     void shouldUpdateNameAndTimestamp() {
       // given
-      User user = UserFixture.createDefaultUser();
+      User user = UserFixture.createValidUser();
       String newName = "새로운 유저명";
       String newPassword = "newpass123";
       Instant originalUpdatedAt = user.getUpdatedAt();
+
+      System.out.println(originalUpdatedAt);
 
       // when & then
       assertAll(
