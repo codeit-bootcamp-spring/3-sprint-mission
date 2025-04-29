@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * 사용자의 상태 관리
@@ -18,6 +19,7 @@ import lombok.Getter;
  * </ul>
  */
 @Getter
+@ToString
 public class UserStatus implements Serializable {
 
   @Serial
@@ -70,17 +72,6 @@ public class UserStatus implements Serializable {
   }
 
   @Override
-  public String toString() {
-    return "UserStatus{" +
-        "id=" + id +
-        ", createdAt=" + createdAt +
-        ", updatedAt=" + updatedAt +
-        ", userId=" + userId +
-        ", lastActiveAt=" + lastActiveAt +
-        '}';
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -89,15 +80,11 @@ public class UserStatus implements Serializable {
       return false;
     }
     UserStatus userStatus = (UserStatus) o;
-    return Objects.equals(id, userStatus.id) &&
-        Objects.equals(userId, userStatus.userId) &&
-        Objects.equals(lastActiveAt, userStatus.lastActiveAt) &&
-        Objects.equals(createdAt, userStatus.createdAt) &&
-        Objects.equals(updatedAt, userStatus.updatedAt);
+    return Objects.equals(id, userStatus.id);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, userId, lastActiveAt, createdAt, updatedAt);
+    return Objects.hash(id);
   }
 }

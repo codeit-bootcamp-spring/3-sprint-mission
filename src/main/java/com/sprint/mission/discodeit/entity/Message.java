@@ -5,7 +5,10 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * 메시지 정보 관리
@@ -19,33 +22,35 @@ import lombok.Getter;
  * </ul>
  */
 @Getter
+@ToString
+@Builder(toBuilder = true, access = AccessLevel.PRIVATE)
 public class Message implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 5091331492371241399L;
+
   // 메시지 정보 관리
   private final UUID id;
   private final Instant createdAt;
   private Instant updatedAt;
   private String content;
-  // 참조 정보 getter
+
+  // 참조 정보
   private final UUID userId;
   private final UUID channelId;
   private Instant deletedAt;
 
-  // 외부에서 직접 객체 생성 방지.
-  private Message(String content, UUID userId, UUID channelId) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.updatedAt = this.createdAt;
-    this.content = content;
-    this.userId = userId;
-    this.channelId = channelId;
-  }
-
   // 정적 팩토리 메서드로 명시적인 생성
   public static Message create(String content, UUID userId, UUID channelId) {
-    return new Message(content, userId, channelId);
+    return Message.builder()
+        .id(UUID.randomUUID())
+        .createdAt(Instant.now())
+        .updatedAt(Instant.now())
+        .content(content)
+        .userId(userId)
+        .channelId(channelId)
+        .deletedAt(null)
+        .build();
   }
 
   public void setUpdatedAt() {
@@ -71,18 +76,6 @@ public class Message implements Serializable {
   }
 
   @Override
-  public String toString() {
-    return "Message{" +
-        "id=" + id +
-        ", createdAt=" + createdAt +
-        ", updatedAt=" + updatedAt +
-        ", content='" + content + '\'' +
-        ", userId=" + userId +
-        ", channelId=" + channelId +
-        '}';
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -91,16 +84,11 @@ public class Message implements Serializable {
       return false;
     }
     Message message = (Message) o;
-    return Objects.equals(id, message.id) &&
-        Objects.equals(content, message.content) &&
-        Objects.equals(userId, message.userId) &&
-        Objects.equals(channelId, message.channelId) &&
-        Objects.equals(createdAt, message.createdAt) &&
-        Objects.equals(updatedAt, message.updatedAt);
+    return Objects.equals(id, message.id);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, content, userId, channelId, createdAt, updatedAt);
+    return Objects.hash(id);
   }
 }

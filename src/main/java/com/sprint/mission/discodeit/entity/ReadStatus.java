@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * 사용자가 채널 별 마지막으로 메시지를 읽은 시간을 표현하는 도메인 모델
@@ -18,6 +19,7 @@ import lombok.Getter;
  * </ul>
  */
 @Getter
+@ToString
 public class ReadStatus implements Serializable {
 
   @Serial
@@ -58,18 +60,6 @@ public class ReadStatus implements Serializable {
   }
 
   @Override
-  public String toString() {
-    return "ReadStatus{" +
-        "id=" + id +
-        ", createdAt=" + createdAt +
-        ", updatedAt=" + updatedAt +
-        ", userId=" + userId +
-        ", channelId=" + channelId +
-        ", lastReadAt=" + lastReadAt +
-        '}';
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -77,17 +67,12 @@ public class ReadStatus implements Serializable {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    ReadStatus that = (ReadStatus) o;
-    return Objects.equals(id, that.id) &&
-        Objects.equals(userId, that.userId) &&
-        Objects.equals(channelId, that.channelId) &&
-        Objects.equals(lastReadAt, that.lastReadAt) &&
-        Objects.equals(createdAt, that.createdAt) &&
-        Objects.equals(updatedAt, that.updatedAt);
+    ReadStatus readStatus = (ReadStatus) o;
+    return Objects.equals(id, readStatus.id);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, userId, channelId, lastReadAt, createdAt, updatedAt);
+    return Objects.hash(id);
   }
 }

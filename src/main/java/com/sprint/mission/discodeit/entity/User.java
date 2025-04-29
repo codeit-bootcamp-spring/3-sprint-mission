@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * 사용자 정보 관리
@@ -20,7 +22,8 @@ import lombok.Getter;
  * </ul>
  */
 @Getter
-@Builder
+@ToString
+@Builder(toBuilder = true, access = AccessLevel.PRIVATE)
 public class User implements Serializable {
 
   @Serial
@@ -90,19 +93,6 @@ public class User implements Serializable {
   }
 
   @Override
-  public String toString() {
-    return "User{" +
-        "id=" + id +
-        ", createdAt=" + createdAt +
-        ", updatedAt=" + updatedAt +
-        ", email='" + email + '\'' +
-        ", name='" + name + '\'' +
-        ", password='" + password + '\'' +
-        ", channels=" + channels +
-        '}';
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -111,17 +101,11 @@ public class User implements Serializable {
       return false;
     }
     User user = (User) o;
-    return Objects.equals(id, user.id) &&
-        Objects.equals(email, user.email) &&
-        Objects.equals(name, user.name) &&
-        Objects.equals(password, user.password) &&
-        Objects.equals(createdAt, user.createdAt) &&
-        Objects.equals(updatedAt, user.updatedAt) &&
-        Objects.equals(channels, user.channels);
+    return Objects.equals(id, user.id);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, email, name, password, createdAt, updatedAt, channels);
+    return Objects.hash(id);
   }
 }

@@ -41,6 +41,7 @@ public class BasicUserService implements UserService {
 
     UUID profileImageId = null;
     if (ucr.profileImage() != null && ucr.profileImage().getId() != null) {
+      binaryContentRepository.save(ucr.profileImage());
       profileImageId = ucr.profileImage().getId();
     }
 

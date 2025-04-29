@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * 채널 정보 관리
@@ -21,15 +22,23 @@ import lombok.Getter;
  * </ul>
  */
 @Getter
+@ToString
 public class Channel implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 4947061877205205272L;
+
+  public enum ChannelType {
+    PUBLIC,
+    PRIVATE
+  }
+
   // 채널 정보 관리
   private final UUID id;
   private final Instant createdAt;
   private Instant updatedAt;
-  // 참조 정보 getter
+
+  // 참조 정보
   private final User creator;
   private String name;
   private List<User> participants = new ArrayList<>();
@@ -46,6 +55,10 @@ public class Channel implements Serializable {
 
   // 정적 팩토리 메서드로 명시적인 생성
   public static Channel create(User creator, String name) {
+    return new Channel(creator, name);
+  }
+
+  public static Channel create(User creator, String name, ChannelType PRIVATE) {
     return new Channel(creator, name);
   }
 
@@ -97,18 +110,6 @@ public class Channel implements Serializable {
   }
 
   @Override
-  public String toString() {
-    return "Channel{" +
-        "id=" + id +
-        ", createdAt=" + createdAt +
-        ", updatedAt=" + updatedAt +
-        ", name='" + name + '\'' +
-        ", creator=" + creator.getName() +
-        ", participants=" + participants +
-        '}';
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -117,16 +118,11 @@ public class Channel implements Serializable {
       return false;
     }
     Channel channel = (Channel) o;
-    return Objects.equals(id, channel.id) &&
-        Objects.equals(name, channel.name) &&
-        Objects.equals(createdAt, channel.createdAt) &&
-        Objects.equals(updatedAt, channel.updatedAt) &&
-        Objects.equals(creator, channel.creator) &&
-        Objects.equals(participants, channel.participants);
+    return Objects.equals(id, channel.id);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, createdAt, updatedAt, creator, participants);
+    return Objects.hash(id);
   }
 }

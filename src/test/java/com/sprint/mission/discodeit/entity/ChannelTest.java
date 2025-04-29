@@ -7,8 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.sprint.mission.discodeit.common.exception.ChannelException;
 import com.sprint.mission.discodeit.fixture.ChannelFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,6 +19,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class ChannelTest {
+
+  // 테스트에서 사용할 고정된 시간
+  private static final Instant FIXED_TIME = Instant.parse("2023-01-01T10:00:00Z");
+  private static final Clock FIXED_CLOCK = Clock.fixed(FIXED_TIME, ZoneId.systemDefault());
 
   @Nested
   @DisplayName("채널 생성")
@@ -72,14 +79,20 @@ class ChannelTest {
   @DisplayName("채널 정보 조회")
   class Read {
 
+    private Channel channel;
+    private User participant;
+
+    @BeforeEach
+    void setUp() {
+      // 각 테스트마다 새로운 인스턴스 생성하여 독립성 보장
+      channel = ChannelFixture.createValidChannel();
+      participant = UserFixture.createValidUser();
+      channel.addParticipant(participant);
+    }
+
     @Test
     @DisplayName("참여자 목록 조회 시 불변성이 보장되어야 한다")
     void shouldReturnImmutableParticipantsList() {
-      // given
-      Channel channel = ChannelFixture.createValidChannel();
-      User participant = UserFixture.createValidUser();
-      channel.addParticipant(participant);
-
       // when
       List<User> participants = channel.getParticipants();
       participants.clear(); // 반환된 리스트 수정 시도
@@ -101,31 +114,41 @@ class ChannelTest {
   @DisplayName("채널 정보 수정")
   class Update {
 
+    private Channel channel;
+    private Instant originalUpdatedAt;
+
+    @BeforeEach
+    void setUp() {
+      // 각 테스트마다 새로운 인스턴스 생성하여 독립성 보장
+      channel = ChannelFixture.createValidChannel();
+      originalUpdatedAt = channel.getUpdatedAt();
+
+      // 시간 차이를 보장하기 위한 대기
+      try {
+        Thread.sleep(5);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }
+
     @Test
-    @DisplayName("채널 정보 수정 시 수정 정보와 시간이 업데이트되어야 한다")
+    @DisplayName("채널 이름 수정 시 이름과 수정 시간이 업데이트되어야 한다")
     void shouldUpdateNameAndTimestamp() {
       // given
-      Channel channel = ChannelFixture.createValidChannel();
-      Instant originalUpdatedAt = channel.getUpdatedAt();
       String newName = "변경된 채널명";
 
       // when
       channel.updateName(newName);
 
-      // when & then
+      // then
       assertAll(
-          "채널 정보 수정 검증",
-          () -> {
-            assertAll(
-                "이름 변경과 수정 시간 업데이트 검증",
-                () -> assertThat(channel.getName())
-                    .as("새로운 이름으로 변경되어야 함")
-                    .isEqualTo(newName),
-                () -> assertThat(channel.getUpdatedAt())
-                    .as("수정 시간이 갱신되어야 함")
-                    .isAfterOrEqualTo(originalUpdatedAt)
-            );
-          }
+          "이름 변경과 수정 시간 업데이트 검증",
+          () -> assertThat(channel.getName())
+              .as("새로운 이름으로 변경되어야 함")
+              .isEqualTo(newName),
+          () -> assertThat(channel.getUpdatedAt())
+              .as("수정 시간이 갱신되어야 함")
+              .isAfter(originalUpdatedAt)
       );
     }
 
@@ -133,33 +156,28 @@ class ChannelTest {
     @ValueSource(strings = {"감자", "왕감자", "고구마"})
     @DisplayName("채널 이름 수정 테스트 여러 데이터")
     void shouldUpdateNameAndTimestampParameterized(String newName) {
-      // given
-      Channel channel = ChannelFixture.createValidChannel();
-      Instant originalUpdatedAt = channel.getUpdatedAt();
-
       // when
       channel.updateName(newName);
 
       // then
       assertAll(
           () -> assertThat(channel.getName()).isEqualTo(newName),
-          () -> assertThat(channel.getUpdatedAt()).isAfterOrEqualTo(originalUpdatedAt)
+          () -> assertThat(channel.getUpdatedAt()).isAfter(originalUpdatedAt)
       );
     }
-
 
     @Test
     @DisplayName("새로운 참여자 추가 시 참여자 목록이 올바르게 갱신되어야 한다")
     void shouldAddNewParticipant() {
       // given
-      Channel channel = ChannelFixture.createValidChannel();
       User newParticipant = UserFixture.createValidUser();
-      Instant originalUpdatedAt = channel.getUpdatedAt();
 
-      // when & then
+      // when
+      channel.addParticipant(newParticipant);
+
+      // then
       assertAll(
           "참여자 추가 검증",
-          () -> channel.addParticipant(newParticipant),
           () -> assertThat(channel.getParticipants())
               .as("참여자 목록에 새로운 참여자가 포함되어야 함")
               .contains(newParticipant),
@@ -168,7 +186,7 @@ class ChannelTest {
               .hasSize(2),
           () -> assertThat(channel.getUpdatedAt())
               .as("수정 시간이 갱신되어야 함")
-              .isAfterOrEqualTo(originalUpdatedAt)
+              .isAfter(originalUpdatedAt)
       );
     }
 
@@ -176,10 +194,8 @@ class ChannelTest {
     @DisplayName("중복된 참여자 추가 시 예외가 발생해야 한다")
     void shouldThrowExceptionForDuplicateParticipant() {
       // given
-      Channel channel = ChannelFixture.createValidChannel();
       User existingParticipant = channel.getCreator();
       int originalSize = channel.getParticipants().size();
-      Instant originalUpdatedAt = channel.getUpdatedAt();
 
       // when & then
       assertAll(
@@ -200,10 +216,17 @@ class ChannelTest {
     @DisplayName("참여자 제거 시 목록에서 삭제되어야 한다")
     void shouldRemoveParticipant() {
       // given
-      Channel channel = ChannelFixture.createValidChannel();
-      Instant originalUpdatedAt = channel.getUpdatedAt();
       User participant = UserFixture.createValidUser();
       channel.addParticipant(participant);
+
+      // 수정 시간 업데이트 이후 시간 차이를 보장하기 위한 대기
+      try {
+        Thread.sleep(5);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+
+      Instant beforeRemovalUpdatedAt = channel.getUpdatedAt();
 
       // when
       channel.removeParticipant(participant.getId());
@@ -219,7 +242,7 @@ class ChannelTest {
               .hasSize(1),
           () -> assertThat(channel.getUpdatedAt())
               .as("수정 시간이 갱신되어야 함")
-              .isAfterOrEqualTo(originalUpdatedAt)
+              .isAfter(beforeRemovalUpdatedAt)
       );
     }
   }
