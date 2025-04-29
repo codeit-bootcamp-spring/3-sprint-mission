@@ -12,36 +12,40 @@ public class JCFChannelService implements ChannelService {
     public JCFChannelService() { this.data = new HashMap<>(); } // 기본 생성자
 
     @Override
-    public Channel createChannel(Channel channel) {
-        UUID channelId = channel.getId();
-        data.put(channelId, channel);
-        return channel; //
+    public Channel createChannel(String channelName, String description) {
+        Channel channel = new Channel(channelName, description);
+        data.put(channel.getId(), channel);
+
+        return channel;
     }
 
     @Override
-    public Channel readChannel(UUID id) {
-        return data.get(id);
+    public Channel readChannel(UUID channelId) {
+        Channel channelNullable = this.data.get(channelId);
+        return Optional.ofNullable(channelNullable)
+                .orElseThrow(() -> new NoSuchElementException(channelId + "ID를 가진 채널이 존재하지 않습니다."));
     }
 
     @Override
     public List<Channel> readAllChannels() {
-        return new ArrayList<>(data.values());
+        return this.data.values().stream().toList();
     };
 
     @Override
-    public void updateChannel(UUID id, String newName) { // U
-        Channel channel = data.get(id);
-        if (channel != null) {
-            channel.updateChannelName(newName);
-            System.out.println("이름을 " + newName + "으로 수정했습니다.");
-        } else {
-            System.out.println("해당 사용자가 존재하지 않습니다.");
-        }
+    public Channel updateChannel(UUID id, String newName, String newDescription) { // U
+        Channel channelNullable = this.data.get(id);
+        Channel channel = Optional.ofNullable(channelNullable)
+                .orElseThrow(() -> new NoSuchElementException(id + "ID를 가진 채널이 존재하지 않습니다."));
+        channel.updateChannel(newName, newDescription);
+
+        return channel;
     } // U
 
     @Override
     public void deleteChannel(UUID id) { // D
-        Channel channel = data.get(id);
-        data.remove(channel.getId()); // ID를 불러와서 없앰
+        if (!this.data.containsKey(id)) {
+            throw new NoSuchElementException(id + "ID를 가진 채널을 찾을 수 없습니다.");
+        }
+        this.data.remove(id);
     };
 }
