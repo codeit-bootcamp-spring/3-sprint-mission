@@ -38,6 +38,7 @@ public class DiscodeitApplication {
 		// 셋업
 		User user = setupUser(userService);
 		Channel channel = setupChannel(channelService);
+
 		// 테스트
 		System.out.println("user = " + user);
 		System.out.println("channel = " + channel);

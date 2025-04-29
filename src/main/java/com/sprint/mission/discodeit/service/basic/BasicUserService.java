@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,13 +12,14 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
 
-    @Autowired
-    public BasicUserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+//    @Autowired
+//    public BasicUserService(UserRepository userRepository) {
+//        this.userRepository = userRepository;
+//    }
 
     @Override
     public User create(String username, String email, String password) {

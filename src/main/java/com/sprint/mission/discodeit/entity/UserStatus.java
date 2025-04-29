@@ -1,31 +1,24 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.time.Instant;
 import java.util.UUID;
 
+@Getter
 public class UserStatus {
     private static final long serialVersionUID = 6919471281193075220L;
-    UUID id;
-    UUID userId;
-    Instant createdAt;
-    Instant updatedAt;
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    //
+    private UUID userId;
+    //
     public UserStatus(UUID userId) {
         this.id = UUID.randomUUID();
-        this.userId = userId;
         this.createdAt = Instant.now();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-    public UUID getUserId() {
-        return userId;
-    }
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-    public Instant getUpdatedAt() {
-        return updatedAt;
+        //
+        this.userId = userId;
     }
 
     @Override
