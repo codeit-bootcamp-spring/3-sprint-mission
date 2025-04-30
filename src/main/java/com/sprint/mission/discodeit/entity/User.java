@@ -12,10 +12,10 @@ public class User implements Serializable {
     private UUID id;
 
     @Getter
-    private Long createdAt;
+    private Instant createdAt;
 
     @Getter
-    private Long updatedAt;
+    private Instant updatedAt;
 
     @Getter
     private String username;
@@ -28,7 +28,7 @@ public class User implements Serializable {
 
     public User(String username, String email, String password) {
         this.id = UUID.randomUUID();
-        this.createdAt = Instant.now().getEpochSecond();
+        this.createdAt = Instant.now();
         //
         this.username = username;
         this.email = email;
@@ -51,7 +51,7 @@ public class User implements Serializable {
         }
 
         if (anyValueUpdated) {
-            this.updatedAt = Instant.now().getEpochSecond();
+            this.updatedAt = Instant.now();
         }
     }
 
