@@ -24,10 +24,15 @@ import java.util.UUID;
 public interface UserService {
 
     UserCreateResponse create(UserCreateRequest userCreateDto);
+
     UserFindResponse findUserById(UUID userId);
+
     List<UserFindResponse> findAllUsers();
+
     ProfileUploadResponse updateImage(ProfileUploadRequest request);
+    // not required
     void updateUser(UUID userId, String name);
+
     void deleteUser(UUID userId);
 
 }

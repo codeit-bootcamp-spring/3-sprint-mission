@@ -2,12 +2,10 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.util.FilePathUtil;
+import com.sprint.mission.discodeit.util.FilePathProperties;
 import com.sprint.mission.discodeit.util.FileSerializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.io.FileInputStream;
@@ -15,7 +13,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -36,14 +33,14 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 public class FileUserRepository implements UserRepository {
-    private final FilePathUtil filePathUtil;
+    private final FilePathProperties filePathProperties;
 
 
 
     @Override
     public User createUserByName(String name, String email, String password) {
         User user = new User(name, email, password );
-        Path path = filePathUtil.getUserFilePath(user.getId());
+        Path path = filePathProperties.getUserFilePath(user.getId());
         FileSerializer.writeFile(path, user);
         return user;
     }
@@ -51,7 +48,7 @@ public class FileUserRepository implements UserRepository {
     @Override
     public User createUserByName(String name, String email, String password, UUID profileId) {
         User user = new User(name, email, password, profileId);
-        Path path = filePathUtil.getUserFilePath(user.getId());
+        Path path = filePathProperties.getUserFilePath(user.getId());
         FileSerializer.writeFile(path, user);
         return user;
     }
@@ -59,7 +56,7 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public User findUserById(UUID userId) {
-        Path path = filePathUtil.getUserFilePath(userId);
+        Path path = filePathProperties.getUserFilePath(userId);
 
         if (!Files.exists(path)) {
             throw new RuntimeException("nothing exists");
@@ -70,7 +67,7 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public List<User> findAllUsers() {
-        Path directory = filePathUtil.getUserDirectory();
+        Path directory = filePathProperties.getUserDirectory();
 
         if (!Files.exists(directory)) {
             return Collections.emptyList();
@@ -97,7 +94,7 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public void updateProfileIdById(UUID userId, UUID profileId) {
-        Path path = filePathUtil.getUserFilePath(userId);
+        Path path = filePathProperties.getUserFilePath(userId);
         if (!Files.exists(path)) {
             throw new IllegalStateException("no user in repository");
         }
@@ -108,7 +105,7 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public void updateUserById(UUID userId, String name) {
-        Path path = filePathUtil.getUserFilePath(userId);
+        Path path = filePathProperties.getUserFilePath(userId);
         if (!Files.exists(path)) {
             throw new RuntimeException("파일 없음: fileUserRepository.updateUserById");
         }
@@ -119,7 +116,7 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public void deleteUserById(UUID userId) {
-        Path path = filePathUtil.getUserFilePath(userId);
+        Path path = filePathProperties.getUserFilePath(userId);
 
         try{
             Files.delete(path);

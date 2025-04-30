@@ -22,9 +22,9 @@ import java.util.UUID;
  * 2025. 4. 25.        doungukkim       최초 생성
  */
 
-public record PrivateChannelCreateRequest(List<User> users) {
-    public PrivateChannelCreateRequest(Set<User>users) {
-        this(users.stream().toList());
+public record PrivateChannelCreateRequest(List<UUID> userIds) {
+    public PrivateChannelCreateRequest(Set<UUID>userIds) {
+        this(userIds.stream().toList());
     }
 }
 

@@ -33,6 +33,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         return new BinaryContentCreateResponse(binaryContent.getId(), binaryContent.getUpdatedAt(), binaryContent.getAttachment());
     }
 
+    @Override
     public BinaryContent find(UUID attachmentId) {
         Objects.requireNonNull(attachmentId, "no param");
 
@@ -40,7 +41,7 @@ public class BasicBinaryContentService implements BinaryContentService {
                 .orElseThrow(() -> new IllegalArgumentException("no Binary Content matches")); // file | jcf : no exception
     }
 
-
+    @Override
     public List<BinaryContent> findAllByIdIn(List<UUID> attachmentIds) {
         Objects.requireNonNull(attachmentIds, "no attachmentIds");
         if (attachmentIds.isEmpty()) {

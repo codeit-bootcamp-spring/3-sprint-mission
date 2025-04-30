@@ -2,15 +2,9 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.util.FilePathUtil;
-import com.sprint.mission.discodeit.util.FileSerializer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
 
@@ -57,7 +51,7 @@ public class jcfReadStatusRepository implements ReadStatusRepository{
     @Override
     public void deleteReadStatusById(UUID readStatusId) {
         if (!data.containsKey(readStatusId)) {
-            throw new IllegalStateException("no readstatus to delete");
+            throw new IllegalStateException("no readStatus to delete");
         }
         data.remove(readStatusId);
     }
