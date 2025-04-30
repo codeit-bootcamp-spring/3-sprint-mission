@@ -15,6 +15,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +30,7 @@ import java.util.UUID;
 public class DiscodeitApplication {
 	private final static byte[] dummyData = new byte[1];
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		ConfigurableApplicationContext context =
 				SpringApplication.run(DiscodeitApplication.class, args);
 
@@ -48,13 +54,13 @@ public class DiscodeitApplication {
 		createExampleChannels(basicChannelService, basicUserService);
 		createExampleMessages(basicMessageService, basicUserService, basicChannelService);
 //
-//		userServiceTest(basicUserService);
+// 		userServiceTest(basicUserService);
 //		authServiceTest(basicAuthService);
 //		userStatusServiceTest(basicUserStatusService, basicUserService);
 //		channelServiceTest(basicChannelService, basicUserService);
 //		messageServiceTest(basicMessageService, basicUserService, basicChannelService);
 //		basicReadStatusService(basicUserService, basicReadStatusService);
-//		basicBinaryContentService(basicUserService, basicMessageService, basicBinaryContentService);
+		basicBinaryContentService(basicUserService, basicMessageService, basicBinaryContentService);
 
 //		partition("User 제거 시 연관 도메인 삭제 확인");
 //		basicUserService.deleteById(UUID.fromString("35db56d2-c16b-41ac-b05a-32536a6df8ab"));
@@ -90,6 +96,7 @@ public class DiscodeitApplication {
 //
 //		partition("삭제 후 BinaryContent");
 //		basicBinaryContentService.findAll().forEach(System.out::println);
+
 	}
 
 	private static void userServiceTest(BasicUserService basicUserService) {
@@ -189,7 +196,8 @@ public class DiscodeitApplication {
 
 	private static void basicBinaryContentService(BasicUserService basicUserService,
 												  BasicMessageService basicMessageService,
-												  BasicBinaryContentService basicBinaryContentService) {
+												  BasicBinaryContentService basicBinaryContentService)
+	throws IOException {
 		UUID user = basicUserService.findByName("bob").getId();
 		UUID userMessages = basicMessageService.findAllByUserId(user).get(0).getId();
 
@@ -203,6 +211,24 @@ public class DiscodeitApplication {
 		partition("메시지에 있던 첨부 파일 삭제");
 		basicMessageService.updateBinaryContent(userMessages, new ArrayList<>());
 		basicBinaryContentService.findAll().forEach(System.out::println);
+
+		partition("실제 이미지로 테스트");
+		BufferedImage image = ImageIO.read(new File("src/test.jpg"));
+		ByteArrayOutputStream outputStreamObj = new ByteArrayOutputStream();
+
+		ImageIO.write(image, "jpg", outputStreamObj);
+
+		byte[] byteArray = outputStreamObj.toByteArray();
+
+		basicUserService.updateProfileImage(user, new BinaryContentDTO("test.jpg",
+				"image/jpg", byteArray));
+
+		UUID profileId = basicUserService.findById(user).getProfileId();
+		byte[] readByteArray = basicBinaryContentService.findById(profileId).getData();
+		ByteArrayInputStream inStreamObj = new ByteArrayInputStream(readByteArray);
+
+		BufferedImage readImage = ImageIO.read(inStreamObj);
+		ImageIO.write(readImage, "jpg", new File("src/readTestImg.jpg"));
 	}
 
 	private static UserRequestDTO createUser(String name, String email, String password, String statusMessage) {
