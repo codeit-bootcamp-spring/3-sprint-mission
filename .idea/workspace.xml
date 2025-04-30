@@ -5,15 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="08140402-956f-48d4-b229-3a6d3ecba6ec" name="Changes" comment="feature: gitignore">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/discodeit/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/discodeit/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/discodeit/src/main/java/com/sprint/mission/discodeit/DiscodeitApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/discodeit/src/main/java/com/sprint/mission/discodeit/DiscodeitApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/discodeit/src/main/java/com/sprint/mission/discodeit/files/channels.json" beforeDir="false" afterPath="$PROJECT_DIR$/discodeit/src/main/java/com/sprint/mission/discodeit/files/channels.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/discodeit/src/main/java/com/sprint/mission/discodeit/files/messages.json" beforeDir="false" afterPath="$PROJECT_DIR$/discodeit/src/main/java/com/sprint/mission/discodeit/files/messages.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/discodeit/src/main/java/com/sprint/mission/discodeit/files/readstatus.json" beforeDir="false" afterPath="$PROJECT_DIR$/discodeit/src/main/java/com/sprint/mission/discodeit/files/readstatus.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/discodeit/src/main/java/com/sprint/mission/discodeit/files/users.json" beforeDir="false" afterPath="$PROJECT_DIR$/discodeit/src/main/java/com/sprint/mission/discodeit/files/users.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/discodeit/src/main/java/com/sprint/mission/discodeit/files/userstatus.json" beforeDir="false" afterPath="$PROJECT_DIR$/discodeit/src/main/java/com/sprint/mission/discodeit/files/userstatus.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -114,6 +106,8 @@
       <workItem from="1745970905819" duration="8000" />
       <workItem from="1745970932385" duration="88000" />
       <workItem from="1745971075045" duration="6000" />
+      <workItem from="1745971510179" duration="106000" />
+      <workItem from="1745971625747" duration="6000" />
     </task>
     <task id="LOCAL-00001" summary="feature: gitignore">
       <option name="closed" value="true" />

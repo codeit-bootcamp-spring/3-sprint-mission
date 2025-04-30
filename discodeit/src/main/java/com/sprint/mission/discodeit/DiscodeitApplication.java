@@ -49,6 +49,7 @@ public class DiscodeitApplication {
         System.out.println("메시지 생성 시간 : " + message.getCreatedAt());
         messageService.update(message.getId(),updateMessageRequest);
         System.out.println("수정된 메시지 생성 : " + message.getContent());
+        System.out.println("메시지 수정된 시간 : " + message.getUpdatedAt());
     }
 
 
@@ -71,7 +72,4 @@ public class DiscodeitApplication {
         // 테스트
         messageCreateTest(messageService, channel, user);
     }
-
-//
-
 }
