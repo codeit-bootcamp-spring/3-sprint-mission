@@ -57,7 +57,6 @@ public class JcfUserService implements UserService {
             return new UserCreateResponse(
                     user.getId(),
                     user.getUsername(),
-                    user.getPassword(),
                     user.getEmail(),
                     user.getProfileId(),
                     userStatus.getId()
@@ -70,7 +69,6 @@ public class JcfUserService implements UserService {
             return new UserCreateResponse(
                     user.getId(),
                     user.getUsername(),
-                    user.getPassword(),
                     user.getEmail(),
                     user.getProfileId(),
                     userStatus.getId()

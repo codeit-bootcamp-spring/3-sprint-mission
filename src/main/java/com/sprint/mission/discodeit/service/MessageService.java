@@ -22,13 +22,14 @@ import java.util.UUID;
 public interface MessageService {
 
     MessageCreateResponse createMessage(MessageCreateRequest request);
-    MessageAttachmentsCreateResponse createMessage(MessageAttachmentsCreateRequest request);
 
+    MessageAttachmentsCreateResponse createMessage(MessageAttachmentsCreateRequest request);
+    // not required
     Message findMessageById(UUID messageId);
+    // not required
+    List<Message> findAllMessages();
 
     List<Message> findAllByChannelId(UUID channelId);
-
-    List<Message> findAllMessages();
 
     void updateMessage(MessageUpdateRequest request);
 

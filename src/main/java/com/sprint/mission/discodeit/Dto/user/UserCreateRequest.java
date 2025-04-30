@@ -21,12 +21,13 @@ public class UserCreateRequest {
     private String password;
     private byte[] image;
 
+    // 일반 생성
     public UserCreateRequest(String username, String email, String password) {
         this.username = username;
         this.email = email;
         this.password = password;
     }
-
+    // 프로필 이미지와 같이 생성
     public UserCreateRequest(String username, String email, String password, byte[] image) {
         this.username = username;
         this.email = email;

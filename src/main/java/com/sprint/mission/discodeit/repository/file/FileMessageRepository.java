@@ -1,15 +1,11 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.fasterxml.jackson.core.ObjectCodec;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.util.FilePathUtil;
+import com.sprint.mission.discodeit.util.FilePathProperties;
 import com.sprint.mission.discodeit.util.FileSerializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.io.FileInputStream;
@@ -36,7 +32,7 @@ import java.util.*;
 @Repository
 @RequiredArgsConstructor
 public class FileMessageRepository implements MessageRepository {
-    private final FilePathUtil pathUtil;
+    private final FilePathProperties pathUtil;
 
 
 

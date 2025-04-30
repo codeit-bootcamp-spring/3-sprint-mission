@@ -16,7 +16,6 @@ import java.util.UUID;
 public record UserCreateResponse(
         UUID id,
         String username,
-        String password,
         String email,
         UUID profileId,
         UUID userStatusId

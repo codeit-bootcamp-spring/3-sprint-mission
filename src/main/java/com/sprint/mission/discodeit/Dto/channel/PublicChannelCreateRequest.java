@@ -1,11 +1,7 @@
 package com.sprint.mission.discodeit.Dto.channel;
 
-import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.User;
 import lombok.Getter;
 
-import java.time.Instant;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -24,10 +20,10 @@ import java.util.UUID;
 public class PublicChannelCreateRequest {
     String channelName;
     String description;
-    List<User> users;
+    List<UUID> userIds;
 
-    public PublicChannelCreateRequest(Set<User> users, String channelName, String description) {
-        this.users = users.stream().toList();
+    public PublicChannelCreateRequest(Set<UUID> userIds, String channelName, String description) {
+        this.userIds = userIds.stream().toList();
         this.channelName = channelName;
         this.description = description;
     }

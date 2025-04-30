@@ -29,6 +29,8 @@ public class ChannelCreateResponse {
         this.id = id;
         this.type = type;
         this.updatedAt = updatedAt;
+        this.name = "";
+        this.description = "";
     }
 
     public ChannelCreateResponse(UUID id, ChannelType type, Instant updatedAt, String name, String description) {

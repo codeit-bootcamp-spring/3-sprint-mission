@@ -1,14 +1,11 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.util.FilePathUtil;
+import com.sprint.mission.discodeit.util.FilePathProperties;
 import com.sprint.mission.discodeit.util.FileSerializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.io.FileInputStream;
@@ -16,7 +13,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -38,7 +34,7 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 public class FileChannelRepository implements ChannelRepository {
-    private final FilePathUtil filePathUtil;
+    private final FilePathProperties filePathUtil;
 
 
     @Override

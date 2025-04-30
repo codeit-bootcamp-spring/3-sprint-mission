@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -30,11 +31,10 @@ public class JcfUserStatusRepository implements UserStatusRepository {
 
     @Override
     public void updateByUserId(UUID userId, Instant newTime) {
-        UserStatus userStatus = data.values().stream().filter(us -> us.getUserId().equals(userId))
-                .findFirst().orElse(null);
-        if (userStatus == null) {
-            return;
-        }
+        UserStatus userStatus = data.values().stream()
+                .filter(us -> us.getUserId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("no userStatus"));
         userStatus.setUpdatedAt(newTime);
     }
 
@@ -49,6 +49,10 @@ public class JcfUserStatusRepository implements UserStatusRepository {
 
     @Override
     public UserStatus findById(UUID userStatusId) {
+        if (!data.containsKey(userStatusId)) {
+            throw new IllegalStateException("no userStatus to find");
+        }
+
         return data.get(userStatusId);
     }
 
@@ -92,12 +96,11 @@ public class JcfUserStatusRepository implements UserStatusRepository {
         return data.values().stream().toList();
     }
 
-    // 추가 예정
 
     @Override
     public void deleteById(UUID userStatusId) {
         if (!data.containsKey(userStatusId)) {
-            throw new IllegalStateException("no userStatus to delete by eid");
+            throw new IllegalStateException("no userStatus to delete by id");
         }
         data.remove(userStatusId);
     }

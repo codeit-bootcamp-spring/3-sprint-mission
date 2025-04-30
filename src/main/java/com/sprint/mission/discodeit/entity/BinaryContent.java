@@ -35,12 +35,14 @@ public class BinaryContent implements Serializable {
     public BinaryContent(byte[] image) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         this.attachment = image;
     }
 
     public void setAttachment(byte[] attachment) {
         this.attachment = attachment;
         this.updatedAt = Instant.now();
+
     }
 
     @Override

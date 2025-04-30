@@ -1,16 +1,11 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.util.FilePathUtil;
+import com.sprint.mission.discodeit.util.FilePathProperties;
 import com.sprint.mission.discodeit.util.FileSerializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.io.FileInputStream;
@@ -18,7 +13,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -39,14 +33,14 @@ import java.util.stream.Stream;
 @Repository
 @RequiredArgsConstructor
 public class FileUserStatusRepository implements UserStatusRepository {
-    private final FilePathUtil filePathUtil;
+    private final FilePathProperties filePathUtil;
 
     @Override
     public void updateByUserId(UUID userId, Instant newTime) {
         Path directory = filePathUtil.getUserStatusDirectory();
 
         if (!Files.exists(directory)) {
-            return ;
+            throw new IllegalStateException("no userStatus");
         }
 
         UserStatus newUserStatus;
@@ -64,7 +58,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
                     .filter(Objects::nonNull)
                     .filter(userStatus -> userStatus.getUserId().equals(userId))
                     .findFirst()
-                    .orElse(null);
+                    .orElseThrow(() -> new IllegalStateException("any matching userStatus"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -97,7 +91,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
         Path path = filePathUtil.getUserStatusFilePath(userStatusId);
 
         if (!Files.exists(path)) {
-            return null;
+            throw new IllegalStateException("no userStatus to find");
         }
         return FileSerializer.readFile(path, UserStatus.class);
     }

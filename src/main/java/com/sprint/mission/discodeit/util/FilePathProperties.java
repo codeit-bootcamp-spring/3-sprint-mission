@@ -20,7 +20,7 @@ import java.util.UUID;
  * 2025. 4. 14.        doungukkim       최초 생성
  */
 @Component
-public class FilePathUtil {
+public class FilePathProperties {
 private static final String TO_FILES = "src/main/java/com/sprint/mission/data/";
     private static final Path USER_DIRECTORY = Paths.get(TO_FILES+"user");
     private static final Path CHANNEL_DIRECTORY = Paths.get(TO_FILES+"channel");
@@ -33,7 +33,7 @@ private static final String TO_FILES = "src/main/java/com/sprint/mission/data/";
 
     private static final Path[] DIRECTORIES = {USER_DIRECTORY, CHANNEL_DIRECTORY, MESSAGE_DIRECTORY, USER_STATUS_DIRECTORY,BINARY_CONTENT_DIRECTORY,READ_STATUS_DIRECTORY};
 
-    public FilePathUtil() {
+    public FilePathProperties() {
         for (Path directory : DIRECTORIES) {
             init(directory);
         }

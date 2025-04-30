@@ -37,9 +37,9 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelCreateResponse createChannel(PrivateChannelCreateRequest request) {
-        List<User> users = Optional.ofNullable(request.users())
-                .orElseThrow(() -> new IllegalArgumentException("no users in request") );
-        List<UUID> userIds = users.stream().map(User::getId).toList();
+
+        List<UUID> userIds = Optional.ofNullable(request.userIds())
+                .orElseThrow(() -> new IllegalArgumentException("no param in request"));
 
         // channel 생성
         Channel channel = channelRepository.createPrivateChannelByName();
@@ -57,8 +57,8 @@ public class BasicChannelService implements ChannelService {
         String description = Optional.ofNullable(request.getDescription())
                 .orElseThrow(() -> new IllegalArgumentException("no description in request"));
 
-        List<User> users = request.getUsers();
-        List<UUID> userIds = users.stream().map(User::getId).toList();
+
+        List<UUID> userIds = Optional.ofNullable(request.getUserIds()).orElseThrow(() -> new IllegalArgumentException("no userIds in request"));
 
         // channel 생성
         Channel channel = channelRepository.createPublicChannelByName(channelName, description);
@@ -184,6 +184,8 @@ public class BasicChannelService implements ChannelService {
                     .orElseThrow(() -> new IllegalArgumentException("이름 입력 없음: BasicChannelService.update"));
 
             channelRepository.updateChannel(channelId, request.name());
+        } else {
+            throw new IllegalArgumentException("only public channel can change the name");
         }
     }
 
@@ -191,15 +193,15 @@ public class BasicChannelService implements ChannelService {
     public void deleteChannel(UUID channelId) {
         Objects.requireNonNull(channelId, "no channelId: BasicChannelService.deleteChannel");
 
-        // 하나의 객체도 삭제 실패가 없어야 하나?
+        // 하나의 객체도 삭제 실패가 없어야 하나? YES
         List<ReadStatus> targetReadStatuses = readStatusRepository.findReadStatusesByChannelId(channelId);
         for (ReadStatus readStatus : targetReadStatuses) {
-            readStatusRepository.deleteReadStatusById(readStatus.getId()); // file: throw exception  | jcf: no exception
+            readStatusRepository.deleteReadStatusById(readStatus.getId()); // throw
         }
 
         List<Message> targetMessages = messageRepository.findMessagesByChannelId(channelId);
         for (Message targetMessage : targetMessages) {
-            messageRepository.deleteMessageById(targetMessage.getId()); // file: throw exception | jcf: no exception
+            messageRepository.deleteMessageById(targetMessage.getId()); // throw
         }
 
         channelRepository.deleteChannel(channelId); // file | jcf : throw exception

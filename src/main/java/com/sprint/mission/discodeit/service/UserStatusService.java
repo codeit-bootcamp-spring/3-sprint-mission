@@ -22,30 +22,16 @@ import java.util.UUID;
  */
 
 public interface UserStatusService {
-    //    create
-//      [ ] DTO를 활용해 파라미터를 그룹화합니다.
-//      [ ] 관련된 User가 존재하지 않으면 예외를 발생시킵니다.
-//      [ ] 같은 User와 관련된 객체가 이미 존재하면 예외를 발생시킵니다.
+
     UserStatusCreateResponse create(UserStatusCreateRequest request);
 
-    //    find
-//      [ ] id로 조회합니다.
     UserStatus find(UUID userStatusId);
 
-    //    findAll
-//      [ ] 모든 객체를 조회합니다.
     List<UserStatus> findAll();
 
-    //    update
-//      [ ] DTO를 활용해 파라미터를 그룹화합니다.
-//          수정 대상 객체의 id 파라미터, 수정할 값(시간) 파라미터
     void update(UserStatusUpdateRequest request);
 
-    //    updateByUserId
-//      [ ] userId 로 특정 User의 객체를 업데이트합니다.
-    void updateByUserId(UUID userId, Instant newTime);
+    void updateByUserId(UUID userId, Instant newTime);  // throw
 
-    //    delete
-//      [ ] id로 삭제합니다.
     void delete(UUID userStatusId);
 }

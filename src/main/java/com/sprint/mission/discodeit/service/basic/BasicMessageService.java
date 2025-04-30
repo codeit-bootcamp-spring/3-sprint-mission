@@ -79,13 +79,14 @@ public class BasicMessageService implements MessageService{
         );
     }
 
+    // not required
     @Override
     public Message findMessageById(UUID messageId) {
         Objects.requireNonNull(messageId, "no messageId: BasicMessageService.findMessageById");
         return Optional.ofNullable(messageRepository.findMessageById(messageId))
                 .orElseThrow(() -> new IllegalStateException("no message in DB: BasicMessageService.findMessageById"));
     }
-
+    // not required
     @Override
     public List<Message> findAllMessages() {
         return messageRepository.findAllMessages();

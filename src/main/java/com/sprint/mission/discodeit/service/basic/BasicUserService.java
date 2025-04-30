@@ -34,8 +34,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class BasicUserService  implements UserService {
     private final UserRepository userRepository;
-
-
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
 
@@ -49,7 +47,7 @@ public class BasicUserService  implements UserService {
         boolean usernameNotUnique = !userRepository.isUniqueUsername(userCreateRequest.getUsername());
         boolean emailNotUnique = !userRepository.isUniqueEmail(userCreateRequest.getEmail());
 
-        if ((usernameNotUnique) || (emailNotUnique)) {
+        if (usernameNotUnique || emailNotUnique) {
             throw new IllegalStateException("not unique username or email");
         }
 
@@ -61,7 +59,6 @@ public class BasicUserService  implements UserService {
             return new UserCreateResponse(
                     user.getId(),
                     user.getUsername(),
-                    user.getPassword(),
                     user.getEmail(),
                     user.getProfileId(),
                     userStatus.getId()
@@ -74,7 +71,6 @@ public class BasicUserService  implements UserService {
             return new UserCreateResponse(
                     user.getId(),
                     user.getUsername(),
-                    user.getPassword(),
                     user.getEmail(),
                     user.getProfileId(),
                     userStatus.getId()
@@ -129,7 +125,7 @@ public class BasicUserService  implements UserService {
     }
 
 
-    // optional to update image
+
     @Override
     public ProfileUploadResponse updateImage(ProfileUploadRequest request) {
         UUID userId = Optional.ofNullable(request.userId()).orElseThrow(() -> new IllegalArgumentException("no userId in request"));
@@ -159,6 +155,7 @@ public class BasicUserService  implements UserService {
                 user.getProfileId());
     }
 
+    // not required
     @Override
     public void updateUser(UUID userId, String name) {
         Objects.requireNonNull(userId, "user 아이디 입력 없음: BasicUserService.updateUser");

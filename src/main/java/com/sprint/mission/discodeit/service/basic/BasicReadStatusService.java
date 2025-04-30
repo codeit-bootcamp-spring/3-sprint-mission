@@ -33,10 +33,10 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public ReadStatusCreateResponse create(ReadStatusCreateRequest request) {
-        ReadStatus readStatus = readStatusRepository.createByUserId(
-                Objects.requireNonNull(request.userId(), "trouble with userId: BasicReadStatusService.create"),
-                Objects.requireNonNull(request.channelId(), "trouble with channelId: BasicReadStatusService.create")
-        );
+        Objects.requireNonNull(request.userId(), "trouble with userId: BasicReadStatusService.create");
+        Objects.requireNonNull(request.channelId(), "trouble with channelId: BasicReadStatusService.create");
+
+        ReadStatus readStatus = readStatusRepository.createByUserId(request.userId(), request.channelId());
         return new ReadStatusCreateResponse(readStatus.getId(), readStatus.getUserId(), readStatus.getChannelId());
     }
 
