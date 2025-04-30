@@ -8,5 +8,5 @@ import java.util.Map;
 import java.util.UUID;
 
 
-public record FindUserRequest(UUID id, UUID profileId, Instant createdAt, Instant updatedAt, String username, String email, Map<UUID,User> friends,
+public record FindUserRespond(UUID id, UUID profileId, Instant createdAt, Instant updatedAt, String username, String email, Map<UUID,User> friends,
                               UserStatus userStatus) {}
