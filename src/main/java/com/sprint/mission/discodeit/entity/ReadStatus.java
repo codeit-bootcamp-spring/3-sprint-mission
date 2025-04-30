@@ -2,10 +2,13 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
-public class ReadStatus {
+public class ReadStatus implements Serializable {
+    @Getter
+    private static final Long serialVersionUID = 1L;
     @Getter
     private final UUID id;
     @Getter
@@ -24,7 +27,7 @@ public class ReadStatus {
     private Instant lastReadTime;
 
 
-    // QUESTION. 처음에 생성될때 읽지않은 상태가 초기값이 맞나?
+    // XXX. 처음에 생성될때 읽지않은 상태가 초기값이 맞나?
     public ReadStatus(UUID userId, UUID channelId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();

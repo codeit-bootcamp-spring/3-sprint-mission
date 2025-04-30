@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import com.sprint.mission.discodeit.dto.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.PublicChannelCreateRequest;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -35,8 +36,10 @@ public class Channel implements Serializable {
     private List<UUID> attendees;
     @Getter
     private List<UUID> messages;
+    @Getter
+    @Setter
+    private Instant lastMessageTime;
 
-    // TODO : ChannelCreateRequest 로 받아야하나?
     public Channel(PublicChannelCreateRequest publicChannelCreateRequest) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
@@ -47,7 +50,7 @@ public class Channel implements Serializable {
         this.description = publicChannelCreateRequest.description();
         this.ownerId = publicChannelCreateRequest.ownerId();
         //
-        this.attendees = new ArrayList<>();
+        this.attendees = List.of(this.ownerId);
         this.messages = new ArrayList<>();
     }
 
@@ -59,11 +62,11 @@ public class Channel implements Serializable {
         this.type = privateChannelCreateRequest.type();
         this.ownerId = privateChannelCreateRequest.ownerId();
         //
-        this.attendees = new ArrayList<>();
+        this.attendees = List.of(this.ownerId);
         this.messages = new ArrayList<>();
     }
 
-    //QUESTION : channel.addAttendees(), 이게 repository가 아니라 여기 있는게 맞을까?
+    //XXX : channel.addAttendees(), 이게 repository가 아니라 여기 있는게 맞을까?
     public void addAttendee(UUID userId) {
         this.attendees.add(userId);
     }

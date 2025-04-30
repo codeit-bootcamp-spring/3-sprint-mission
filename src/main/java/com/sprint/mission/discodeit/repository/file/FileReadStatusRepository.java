@@ -70,18 +70,13 @@ public class FileReadStatusRepository implements ReadStatusRepository {
             ReadStatus readStatusNullable = (ReadStatus) ois.readObject();
             return Optional.ofNullable(readStatusNullable);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return Optional.empty();
         }
     }
 
     @Override
-    public Optional<ReadStatus> findByChannelId(UUID channelId) {
-        List<ReadStatus> readStatuses = this.findAll();
-        Optional<ReadStatus> userStatusNullable = readStatuses.stream()
-                .filter(readStatus -> readStatus.getChannelId().equals(channelId))
-                .findFirst();
-
-        return userStatusNullable;
+    public List<ReadStatus> findAllByChannelId(UUID channelId) {
+        return this.findAll().stream().filter((readStatus) -> readStatus.getChannelId().equals(channelId)).toList();
     }
 
     @Override
@@ -104,7 +99,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
                     });
             return readStatuses;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return List.of();
         }
     }
 

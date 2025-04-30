@@ -4,11 +4,14 @@ import com.sprint.mission.discodeit.dto.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.MessageCreateResponse;
 import com.sprint.mission.discodeit.dto.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -17,21 +20,31 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
-    //
+    private final ChannelRepository channelRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
     public MessageCreateResponse create(MessageCreateRequest createRequest) {
-        //TODO : 유저가 해당 채널에 있는지 validation check 후 메세지 생성
+        /* 유저가 해당 채널에 있는지 validation check */
 
+        this.channelRepository.findById(createRequest.channelId())
+                .ifPresent((channel) -> {
+                            if (!channel.getAttendees().contains(createRequest.userId())) {
+                                new Exception("유저가 참여하지 않은 채팅방에는 메세지를 보낼수 없습니다.");
+                            }
+                        }
+                );
 
-        //TODO : 선택적으로 여러개의 첨부파일 같이 등록 가능
-        //QUESTION. 메세지 create 하기 전에 createRequest에서 attachmentIds를 알수있나? 여기서 파일 추가할껀데?
-
+        /* 선택적으로 여러개의 첨부파일 같이 등록 가능 */
         Message message = new Message(createRequest);
 
-        //FIXME : MessageCreateResponse에는 Message 밖에없는데
         this.messageRepository.save(message);
 
+        /* 채널 lastMessageTime 업데이트 */
+        this.channelRepository.findById(createRequest.channelId()).ifPresent((channel) -> {
+            channel.setLastMessageTime(Instant.now());
+            this.channelRepository.save(channel);
+        });
         return new MessageCreateResponse(message);
     }
 
@@ -59,14 +72,18 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public MessageCreateResponse update(MessageUpdateRequest updateRequest) {
-        // 다른 메소드에서 this.find() 이제 사용 못함.
         Message message = this.messageRepository.findById(updateRequest.messageId())
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + updateRequest.messageId() + " not found"));
 
         message.update(updateRequest.newContent(), updateRequest.attachmentIds());
 
-        //QUESTION: 이렇게 하면 파일레포일때 파일 업데이트가되나??? -> 안됨
-        return new MessageCreateResponse(message);
+        /* 업데이트 후 다시 DB 저장 */
+        this.messageRepository.save(message);
+
+        Message updatedMessage = this.messageRepository.findById(updateRequest.messageId())
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + updateRequest.messageId() + " not found"));
+
+        return new MessageCreateResponse(updatedMessage);
     }
 
     @Override
@@ -74,12 +91,11 @@ public class BasicMessageService implements MessageService {
         Message message = this.messageRepository.findById(messageId).
                 orElseThrow(() -> new NoSuchElementException("Message with messageId " + messageId + " not found"));
 
-        //TODO : BinaryContentRepository에서 해당 객체 삭제,
-//        if(!message.getAttachmentIds().isEmpty()){
-//            for(UUID binaryContentId : message.getAttachmentIds()){
-//                this.BinaryContentRepository.deleteById(binaryContentId);
-//            }
-//        }
+        if (message.getAttachmentIds() != null && !message.getAttachmentIds().isEmpty()) {
+            for (UUID binaryContentId : message.getAttachmentIds()) {
+                this.binaryContentRepository.deleteById(binaryContentId);
+            }
+        }
 
         this.messageRepository.deleteById(messageId);
     }

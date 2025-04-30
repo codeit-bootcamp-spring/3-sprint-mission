@@ -68,7 +68,7 @@ public class FileChannelRepository implements ChannelRepository {
             Channel channelNullable = (Channel) ois.readObject();
             return Optional.ofNullable(channelNullable);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return Optional.empty();
         }
 
     }
@@ -88,7 +88,6 @@ public class FileChannelRepository implements ChannelRepository {
                         ) {
                             Channel channel = (Channel) ois.readObject();
                             channels.add(channel);
-                            //FIXME
                         } catch (IOException | ClassNotFoundException e) {
                             throw new RuntimeException(e);
                         }
@@ -97,7 +96,7 @@ public class FileChannelRepository implements ChannelRepository {
 
             return channels;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return List.of();
         }
 
     }

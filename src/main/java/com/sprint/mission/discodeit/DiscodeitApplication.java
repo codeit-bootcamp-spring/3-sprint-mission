@@ -3,9 +3,7 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.dto.*;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.service.*;
-import com.sprint.mission.discodeit.service.basic.BasicChannelService;
-import com.sprint.mission.discodeit.service.basic.BasicMessageService;
-import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.service.basic.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -61,23 +59,23 @@ public class DiscodeitApplication {
         System.out.println("---------- 유저상태 update ----------");
         System.out.println(userStatusService.updateByUserId(냥냥.getId(), UserStatusType.OFFLINE).userStatus().toString());
 
-        System.out.println("---------- 유저 delete 후 결과 조회 ----------");
-        userService.delete(댕댕이유저ResponseWithProfile.user().getId());
-
-        System.out.println("---------- (삭제후) 유저 findAll ----------");
-        for (UserResponse userRes : userService.findAll()) {
-            System.out.println("name : " + userRes.name());
-        }
-
-        System.out.println("----------  (삭제후) 유저상태 findAll ----------");
-        for (UserStatusResponse userRes : userStatusService.findAll()) {
-            System.out.println("name : " + userRes.userStatus());
-        }
+//        System.out.println("---------- 유저 delete 후 결과 조회 ----------");
+//        userService.delete(댕댕이유저ResponseWithProfile.user().getId());
+//
+//        System.out.println("---------- (삭제후) 유저 findAll ----------");
+//        for (UserResponse userRes : userService.findAll()) {
+//            System.out.println("name : " + userRes.name());
+//        }
+//
+//        System.out.println("----------  (삭제후) 유저상태 findAll ----------");
+//        for (UserStatusResponse userRes : userStatusService.findAll()) {
+//            System.out.println("name : " + userRes.userStatus());
+//        }
 
         return 댕댕이유저ResponseWithProfile.user();
     }
 
-    static Channel setupChannel(ChannelService channelService) {
+    static Channel setupChannel(ChannelService channelService, ReadStatusService readStatusService) {
 
         // 공개 채널 생성
         ChannelCreateResponse 댕댕공개채널_CreateResponse = channelService.create(new PublicChannelCreateRequest("댕댕이들의 공개 채널", ChannelType.PUBLIC, "댕댕 공지사항", 댕댕.getId()));
@@ -114,12 +112,12 @@ public class DiscodeitApplication {
 //        System.out.println("---------- 채널 update -> 결과 : private 채널이므로 에러 떠야함 ----------");
 //        channelService.update(new ChannelUpdateRequest(냥냥비공개채널_CreateResponse.channel().getId(), "냥냥이의 비공개 채널 진화함", null));
 
-
-        System.out.println("---------- 채널 delete 후 결과 조회  ----------");
-        channelService.delete(댕댕공개채널2_CreateResponse.channel().getId());
-        for (ChannelResponse chanRes : channelService.findAllByUserId(댕댕.getId())) {
-            System.out.println("channel id : " + chanRes.channel().getId() + "참석자 리스트(비공개채널일때만) : " + chanRes.attendeesId());
+        System.out.println("---------- ReadStatus findAll ----------");
+        for (ReadStatusResponse readStatusRes : readStatusService.findAllByUserId(댕댕.getId())) {
+            System.out.println("name : " + readStatusRes.readStatus().toString());
         }
+
+        channelService.delete(댕댕공개채널2_CreateResponse.channel().getId());
 
         return 냥냥비공개채널_CreateResponse.channel();
     }
@@ -179,13 +177,14 @@ public class DiscodeitApplication {
         UserService userService = context.getBean(BasicUserService.class);
         ChannelService channelService = context.getBean(BasicChannelService.class);
         MessageService messageService = context.getBean(BasicMessageService.class);
-        BinaryContentService binaryContentService = context.getBean(BinaryContentService.class);
-        UserStatusService userStatusService = context.getBean(UserStatusService.class);
+        BinaryContentService binaryContentService = context.getBean(BasicBinaryContentService.class);
+        UserStatusService userStatusService = context.getBean(BasicUserStatusService.class);
+        ReadStatusService readStatusService = context.getBean(BasicReadStatusService.class);
 
         // 셋업
         User user = setupUser(userService, binaryContentService, userStatusService);
-        Channel channel = setupChannel(channelService);
-//        messageCreateTest(messageService);
+        Channel channel = setupChannel(channelService, readStatusService);
+        messageCreateTest(messageService);
 
 
         System.out.println("🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️Service End🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️️‍");

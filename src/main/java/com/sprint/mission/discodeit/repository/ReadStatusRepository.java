@@ -11,8 +11,7 @@ public interface ReadStatusRepository {
 
     public Optional<ReadStatus> findById(UUID readStatusId);
 
-    // Q. 이게 언제 필요하지?
-    public Optional<ReadStatus> findByChannelId(UUID channelId);
+    public List<ReadStatus> findAllByChannelId(UUID channelId);
 
     public List<ReadStatus> findAll();
 

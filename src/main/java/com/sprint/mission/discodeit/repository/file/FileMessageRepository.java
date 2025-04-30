@@ -69,7 +69,7 @@ public class FileMessageRepository implements MessageRepository {
             Message messageNullable = (Message) ois.readObject();
             return Optional.ofNullable(messageNullable);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return Optional.empty();
         }
 
     }
@@ -95,10 +95,16 @@ public class FileMessageRepository implements MessageRepository {
 
             return messages;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return List.of();
         }
 
     }
+
+    @Override
+    public List<Message> findAllByChannelId(UUID channelId) {
+        return this.findAll().stream().filter((message) -> message.getChannelId().equals(channelId)).toList();
+    }
+
 
     @Override
     public boolean existsById(UUID id) {

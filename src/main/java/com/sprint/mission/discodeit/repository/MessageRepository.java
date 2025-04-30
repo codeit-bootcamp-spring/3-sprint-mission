@@ -14,8 +14,7 @@ public interface MessageRepository {
 
     public List<Message> findAll();
 
-    //TODO
-//    public List<Message> findAllByChannelId(UUID channelId);
+    public List<Message> findAllByChannelId(UUID channelId);
 
     public boolean existsById(UUID messageId);
 
