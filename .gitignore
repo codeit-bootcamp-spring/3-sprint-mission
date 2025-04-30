@@ -48,3 +48,6 @@ bin/
 ### Files ###
 data
 !**/src/main/**/data
+
+### logs ###
+logs
