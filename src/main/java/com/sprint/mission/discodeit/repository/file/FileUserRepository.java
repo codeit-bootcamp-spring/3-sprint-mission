@@ -2,9 +2,13 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entitiy.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,18 +17,28 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "File")
 public class FileUserRepository implements UserRepository {
 
-    private static final String FILE_PATH = "src/main/java/com/sprint/mission/discodeit/repository/file/data/users.ser";
+    private static final Path FILE_PATH = Paths.get("src/main/java/com/sprint/mission/discodeit/repository/file/data/users.ser");
+
 
     //File*Repository에서만 사용, 파일을 읽어들여 리스트 반환
-    public List<User> readFiles(){
+    public List<User> readFiles() {
+        try {
+            if (!Files.exists(FILE_PATH) || Files.size(FILE_PATH) == 0) {
+                return new ArrayList<>();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         List<User> users = new ArrayList<>();
-        try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
-            while(true){
+        try (ObjectInputStream reader = new ObjectInputStream(new FileInputStream(FILE_PATH.toFile()))) {
+            while(true) {
                 try {
                     users.add((User) reader.readObject());
-                }catch (EOFException e){
+                } catch (EOFException e) {
                     break;
                 }
             }
@@ -34,17 +48,16 @@ public class FileUserRepository implements UserRepository {
         return users;
     }
 
+
     //File*Repository에서만 사용, 만들어 놓은 리스트를 인자로 받아 파일에 쓰기
-    public void writeFiles(List<User> users){
-        try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){
-            users.forEach((c)->{
-                try {
-                    writer.writeObject(c);
-                } catch (IOException e) {
-                    e.printStackTrace();
+    public void writeFiles(List<User> users) {
+        try {
+            Files.createDirectories(FILE_PATH.getParent());
+            try (ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(FILE_PATH.toFile()))) {
+                for (User user : users) {
+                    writer.writeObject(user);
                 }
-            });
-            writer.flush();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -66,11 +79,9 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public Optional<User> readById(UUID id) {
-        List<User> users = new ArrayList<>(readFiles());
-        Optional<User> user = users.stream()
-                .filter((u)->u.getId().equals(id))
+        return readFiles().stream()
+                .filter((user)->user.getId().equals(id))
                 .findAny();
-        return user;
     }
 
     @Override
@@ -102,10 +113,10 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public void delete(User user) {
+    public void delete(UUID userId) {
         List<User> users = readFiles();
         List<User> deleteUsers = users.stream()
-                .filter((c) -> !c.getId().equals(user.getId()))
+                .filter((c) -> !c.getId().equals(userId))
                 .collect(Collectors.toList());
        writeFiles(deleteUsers);
     }

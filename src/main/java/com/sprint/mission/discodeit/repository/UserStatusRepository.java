@@ -10,6 +10,7 @@ public interface UserStatusRepository {
     public UserStatus save(UserStatus userStatus);
     public List<UserStatus> read();
     public Optional<UserStatus> readById(UUID id);
+    public Optional<UserStatus> readByUserId(UUID userId);
     public void update(UUID id, UserStatus userStatus);
-    public void delete(UserStatus userStatus);
+    public void delete(UUID userStatusId);
 }

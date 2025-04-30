@@ -2,29 +2,43 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entitiy.BinaryContent;
 import com.sprint.mission.discodeit.entitiy.Channel;
-import com.sprint.mission.discodeit.entitiy.UserStatus;
+import com.sprint.mission.discodeit.entitiy.Message;
+import com.sprint.mission.discodeit.entitiy.ReadStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
-import java.time.Instant;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "File")
 public class FileBinaryContentRepository implements BinaryContentRepository {
 
-    private static final String FILE_PATH = "src/main/java/com/sprint/mission/discodeit/repository/file/data/binarycontents.ser";
+    private static final Path FILE_PATH = Paths.get("src/main/java/com/sprint/mission/discodeit/repository/file/data/binarycontents.ser");
 
     //File*Repository에서만 사용, 파일을 읽어들여 리스트 반환
-    public List<BinaryContent> readFiles(){
+    public List<BinaryContent> readFiles() {
+        try {
+            if (!Files.exists(FILE_PATH) || Files.size(FILE_PATH) == 0) {
+                return new ArrayList<>();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         List<BinaryContent> binaryContents = new ArrayList<>();
-        try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
-            while(true){
+        try (ObjectInputStream reader = new ObjectInputStream(new FileInputStream(FILE_PATH.toFile()))) {
+            while(true) {
                 try {
                     binaryContents.add((BinaryContent) reader.readObject());
-                }catch (EOFException e){
+                } catch (EOFException e) {
                     break;
                 }
             }
@@ -34,17 +48,16 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
         return binaryContents;
     }
 
+
     //File*Repository에서만 사용, 만들어 놓은 리스트를 인자로 받아 파일에 쓰기
-    public void writeFiles(List<BinaryContent> binaryContents){
-        try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){
-            binaryContents.forEach((c)->{
-                try {
-                    writer.writeObject(c);
-                } catch (IOException e) {
-                    e.printStackTrace();
+    public void writeFiles(List<BinaryContent> binaryContents) {
+        try {
+            Files.createDirectories(FILE_PATH.getParent());
+            try (ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(FILE_PATH.toFile()))) {
+                for (BinaryContent binaryContent : binaryContents) {
+                    writer.writeObject(binaryContent);
                 }
-            });
-            writer.flush();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -87,10 +100,10 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
-    public void delete(BinaryContent binaryContent) {
+    public void delete(UUID binaryContentId) {
         List<BinaryContent> binaryContents = readFiles();
         List<BinaryContent> deleteBinaryContents = binaryContents.stream()
-                .filter((c) -> !c.getId().equals(binaryContent.getId()))
+                .filter((c) -> !c.getId().equals(binaryContentId))
                 .toList();
         writeFiles(deleteBinaryContents);
     }

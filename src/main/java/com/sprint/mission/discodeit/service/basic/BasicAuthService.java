@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.rmi.NoSuchObjectException;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +15,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
 
-    UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
     public User login(LoginRequest request) {
@@ -26,9 +27,10 @@ public class BasicAuthService implements AuthService {
             if (user.isPresent()) {
                 return user.get();
             } else
-                throw new ClassNotFoundException();
-        } catch (ClassNotFoundException e) {
-            System.out.println("일치하지 않는 아이디 또는 비밀번호 입니다.");;
+                throw new NoSuchObjectException("일치하지 않는 아이디 또는 비밀번호 입니다.");
+        } catch (NoSuchObjectException e) {
+            System.out.println(e);
+            return null;
         }
     }
 }

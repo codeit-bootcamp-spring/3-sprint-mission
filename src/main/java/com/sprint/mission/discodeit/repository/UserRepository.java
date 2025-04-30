@@ -11,6 +11,6 @@ public interface UserRepository {
     public List<User> read();
     public Optional<User> readById(UUID id);
     public void update(UUID id, User user);
-    public void delete(User user);
+    public void delete(UUID userId);
     public Boolean duplicateCheck(User user);
 }

@@ -12,6 +12,5 @@ public interface BinaryContentRepository {
     public List<BinaryContent> read();
     public Optional<BinaryContent> readById(UUID id);
     public void update(UUID id, BinaryContent binaryContent);
-    public void delete(BinaryContent binaryContent);
-
+    public void delete(UUID binaryContentId);
 }
