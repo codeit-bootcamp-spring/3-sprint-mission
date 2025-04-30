@@ -2,16 +2,19 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
-@Repository
 public class FileMessageRepository implements MessageRepository {
 
-    private final String FILENAME = "src/main/java/com/sprint/mission/discodeit/data/messageRepo.ser";
-    private final File file = new File(FILENAME);
+    private String fileName;
+    private File file;
+
+    public FileMessageRepository(String filePath) {
+        this.fileName = "src/main/java/com/sprint/mission/discodeit/" + filePath + "/messageRepo.ser";
+        this.file = new File(fileName);
+    }
 
     @Override
     public Message save(Message message) {

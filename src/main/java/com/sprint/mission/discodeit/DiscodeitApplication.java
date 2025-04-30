@@ -47,14 +47,14 @@ public class DiscodeitApplication {
 		createExampleUsers(basicUserService);
 		createExampleChannels(basicChannelService, basicUserService);
 		createExampleMessages(basicMessageService, basicUserService, basicChannelService);
-
-		userServiceTest(basicUserService);
-		authServiceTest(basicAuthService);
-		userStatusServiceTest(basicUserStatusService, basicUserService);
-		channelServiceTest(basicChannelService, basicUserService);
-		messageServiceTest(basicMessageService, basicUserService, basicChannelService);
-		basicReadStatusService(basicUserService, basicReadStatusService);
-		basicBinaryContentService(basicUserService, basicMessageService, basicBinaryContentService);
+//
+//		userServiceTest(basicUserService);
+//		authServiceTest(basicAuthService);
+//		userStatusServiceTest(basicUserStatusService, basicUserService);
+//		channelServiceTest(basicChannelService, basicUserService);
+//		messageServiceTest(basicMessageService, basicUserService, basicChannelService);
+//		basicReadStatusService(basicUserService, basicReadStatusService);
+//		basicBinaryContentService(basicUserService, basicMessageService, basicBinaryContentService);
 
 //		partition("User 제거 시 연관 도메인 삭제 확인");
 //		basicUserService.deleteById(UUID.fromString("35db56d2-c16b-41ac-b05a-32536a6df8ab"));

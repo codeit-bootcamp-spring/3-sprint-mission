@@ -2,11 +2,9 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
-@Repository
 public class JCFChannelRepository implements ChannelRepository {
 
     private final Map<UUID, Channel> data;
@@ -42,7 +40,7 @@ public class JCFChannelRepository implements ChannelRepository {
     @Override
     public List<Channel> findByNameContaining(String name) {
         return data.values().stream()
-                .filter(channel -> channel.getChannelName().contains(name))
+                .filter(channel -> !channel.isPrivate() && channel.getChannelName().contains(name))
                 .toList();
     }
 

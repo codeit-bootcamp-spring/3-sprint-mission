@@ -2,16 +2,19 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
-@Repository
 public class FileUserStatusRepository implements UserStatusRepository {
 
-    private final String FILENAME = "src/main/java/com/sprint/mission/discodeit/data/userStatusRepo.ser";
-    private final File file = new File(FILENAME);
+    private String fileName;
+    private File file;
+
+    public FileUserStatusRepository(String filePath) {
+        this.fileName = "src/main/java/com/sprint/mission/discodeit/" + filePath + "/userStatusRepo.ser";
+        this.file = new File(fileName);
+    }
 
     @Override
     public void save(UserStatus userStatus) {

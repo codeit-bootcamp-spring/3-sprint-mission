@@ -2,17 +2,19 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
-@Repository
 public class FileReadStatusRepository implements ReadStatusRepository {
 
-    private final String FILENAME = "src/main/java/com/sprint/mission/discodeit/data/readStatusRepo.ser";
-    private final File file = new File(FILENAME);
+    private String fileName;
+    private File file;
 
+    public FileReadStatusRepository(String filePath) {
+        this.fileName = "src/main/java/com/sprint/mission/discodeit/" + filePath + "/readStatusRepo.ser";
+        this.file = new File(fileName);
+    }
     @Override
     public void save(ReadStatus readStatus) {
         // 파일에서 읽어오기

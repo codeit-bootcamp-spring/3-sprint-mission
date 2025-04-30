@@ -2,17 +2,20 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
-@Repository
 public class FileBinaryContentRepository implements BinaryContentRepository {
 
-    private final String FILENAME = "src/main/java/com/sprint/mission/discodeit/data/binaryContentRepo.ser";
-    private final File file = new File(FILENAME);
-    
+    private String fileName;
+    private File file;
+
+    public FileBinaryContentRepository(String filePath) {
+        this.fileName = "src/main/java/com/sprint/mission/discodeit/" + filePath + "/binaryContentRepo.ser";
+        this.file = new File(fileName);
+    }
+
     @Override
     public void save(BinaryContent binaryContent) {
         // 파일에서 읽어오기

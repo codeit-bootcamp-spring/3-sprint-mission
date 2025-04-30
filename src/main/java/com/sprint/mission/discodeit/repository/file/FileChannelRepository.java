@@ -2,16 +2,19 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
-@Repository
 public class FileChannelRepository implements ChannelRepository {
 
-    private final String FILENAME = "src/main/java/com/sprint/mission/discodeit/data/channelRepo.ser";
-    private final File file = new File(FILENAME);
+    private String fileName;
+    private File file;
+
+    public FileChannelRepository(String filePath) {
+        this.fileName = "src/main/java/com/sprint/mission/discodeit/" + filePath + "/channelRepo.ser";
+        this.file = new File(fileName);
+    }
 
     @Override
     public Channel save(Channel channel) {
