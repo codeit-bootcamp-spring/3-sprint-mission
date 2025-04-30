@@ -8,7 +8,9 @@ import com.sprint.mission.discodeit.service.MessageService;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
 
+@Service
 public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
     //
