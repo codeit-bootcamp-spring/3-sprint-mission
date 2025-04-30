@@ -28,6 +28,8 @@ public interface UserService {
 
     public void delete(UUID userId);
 
+    public boolean hasSameEmailOrName(String name, String email);
+
     // XXX : 불가능. userservice는 channel service에 의존하고 있지 않으므로
 //    public List<User> findAttendeesByChannel(UUID channelId);
 }

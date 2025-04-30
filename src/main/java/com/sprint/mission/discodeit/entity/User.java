@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.UserCreateRequest;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -30,27 +31,16 @@ public class User implements Serializable {
     @Getter
     private UUID profileId; // BinaryContent의 id
 
-    // TODO : UserCreateRequest 로 받아야하나?
-    public User(String name, String email, String password) {
+    public User(UserCreateRequest createRequest) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         //
-        this.name = name;
-        this.email = email;
-        this.password = password;
-    }
-
-    public User(String name, String email, String password, UUID profileId) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
+        this.name = createRequest.name();
+        this.email = createRequest.email();
+        this.password = createRequest.password();
         //
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        //
-        this.profileId = profileId;
+        this.profileId = createRequest.profileId();
     }
 
     public void update(String name, String email, String password, UUID profileId) {

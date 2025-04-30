@@ -1,13 +1,8 @@
 package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.dto.*;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.service.*;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
@@ -31,17 +26,17 @@ public class DiscodeitApplication {
     private static Channel 냥냥채널1_비공개;
     private static Message message;
 
-    static User setupUser(UserService userService) {
-
+    static User setupUser(UserService userService, BinaryContentService binaryContentService, UserStatusService userStatusService) {
         // 프로필사진 있는 유저 생성
-        UserCreateResponse 댕댕이유저ResponseWithProfile = userService.create(new UserCreateRequest("댕댕이", "woody@codeit.com", "woody1234", UUID.randomUUID()));
+        BinaryContentResponse 댕댕이프로필사진Response = binaryContentService.create(new BinaryContentCreateRequest(new File("./src/main/resources/sample_01.png")));
+        UserCreateResponse 댕댕이유저ResponseWithProfile = userService.create(new UserCreateRequest("댕댕이", "woody@codeit.com", "woody1234", 댕댕이프로필사진Response.binaryContent().getId()));
         댕댕 = 댕댕이유저ResponseWithProfile.user();
 
         System.out.println("----------프로필있는 유저 생성----------");
         System.out.println(댕댕이유저ResponseWithProfile);
 
         // 프로필사진 없는 유저 생성
-        UserCreateResponse 냥냥이유저Response = userService.create(new UserCreateRequest("냥냥이", "woody@codeit.com", "woody1234", null));
+        UserCreateResponse 냥냥이유저Response = userService.create(new UserCreateRequest("냥냥이", "woody2@codeit.com", "woody1234", null));
         냥냥 = 냥냥이유저Response.user();
 
         System.out.println("----------프로필없는 유저 생성----------");
@@ -56,14 +51,27 @@ public class DiscodeitApplication {
             System.out.println("name : " + userRes.name());
         }
         System.out.println("---------- 유저 update ----------");
-        UserCreateResponse updatedUserResponse = userService.update(new UserUpdateRequest(댕댕이유저ResponseWithProfile.user().getId(), "댕댕이 진화함", null, null, null));
+        UserCreateResponse updatedUserResponse = userService.update(new UserUpdateRequest(댕댕이유저ResponseWithProfile.user().getId(), "댕댕 진화함", null, null, null));
         System.out.println(updatedUserResponse.user().getName() + " 로 업데이트 됨");
 
-//        System.out.println("---------- 유저 delete 후 결과 조회 ----------");
-//        userService.delete(userCreateResponseWithProfile.user().getId());
-        System.out.println("---------- 유저 findAll ----------");
+        System.out.println("---------- 유저상태 findAll ----------");
+        for (UserStatusResponse userRes : userStatusService.findAll()) {
+            System.out.println("name : " + userRes.userStatus());
+        }
+        System.out.println("---------- 유저상태 update ----------");
+        System.out.println(userStatusService.updateByUserId(냥냥.getId(), UserStatusType.OFFLINE).userStatus().toString());
+
+        System.out.println("---------- 유저 delete 후 결과 조회 ----------");
+        userService.delete(댕댕이유저ResponseWithProfile.user().getId());
+
+        System.out.println("---------- (삭제후) 유저 findAll ----------");
         for (UserResponse userRes : userService.findAll()) {
             System.out.println("name : " + userRes.name());
+        }
+
+        System.out.println("----------  (삭제후) 유저상태 findAll ----------");
+        for (UserStatusResponse userRes : userStatusService.findAll()) {
+            System.out.println("name : " + userRes.userStatus());
         }
 
         return 댕댕이유저ResponseWithProfile.user();
@@ -171,11 +179,13 @@ public class DiscodeitApplication {
         UserService userService = context.getBean(BasicUserService.class);
         ChannelService channelService = context.getBean(BasicChannelService.class);
         MessageService messageService = context.getBean(BasicMessageService.class);
+        BinaryContentService binaryContentService = context.getBean(BinaryContentService.class);
+        UserStatusService userStatusService = context.getBean(UserStatusService.class);
 
         // 셋업
-        User user = setupUser(userService);
+        User user = setupUser(userService, binaryContentService, userStatusService);
         Channel channel = setupChannel(channelService);
-        messageCreateTest(messageService);
+//        messageCreateTest(messageService);
 
 
         System.out.println("🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️Service End🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️️‍");

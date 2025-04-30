@@ -2,13 +2,16 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.UUID;
 
-public class BinaryContent {
+public class BinaryContent implements Serializable {
+    @Getter
+    private static final Long serialVersionUID = 1L;
     @Getter
     private final UUID id;
     @Getter
@@ -16,17 +19,13 @@ public class BinaryContent {
     //
     @Getter
     private final byte[] byteArray;
-    //Q. 파일 소유자를 저장
-    @Getter
-    private final UUID userId;
 
 
-    public BinaryContent(byte[] byteArray, UUID userId) {
+    public BinaryContent(byte[] byteArray) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         //
         this.byteArray = byteArray;
-        this.userId = userId;
     }
 
     @Override
@@ -39,7 +38,6 @@ public class BinaryContent {
         return "️ BinaryContent {\n" +
                 "  id         = " + id + "\n" +
                 "  createdAt  = " + createdAtFormatted + "\n" +
-                "  userId       = '" + userId + "'\n" +
                 "}";
     }
 

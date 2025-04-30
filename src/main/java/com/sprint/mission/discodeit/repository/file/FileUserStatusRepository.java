@@ -42,7 +42,6 @@ public class FileUserStatusRepository implements UserStatusRepository {
     @Override
     public UserStatus save(UserStatus userStatus) {
         Path filePath = this.resolvePath(userStatus.getId());
-
         try (
                 // 파일과 연결되는 스트림 생성
                 FileOutputStream fos = new FileOutputStream(filePath.toFile());
@@ -71,7 +70,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
             UserStatus userStatusNullable = (UserStatus) ois.readObject();
             return Optional.ofNullable(userStatusNullable);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return Optional.empty();
         }
     }
 
@@ -105,7 +104,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
                     });
             return userStatuses;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return List.of();
         }
     }
 
