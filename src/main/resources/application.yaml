@@ -3,5 +3,5 @@ server:
 
 discodeit:
   repository:
-    type: JCF
-    fileDirectory: .discordit
+    type: File
+    fileDirectory: src/main/java/com/sprint/mission/discodeit/repository/file/data

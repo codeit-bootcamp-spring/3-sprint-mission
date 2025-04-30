@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entitiy.Message;
 import com.sprint.mission.discodeit.entitiy.ReadStatus;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -21,13 +22,18 @@ import java.util.stream.Collectors;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "File")
 public class FileMessageRepository implements MessageRepository {
 
-    private static final Path FILE_PATH = Paths.get("src/main/java/com/sprint/mission/discodeit/repository/file/data/messages.ser");
+    @Value( "${discodeit.repository.fileDirectory}")
+    private String FILE_Directory;
+    private final String FILE_NAME = "message.ser";
 
+    public Path getFilePath() {
+        return Paths.get(FILE_Directory, FILE_NAME);
+    }
 
     //File*Repository에서만 사용, 파일을 읽어들여 리스트 반환
     public List<Message> readFiles() {
         try {
-            if (!Files.exists(FILE_PATH) || Files.size(FILE_PATH) == 0) {
+            if (!Files.exists(getFilePath()) || Files.size(getFilePath()) == 0) {
                 return new ArrayList<>();
             }
         } catch (IOException e) {
@@ -35,7 +41,7 @@ public class FileMessageRepository implements MessageRepository {
         }
 
         List<Message> messages = new ArrayList<>();
-        try (ObjectInputStream reader = new ObjectInputStream(new FileInputStream(FILE_PATH.toFile()))) {
+        try (ObjectInputStream reader = new ObjectInputStream(new FileInputStream(getFilePath().toFile()))) {
             while(true) {
                 try {
                     messages.add((Message) reader.readObject());
@@ -53,8 +59,8 @@ public class FileMessageRepository implements MessageRepository {
     //File*Repository에서만 사용, 만들어 놓은 리스트를 인자로 받아 파일에 쓰기
     public void writeFiles(List<Message> messages) {
         try {
-            Files.createDirectories(FILE_PATH.getParent());
-            try (ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(FILE_PATH.toFile()))) {
+            Files.createDirectories(getFilePath().getParent());
+            try (ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(getFilePath().toFile()))) {
                 for (Message message : messages) {
                     writer.writeObject(message);
                 }
@@ -113,9 +119,7 @@ public class FileMessageRepository implements MessageRepository {
     @Override
     public void delete(UUID messageId) {
         List<Message> messages = readFiles();
-        List<Message> deleteMessages = messages.stream()
-                .filter((c) -> !c.getId().equals(messageId))
-                .toList();
-        writeFiles(deleteMessages);
+        messages.removeIf(message -> message.getId().equals(messageId));
+        writeFiles(messages);
     }
 }

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entitiy.User;
 import com.sprint.mission.discodeit.entitiy.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -20,12 +21,18 @@ import java.util.UUID;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "File")
 public class FileUserStatusRepository implements UserStatusRepository {
 
-    private static final Path FILE_PATH = Paths.get("src/main/java/com/sprint/mission/discodeit/repository/file/data/userstatuses.ser");
+    @Value( "${discodeit.repository.fileDirectory}")
+    private String FILE_Directory;
+    private final String FILE_NAME = "userstatus.ser";
+
+    public Path getFilePath() {
+        return Paths.get(FILE_Directory, FILE_NAME);
+    }
 
     //File*Repository에서만 사용, 파일을 읽어들여 리스트 반환
     public List<UserStatus> readFiles() {
         try {
-            if (!Files.exists(FILE_PATH) || Files.size(FILE_PATH) == 0) {
+            if (!Files.exists(getFilePath()) || Files.size(getFilePath()) == 0) {
                 return new ArrayList<>();
             }
         } catch (IOException e) {
@@ -33,7 +40,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
         }
 
         List<UserStatus> userStatuses = new ArrayList<>();
-        try (ObjectInputStream reader = new ObjectInputStream(new FileInputStream(FILE_PATH.toFile()))) {
+        try (ObjectInputStream reader = new ObjectInputStream(new FileInputStream(getFilePath().toFile()))) {
             while(true) {
                 try {
                     userStatuses.add((UserStatus) reader.readObject());
@@ -51,8 +58,8 @@ public class FileUserStatusRepository implements UserStatusRepository {
     //File*Repository에서만 사용, 만들어 놓은 리스트를 인자로 받아 파일에 쓰기
     public void writeFiles(List<UserStatus> userStatuses) {
         try {
-            Files.createDirectories(FILE_PATH.getParent());
-            try (ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(FILE_PATH.toFile()))) {
+            Files.createDirectories(getFilePath().getParent());
+            try (ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(getFilePath().toFile()))) {
                 for (UserStatus readStatus : userStatuses) {
                     writer.writeObject(readStatus);
                 }

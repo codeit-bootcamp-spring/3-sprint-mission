@@ -2,7 +2,9 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entitiy.ReadStatus;
 import com.sprint.mission.discodeit.entitiy.User;
+import com.sprint.mission.discodeit.entitiy.UserStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -21,13 +23,18 @@ import java.util.UUID;
 public class FileReadStatusRepository implements ReadStatusRepository {
 
 
-    private static final Path FILE_PATH = Paths.get("src/main/java/com/sprint/mission/discodeit/repository/file/data/readstatuses.ser");
+    @Value( "${discodeit.repository.fileDirectory}")
+    private String FILE_Directory;
+    private final String FILE_NAME = "readstatus.ser";
 
+    public Path getFilePath() {
+        return Paths.get(FILE_Directory, FILE_NAME);
+    }
 
     //File*Repository에서만 사용, 파일을 읽어들여 리스트 반환
     public List<ReadStatus> readFiles() {
         try {
-            if (!Files.exists(FILE_PATH) || Files.size(FILE_PATH) == 0) {
+            if (!Files.exists(getFilePath()) || Files.size(getFilePath()) == 0) {
                 return new ArrayList<>();
             }
         } catch (IOException e) {
@@ -35,7 +42,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         }
 
         List<ReadStatus> readStatuses = new ArrayList<>();
-        try (ObjectInputStream reader = new ObjectInputStream(new FileInputStream(FILE_PATH.toFile()))) {
+        try (ObjectInputStream reader = new ObjectInputStream(new FileInputStream(getFilePath().toFile()))) {
             while(true) {
                 try {
                     readStatuses.add((ReadStatus) reader.readObject());
@@ -53,8 +60,8 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     //File*Repository에서만 사용, 만들어 놓은 리스트를 인자로 받아 파일에 쓰기
     public void writeFiles(List<ReadStatus> readStatuses) {
         try {
-            Files.createDirectories(FILE_PATH.getParent());
-            try (ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(FILE_PATH.toFile()))) {
+            Files.createDirectories(getFilePath().getParent());
+            try (ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(getFilePath().toFile()))) {
                 for (ReadStatus readStatus : readStatuses) {
                     writer.writeObject(readStatus);
                 }
@@ -120,9 +127,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     @Override
     public void delete(UUID readStatusId) {
         List<ReadStatus> readStatuses = readFiles();
-        List<ReadStatus> ReadStatus = readStatuses.stream()
-                .filter((c) -> !c.getId().equals(readStatusId))
-                .toList();
+        readStatuses.removeIf(readStatus -> readStatus.getId().equals(readStatusId));
         writeFiles(readStatuses);
     }
 }

@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entitiy.Channel;
 import com.sprint.mission.discodeit.entitiy.Message;
 import com.sprint.mission.discodeit.entitiy.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -22,12 +23,17 @@ import java.util.UUID;
 public class FileChannelRepository implements ChannelRepository {
 
 
-    private static final Path FILE_PATH = Paths.get("src/main/java/com/sprint/mission/discodeit/repository/file/data/channels.ser");
+    @Value( "${discodeit.repository.fileDirectory}")
+    private String FILE_Directory;
+    private final String FILE_NAME = "channel.ser";
 
+    public Path getFilePath() {
+        return Paths.get(FILE_Directory, FILE_NAME);
+    }
     //File*Repository에서만 사용, 파일을 읽어들여 리스트 반환
     public List<Channel> readFiles() {
         try {
-            if (!Files.exists(FILE_PATH) || Files.size(FILE_PATH) == 0) {
+            if (!Files.exists(getFilePath()) || Files.size(getFilePath()) == 0) {
                 return new ArrayList<>();
             }
         } catch (IOException e) {
@@ -35,7 +41,7 @@ public class FileChannelRepository implements ChannelRepository {
         }
 
         List<Channel> messages = new ArrayList<>();
-        try (ObjectInputStream reader = new ObjectInputStream(new FileInputStream(FILE_PATH.toFile()))) {
+        try (ObjectInputStream reader = new ObjectInputStream(new FileInputStream(getFilePath().toFile()))) {
             while(true) {
                 try {
                     messages.add((Channel) reader.readObject());
@@ -53,8 +59,8 @@ public class FileChannelRepository implements ChannelRepository {
     //File*Repository에서만 사용, 만들어 놓은 리스트를 인자로 받아 파일에 쓰기
     public void writeFiles(List<Channel> channels) {
         try {
-            Files.createDirectories(FILE_PATH.getParent());
-            try (ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(FILE_PATH.toFile()))) {
+            Files.createDirectories(getFilePath().getParent());
+            try (ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(getFilePath().toFile()))) {
                 for (Channel channel : channels) {
                     writer.writeObject(channel);
                 }
@@ -104,10 +110,8 @@ public class FileChannelRepository implements ChannelRepository {
     @Override
     public void delete(UUID channelId) {
         List<Channel> channels = readFiles();
-        List<Channel> deleteChannels = channels.stream()
-                .filter((c) -> !c.getId().equals(channelId))
-                .toList();
-        writeFiles(deleteChannels);
+        channels.removeIf(channel -> channel.getId().equals(channelId));
+        writeFiles(channels);
     }
 
 }
