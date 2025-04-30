@@ -2,53 +2,55 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entitiy.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
-import java.io.*;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "JCF", matchIfMissing = true)
 public class JCFChannelRepository implements ChannelRepository {
-    private final CopyOnWriteArrayList<Channel> data;
 
-    public JCFChannelRepository(CopyOnWriteArrayList<Channel> channels) {
-        this.data=channels;
-    }
+    private final CopyOnWriteArrayList<Channel> data  = new CopyOnWriteArrayList<>();
 
     @Override
-    public void save(Channel channel) {
+    public Channel save(Channel channel) {
         data.add(channel);
+        return channel;
     }
 
     @Override
-    public void read() {
-        data.stream()
-                .forEach(System.out::println);
+    public List<Channel> read() {
+        return data;
     }
 
     @Override
-    public void readById(UUID id) {
-        data.stream()
-                .filter(n->n.getId().equals(id))
-                .forEach(System.out::println);
+    public Optional<Channel> readById(UUID id) {
+        return data.stream()
+                .filter(channel -> channel.getId().equals(id))
+                .findAny();
     }
 
     @Override
-    public void update(UUID id,Channel channel) {
+    public void update(UUID id, Channel channel) {
         data.stream()
                 .filter(chan -> chan.getId().equals(id))
-                .forEach(chan->{
-                    chan.updateUpdatedAt(Instant.now());
-                    chan.updateChannelName(channel.getChannelName());
-                    chan.updateMembers(channel.getMembers());
+                .forEach(chan-> {
+                    chan.setUpdatedAt(Instant.now());
+                    chan.setChannelName(channel.getChannelName());
+                    chan.setDescription(channel.getDescription());
+                    chan.setType(channel.getType());
                 });
     }
 
     @Override
-    public void delete(Channel channel) {
-        data.remove(channel);
+    public void delete(UUID channelId) {
+        data.removeIf(channel -> channel.getId().equals(channelId));
     }
+
 }
