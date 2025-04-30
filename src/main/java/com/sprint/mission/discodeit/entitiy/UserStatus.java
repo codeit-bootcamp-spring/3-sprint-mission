@@ -2,13 +2,14 @@ package com.sprint.mission.discodeit.entitiy;
 
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserStatus {
+public class UserStatus implements Serializable {
 
     private UUID id;
     private Instant createdAt;
