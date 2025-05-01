@@ -2,10 +2,12 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.UUID;
 
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final UUID id;
     private final String userid;
     private String password;
@@ -24,22 +26,45 @@ public class User {
         this.isLogin = false;
     }
 
-    public UUID getId() {return id;}
-    public String getUserId() {return userid;}
-    public String getPassword() {return password;}
-    public String getName() {return name;}
-    public boolean getIsLogin() {return isLogin;}
+    public UUID getId() {
+
+        return id;
+    }
+
+    public String getUserId() {
+
+        return userid;
+    }
+
+    public String getPassword() {
+
+        return password;
+    }
+
+    public String getName() {
+
+        return name;
+    }
+
+    public boolean getIsLogin() {
+
+        return isLogin;
+    }
 
     // Date 타입 포매팅
     public String getCreatedAt() {
         String formattedCreatedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(createdAt);
-        return formattedCreatedTime;}
+        return formattedCreatedTime;
+    }
+
     public String getUpdatedAt() {
         String formattedUpdatedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(updatedAt);
-        return formattedUpdatedTime;}
+        return formattedUpdatedTime;
+    }
 
     @Override
     public String toString() {
+
         return "User{" +
 //                "id=" + id +
                 "userid='" + userid + '\'' +
@@ -53,11 +78,20 @@ public class User {
     public void setLogin() {
         this.isLogin = true;
     }
+
     public void setLogout() {
         this.isLogin = false;
     }
-    public void updateName(String name) {this.name = name;}
-    public void updatePassword(String password) {this.password = password;}
-    public void updateDateTime() {this.updatedAt = System.currentTimeMillis();}
+
+    public void updateName(String name) {
+        this.name = name;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
 }
 

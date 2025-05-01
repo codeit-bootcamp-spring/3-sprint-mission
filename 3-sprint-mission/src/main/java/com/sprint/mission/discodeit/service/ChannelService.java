@@ -9,9 +9,12 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
-    void create(User user) throws IOException;
-    Channel read(User user, UUID id) throws IOException;
-    List<Channel> readAll(User user);
+    Channel create(User user) throws IOException;
+    Channel find(User user, UUID id) throws IOException;
+    List<Channel> findByName(User user, String name);
+    List<Channel> findAll(User user);
+    void addEntry(User user, UUID id, UUID entryId);
+    Channel enterChannel(User user, UUID id) throws IOException;
     void updateName(User user, UUID id) throws IOException;
     void delete(User user, UUID id);
 
