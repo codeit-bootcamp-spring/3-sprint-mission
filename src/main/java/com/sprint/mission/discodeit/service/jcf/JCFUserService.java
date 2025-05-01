@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
 import java.util.Scanner;
+import java.util.UUID;
 
 public class JCFUserService implements UserService {
 
@@ -14,7 +15,7 @@ public class JCFUserService implements UserService {
     }
 
 
-    public User inputUserName() {
+    public User registerUser() {
         Scanner sc = new Scanner(System.in);
         System.out.println("안녕하세요. DisCodeit에 오신 걸 환영합니다. 사용자의 이름을 입력 해 주세요.");
         String userName = sc.nextLine();
@@ -22,8 +23,8 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void createNewUserNames(String oldName, String newName) {
-        if (oldName.equals(newName.trim())) {
+    public void createNewUserNames(String existingName, String newName) {
+        if (existingName.equals(newName.trim())) {
             System.out.println("동일한 프로필은 생성할 수 없습니다.");
         } else {
             users.add(new User(newName));
@@ -36,10 +37,10 @@ public class JCFUserService implements UserService {
         }
     }
 
-    public void outputOneUserInfo(String name) {
+    public void outputOneUserInfo(UUID uuid) {
         List<User> userName = users
                 .stream()
-                .filter(e -> e.getUsername().equals(name))
+                .filter(e -> e.getId().equals(uuid))
                 .toList();
         System.out.println(userName);
     }
@@ -67,7 +68,7 @@ public class JCFUserService implements UserService {
         return users.stream().filter(user1 -> user1.getNumber() == userNumber).findFirst().orElse(null);
     }
 
-    public void login(int loginNumber, List<User> users) {
+    public void login(int loginNumber) {
         users.stream()
                 .filter(user -> user.getNumber() == loginNumber)
                 .findFirst()

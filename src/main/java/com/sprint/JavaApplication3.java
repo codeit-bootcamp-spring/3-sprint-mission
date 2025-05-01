@@ -1,0 +1,54 @@
+package com.sprint;
+
+import com.sprint.mission.discodeit.menu.ChannelMenu;
+import com.sprint.mission.discodeit.menu.MessageMenu;
+import com.sprint.mission.discodeit.menu.UserMenu;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import java.util.Scanner;
+
+public class JavaApplication3 {
+
+    private static final Scanner sc = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        FileUserRepository fileUserRepo = new FileUserRepository();
+        FileChannelRepository fileChannelRepo = new FileChannelRepository();
+        FileMessageRepository fileMessageRepo = new FileMessageRepository();
+
+        UserService userService = new BasicUserService(fileUserRepo);
+        ChannelService channelService = new BasicChannelService(fileChannelRepo);
+        MessageService messageService = new BasicMessageService(fileMessageRepo);
+
+        UserMenu userMenu = new UserMenu(sc, userService);
+        ChannelMenu channelMenu = new ChannelMenu(sc, channelService);
+        MessageMenu messageMenu = new MessageMenu(sc, messageService);
+
+        userMenu.loginUser();
+
+        while (true) {
+            System.out.println("\n원하는 기능을 입력해 주세요.");
+            System.out.println("1. 내 정보\t2. 채널 정보\t3. 메시지\t4. 로그아웃");
+            int choice = Integer.parseInt(sc.nextLine());
+
+            switch (choice) {
+                case 1 -> userMenu.run();
+                case 2 -> channelMenu.run();
+                case 3 -> messageMenu.run();
+                case 4 -> {
+                    System.out.println("Discodeit을 종료합니다. 감사합니다.");
+                    sc.close();
+                    return;
+                }
+                default -> System.out.println("올바른 번호를 입력해 주세요.");
+            }
+        }
+    }
+}

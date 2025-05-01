@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class Message {
+public class Message implements Serializable {
+    private static final long serialVersionUID = -953021662940755622L;
     private static int counter = 1;
+
     private int number;
     private UUID id;
     private long createdAt;
@@ -44,11 +47,35 @@ public class Message {
         return number;
     }
 
+    public static void setCounter(int counter) {
+        Message.counter = counter;
+    }
+
+    public void setNumber(int number) {
+        this.number = number;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdateAt(long updateAt) {
+        this.updateAt = updateAt;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
     @Override
     public String toString() {
         return "Message{" +
                 "number=" + number +
-                "id=" + id +
+                ", id=" + id +
                 ", createdAt=" + createdAt +
                 ", updateAt=" + updateAt +
                 ", message='" + message + '\'' +
