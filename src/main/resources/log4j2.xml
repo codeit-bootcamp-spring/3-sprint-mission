@@ -4,17 +4,34 @@
   xsi:schemaLocation="
                    https://logging.apache.org/xml/ns
                    https://logging.apache.org/xml/ns/log4j-config-2.xsd">
+
   <Appenders>
     <Console name="CONSOLE">
       <PatternLayout pattern="%p - %m%n"/>
     </Console>
-    <File name="MAIN" fileName="logs/main.log">
+
+    <RollingFile name="MAIN"
+      fileName="logs/main.log"
+      filePattern="logs/main-%d{yyyy-MM-dd}-%i.log.gz">
       <JsonTemplateLayout/>
-    </File>
-    <File name="DEBUG_LOG" fileName="logs/debug.log">
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1"/>
+        <SizeBasedTriggeringPolicy size="50 MB"/>
+      </Policies>
+    </RollingFile>
+
+    <RollingFile name="DEBUG_LOG"
+      fileName="logs/debug.log"
+      filePattern="logs/debug-%d{yyyy-MM-dd}-%i.log.gz">
       <PatternLayout pattern="%d [%t] %p %c - %m%n"/>
-    </File>
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1"/>
+        <SizeBasedTriggeringPolicy size="50 MB"/>
+      </Policies>
+    </RollingFile>
+
   </Appenders>
+
   <Loggers>
     <Root level="INFO">
       <AppenderRef ref="CONSOLE" level="DEBUG"/>
@@ -24,4 +41,5 @@
       <AppenderRef ref="DEBUG_LOG"/>
     </Logger>
   </Loggers>
+
 </Configuration>

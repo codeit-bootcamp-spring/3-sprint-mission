@@ -14,12 +14,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
 
+  private static final Logger log = LogManager.getLogger(BasicUserService.class);
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
@@ -39,16 +42,32 @@ public class BasicUserService implements UserService {
     validateUserEmail(request.email());
     validateUserName(request.name());
 
-    UUID profileImageId = null;
-    if (request.profileImage() != null && request.profileImage().getId() != null) {
-      binaryContentRepository.save(request.profileImage());
-      profileImageId = request.profileImage().getId();
+    User newUser = User.create(
+        request.email(),
+        request.name(),
+        request.password(),
+        null // profileImageId는 나중에 세팅
+    );
+    User savedUser = userRepository.save(newUser);
+
+    userStatusRepository.save(UserStatus.create(savedUser.getId()));
+
+    try {
+      UUID profileImageId = null;
+
+      if (request.profileImage() != null && request.profileImage().getId() != null) {
+        binaryContentRepository.save(request.profileImage());
+        profileImageId = request.profileImage().getId();
+
+        savedUser.updateProfileImageId(profileImageId);
+        userRepository.save(savedUser);
+      }
+    } catch (Exception e) {
+      // 로깅하고 무시 (기본 null)
+      log.warn("프로필 이미지 등록 실패: 기본 이미지 사용", e);
     }
 
-    User newUser = User.create(request.email(), request.name(), request.password(), profileImageId);
-    User user = userRepository.save(newUser);
-    userStatusRepository.save(UserStatus.create(user.getId()));
-    return toUserResponse(user);
+    return toUserResponse(savedUser);
   }
 
   private void validateUserEmail(String email) {

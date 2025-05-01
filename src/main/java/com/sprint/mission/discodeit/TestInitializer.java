@@ -25,7 +25,8 @@ public class TestInitializer {
     MessageService messageService = new BasicMessageService(
         bundle.getMessageRepository(),
         bundle.getUserRepository(),
-        bundle.getChannelRepository()
+        bundle.getChannelRepository(),
+        bundle.getBinaryContentRepository()
     );
 
     User user = setupUser(userService);

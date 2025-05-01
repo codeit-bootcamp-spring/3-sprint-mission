@@ -51,19 +51,5 @@ public class BinaryContentTest {
       assertThat(content1).as("BinaryContent 객체는 서로 달라야 한다").isNotEqualTo(content2);
       assertThat(content1.getId()).as("BinaryContent ID는 고유해야 한다").isNotEqualTo(content2.getId());
     }
-
-    @Test
-    @DisplayName("메시지 첨부파일 생성 시 메시지 ID가 올바르게 설정되어야 한다")
-    void shouldSetMessageIdForAttachment() {
-      UUID messageId = UUID.randomUUID();
-      BinaryContent attachment = BinaryContentFixture.createValidMessageAttachment(messageId);
-
-      // 메시지 첨부파일 검증
-      assertAll(
-          () -> assertNotNull(attachment.getId(), "ID는 null이 아니어야 한다"),
-          () -> assertEquals(messageId, attachment.getMessageId(), "메시지 ID가 올바르게 설정되어야 한다"),
-          () -> assertThat(attachment.getUserId()).as("프로필 이미지가 아니므로 userId는 null이어야 한다").isNull()
-      );
-    }
   }
 }

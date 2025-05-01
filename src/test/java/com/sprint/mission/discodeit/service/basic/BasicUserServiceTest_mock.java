@@ -117,7 +117,7 @@ class BasicUserServiceTest_mock {
 
       verify(userRepository, times(1)).findByEmail(request.email());
       verify(userRepository, times(1)).findByName(request.name());
-      verify(userRepository, times(1)).save(userCaptor.capture()); // User 저장 시 캡처
+      verify(userRepository, times(2)).save(userCaptor.capture()); // User 저장 시 캡처
       assertEquals(profileImage.getId(),
           userCaptor.getValue().getProfileImageId()); // 저장된 User의 profileImageId 확인
       verify(userStatusRepository, times(1)).save(any(UserStatus.class));

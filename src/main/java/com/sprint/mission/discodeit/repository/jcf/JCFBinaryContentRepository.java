@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -22,11 +23,12 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
   }
 
   @Override
-  public Optional<BinaryContent> findByMessageId(UUID messageId) {
+  public List<BinaryContent> findAllByMessageId(UUID messageId) {
     return binaryContentMap.values().stream()
         .filter(content -> Objects.equals(content.getMessageId(), messageId))
-        .findFirst();
+        .toList();
   }
+
 
   @Override
   public Optional<BinaryContent> findByUserId(UUID userId) {
@@ -47,5 +49,12 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
         .ifPresent(status -> {
           binaryContentMap.remove(id);
         });
+  }
+
+  @Override
+  public void deleteAllByMessageId(UUID messageId) {
+    binaryContentMap.values().removeIf(content ->
+        Objects.equals(content.getMessageId(), messageId)
+    );
   }
 }

@@ -73,6 +73,14 @@ public class FileMessageRepository implements MessageRepository {
   }
 
   @Override
+  public List<Message> findAllByChannelId(UUID channelId) {
+    return fileStorage.readAll().stream()
+        .map(obj -> (Message) obj)
+        .filter(message -> message.getChannelId().equals(channelId))
+        .toList();
+  }
+
+  @Override
   public void deleteById(UUID id) {
     Long position = indexManager.getPosition(id);
     if (position != null) {

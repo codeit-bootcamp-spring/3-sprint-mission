@@ -20,9 +20,9 @@ public class BinaryContentFixture {
   /**
    * 기본 메시지 첨부파일을 생성한다.
    */
-  public static BinaryContent createValidMessageAttachment(UUID messageId) {
+  public static BinaryContent createValidMessageAttachment() {
     return BinaryContent.createMessageAttachment(DEFAULT_DATA, DEFAULT_FILE_NAME, DEFAULT_MIME_TYPE,
-        messageId);
+        null);
   }
 
   /**
@@ -37,8 +37,8 @@ public class BinaryContentFixture {
    * 커스텀 메시지 첨부파일을 생성한다.
    */
   public static BinaryContent createCustomMessageAttachment(byte[] data, String fileName,
-      String mimeType, UUID messageId) {
-    return BinaryContent.createMessageAttachment(data, fileName, mimeType, messageId);
+      String mimeType) {
+    return BinaryContent.createMessageAttachment(data, fileName, mimeType, null);
   }
 
   /**

@@ -43,7 +43,7 @@ public class BinaryContent extends ImmutableAuditable implements Serializable {
   // 참조 정보
   private final ContentType contentType;
   private final UUID userId;
-  private final UUID messageId;
+  private UUID messageId;
 
   private BinaryContent(byte[] data, String fileName, String mimeType, ContentType contentType,
       UUID userId, UUID messageId) {
@@ -70,7 +70,6 @@ public class BinaryContent extends ImmutableAuditable implements Serializable {
 
   public static BinaryContent createMessageAttachment(byte[] data, String fileName, String mimeType,
       UUID messageId) {
-    Objects.requireNonNull(messageId, "컨텐트 생성 시 메시지 id는 필수입니다.");
     return BinaryContent.builder()
         .data(Objects.requireNonNull(data))
         .fileName(Objects.requireNonNull(fileName))
@@ -79,6 +78,13 @@ public class BinaryContent extends ImmutableAuditable implements Serializable {
         .userId(null)
         .messageId(messageId)
         .build();
+  }
+
+  public void attachToMessage(UUID messageId) {
+    if (this.messageId != null) {
+      throw new IllegalStateException("이미 메시지에 연결된 파일입니다.");
+    }
+    this.messageId = Objects.requireNonNull(messageId, "메시지 ID는 null일 수 없습니다.");
   }
 
   @Override

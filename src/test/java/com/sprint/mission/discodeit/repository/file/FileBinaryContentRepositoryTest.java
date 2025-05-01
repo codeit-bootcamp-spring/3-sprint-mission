@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +36,7 @@ class FileBinaryContentRepositoryTest {
     // given
     UUID contentId = UUID.randomUUID();
     BinaryContent savedContent = binaryContentRepository.save(
-        BinaryContentFixture.createValidMessageAttachment(contentId));
+        BinaryContentFixture.createValidMessageAttachment());
 
     // when
     Optional<BinaryContent> foundContent = binaryContentRepository.findById(savedContent.getId());
@@ -95,32 +96,39 @@ class FileBinaryContentRepositoryTest {
   }
 
   @Test
-  @DisplayName("[File] 메시지 ID로 바이너리 컨텐트를 찾을 수 있어야 한다")
+  @DisplayName("[File] 메시지 ID로 바이너리 컨텐트를 찾을 수 있어야 한다 (첨부파일 등록 후 메시지에 연결)")
   void findByMessageIdShouldReturnBinaryContentIfExists() throws IOException {
     // given
-    UUID messageId = UUID.randomUUID();
     BinaryContent savedContent = binaryContentRepository.save(
-        BinaryContentFixture.createValidMessageAttachment(messageId));
+        BinaryContentFixture.createValidMessageAttachment()
+    );
+
+    // 첨부파일을 메시지에 연결
+    UUID messageId = UUID.randomUUID();
+    savedContent.attachToMessage(messageId);
+    binaryContentRepository.save(savedContent);
 
     // when
-    Optional<BinaryContent> foundContent = binaryContentRepository.findByMessageId(messageId);
+    List<BinaryContent> foundContent = binaryContentRepository.findAllByMessageId(messageId);
 
     // then
-    assertThat(foundContent).isPresent();
-    assertThat(foundContent.get().getMessageId()).isEqualTo(messageId);
-    assertThat(foundContent.get().getFileName()).isEqualTo(savedContent.getFileName());
-    assertThat(foundContent.get().getMimeType()).isEqualTo(savedContent.getMimeType());
-    assertThat(foundContent.get().getContentType()).isEqualTo(savedContent.getContentType());
+    assertThat(foundContent).isNotEmpty();
+    BinaryContent actualContent = foundContent.get(0);
+    assertThat(actualContent.getMessageId()).isEqualTo(messageId);
+    assertThat(actualContent.getFileName()).isEqualTo(savedContent.getFileName());
+    assertThat(actualContent.getMimeType()).isEqualTo(savedContent.getMimeType());
+    assertThat(actualContent.getContentType()).isEqualTo(savedContent.getContentType());
   }
 
+
   @Test
-  @DisplayName("[File] 존재하지 않는 메시지 ID로 바이너리 컨텐트를 찾으면 Optional.empty()를 반환해야 한다")
-  void findByMessageIdShouldReturnEmptyOptionalIfNotFound() {
+  @DisplayName("[File] 존재하지 않는 메시지 ID로 바이너리 컨텐트를 찾으면 빈 리스트를 반환해야 한다")
+  void findByMessageIdShouldReturnEmptyListIfNotFound() {
     // given
     UUID nonExistingMessageId = UUID.randomUUID();
 
     // when
-    Optional<BinaryContent> foundContent = binaryContentRepository.findByMessageId(
+    List<BinaryContent> foundContent = binaryContentRepository.findAllByMessageId(
         nonExistingMessageId);
 
     // then
@@ -132,7 +140,7 @@ class FileBinaryContentRepositoryTest {
   void saveShouldPersistBinaryContent() throws IOException {
     // given
     UUID contentId = UUID.randomUUID();
-    BinaryContent contentToSave = BinaryContentFixture.createValidMessageAttachment(contentId);
+    BinaryContent contentToSave = BinaryContentFixture.createValidMessageAttachment();
 
     // when
     BinaryContent savedContent = binaryContentRepository.save(contentToSave);
@@ -153,7 +161,7 @@ class FileBinaryContentRepositoryTest {
     // given
     UUID contentId = UUID.randomUUID();
     BinaryContent savedContent = binaryContentRepository.save(
-        BinaryContentFixture.createValidMessageAttachment(contentId));
+        BinaryContentFixture.createValidMessageAttachment());
 
     // when
     binaryContentRepository.deleteById(savedContent.getId());

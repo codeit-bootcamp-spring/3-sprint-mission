@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public interface BinaryContentRepository {
    * @param messageId UUID
    * @return Optional<BinaryContent>
    */
-  Optional<BinaryContent> findByMessageId(UUID messageId);
+  List<BinaryContent> findAllByMessageId(UUID messageId);
 
   /**
    * 컨텐트 저장
@@ -44,4 +45,11 @@ public interface BinaryContentRepository {
    * @param id UUID
    */
   void deleteById(UUID id);
+
+  /**
+   * 메시지 id로 해당 메시지와 관련된 컨텐트 삭제
+   *
+   * @param messageId UUID
+   */
+  void deleteAllByMessageId(UUID messageId);
 }

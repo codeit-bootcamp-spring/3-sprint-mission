@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.sprint.mission.discodeit.dto.ChannelResponse;
+import com.sprint.mission.discodeit.dto.data.MessageResponse;
 import com.sprint.mission.discodeit.dto.data.PrivateChannelResponse;
 import com.sprint.mission.discodeit.dto.data.PublicChannelResponse;
 import com.sprint.mission.discodeit.dto.data.UserResponse;
@@ -75,7 +76,8 @@ public class DisCodeItApplicationTest {
     MessageService messageService = new BasicMessageService(
         bundle.getMessageRepository(),
         bundle.getUserRepository(),
-        bundle.getChannelRepository()
+        bundle.getChannelRepository(),
+        bundle.getBinaryContentRepository()
     );
 
     runIntegrationScenario(userService, channelService, messageService);
@@ -95,7 +97,8 @@ public class DisCodeItApplicationTest {
     MessageService messageService = new BasicMessageService(
         bundle.getMessageRepository(),
         bundle.getUserRepository(),
-        bundle.getChannelRepository()
+        bundle.getChannelRepository(),
+        bundle.getBinaryContentRepository()
     );
 
     runIntegrationScenario(userService, channelService, messageService);
@@ -147,8 +150,8 @@ public class DisCodeItApplicationTest {
         "생성된 채널이 목록에 있어야 합니다.");
 
     // 6. 생성된 메시지 확인
-    List<Message> allMessages = messageService.searchMessages(null, null, null);
-    assertTrue(allMessages.stream().anyMatch(m -> m.getId().equals(message.getId())),
+    List<MessageResponse> allMessages = messageService.searchMessages(null, null, null);
+    assertTrue(allMessages.stream().anyMatch(m -> m.id().equals(message.getId())),
         "생성된 메시지가 목록에 있어야 합니다.");
   }
 

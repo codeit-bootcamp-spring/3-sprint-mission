@@ -6,6 +6,8 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.storage.FileStorage;
 import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
 import com.sprint.mission.discodeit.repository.storage.IndexManager;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Repository;
@@ -68,12 +70,15 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
   }
 
   @Override
-  public Optional<BinaryContent> findByMessageId(UUID messageId) {
-    Long position = messageIdIndexManager.getPosition(messageId);
-    if (position == null) {
-      return Optional.empty();
+  public List<BinaryContent> findAllByMessageId(UUID messageId) {
+    List<Long> positions = messageIdIndexManager.getPositions(String.valueOf(messageId));
+    if (positions == null || positions.isEmpty()) {
+      return List.of();
     }
-    return Optional.ofNullable((BinaryContent) fileStorage.readObject(position));
+    return positions.stream()
+        .map(pos -> (BinaryContent) fileStorage.readObject(pos))
+        .filter(Objects::nonNull)
+        .toList();
   }
 
   @Override
@@ -91,7 +96,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
         }
         // messageId 기반 인덱스 업데이트
         if (binaryContent.getMessageId() != null) {
-          messageIdIndexManager.addEntry(binaryContent.getMessageId(), existingPosition);
+          messageIdIndexManager.addEntry(binaryContent.getMessageId().toString(), existingPosition);
         }
       } else {
         // 새로운 바이너리 컨텐트 저장
@@ -109,7 +114,6 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
       idIndexManager.saveIndex();
       userIdIndexManager.saveIndex();
       messageIdIndexManager.saveIndex();
-
     } catch (FileException e) {
       throw new RuntimeException("바이너리 컨텐트 저장 실패: " + e.getMessage(), e);
     }
@@ -147,4 +151,36 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
       }
     }
   }
+
+  @Override
+  public void deleteAllByMessageId(UUID messageId) {
+    List<Long> positions = messageIdIndexManager.getPositions(messageId.toString());
+    if (positions != null && !positions.isEmpty()) {
+      try {
+        for (Long position : positions) {
+          BinaryContent content = (BinaryContent) fileStorage.readObject(position);
+          if (content != null) {
+            // 실제 삭제
+            fileStorage.deleteObject(position);
+            idIndexManager.removeEntry(content.getId());
+
+            // userId 인덱스도 정리
+            if (content.getUserId() != null) {
+              userIdIndexManager.removeEntry(content.getUserId());
+            }
+          }
+        }
+        // messageId 인덱스 자체는 통째로 날림
+        messageIdIndexManager.removeEntry(messageId);
+
+        idIndexManager.saveIndex();
+        userIdIndexManager.saveIndex();
+        messageIdIndexManager.saveIndex();
+
+      } catch (FileException e) {
+        throw new RuntimeException("메시지 ID로 첨부파일 삭제 실패: " + e.getMessage(), e);
+      }
+    }
+  }
+
 }

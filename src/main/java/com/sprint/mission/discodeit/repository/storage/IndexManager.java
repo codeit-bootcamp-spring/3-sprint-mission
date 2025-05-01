@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,28 +18,36 @@ public class IndexManager {
 
   private final File indexFile;
   private Map<UUID, Long> indexMap = new HashMap<>();
-  private final Map<String, List<Long>> stringIndexMap = new HashMap<>();
+  private Map<String, List<Long>> stringIndexMap = new HashMap<>();
+
+  private static class IndexData implements java.io.Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 7983967426800483148L;
+
+    Map<UUID, Long> uuidIndexMap;
+    Map<String, List<Long>> stringIndexMap;
+
+    public IndexData(Map<UUID, Long> uuidIndexMap, Map<String, List<Long>> stringIndexMap) {
+      this.uuidIndexMap = uuidIndexMap;
+      this.stringIndexMap = stringIndexMap;
+    }
+  }
 
   public IndexManager(String indexPath) throws FileException {
     this.indexFile = new File(indexPath);
 
     try {
-      // 폴더가 없으면 생성
       if (!indexFile.getParentFile().exists() && !indexFile.getParentFile().mkdirs()) {
         throw FileException.readError(indexFile.getParentFile(),
             new IOException("상위 디렉토리를 생성할 수 없습니다."));
       }
-
-      // 파일 없을 경우 생성
       if (!indexFile.exists()) {
         createNewIndexFile();
       }
-
-      // 파일이 존재하며 내용이 있을 경우 로드
       if (indexFile.length() > 0) {
         loadIndex();
       }
-
     } catch (IOException | ClassNotFoundException e) {
       throw FileException.readError(indexFile, e);
     }
@@ -46,7 +55,15 @@ public class IndexManager {
 
   private void loadIndex() throws IOException, ClassNotFoundException {
     try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(indexFile))) {
-      indexMap = (Map<UUID, Long>) ois.readObject();
+      Object readObj = ois.readObject();
+      if (readObj instanceof IndexData data) {
+        this.indexMap = data.uuidIndexMap != null ? data.uuidIndexMap : new HashMap<>();
+        this.stringIndexMap = data.stringIndexMap != null ? data.stringIndexMap : new HashMap<>();
+      } else if (readObj instanceof Map) {
+        // 역호환: 기존 구조
+        this.indexMap = (Map<UUID, Long>) readObj;
+        this.stringIndexMap = new HashMap<>();
+      }
     }
   }
 
@@ -58,7 +75,8 @@ public class IndexManager {
 
   public void saveIndex() throws FileException {
     try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(indexFile))) {
-      oos.writeObject(indexMap);
+      IndexData data = new IndexData(indexMap, stringIndexMap);
+      oos.writeObject(data);
     } catch (IOException e) {
       throw FileException.writeError(indexFile, e);
     }

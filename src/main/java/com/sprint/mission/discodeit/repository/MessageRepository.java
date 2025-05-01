@@ -23,6 +23,14 @@ public interface MessageRepository {
   List<Message> findAll();
 
   /**
+   * 특정 채널의 모든 메시지를 조회
+   *
+   * @param channelId UUID
+   * @return List<Message>
+   */
+  List<Message> findAllByChannelId(UUID channelId);
+
+  /**
    * 메시지 저장
    *
    * @param message Message
