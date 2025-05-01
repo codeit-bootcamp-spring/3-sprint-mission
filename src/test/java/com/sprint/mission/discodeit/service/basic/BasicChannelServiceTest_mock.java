@@ -83,6 +83,76 @@ class BasicChannelServiceTest_mock {
   }
 
   @Test
+  @DisplayName("채널 조회는 Public/Private 채널을 구분해서 적절한 응답을 반환해야 한다")
+  void searchChannels_shouldReturnProperResponseForEachChannelType() {
+    UUID creatorId = UUID.randomUUID();
+    UUID participantId = UUID.randomUUID();
+
+    // Private 채널 세팅
+    Channel privateChannel = Channel.createPrivate(creatorId);
+    privateChannel.addParticipant(creatorId);  // 생성자 추가
+    privateChannel.addParticipant(participantId);
+    Message privateMessage = Message.create("Private 메시지", creatorId, privateChannel.getId());
+
+    // Public 채널 세팅
+    Channel publicChannel = Channel.createPublic(creatorId, "공지", "공지사항입니다");
+    publicChannel.addParticipant(creatorId);
+    Message publicMessage = Message.create("Public 메시지", creatorId, publicChannel.getId());
+
+    when(channelRepository.findAll()).thenReturn(List.of(privateChannel, publicChannel));
+    when(messageRepository.findAll()).thenReturn(List.of(privateMessage, publicMessage));
+
+    List<ChannelResponse> result = channelService.searchChannels(null, null);
+
+    assertEquals(2, result.size());
+
+    for (ChannelResponse response : result) {
+      assertTrue(response.latestMessageTime() != null);
+
+      if (response instanceof PrivateChannelResponse privateResp) {
+        // PRIVATE 채널일 때만 참여자 정보 검증
+        assertEquals(privateChannel.getId(), privateResp.id());
+        assertTrue(privateResp.participantIds().contains(creatorId));
+        assertTrue(privateResp.participantIds().contains(participantId));
+      } else if (response instanceof PublicChannelResponse publicResp) {
+        // PUBLIC 채널은 참여자 정보가 없음 (publicResp에는 participantIds 없음)
+        assertEquals(publicChannel.getId(), publicResp.id());
+      } else {
+        throw new AssertionError("Unknown ChannelResponse type: " + response.getClass());
+      }
+    }
+  }
+
+  @Test
+  @DisplayName("findAllByUserId는 Public 채널과 참여한 Private 채널만 반환해야 한다")
+  void findAllByUserId_shouldReturnOnlyAccessibleChannels() {
+    UUID creatorId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    UUID otherUserId = UUID.randomUUID();
+
+    // Private 채널 (유저 참여)
+    Channel privateChannel1 = Channel.createPrivate(creatorId);
+    privateChannel1.addParticipant(userId);
+
+    // Private 채널 (유저 불참)
+    Channel privateChannel2 = Channel.createPrivate(creatorId);
+    privateChannel2.addParticipant(otherUserId);
+
+    // Public 채널
+    Channel publicChannel = Channel.createPublic(creatorId, "public", "desc");
+
+    when(channelRepository.findAll()).thenReturn(
+        List.of(privateChannel1, privateChannel2, publicChannel));
+    when(messageRepository.findAll()).thenReturn(List.of());
+
+    List<ChannelResponse> result = channelService.getAllByUserId(userId);
+
+    assertEquals(2, result.size());
+    assertTrue(result.stream().anyMatch(r -> r.id().equals(publicChannel.getId())));
+    assertTrue(result.stream().anyMatch(r -> r.id().equals(privateChannel1.getId())));
+  }
+
+  @Test
   @DisplayName("비공개 채널의 이름을 업데이트하려고 하면 ChannelException이 발생한다")
   void shouldThrowWhenUpdatingPrivateChannelName() {
     UUID channelId = UUID.randomUUID();
@@ -120,8 +190,8 @@ class BasicChannelServiceTest_mock {
   }
 
   @Test
-  @DisplayName("채널 삭제 시 관련 메시지와 ReadStatus도 함께 삭제된다")
-  void shouldDeleteChannelAndAssociatedEntities() {
+  @DisplayName("채널 삭제 시 채널과 관련된 Message, ReadStatus를 함께 삭제해야 한다")
+  void deleteChannel_shouldAlsoDeleteMessagesAndReadStatuses() {
     UUID channelId = UUID.randomUUID();
     Channel channel = Channel.createPublic(UUID.randomUUID(), "general", "desc");
 
@@ -138,47 +208,5 @@ class BasicChannelServiceTest_mock {
     verify(messageRepository).deleteById(message.getId());
     verify(readStatusRepository).deleteById(status.getId());
     verify(channelRepository).deleteById(channelId);
-  }
-
-  @Test
-  @DisplayName("searchChannels는 Public/Private 채널을 구분해서 적절한 응답을 반환해야 한다")
-  void searchChannels_shouldReturnProperResponseForEachChannelType() {
-    UUID creatorId = UUID.randomUUID();
-    UUID participantId = UUID.randomUUID();
-
-    // Private 채널 세팅
-    Channel privateChannel = Channel.createPrivate(creatorId);
-    privateChannel.addParticipant(creatorId);  // 생성자 추가
-    privateChannel.addParticipant(participantId);
-    Message privateMessage = Message.create("Private 메시지", creatorId, privateChannel.getId());
-
-    // Public 채널 세팅
-    Channel publicChannel = Channel.createPublic(creatorId, "공지", "공지사항입니다");
-    publicChannel.addParticipant(creatorId);
-    Message publicMessage = Message.create("Public 메시지", creatorId, publicChannel.getId());
-
-    when(channelRepository.findAll()).thenReturn(List.of(privateChannel, publicChannel));
-    when(messageRepository.findAll()).thenReturn(List.of(privateMessage, publicMessage));
-
-    List<ChannelResponse> result = channelService.searchChannels(null, null);
-
-    assertEquals(2, result.size());
-
-    for (ChannelResponse response : result) {
-      assertTrue(response.latestMessageTime() != null);
-
-      if (response instanceof PrivateChannelResponse privateResp) {
-        // PRIVATE 채널일 때만 참여자 정보 검증
-        assertEquals(privateChannel.getId(), privateResp.id());
-        assertTrue(privateResp.participantIds().contains(creatorId));
-        assertTrue(privateResp.participantIds().contains(participantId));
-      } else if (response instanceof PublicChannelResponse publicResp) {
-        // PUBLIC 채널은 참여자 정보가 없음 (publicResp에는 participantIds 없음)
-        assertEquals(publicChannel.getId(), publicResp.id());
-        // 여기서 별도 검증은 필요 없지만 latestMessageTime이 포함됐는지만 보면 OK
-      } else {
-        throw new AssertionError("Unknown ChannelResponse type: " + response.getClass());
-      }
-    }
   }
 }

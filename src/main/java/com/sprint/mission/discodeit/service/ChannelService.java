@@ -61,7 +61,7 @@ public interface ChannelService {
    * @param userId 사용자 ID
    * @return 사용자가 참여 중인 채널 목록
    */
-  List<ChannelResponse> getUserChannels(UUID userId);
+  List<ChannelResponse> getAllByUserId(UUID userId);
 
   /**
    * 채널 정보를 업데이트한다

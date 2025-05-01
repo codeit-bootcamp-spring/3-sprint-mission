@@ -63,17 +63,20 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public List<ChannelResponse> searchChannels(UUID creatorId, String name) {
+  public List<ChannelResponse> getAllByUserId(UUID userId) {
     return channelRepository.findAll().stream()
-        .filter(channel -> channel.matchesFilter(creatorId, name))
+        .filter(channel ->
+            channel.getType() == Channel.ChannelType.PUBLIC ||
+                channel.isParticipant(userId)
+        )
         .map(this::toResponse)
         .collect(Collectors.toList());
   }
 
   @Override
-  public List<ChannelResponse> getUserChannels(UUID userId) {
+  public List<ChannelResponse> searchChannels(UUID creatorId, String name) {
     return channelRepository.findAll().stream()
-        .filter(channel -> channel.isParticipant(userId))
+        .filter(channel -> channel.matchesFilter(creatorId, name))
         .map(this::toResponse)
         .collect(Collectors.toList());
   }
