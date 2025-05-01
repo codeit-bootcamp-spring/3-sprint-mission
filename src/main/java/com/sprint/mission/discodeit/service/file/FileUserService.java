@@ -1,8 +1,13 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.data.UserDTO;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.dto.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.List;
@@ -16,19 +21,18 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public User createUser(String name) {
-        if (getUserByName(name) != null) {
-            throw new IllegalArgumentException("[User] 이미 존재하는 사용자 이름입니다. (" + name + ")");
-        }
-
-        User user = User.of(name);
-        userRepository.save(user);
-        return user;
+    public User createUser(UserCreateRequest userCreateRequest, BinaryContentCreateRequest profileImage) {
+        return null;
     }
 
     @Override
-    public User getUser(UUID id) {
-        return userRepository.loadById(id);
+    public UserDTO getUser(UUID id) {
+        return null;
+    }
+
+    @Override
+    public List<UserDTO> getAllUsers() {
+        return List.of();
     }
 
     @Override
@@ -37,19 +41,10 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public List<User> getAllUsers() {
-        List<User> users = userRepository.loadAll();
-        return users.stream().toList();
+    public BinaryContent updateUserProfileImage(UserUpdateRequest userUpdateRequest) {
+        return null;
     }
 
-    @Override
-    public void updateUser(UUID id, String name) {
-        try {
-            userRepository.update(id, name);
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
-    }
 
     @Override
     public void deleteUser(UUID id) {

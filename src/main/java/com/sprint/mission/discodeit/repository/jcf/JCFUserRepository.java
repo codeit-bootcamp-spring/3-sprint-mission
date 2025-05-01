@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
+import com.sprint.mission.discodeit.dto.entity.BinaryContent;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.dto.entity.User;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -24,6 +26,11 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
+    public User loadByEmail(String email) {
+        return null;
+    }
+
+    @Override
     public User loadById(UUID id) {
         return users.get(id);
     }
@@ -33,15 +40,10 @@ public class JCFUserRepository implements UserRepository {
         return users.values().stream().toList();
     }
 
-    @Override
-    public void update(UUID id, String name) {
-        User user = users.get(id);
-        if (user == null) {
-            throw new IllegalArgumentException("[User] 유효하지 않은 사용자입니다. (" + id + ")");
-        }
-
-        user.setName(name);
-    }
+//    @Override
+//    public BinaryContent update(UUID userId, BinaryContentCreateRequest binaryContentCreateRequest) {
+//        return null;
+//    }
 
     @Override
     public void deleteById(UUID id) {

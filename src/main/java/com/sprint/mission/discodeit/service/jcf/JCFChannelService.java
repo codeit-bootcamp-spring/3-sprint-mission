@@ -1,17 +1,13 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.dto.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
-    private final JCFUserService userService;
     private final Map<UUID, Channel> data = new HashMap<>();
 
-    public JCFChannelService(JCFUserService userService) {
-        this.userService = userService;
-    }
 
     @Override
     public Channel createChannel(String name) {
@@ -61,13 +57,13 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void leaveChannel(UUID userId, UUID channelId) {
-        if (!existsById(channelId)) {
-            System.out.println("[Channel] 유효하지 않은 채널입니다.");
-        } else if (!userService.existsById(userId)) {
-            System.out.println("[Channel] 유효하지 않은 사용자입니다.");
-        } else {
-            getChannel(channelId).leave(userId);
-        }
+//        if (!existsById(channelId)) {
+//            System.out.println("[Channel] 유효하지 않은 채널입니다.");
+//        } else if (!userService.existsById(userId)) {
+//            System.out.println("[Channel] 유효하지 않은 사용자입니다.");
+//        } else {
+//            getChannel(channelId).leave(userId);
+//        }
     }
 
     @Override

@@ -1,6 +1,11 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.data.UserDTO;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.entity.BinaryContent;
+import com.sprint.mission.discodeit.dto.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
@@ -9,25 +14,18 @@ public class JCFUserService implements UserService {
     private final Map<UUID, User> data = new HashMap<>();
 
     @Override
-    public User createUser(String name) {
-        // 이름 중복 검사
-        if (getUserByName(name) != null) {
-            throw new IllegalArgumentException("[User] 이미 존재하는 사용자 이름입니다. (" + name + ")");
-        }
-
-        User user = new User(name);
-        data.put(user.getId(), user);
-        return user;
+    public User createUser(UserCreateRequest userCreateRequest, BinaryContentCreateRequest profileImage) {
+        return null;
     }
 
     @Override
-    public User getUser(UUID id) {
-        return data.get(id);
+    public UserDTO getUser(UUID id) {
+        return null;
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return data.values().stream().toList();
+    public List<UserDTO> getAllUsers() {
+        return List.of();
     }
 
     @Override
@@ -39,11 +37,8 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void updateUser(UUID id, String name) {
-        User user = data.get(id);
-        if (user != null) {
-            user.setName(name);
-        }
+    public BinaryContent updateUserProfileImage(UserUpdateRequest userUpdateRequest) {
+        return null;
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.dto.entity.Message;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;

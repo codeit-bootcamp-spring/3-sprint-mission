@@ -1,18 +1,25 @@
 package com.sprint.mission.discodeit.flow;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.entity.Channel;
+import com.sprint.mission.discodeit.dto.entity.Message;
+import com.sprint.mission.discodeit.dto.entity.User;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.service.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class TestScenario {
     private final UserService userService;
+    private final UserStatusService userStatusService;
+    private final ReadStatusService readStatusService;
+    private final BinaryContentService binaryContentService;
+    private final AuthService authService;
     private final ChannelService channelService;
     private final MessageService messageService;
 
@@ -22,18 +29,26 @@ public class TestScenario {
 
     public TestScenario(
             UserService userService,
+            UserStatusService userStatusService,
+            ReadStatusService readStatusService,
+            BinaryContentService binaryContentService,
+            AuthService authService,
             ChannelService channelService,
             MessageService messageService
     ) {
         this.userService    = userService;
+        this.userStatusService = userStatusService;
+        this.readStatusService = readStatusService;
+        this.binaryContentService = binaryContentService;
+        this.authService = authService;
         this.channelService = channelService;
         this.messageService = messageService;
     }
 
     public void run() {
         testUserServices();
-        testChannelServices();
-        testMessageServices();
+//        testChannelServices();
+//        testMessageServices();
     }
 
     private void testUserServices() {
@@ -65,12 +80,27 @@ public class TestScenario {
 
     private void createUser() {
         System.out.println("\n[User] 유효성 검사 후 사용자 생성");
-        List<String> names = List.of("Jane", "Tom", "Kate", "Kate");
-        users = names.stream()
-                .map(name -> {
+
+        List<UserCreateRequest> createDTOs = List.of(
+                new UserCreateRequest("Jane", "jane@google.com", "1234"),
+                new UserCreateRequest("Tom",  "tom@naver.com",  "2345"),
+                new UserCreateRequest("Kate", "kate@daum.com", "3456")
+        );
+
+        List<BinaryContentCreateRequest> imageDTOs = Arrays.asList( //List.of()로는 null 값을 담을 수 없음
+                new BinaryContentCreateRequest("Jane.png", "/data/binaryContents/Jane.png"),
+                null,
+                new BinaryContentCreateRequest("Kate.jpg", "/data/binaryContents/Kate.jpg")
+        );
+
+        users = IntStream.range(0, createDTOs.size())
+                .mapToObj(i -> {
+                    UserCreateRequest userDto = createDTOs.get(i);
+                    BinaryContentCreateRequest imgDto = imageDTOs.get(i);
+
                     try {
-                        User created = userService.createUser(name);
-                        return userService.getUser(created.getId());
+                        User created = userService.createUser(userDto, imgDto);
+                        return created;
                     } catch (IllegalArgumentException e) {
                         System.out.println(e.getMessage());
                         return null;
@@ -92,11 +122,21 @@ public class TestScenario {
     }
 
     private void updateUser() {
-        System.out.println("\n[User] 수정된 사용자 정보");
-        userService.updateUser(users.get(0).getId(), "John");
-        userService.updateUser(users.get(1).getId(), "Ted");
-        System.out.println(userService.getUser(users.get(0).getId()));
-        System.out.println(userService.getUser(users.get(1).getId()));
+        System.out.println("\n[User] 사용자 프로필 이미지 추가/수정 후 조회");
+
+        List<BinaryContentCreateRequest> imageDTOs = List.of(
+                new BinaryContentCreateRequest("EditJane.png", "/data/binaryContents/attachments"),
+                new BinaryContentCreateRequest("AddTomProfile.jpg", "/data/binaryContents/attachments")
+        );
+
+        List<UserUpdateRequest> updateDTOs = List.of(
+                new UserUpdateRequest(users.get(0).getId(), imageDTOs.get(0)),
+                new UserUpdateRequest(users.get(1).getId(), imageDTOs.get(1))
+        );
+
+        updateDTOs.stream()
+                .map(userService::updateUserProfileImage)
+                .forEach(System.out::println);
     }
 
     private void deleteUser() {

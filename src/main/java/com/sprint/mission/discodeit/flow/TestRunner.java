@@ -7,14 +7,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class TestRunner implements CommandLineRunner {
     private final TestScenario fileTestScenario;
-    private final TestScenario jcfTestScenario;
+//    private final TestScenario jcfTestScenario;
 
     public TestRunner(
-            @Qualifier("fileTest") TestScenario fileTestScenario,
-            @Qualifier("jcfTest") TestScenario jcfTestScenario
+            @Qualifier("fileTest") TestScenario fileTestScenario
+//            @Qualifier("jcfTest") TestScenario jcfTestScenario
     ) {
         this.fileTestScenario = fileTestScenario;
-        this.jcfTestScenario = jcfTestScenario;
+//        this.jcfTestScenario = jcfTestScenario;
     }
 
     @Override
@@ -22,7 +22,7 @@ public class TestRunner implements CommandLineRunner {
         System.out.println("\n------- BasicService & FileRepo Test -------");
         fileTestScenario.run();
 
-        System.out.println("\n------- BasicService & JCFRepo Test -------");
-        jcfTestScenario.run();
+//        System.out.println("\n------- BasicService & JCFRepo Test -------");
+//        jcfTestScenario.run();
     }
 }

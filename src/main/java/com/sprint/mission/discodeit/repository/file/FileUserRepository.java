@@ -1,14 +1,16 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import com.sprint.mission.discodeit.dto.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.entity.User;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Repository("fileUserRepository")
 public class FileUserRepository implements UserRepository {
@@ -36,6 +38,18 @@ public class FileUserRepository implements UserRepository {
 
         for (User user : users) {
             if (user.getName().equals(name)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public User loadByEmail(String email) {
+        List<User> users = loadAll();
+
+        for (User user : users) {
+            if (user.getEmail().equals(email)) {
                 return user;
             }
         }
@@ -83,31 +97,14 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public void update(UUID id, String name) {
-        User user = loadById(id);
-        if (user == null) {
-            throw new IllegalArgumentException("[User] 유효하지 않은 사용자입니다. (" + id + ")");
-        }
-
-        user.setName(name);
-        save(user);
-    }
-
-    @Override
     public void deleteById(UUID id) {
-        File file = new File(DIR + id + ".ser");
-
         try {
-            if (file.exists()) {
-                if (!file.delete()) { //file.delete는 실패했을 때 예외 반환 x
-                    System.out.println("[User] 파일 삭제 실패");
-                };
-            }
-            else {
-                System.out.println("[User] 유효하지 않은 파일 (" + id + ")");
+            File file = new File(DIR + id + ".ser");
+            if (!file.delete()) { //file.delete는 실패했을 때 예외 반환 x
+                System.out.println("[User] 파일 삭제 실패");
             }
         } catch (Exception e) {
-            throw new RuntimeException("[User] 파일 삭제 중 오류 발생 (" + id + ")", e);
+            throw new RuntimeException("[User] 파일 접근 오류 (" + id + ")", e);
         }
     }
 
