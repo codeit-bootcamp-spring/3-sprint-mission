@@ -120,7 +120,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
   }
 
   @Override
-  public void deleteById(UUID id) {
+  public void delete(UUID id) {
     try {
       Long position = indexManager.getPosition(id);
       if (position != null) {

@@ -44,7 +44,7 @@ public interface BinaryContentRepository {
    *
    * @param id UUID
    */
-  void deleteById(UUID id);
+  void delete(UUID id);
 
   /**
    * 메시지 id로 해당 메시지와 관련된 컨텐트 삭제

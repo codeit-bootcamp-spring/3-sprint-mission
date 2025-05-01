@@ -67,7 +67,7 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
   public ReadStatus save(ReadStatus readStatus) {
     // 기존 데이터가 있는 경우 삭제
     if (readStatus.getId() != null) {
-      deleteById(readStatus.getId());
+      delete(readStatus.getId());
     }
 
     // 새 객체 생성 (ID가 없는 경우)
@@ -90,7 +90,7 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
   }
 
   @Override
-  public void deleteById(UUID id) {
+  public void delete(UUID id) {
     findById(id).ifPresent(status -> {
       // 기본 저장소에서 삭제
       readStatusMap.remove(id);

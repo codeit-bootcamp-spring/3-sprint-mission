@@ -60,5 +60,5 @@ public interface ReadStatusRepository {
    *
    * @param id UUID
    */
-  void deleteById(UUID id);
+  void delete(UUID id);
 }

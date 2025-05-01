@@ -93,7 +93,7 @@ public class FileUserRepository implements UserRepository {
   }
 
   @Override
-  public void deleteById(UUID id) {
+  public void delete(UUID id) {
     Long position = indexManager.getPosition(id);
     if (position != null) {
       fileStorage.deleteObject(position);

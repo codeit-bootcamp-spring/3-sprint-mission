@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.basic;
+package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.common.exception.ChannelException;
 import com.sprint.mission.discodeit.dto.ChannelResponse;
@@ -13,7 +13,6 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -25,26 +24,26 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class BasicChannelService implements ChannelService {
+public class ChannelServiceImpl implements ChannelService {
 
   private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
 
   @Override
-  public Channel createChannel(UUID creatorId, String name, String description) {
+  public Channel create(UUID creatorId, String name, String description) {
     Channel channel = Channel.create(creatorId, name, description);
     return channelRepository.save(channel);
   }
 
   @Override
-  public Channel createPublicChannel(PublicChannelCreateRequest dto) {
+  public Channel createPublic(PublicChannelCreateRequest dto) {
     Channel channel = Channel.createPublic(dto.creator(), dto.name(), dto.description());
     return channelRepository.save(channel);
   }
 
   @Override
-  public Channel createPrivateChannel(PrivateChannelCreateRequest dto) {
+  public Channel createPrivate(PrivateChannelCreateRequest dto) {
     Channel channel = Channel.createPrivate(dto.creator());
     for (UUID participantId : dto.participantIds()) {
       try {
@@ -58,12 +57,12 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public Optional<ChannelResponse> getChannelById(UUID id) {
+  public Optional<ChannelResponse> findById(UUID id) {
     return channelRepository.findById(id).map(this::toResponse);
   }
 
   @Override
-  public List<ChannelResponse> getAllByUserId(UUID userId) {
+  public List<ChannelResponse> findAllByUserId(UUID userId) {
     return channelRepository.findAll().stream()
         .filter(channel ->
             channel.getType() == Channel.ChannelType.PUBLIC ||
@@ -74,7 +73,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public List<ChannelResponse> searchChannels(UUID creatorId, String name) {
+  public List<ChannelResponse> findByCreatorIdOrName(UUID creatorId, String name) {
     return channelRepository.findAll().stream()
         .filter(channel -> channel.matchesFilter(creatorId, name))
         .map(this::toResponse)
@@ -82,7 +81,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public Optional<ChannelResponse> updateChannel(PublicChannelUpdateRequest request) {
+  public Optional<ChannelResponse> update(PublicChannelUpdateRequest request) {
     return channelRepository.findById(request.channelId())
         .map(channel -> {
           if (channel.getType() == Channel.ChannelType.PRIVATE) {
@@ -117,18 +116,18 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public Optional<ChannelResponse> deleteChannel(UUID channelId) {
+  public Optional<ChannelResponse> delete(UUID channelId) {
     Optional<Channel> deleted = channelRepository.findById(channelId);
     deleted.ifPresent(channel -> {
       // 연관된 메시지 삭제
       messageRepository.findAll().stream()
           .filter(m -> m.getChannelId().equals(channelId))
-          .forEach(m -> messageRepository.deleteById(m.getId()));
+          .forEach(m -> messageRepository.delete(m.getId()));
       // 연관된 읽음 상태 삭제
       readStatusRepository.findByChannelId(channelId)
-          .forEach(rs -> readStatusRepository.deleteById(rs.getId()));
+          .forEach(rs -> readStatusRepository.delete(rs.getId()));
       // 채널 삭제
-      channelRepository.deleteById(channelId);
+      channelRepository.delete(channelId);
     });
     return deleted.map(this::toResponse);
   }

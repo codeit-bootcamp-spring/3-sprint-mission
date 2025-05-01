@@ -33,7 +33,7 @@ public class JCFUserStatusRepository implements UserStatusRepository {
   }
 
   @Override
-  public void deleteById(UUID id) {
+  public void delete(UUID id) {
     Optional.ofNullable(userStatusMap.get(id))
         .ifPresent(status -> {
           userStatusMap.remove(id);

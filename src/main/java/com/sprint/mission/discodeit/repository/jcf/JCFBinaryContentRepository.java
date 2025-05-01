@@ -44,7 +44,7 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
   }
 
   @Override
-  public void deleteById(UUID id) {
+  public void delete(UUID id) {
     Optional.ofNullable(binaryContentMap.get(id))
         .ifPresent(status -> {
           binaryContentMap.remove(id);

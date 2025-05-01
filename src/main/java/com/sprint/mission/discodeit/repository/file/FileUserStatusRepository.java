@@ -89,7 +89,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
   }
 
   @Override
-  public void deleteById(UUID id) {
+  public void delete(UUID id) {
     Long positionToDelete = indexManager.getPosition(id);
     if (positionToDelete != null) {
       try {

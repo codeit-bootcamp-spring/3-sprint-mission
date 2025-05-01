@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.basic;
+package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.common.exception.ChannelException;
 import com.sprint.mission.discodeit.common.exception.UserException;
@@ -12,7 +12,6 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.MessageService;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +23,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class BasicMessageService implements MessageService {
+public class MessageServiceImpl implements MessageService {
 
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
@@ -32,7 +31,7 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public Message createMessage(String content, UUID userId, UUID channelId)
+  public Message create(String content, UUID userId, UUID channelId)
       throws UserException, ChannelException {
     userRepository.findById(userId)
         .orElseThrow(() -> UserException.notFound(userId));
@@ -49,7 +48,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public Message createMessage(MessageCreateRequest request) throws ChannelException {
+  public Message create(MessageCreateRequest request) throws ChannelException {
     userRepository.findById(request.userId())
         .orElseThrow(() -> ChannelException.notFound(request.userId()));
 
@@ -77,7 +76,7 @@ public class BasicMessageService implements MessageService {
 
 
   @Override
-  public Optional<MessageResponse> getMessageById(UUID id) {
+  public Optional<MessageResponse> findById(UUID id) {
     return messageRepository.findById(id)
         .map(this::toResponse);
   }
@@ -96,7 +95,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public List<MessageResponse> getMessagesById(UUID channelId) {
+  public List<MessageResponse> findAllByChannelId(UUID channelId) {
     return messageRepository.findAllByChannelId(channelId).stream()
         .filter(m -> m.getDeletedAt() == null)
         .sorted(Comparator.comparing(Message::getCreatedAt))
@@ -105,7 +104,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public Optional<MessageResponse> updateMessageContent(MessageUpdateRequest request) {
+  public Optional<MessageResponse> updateContent(MessageUpdateRequest request) {
     return messageRepository.findById(request.messageId())
         .map(message -> {
           message.updateContent(request.newContent());
@@ -115,7 +114,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public Optional<MessageResponse> deleteMessage(UUID id) {
+  public Optional<MessageResponse> delete(UUID id) {
     return messageRepository.findById(id)
         .filter(m -> m.getDeletedAt() == null)
         .map(m -> {

@@ -108,7 +108,7 @@ class FileUserStatusRepositoryTest {
 
   @Test
   @DisplayName("[File] ID로 사용자 상태를 삭제해야 한다")
-  void deleteByIdShouldRemoveUserStatusIfExists() {
+  void deleteShouldRemoveUserStatusIfExists() {
     // given
     UUID userId = UUID.randomUUID();
     UserStatus savedStatus = userStatusRepository.save(
@@ -116,7 +116,7 @@ class FileUserStatusRepositoryTest {
     UUID statusIdToDelete = savedStatus.getId();
 
     // when
-    userStatusRepository.deleteById(statusIdToDelete);
+    userStatusRepository.delete(statusIdToDelete);
     Optional<UserStatus> deletedStatus = FileUserStatusRepository.from(filePath.toString())
         .findById(statusIdToDelete);
 
@@ -126,12 +126,12 @@ class FileUserStatusRepositoryTest {
 
   @Test
   @DisplayName("[File] 존재하지 않는 ID로 삭제를 시도해도 예외가 발생하지 않아야 한다")
-  void deleteByIdShouldNotThrowExceptionIfNotFound() {
+  void deleteShouldNotThrowExceptionIfNotFound() {
     // given
     UUID nonExistingId = UUID.randomUUID();
 
     // when & then
-    userStatusRepository.deleteById(nonExistingId);
+    userStatusRepository.delete(nonExistingId);
     assertTrue(true, "예외가 발생하지 않았음");
   }
 }

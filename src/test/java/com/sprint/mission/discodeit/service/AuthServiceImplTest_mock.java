@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.basic;
+package com.sprint.mission.discodeit.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,7 +25,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class BasicAuthServiceTest_mock {
+class AuthServiceImplTest_mock {
 
   @Mock
   private UserRepository userRepository;
@@ -34,7 +34,7 @@ class BasicAuthServiceTest_mock {
   private UserStatusRepository userStatusRepository;
 
   @InjectMocks
-  private BasicAuthService authService;
+  private AuthServiceImpl authService;
 
   private static User user;
   private static UserStatus userStatus;

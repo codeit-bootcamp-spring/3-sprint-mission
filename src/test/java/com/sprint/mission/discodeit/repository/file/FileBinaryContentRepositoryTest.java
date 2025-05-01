@@ -157,14 +157,14 @@ class FileBinaryContentRepositoryTest {
 
   @Test
   @DisplayName("[File] ID로 바이너리 컨텐트를 삭제해야 한다")
-  void deleteByIdShouldRemoveBinaryContentIfExists() throws IOException {
+  void deleteShouldRemoveBinaryContentIfExists() throws IOException {
     // given
     UUID contentId = UUID.randomUUID();
     BinaryContent savedContent = binaryContentRepository.save(
         BinaryContentFixture.createValidMessageAttachment());
 
     // when
-    binaryContentRepository.deleteById(savedContent.getId());
+    binaryContentRepository.delete(savedContent.getId());
 
     // then
     Optional<BinaryContent> deletedContent = binaryContentRepository.findById(savedContent.getId());
@@ -173,13 +173,13 @@ class FileBinaryContentRepositoryTest {
 
   @Test
   @DisplayName("[File] 존재하지 않는 ID로 삭제를 시도해도 예외가 발생하지 않아야 한다")
-  void deleteByIdShouldNotThrowExceptionIfNotFound() {
+  void deleteShouldNotThrowExceptionIfNotFound() {
     // given
     UUID nonExistingId = UUID.randomUUID();
 
     // when & then
     // deleteById는 void 형식이므로 예외가 발생하지 않는지만 확인
-    binaryContentRepository.deleteById(nonExistingId);
+    binaryContentRepository.delete(nonExistingId);
     assertTrue(true, "예외가 발생하지 않았음");
   }
 }

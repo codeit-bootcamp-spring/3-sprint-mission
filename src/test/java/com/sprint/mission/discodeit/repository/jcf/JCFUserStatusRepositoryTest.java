@@ -98,7 +98,7 @@ class JCFUserStatusRepositoryTest {
 
   @Test
   @DisplayName("[JCF] ID로 사용자 상태를 삭제해야 한다")
-  void deleteByIdShouldRemoveUserStatusIfExists() {
+  void deleteShouldRemoveUserStatusIfExists() {
     // given
     UUID userId = UUID.randomUUID();
     UserStatus savedStatus = userStatusRepository.save(
@@ -106,7 +106,7 @@ class JCFUserStatusRepositoryTest {
     UUID statusIdToDelete = savedStatus.getId();
 
     // when
-    userStatusRepository.deleteById(statusIdToDelete);
+    userStatusRepository.delete(statusIdToDelete);
     Optional<UserStatus> deletedStatus = userStatusRepository.findById(statusIdToDelete);
 
     // then
@@ -115,12 +115,12 @@ class JCFUserStatusRepositoryTest {
 
   @Test
   @DisplayName("[JCF] 존재하지 않는 ID로 삭제를 시도해도 아무런 동작을 하지 않아야 한다")
-  void deleteByIdShouldNotPerformActionIfNotFound() {
+  void deleteShouldNotPerformActionIfNotFound() {
     // given
     UUID nonExistingId = UUID.randomUUID();
 
     // when
-    userStatusRepository.deleteById(nonExistingId);
+    userStatusRepository.delete(nonExistingId);
 
     // then
     Optional<UserStatus> notFoundStatus = userStatusRepository.findById(nonExistingId);

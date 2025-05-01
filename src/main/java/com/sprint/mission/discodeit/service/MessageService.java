@@ -18,7 +18,7 @@ public interface MessageService {
    * @param channelId 채널 ID
    * @return 생성된 메시지 객체
    */
-  Message createMessage(String content, UUID userId, UUID channelId);
+  Message create(String content, UUID userId, UUID channelId);
 
   /**
    * 새 메시지를 생성한다
@@ -26,7 +26,7 @@ public interface MessageService {
    * @param request MessageCreateRequest
    * @return 생성된 메시지 객체
    */
-  Message createMessage(MessageCreateRequest request);
+  Message create(MessageCreateRequest request);
 
   /**
    * ID로 메시지를 조회한다
@@ -34,7 +34,7 @@ public interface MessageService {
    * @param id 메시지 ID
    * @return 조회된 메시지 객체
    */
-  Optional<MessageResponse> getMessageById(UUID id);
+  Optional<MessageResponse> findById(UUID id);
 
   /**
    * 조건에 맞는 메시지를 검색한다
@@ -52,7 +52,7 @@ public interface MessageService {
    * @param channelId 채널 ID
    * @return 채널 내 모든 메시지 목록
    */
-  List<MessageResponse> getMessagesById(UUID channelId);
+  List<MessageResponse> findAllByChannelId(UUID channelId);
 
   /**
    * 메시지 내용을 업데이트한다
@@ -60,7 +60,7 @@ public interface MessageService {
    * @param request MessageUpdateRequest
    * @return 업데이트된 메시지 객체
    */
-  Optional<MessageResponse> updateMessageContent(MessageUpdateRequest request);
+  Optional<MessageResponse> updateContent(MessageUpdateRequest request);
 
   /**
    * 메시지에 첨부파일을 연결한다
@@ -77,5 +77,5 @@ public interface MessageService {
    * @param id 삭제할 메시지 ID
    * @return 메시지 삭제 성공 여부
    */
-  Optional<MessageResponse> deleteMessage(UUID id);
+  Optional<MessageResponse> delete(UUID id);
 }

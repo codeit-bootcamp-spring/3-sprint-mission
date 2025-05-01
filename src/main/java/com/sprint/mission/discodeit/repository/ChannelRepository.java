@@ -35,5 +35,5 @@ public interface ChannelRepository {
    *
    * @param id UUID
    */
-  void deleteById(UUID id);
+  void delete(UUID id);
 }

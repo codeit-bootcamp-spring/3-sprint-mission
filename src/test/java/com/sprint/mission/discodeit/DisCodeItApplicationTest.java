@@ -15,11 +15,11 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.factory.RepositoryBundle;
 import com.sprint.mission.discodeit.repository.factory.RepositoryFactory;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.ChannelServiceImpl;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.MessageServiceImpl;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.basic.BasicChannelService;
-import com.sprint.mission.discodeit.service.basic.BasicMessageService;
-import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.service.UserServiceImpl;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -66,14 +66,14 @@ public class DisCodeItApplicationTest {
   @Test
   void jcfRepositories_shouldWorkTogether() {
     RepositoryBundle bundle = RepositoryFactory.createJCFRepositories();
-    UserService userService = new BasicUserService(
+    UserService userService = new UserServiceImpl(
         bundle.getUserRepository(),
         bundle.getUserStatusRepository(),
         bundle.getBinaryContentRepository()
     );
-    ChannelService channelService = new BasicChannelService(bundle.getChannelRepository(),
+    ChannelService channelService = new ChannelServiceImpl(bundle.getChannelRepository(),
         bundle.getReadStatusRepository(), bundle.getMessageRepository());
-    MessageService messageService = new BasicMessageService(
+    MessageService messageService = new MessageServiceImpl(
         bundle.getMessageRepository(),
         bundle.getUserRepository(),
         bundle.getChannelRepository(),
@@ -87,14 +87,14 @@ public class DisCodeItApplicationTest {
   @Test
   void fileRepositories_shouldWorkTogether() {
     RepositoryBundle bundle = RepositoryFactory.createFileRepositories();
-    UserService userService = new BasicUserService(
+    UserService userService = new UserServiceImpl(
         bundle.getUserRepository(),
         bundle.getUserStatusRepository(),
         bundle.getBinaryContentRepository()
     );
-    ChannelService channelService = new BasicChannelService(bundle.getChannelRepository(),
+    ChannelService channelService = new ChannelServiceImpl(bundle.getChannelRepository(),
         bundle.getReadStatusRepository(), bundle.getMessageRepository());
-    MessageService messageService = new BasicMessageService(
+    MessageService messageService = new MessageServiceImpl(
         bundle.getMessageRepository(),
         bundle.getUserRepository(),
         bundle.getChannelRepository(),
@@ -108,18 +108,18 @@ public class DisCodeItApplicationTest {
       MessageService messageService) {
 
     // 1. 사용자 생성
-    User user = userService.createUser("test@test.com", "길동쓰", "pwd1234");
+    User user = userService.create("test@test.com", "길동쓰", "pwd1234");
     assertNotNull(user.getId(), "사용자 ID가 생성되어야 합니다.");
 
     // 2. 채널 생성
-    Channel channel = channelService.createChannel(user.getId(), "공지", "공지 채널쓰");
+    Channel channel = channelService.create(user.getId(), "공지", "공지 채널쓰");
 
     // 생성자를 참여자로 추가 (서비스 메서드로 처리)
     channelService.addParticipant(channel.getId(), user.getId());
 
     assertNotNull(channel.getId(), "채널 ID가 생성되어야 합니다.");
 
-    ChannelResponse channelResponse = channelService.getChannelById(channel.getId())
+    ChannelResponse channelResponse = channelService.findById(channel.getId())
         .orElseThrow(() -> new IllegalStateException("채널을 찾을 수 없습니다."));
 
     if (channelResponse instanceof PrivateChannelResponse privateResp) {
@@ -133,19 +133,19 @@ public class DisCodeItApplicationTest {
     }
 
     // 3. 메시지 생성
-    Message message = messageService.createMessage("안녕하세요.", user.getId(), channel.getId());
+    Message message = messageService.create("안녕하세요.", user.getId(), channel.getId());
     assertNotNull(message.getId(), "메시지 ID가 생성되어야 합니다.");
     assertEquals("안녕하세요.", message.getContent(), "메시지 내용이 일치해야 합니다.");
     assertEquals(message.getUserId(), user.getId(), "메시지 작성자가 일치해야 합니다.");
     assertEquals(message.getChannelId(), channel.getId(), "메시지 채널이 일치해야 합니다.");
 
     // 4. 생성된 사용자 확인
-    List<UserResponse> allUsers = userService.getAllUsers();
+    List<UserResponse> allUsers = userService.findAll();
     assertTrue(allUsers.stream().anyMatch(u -> u.id().equals(user.getId())),
         "생성된 사용자가 목록에 있어야 합니다.");
 
     // 5. 생성된 채널 확인
-    List<ChannelResponse> allChannels = channelService.searchChannels(null, null);
+    List<ChannelResponse> allChannels = channelService.findByCreatorIdOrName(null, null);
     assertTrue(allChannels.stream().anyMatch(c -> c.id().equals(channel.getId())),
         "생성된 채널이 목록에 있어야 합니다.");
 

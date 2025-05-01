@@ -68,14 +68,14 @@ class JCFBinaryContentRepositoryTest {
 
   @Test
   @DisplayName("deleteById로 저장된 BinaryContent를 삭제하고 조회하면 찾을 수 없다.")
-  void deleteById_deletesBinaryContent() {
+  void delete_deletesBinaryContent() {
     // given
     BinaryContent contentToSave = BinaryContentFixture.createValidMessageAttachment();
     BinaryContent savedContent = binaryContentRepository.save(contentToSave);
     UUID idToDelete = savedContent.getId();
 
     // when
-    binaryContentRepository.deleteById(idToDelete);
+    binaryContentRepository.delete(idToDelete);
     Optional<BinaryContent> foundContent = binaryContentRepository.findById(idToDelete);
 
     // then

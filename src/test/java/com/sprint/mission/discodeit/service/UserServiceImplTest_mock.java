@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.basic;
+package com.sprint.mission.discodeit.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -35,7 +35,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class BasicUserServiceTest_mock {
+class UserServiceImplTest_mock {
 
   @Mock
   private UserRepository userRepository;
@@ -47,7 +47,7 @@ class BasicUserServiceTest_mock {
   private UserStatusRepository userStatusRepository;
 
   @InjectMocks
-  private BasicUserService basicUserService;
+  private UserServiceImpl userServiceImpl;
 
   @Nested
   @DisplayName("유저 생성")
@@ -69,7 +69,7 @@ class BasicUserServiceTest_mock {
           Optional.of(savedUserStatus));
 
       // when
-      UserResponse createdUserResponse = basicUserService.createUser(request);
+      UserResponse createdUserResponse = userServiceImpl.create(request);
 
       // then
       assertNotNull(createdUserResponse);
@@ -105,7 +105,7 @@ class BasicUserServiceTest_mock {
       ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
       // when
-      UserResponse createdUserResponse = basicUserService.createUser(request);
+      UserResponse createdUserResponse = userServiceImpl.create(request);
 
       // then
       assertNotNull(createdUserResponse);
@@ -133,7 +133,7 @@ class BasicUserServiceTest_mock {
 
       // when & Then
       UserException exception = assertThrows(UserException.class,
-          () -> basicUserService.createUser(request));
+          () -> userServiceImpl.create(request));
       assertEquals(UserException.DUPLICATE_EMAIL, exception.getErrorCode());
 
       verify(userRepository, times(1)).findByEmail(request.email());
@@ -154,7 +154,7 @@ class BasicUserServiceTest_mock {
 
       // when & Then
       UserException exception = assertThrows(UserException.class,
-          () -> basicUserService.createUser(request));
+          () -> userServiceImpl.create(request));
       assertEquals(UserException.DUPLICATE_NAME, exception.getErrorCode());
 
       verify(userRepository, times(1)).findByEmail(request.email());
@@ -181,12 +181,12 @@ class BasicUserServiceTest_mock {
       when(userRepository.findById(userId)).thenReturn(Optional.of(userToDelete));
 
       // when
-      basicUserService.deleteUser(userId);
+      userServiceImpl.delete(userId);
 
       // then
-      verify(userRepository, times(1)).deleteById(userId);
-      verify(binaryContentRepository, times(1)).deleteById(userToDelete.getProfileImageId());
-      verify(userStatusRepository, times(1)).deleteById(userId);
+      verify(userRepository, times(1)).delete(userId);
+      verify(binaryContentRepository, times(1)).delete(userToDelete.getProfileImageId());
+      verify(userStatusRepository, times(1)).delete(userId);
     }
 
     @Test
@@ -199,11 +199,11 @@ class BasicUserServiceTest_mock {
       when(userRepository.findById(userId)).thenReturn(Optional.of(userToDelete));
 
       // when
-      basicUserService.deleteUser(userId);
+      userServiceImpl.delete(userId);
 
       // then
-      verify(userRepository, times(1)).deleteById(userId);
-      verify(userStatusRepository, times(1)).deleteById(userId);
+      verify(userRepository, times(1)).delete(userId);
+      verify(userStatusRepository, times(1)).delete(userId);
     }
 
     @Test
@@ -214,12 +214,12 @@ class BasicUserServiceTest_mock {
       when(userRepository.findById(nonExistingUserId)).thenReturn(Optional.empty());
 
       // when
-      basicUserService.deleteUser(nonExistingUserId);
+      userServiceImpl.delete(nonExistingUserId);
 
       // then
-      verify(userRepository, never()).deleteById(any());
-      verify(binaryContentRepository, never()).deleteById(any());
-      verify(userStatusRepository, never()).deleteById(any());
+      verify(userRepository, never()).delete(any());
+      verify(binaryContentRepository, never()).delete(any());
+      verify(userStatusRepository, never()).delete(any());
     }
   }
 }

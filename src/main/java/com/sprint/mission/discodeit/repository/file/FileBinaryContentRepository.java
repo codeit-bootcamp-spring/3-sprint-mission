@@ -121,7 +121,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
   }
 
   @Override
-  public void deleteById(UUID id) {
+  public void delete(UUID id) {
     Long positionToDelete = idIndexManager.getPosition(id);
     if (positionToDelete != null) {
       try {

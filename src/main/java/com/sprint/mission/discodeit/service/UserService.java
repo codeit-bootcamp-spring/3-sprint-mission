@@ -18,7 +18,7 @@ public interface UserService {
    * @param password 사용자 비밀번호
    * @return 생성된 사용자 객체
    */
-  User createUser(String email, String name, String password);
+  User create(String email, String name, String password);
 
   /**
    * 새로운 사용자를 생성한다
@@ -26,7 +26,7 @@ public interface UserService {
    * @param dto UserCreateRequest
    * @return 생성된 사용자 객체
    */
-  UserResponse createUser(UserCreateRequest dto);
+  UserResponse create(UserCreateRequest dto);
 
   /**
    * ID로 사용자를 조회한다
@@ -34,7 +34,7 @@ public interface UserService {
    * @param id 사용자 ID
    * @return Optional<UserResponse>
    */
-  Optional<UserResponse> getUserById(UUID id);
+  Optional<UserResponse> findById(UUID id);
 
   /**
    * 이름으로 사용자를 검색한다
@@ -42,7 +42,7 @@ public interface UserService {
    * @param name 검색할 사용자 이름
    * @return Optional<User>
    */
-  Optional<UserResponse> getUserByName(String name);
+  Optional<UserResponse> findByName(String name);
 
   /**
    * 이메일로 사용자를 검색한다
@@ -50,14 +50,14 @@ public interface UserService {
    * @param email 검색할 사용자 이메일
    * @return Optional<UserResponse>
    */
-  Optional<UserResponse> getUserByEmail(String email);
+  Optional<UserResponse> findByEmail(String email);
 
   /**
    * 모든 사용자를 조회한다
    *
    * @return 전체 사용자 목록
    */
-  List<UserResponse> getAllUsers();
+  List<UserResponse> findAll();
 
   /**
    * 사용자 정보를 업데이트한다
@@ -65,7 +65,7 @@ public interface UserService {
    * @param dto UserUpdateRequest
    * @return 업데이트된 사용자 객체
    */
-  Optional<UserResponse> updateUser(UserUpdateRequest dto);
+  Optional<UserResponse> update(UserUpdateRequest dto);
 
   /**
    * 사용자를 삭제한다
@@ -73,5 +73,5 @@ public interface UserService {
    * @param id 삭제할 사용자 ID
    * @return 삭제된 사용자 객체
    */
-  Optional<UserResponse> deleteUser(UUID id);
+  Optional<UserResponse> delete(UUID id);
 }

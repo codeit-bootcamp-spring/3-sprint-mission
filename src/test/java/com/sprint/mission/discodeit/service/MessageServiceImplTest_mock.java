@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.basic;
+package com.sprint.mission.discodeit.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -35,7 +35,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class BasicMessageServiceTest_mock {
+public class MessageServiceImplTest_mock {
 
   @Mock
   UserRepository userRepository;
@@ -47,7 +47,7 @@ public class BasicMessageServiceTest_mock {
   BinaryContentRepository binaryContentRepository;
 
   @InjectMocks
-  BasicMessageService messageService;
+  MessageServiceImpl messageService;
 
   @Nested
   @DisplayName("메시지 서비스 테스트")
@@ -70,7 +70,7 @@ public class BasicMessageServiceTest_mock {
           Optional.of(channel));
       when(messageRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-      Message result = messageService.createMessage(request);
+      Message result = messageService.create(request);
 
       assertNotNull(result.getId());
       verify(messageRepository).save(any());
@@ -119,7 +119,7 @@ public class BasicMessageServiceTest_mock {
           Optional.of(BinaryContentFixture.createValidMessageAttachment()));
       when(messageRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-      Message result = messageService.createMessage(request);
+      Message result = messageService.create(request);
 
       assertNotNull(result.getId());
       verify(messageRepository).save(any());
@@ -142,7 +142,7 @@ public class BasicMessageServiceTest_mock {
 
       when(messageRepository.findAllByChannelId(channelId)).thenReturn(messages);
 
-      List<MessageResponse> result = messageService.getMessagesById(channelId);
+      List<MessageResponse> result = messageService.findAllByChannelId(channelId);
 
       assertNotNull(result);
       assertEquals(2, result.size());
@@ -165,7 +165,7 @@ public class BasicMessageServiceTest_mock {
 
       MessageUpdateRequest updateRequest = new MessageUpdateRequest(messageId, updatedContent);
 
-      messageService.updateMessageContent(updateRequest);
+      messageService.updateContent(updateRequest);
 
       assertEquals(updatedContent, message.getContent());
       verify(messageRepository).save(any());
@@ -184,7 +184,7 @@ public class BasicMessageServiceTest_mock {
 
       when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
 
-      messageService.deleteMessage(messageId);
+      messageService.delete(messageId);
 
       verify(messageRepository).save(any());
       verify(binaryContentRepository).deleteAllByMessageId(messageId);

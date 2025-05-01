@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.basic;
+package com.sprint.mission.discodeit.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,9 +34,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("BasicChannelService 단위 테스트")
-class BasicChannelServiceTest_mock {
+class ChannelServiceImplTest_mock {
 
-  private static final Logger log = LogManager.getLogger(BasicChannelServiceTest_mock.class);
+  private static final Logger log = LogManager.getLogger(ChannelServiceImplTest_mock.class);
 
   @Mock
   ChannelRepository channelRepository;
@@ -46,18 +46,18 @@ class BasicChannelServiceTest_mock {
   ReadStatusRepository readStatusRepository;
 
   @InjectMocks
-  BasicChannelService channelService;
+  ChannelServiceImpl channelService;
 
   @Test
   @DisplayName("공개 채널 생성 시 ChannelRepository의 save가 호출되고 PUBLIC 타입의 채널이 생성된다")
-  void shouldCreatePublicChannel() {
+  void shouldCreatePublic() {
     UUID creatorId = UUID.randomUUID();
     PublicChannelCreateRequest request = new PublicChannelCreateRequest(creatorId, "general",
         "welcome");
 
     when(channelRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    Channel result = channelService.createPublicChannel(request);
+    Channel result = channelService.createPublic(request);
 
     assertEquals("general", result.getName());
     assertEquals(Channel.ChannelType.PUBLIC, result.getType());
@@ -75,7 +75,7 @@ class BasicChannelServiceTest_mock {
     when(channelRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     when(readStatusRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    Channel result = channelService.createPrivateChannel(request);
+    Channel result = channelService.createPrivate(request);
 
     assertTrue(result.isParticipant(userId));
     verify(readStatusRepository).save(any());
@@ -102,7 +102,7 @@ class BasicChannelServiceTest_mock {
     when(channelRepository.findAll()).thenReturn(List.of(privateChannel, publicChannel));
     when(messageRepository.findAll()).thenReturn(List.of(privateMessage, publicMessage));
 
-    List<ChannelResponse> result = channelService.searchChannels(null, null);
+    List<ChannelResponse> result = channelService.findByCreatorIdOrName(null, null);
 
     assertEquals(2, result.size());
 
@@ -145,7 +145,7 @@ class BasicChannelServiceTest_mock {
         List.of(privateChannel1, privateChannel2, publicChannel));
     when(messageRepository.findAll()).thenReturn(List.of());
 
-    List<ChannelResponse> result = channelService.getAllByUserId(userId);
+    List<ChannelResponse> result = channelService.findAllByUserId(userId);
 
     assertEquals(2, result.size());
     assertTrue(result.stream().anyMatch(r -> r.id().equals(publicChannel.getId())));
@@ -164,7 +164,7 @@ class BasicChannelServiceTest_mock {
         null);
 
     assertThrows(ChannelException.class,
-        () -> channelService.updateChannel(request));
+        () -> channelService.update(request));
   }
 
   @Test
@@ -181,7 +181,7 @@ class BasicChannelServiceTest_mock {
     PublicChannelUpdateRequest request = new PublicChannelUpdateRequest(channelId, newName,
         description);
 
-    Optional<ChannelResponse> result = channelService.updateChannel(request);
+    Optional<ChannelResponse> result = channelService.update(request);
 
     assertTrue(result.isPresent());
     assertEquals(newName, result.get().name());
@@ -202,11 +202,11 @@ class BasicChannelServiceTest_mock {
     when(messageRepository.findAll()).thenReturn(List.of(message));
     when(readStatusRepository.findByChannelId(channelId)).thenReturn(List.of(status));
 
-    Optional<ChannelResponse> result = channelService.deleteChannel(channelId);
+    Optional<ChannelResponse> result = channelService.delete(channelId);
 
     assertTrue(result.isPresent());
-    verify(messageRepository).deleteById(message.getId());
-    verify(readStatusRepository).deleteById(status.getId());
-    verify(channelRepository).deleteById(channelId);
+    verify(messageRepository).delete(message.getId());
+    verify(readStatusRepository).delete(status.getId());
+    verify(channelRepository).delete(channelId);
   }
 }

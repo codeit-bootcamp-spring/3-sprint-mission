@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.basic;
+package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.common.exception.UserException;
 import com.sprint.mission.discodeit.dto.data.UserResponse;
@@ -9,7 +9,6 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,15 +19,15 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class BasicUserService implements UserService {
+public class UserServiceImpl implements UserService {
 
-  private static final Logger log = LogManager.getLogger(BasicUserService.class);
+  private static final Logger log = LogManager.getLogger(UserServiceImpl.class);
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public User createUser(String email, String name, String password) {
+  public User create(String email, String name, String password) {
     validateUserEmail(email);
     validateUserName(name);
     User newUser = User.create(email, name, password);
@@ -38,7 +37,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public UserResponse createUser(UserCreateRequest request) {
+  public UserResponse create(UserCreateRequest request) {
     validateUserEmail(request.email());
     validateUserName(request.name());
 
@@ -83,27 +82,27 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public Optional<UserResponse> getUserById(UUID id) {
+  public Optional<UserResponse> findById(UUID id) {
     return userRepository.findById(id).map(this::toUserResponse);
   }
 
   @Override
-  public Optional<UserResponse> getUserByName(String name) {
+  public Optional<UserResponse> findByName(String name) {
     return userRepository.findByName(name).map(this::toUserResponse);
   }
 
   @Override
-  public Optional<UserResponse> getUserByEmail(String email) {
+  public Optional<UserResponse> findByEmail(String email) {
     return userRepository.findByEmail(email).map(this::toUserResponse);
   }
 
   @Override
-  public List<UserResponse> getAllUsers() {
+  public List<UserResponse> findAll() {
     return userRepository.findAll().stream().map(this::toUserResponse).toList();
   }
 
   @Override
-  public Optional<UserResponse> updateUser(UserUpdateRequest request) {
+  public Optional<UserResponse> update(UserUpdateRequest request) {
     return userRepository.findById(request.id())
         .map(user -> {
           if (request.name() != null) {
@@ -122,14 +121,14 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public Optional<UserResponse> deleteUser(UUID id) {
+  public Optional<UserResponse> delete(UUID id) {
     return userRepository.findById(id).map(user -> {
-      userRepository.deleteById(id);
+      userRepository.delete(id);
 
       Optional.ofNullable(user.getProfileImageId())
-          .ifPresent(binaryContentRepository::deleteById);
+          .ifPresent(binaryContentRepository::delete);
 
-      userStatusRepository.deleteById(id);
+      userStatusRepository.delete(id);
       return toUserResponse(user);
     });
   }
