@@ -6,23 +6,46 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * UserStatus 테스트를 위한 Fixture
+ */
 public class UserStatusFixture {
 
+  /**
+   * 유효한 UserStatus를 생성한다 (기본 온라인 상태)
+   */
   public static UserStatus createValidUserStatus(UUID userId) {
     return UserStatus.create(userId);
   }
 
-  public static UserStatus createValidUserStatusOffline(UUID userId) {
+  /**
+   * 오프라인 상태의 UserStatus를 생성한다. lastActiveAt을 현재 시간 기준 6분 전으로 설정한다.
+   */
+  public static UserStatus createOfflineUserStatus(UUID userId) {
     UserStatus userStatus = UserStatus.create(userId);
     try {
       Field lastActiveAtField = UserStatus.class.getDeclaredField("lastActiveAt");
       lastActiveAtField.setAccessible(true);
-      // 6분 전으로 설정 (이전에는 6밀리초를 빼고 있었음)
       lastActiveAtField.set(userStatus, Instant.now().minus(Duration.ofMinutes(6)));
-      lastActiveAtField.setAccessible(false); // 접근 권한 다시 닫기
     } catch (NoSuchFieldException | IllegalAccessException e) {
-      // 리플렉션 실패 시 예외 처리 (테스트 환경에서는 심각한 오류이므로 RuntimeException으로 wrapping)
-      throw new RuntimeException("리플렉션을 통한 lastActiveAt 설정 실패", e);
+      throw new IllegalStateException("리플렉션을 통한 lastActiveAt 설정 실패", e);
+    }
+    return userStatus;
+  }
+
+  /**
+   * 특정 시간만큼 lastActiveAt을 조정한 UserStatus를 생성한다. 예: duration = 10분 -> 현재 시간에서 10분 전으로 lastActiveAt
+   * 설정
+   */
+  public static UserStatus createUserStatusWithCustomLastActiveAt(UUID userId,
+      Duration durationBeforeNow) {
+    UserStatus userStatus = UserStatus.create(userId);
+    try {
+      Field lastActiveAtField = UserStatus.class.getDeclaredField("lastActiveAt");
+      lastActiveAtField.setAccessible(true);
+      lastActiveAtField.set(userStatus, Instant.now().minus(durationBeforeNow));
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new IllegalStateException("리플렉션을 통한 lastActiveAt 설정 실패", e);
     }
     return userStatus;
   }

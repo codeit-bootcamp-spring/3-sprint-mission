@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.sprint.mission.discodeit.dto.ChannelResponse;
+import com.sprint.mission.discodeit.dto.data.PrivateChannelResponse;
+import com.sprint.mission.discodeit.dto.data.PublicChannelResponse;
 import com.sprint.mission.discodeit.dto.data.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -67,7 +70,8 @@ public class DisCodeItApplicationTest {
         bundle.getUserStatusRepository(),
         bundle.getBinaryContentRepository()
     );
-    ChannelService channelService = new BasicChannelService(bundle.getChannelRepository());
+    ChannelService channelService = new BasicChannelService(bundle.getChannelRepository(),
+        bundle.getReadStatusRepository(), bundle.getMessageRepository());
     MessageService messageService = new BasicMessageService(
         bundle.getMessageRepository(),
         bundle.getUserRepository(),
@@ -86,7 +90,8 @@ public class DisCodeItApplicationTest {
         bundle.getUserStatusRepository(),
         bundle.getBinaryContentRepository()
     );
-    ChannelService channelService = new BasicChannelService(bundle.getChannelRepository());
+    ChannelService channelService = new BasicChannelService(bundle.getChannelRepository(),
+        bundle.getReadStatusRepository(), bundle.getMessageRepository());
     MessageService messageService = new BasicMessageService(
         bundle.getMessageRepository(),
         bundle.getUserRepository(),
@@ -98,14 +103,31 @@ public class DisCodeItApplicationTest {
 
   private void runIntegrationScenario(UserService userService, ChannelService channelService,
       MessageService messageService) {
+
     // 1. 사용자 생성
     User user = userService.createUser("test@test.com", "길동쓰", "pwd1234");
     assertNotNull(user.getId(), "사용자 ID가 생성되어야 합니다.");
 
     // 2. 채널 생성
-    Channel channel = channelService.createChannel(user, "공지", "공지 채널쓰");
+    Channel channel = channelService.createChannel(user.getId(), "공지", "공지 채널쓰");
+
+    // 생성자를 참여자로 추가 (서비스 메서드로 처리)
+    channelService.addParticipant(channel.getId(), user.getId());
+
     assertNotNull(channel.getId(), "채널 ID가 생성되어야 합니다.");
-    assertTrue(channel.getParticipants().contains(user), "채널 생성자가 참여해야 합니다.");
+
+    ChannelResponse channelResponse = channelService.getChannelById(channel.getId())
+        .orElseThrow(() -> new IllegalStateException("채널을 찾을 수 없습니다."));
+
+    if (channelResponse instanceof PrivateChannelResponse privateResp) {
+      // Private 채널일 경우 참여자 정보 검증
+      assertTrue(privateResp.participantIds().contains(user.getId()), "채널 생성자가 참여해야 합니다.");
+    } else if (channelResponse instanceof PublicChannelResponse) {
+      // Public 채널은 참여자 정보가 없으므로 검증 생략
+      System.out.println("Public 채널에는 참여자 정보가 없습니다.");
+    } else {
+      throw new IllegalStateException("알 수 없는 ChannelResponse 타입: " + channelResponse.getClass());
+    }
 
     // 3. 메시지 생성
     Message message = messageService.createMessage("안녕하세요.", user.getId(), channel.getId());
@@ -120,8 +142,8 @@ public class DisCodeItApplicationTest {
         "생성된 사용자가 목록에 있어야 합니다.");
 
     // 5. 생성된 채널 확인
-    List<Channel> allChannels = channelService.searchChannels(null, null);
-    assertTrue(allChannels.stream().anyMatch(c -> c.getId().equals(channel.getId())),
+    List<ChannelResponse> allChannels = channelService.searchChannels(null, null);
+    assertTrue(allChannels.stream().anyMatch(c -> c.id().equals(channel.getId())),
         "생성된 채널이 목록에 있어야 합니다.");
 
     // 6. 생성된 메시지 확인
@@ -129,4 +151,5 @@ public class DisCodeItApplicationTest {
     assertTrue(allMessages.stream().anyMatch(m -> m.getId().equals(message.getId())),
         "생성된 메시지가 목록에 있어야 합니다.");
   }
+
 }

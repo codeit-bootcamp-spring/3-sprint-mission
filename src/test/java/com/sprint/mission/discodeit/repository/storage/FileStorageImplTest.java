@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,8 +38,8 @@ class FileStorageImplTest {
 
   @BeforeEach
   void setUp() throws IOException {
-    storageFile = FileFixture.createTestFile("test-storage.ser");
-    invalidFile = FileFixture.createTestFile("invalid_file.ser");
+    storageFile = FileFixture.createTestFile("test-storage.ser", true);
+    invalidFile = FileFixture.createTestFile("invalid_file.ser", true);
     if (storageFile.exists()) {
       storageFile.delete();
     }
@@ -66,8 +67,8 @@ class FileStorageImplTest {
 
   private Message createCustomTestMessage(String content) {
     Channel channel = ChannelFixture.createValidChannel();
-    User creator = channel.getCreator();
-    return MessageFixture.createCustomMessage(content, creator, channel);
+    UUID userId = channel.getCreatorId();
+    return MessageFixture.createCustomMessage(content, userId, channel);
   }
 
   private static Stream<Arguments> provideMessages() {
@@ -229,7 +230,7 @@ class FileStorageImplTest {
     // given
     List<Message> objects = messageContents.stream()
         .map(content -> MessageFixture.createCustomMessage(content,
-            UserFixture.createValidUser(), ChannelFixture.createValidChannel()))
+            UserFixture.createValidUser().getId(), ChannelFixture.createValidChannel()))
         .toList();
 
     // when

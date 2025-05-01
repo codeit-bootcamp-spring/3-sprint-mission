@@ -62,10 +62,10 @@ public interface UserService {
   /**
    * 사용자 정보를 업데이트한다
    *
-   * @param urr UserUpdateRequest
+   * @param dto UserUpdateRequest
    * @return 업데이트된 사용자 객체
    */
-  Optional<UserResponse> updateUser(UserUpdateRequest urr);
+  Optional<UserResponse> updateUser(UserUpdateRequest dto);
 
   /**
    * 사용자를 삭제한다

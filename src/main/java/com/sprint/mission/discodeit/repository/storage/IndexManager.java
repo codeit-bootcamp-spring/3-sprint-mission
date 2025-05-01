@@ -7,7 +7,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -15,6 +17,7 @@ public class IndexManager {
 
   private final File indexFile;
   private Map<UUID, Long> indexMap = new HashMap<>();
+  private final Map<String, List<Long>> stringIndexMap = new HashMap<>();
 
   public IndexManager(String indexPath) throws FileException {
     this.indexFile = new File(indexPath);
@@ -68,6 +71,10 @@ public class IndexManager {
     indexMap.put(id, position);
   }
 
+  public void addEntry(String key, long position) {
+    stringIndexMap.computeIfAbsent(key, k -> new ArrayList<>()).add(position);
+  }
+
   public void removeEntry(UUID id) {
     indexMap.remove(id);
   }
@@ -76,7 +83,21 @@ public class IndexManager {
     return indexMap.get(id);
   }
 
+  public List<Long> getPositions(String key) {
+    return stringIndexMap.getOrDefault(key, new ArrayList<>());
+  }
+
   public Map<UUID, Long> getAllIndexEntries() {
     return new HashMap<>(indexMap);
+  }
+
+  public void removeEntry(String key, long position) {
+    List<Long> positions = stringIndexMap.get(key);
+    if (positions != null) {
+      positions.remove(position);
+      if (positions.isEmpty()) {
+        stringIndexMap.remove(key);
+      }
+    }
   }
 }

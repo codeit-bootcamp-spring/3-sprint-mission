@@ -35,17 +35,17 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public UserResponse createUser(UserCreateRequest dto) {
-    validateUserEmail(dto.email());
-    validateUserName(dto.name());
+  public UserResponse createUser(UserCreateRequest request) {
+    validateUserEmail(request.email());
+    validateUserName(request.name());
 
     UUID profileImageId = null;
-    if (dto.profileImage() != null && dto.profileImage().getId() != null) {
-      binaryContentRepository.save(dto.profileImage());
-      profileImageId = dto.profileImage().getId();
+    if (request.profileImage() != null && request.profileImage().getId() != null) {
+      binaryContentRepository.save(request.profileImage());
+      profileImageId = request.profileImage().getId();
     }
 
-    User newUser = User.create(dto.email(), dto.name(), dto.password(), profileImageId);
+    User newUser = User.create(request.email(), request.name(), request.password(), profileImageId);
     User user = userRepository.save(newUser);
     userStatusRepository.save(UserStatus.create(user.getId()));
     return toUserResponse(user);
@@ -84,18 +84,18 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public Optional<UserResponse> updateUser(UserUpdateRequest urr) {
-    return userRepository.findById(urr.id())
+  public Optional<UserResponse> updateUser(UserUpdateRequest request) {
+    return userRepository.findById(request.id())
         .map(user -> {
-          if (urr.name() != null) {
-            validateUserName(urr.name());
-            user.updateName(urr.name());
+          if (request.name() != null) {
+            validateUserName(request.name());
+            user.updateName(request.name());
           }
-          if (urr.password() != null) {
-            user.updatePassword(urr.password());
+          if (request.password() != null) {
+            user.updatePassword(request.password());
           }
-          if (urr.profileImageId() != null) {
-            user.updateProfileImageId(urr.profileImageId());
+          if (request.profileImageId() != null) {
+            user.updateProfileImageId(request.profileImageId());
           }
           User savedUser = userRepository.save(user);
           return toUserResponse(savedUser);
@@ -117,8 +117,6 @@ public class BasicUserService implements UserService {
 
   private UserResponse toUserResponse(User user) {
     Optional<UserStatus> userStatus = userStatusRepository.findById(user.getId());
-    boolean isActive = userStatus.map(UserStatus::isCurrentlyActive).orElse(false);
-    return new UserResponse(user.getId(), user.getEmail(), user.getName(),
-        isActive, user.getProfileImageId());
+    return UserResponse.from(user, userStatus);
   }
 }

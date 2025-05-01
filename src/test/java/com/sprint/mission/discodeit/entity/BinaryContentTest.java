@@ -8,26 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 public class BinaryContentTest {
-
-  private byte[] testData;
-  private String testFileName;
-  private String testMimeType;
-  private UUID testUserId;
-
-  @BeforeEach
-  void setUp() {
-    // 테스트 데이터 초기화로 독립성 보장
-    testData = new byte[]{1, 2, 3};
-    testFileName = "example.png";
-    testMimeType = "image/png";
-    testUserId = UUID.randomUUID();
-  }
 
   @Nested
   @DisplayName("BinaryContent 생성")
@@ -36,33 +21,49 @@ public class BinaryContentTest {
     @Test
     @DisplayName("BinaryContent 생성 시 기본 정보가 올바르게 생성되어야 한다")
     void shouldCreateBinaryContentWithCorrectInfo() {
-      // when
-      BinaryContent content = BinaryContentFixture.createCustomMessageAttachment(
-          testData, testFileName, testMimeType, testUserId);
+      // 테스트용 프로필 이미지를 생성한다
+      UUID userId = UUID.randomUUID();
+      BinaryContent content = BinaryContentFixture.createValidProfileImage(userId);
 
-      // then
+      // BinaryContent 기본 정보 검증
       assertAll(
-          "BinaryContent 기본 정보 검증",
-          () -> assertNotNull(content.getId(), "ID는 null이 아니어야 함"),
-          () -> assertNotNull(content.getCreatedAt(), "생성 시간은 null이 아니어야 함"),
-          () -> assertArrayEquals(testData, content.getData(), "데이터가 올바르게 설정되어야 함"),
-          () -> assertEquals(testFileName, content.getFileName(), "파일명이 올바르게 설정되어야 함"),
-          () -> assertEquals(testMimeType, content.getMimeType(), "MIME 타입이 올바르게 설정되어야 함")
+          () -> assertNotNull(content.getId(), "ID는 null이 아니어야 한다"),
+          () -> assertNotNull(content.getCreatedAt(), "생성 시간은 null이 아니어야 한다"),
+          () -> assertArrayEquals(BinaryContentFixture.getDefaultData(), content.getData(),
+              "데이터가 올바르게 설정되어야 한다"),
+          () -> assertEquals(BinaryContentFixture.getDefaultFileName(), content.getFileName(),
+              "파일명이 올바르게 설정되어야 한다"),
+          () -> assertEquals(BinaryContentFixture.getDefaultMimeType(), content.getMimeType(),
+              "MIME 타입이 올바르게 설정되어야 한다"),
+          () -> assertEquals(userId, content.getUserId(), "사용자 ID가 올바르게 설정되어야 한다")
       );
     }
 
     @Test
-    @DisplayName("각 BinaryContent는 고유한 ID를 가져야 한다")
+    @DisplayName("BinaryContent 생성 시 고유한 ID를 가져야 한다")
     void shouldHaveUniqueId() {
-      // when
-      BinaryContent content1 = BinaryContentFixture.createCustomMessageAttachment(
-          testData, testFileName, testMimeType, testUserId);
-      BinaryContent content2 = BinaryContentFixture.createCustomMessageAttachment(
-          testData, testFileName, testMimeType, testUserId);
+      // 테스트용 프로필 이미지를 두 개 생성한다
+      UUID userId = UUID.randomUUID();
+      BinaryContent content1 = BinaryContentFixture.createValidProfileImage(userId);
+      BinaryContent content2 = BinaryContentFixture.createValidProfileImage(userId);
 
-      // then
-      assertThat(content1).as("BinaryContent는 고유한 아이디를 가진다").isNotEqualTo(content2);
-      assertThat(content1.getId()).as("BinaryContent ID는 고유해야 함").isNotEqualTo(content2.getId());
+      // 서로 다른 객체임을 검증
+      assertThat(content1).as("BinaryContent 객체는 서로 달라야 한다").isNotEqualTo(content2);
+      assertThat(content1.getId()).as("BinaryContent ID는 고유해야 한다").isNotEqualTo(content2.getId());
+    }
+
+    @Test
+    @DisplayName("메시지 첨부파일 생성 시 메시지 ID가 올바르게 설정되어야 한다")
+    void shouldSetMessageIdForAttachment() {
+      UUID messageId = UUID.randomUUID();
+      BinaryContent attachment = BinaryContentFixture.createValidMessageAttachment(messageId);
+
+      // 메시지 첨부파일 검증
+      assertAll(
+          () -> assertNotNull(attachment.getId(), "ID는 null이 아니어야 한다"),
+          () -> assertEquals(messageId, attachment.getMessageId(), "메시지 ID가 올바르게 설정되어야 한다"),
+          () -> assertThat(attachment.getUserId()).as("프로필 이미지가 아니므로 userId는 null이어야 한다").isNull()
+      );
     }
   }
 }

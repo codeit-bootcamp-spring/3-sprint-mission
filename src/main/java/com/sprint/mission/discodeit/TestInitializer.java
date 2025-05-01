@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import java.util.UUID;
 
 public class TestInitializer {
 
@@ -19,7 +20,8 @@ public class TestInitializer {
         bundle.getUserStatusRepository(),
         bundle.getBinaryContentRepository()
     );
-    ChannelService channelService = new BasicChannelService(bundle.getChannelRepository());
+    ChannelService channelService = new BasicChannelService(bundle.getChannelRepository(),
+        bundle.getReadStatusRepository(), bundle.getMessageRepository());
     MessageService messageService = new BasicMessageService(
         bundle.getMessageRepository(),
         bundle.getUserRepository(),
@@ -27,7 +29,7 @@ public class TestInitializer {
     );
 
     User user = setupUser(userService);
-    Channel channel = setupChannel(channelService, user);
+    Channel channel = setupChannel(channelService, user.getId());
     messageCreateTest(messageService, channel, user);
     printTestResults(userService, channelService, messageService);
   }
@@ -36,8 +38,8 @@ public class TestInitializer {
     return userService.createUser("test@test.com", "길동쓰", "pwd1234");
   }
 
-  private static Channel setupChannel(ChannelService channelService, User creator) {
-    return channelService.createChannel(creator, "공지", "공지 채널쓰");
+  private static Channel setupChannel(ChannelService channelService, UUID creatorId) {
+    return channelService.createChannel(creatorId, "공지", "공지 채널쓰");
   }
 
   private static void messageCreateTest(MessageService messageService, Channel channel,

@@ -53,19 +53,15 @@ class BasicAuthServiceTest_mock {
     // given
     when(userRepository.findByNameWithPassword(user.getName(), user.getPassword())).thenReturn(
         Optional.ofNullable(user));
-    when(userStatusRepository.findByUserId(user.getId()))
-        .thenReturn(Optional.of(userStatus));
 
     // when
     UserResponse response = authService.login(loginRequest);
-
-    System.out.println(response);
 
     // Then
     assertThat(response).isNotNull();
     assertThat(response)
         .usingRecursiveComparison()
-        .isEqualTo(toUserResponse(user, userStatus));
+        .isEqualTo(toUserResponse(user));
 
     verify(userRepository).findByNameWithPassword(loginRequest.userName(), loginRequest.password());
   }
@@ -89,13 +85,8 @@ class BasicAuthServiceTest_mock {
     verify(userRepository).findByNameWithPassword(nonExistingUserName, nonExistingPassword);
   }
 
-  private UserResponse toUserResponse(User user, UserStatus status) {
-    return new UserResponse(
-        user.getId(),
-        user.getEmail(),
-        user.getName(),
-        status.isCurrentlyActive(),
-        user.getProfileImageId()
-    );
+  private UserResponse toUserResponse(User user) {
+    Optional<UserStatus> userStatus = userStatusRepository.findById(user.getId());
+    return UserResponse.from(user, userStatus);
   }
 }

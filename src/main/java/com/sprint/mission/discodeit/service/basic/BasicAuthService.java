@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,20 +24,11 @@ public class BasicAuthService implements AuthService {
     User user = userRepository.findByNameWithPassword(request.userName(), request.password())
         .orElseThrow(AuthException::invalidCredentials);
 
-    UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-        .filter(UserStatus::isCurrentlyActive)
-        .orElseThrow(AuthException::invalidCredentials);
-
-    return toUserResponse(user, userStatus);
+    return toUserResponse(user);
   }
-
-  private UserResponse toUserResponse(User user, UserStatus status) {
-    return new UserResponse(
-        user.getId(),
-        user.getEmail(),
-        user.getName(),
-        status.isCurrentlyActive(),
-        user.getProfileImageId()
-    );
+  
+  private UserResponse toUserResponse(User user) {
+    Optional<UserStatus> userStatus = userStatusRepository.findById(user.getId());
+    return UserResponse.from(user, userStatus);
   }
 }
