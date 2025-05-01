@@ -47,7 +47,7 @@ public class TestScenario {
 
     public void run() {
         testUserServices();
-//        testChannelServices();
+        testChannelServices();
 //        testMessageServices();
     }
 
