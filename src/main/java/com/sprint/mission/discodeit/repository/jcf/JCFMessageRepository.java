@@ -9,7 +9,7 @@ import java.util.*;
 
 
 @Repository
-@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID, Message> data;
 

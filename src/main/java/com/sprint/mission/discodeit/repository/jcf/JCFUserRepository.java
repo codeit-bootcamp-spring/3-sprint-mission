@@ -9,7 +9,7 @@ import java.util.*;
 
 
 @Repository
-@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 public class JCFUserRepository implements UserRepository {
     private final Map<UUID, User> data; //database
 

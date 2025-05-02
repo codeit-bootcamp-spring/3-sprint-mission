@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 
 @Repository
-@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 public class JCFBinaryContentRepository implements BinaryContentRepository {
     private final Map<UUID, BinaryContent> data; //database
 
