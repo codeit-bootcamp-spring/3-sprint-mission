@@ -46,6 +46,7 @@ bin/
 .DS_Store
 
 ### Files ###
+.discodeit
 data
 !**/src/main/**/data
 

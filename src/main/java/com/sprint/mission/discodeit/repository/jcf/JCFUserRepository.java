@@ -8,11 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Repository;
 
-@Primary
-@Repository
 public class JCFUserRepository implements UserRepository {
 
   private final Map<UUID, User> users = new HashMap<>();

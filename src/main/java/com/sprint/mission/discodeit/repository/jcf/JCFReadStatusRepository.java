@@ -9,11 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Repository;
 
-@Primary
-@Repository
 public class JCFReadStatusRepository implements ReadStatusRepository {
 
   // 기본 저장소: ID -> ReadStatus 매핑

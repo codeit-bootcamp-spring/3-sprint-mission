@@ -17,10 +17,6 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
-    all {
-        exclude group: 'ch.qos.logback', module: 'logback-classic'
-        exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
-    }
 }
 
 repositories {
@@ -28,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    implementation('org.springframework.boot:spring-boot-starter') {
+    implementation('org.springframework.boot:spring-boot-starter-web') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
     }
     implementation 'org.mockito:mockito-core'
@@ -40,9 +36,12 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-core'
     implementation 'org.apache.logging.log4j:log4j-slf4j2-impl'
     implementation 'org.apache.logging.log4j:log4j-layout-template-json'
+    // Tomcat log
+    implementation 'org.apache.logging.log4j:log4j-jul'
 
     // 테스트
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
         exclude group: 'ch.qos.logback', module: 'logback-classic'
     }
     testImplementation 'org.apache.logging.log4j:log4j-api'
@@ -50,6 +49,10 @@ dependencies {
     testImplementation 'org.apache.logging.log4j:log4j-slf4j2-impl'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += ['--add-modules', 'java.logging']
 }
 
 tasks.named('test') {

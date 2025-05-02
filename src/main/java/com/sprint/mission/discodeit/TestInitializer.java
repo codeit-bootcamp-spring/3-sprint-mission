@@ -1,33 +1,23 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.config.RepositoryProperties;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.factory.RepositoryBundle;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.ChannelServiceImpl;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.MessageServiceImpl;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserServiceImpl;
 import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class TestInitializer {
 
-  public static void initializeAndTest(RepositoryBundle bundle) {
-    UserService userService = new UserServiceImpl(
-        bundle.getUserRepository(),
-        bundle.getUserStatusRepository(),
-        bundle.getBinaryContentRepository()
-    );
-    ChannelService channelService = new ChannelServiceImpl(bundle.getChannelRepository(),
-        bundle.getReadStatusRepository(), bundle.getMessageRepository());
-    MessageService messageService = new MessageServiceImpl(
-        bundle.getMessageRepository(),
-        bundle.getUserRepository(),
-        bundle.getChannelRepository(),
-        bundle.getBinaryContentRepository()
-    );
+  private static final Logger log = LogManager.getLogger(TestInitializer.class);
+
+  public static void initializeAndTest(UserService userService, ChannelService channelService,
+      MessageService messageService, RepositoryProperties props) {
+    log.info("=== 테스트 시작 (Repository 타입: {}) ===", props.getType());
 
     User user = setupUser(userService);
     Channel channel = setupChannel(channelService, user.getId());
@@ -40,26 +30,31 @@ public class TestInitializer {
   }
 
   private static Channel setupChannel(ChannelService channelService, UUID creatorId) {
-    return channelService.create(creatorId, "공지", "공지 채널쓰");
+    Channel channel = channelService.create(creatorId, "공지", "공지 채널쓰");
+    channelService.addParticipant(channel.getId(), creatorId);
+    log.info("채널 생성 완료: {}", channel.getId());
+    return channel;
   }
 
   private static void messageCreateTest(MessageService messageService, Channel channel,
       User author) {
     Message message = messageService.create("안녕하세요.", author.getId(), channel.getId());
-    System.out.println("메시지 생성 성공: " + message.getId());
+    log.info("메시지 생성 완료: {}", message.getId());
   }
 
   private static void printTestResults(UserService userService, ChannelService channelService,
       MessageService messageService) {
-    System.out.println("\n=== 테스트 결과 ===");
+    log.info("=== 테스트 결과 ===");
 
-    System.out.println("모든 사용자:");
-    userService.findAll().forEach(System.out::println);
+    log.info("모든 사용자:");
+    userService.findAll().forEach(user -> log.info(user.toString()));
 
-    System.out.println("\n모든 채널:");
-    channelService.findByCreatorIdOrName(null, null).forEach(System.out::println);
+    log.info("모든 채널:");
+    channelService.findByCreatorIdOrName(null, null)
+        .forEach(channel -> log.info(channel.toString()));
 
-    System.out.println("\n모든 메시지:");
-    messageService.searchMessages(null, null, null).forEach(System.out::println);
+    log.info("모든 메시지:");
+    messageService.searchMessages(null, null, null)
+        .forEach(message -> log.info(message.toString()));
   }
 }

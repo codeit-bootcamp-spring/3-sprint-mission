@@ -8,9 +8,7 @@ import com.sprint.mission.discodeit.repository.storage.IndexManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.stereotype.Repository;
 
-@Repository
 public class FileMessageRepository implements MessageRepository {
 
   private static final String DEFAULT_FILE_PATH = "data/messages.ser";

@@ -8,11 +8,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Repository;
 
-@Primary
-@Repository
 public class JCFBinaryContentRepository implements BinaryContentRepository {
 
   private final Map<UUID, BinaryContent> binaryContentMap = new ConcurrentHashMap<>();

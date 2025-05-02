@@ -79,9 +79,6 @@ public class FileFixture {
     return file;
   }
 
-  /**
-   * 테스트 디렉토리와 그 안의 모든 파일을 삭제한다.
-   */
   public static void cleanupTestDirectory() {
     try {
       Path directory = getTestDirectory();
@@ -94,13 +91,38 @@ public class FileFixture {
                 log.debug("삭제됨: {}", path);
               } catch (IOException e) {
                 log.error("파일 삭제 중 오류 발생: {}", path, e);
-                throw new RuntimeException("테스트 디렉토리 정리 중 오류 발생", e);
               }
             });
+
+        // 디렉토리까지 삭제 (빈 디렉토리도 삭제)
+        Path parentDirectory = directory.getParent();
+        if (Files.exists(directory) && Files.isDirectory(directory)) {
+          Files.delete(directory);
+          log.debug("삭제됨: {}", directory);
+        }
+
+        // 상위 디렉토리인 `data`도 삭제
+        if (parentDirectory != null && Files.exists(parentDirectory) && Files.isDirectory(
+            parentDirectory) && isDirectoryEmpty(parentDirectory)) {
+          Files.delete(parentDirectory);
+          log.debug("삭제됨: {}", parentDirectory);
+        }
       }
     } catch (IOException e) {
       log.error("디렉토리 삭제 중 오류 발생", e);
       throw new RuntimeException("테스트 디렉토리 정리 중 오류 발생", e);
+    }
+  }
+
+  /**
+   * 주어진 디렉토리가 비어 있는지 확인한다.
+   *
+   * @param directory 확인할 디렉토리
+   * @return 디렉토리가 비어 있으면 true, 아니면 false
+   */
+  private static boolean isDirectoryEmpty(Path directory) throws IOException {
+    try (var stream = Files.list(directory)) {
+      return stream.findAny().isEmpty(); // 디렉토리 내에 파일이 없으면 true
     }
   }
 }

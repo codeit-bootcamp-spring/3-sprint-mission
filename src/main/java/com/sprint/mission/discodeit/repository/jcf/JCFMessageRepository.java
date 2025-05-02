@@ -7,11 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Repository;
 
-@Primary
-@Repository
 public class JCFMessageRepository implements MessageRepository {
 
   private final List<Message> messages = new CopyOnWriteArrayList<>();

@@ -26,6 +26,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +35,7 @@ import org.junit.jupiter.api.Test;
 public class DisCodeItApplicationTest {
 
   private static final String DATA_DIR = "DATA";
+  private static final Logger log = LogManager.getLogger(DisCodeItApplicationTest.class);
 
   @BeforeEach
   void setUp() throws IOException {
@@ -127,7 +130,7 @@ public class DisCodeItApplicationTest {
       assertTrue(privateResp.participantIds().contains(user.getId()), "채널 생성자가 참여해야 합니다.");
     } else if (channelResponse instanceof PublicChannelResponse) {
       // Public 채널은 참여자 정보가 없으므로 검증 생략
-      System.out.println("Public 채널에는 참여자 정보가 없습니다.");
+      log.info("Public 채널에는 참여자 정보가 없습니다.");
     } else {
       throw new IllegalStateException("알 수 없는 ChannelResponse 타입: " + channelResponse.getClass());
     }

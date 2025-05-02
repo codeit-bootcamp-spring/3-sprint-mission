@@ -13,15 +13,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-  private static final Logger log = LogManager.getLogger(UserServiceImpl.class);
+  //  private static final Logger log = LogManager.getLogger(UserServiceImpl.class);
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
@@ -63,7 +61,7 @@ public class UserServiceImpl implements UserService {
       }
     } catch (Exception e) {
       // 로깅하고 무시 (기본 null)
-      log.warn("프로필 이미지 등록 실패: 기본 이미지 사용", e);
+//      log.warn("프로필 이미지 등록 실패: 기본 이미지 사용", e);
     }
 
     return toUserResponse(savedUser);
