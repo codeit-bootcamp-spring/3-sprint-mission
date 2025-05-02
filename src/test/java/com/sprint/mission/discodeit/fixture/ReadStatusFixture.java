@@ -10,8 +10,8 @@ public class ReadStatusFixture {
   /**
    * ReadStatus를 생성한다 (Request 기반)
    */
-  public static ReadStatus createReadStatus(ReadStatusCreateRequest dto) {
-    return ReadStatus.create(dto.userId(), dto.channelId());
+  public static ReadStatus createReadStatus(ReadStatusCreateRequest request) {
+    return ReadStatus.create(request.userId(), request.channelId());
   }
 
   /**
