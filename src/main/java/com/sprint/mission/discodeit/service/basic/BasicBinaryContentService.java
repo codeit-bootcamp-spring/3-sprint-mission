@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -16,8 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -25,13 +23,13 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public BinaryContentResponse create(BinaryContentCreateRequest createRequest) {
+    public BinaryContent create(BinaryContentCreateRequest createRequest) {
         //TODO : 에러처리
         byte[] byteArray = this.imageToByteArray(createRequest.contentFile());
         BinaryContent binaryContent = new BinaryContent(byteArray);
         this.binaryContentRepository.save(binaryContent);
 
-        return new BinaryContentResponse(binaryContent);
+        return binaryContent;
     }
 
     //reference : https://www.geeksforgeeks.org/java-program-to-convert-byte-array-to-image/
@@ -78,42 +76,33 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public BinaryContentResponse find(UUID binaryContentId) {
-        // TODO : 레포 생성하고 실제 값 넣어주기
-//        BinaryContent binaryContent = this.binaryContentRepository
-//                .findById(binaryContentId)
-//                .orElseThrow(() -> new NoSuchElementException("binaryContent with id " + binaryContentId + " not found"));
-//
-//        return new BinaryContentResponse(binaryContent);
+    public BinaryContent find(UUID binaryContentId) {
+        BinaryContent binaryContent = this.binaryContentRepository
+                .findById(binaryContentId)
+                .orElseThrow(() -> new NoSuchElementException("binaryContent with id " + binaryContentId + " not found"));
 
-        return null;
+        return binaryContent;
     }
 
 
     // Reference : https://www.baeldung.com/java-filter-collection-by-list
     @Override
-    public List<BinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds) {
-        // TODO : 레포 생성하고 실제 값 넣어주기
+    public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
         // TODO : 잘 작동하는지 확인할것
-//        List<BinaryContent> binaryContents = this.binaryContentRepository.findAll();
-//        Set<UUID> binaryContentIdsSet = new HashSet<>(binaryContentIds);
-//
-//        List<BinaryContentResponse> filteredBinaryContents = binaryContents.stream().filter(binaryContentIdsSet::contains).map(BinaryContentResponse::new).toList();
+        List<BinaryContent> binaryContents = this.binaryContentRepository.findAll();
+        Set<UUID> binaryContentIdsSet = new HashSet<>(binaryContentIds);
 
+        List<BinaryContent> filteredBinaryContents = binaryContents.stream().filter(binaryContentIdsSet::contains).toList();
 
-        return List.of();
+        return filteredBinaryContents;
     }
 
     @Override
     public void delete(UUID binaryContentId) {
-        // TODO : 레포 생성하고 실제 값 넣어주기
-//        BinaryContent binaryContent = this.binaryContentRepository
-//                .findById(binaryContentId)
-//                .orElseThrow(() -> new NoSuchElementException("binaryContent with id " + binaryContentId + " not found"));
-//
+        BinaryContent binaryContent = this.binaryContentRepository
+                .findById(binaryContentId)
+                .orElseThrow(() -> new NoSuchElementException("binaryContent with id " + binaryContentId + " not found"));
 
-        //        this.binaryContentRepository.deleteById(binaryContentId);
-
-
+        this.binaryContentRepository.deleteById(binaryContentId);
     }
 }

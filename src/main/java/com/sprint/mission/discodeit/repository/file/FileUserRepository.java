@@ -72,7 +72,7 @@ public class FileUserRepository implements UserRepository {
 
             return Optional.ofNullable(userNullable);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return Optional.empty();
         }
 
     }
@@ -98,7 +98,7 @@ public class FileUserRepository implements UserRepository {
             return users;
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return List.of();
         }
 
     }

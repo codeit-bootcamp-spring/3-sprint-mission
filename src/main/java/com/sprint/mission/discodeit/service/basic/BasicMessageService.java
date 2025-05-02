@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.MessageCreateResponse;
 import com.sprint.mission.discodeit.dto.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -24,7 +23,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public MessageCreateResponse create(MessageCreateRequest createRequest) {
+    public Message create(MessageCreateRequest createRequest) {
         /* 유저가 해당 채널에 있는지 validation check */
 
         this.channelRepository.findById(createRequest.channelId())
@@ -45,45 +44,45 @@ public class BasicMessageService implements MessageService {
             channel.setLastMessageTime(Instant.now());
             this.channelRepository.save(channel);
         });
-        return new MessageCreateResponse(message);
+        return message;
     }
 
     @Override
-    public MessageCreateResponse findById(UUID messageId) {
+    public Message findById(UUID messageId) {
         Message message = this.messageRepository
                 .findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
 
-        return new MessageCreateResponse(message);
+        return message;
     }
 
     @Override
-    public List<MessageCreateResponse> findAllByChannelId(UUID channelId) {
+    public List<Message> findAllByChannelId(UUID channelId) {
 
-        List<MessageCreateResponse> messages = this.messageRepository
+        List<Message> messages = this.messageRepository
                 .findAll()
                 .stream().filter((message) -> {
                     return message.getChannelId().equals(channelId);
-                }).map(MessageCreateResponse::new).toList();
+                }).toList();
 
 
         return messages;
     }
 
     @Override
-    public MessageCreateResponse update(MessageUpdateRequest updateRequest) {
-        Message message = this.messageRepository.findById(updateRequest.messageId())
-                .orElseThrow(() -> new NoSuchElementException("Message with id " + updateRequest.messageId() + " not found"));
+    public Message update(UUID messageId, MessageUpdateRequest updateRequest) {
+        Message message = this.messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
 
         message.update(updateRequest.newContent(), updateRequest.attachmentIds());
 
         /* 업데이트 후 다시 DB 저장 */
         this.messageRepository.save(message);
 
-        Message updatedMessage = this.messageRepository.findById(updateRequest.messageId())
-                .orElseThrow(() -> new NoSuchElementException("Message with id " + updateRequest.messageId() + " not found"));
+        Message updatedMessage = this.messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
 
-        return new MessageCreateResponse(updatedMessage);
+        return updatedMessage;
     }
 
     @Override

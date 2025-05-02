@@ -13,7 +13,6 @@ public interface BinaryContentRepository {
 
     public List<BinaryContent> findAll();
 
-    // QUESTION. 이게 필요한가?
     public boolean existsById(UUID binaryContentId);
 
     public void deleteById(UUID binaryContentId);

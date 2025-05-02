@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.*;
+import com.sprint.mission.discodeit.dto.ChannelResponse;
+import com.sprint.mission.discodeit.dto.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -23,16 +26,16 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
 
     @Override
-    public ChannelCreateResponse create(PublicChannelCreateRequest publicChannelCreateRequest) {
+    public Channel create(PublicChannelCreateRequest publicChannelCreateRequest) {
         Channel channel = new Channel(publicChannelCreateRequest);
 
         this.channelRepository.save(channel);
 
-        return new ChannelCreateResponse(channel);
+        return channel;
     }
 
     /* User 별 ReadStatus 생성 , name과 description 생략 */
-    public ChannelCreateResponse create(PrivateChannelCreateRequest privateCreateRequest) {
+    public Channel create(PrivateChannelCreateRequest privateCreateRequest) {
         Channel channel = new Channel(privateCreateRequest);
 
         /* attendees 에 있는 유저들 ReadStatus 생성 */
@@ -42,7 +45,7 @@ public class BasicChannelService implements ChannelService {
 
         this.channelRepository.save(channel);
 
-        return new ChannelCreateResponse(channel);
+        return channel;
     }
 
     @Override
@@ -78,9 +81,9 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelCreateResponse update(ChannelUpdateRequest updateRequest) {
-        Channel channel = this.channelRepository.findById(updateRequest.channelId())
-                .orElseThrow(() -> new NoSuchElementException("Channel with id " + updateRequest.channelId() + " not found"));
+    public Channel update(UUID channelId, PublicChannelUpdateRequest updateRequest) {
+        Channel channel = this.channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
 
         if (channel.getType().equals(ChannelType.PRIVATE)) {
             throw new UnsupportedOperationException("private 채널은 수정이 불가능합니다.");
@@ -91,10 +94,10 @@ public class BasicChannelService implements ChannelService {
         /* 업데이트 후 다시 DB 저장 */
         this.channelRepository.save(channel);
 
-        Channel updatedChannel = this.channelRepository.findById(updateRequest.channelId())
-                .orElseThrow(() -> new NoSuchElementException("Channel with id " + updateRequest.channelId() + " not found"));
+        Channel updatedChannel = this.channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
 
-        return new ChannelCreateResponse(updatedChannel);
+        return updatedChannel;
     }
 
     @Override

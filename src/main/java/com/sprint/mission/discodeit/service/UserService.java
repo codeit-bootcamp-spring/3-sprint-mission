@@ -1,12 +1,13 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.UserCreateResponse;
 import com.sprint.mission.discodeit.dto.UserResponse;
 import com.sprint.mission.discodeit.dto.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /*
@@ -15,7 +16,7 @@ import java.util.UUID;
 
 public interface UserService {
 
-    public UserCreateResponse create(UserCreateRequest createRequest);
+    public User create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profileCreateRequest);
 
     public UserResponse find(UUID userId);
 
@@ -23,8 +24,7 @@ public interface UserService {
 
     public List<UserResponse> findAll();
 
-    // QUESTION. User를 반환하는게 좋을까 response DTO를 반환하는게 좋을까
-    public UserCreateResponse update(UserUpdateRequest updateRequest);
+    public User update(UUID userId, UserUpdateRequest updateRequest, Optional<BinaryContentCreateRequest> profileCreateRequest);
 
     public void delete(UUID userId);
 

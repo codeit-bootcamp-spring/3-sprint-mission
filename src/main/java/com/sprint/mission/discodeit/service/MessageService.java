@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.MessageCreateResponse;
 import com.sprint.mission.discodeit.dto.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.Message;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,13 +14,13 @@ import java.util.UUID;
 public interface MessageService {
 
     //TODO: 객체 생성 후 -> create 함수.  validation과 관계없이 객체 생성을 먼저 하는데 괜찮은가? -> 생성자에서 체크할것
-    public MessageCreateResponse create(MessageCreateRequest createRequest);
+    public Message create(MessageCreateRequest createRequest);
 
-    public MessageCreateResponse findById(UUID messageId);
+    public Message findById(UUID messageId);
 
-    public List<MessageCreateResponse> findAllByChannelId(UUID channelId);
+    public List<Message> findAllByChannelId(UUID channelId);
 
-    public MessageCreateResponse update(MessageUpdateRequest updateRequest);
+    public Message update(UUID messageId, MessageUpdateRequest updateRequest);
 
     public void delete(UUID messageId);
 

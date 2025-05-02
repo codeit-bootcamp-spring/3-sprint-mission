@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.UserCreateRequest;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -31,16 +30,16 @@ public class User implements Serializable {
     @Getter
     private UUID profileId; // BinaryContent의 id
 
-    public User(UserCreateRequest createRequest) {
+    public User(String name, String email, String password, UUID profileId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         //
-        this.name = createRequest.name();
-        this.email = createRequest.email();
-        this.password = createRequest.password();
+        this.name = name;
+        this.email = email;
+        this.password = password;
         //
-        this.profileId = createRequest.profileId();
+        this.profileId = profileId;
     }
 
     public void update(String name, String email, String password, UUID profileId) {

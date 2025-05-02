@@ -32,7 +32,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
         }
     }
 
-    // TODO : 나중에 Util로 빼기 -> 인터페이스에 넣으면 안되나? 아니면 추상클래스?
+    // TODO : 나중에 Util로 빼기
     private Path resolvePath(UUID id) {
         // 객체를 저장할 파일 path 생성
         return this.DIRECTORY.resolve(id + EXTENSION);

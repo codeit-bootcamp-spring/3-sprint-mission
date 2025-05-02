@@ -1,19 +1,24 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.*;
+import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.UserResponse;
+import com.sprint.mission.discodeit.dto.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.DuplicateUserException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -22,27 +27,33 @@ import java.util.UUID;
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
-    // FIXME : Q: service 의존하면 안됨
-    private final UserStatusService userStatusService;
     private final BinaryContentRepository binaryContentRepository;
+    //Q. 만약 binaryContentService를 쓰지 않는다면 binaryContentService의 코드가 여기서도 반복되는데
+    // 이때는 그냥 의존하는것이 낫나? vs 중복된 코드를 써도 분리가 좋나?
+    private final BinaryContentService binaryContentService;
 
-    //Q: binaryConent를 따로 만들고 여기서는 그 Id 만 전달해줄껀지 아니면 여기서 binaryConent를 생성할건지
-    // -> 일단 여기서 this.binaryContentService.create() 호출해서 생성
     @Override
-    public UserCreateResponse create(UserCreateRequest createRequest) {
+    public User create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profileCreateRequest) {
         // 0. validation (name, email이 유니크 해야함)
-        if (this.hasSameEmailOrName(createRequest.name(), createRequest.email())) {
+        if (this.hasSameEmailOrName(userCreateRequest.name(), userCreateRequest.email())) {
             throw new DuplicateUserException();
         }
-        // 1. create user
-        User user = new User(createRequest);
-        // 2. DB저장
+        // 1. 프로필 이미지 있으면 생성하고 유저 생성
+        profileCreateRequest.map(binaryContentCreateRequest -> {
+            BinaryContent profileBinaryContent = this.binaryContentService.create(binaryContentCreateRequest);
+            User user = new User(userCreateRequest.name(), userCreateRequest.email(), userCreateRequest.password(), profileBinaryContent.getId());
+            return null;
+        });
+        // 2. 프로필 이미지 없을때 유저 생성
+        User user = new User(userCreateRequest.name(), userCreateRequest.email(), userCreateRequest.password(), null);
+        // 3. DB저장
         this.userRepository.save(user);
-        // 3. UserStatus 인스턴스 생성
-        UserStatusResponse userStatusResponse = this.userStatusService.create(new UserStatusCreateRequest(user.getId()));
+        // 4. UserStatus 인스턴스 생성
+//        UserStatusResponse userStatusResponse = this.userStatusService.create(new UserStatusCreateRequest(user.getId()));
+        UserStatus userStatus = new UserStatus(user.getId());
+        this.userStatusRepository.save(userStatus);
 
-
-        return new UserCreateResponse(user, userStatusResponse.userStatus());
+        return user;
     }
 
     @Override
@@ -77,26 +88,31 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserCreateResponse update(UserUpdateRequest updateRequest) {
+    public User update(UUID userId, UserUpdateRequest updateRequest, Optional<BinaryContentCreateRequest> profileCreateRequest) {
         // 0. validation (name, email이 유니크 해야함)
         if (this.hasSameEmailOrName(updateRequest.newName(), updateRequest.newEmail())) {
             throw new DuplicateUserException();
         }
 
-        User user = this.userRepository.findById(updateRequest.userId()).
-                orElseThrow(() -> new NoSuchElementException("User with id " + updateRequest.userId() + " not found"));
+        User user = this.userRepository.findById(userId).
+                orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
-        user.update(updateRequest.newName(), updateRequest.newEmail(), updateRequest.newPassword(), updateRequest.newProfileId());
+        // 1. 프로필 이미지 업데이트
+        profileCreateRequest.map(binaryContentCreateRequest -> {
+            BinaryContent profileBinaryContent = this.binaryContentService.create(binaryContentCreateRequest);
+            user.update(updateRequest.newName(), updateRequest.newEmail(), updateRequest.newPassword(), profileBinaryContent.getId());
+            return null;
+        });
+
+        user.update(updateRequest.newName(), updateRequest.newEmail(), updateRequest.newPassword(), null);
 
         /* 업데이트 후 다시 DB 저장 */
         this.userRepository.save(user);
 
-        User updatedUser = this.userRepository.findById(updateRequest.userId()).
-                orElseThrow(() -> new NoSuchElementException("User with id " + updateRequest.userId() + " not found"));
+        User updatedUser = this.userRepository.findById(userId).
+                orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
-        UserStatus userStatus = this.userStatusRepository.findByUserId(user.getId()).orElseThrow(() -> new NoSuchElementException("userStatus with userId " + user.getId() + " not found"));
-
-        return new UserCreateResponse(updatedUser, userStatus);
+        return updatedUser;
     }
 
 

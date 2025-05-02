@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -24,7 +23,7 @@ public class BasicUserStatusService implements UserStatusService {
     private final UserRepository userRepository;
 
     @Override
-    public UserStatusResponse create(UserStatusCreateRequest createRequest) {
+    public UserStatus create(UserStatusCreateRequest createRequest) {
         //1.  `User`가 존재하지 않으면 예외 발생
         User user = this.userRepository
                 .findById(createRequest.userId())
@@ -41,27 +40,27 @@ public class BasicUserStatusService implements UserStatusService {
         //4. DB저장
         this.userStatusRepository.save(userStatus);
 
-        return new UserStatusResponse(userStatus);
+        return userStatus;
     }
 
     @Override
-    public UserStatusResponse find(UUID userStatusId) {
+    public UserStatus find(UUID userStatusId) {
         UserStatus userStatus = this.userStatusRepository
                 .findById(userStatusId)
                 .orElseThrow(() -> new NoSuchElementException("userStatus with id " + userStatusId + " not found"));
 
-        return new UserStatusResponse(userStatus);
+        return userStatus;
     }
 
     @Override
-    public List<UserStatusResponse> findAll() {
-        List<UserStatusResponse> userStatuses = this.userStatusRepository.findAll().stream().map(UserStatusResponse::new).toList();
+    public List<UserStatus> findAll() {
+        List<UserStatus> userStatuses = this.userStatusRepository.findAll().stream().toList();
 
         return userStatuses;
     }
 
     @Override
-    public UserStatusResponse update(UserStatusUpdateRequest updateRequest) {
+    public UserStatus update(UserStatusUpdateRequest updateRequest) {
         UserStatus userStatus = this.userStatusRepository
                 .findById(updateRequest.userStatusId())
                 .orElseThrow(() -> new NoSuchElementException("userStatus with id " + updateRequest.userStatusId() + " not found"));
@@ -75,11 +74,11 @@ public class BasicUserStatusService implements UserStatusService {
                 .findById(updateRequest.userStatusId())
                 .orElseThrow(() -> new NoSuchElementException("userStatus with id " + updateRequest.userStatusId() + " not found"));
 
-        return new UserStatusResponse(updatedUserStatus);
+        return updatedUserStatus;
     }
 
     @Override
-    public UserStatusResponse updateByUserId(UUID userId, UserStatusType status) {
+    public UserStatus updateByUserId(UUID userId, UserStatusType status) {
         UserStatus userStatus = this.userStatusRepository
                 .findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException("userStatus with userId " + userId + " not found"));
@@ -93,7 +92,7 @@ public class BasicUserStatusService implements UserStatusService {
                 .findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException("userStatus with userId " + userId + " not found"));
 
-        return new UserStatusResponse(updatedUserStatus);
+        return updatedUserStatus;
     }
 
     @Override

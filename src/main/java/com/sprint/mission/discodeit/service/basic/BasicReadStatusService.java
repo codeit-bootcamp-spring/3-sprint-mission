@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.ReadStatusResponse;
 import com.sprint.mission.discodeit.dto.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -27,7 +26,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
 
     @Override
-    public ReadStatusResponse create(ReadStatusCreateRequest createRequest) {
+    public ReadStatus create(ReadStatusCreateRequest createRequest) {
         // 1. `Channel`이나`User`가 존재하지 않으면 예외 발생
         User user = this.userRepository
                 .findById(createRequest.userId())
@@ -49,32 +48,28 @@ public class BasicReadStatusService implements ReadStatusService {
         //4. DB저장
         this.readStatusRepository.save(readStatus);
 
-        return new ReadStatusResponse(readStatus);
+        return readStatus;
     }
 
     @Override
-    public ReadStatusResponse find(UUID readStatusId) {
+    public ReadStatus find(UUID readStatusId) {
         ReadStatus readStatus = this.readStatusRepository
                 .findById(readStatusId)
                 .orElseThrow(() -> new NoSuchElementException("readStatus with id " + readStatusId + " not found"));
 
-        return new ReadStatusResponse(readStatus);
+        return readStatus;
     }
 
     @Override
-    public List<ReadStatusResponse> findAllByUserId(UUID userId) {
-        List<ReadStatusResponse> readStatuses = this.readStatusRepository.findAll()
+    public List<ReadStatus> findAllByUserId(UUID userId) {
+        List<ReadStatus> readStatuses = this.readStatusRepository.findAll()
                 .stream().filter(readStatus -> readStatus.getUserId() == userId)
-                .map(readStatus -> {
-                    return new ReadStatusResponse(readStatus);
-                })
                 .toList();
-        System.out.println("this.readStatusRepository.findAll().size() = " + this.readStatusRepository.findAll().size());
         return readStatuses;
     }
 
     @Override
-    public ReadStatusResponse update(ReadStatusUpdateRequest updateRequest) {
+    public ReadStatus update(ReadStatusUpdateRequest updateRequest) {
         ReadStatus readStatus = this.readStatusRepository
                 .findById(updateRequest.readStatusId())
                 .orElseThrow(() -> new NoSuchElementException("readStatus with id " + updateRequest.readStatusId() + " not found"));
@@ -88,7 +83,7 @@ public class BasicReadStatusService implements ReadStatusService {
                 .findById(updateRequest.readStatusId())
                 .orElseThrow(() -> new NoSuchElementException("readStatus with id " + updateRequest.readStatusId() + " not found"));
 
-        return new ReadStatusResponse(updateReadStatus);
+        return updateReadStatus;
     }
 
     @Override
