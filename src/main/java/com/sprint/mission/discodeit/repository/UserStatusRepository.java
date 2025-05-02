@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,6 +22,13 @@ public interface UserStatusRepository {
    * @return Optional<UserStatus>
    */
   Optional<UserStatus> findByUserId(UUID userId);
+
+  /**
+   * 모든 사용자 상태 조회
+   *
+   * @return List<User>
+   */
+  List<UserStatus> findAll();
 
   /**
    * 사용자 상태 저장

@@ -6,6 +6,8 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.repository.storage.FileStorage;
 import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
 import com.sprint.mission.discodeit.repository.storage.IndexManager;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -59,6 +61,18 @@ public class FileUserStatusRepository implements UserStatusRepository {
       return Optional.empty();
     }
     return Optional.ofNullable((UserStatus) fileStorage.readObject(position));
+  }
+
+  @Override
+  public List<UserStatus> findAll() {
+    List<UserStatus> userStatuses = new ArrayList<>();
+    indexManager.getAllIndexEntries().forEach((id, position) -> {
+      UserStatus userStatus = (UserStatus) fileStorage.readObject(position);
+      if (userStatus != null) {
+        userStatuses.add(userStatus);
+      }
+    });
+    return userStatuses;
   }
 
   @Override
