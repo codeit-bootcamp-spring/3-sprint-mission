@@ -2,174 +2,181 @@ package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.dto.channel.*;
+import com.sprint.mission.discodeit.entity.dto.message.MessageDeleteRequestDto;
+import com.sprint.mission.discodeit.entity.dto.readStatus.ReadStatusCreateRequestDto;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import java.io.*;
-import java.util.*;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
+@Service
+@RequiredArgsConstructor
 public class FileChannelService implements ChannelService {
+
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
+    private final ReadStatusRepository readStatusRepository;
+    private final MessageRepository messageRepository;
     private final String FILE_PATH = "channels.ser";
 
-    private boolean isAdmin(Channel channel, User user) {
-        boolean isAdmin = channel.getChannelAdmin().getId().equals(user.getId());
+    private boolean isAdmin(Channel channel, UUID userId) {
+        boolean isAdmin = channel.getChannelAdmin().getId().equals(userId);
         if (!isAdmin) {
             System.out.println("권한이 없습니다.");
         }
         return isAdmin;
     }
 
-    public void saveToFile(Map<UUID, Channel> channels) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
-            oos.writeObject(channels);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public Map<UUID, Channel> loadFromFile() {
-        File file = new File(FILE_PATH);
-        if (!file.exists()) return new HashMap<>();
-
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, Channel>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return new HashMap<>();
-        }
+    @Override
+    public Channel createChannel(ChannelCreateDto channelCreateDto) {
+        return  channelRepository.createChannel(channelCreateDto);
     }
 
     @Override
-    public Channel createChannel(String channelName, String description, User user) {
-        Map<UUID, Channel> channels = loadFromFile();
-        Channel channel = new Channel(user, channelName, description);
+    public Channel createChannel(ChannelCreatePrivateDto channelCreatePrivateDto) {
+        Channel channel = channelRepository.createChannel(channelCreatePrivateDto);
 
-        channel.addMember(user);
+        channelCreatePrivateDto.getUsers().forEach(user -> {
+            ReadStatusCreateRequestDto readStatusDto = new ReadStatusCreateRequestDto(
+                    user.getId(),
+                    channel.getId()
+            );
 
-        channels.put(channel.getId(), channel);
-        saveToFile(channels);
+            // ReadStatus 생성
+            readStatusRepository.createReadStatus(readStatusDto);
+        });
+
+        ReadStatusCreateRequestDto adminReadStatusDto = new ReadStatusCreateRequestDto(
+                channelCreatePrivateDto.getAdmin().getId(),
+                channel.getId()
+        );
+        readStatusRepository.createReadStatus(adminReadStatusDto);
+
         return channel;
     }
 
     @Override
-    public Optional<Channel> getChannel(UUID id) {
-        return Optional.ofNullable(loadFromFile().get(id));
+    public Optional<ChannelResponseDto> getChannel(GetPublicChannelRequestDto getPublicChannelRequestDto) {
+        return channelRepository.getChannel(getPublicChannelRequestDto).map(this::createChannelResponseDto);
     }
 
     @Override
-    public List<Channel> getAllChannels() {
-        return new ArrayList<>(loadFromFile().values());
+    public Optional<ChannelResponseDto> getChannel(GetPrivateChannelRequestDto getPrivateChannelRequestDto) {
+        return channelRepository.getChannel(getPrivateChannelRequestDto)
+                .map(channel -> {
+                    ChannelResponseDto responseDto = createChannelResponseDto(channel);
+                    responseDto.setMemberIds(channel.getMembers().stream()
+                            .map(User::getId)
+                            .collect(Collectors.toSet()));
+                    return responseDto;
+                });
+    }
+
+    @Override
+    public List<ChannelResponseDto> findAllByUserId(UUID userId) {
+        return channelRepository.findAllByUserId(userId).stream()
+                .filter(channel -> {
+                    boolean isPublic = channel.getType() == ChannelType.PUBLIC;
+                    boolean isPrivateAndMember = !isPublic && channel.getMembers().stream()
+                            .anyMatch(member -> member.getId().equals(userId));
+                    return isPublic || isPrivateAndMember;
+                })
+                .map(channel -> {
+                    ChannelResponseDto dto = createChannelResponseDto(channel);
+
+                    if (channel.getType() != ChannelType.PUBLIC) {
+                        dto.setMemberIds(channel.getMembers().stream()
+                                .map(User::getId)
+                                .collect(Collectors.toSet()));
+                    }
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
     public boolean deleteChannel(UUID id, User user) {
-        Map<UUID, Channel> channels = loadFromFile();
+        try {
+            Optional<Channel> channelOpt = channelRepository.getChannel(
+                    new GetPublicChannelRequestDto(id));
 
-        if (channels.containsKey(id)) {
-            Channel channel = channels.get(id);
-            if (isAdmin(channel, user)) {
-                Set<User> memberCopy = new HashSet<>(channel.getMembers());
-                memberCopy.forEach(member -> {
-                    member.getChannels().remove(channel);
+            if (channelOpt.isPresent()) {
+                Channel channel = channelOpt.get();
+
+                channel.getMessages().forEach(message ->
+                        messageRepository.deleteMessage(
+                                new MessageDeleteRequestDto(
+                                        message.getId(),
+                                        channel.getId(),
+                                        user.getId()
+                                )
+                        )
+                );
+
+                channel.getMembers().forEach(member -> {
+                    ReadStatus readStatus = readStatusRepository.findAllByUserId(member.getId())
+                            .stream()
+                            .filter(rs -> rs.getChannelId().equals(id))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (readStatus != null) {
+                        readStatusRepository.deleteReadStatus(readStatus.getId());
+                    }
                 });
 
-                channels.remove(id);
-                saveToFile(channels);
-                System.out.println("삭제 되었습니다.");
-                return true;
-            }else {
-                return false;
+                return channelRepository.deleteChannel(id, user);
             }
-        }
-        return false;
-    }
+            return false;
 
-    @Override
-    public boolean modifyChannelName(UUID id, User user, String name) {
-        Map<UUID, Channel> channels = loadFromFile();
-
-        if (channels.containsKey(id)) {
-            System.out.println(user.getId());
-            if (isAdmin(channels.get(id), user)) {
-                channels.get(id).setName(name);
-                saveToFile(channels);
-                System.out.println("변경되었습니다.");
-                return true;
-            }else {
-                return false;
-            }
-        }else {
+        } catch (NoSuchElementException e) {
             System.out.println("존재하지 않는 채널입니다.");
             return false;
         }
     }
 
     @Override
-    public boolean modifyChannelDescription(UUID id, User user, String description) {
-        Map<UUID, Channel> channels = loadFromFile();
-
-        if (channels.containsKey(id)) {
-            if (isAdmin(channels.get(id), user)) {
-                channels.get(id).setDescription(description);
-                saveToFile(channels);
-                System.out.println("변경되었습니다.");
-                return true;
-            }else {
-                return false;
-            }
-        }else {
-            System.out.println("존재하지 않는 채널입니다.");
-            return false;
-        }
+    public boolean modifyChannel(ChannelUpdateRequestDto channelUpdateRequestDto) {
+        return channelRepository.modifyChannel(channelUpdateRequestDto);
     }
 
     @Override
     public boolean kickOutChannel(UUID channelId, User kickUser, User admin) {
-        Map<UUID, Channel> channels = loadFromFile();
-
-        if (channels.containsKey(channelId)) {
-            Channel channel = channels.get(channelId);
-
-            if (isAdmin(channel, admin)) {
-                boolean removed = channel.getMembers().remove(kickUser);
-                kickUser.getChannels().remove(channel); // 양방향 제거
-
-                if (removed) {
-                    saveToFile(channels);
-                    System.out.println(kickUser.getUserName() + " 회원이 강퇴되었습니다.");
-                    return true;
-                } else {
-                    System.out.println("강퇴 실패: 멤버 목록에 없습니다.");
-                }
-            }
-        } else {
-            System.out.println("존재하지 않는 채널입니다.");
-        }
-        return false;
+        return channelRepository.kickOutChannel(channelId, kickUser, admin);
     }
 
     @Override
     public boolean joinChannel(Channel channel, User user) {
-        Map<UUID, Channel> channels = loadFromFile();
-        Channel ch = channels.get(channel.getId());
-        if (ch != null) {
-            ch.addMember(user);
-            saveToFile(channels);
-            return true;
-        }
-        return false;
+        return channelRepository.joinChannel(channel, user);
     }
 
-    @Override
-    public boolean addMessageToChannel(UUID channelId, Message message) {
-        Map<UUID, Channel> channels = loadFromFile();
+    private ChannelResponseDto createChannelResponseDto(Channel channel) {
+        ChannelResponseDto dto = new ChannelResponseDto();
+        dto.setChannelId(channel.getId());
+        dto.setName(channel.getName());
+        dto.setDescription(channel.getDescription());
+        dto.setAdmin(channel.getChannelAdmin());
+        dto.setType(channel.getType());
 
-        if (channels.containsKey(channelId)) {
-            Channel ch = channels.get(channelId);
-            ch.getMessages().add(message);
-            saveToFile(channels);
-            return true;
+        // 최근 메시지 시간 설정
+        if (!channel.getMessages().isEmpty()) {
+            Message lastMessage = channel.getMessages().get(channel.getMessages().size() - 1);
+            dto.setLastMessageAt(lastMessage.getCreatedAt());
         }
-        return false;
+
+        return dto;
     }
 }

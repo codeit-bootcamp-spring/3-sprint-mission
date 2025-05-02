@@ -1,46 +1,35 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.common.Period;
+import com.sprint.mission.discodeit.entity.dto.user.UserCreateDto;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 
+@Getter
+@Setter
 public class User extends Period implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String userName;
     private String password;
     private Set<Channel> channels;
+    private byte[] profileImage;
+    private boolean isOnline;
 
     public User() {
     }
 
-    public User(String userName, String password) {
+    public User(UserCreateDto userCreateDto) {
         super();
-        this.userName = userName;
-        this.password = password;
+        this.userName = userCreateDto.getUsername();
+        this.password = userCreateDto.getPassword();
         this.channels = new HashSet<>();
-    }
-
-    public UUID getId() {
-        return super.getId();
-    }
-
-
-    public Long getCreatedAt() {
-        return super.getCreatedAt();
-    }
-
-
-    public Long getUpdatedAt() {
-        return super.getUpdatedAt();
-    }
-
-    public String getUserName() {
-        return userName;
+        this.isOnline = true;
     }
 
     public void setUserName(String userName) {
@@ -48,21 +37,9 @@ public class User extends Period implements Serializable {
         update();
     }
 
-    public String getPassword() {
-        return password;
-    }
-
     public void setPassword(String password) {
         this.password = password;
         update();
-    }
-
-    public Set<Channel> getChannels() {
-        return channels;
-    }
-
-    public void setChannels(Set<Channel> channels) {
-        this.channels = channels;
     }
 
     @Override
