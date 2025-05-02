@@ -38,11 +38,8 @@ public class BasicAuthService implements AuthService {
 
 
     public LoginResponse login(LoginRequest request) {
-        String username = Optional.ofNullable(request.username())
-                .orElseThrow(() -> new IllegalArgumentException("no name"));
-
-        String password = Optional.ofNullable(request.password())
-                .orElseThrow(() -> new IllegalArgumentException("no password"));
+        String username = request.username();
+        String password = request.password();
 
         List<User> users = userRepository.findAllUsers();
         for (User user : users) {

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.Dto.message;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -21,5 +22,9 @@ public record MessageAttachmentsCreateRequest
         (UUID senderId,
          UUID channelId,
          List<byte[]> attachments) {
-
+    public MessageAttachmentsCreateRequest {
+        Objects.requireNonNull(senderId,"no senderId in request");
+        Objects.requireNonNull(channelId, "no channelId in request");
+        Objects.requireNonNull(attachments, "no attachments in request");
+    }
 }

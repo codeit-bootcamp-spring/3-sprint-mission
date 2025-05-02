@@ -22,27 +22,19 @@ import java.util.UUID;
 // [ ] 수정 불가능한 도메인 모델로 간주합니다. 따라서 updatedAt 필드는 정의하지 않습니다.
 // [ ] User, Message 도메인 모델과의 의존 관계 방향성을 잘 고려하여 id 참조 필드를 추가하세요.
 @Getter
-public class BinaryContent implements Serializable {
-
+public class BinaryContent extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final UUID id;
-    private final Instant createdAt;
-    private Instant updatedAt;
     private byte[] attachment;
 
 
     public BinaryContent(byte[] image) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
         this.attachment = image;
     }
 
     public void setAttachment(byte[] attachment) {
         this.attachment = attachment;
         this.updatedAt = Instant.now();
-
     }
 
     @Override

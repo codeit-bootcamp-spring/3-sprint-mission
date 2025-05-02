@@ -48,7 +48,7 @@ public class BasicMessageService implements MessageService{
     public MessageCreateResponse createMessage(MessageCreateRequest request) {
         Channel channel = Optional.ofNullable(channelRepository.findChannelById(request.channelId())).orElseThrow(() -> new IllegalStateException("채널 없음: BasicMessageService.createMessage"));
         User user = Optional.ofNullable(userRepository.findUserById(request.senderId())).orElseThrow(() -> new IllegalStateException("유저 없음: BasicMessageService.createMessage"));
-        String content = Optional.ofNullable(request.content()).orElseThrow(()->new IllegalArgumentException("메세지 없음: BasicMessageService.createMessage"));
+        String content = request.content();
 
         Message message = messageRepository.createMessageWithContent(user.getId(), channel.getId(), content);
 
@@ -64,7 +64,7 @@ public class BasicMessageService implements MessageService{
     public MessageAttachmentsCreateResponse createMessage(MessageAttachmentsCreateRequest request) {
         Channel channel = Optional.ofNullable(channelRepository.findChannelById(request.channelId())).orElseThrow(() -> new IllegalStateException("채널 없음: BasicMessageService.createMessage"));
         User user = Optional.ofNullable(userRepository.findUserById(request.senderId())).orElseThrow(() -> new IllegalStateException("유저 없음: BasicMessageService.createMessage"));
-        List<byte[]> attachments = Optional.ofNullable(request.attachments()).orElseThrow(() -> new IllegalArgumentException("첨부 파일 없음: BasicMessageService.createMessage"));
+        List<byte[]> attachments = request.attachments();
 
         List<UUID> attachmentIds = attachments.stream()
                 .map(attachment -> binaryContentRepository.createBinaryContent(attachment).getId())
@@ -95,10 +95,7 @@ public class BasicMessageService implements MessageService{
 
     @Override
     public void updateMessage(MessageUpdateRequest request) {
-        messageRepository.updateMessageById(
-                Optional.ofNullable(request.messageId()).orElseThrow(() -> new IllegalArgumentException("trouble with messageId : BasicMessageService.updateMessage")),
-                Optional.ofNullable(request.content()).orElseThrow(()-> new IllegalArgumentException("trouble with content : BasicMessageService.updateMessage"))
-        );
+        messageRepository.updateMessageById(request.messageId(),request.content());
     }
 
 
@@ -114,7 +111,4 @@ public class BasicMessageService implements MessageService{
         }
         messageRepository.deleteMessageById(messageId);  // throw exception
     }
-
-
-
 }

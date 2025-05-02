@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.Dto.binaryContent;
 
 import lombok.Getter;
 
+import java.util.Objects;
+
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.binaryContent
  * fileName       : BinaryContentCreatRequest
@@ -15,6 +17,9 @@ import lombok.Getter;
  */
 
 public record BinaryContentCreateRequest(byte[] attachment) {
+    public BinaryContentCreateRequest {
+        Objects.requireNonNull(attachment, "no attachment in request");
+    }
 }
 
 

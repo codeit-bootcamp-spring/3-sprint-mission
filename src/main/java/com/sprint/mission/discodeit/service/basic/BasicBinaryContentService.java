@@ -28,22 +28,19 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContentCreateResponse create(BinaryContentCreateRequest request) {
-        byte[] attachment = Optional.ofNullable(request.attachment()).orElseThrow(() -> new IllegalArgumentException("no request.getAttachment"));
+        byte[] attachment = request.attachment();
         BinaryContent binaryContent = binaryContentRepository.createBinaryContent(attachment);
         return new BinaryContentCreateResponse(binaryContent.getId(), binaryContent.getUpdatedAt(), binaryContent.getAttachment());
     }
 
     @Override
     public BinaryContent find(UUID attachmentId) {
-        Objects.requireNonNull(attachmentId, "no param");
-
         return Optional.ofNullable(binaryContentRepository.findById(attachmentId))
                 .orElseThrow(() -> new IllegalArgumentException("no Binary Content matches")); // file | jcf : no exception
     }
 
     @Override
     public List<BinaryContent> findAllByIdIn(List<UUID> attachmentIds) {
-        Objects.requireNonNull(attachmentIds, "no attachmentIds");
         if (attachmentIds.isEmpty()) {
             throw new IllegalStateException("no ids in param");
         }

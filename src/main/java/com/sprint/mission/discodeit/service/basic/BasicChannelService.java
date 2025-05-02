@@ -38,8 +38,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelCreateResponse createChannel(PrivateChannelCreateRequest request) {
 
-        List<UUID> userIds = Optional.ofNullable(request.userIds())
-                .orElseThrow(() -> new IllegalArgumentException("no param in request"));
+        List<UUID> userIds = request.userIds();
 
         // channel 생성
         Channel channel = channelRepository.createPrivateChannelByName();
@@ -52,13 +51,9 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelCreateResponse createChannel(PublicChannelCreateRequest request) {
-        String channelName = Optional.ofNullable(request.getChannelName())
-                .orElseThrow(() -> new IllegalArgumentException("no name in request"));
-        String description = Optional.ofNullable(request.getDescription())
-                .orElseThrow(() -> new IllegalArgumentException("no description in request"));
-
-
-        List<UUID> userIds = Optional.ofNullable(request.getUserIds()).orElseThrow(() -> new IllegalArgumentException("no userIds in request"));
+        String channelName = request.getChannelName();
+        String description = request.getDescription();
+        List<UUID> userIds = request.getUserIds();
 
         // channel 생성
         Channel channel = channelRepository.createPublicChannelByName(channelName, description);
@@ -77,8 +72,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public List<ChannelFindResponse> findAllByUserId(ChannelFindByUserIdRequest request) {
-        UUID userId = Optional.ofNullable(request.userId())
-                .orElseThrow(() -> new IllegalArgumentException("no userId in request"));
+        UUID userId = request.userId();
 
         List<ChannelFindResponse> response = new ArrayList<>();
         // 유저가 참가한 방이 없을 수 있음
@@ -171,8 +165,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public void update(ChannelUpdateRequest request) {
-        UUID channelId = Optional.ofNullable(request.channelId())
-                .orElseThrow(() -> new IllegalArgumentException("no channelId in request"));
+        UUID channelId = request.channelId();
 
         Channel channel = Optional.ofNullable(channelRepository
                 .findChannelById(channelId)).orElseThrow(() -> new RuntimeException("no channel repository"));

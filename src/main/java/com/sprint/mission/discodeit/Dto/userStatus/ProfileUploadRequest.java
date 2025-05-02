@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.Dto.userStatus;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -17,5 +18,8 @@ import java.util.UUID;
  * 2025. 4. 24.        doungukkim       최초 생성
  */
 public record ProfileUploadRequest(UUID userId, byte[] image){
+    public ProfileUploadRequest {
+        Objects.requireNonNull(userId, "no userId in request");
+    }
 }
 
