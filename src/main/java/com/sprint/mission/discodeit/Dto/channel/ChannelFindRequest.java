@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.Dto.channel;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -14,5 +15,7 @@ import java.util.UUID;
  * 2025. 4. 29.        doungukkim       최초 생성
  */
 public record ChannelFindRequest (UUID channelId){
-
+    public ChannelFindRequest {
+        Objects.requireNonNull(channelId, "no channelId in request");
+    }
 }

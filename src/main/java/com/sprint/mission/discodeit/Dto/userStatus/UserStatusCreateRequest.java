@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.Dto.userStatus;
 
 import lombok.Getter;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -18,5 +19,7 @@ import java.util.UUID;
 
 public record UserStatusCreateRequest
         (UUID userId) {
-
+    public UserStatusCreateRequest {
+        Objects.requireNonNull(userId, "no userId in request");
+    }
 }

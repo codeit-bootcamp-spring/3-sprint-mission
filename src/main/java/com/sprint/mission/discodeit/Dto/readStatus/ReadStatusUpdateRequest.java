@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.Dto.readStatus;
 import lombok.Getter;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -20,5 +21,8 @@ import java.util.UUID;
 public record ReadStatusUpdateRequest
         (UUID readStatusId, Instant newTime) {
 
-
+    public ReadStatusUpdateRequest {
+        Objects.requireNonNull(readStatusId, "no messageId in request");
+        Objects.requireNonNull(newTime, "no newTime in request");
+    }
 }

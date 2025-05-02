@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.Dto.user;
 
 import lombok.Getter;
 
+import java.util.Objects;
+
 /**
  * packageName    : com.sprint.mission.discodeit.Dto
  * fileName       : UserServiceDto
@@ -23,15 +25,15 @@ public class UserCreateRequest {
 
     // 일반 생성
     public UserCreateRequest(String username, String email, String password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
+        this.username = Objects.requireNonNull(username, "no username in request");
+        this.email = Objects.requireNonNull(email, "no email in request");
+        this.password = Objects.requireNonNull(password, "no password in request");
     }
     // 프로필 이미지와 같이 생성
     public UserCreateRequest(String username, String email, String password, byte[] image) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
+        this.username = Objects.requireNonNull(username, "no username in request");
+        this.email = Objects.requireNonNull(email, "no email in request");
+        this.password = Objects.requireNonNull(password, "no password in request");
         this.image = image;
     }
 }

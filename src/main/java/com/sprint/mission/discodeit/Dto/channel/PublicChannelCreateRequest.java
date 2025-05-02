@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.Dto.channel;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,8 +24,9 @@ public class PublicChannelCreateRequest {
     List<UUID> userIds;
 
     public PublicChannelCreateRequest(Set<UUID> userIds, String channelName, String description) {
-        this.userIds = userIds.stream().toList();
-        this.channelName = channelName;
-        this.description = description;
+        this.userIds = Objects.requireNonNull(userIds, "no userIds in request").stream().toList();
+        this.channelName = Objects.requireNonNull(channelName, "no channelName in request");
+
+        this.description = Objects.requireNonNull(description, "no description in request");
     }
 }

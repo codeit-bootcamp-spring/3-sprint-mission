@@ -36,8 +36,7 @@ public class BasicUserStatusService implements UserStatusService {
     //    user -> exception, userstatus -> exception
     @Override
     public UserStatusCreateResponse create(UserStatusCreateRequest request) {
-        UUID userId = Optional.ofNullable(request.userId())
-                .orElseThrow(() -> new IllegalArgumentException("no request exist"));
+        UUID userId = request.userId();
 
         userRepository.findUserById(userId); // 없으면 throw error 날림
 
@@ -69,8 +68,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public void update(UserStatusUpdateRequest request) {
         userStatusRepository.update(
-                Objects.requireNonNull(request.userStatusId(), "no param"),
-                Objects.requireNonNull(request.newTime(), "no param")
+                request.userStatusId(), request.newTime()
         );
     }
 

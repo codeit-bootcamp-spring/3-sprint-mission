@@ -33,9 +33,6 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public ReadStatusCreateResponse create(ReadStatusCreateRequest request) {
-        Objects.requireNonNull(request.userId(), "trouble with userId: BasicReadStatusService.create");
-        Objects.requireNonNull(request.channelId(), "trouble with channelId: BasicReadStatusService.create");
-
         ReadStatus readStatus = readStatusRepository.createByUserId(request.userId(), request.channelId());
         return new ReadStatusCreateResponse(readStatus.getId(), readStatus.getUserId(), readStatus.getChannelId());
     }
@@ -54,8 +51,8 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     public void update(ReadStatusUpdateRequest request) {
         readStatusRepository.updateUpdatedTime(
-                Objects.requireNonNull(request.readStatusId(), "No readStatusId"),
-                Objects.requireNonNull(request.newTime(), "no time in request")
+                request.readStatusId(),
+                request.newTime()
         );
     }
 

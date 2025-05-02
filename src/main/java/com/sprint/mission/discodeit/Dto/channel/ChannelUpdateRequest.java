@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.Dto.channel;
 
 import lombok.Getter;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -20,7 +21,8 @@ public record ChannelUpdateRequest
         (UUID channelId,
          String name
         ) {
-
-
-
+        public ChannelUpdateRequest {
+                Objects.requireNonNull(channelId, "no channelId in request");
+                Objects.requireNonNull(name, "no name in request");
+        }
 }

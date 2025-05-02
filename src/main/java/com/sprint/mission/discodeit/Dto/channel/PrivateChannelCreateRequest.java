@@ -5,10 +5,7 @@ import com.sprint.mission.discodeit.entity.User;
 import lombok.Getter;
 
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.user
@@ -24,7 +21,7 @@ import java.util.UUID;
 
 public record PrivateChannelCreateRequest(List<UUID> userIds) {
     public PrivateChannelCreateRequest(Set<UUID>userIds) {
-        this(userIds.stream().toList());
+        this(Objects.requireNonNull(userIds, "no userIds in request").stream().toList());
     }
 }
 

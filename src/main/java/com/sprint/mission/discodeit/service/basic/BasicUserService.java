@@ -40,10 +40,6 @@ public class BasicUserService  implements UserService {
 
     @Override
     public UserCreateResponse create(UserCreateRequest userCreateRequest) {
-        Objects.requireNonNull(userCreateRequest.getUsername(), "no name in parameter: BasicUserService.create");
-        Objects.requireNonNull(userCreateRequest.getEmail(), "no email in parameter: BasicUserService.create");
-        Objects.requireNonNull(userCreateRequest.getPassword(), "no password in parameter: BasicUserService.create");
-
         boolean usernameNotUnique = !userRepository.isUniqueUsername(userCreateRequest.getUsername());
         boolean emailNotUnique = !userRepository.isUniqueEmail(userCreateRequest.getEmail());
 
@@ -126,10 +122,11 @@ public class BasicUserService  implements UserService {
 
 
 
+
     @Override
     public ProfileUploadResponse updateImage(ProfileUploadRequest request) {
-        UUID userId = Optional.ofNullable(request.userId()).orElseThrow(() -> new IllegalArgumentException("no userId in request"));
-        byte[] newImage = Optional.ofNullable(request.image()).orElseThrow(() -> new IllegalArgumentException("no image in request"));
+        UUID userId = request.userId();
+        byte[] newImage = request.image();
         User user = userRepository.findUserById(userId); // throw
         UUID profileId = userRepository.findUserById(userId).getProfileId(); // throw
 

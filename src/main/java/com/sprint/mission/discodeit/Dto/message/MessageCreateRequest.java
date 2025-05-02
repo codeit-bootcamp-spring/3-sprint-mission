@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.Dto.message;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -22,4 +23,9 @@ public record MessageCreateRequest
     UUID channelId,
     String content
 ) {
+    public MessageCreateRequest {
+        Objects.requireNonNull(senderId, "no sender in request");
+        Objects.requireNonNull(channelId, "no channelId in request");
+        Objects.requireNonNull(content, "no content in request");
+    }
 }

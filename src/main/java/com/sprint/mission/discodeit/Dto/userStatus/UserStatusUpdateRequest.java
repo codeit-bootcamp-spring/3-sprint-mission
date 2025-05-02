@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.Dto.userStatus;
 import lombok.Getter;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -18,4 +19,8 @@ import java.util.UUID;
  */
 
 public record UserStatusUpdateRequest(UUID userStatusId, Instant newTime) {
+    public UserStatusUpdateRequest {
+        Objects.requireNonNull(userStatusId, "no userId in request");
+        Objects.requireNonNull(newTime, "no newTime in request");
+    }
 }

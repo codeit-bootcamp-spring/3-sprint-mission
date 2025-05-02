@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.Dto.readStatus;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -15,5 +16,9 @@ import java.util.UUID;
  */
 
 public record ReadStatusCreateRequest(UUID userId, UUID channelId) {
+    public ReadStatusCreateRequest {
+        Objects.requireNonNull(userId, "no userId in request");
+        Objects.requireNonNull(channelId, "no channelId in request");
+    }
 }
 
