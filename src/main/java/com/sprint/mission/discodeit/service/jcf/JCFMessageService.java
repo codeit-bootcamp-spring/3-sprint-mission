@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.dto.entity.Channel;
 import com.sprint.mission.discodeit.dto.entity.Message;
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.*;
@@ -15,22 +16,27 @@ public class JCFMessageService  implements MessageService {
         this.channelService = channelService;
     }
 
+//    @Override
+//    public Message createMessage(UUID userId, UUID channelId, String content) {
+//        Channel channel = channelService.getChannel(channelId);
+//
+//        if (channel == null) {
+//            System.out.println("[Message] 존재하지 않는 채널입니다. (channelId: " + channelId + ")");
+//            return null;
+//        }
+//        if (!channel.isMember(userId)) {
+//            System.out.println("[Message] 먼저 채널에 접속해주세요.");
+//            return null;
+//        }
+//
+//        Message message = Message.of(userId, channelId, content);
+//        data.put(message.getId(), message);
+//        return message;
+//    }
+
     @Override
-    public Message createMessage(UUID userId, UUID channelId, String content) {
-        Channel channel = channelService.getChannel(channelId);
-
-        if (channel == null) {
-            System.out.println("[Message] 존재하지 않는 채널입니다. (channelId: " + channelId + ")");
-            return null;
-        }
-        if (!channel.isMember(userId)) {
-            System.out.println("[Message] 먼저 채널에 접속해주세요.");
-            return null;
-        }
-
-        Message message = Message.of(userId, channelId, content);
-        data.put(message.getId(), message);
-        return message;
+    public Message createMessage(MessageCreateRequest messageCreateRequest) {
+        return null;
     }
 
     @Override

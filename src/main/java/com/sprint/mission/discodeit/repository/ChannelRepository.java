@@ -10,7 +10,7 @@ public interface ChannelRepository {
     Channel loadByName(String name);
     Channel loadById(UUID id);
     List<Channel> loadAll();
-    void update(UUID id, String name);
+    Channel update(UUID id, String name);
     void join(UUID userId, UUID channelId);
     void leave(UUID userId, UUID channelId);
     void delete(UUID id);

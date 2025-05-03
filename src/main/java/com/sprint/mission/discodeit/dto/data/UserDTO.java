@@ -15,7 +15,7 @@ public class UserDTO {
 
     @Override
     public String toString() {
-        return "[UserResponseDTO] {" + name + " id=" + id + ", email=" + email + ", loggedIn=" + isLoggedIn + "}";
+        return "[UserDTO] {" + name + " id=" + id + ", email=" + email + ", loggedIn=" + isLoggedIn + "}";
     }
 }
 

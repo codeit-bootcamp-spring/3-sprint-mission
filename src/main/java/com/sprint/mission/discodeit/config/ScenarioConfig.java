@@ -90,16 +90,20 @@ public class ScenarioConfig {
 
     @Bean("fileChannelService")
     public ChannelService fileChannelService (
-            @Qualifier("fileChannelRepository") ChannelRepository channelRepository
+            @Qualifier("fileChannelRepository") ChannelRepository channelRepository,
+            @Qualifier("fileMessageRepository") MessageRepository messageRepository,
+            @Qualifier("fileReadStatusRepository") ReadStatusRepository readStatusRepository
     ) {
-        return new BasicChannelService(channelRepository);
+        return new BasicChannelService(channelRepository, messageRepository, readStatusRepository);
     }
 
     @Bean("jcfChannelService")
     public ChannelService jcfChannelService (
-            @Qualifier("jcfChannelRepository") ChannelRepository channelRepository
+            @Qualifier("jcfChannelRepository") ChannelRepository channelRepository,
+            @Qualifier("jcfMessageRepository") MessageRepository messageRepository,
+            @Qualifier("jcfReadStatusRepository") ReadStatusRepository readStatusRepository
     ) {
-        return new BasicChannelService(channelRepository);
+        return new BasicChannelService(channelRepository, messageRepository, readStatusRepository);
     }
 
     @Bean("fileMessageService")

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.dto.entity.Channel;
@@ -22,26 +23,31 @@ public class FileMessageService implements MessageService {
         this.channelService = channelService;
     }
 
-    @Override
     public Message createMessage(UUID userId, UUID channelId, String content) {
-        try {
-            Channel ch = channelService.getChannel(channelId);
-            if (userService.getUser(userId) == null || ch == null) {
-                throw new IllegalArgumentException("[Message] 유효하지 않은 userId 혹은 channelId가 존재합니다. " +
-                        "(userId: " + userId + ", channelId: " + channelId + ")");
-            }
+//        try {
+//            Channel ch = channelService.getChannel(channelId);
+//            if (userService.getUser(userId) == null || ch == null) {
+//                throw new IllegalArgumentException("[Message] 유효하지 않은 userId 혹은 channelId가 존재합니다. " +
+//                        "(userId: " + userId + ", channelId: " + channelId + ")");
+//            }
+//
+//            if (!ch.isMember(userId)) {
+//                throw new IllegalAccessException("[Message] 먼저 채널에 접속해주세요.");
+//            }
+//        } catch (IllegalArgumentException | IllegalAccessException e) {
+//            System.out.println(e.getMessage());
+//            return null;
+//        }
+//
+//        Message msg = Message.of(userId, channelId, content);
+//        messageRepository.save(msg);
+//        return msg;
+        return null;
+    }
 
-            if (!ch.isMember(userId)) {
-                throw new IllegalAccessException("[Message] 먼저 채널에 접속해주세요.");
-            }
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
-
-        Message msg = Message.of(userId, channelId, content);
-        messageRepository.save(msg);
-        return msg;
+    @Override
+    public Message createMessage(MessageCreateRequest messageCreateRequest) {
+        return null;
     }
 
     @Override
@@ -49,14 +55,15 @@ public class FileMessageService implements MessageService {
 
     @Override
     public List<Message> getMessagesByChannel(UUID channelId) {
-        Channel ch;
-        try {
-            ch = channelService.getChannel(channelId);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-
-        return messageRepository.loadByChannel(ch.getId());
+//        Channel ch;
+//        try {
+//            ch = channelService.getChannel(channelId);
+//        } catch (IllegalArgumentException e) {
+//            return null;
+//        }
+//
+//        return messageRepository.loadByChannel(ch.getId());
+        return null;
     }
 
     @Override

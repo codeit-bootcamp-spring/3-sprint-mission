@@ -9,7 +9,8 @@ public interface MessageRepository {
     void save(Message msg);
     Message loadById(UUID id);
     List<Message> loadAll();
-    List<Message> loadByChannel(UUID channelId);
+    List<Message> loadByChannelId(UUID channelId);
     void update(UUID id, String content);
     void deleteById(UUID id);
+    void deleteByChannelId(UUID channelId);
 }

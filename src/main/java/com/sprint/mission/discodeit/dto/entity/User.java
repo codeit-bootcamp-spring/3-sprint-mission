@@ -35,9 +35,9 @@ public class User implements Serializable {
         return new User(userCreateRequest.getName(), userCreateRequest.getEmail(), userCreateRequest.getPassword());
     }
 
-    public void setName(String name) {
-        this.name = name;
-        this.updatedAt = Instant.now();
+    public User updateUserStatusId(UUID userStatusId) {
+        this.userStatusId = userStatusId;
+        return this;
     }
 
     public User updateProfileImageId(UUID profileImageId) {

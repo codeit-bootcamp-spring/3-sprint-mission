@@ -73,14 +73,12 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public List<Message> loadByChannel(UUID channelId) {
+    public List<Message> loadByChannelId(UUID channelId) {
         List<Message> messages = loadAll();
 
-        messages = messages.stream()
+        return messages.stream()
                 .filter(m -> m.getChannelId().equals(channelId))
                 .toList();
-
-        return messages;
     }
 
     @Override
@@ -110,6 +108,13 @@ public class FileMessageRepository implements MessageRepository {
         } catch (Exception e) {
             throw new RuntimeException("[Message] 파일 삭제 중 오류 발생 (" + id + ")", e);
         }
+    }
+
+
+    public void deleteByChannelId(UUID channelId) {
+        loadByChannelId(channelId).stream()
+                .map(Message::getId)
+                .forEach(this::deleteById);
     }
 
     private void clearFile() {

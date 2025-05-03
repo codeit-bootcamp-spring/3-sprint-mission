@@ -29,7 +29,7 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public List<Message> loadByChannel(UUID channelId) {
+    public List<Message> loadByChannelId(UUID channelId) {
         return messages.values().stream()
                 .filter(m -> m.getChannelId().equals(channelId))
                 .toList();
@@ -46,5 +46,10 @@ public class JCFMessageRepository implements MessageRepository {
     @Override
     public void deleteById(UUID id) {
         messages.remove(id);
+    }
+
+    @Override
+    public void deleteByChannelId(UUID channelId) {
+
     }
 }

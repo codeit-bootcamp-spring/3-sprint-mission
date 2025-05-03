@@ -34,13 +34,14 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public void update(UUID id, String name) {
-        Channel ch = channels.get(id);
-        if (ch == null) {
+    public Channel update(UUID id, String name) {
+        Channel channel = channels.get(id);
+        if (channel == null) {
             throw new IllegalArgumentException("[Channel] 유효하지 않은 채널입니다. (channelId: " + id + ")");
         }
 
-        ch.setName(name);
+        channel.setName(name);
+        return channel;
     }
 
     @Override

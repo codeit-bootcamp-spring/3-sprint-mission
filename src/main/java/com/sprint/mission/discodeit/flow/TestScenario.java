@@ -1,16 +1,12 @@
 package com.sprint.mission.discodeit.flow;
 
-import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.*;
 import com.sprint.mission.discodeit.dto.entity.Channel;
 import com.sprint.mission.discodeit.dto.entity.Message;
 import com.sprint.mission.discodeit.dto.entity.User;
-import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.service.*;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -24,7 +20,8 @@ public class TestScenario {
     private final MessageService messageService;
 
     private List<User> users;
-    private List<Channel> channels;
+    private List<Channel> publicChannels;
+    private List<Channel> privateChannels;
     private List<Message> messages;
 
     public TestScenario(
@@ -48,7 +45,7 @@ public class TestScenario {
     public void run() {
         testUserServices();
         testChannelServices();
-//        testMessageServices();
+        testMessageServices();
     }
 
     private void testUserServices() {
@@ -60,8 +57,9 @@ public class TestScenario {
     }
 
     private void testChannelServices() {
-        createChannel();
-        getAllChannels();
+        createPublicChannel();
+        createPrivateChannel();
+        getChannelsByUserId();
         getChannel();
         updateChannel();
         deleteChannel();
@@ -73,9 +71,9 @@ public class TestScenario {
         createMessage();
         getAllMessages();
         getMessage();
-        getChannelMessage();
-        updateMessage();
-        deleteMessage();
+//        getChannelMessage();
+//        updateMessage();
+//        deleteMessage();
     }
 
     private void createUser() {
@@ -88,9 +86,9 @@ public class TestScenario {
         );
 
         List<BinaryContentCreateRequest> imageDTOs = Arrays.asList( //List.of()로는 null 값을 담을 수 없음
-                new BinaryContentCreateRequest("Jane.png", "/data/binaryContents/Jane.png"),
+                new BinaryContentCreateRequest("Jane.png", "/data/binaryContents/profileImages"),
                 null,
-                new BinaryContentCreateRequest("Kate.jpg", "/data/binaryContents/Kate.jpg")
+                new BinaryContentCreateRequest("Kate.jpg", "/data/binaryContents/profileImages")
         );
 
         users = IntStream.range(0, createDTOs.size())
@@ -125,8 +123,8 @@ public class TestScenario {
         System.out.println("\n[User] 사용자 프로필 이미지 추가/수정 후 조회");
 
         List<BinaryContentCreateRequest> imageDTOs = List.of(
-                new BinaryContentCreateRequest("EditJane.png", "/data/binaryContents/attachments"),
-                new BinaryContentCreateRequest("AddTomProfile.jpg", "/data/binaryContents/attachments")
+                new BinaryContentCreateRequest("EditJane.png", "/data/binaryContents/profileImages"),
+                new BinaryContentCreateRequest("AddTomProfile.jpg", "/data/binaryContents/profileImages")
         );
 
         List<UserUpdateRequest> updateDTOs = List.of(
@@ -145,14 +143,20 @@ public class TestScenario {
         userService.getAllUsers().forEach(System.out::println);
     }
 
-    private void createChannel() {
+    private void createPublicChannel() {
         System.out.println("\n[Channel] 유효성 검사 후 채널 생성");
-        List<String> channelNames = List.of("ch1", "ch2", "ch3", "ch2");
-        channels = channelNames.stream()
-                .map(name -> {
+
+        List<PublicChannelCreateRequest> publicDTOs = List.of(
+                new PublicChannelCreateRequest("ch1", "public channel1"),
+                new PublicChannelCreateRequest("ch2", "public channel2"),
+                new PublicChannelCreateRequest("ch3", "public channel3"),
+                new PublicChannelCreateRequest("ch2", "이름 중복 검사")
+        );
+
+        publicChannels = publicDTOs.stream()
+                .map(dto -> {
                     try {
-                        Channel created = channelService.createChannel(name);
-                        return channelService.getChannel(created.getId());
+                        return channelService.createPublicChannel(dto);
                     } catch (IllegalArgumentException e) {
                         System.out.println(e.getMessage());
                         return null;
@@ -162,66 +166,127 @@ public class TestScenario {
                 .toList();
     }
 
-    private void getAllChannels() {
-        System.out.println("\n[Channel] 모든 채널 조회");
-        channelService.getAllChannels().forEach(System.out::println);
+    private void createPrivateChannel() {
+        List<UUID> membersForChA = List.of(users.get(0).getId(), users.get(1).getId());
+        List<UUID> membersForChB = List.of(users.get(0).getId());
+
+        List<PrivateChannelCreateRequest> privateDTOs = List.of(
+                new PrivateChannelCreateRequest(new HashSet<>(membersForChA)),
+                new PrivateChannelCreateRequest(new HashSet<>(membersForChB))
+        );
+
+        privateChannels = privateDTOs.stream()
+                .map(dto -> {
+                    try {
+                        return channelService.createPrivateChannel(dto);
+                    } catch (IllegalArgumentException e) {
+                        System.out.println(e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    private void getChannelsByUserId() {
+        System.out.println("\n[Channel] User가 포함된 모든 채널 조회");
+        channelService.getAllChannelsByUserId(users.get(0).getId()).forEach(System.out::println);
     }
 
     private void getChannel() {
         System.out.println("\n[Channel] 단일 채널 조회");
-        System.out.println(channelService.getChannel(channels.get(0).getId()));
-        System.out.println(channelService.getChannel(channels.get(1).getId()));
+        System.out.println(channelService.getChannel(publicChannels.get(0).getId()));
+        System.out.println(channelService.getChannel(privateChannels.get(0).getId()));
     }
 
     private void updateChannel() {
         System.out.println("\n[Channel] 수정된 채널 정보 (ch1, ch2)");
-        channelService.updateChannel(channels.get(0).getId(), "channel1");
-        channelService.updateChannel(channels.get(1).getId(), "channel2");
-        System.out.println(channelService.getChannel(channels.get(0).getId()));
-        System.out.println(channelService.getChannel(channels.get(1).getId()));
+
+        List<PublicChannelUpdateRequest> updateDTOs = List.of(
+                new PublicChannelUpdateRequest(publicChannels.get(0).getId(), "channel1"),
+                new PublicChannelUpdateRequest(publicChannels.get(1).getId(), "channel2")
+        );
+
+        updateDTOs.forEach(channelService::updateChannel);
     }
 
     private void deleteChannel() {
-        System.out.println("\n[Channel] 삭제 후 전체 채널 조회 (ch3)");
-        channelService.deleteChannel(channels.get(2).getId());
-        channelService.getAllChannels().forEach(System.out::println);
+        System.out.println("\n[Channel] 채널 삭제 (chB)");
+        channelService.deleteChannel(privateChannels.get(1).getId());
     }
 
     private void joinChannel() {
-        System.out.println("\n[Channel] 채널 접속");
-        channelService.joinChannel(users.get(0).getId(), channels.get(0).getId());
-        channelService.joinChannel(users.get(1).getId(), channels.get(0).getId());
-        channelService.joinChannel(users.get(1).getId(), channels.get(1).getId());
-
-        System.out.println("\n[Channel] 채널 접속 후 조회 ");
-        channelService.getAllChannels().forEach(System.out::println);
+        System.out.println("\n[Channel] 채널 접속 후 조회");
+        channelService.joinChannel(users.get(0).getId(), publicChannels.get(0).getId());
+        channelService.joinChannel(users.get(1).getId(), publicChannels.get(0).getId());
+        channelService.joinChannel(users.get(0).getId(), publicChannels.get(1).getId());
+        channelService.joinChannel(users.get(1).getId(), publicChannels.get(1).getId());
     }
 
     private void leaveChannel() {
-        System.out.println("\n[Channel] 채널 탈퇴");
-        channelService.leaveChannel(users.get(1).getId(), channels.get(1).getId());
-        channelService.getAllChannels().forEach(System.out::println);
-
-        System.out.println("\n[Channel] 채널 탈퇴 후 조회 ");
-        channelService.getAllChannels().forEach(System.out::println);
+        System.out.println("\n[Channel] 채널 탈퇴 후 조회 (ch2)");
+        channelService.leaveChannel(users.get(1).getId(), publicChannels.get(1).getId());
     }
 
     private void createMessage() {
         System.out.println("\n[Message] 유효성 검사 후 메시지 생성");
-        messages = Stream.of(
-                        messageService.createMessage(users.get(0).getId(), channels.get(0).getId(), "안녕하세요!"),
-                        messageService.createMessage(users.get(1).getId(), channels.get(0).getId(), "1번 채널입니다."),
-                        messageService.createMessage(users.get(2).getId(), channels.get(0).getId(), "사용자 예외 처리 테스트"), // 존재하지 않는 사용자 예외 발생 !
-                        messageService.createMessage(users.get(0).getId(), channels.get(2).getId(), "서버 예외 처리 테스트"), // 존재하지 않는 서버 예외 발생
-                        messageService.createMessage(users.get(0).getId(), channels.get(1).getId(), "채널 접속 예외 처리 테스트") // 접속하지 않는 채널 예외 발생
+
+        List<MessageCreateRequest> requestDTOs = List.of(
+                new MessageCreateRequest(
+                        users.get(0).getId(),
+                        publicChannels.get(0).getId(),
+                        "안녕하세요!",
+                        null
+                ),
+                new MessageCreateRequest(
+                        users.get(1).getId(),
+                        publicChannels.get(0).getId(),
+                        "파일 첨부 테스트입니다.",
+                        List.of(
+                                new BinaryContentCreateRequest("abc.txt", "/data/binaryContents/"),
+                                new BinaryContentCreateRequest("doc.pdf", "/data/binaryContents/")
+                        )
+                ),
+                new MessageCreateRequest(
+                        users.get(0).getId(),
+                        publicChannels.get(1).getId(),
+                        "메시지 삭제 테스트 용",
+                        null
+                ),
+                new MessageCreateRequest(
+                        UUID.randomUUID(),
+                        publicChannels.get(0).getId(),
+                        "사용자 예외 처리 테스트",
+                        null
                 )
+        );
+
+        messages = requestDTOs.stream()
+                .map(dto -> {
+                    try {
+                        return messageService.createMessage(dto);
+                    } catch (IllegalArgumentException e) {
+                        System.out.println(e.getMessage());
+                        return null;
+                    }
+                })
                 .filter(Objects::nonNull)
                 .toList();
     }
 
     private void getAllMessages() {
         System.out.println("\n[Message] 모든 메시지 조회");
-        messageService.getAllMessages().forEach(System.out::println);
+//        messageService.getAllMessages().forEach(System.out::println);
+
+        publicChannels.forEach(channel ->
+            messageService.getMessagesByChannel(channel.getId())
+                    .forEach(System.out::println)
+        );
+
+        privateChannels.forEach(channel ->
+                messageService.getMessagesByChannel(channel.getId())
+                        .forEach(System.out::println)
+        );
     }
 
     private void getMessage() {
@@ -232,7 +297,7 @@ public class TestScenario {
 
     private void getChannelMessage() {
         System.out.println("\n[Message] channel1의 메시지 조회");
-        messageService.getMessagesByChannel(channels.get(0).getId()).forEach(System.out::println);
+        messageService.getMessagesByChannel(publicChannels.get(0).getId()).forEach(System.out::println);
     }
 
     private void updateMessage() {

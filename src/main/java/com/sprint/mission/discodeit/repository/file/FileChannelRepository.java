@@ -82,7 +82,7 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public void update(UUID id, String name) {
+    public Channel update(UUID id, String name) {
         Channel channel = loadById(id);
         if (channel == null) {
             throw new IllegalArgumentException("[Channel] 유효하지 않은 채널입니다. (" + id + ")");
@@ -90,6 +90,7 @@ public class FileChannelRepository implements ChannelRepository {
 
         channel.setName(name);
         save(channel);
+        return channel;
     }
 
     @Override
@@ -97,12 +98,12 @@ public class FileChannelRepository implements ChannelRepository {
         Channel channel = loadById(channelId);
 
         if (channel == null) {
-            throw new IllegalArgumentException("[User] 유효하지 않은 channel 파일 (" + channelId + ".ser)");
+            throw new IllegalArgumentException("[Channel] 유효하지 않은 channel 파일 (" + channelId + ".ser)");
         }
 
         channel.join(userId);
         save(channel);
-        System.out.println("[Channel] 채널에 접속했습니다. (userId: " + userId + ", channelId: " + channelId + ")");
+        System.out.println(channel);
     }
 
     @Override
@@ -110,12 +111,12 @@ public class FileChannelRepository implements ChannelRepository {
         Channel channel = loadById(channelId);
 
         if (channel == null) {
-            throw new IllegalArgumentException("[User] 유효하지 않은 channel 파일 (" + channelId + ".ser)");
+            throw new IllegalArgumentException("[Channel] 유효하지 않은 channel 파일 (" + channelId + ".ser)");
         }
 
         channel.leave(userId);
         save(channel);
-        System.out.println("[Channel] 채널에서 탈퇴했습니다. (userId: " + userId + ", channelId: " + channelId + ")");
+        System.out.println(channel);
     }
 
     @Override
@@ -126,13 +127,14 @@ public class FileChannelRepository implements ChannelRepository {
             if (file.exists()) {
                 if (!file.delete()) {
                     System.out.println("[Channel] 파일 삭제 실패");
-                };
+                }
             }
             else {
                 System.out.println("[Channel] 유효하지 않은 파일 (" + id + ")");
             }
+            System.out.println("[Channel] 채널 삭제 완료 (" + id + ")");
         } catch (Exception e) {
-            throw new RuntimeException("[Channel] 파일 삭제 중 오류 발생 (" + id + ")", e);
+            throw new RuntimeException("[Channel] 파일 삭제 중 오류 발생 (id=" + id + ")", e);
         }
     }
 

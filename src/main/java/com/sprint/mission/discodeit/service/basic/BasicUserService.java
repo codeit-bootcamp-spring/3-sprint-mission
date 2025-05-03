@@ -36,19 +36,20 @@ public class BasicUserService implements UserService {
         }
 
         User user = User.of(userCreateRequest);
-        userRepository.save(user);
 
         UserStatus userStatus = UserStatus.of(user.getId());
         userStatusRepository.save(userStatus);
+        user.updateUserStatusId(userStatus.getId());
+        userRepository.save(user);
 
-        if (binaryContentCreateRequest == null) {
-            return user;
+        if (binaryContentCreateRequest != null) {
+            UserUpdateRequest userUpdateRequest = new UserUpdateRequest(user.getId(), binaryContentCreateRequest);
+            BinaryContent binaryContent = updateUserProfileImage(userUpdateRequest);
+            user.updateProfileImageId(binaryContent.getId());
         }
 
-        UserUpdateRequest userUpdateRequest = new UserUpdateRequest(user.getId(), binaryContentCreateRequest);
-        updateUserProfileImage(userUpdateRequest);
-
-        return userRepository.loadById(user.getId());
+        userRepository.save(user);
+        return user;
     }
 
     @Override
@@ -88,9 +89,7 @@ public class BasicUserService implements UserService {
         if (user.getProfileImageId() == null) {
             binaryContent = BinaryContent.forUserProfileImage(user.getId(), binaryContentCreateRequest);
             binaryContentRepository.save(binaryContent);
-
-            user.updateProfileImageId(binaryContent.getId());
-            userRepository.save(user);
+            userRepository.save(user.updateProfileImageId(binaryContent.getId()));
         } else {
             binaryContent = binaryContentRepository.loadByUserId(user.getId());
             binaryContentRepository.save(
@@ -110,7 +109,7 @@ public class BasicUserService implements UserService {
             }
 
 //            messageRepository.deleteByUserId(id);
-//            readStatusRepository.deleteByUserId(id);
+            readStatusRepository.deleteByUserId(id);
             userStatusRepository.deleteById(id);
             userRepository.deleteById(id);
         } catch (RuntimeException e) {

@@ -16,9 +16,7 @@ import java.util.UUID;
 public class FileUserRepository implements UserRepository {
     private static final String DIR = "data/users/";
 
-    public FileUserRepository() {
-        clearFile();
-    }
+    public FileUserRepository() { clearFile(); }
 
     @Override
     public void save(User user) {

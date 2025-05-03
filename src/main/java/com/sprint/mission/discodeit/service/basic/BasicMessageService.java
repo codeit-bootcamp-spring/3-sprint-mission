@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.entity.Channel;
 import com.sprint.mission.discodeit.dto.entity.Message;
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -18,7 +19,10 @@ public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
 
     @Override
-    public Message createMessage(UUID userId, UUID channelId, String content) {
+    public Message createMessage(MessageCreateRequest messageCreateRequest) {
+        UUID userId = messageCreateRequest.getUserId();
+        UUID channelId = messageCreateRequest.getChannelId();
+
         try {
             Channel ch = channelRepository.loadById(channelId);
             if (userRepository.loadById(userId) == null || ch == null) {
@@ -33,7 +37,7 @@ public class BasicMessageService implements MessageService {
             return null;
         }
 
-        Message msg = Message.of(userId, channelId, content);
+        Message msg = Message.of(userId, channelId, messageCreateRequest.getContent());
         messageRepository.save(msg);
         return msg;
     }
@@ -45,13 +49,11 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public List<Message> getMessagesByChannel(UUID channelId) {
-        return messageRepository.loadByChannel(channelId);
+        return messageRepository.loadByChannelId(channelId);
     }
 
     @Override
-    public List<Message> getAllMessages() {
-        return messageRepository.loadAll();
-    }
+    public List<Message> getAllMessages() { return messageRepository.loadAll(); }
 
     @Override
     public void updateMessage(UUID id, String content) {
