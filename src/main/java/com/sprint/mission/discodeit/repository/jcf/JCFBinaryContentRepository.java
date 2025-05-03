@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository("jcfBinaryContentRepository")
@@ -22,6 +23,11 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
     @Override
     public BinaryContent loadById(UUID userId) {
         return null;
+    }
+
+    @Override
+    public List<BinaryContent> loadAll() {
+        return List.of();
     }
 
     @Override
