@@ -32,16 +32,18 @@ public class ScenarioConfig {
 
     @Bean("fileUserStatusService")
     public UserStatusService fileUserStatusService(
-            @Qualifier("fileUserStatusRepository") UserStatusRepository userStatusRepository
+            @Qualifier("fileUserStatusRepository") UserStatusRepository userStatusRepository,
+           @Qualifier("fileUserRepository") UserRepository userRepository
     ) {
-        return new BasicUserStatusService(userStatusRepository);
+        return new BasicUserStatusService(userStatusRepository, userRepository);
     }
 
     @Bean("jcfUserStatusService")
     public UserStatusService jcfUserStatusService (
-            @Qualifier("jcfUserStatusRepository") UserStatusRepository userStatusRepository
+            @Qualifier("jcfUserStatusRepository") UserStatusRepository userStatusRepository,
+            @Qualifier("jcfUserRepository") UserRepository userRepository
     ) {
-        return new BasicUserStatusService(userStatusRepository);
+        return new BasicUserStatusService(userStatusRepository, userRepository);
     }
 
     @Bean("fileReadStatusService")

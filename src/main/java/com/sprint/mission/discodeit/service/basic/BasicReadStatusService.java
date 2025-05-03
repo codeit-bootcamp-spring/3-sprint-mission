@@ -35,9 +35,7 @@ public class BasicReadStatusService implements ReadStatusService {
                 .loadAllByUserId(userId)
                 .stream()
                 .anyMatch(rs -> rs.getChannelId().equals(channelId))) {
-            throw new IllegalArgumentException(
-                    "[ReadStatus] 이미 관련된 객체가 존재합니다. (user=" + userId + ", channel=" + channelId + ")"
-            );
+            throw new IllegalArgumentException("[ReadStatus] 이미 관련된 객체가 존재합니다. (user=" + userId + ", channel=" + channelId + ")");
         }
 
         ReadStatus readStatus = ReadStatus.of(readStatusCreateRequest.getUserId(), readStatusCreateRequest.getChannelId());

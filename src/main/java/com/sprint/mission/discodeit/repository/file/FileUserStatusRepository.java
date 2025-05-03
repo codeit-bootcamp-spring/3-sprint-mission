@@ -5,6 +5,11 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Repository("fileUserStatusRepository")
@@ -38,6 +43,32 @@ public class FileUserStatusRepository implements UserStatusRepository {
             return (UserStatus) in.readObject();
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException("[UserStatus] 로그인 상태 로드 중 오류 발생", e);
+        }
+    }
+
+    @Override
+    public List<UserStatus> loadAll() {
+        if (Files.exists(Path.of(DIR))) {
+            try {
+                List<UserStatus> userStatuses = Files.list(Paths.get(DIR))
+                        .map( path -> {
+                            try (
+                                    FileInputStream fis = new FileInputStream(path.toFile());
+                                    ObjectInputStream ois = new ObjectInputStream(fis)
+                            ) {
+                                Object data = ois.readObject();
+                                return (UserStatus) data;
+                            } catch (IOException | ClassNotFoundException e) {
+                                throw new RuntimeException("[UserStatus] 파일 로드 중 오류 발생", e);
+                            }
+                        })
+                        .toList();
+                return userStatuses;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return new ArrayList<>();
         }
     }
 
