@@ -5,12 +5,14 @@ import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.*;
 import com.sprint.mission.discodeit.service.basic.*;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ScenarioConfig {
     @Bean("fileUserService")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="file")
     public UserService fileUserService (
             @Qualifier("fileUserRepository") UserRepository userRepository,
             @Qualifier("fileUserStatusRepository") UserStatusRepository userStatusRepository,
@@ -21,6 +23,7 @@ public class ScenarioConfig {
     }
 
     @Bean("jcfUserService")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="jcf")
     public UserService jcfUserService (
             @Qualifier("jcfUserRepository") UserRepository userRepository,
             @Qualifier("jcfUserStatusRepository") UserStatusRepository userStatusRepository,
@@ -31,6 +34,7 @@ public class ScenarioConfig {
     }
 
     @Bean("fileUserStatusService")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="file")
     public UserStatusService fileUserStatusService(
             @Qualifier("fileUserStatusRepository") UserStatusRepository userStatusRepository,
            @Qualifier("fileUserRepository") UserRepository userRepository
@@ -39,6 +43,7 @@ public class ScenarioConfig {
     }
 
     @Bean("jcfUserStatusService")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="jcf")
     public UserStatusService jcfUserStatusService (
             @Qualifier("jcfUserStatusRepository") UserStatusRepository userStatusRepository,
             @Qualifier("jcfUserRepository") UserRepository userRepository
@@ -47,6 +52,7 @@ public class ScenarioConfig {
     }
 
     @Bean("fileReadStatusService")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="file")
     public ReadStatusService fileReadStatusService (
             @Qualifier("fileReadStatusRepository") ReadStatusRepository readStatusRepository,
             @Qualifier("fileUserRepository") UserRepository userRepository,
@@ -56,6 +62,7 @@ public class ScenarioConfig {
     }
 
     @Bean("jcfReadStatusService")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="jcf")
     public ReadStatusService jfcReadStatusService (
             @Qualifier("jcfReadStatusRepository") ReadStatusRepository readStatusRepository,
             @Qualifier("jcfUserRepository") UserRepository userRepository,
@@ -65,6 +72,7 @@ public class ScenarioConfig {
     }
 
     @Bean("fileBinaryContentService")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="file")
     public BinaryContentService fileBinaryContentService (
             @Qualifier("fileBinaryContentRepository") BinaryContentRepository binaryContentRepository
     ) {
@@ -72,6 +80,7 @@ public class ScenarioConfig {
     }
 
     @Bean("jcfBinaryContentService")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="jcf")
     public BinaryContentService jcfBinaryContentService (
             @Qualifier("jcfBinaryContentRepository") BinaryContentRepository binaryContentRepository
     ) {
@@ -79,6 +88,7 @@ public class ScenarioConfig {
     }
 
     @Bean("fileAuthService")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="file")
     public AuthService fileAuthService(
             @Qualifier("fileUserRepository") UserRepository userRepository,
             @Qualifier("fileUserStatusRepository") UserStatusRepository userStatusRepository
@@ -87,6 +97,7 @@ public class ScenarioConfig {
     }
 
     @Bean("jcfAuthService")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="jcf")
     public AuthService jcfAuthService(
             @Qualifier("jcfUserRepository") UserRepository userRepository,
             @Qualifier("jcfUserStatusRepository") UserStatusRepository userStatusRepository
@@ -95,6 +106,7 @@ public class ScenarioConfig {
     }
 
     @Bean("fileChannelService")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="file")
     public ChannelService fileChannelService (
             @Qualifier("fileChannelRepository") ChannelRepository channelRepository,
             @Qualifier("fileMessageRepository") MessageRepository messageRepository,
@@ -104,6 +116,7 @@ public class ScenarioConfig {
     }
 
     @Bean("jcfChannelService")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="jcf")
     public ChannelService jcfChannelService (
             @Qualifier("jcfChannelRepository") ChannelRepository channelRepository,
             @Qualifier("jcfMessageRepository") MessageRepository messageRepository,
@@ -113,6 +126,7 @@ public class ScenarioConfig {
     }
 
     @Bean("fileMessageService")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="file")
     public MessageService fileMessageService (
             @Qualifier("fileMessageRepository") MessageRepository messageRepository,
             @Qualifier("fileUserRepository") UserRepository userRepository,
@@ -122,6 +136,7 @@ public class ScenarioConfig {
     }
 
     @Bean("jcfMessageService")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="jcf")
     public MessageService jcfMessageService (
             @Qualifier("jcfMessageRepository") MessageRepository messageRepository,
             @Qualifier("jcfUserRepository") UserRepository userRepository,
@@ -131,6 +146,7 @@ public class ScenarioConfig {
     }
 
     @Bean("fileTest")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="file")
     public TestScenario fileTestExecutor (
             @Qualifier("fileUserService") UserService userService,
             @Qualifier("fileUserStatusService") UserStatusService userStatusService,
@@ -144,6 +160,7 @@ public class ScenarioConfig {
     }
 
     @Bean("jcfTest")
+    @ConditionalOnProperty(name="discodeit.repository.type", havingValue="jcf")
     public TestScenario jcfTestExecutor (
             @Qualifier("jcfUserService") UserService userService,
             @Qualifier("jcfUserStatusService") UserStatusService userStatusService,
