@@ -46,16 +46,20 @@ public class ScenarioConfig {
 
     @Bean("fileReadStatusService")
     public ReadStatusService fileReadStatusService (
-            @Qualifier("fileReadStatusRepository") ReadStatusRepository readStatusRepository
+            @Qualifier("fileReadStatusRepository") ReadStatusRepository readStatusRepository,
+            @Qualifier("fileUserRepository") UserRepository userRepository,
+            @Qualifier("fileChannelRepository") ChannelRepository channelRepository
     ) {
-        return new BasicReadStatusService(readStatusRepository);
+        return new BasicReadStatusService(readStatusRepository, userRepository, channelRepository);
     }
 
     @Bean("jcfReadStatusService")
     public ReadStatusService jfcReadStatusService (
-            @Qualifier("jcfReadStatusRepository") ReadStatusRepository readStatusRepository
+            @Qualifier("jcfReadStatusRepository") ReadStatusRepository readStatusRepository,
+            @Qualifier("jcfUserRepository") UserRepository userRepository,
+            @Qualifier("jcfChannelRepository") ChannelRepository channelRepository
     ) {
-        return new BasicReadStatusService(readStatusRepository);
+        return new BasicReadStatusService(readStatusRepository, userRepository, channelRepository);
     }
 
     @Bean("fileBinaryContentService")

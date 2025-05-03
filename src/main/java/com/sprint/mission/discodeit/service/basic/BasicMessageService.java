@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.entity.Channel;
 import com.sprint.mission.discodeit.dto.entity.Message;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -56,8 +57,8 @@ public class BasicMessageService implements MessageService {
     public List<Message> getAllMessages() { return messageRepository.loadAll(); }
 
     @Override
-    public void updateMessage(UUID id, String content) {
-        messageRepository.update(id, content);
+    public void updateMessage(MessageUpdateRequest messageUpdateRequest) {
+        messageRepository.update(messageUpdateRequest.getMessageId(), messageUpdateRequest.getContent());
     }
 
     @Override

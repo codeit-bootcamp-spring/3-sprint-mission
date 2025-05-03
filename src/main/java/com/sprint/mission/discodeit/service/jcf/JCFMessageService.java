@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.dto.entity.Channel;
 import com.sprint.mission.discodeit.dto.entity.Message;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.*;
@@ -60,12 +61,17 @@ public class JCFMessageService  implements MessageService {
     }
 
     @Override
-    public void updateMessage(UUID id, String content) {
-        Message message = data.get(id);
-        if (message != null) {
-            message.update(content);
-        }
+    public void updateMessage(MessageUpdateRequest messageUpdateRequest) {
+
     }
+
+//    @Override
+//    public void updateMessage(UUID id, String content) {
+//        Message message = data.get(id);
+//        if (message != null) {
+//            message.update(content);
+//        }
+//    }
 
     @Override
     public void deleteMessage(UUID id) {

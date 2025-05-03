@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.dto.entity.Channel;
@@ -70,9 +71,9 @@ public class FileMessageService implements MessageService {
     public List<Message> getAllMessages() { return messageRepository.loadAll(); }
 
     @Override
-    public void updateMessage(UUID id, String content) {
+    public void updateMessage(MessageUpdateRequest messageUpdateRequest) {
         try {
-            messageRepository.update(id, content);
+            messageRepository.update(messageUpdateRequest.getMessageId(), messageUpdateRequest.getContent());
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }

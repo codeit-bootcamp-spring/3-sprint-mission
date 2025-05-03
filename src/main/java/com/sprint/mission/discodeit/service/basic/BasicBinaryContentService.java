@@ -7,4 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
+
+
 }

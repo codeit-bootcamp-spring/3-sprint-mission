@@ -71,9 +71,8 @@ public class TestScenario {
         createMessage();
         getAllMessages();
         getMessage();
-//        getChannelMessage();
-//        updateMessage();
-//        deleteMessage();
+        updateMessage();
+        deleteMessage();
     }
 
     private void createUser() {
@@ -295,14 +294,10 @@ public class TestScenario {
         System.out.println(messageService.getMessage(messages.get(1).getId()));
     }
 
-    private void getChannelMessage() {
-        System.out.println("\n[Message] channel1의 메시지 조회");
-        messageService.getMessagesByChannel(publicChannels.get(0).getId()).forEach(System.out::println);
-    }
-
     private void updateMessage() {
         System.out.println("\n[Message] 메시지 수정 (1번 메시지)");
-        messageService.updateMessage(messages.get(0).getId(), "Hello!");
+        MessageUpdateRequest messageUpdateRequest = new MessageUpdateRequest(messages.get(0).getId(), "Hello!");
+        messageService.updateMessage(messageUpdateRequest);
         System.out.println(messageService.getMessage(messages.get(0).getId()));
     }
 
