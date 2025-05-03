@@ -26,11 +26,7 @@ public class JcfMessageRepository implements MessageRepository {
 
   @Override
   public void delete(UUID messageId) {
-    Message msg = messageMap.remove(messageId);
-    if (msg != null) {
-      removeFromChannel(msg.getChannelId(), msg);
-      removeFromUser(msg.getSenderId(), msg);
-    }
+    messageMap.remove(messageId);
   }
 
   @Override
@@ -43,13 +39,13 @@ public class JcfMessageRepository implements MessageRepository {
     return userMessagesMap.getOrDefault(senderId, Collections.emptyList());
   }
 
-  @Override
-  public void removeFromChannel(UUID channelId, Message message) {
-    channelMessagesMap.getOrDefault(channelId, new ArrayList<>()).remove(message);
-  }
-
-  @Override
-  public void removeFromUser(UUID userId, Message message) {
-    userMessagesMap.getOrDefault(userId, new ArrayList<>()).remove(message);
-  }
+//  @Override
+//  public void removeFromChannel(UUID channelId, Message message) {
+//    channelMessagesMap.getOrDefault(channelId, new ArrayList<>()).remove(message);
+//  }
+//
+//  @Override
+//  public void removeFromUser(UUID userId, Message message) {
+//    userMessagesMap.getOrDefault(userId, new ArrayList<>()).remove(message);
+//  }
 }

@@ -23,7 +23,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public Channel createChannel(String channelName, User ownerUser) {
-    boolean isDuplicate = channelRepository.getAllChannels().stream()
+    boolean isDuplicate = channelRepository.findAll().stream()
         .anyMatch(c -> c.getChannelOwner().getId().equals(ownerUser.getId())
             && c.getChannelName().equals(channelName));
 
@@ -40,17 +40,17 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public Optional<Channel> getChannelById(UUID channelId) {
-    return channelRepository.getChannelById(channelId);
+    return channelRepository.findById(channelId);
   }
 
   @Override
   public List<Channel> getAllChannels() {
-    return channelRepository.getAllChannels();
+    return channelRepository.findAll();
   }
 
   @Override
   public void updateChannelName(UUID channelId, String newChannelName) {
-    Channel channel = channelRepository.getChannelById(channelId)
+    Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
 
     if (channel.getChannelName().equals(newChannelName)) {
@@ -58,7 +58,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     UUID ownerId = channel.getChannelOwner().getId();
-    boolean isDuplicate = channelRepository.getAllChannels().stream()
+    boolean isDuplicate = channelRepository.findAll().stream()
         .anyMatch(c -> c.getChannelOwner().getId().equals(ownerId)
             && c.getChannelName().equals(newChannelName));
 
@@ -77,7 +77,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public void addMember(UUID channelId, UUID userId) {
-    Channel channel = channelRepository.getChannelById(channelId)
+    Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널 ID입니다."));
     User user = userService.getUserById(userId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 ID입니다."));
@@ -88,7 +88,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public void removeMember(UUID channelId, UUID userId) {
-    Channel channel = channelRepository.getChannelById(channelId)
+    Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널 ID입니다."));
     User user = userService.getUserById(userId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 ID입니다."));
@@ -99,7 +99,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public List<User> getChannelMembers(UUID channelId) {
-    Channel channel = channelRepository.getChannelById(channelId)
+    Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널 ID입니다."));
     return new ArrayList<>(channel.getChannelUsers());
   }

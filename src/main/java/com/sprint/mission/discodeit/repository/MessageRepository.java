@@ -22,9 +22,9 @@ public interface MessageRepository {
   // 특정 유저가 보낸 모든 메시지를 조회
   List<Message> findBySenderId(UUID senderId);
 
-  // 특정 채널에서 메시지를 제거
-  void removeFromChannel(UUID channelId, Message message);
-
-  // 특정 유저의 메시지 목록에서 메시지를 제거
-  void removeFromUser(UUID userId, Message message);
+//  // 특정 채널에서 메시지를 제거
+//  void removeFromChannel(UUID channelId, Message message);
+//
+//  // 특정 유저의 메시지 목록에서 메시지를 제거
+//  void removeFromUser(UUID userId, Message message);
 }

@@ -114,8 +114,8 @@ public class BasicMessageService implements MessageService {
     }
 
     messageRepository.delete(messageId);
-    messageRepository.removeFromChannel(msg.getChannelId(), msg);
-    messageRepository.removeFromUser(senderId, msg);
+//    messageRepository.removeFromChannel(msg.getChannelId(), msg);
+//    messageRepository.removeFromUser(senderId, msg);
   }
 
   @Override

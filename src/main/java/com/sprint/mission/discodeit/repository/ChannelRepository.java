@@ -11,10 +11,10 @@ public interface ChannelRepository {
   Channel save(Channel channel);
 
   // 2. 채널 단건 조회
-  Optional<Channel> getChannelById(UUID channelId);
+  Optional<Channel> findById(UUID channelId);
 
   // 3. 채널 전체 조회
-  List<Channel> getAllChannels();
+  List<Channel> findAll();
 
   // 4. 채널 이름 수정
   void update(Channel channel);

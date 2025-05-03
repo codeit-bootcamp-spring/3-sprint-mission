@@ -15,12 +15,12 @@ public class JcfChannelRepository implements ChannelRepository {
   }
 
   @Override
-  public Optional<Channel> getChannelById(UUID channelId) {
+  public Optional<Channel> findById(UUID channelId) {
     return Optional.ofNullable(channelMap.get(channelId));
   }
 
   @Override
-  public List<Channel> getAllChannels() {
+  public List<Channel> findAll() {
     return new ArrayList<>(channelMap.values());
   }
 

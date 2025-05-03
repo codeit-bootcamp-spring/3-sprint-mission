@@ -13,26 +13,28 @@ public class JcfUserRepository implements UserRepository {
   }
 
   @Override
-  public void save(User user) {
+  public User save(User user) {
     userMap.put(user.getId(), user);
+    return user;
   }
 
   @Override
-  public Optional<User> getUserById(UUID id) {
+  public Optional<User> findById(UUID id) {
     return Optional.ofNullable(userMap.get(id));
   }
 
   @Override
-  public List<User> getAllUsers() {
+  public List<User> findAll() {
     return new ArrayList<>(userMap.values());
   }
 
   @Override
-  public void update(User user) {
+  public User update(User user) {
     if (!userMap.containsKey(user.getId())) {
       throw new IllegalArgumentException("해당 ID의 유저가 존재하지 않습니다: " + user.getId());
     }
     userMap.put(user.getId(), user);
+    return user;
   }
 
   @Override

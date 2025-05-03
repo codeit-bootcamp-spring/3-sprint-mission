@@ -36,16 +36,16 @@ public class BasicUserService implements UserService {
 
   @Override
   public Optional<User> getUserById(UUID id) {
-    return userRepository.getUserById(id);
+    return userRepository.findById(id);
   }
 
   @Override
   public List<User> getAllUsers() {
-    return userRepository.getAllUsers();
+    return userRepository.findAll();
   }
 
   public void updateUserName(UUID id, String name) {
-    User user = userRepository.getUserById(id)
+    User user = userRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저를 찾을 수 없습니다: " + id));
 
     user.updateName(name);
@@ -53,7 +53,7 @@ public class BasicUserService implements UserService {
   }
 
   public void updateUserEmail(UUID id, String email) {
-    User user = userRepository.getUserById(id)
+    User user = userRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저를 찾을 수 없습니다: " + id));
 
     if (user.getEmail().equalsIgnoreCase(email)) {
@@ -70,7 +70,7 @@ public class BasicUserService implements UserService {
 
   @Override
   public void deleteUser(UUID id) {
-    User user = userRepository.getUserById(id)
+    User user = userRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저를 찾을 수 없습니다: " + id));
 
     if (channelService != null) {
@@ -82,7 +82,7 @@ public class BasicUserService implements UserService {
   }
 
   private boolean isEmailDuplicate(String email) {
-    return userRepository.getAllUsers().stream()
+    return userRepository.findAll().stream()
         .anyMatch(user -> user.getEmail().equalsIgnoreCase(email));
   }
 }
