@@ -26,6 +26,9 @@ public class User implements Serializable {
     @Getter
     private String password;
 
+    @Getter
+    private UUID profileId;
+
     public User(String username, String email, String password) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
