@@ -8,13 +8,12 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.fixture.ChannelFixture;
-import com.sprint.mission.discodeit.fixture.FileFixture;
 import com.sprint.mission.discodeit.fixture.MessageFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.testutil.MemoryUtil;
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -22,10 +21,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -36,29 +35,14 @@ class FileStorageImplTest {
   private File storageFile;
   private File invalidFile;
 
+  @TempDir
+  Path tempDir;
+
   @BeforeEach
-  void setUp() throws IOException {
-    storageFile = FileFixture.createTestFile("test-storage.ser", true);
-    invalidFile = FileFixture.createTestFile("invalid_file.ser", true);
-    if (storageFile.exists()) {
-      storageFile.delete();
-    }
-    if (invalidFile.exists()) {
-      invalidFile.delete();
-    }
-
+  void setUp() {
+    storageFile = tempDir.resolve("test-storage.ser").toFile();
+    invalidFile = tempDir.resolve("invalid_file.ser").toFile();
     fileStorage = new FileStorageImpl(storageFile.getPath());
-  }
-
-  @AfterEach
-  void tearDown() {
-    if (storageFile.exists()) {
-      storageFile.delete();
-    }
-    if (invalidFile.exists()) {
-      invalidFile.delete();
-    }
-
   }
 
   private Message createDefaultTestMessage() {
@@ -80,17 +64,15 @@ class FileStorageImplTest {
 
   @Test
   void shouldHandleConcurrentAccess() throws Exception {
-    // given
     int threadCount = 10;
-    List positions = new CopyOnWriteArrayList<>();
-    List expectedUsers = IntStream.range(0, threadCount)
-        .mapToObj(i -> UserFixture.createValidUser()).toList(); // 예상 저장 유저 객체 리스트
+    List<Long> positions = new CopyOnWriteArrayList<>();
+    List<User> expectedUsers = IntStream.range(0, threadCount)
+        .mapToObj(i -> UserFixture.createValidUser()).toList();
 
-    // when
     ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
     IntStream.range(0, threadCount).forEach(i -> {
       executorService.submit(() -> {
-        User user = (User) expectedUsers.get(i); // 각 스레드가 고유한 기본 유저를 가져옴
+        User user = expectedUsers.get(i);
         long position = fileStorage.saveObject(user);
         positions.add(position);
       });
@@ -98,29 +80,24 @@ class FileStorageImplTest {
 
     executorService.shutdown();
     while (!executorService.isTerminated()) {
-      // 스레드가 종료될 때까지 대기
+      // 대기
     }
 
-    // then
     List<Object> storedUsers = fileStorage.readAll();
     assertAll(
         () -> assertThat(positions).hasSize(threadCount),
         () -> assertThat(storedUsers).hasSize(threadCount),
         () -> assertThat(storedUsers).containsExactlyInAnyOrderElementsOf(expectedUsers)
     );
-
   }
 
   @Test
   void saveObjectShouldSaveToFileAndReturnPosition() {
-    // given
     Serializable obj = createDefaultTestMessage();
     long position = fileStorage.saveObject(obj);
 
-    // when
     List<Object> storedObjects = fileStorage.readAll();
 
-    // then
     assertAll(
         () -> assertThat(position).isEqualTo(0L),
         () -> assertThat(storedObjects).hasSize(1),
@@ -130,31 +107,25 @@ class FileStorageImplTest {
 
   @Test
   void readObjectShouldReturnSavedObject() {
-    // given
     Serializable obj1 = createDefaultTestMessage();
     Serializable obj2 = createCustomTestMessage("Custom Message");
     long position1 = fileStorage.saveObject(obj1);
     long position2 = fileStorage.saveObject(obj2);
 
-    // when
     Object retrievedObj = fileStorage.readObject(position2);
 
-    // then
     assertThat(retrievedObj).isEqualTo(obj2);
   }
 
   @Test
   void updateSingleObjectShouldReplaceSamePosition() {
-    // given
     Serializable originalMessage = createDefaultTestMessage();
     Serializable updatedMessage = createCustomTestMessage("Updated Message");
 
-    // when
     long initialPosition = fileStorage.saveObject(originalMessage);
     fileStorage.updateObject(initialPosition, updatedMessage);
     List<Object> storedObjects = fileStorage.readAll();
 
-    // then
     assertAll(
         () -> assertThat(storedObjects).hasSize(1),
         () -> assertThat(storedObjects.get(0)).isEqualTo(updatedMessage),
@@ -166,45 +137,32 @@ class FileStorageImplTest {
   void updateObjectInMultipleShouldPreserveOthers() {
     MemoryUtil.logMemoryUsage("Before Operation");
 
-    // given
     Serializable firstMessage = createDefaultTestMessage();
     Serializable secondMessage = createCustomTestMessage("Second Message");
     Serializable updatedMessage = createCustomTestMessage("Updated First Message");
 
-    // when
     long firstPosition = fileStorage.saveObject(firstMessage);
     long secondPosition = fileStorage.saveObject(secondMessage);
     fileStorage.updateObject(firstPosition, updatedMessage);
     List<Object> storedObjects = fileStorage.readAll();
 
-    // then
     assertAll(
-        () -> assertThat(storedObjects)
-            .as("저장된 전체 객체 수는 2개여야 한다.")
-            .hasSize(2),
-        () -> assertThat(storedObjects.get(0))
-            .as("삭제하며 앞당기므로 기존 두 번째의 객체가 조회돼야 한다.")
-            .isEqualTo(secondMessage),
-        () -> assertThat(storedObjects.get(1))
-            .as("수정된 객체는 파일의 끝에 삽입된다.")
-            .isEqualTo(updatedMessage)
+        () -> assertThat(storedObjects).hasSize(2),
+        () -> assertThat(storedObjects.get(0)).isEqualTo(secondMessage),
+        () -> assertThat(storedObjects.get(1)).isEqualTo(updatedMessage)
     );
   }
 
-
   @Test
   void optimizeShouldReorganizeFileContents() {
-    // given
     Serializable obj1 = createDefaultTestMessage();
     Serializable obj2 = createCustomTestMessage("Another Content");
     fileStorage.saveObject(obj1);
     fileStorage.saveObject(obj2);
 
-    // when
     fileStorage.optimize();
     List<Object> storedObjects = fileStorage.readAll();
 
-    // then
     assertAll(
         () -> assertThat(storedObjects).hasSize(2),
         () -> assertThat(storedObjects.get(0)).isEqualTo(obj1),
@@ -213,8 +171,7 @@ class FileStorageImplTest {
   }
 
   @Test
-  void shouldThrowExceptionIfFileNotFound() throws IOException {
-    // when & then
+  void shouldThrowExceptionIfFileNotFound() {
     try {
       FileStorage invalidStorage = new FileStorageImpl(invalidFile.getPath());
       invalidStorage.readAll();
@@ -227,20 +184,17 @@ class FileStorageImplTest {
   @MethodSource("provideMessages")
   @DisplayName("여러 객체 저장 후 모든 반환 위치와 저장 상태 확인")
   void saveMultipleObjectsAndVerify(List<String> messageContents) {
-    // given
     List<Message> objects = messageContents.stream()
         .map(content -> MessageFixture.createCustomMessage(content,
             UserFixture.createValidUser().getId(), ChannelFixture.createValidChannel()))
         .toList();
 
-    // when
     List<Long> positions = objects.stream()
         .map(fileStorage::saveObject)
         .toList();
 
     List<Object> storedObjects = fileStorage.readAll();
 
-    // then
     assertAll(
         () -> assertThat(positions).hasSize(objects.size()),
         () -> assertThat(storedObjects).containsAll(objects),
