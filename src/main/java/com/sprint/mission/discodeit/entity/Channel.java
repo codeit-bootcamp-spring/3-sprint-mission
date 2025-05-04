@@ -17,23 +17,37 @@ public class Channel implements Serializable {
     private final Instant createdAt;
     private Instant updatedAt;
     private String channelName;
+    private String description;
+    private ChannelType type;
     private final Set<UUID> userIds = new HashSet<>();
     private final List<UUID> messageIds = new ArrayList<>();
 
-    public Channel(String channelName) {
+    public Channel(String channelName, String description, ChannelType type) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = createdAt;
         this.channelName = channelName;
+        this.description = description;
+        this.type = type;
     }
 
     public void updateTime() {
         this.updatedAt = Instant.now();
     }
 
-    public void updateChannelName(String channelName) {
-        this.channelName = channelName;
-        updateTime();
+    public void updateChannel(String channelName, String description) {
+        boolean anyValueUpdated = false;
+        if (channelName != null && !channelName.equals(this.channelName)) {
+            this.channelName = channelName;
+            anyValueUpdated = true;
+        }
+        if (description != null && !description.equals(this.description)) {
+            this.description = description;
+            anyValueUpdated = true;
+        }
+        if (anyValueUpdated) {
+            updateTime();
+        }
     }
 
     public void addUser(UUID userId) {
@@ -50,6 +64,8 @@ public class Channel implements Serializable {
     public String toString() {
         return "Channel{" +
                 "channelName='" + channelName + '\'' +
+                ", type=" + type +
+                ",description='" + description + '\'' +
                 ", userIds=" + userIds +
                 ", messageIds=" + messageIds +
                 ", createdAt=" + Date.from(createdAt) +
