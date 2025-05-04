@@ -21,8 +21,8 @@ import java.util.UUID;
 @Getter
 public class Channel extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
+    private final ChannelType type;
     private String name;
-    private ChannelType type;
     private String description;
 
     public Channel() {
