@@ -32,7 +32,7 @@ public class BasicChannelService implements ChannelService {
 
 
     @Override
-    public void create(PrivateChannelCreateRequest privateChannelCreateRequest) {
+    public Channel create(PrivateChannelCreateRequest privateChannelCreateRequest) {
         // 유효성 검사
         if (privateChannelCreateRequest.getChannelType() != ChannelType.PRIVATE) {
             throw new IllegalArgumentException("채널 타입이 PRIVATE이 아닙니다");
@@ -58,10 +58,12 @@ public class BasicChannelService implements ChannelService {
             );
             readStatusRepository.save(readStatus);
         }
+
+        return privateChannel;
     }
 
     @Override
-    public void create(PublicChannelCreateRequest publicChannelCreateRequest) {
+    public Channel create(PublicChannelCreateRequest publicChannelCreateRequest) {
         // 유효성 검사
         if (publicChannelCreateRequest.getChannelType() != ChannelType.PUBLIC) {
             throw new IllegalArgumentException("채널 타입이 PUBLIC이 아닙니다");
@@ -74,6 +76,8 @@ public class BasicChannelService implements ChannelService {
                 publicChannelCreateRequest.getDescription()
         );
         channelRepository.save(publicChannel);
+
+        return publicChannel;
     }
 
     @Override
