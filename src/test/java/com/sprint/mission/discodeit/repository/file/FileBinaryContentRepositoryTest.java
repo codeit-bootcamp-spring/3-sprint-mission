@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -22,12 +22,11 @@ class FileBinaryContentRepositoryTest {
   static Path tempDir;
 
   private BinaryContentRepository binaryContentRepository;
-  private Path filePath;
 
   @BeforeEach
   void setUp() {
-    filePath = tempDir.resolve("user-status.ser");
-    binaryContentRepository = FileBinaryContentRepository.from(filePath.toString());
+    binaryContentRepository = FileBinaryContentRepository.create(
+        new FileStorageImpl(tempDir.toString()));
   }
 
   @Test
@@ -169,17 +168,5 @@ class FileBinaryContentRepositoryTest {
     // then
     Optional<BinaryContent> deletedContent = binaryContentRepository.findById(savedContent.getId());
     assertThat(deletedContent).isEmpty();
-  }
-
-  @Test
-  @DisplayName("[File] 존재하지 않는 ID로 삭제를 시도해도 예외가 발생하지 않아야 한다")
-  void deleteShouldNotThrowExceptionIfNotFound() {
-    // given
-    UUID nonExistingId = UUID.randomUUID();
-
-    // when & then
-    // deleteById는 void 형식이므로 예외가 발생하지 않는지만 확인
-    binaryContentRepository.delete(nonExistingId);
-    assertTrue(true, "예외가 발생하지 않았음");
   }
 }

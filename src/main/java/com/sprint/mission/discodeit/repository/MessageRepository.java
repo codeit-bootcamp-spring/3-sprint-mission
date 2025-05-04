@@ -8,6 +8,13 @@ import java.util.UUID;
 public interface MessageRepository {
 
   /**
+   * 메시지 삽입
+   *
+   * @param message Message
+   */
+  void insert(Message message);
+
+  /**
    * 메시지 객체의 고유 아이디로 조회
    *
    * @param id UUID
@@ -31,12 +38,19 @@ public interface MessageRepository {
   List<Message> findAllByChannelId(UUID channelId);
 
   /**
-   * 메시지 저장
+   * 메시지 저장 또는 업데이트
    *
    * @param message Message
    * @return Message
    */
   Message save(Message message);
+
+  /**
+   * 메시지 업데이트 (존재하지 않으면 예외)
+   *
+   * @param message Message
+   */
+  void update(Message message);
 
   /**
    * 메시지 객체의 고유 아이디로 삭제

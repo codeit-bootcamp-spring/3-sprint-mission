@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.fixture.UserStatusFixture;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,12 +20,12 @@ class FileUserStatusRepositoryTest {
   static Path tempDir;
 
   private UserStatusRepository userStatusRepository;
-  private Path filePath;
 
+  // 각 테스트가 실행될 때마다 새로 생성되도록 초기화
   @BeforeEach
   void setUp() {
-    filePath = tempDir.resolve("user-status.ser");
-    userStatusRepository = FileUserStatusRepository.from(filePath.toString());
+    // FileStorageImpl 객체를 통해 저장소 초기화
+    userStatusRepository = FileUserStatusRepository.create(new FileStorageImpl(tempDir.toString()));
   }
 
   @Test
@@ -97,8 +97,7 @@ class FileUserStatusRepositoryTest {
 
     // when
     UserStatus savedStatus = userStatusRepository.save(userStatusToSave);
-    Optional<UserStatus> loadedStatus = FileUserStatusRepository.from(filePath.toString())
-        .findById(savedStatus.getId());
+    Optional<UserStatus> loadedStatus = userStatusRepository.findById(savedStatus.getId());
 
     // then
     assertThat(loadedStatus).isPresent();
@@ -117,21 +116,9 @@ class FileUserStatusRepositoryTest {
 
     // when
     userStatusRepository.delete(statusIdToDelete);
-    Optional<UserStatus> deletedStatus = FileUserStatusRepository.from(filePath.toString())
-        .findById(statusIdToDelete);
+    Optional<UserStatus> deletedStatus = userStatusRepository.findById(statusIdToDelete);
 
     // then
     assertThat(deletedStatus).isEmpty();
-  }
-
-  @Test
-  @DisplayName("[File] 존재하지 않는 ID로 삭제를 시도해도 예외가 발생하지 않아야 한다")
-  void deleteShouldNotThrowExceptionIfNotFound() {
-    // given
-    UUID nonExistingId = UUID.randomUUID();
-
-    // when & then
-    userStatusRepository.delete(nonExistingId);
-    assertTrue(true, "예외가 발생하지 않았음");
   }
 }

@@ -1,49 +1,51 @@
 package com.sprint.mission.discodeit.repository.storage;
 
 import java.util.List;
+import java.util.UUID;
 
+/**
+ * 객체별 파일 저장소 인터페이스.
+ * <p>
+ * 각 객체를 개별 파일로 분리해 저장 및 관리하는 기능을 제공한다. 파일명은 객체의 고유 식별자(UUID 등)를 기반으로 결정되며, 각 파일은 독립적으로 존재하여 동시성 문제를
+ * 최소화할 수 있다.
+ */
 public interface FileStorage {
 
   /**
-   * 객체를 파일에 저장하고 저장된 위치(position)를 반환한다.
+   * 객체를 파일에 저장한다. 저장 시 객체의 ID (UUID)를 파일명으로 사용한다.
    *
+   * @param id  저장할 객체의 고유 식별자 (파일명을 결정하는 ID).
    * @param obj 저장할 객체 (직렬화 가능해야 함).
-   * @return 객체가 저장된 파일상의 위치를 나타내는 {@code long}.
    */
-  long saveObject(Object obj);
+  void saveObject(UUID id, Object obj);
 
   /**
-   * 파일에서 특정 위치(position)에 저장된 객체를 읽어온다.
+   * 지정한 ID에 해당하는 파일에서 객체를 읽어온다.
    *
-   * @param position 파일 내 객체가 저장된 위치.
-   * @return 지정된 위치에서 읽어온 객체. 위치가 유효하지 않으면 예외가 발생한다.
+   * @param id 객체를 식별하는 고유 ID (파일명으로 사용됨).
+   * @return 파일에서 읽어온 객체.
    */
-  Object readObject(Long position);
+  Object readObject(UUID id);
 
   /**
-   * 파일의 특정 위치(position)에 저장된 객체를 새로운 객체로 수정한다.
+   * 지정한 ID에 해당하는 파일의 객체를 새 객체로 수정(덮어쓰기)한다.
    *
-   * @param position 수정할 객체의 파일 내 위치.
-   * @param obj      새로 저장할 객체 (직렬화 가능해야 함).
+   * @param id  수정할 객체의 고유 ID (파일명으로 사용됨).
+   * @param obj 새로 저장할 객체 (직렬화 가능해야 함).
    */
-  void updateObject(Long position, Object obj);
+  void updateObject(UUID id, Object obj);
 
   /**
-   * 파일의 특정 위치(position)에 저장된 객체를 삭제한다.
+   * 지정한 ID에 해당하는 파일을 삭제한다.
    *
-   * @param position 삭제할 객체의 파일 내 위치.
+   * @param id 삭제할 객체의 고유 ID (파일명으로 사용됨).
    */
-  void deleteObject(Long position);
+  void deleteObject(UUID id);
 
   /**
-   * 파일에 저장된 모든 객체를 읽어온다.
+   * 현재 저장소 내의 모든 객체를 읽어온다.
    *
-   * @return 파일에 저장된 모든 객체의 리스트.
+   * @return 모든 객체의 리스트.
    */
   List<Object> readAll();
-
-  /**
-   * 파일 저장소의 단편화를 방지하기 위해 최적화를 수행한다. 이는 파일 내 객체를 재배치하거나 비어 있는 공간을 정리하는 등의 작업을 포함할 수 있다.
-   */
-  void optimize();
 }

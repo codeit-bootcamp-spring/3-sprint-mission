@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.config.RepositoryProperties;
+import com.sprint.mission.discodeit.service.AuthService;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.UserStatusService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -12,9 +14,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class DiscodeitApplication {
 
   public static void main(String[] args) {
-    java.util.logging.LogManager.getLogManager().reset();
-//    LogManager.getLogManager();
-
     ConfigurableApplicationContext context = SpringApplication.run(DiscodeitApplication.class,
         args);
 
@@ -22,10 +21,12 @@ public class DiscodeitApplication {
     UserService userService = context.getBean(UserService.class);
     ChannelService channelService = context.getBean(ChannelService.class);
     MessageService messageService = context.getBean(MessageService.class);
-    RepositoryProperties props = context.getBean(RepositoryProperties.class);
+    UserStatusService userStatusService = context.getBean(UserStatusService.class);
+    AuthService authService = context.getBean(AuthService.class);
+    BinaryContentService binaryContentService = context.getBean(BinaryContentService.class);
 
     // 테스트 실행
     TestInitializer.initializeAndTest(userService, channelService, messageService,
-        props);
+        userStatusService, authService, binaryContentService);
   }
 }

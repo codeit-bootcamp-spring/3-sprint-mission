@@ -3,49 +3,39 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.storage.FileStorage;
-import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
-import com.sprint.mission.discodeit.repository.storage.IndexManager;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public class FileUserRepository implements UserRepository {
 
-  private static final String DEFAULT_FILE_PATH = "data/users.ser";
-  private static final String DEFAULT_INDEX_PATH = "data/users.ser.idx";
-
   private final FileStorage fileStorage;
-  private final IndexManager indexManager;
 
-  private FileUserRepository() {
-    try {
-      this.fileStorage = new FileStorageImpl(DEFAULT_FILE_PATH);
-      this.indexManager = new IndexManager(DEFAULT_INDEX_PATH);
-    } catch (Exception e) {
-      throw new RuntimeException("FileUserRepository 초기화 실패: " + e.getMessage(), e);
+  private FileUserRepository(FileStorage fileStorage) {
+    this.fileStorage = fileStorage;
+  }
+
+  public static FileUserRepository create(FileStorage fileStorage) {
+    return new FileUserRepository(fileStorage);
+  }
+
+  @Override
+  public void insert(User user) {
+    Optional<User> existing = findById(user.getId());
+    if (existing.isPresent()) {
+      throw new IllegalArgumentException("이미 존재하는 사용자입니다. [ID: " + user.getId() + "]");
     }
-  }
-
-  private FileUserRepository(String filePath) {
-    this.fileStorage = new FileStorageImpl(filePath);
-    this.indexManager = new IndexManager(filePath + ".idx");
-  }
-
-  public static FileUserRepository from(String filePath) {
-    return new FileUserRepository(filePath);
-  }
-
-  public static FileUserRepository createDefault() {
-    return new FileUserRepository();
+    fileStorage.saveObject(user.getId(), user);
   }
 
   @Override
   public Optional<User> findById(UUID id) {
-    Long position = indexManager.getPosition(id);
-    if (position == null) {
+    try {
+      return Optional.of((User) fileStorage.readObject(id));
+    } catch (Exception e) {
       return Optional.empty();
     }
-    return Optional.ofNullable((User) fileStorage.readObject(position));
   }
 
   @Override
@@ -58,7 +48,8 @@ public class FileUserRepository implements UserRepository {
   @Override
   public Optional<User> findByName(String name) {
     return findAll().stream()
-        .filter(user -> user.getName().equals(name)).findFirst();
+        .filter(user -> user.getName().equals(name))
+        .findFirst();
   }
 
   @Override
@@ -70,33 +61,38 @@ public class FileUserRepository implements UserRepository {
 
   @Override
   public List<User> findAll() {
-    return fileStorage.readAll().stream()
-        .map(obj -> (User) obj)
-        .toList();
+    List<Object> allObjects = fileStorage.readAll();
+    List<User> users = new ArrayList<>();
+    for (Object obj : allObjects) {
+      if (obj instanceof User) {
+        users.add((User) obj);
+      }
+    }
+    return users;
   }
 
   @Override
   public User save(User user) {
-    Long existingPosition = indexManager.getPosition(user.getId());
-    if (existingPosition != null) {
-      // 기존 사용자 정보 업데이트
-      fileStorage.updateObject(existingPosition, user);
+    Optional<User> existing = findById(user.getId());
+    if (existing.isPresent()) {
+      fileStorage.updateObject(user.getId(), user);
     } else {
-      // 새로운 사용자 저장
-      long newPosition = fileStorage.saveObject(user);
-      indexManager.addEntry(user.getId(), newPosition);
-      indexManager.saveIndex();
+      fileStorage.saveObject(user.getId(), user);
     }
     return user;
   }
 
   @Override
-  public void delete(UUID id) {
-    Long position = indexManager.getPosition(id);
-    if (position != null) {
-      fileStorage.deleteObject(position);
-      indexManager.removeEntry(id);
-      indexManager.saveIndex();
+  public void update(User user) {
+    Optional<User> existing = findById(user.getId());
+    if (existing.isEmpty()) {
+      throw new IllegalArgumentException("존재하지 않는 사용자입니다. [ID: " + user.getId() + "]");
     }
+    fileStorage.updateObject(user.getId(), user);
+  }
+
+  @Override
+  public void delete(UUID id) {
+    fileStorage.deleteObject(id);
   }
 }

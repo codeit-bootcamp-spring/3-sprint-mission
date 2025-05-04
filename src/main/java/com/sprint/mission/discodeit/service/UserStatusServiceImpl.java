@@ -12,12 +12,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class UserStatusServiceImpl implements UserStatusService {
 
+  private static final Logger log = LogManager.getLogger(UserStatusServiceImpl.class);
   private final UserStatusRepository userStatusRepository;
   private final UserRepository userRepository;
 

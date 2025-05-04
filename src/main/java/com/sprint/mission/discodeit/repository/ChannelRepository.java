@@ -8,6 +8,13 @@ import java.util.UUID;
 public interface ChannelRepository {
 
   /**
+   * 채널 삽입
+   *
+   * @param channel Channel
+   */
+  void insert(Channel channel);
+
+  /**
    * 채널 객체의 고유 아이디로 조회
    *
    * @param id UUID
@@ -23,12 +30,19 @@ public interface ChannelRepository {
   List<Channel> findAll();
 
   /**
-   * 채널 저장
+   * 채널 저장 또는 업데이트
    *
    * @param channel Channel
    * @return Channel
    */
   Channel save(Channel channel);
+
+  /**
+   * 채널 업데이트 (존재하지 않으면 예외)
+   *
+   * @param channel Channel
+   */
+  void update(Channel channel);
 
   /**
    * 채널 객체의 고유 아이디로 삭제

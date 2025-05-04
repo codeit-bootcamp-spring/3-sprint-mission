@@ -8,7 +8,14 @@ import java.util.UUID;
 public interface ReadStatusRepository {
 
   /**
-   * ReasStatus id로 조회
+   * ReadStatus 삽입 (이미 존재 시 예외)
+   *
+   * @param readStatus ReadStatus
+   */
+  void insert(ReadStatus readStatus);
+
+  /**
+   * ReadStatus id로 조회
    *
    * @param id UUID
    * @return Optional<ReadStatus>
@@ -41,19 +48,26 @@ public interface ReadStatusRepository {
   List<ReadStatus> findByChannelId(UUID channelId);
 
   /**
-   * 모든 ReadSatatus 조회
+   * 모든 ReadStatus 조회
    *
    * @return List<ReadStatus>
    */
   List<ReadStatus> findAll();
 
   /**
-   * ReadStatus 저장
+   * ReadStatus 저장 또는 업데이트
    *
    * @param readStatus ReadStatus
    * @return ReadStatus
    */
   ReadStatus save(ReadStatus readStatus);
+
+  /**
+   * ReadStatus 업데이트 (존재하지 않으면 예외)
+   *
+   * @param readStatus ReadStatus
+   */
+  void update(ReadStatus readStatus);
 
   /**
    * ReadStatus id로 삭제

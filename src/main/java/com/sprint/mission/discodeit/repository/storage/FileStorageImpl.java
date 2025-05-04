@@ -1,160 +1,101 @@
 package com.sprint.mission.discodeit.repository.storage;
 
-import com.sprint.mission.discodeit.common.exception.FileException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class FileStorageImpl implements FileStorage {
 
-  private final File file;
-  private final List<Long> positions = new ArrayList<>();
+  private final File directory;
 
-  public FileStorageImpl(String filePath) throws FileException {
-    this.file = new File(filePath);
-    try {
-      // 폴더가 없으면 생성
-      if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
-        throw FileException.writeError(file.getParentFile(),
-            new IOException("상위 디렉토리를 생성할 수 없습니다."));
+  public FileStorageImpl(String directoryPath) {
+    this.directory = new File(directoryPath);
+    if (!directory.exists()) {
+      if (!directory.mkdirs()) {
+        throw new RuntimeException("디렉토리를 생성할 수 없습니다: " + directoryPath);
       }
-      if (!file.exists()) {
-        file.createNewFile();
-      }
-    } catch (IOException e) {
-      throw FileException.writeError(new File(filePath), e);
+    } else if (!directory.isDirectory()) {
+      throw new RuntimeException("지정된 경로가 디렉토리가 아닙니다: " + directoryPath);
+    }
+  }
+
+  private File resolveFile(UUID id) {
+    return new File(directory, id.toString() + ".ser");
+  }
+
+  @Override
+  public void saveObject(UUID id, Object obj) {
+    File targetFile = resolveFile(id);
+    if (targetFile.exists()) {
+      throw new IllegalArgumentException(
+          "파일이 이미 존재합니다. updateObject를 사용하세요: " + targetFile.getName());
+    }
+    writeObjectToFile(targetFile, obj);
+  }
+
+  @Override
+  public Object readObject(UUID id) {
+    File targetFile = resolveFile(id);
+    if (!targetFile.exists()) {
+      throw new RuntimeException("파일이 존재하지 않습니다: " + targetFile.getName());
+    }
+    return readObjectFromFile(targetFile);
+  }
+
+  @Override
+  public void updateObject(UUID id, Object obj) {
+    File targetFile = resolveFile(id);
+    if (!targetFile.exists()) {
+      throw new RuntimeException("수정할 파일이 존재하지 않습니다: " + targetFile.getName());
+    }
+    writeObjectToFile(targetFile, obj);
+  }
+
+  @Override
+  public void deleteObject(UUID id) {
+    File targetFile = resolveFile(id);
+    if (!targetFile.exists()) {
+      throw new RuntimeException("삭제할 파일이 존재하지 않습니다: " + targetFile.getName());
+    }
+    if (!targetFile.delete()) {
+      throw new RuntimeException("파일 삭제에 실패했습니다: " + targetFile.getName());
     }
   }
 
   @Override
-  public synchronized long saveObject(Object obj) {
-    try (RandomAccessFile raf = new RandomAccessFile(file, "rw");
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos)) {
-
-      oos.writeObject(obj);
-      oos.flush();
-      byte[] serializedObject = baos.toByteArray();
-
-      raf.seek(file.length());
-      long position = raf.getFilePointer();
-      raf.writeInt(serializedObject.length);
-      raf.write(serializedObject);
-
-      positions.add(position);
-      return position;
-    } catch (IOException e) {
-      throw FileException.writeError(file, e);
-    }
-  }
-
-  @Override
-  public Object readObject(Long position) {
-    try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
-      raf.seek(position);
-      int length = raf.readInt();
-      byte[] serializedObject = new byte[length];
-      raf.readFully(serializedObject);
-
-      try (ObjectInputStream ois = new ObjectInputStream(
-          new ByteArrayInputStream(serializedObject))) {
-        return ois.readObject();
-      }
-    } catch (IOException | ClassNotFoundException e) {
-      throw FileException.readError(file, e);
-    }
-  }
-
-  @Override
-  public void updateObject(Long position, Object obj) {
-    deleteObject(position);
-    long newPosition = saveObject(obj);
-    positions.add(newPosition);
-  }
-
-  @Override
-  public void deleteObject(Long position) {
-    // 성능과 메모리 효율적이지 않을 수 있지만 파일에서 객체를 삭제하고 빈 공간을 제거하며 앞 당긴다.
-    // TODO: 실행마다 빈 공간을 제거하며 앞 당기 않고 삭제된 객체의 위치를 빈 공간으로 변경하고 주기적인 트리거에 의한 optimize를 통해 개선한다.
-    try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
-      if (!positions.contains(position)) {
-        throw FileException.invalidPosition(file, position);
-      }
-
-      long nextPositionIndex = positions.indexOf(position) + 1;
-      long nextPosition = (nextPositionIndex < positions.size())
-          ? positions.get((int) nextPositionIndex)
-          : file.length(); // 다음 데이터 위치
-
-      long lengthToShift = raf.length() - nextPosition;
-
-      positions.remove(position);
-
-      // 뒤에 나머지 데이터를 앞으로 이동
-      if (lengthToShift > 0) {
-        byte[] remainingData = new byte[(int) lengthToShift];
-        raf.seek(nextPosition);
-        raf.readFully(remainingData);
-        raf.seek(position); // 삭제된 위치로 이동
-        raf.write(remainingData);
-      }
-
-      // 파일의 길이 줄이기
-      raf.setLength(raf.length() - (nextPosition - position));
-    } catch (IOException e) {
-      throw FileException.deleteError(file, position, e);
-    }
-
-  }
-
-  @Override
-  public synchronized List<Object> readAll() {
+  public List<Object> readAll() {
     List<Object> objects = new ArrayList<>();
-    try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
-      positions.clear();
-      while (raf.getFilePointer() < file.length()) {
-        long position = raf.getFilePointer();
-        positions.add(position);
-
-        int length = raf.readInt();
-        if (length <= 0 || (raf.getFilePointer() + length > file.length())) {
-          // 빈 공간이나 잘못된 데이터를 건너뜀
-          raf.seek(raf.getFilePointer() + Math.max(length, 0));
-          continue;
-        }
-
-        byte[] serializedObject = new byte[length];
-        raf.readFully(serializedObject);
-        try (ObjectInputStream ois = new ObjectInputStream(
-            new ByteArrayInputStream(serializedObject))) {
-          objects.add(ois.readObject());
+    File[] files = directory.listFiles((dir, name) -> name.endsWith(".ser"));
+    if (files != null) {
+      for (File file : files) {
+        Object obj = readObjectFromFile(file);
+        if (obj != null) {
+          objects.add(obj);
         }
       }
-    } catch (IOException | ClassNotFoundException e) {
-      throw FileException.readError(file, e);
     }
     return objects;
   }
 
-  @Override
-  public void optimize() {
-    try {
-      List<Object> objects = readAll();
-      try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
-        positions.clear();
-        raf.setLength(0);
-        for (Object obj : objects) {
-          saveObject(obj);
-        }
-      }
-    } catch (Exception e) {
-      throw FileException.optimizationError(file, e);
+  private void writeObjectToFile(File file, Object obj) {
+    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+      oos.writeObject(obj);
+    } catch (IOException e) {
+      throw new RuntimeException("파일 저장 중 오류 발생: " + file.getName(), e);
+    }
+  }
+
+  private Object readObjectFromFile(File file) {
+    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+      return ois.readObject();
+    } catch (IOException | ClassNotFoundException e) {
+      throw new RuntimeException("파일 읽기 중 오류 발생: " + file.getName(), e);
     }
   }
 }

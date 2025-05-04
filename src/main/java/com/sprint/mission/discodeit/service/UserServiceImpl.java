@@ -13,12 +13,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+  private static final Logger log = LogManager.getLogger(UserServiceImpl.class);
   //  private static final Logger log = LogManager.getLogger(UserServiceImpl.class);
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
@@ -103,7 +106,7 @@ public class UserServiceImpl implements UserService {
   public Optional<UserResponse> update(UserUpdateRequest request) {
     return userRepository.findById(request.id())
         .map(user -> {
-          if (request.name() != null) {
+          if (request.name() != null && !request.name().equals(user.getName())) {
             validateUserName(request.name());
             user.updateName(request.name());
           }
@@ -132,7 +135,7 @@ public class UserServiceImpl implements UserService {
   }
 
   private UserResponse toUserResponse(User user) {
-    Optional<UserStatus> userStatus = userStatusRepository.findById(user.getId());
+    Optional<UserStatus> userStatus = userStatusRepository.findByUserId(user.getId());
     return UserResponse.from(user, userStatus);
   }
 }

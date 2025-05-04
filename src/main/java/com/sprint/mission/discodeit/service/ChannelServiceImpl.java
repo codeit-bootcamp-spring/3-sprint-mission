@@ -39,6 +39,7 @@ public class ChannelServiceImpl implements ChannelService {
   @Override
   public Channel createPublic(PublicChannelCreateRequest dto) {
     Channel channel = Channel.createPublic(dto.creator(), dto.name(), dto.description());
+    channel.addParticipant(dto.creator());
     return channelRepository.save(channel);
   }
 

@@ -14,6 +14,15 @@ public class JCFUserStatusRepository implements UserStatusRepository {
   private final Map<UUID, UUID> userIdToStatusIdMap = new ConcurrentHashMap<>();
 
   @Override
+  public void insert(UserStatus userStatus) {
+    if (userStatusMap.containsKey(userStatus.getId())) {
+      throw new IllegalArgumentException("이미 존재하는 UserStatus입니다. [ID: " + userStatus.getId() + "]");
+    }
+    userStatusMap.put(userStatus.getId(), userStatus);
+    userIdToStatusIdMap.put(userStatus.getUserId(), userStatus.getId());
+  }
+
+  @Override
   public Optional<UserStatus> findById(UUID id) {
     return Optional.ofNullable(userStatusMap.get(id));
   }
@@ -34,6 +43,15 @@ public class JCFUserStatusRepository implements UserStatusRepository {
     userStatusMap.put(userStatus.getId(), userStatus);
     userIdToStatusIdMap.put(userStatus.getUserId(), userStatus.getId());
     return userStatus;
+  }
+
+  @Override
+  public void update(UserStatus userStatus) {
+    if (!userStatusMap.containsKey(userStatus.getId())) {
+      throw new IllegalArgumentException("존재하지 않는 UserStatus입니다. [ID: " + userStatus.getId() + "]");
+    }
+    userStatusMap.put(userStatus.getId(), userStatus);
+    userIdToStatusIdMap.put(userStatus.getUserId(), userStatus.getId());
   }
 
   @Override

@@ -14,6 +14,14 @@ public class JCFChannelRepository implements ChannelRepository {
   private final Map<UUID, Channel> channels = new HashMap<>();
 
   @Override
+  public void insert(Channel channel) {
+    if (channels.containsKey(channel.getId())) {
+      throw new IllegalArgumentException("이미 존재하는 채널입니다. [ID: " + channel.getId() + "]");
+    }
+    channels.put(channel.getId(), channel);
+  }
+
+  @Override
   public Channel save(Channel channel) {
     channels.put(channel.getId(), channel);
     return channel;
@@ -30,7 +38,18 @@ public class JCFChannelRepository implements ChannelRepository {
   }
 
   @Override
+  public void update(Channel channel) {
+    if (!channels.containsKey(channel.getId())) {
+      throw new IllegalArgumentException("존재하지 않는 채널입니다. [ID: " + channel.getId() + "]");
+    }
+    channels.put(channel.getId(), channel);
+  }
+
+  @Override
   public void delete(UUID id) {
+    if (!channels.containsKey(id)) {
+      throw new IllegalArgumentException("채널을 찾을 수 없습니다. [ID: " + id + "]");
+    }
     channels.remove(id);
   }
 }

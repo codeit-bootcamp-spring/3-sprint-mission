@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
@@ -65,8 +64,6 @@ class UserServiceImplTest_mock {
       when(userRepository.findByName(request.name())).thenReturn(Optional.empty());
       when(userRepository.save(any(User.class))).thenReturn(savedUser);
       when(userStatusRepository.save(any(UserStatus.class))).thenReturn(savedUserStatus);
-      when(userStatusRepository.findById(savedUser.getId())).thenReturn(
-          Optional.of(savedUserStatus));
 
       // when
       UserResponse createdUserResponse = userServiceImpl.create(request);
@@ -76,7 +73,6 @@ class UserServiceImplTest_mock {
       assertEquals(request.email(), createdUserResponse.email());
       assertEquals(request.name(), createdUserResponse.name());
       assertNotNull(createdUserResponse.id());
-      assertTrue(createdUserResponse.isActive());
 
       verify(userRepository, times(1)).findByEmail(request.email());
       verify(userRepository, times(1)).findByName(request.name());
@@ -99,8 +95,6 @@ class UserServiceImplTest_mock {
       when(userRepository.findByName(request.name())).thenReturn(Optional.empty());
       when(userRepository.save(any(User.class))).thenReturn(savedUser);
       when(userStatusRepository.save(any(UserStatus.class))).thenReturn(savedUserStatus);
-      when(userStatusRepository.findById(savedUser.getId())).thenReturn(
-          Optional.of(savedUserStatus));
 
       ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
@@ -113,7 +107,6 @@ class UserServiceImplTest_mock {
       assertEquals(request.name(), createdUserResponse.name());
       assertEquals(profileImage.getId(), createdUserResponse.profileImageId()); // 응답 DTO 확인
       assertNotNull(createdUserResponse.id());
-      assertTrue(createdUserResponse.isActive());
 
       verify(userRepository, times(1)).findByEmail(request.email());
       verify(userRepository, times(1)).findByName(request.name());

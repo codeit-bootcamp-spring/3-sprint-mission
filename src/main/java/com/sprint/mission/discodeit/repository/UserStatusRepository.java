@@ -8,6 +8,13 @@ import java.util.UUID;
 public interface UserStatusRepository {
 
   /**
+   * 사용자 상태 삽입 (이미 존재 시 예외)
+   *
+   * @param userStatus UserStatus
+   */
+  void insert(UserStatus userStatus);
+
+  /**
    * 사용자 상태 객체의 고유 아이디로 조회
    *
    * @param id UUID
@@ -26,17 +33,24 @@ public interface UserStatusRepository {
   /**
    * 모든 사용자 상태 조회
    *
-   * @return List<User>
+   * @return List<UserStatus>
    */
   List<UserStatus> findAll();
 
   /**
-   * 사용자 상태 저장
+   * 사용자 상태 저장 또는 업데이트
    *
    * @param userStatus UserStatus
    * @return UserStatus
    */
   UserStatus save(UserStatus userStatus);
+
+  /**
+   * 사용자 상태 업데이트 (존재하지 않으면 예외)
+   *
+   * @param userStatus UserStatus
+   */
+  void update(UserStatus userStatus);
 
   /**
    * 사용자 상태의 고유 아이디로 삭제

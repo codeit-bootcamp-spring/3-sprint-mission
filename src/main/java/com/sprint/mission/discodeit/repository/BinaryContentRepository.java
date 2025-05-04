@@ -8,6 +8,13 @@ import java.util.UUID;
 public interface BinaryContentRepository {
 
   /**
+   * 컨텐트 삽입
+   *
+   * @param binaryContent BinaryContent
+   */
+  void insert(BinaryContent binaryContent);
+
+  /**
    * 컨텐트 고유 아이디로 조회
    *
    * @param id UUID
@@ -27,17 +34,24 @@ public interface BinaryContentRepository {
    * 메시지 id로 컨텐트 조회
    *
    * @param messageId UUID
-   * @return Optional<BinaryContent>
+   * @return List<BinaryContent>
    */
   List<BinaryContent> findAllByMessageId(UUID messageId);
 
   /**
-   * 컨텐트 저장
+   * 컨텐트 저장 또는 업데이트
    *
    * @param binaryContent BinaryContent
    * @return BinaryContent
    */
   BinaryContent save(BinaryContent binaryContent);
+
+  /**
+   * 컨텐트 업데이트 (존재하지 않으면 예외)
+   *
+   * @param binaryContent BinaryContent
+   */
+  void update(BinaryContent binaryContent);
 
   /**
    * 컨텐트 고유 id로 삭제

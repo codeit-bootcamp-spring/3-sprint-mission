@@ -25,15 +25,38 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
   private final Map<UUID, List<UUID>> userToStatusIdsMap = new ConcurrentHashMap<>();
 
   @Override
+  public void insert(ReadStatus readStatus) {
+    // 중복된 ReadStatus가 존재하면 예외 발생
+    Optional<ReadStatus> existing = findByUserIdAndChannelId(readStatus.getUserId(),
+        readStatus.getChannelId());
+    if (existing.isPresent()) {
+      throw new IllegalArgumentException(
+          "이미 존재하는 읽기 상태입니다. [UserID: " + readStatus.getUserId() + ", ChannelID: "
+              + readStatus.getChannelId() + "]");
+    }
+    readStatusMap.put(readStatus.getId(), readStatus);
+    String compositeKey = createCompositeKey(readStatus.getUserId(), readStatus.getChannelId());
+    userChannelToStatusIdMap.put(compositeKey, readStatus.getId());
+    channelToStatusIdsMap
+        .computeIfAbsent(readStatus.getChannelId(), k -> new ArrayList<>())
+        .add(readStatus.getId());
+    userToStatusIdsMap
+        .computeIfAbsent(readStatus.getUserId(), k -> new ArrayList<>())
+        .add(readStatus.getId());
+  }
+
+  @Override
   public Optional<ReadStatus> findById(UUID id) {
     return Optional.ofNullable(readStatusMap.get(id));
   }
 
   @Override
   public Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId) {
-    String compositeKey = createCompositeKey(userId, channelId);
-    return Optional.ofNullable(userChannelToStatusIdMap.get(compositeKey))
-        .flatMap(this::findById);
+    // userId와 channelId를 기준으로 ReadStatus 조회
+    return findAll().stream()
+        .filter(readStatus -> readStatus.getUserId().equals(userId) && readStatus.getChannelId()
+            .equals(channelId))
+        .findFirst();
   }
 
   @Override
@@ -61,34 +84,28 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
 
   @Override
   public ReadStatus save(ReadStatus readStatus) {
-    // 기존 데이터가 있는 경우 삭제
-    if (readStatus.getId() != null) {
-      delete(readStatus.getId());
+    Optional<ReadStatus> existing = findById(readStatus.getId());
+    if (existing.isPresent()) {
+      readStatusMap.put(readStatus.getId(), readStatus);
+    } else {
+      readStatusMap.put(readStatus.getId(), readStatus);
     }
+    return readStatus;
+  }
 
-    // 새 객체 생성 (ID가 없는 경우)
-    ReadStatus toSave = (readStatus.getId() == null)
-        ? ReadStatus.create(readStatus.getUserId(), readStatus.getChannelId())
-        : readStatus;
-
-    // 저장 로직
-    readStatusMap.put(toSave.getId(), toSave);
-    String compositeKey = createCompositeKey(toSave.getUserId(), toSave.getChannelId());
-    userChannelToStatusIdMap.put(compositeKey, toSave.getId());
-    channelToStatusIdsMap
-        .computeIfAbsent(toSave.getChannelId(), k -> new ArrayList<>())
-        .add(toSave.getId());
-    userToStatusIdsMap
-        .computeIfAbsent(toSave.getUserId(), k -> new ArrayList<>())
-        .add(toSave.getId());
-
-    return toSave;
+  @Override
+  public void update(ReadStatus readStatus) {
+    Optional<ReadStatus> existing = findById(readStatus.getId());
+    if (existing.isEmpty()) {
+      throw new IllegalArgumentException(
+          "존재하지 않는 읽기 상태입니다. [ReadStatusID: " + readStatus.getId() + "]");
+    }
+    readStatusMap.put(readStatus.getId(), readStatus);
   }
 
   @Override
   public void delete(UUID id) {
     findById(id).ifPresent(status -> {
-      // 기본 저장소에서 삭제
       readStatusMap.remove(id);
 
       // 복합 키 매핑에서 삭제

@@ -3,62 +3,49 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.storage.FileStorage;
-import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
-import com.sprint.mission.discodeit.repository.storage.IndexManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public class FileChannelRepository implements ChannelRepository {
 
-  private static final String DEFAULT_FILE_PATH = "data/channels.ser";
-  private static final String DEFAULT_INDEX_PATH = "data/channels.ser.idx";
-
   private final FileStorage fileStorage;
-  private final IndexManager indexManager;
 
-  private FileChannelRepository() {
-    try {
-      this.fileStorage = new FileStorageImpl(DEFAULT_FILE_PATH);
-      this.indexManager = new IndexManager(DEFAULT_INDEX_PATH);
-    } catch (Exception e) {
-      throw new RuntimeException("FileChannelRepository 초기화 실패: " + e.getMessage(), e);
+  private FileChannelRepository(FileStorage fileStorage) {
+    this.fileStorage = fileStorage;
+  }
+
+  public static FileChannelRepository create(FileStorage fileStorage) {
+    return new FileChannelRepository(fileStorage);
+  }
+
+  @Override
+  public void insert(Channel channel) {
+    Optional<Channel> existing = findById(channel.getId());
+    if (existing.isPresent()) {
+      throw new IllegalArgumentException("이미 존재하는 채널입니다. [ID: " + channel.getId() + "]");
     }
-  }
-
-  private FileChannelRepository(String filePath) {
-    this.fileStorage = new FileStorageImpl(filePath);
-    this.indexManager = new IndexManager(filePath + ".idx");
-  }
-
-  public static FileChannelRepository from(String filePath) {
-    return new FileChannelRepository(filePath);
-  }
-
-  public static FileChannelRepository createDefault() {
-    return new FileChannelRepository();
+    fileStorage.saveObject(channel.getId(), channel);
   }
 
   @Override
   public Channel save(Channel channel) {
-    Long existingPosition = indexManager.getPosition(channel.getId());
-    if (existingPosition != null) {
-      fileStorage.updateObject(existingPosition, channel);
+    Optional<Channel> existing = findById(channel.getId());
+    if (existing.isPresent()) {
+      fileStorage.updateObject(channel.getId(), channel);
     } else {
-      long newPosition = fileStorage.saveObject(channel);
-      indexManager.addEntry(channel.getId(), newPosition);
-      indexManager.saveIndex();
+      fileStorage.saveObject(channel.getId(), channel);
     }
     return channel;
   }
 
   @Override
   public Optional<Channel> findById(UUID id) {
-    Long position = indexManager.getPosition(id);
-    if (position == null) {
+    try {
+      return Optional.of((Channel) fileStorage.readObject(id));
+    } catch (Exception e) {
       return Optional.empty();
     }
-    return Optional.ofNullable((Channel) fileStorage.readObject(position));
   }
 
   @Override
@@ -69,12 +56,20 @@ public class FileChannelRepository implements ChannelRepository {
   }
 
   @Override
+  public void update(Channel channel) {
+    Optional<Channel> existing = findById(channel.getId());
+    if (existing.isEmpty()) {
+      throw new IllegalArgumentException("존재하지 않는 채널입니다. [ID: " + channel.getId() + "]");
+    }
+    fileStorage.updateObject(channel.getId(), channel);
+  }
+
+  @Override
   public void delete(UUID id) {
-    Long position = indexManager.getPosition(id);
-    if (position != null) {
-      fileStorage.deleteObject(position);
-      indexManager.removeEntry(id);
-      indexManager.saveIndex();
+    try {
+      fileStorage.deleteObject(id);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("채널을 삭제하는 도중 오류가 발생했습니다. [ID: " + id + "]", e);
     }
   }
 }

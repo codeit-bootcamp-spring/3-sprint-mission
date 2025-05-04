@@ -8,13 +8,19 @@ import java.util.UUID;
 public interface UserRepository {
 
   /**
+   * 사용자 삽입 (이미 존재 시 예외)
+   *
+   * @param user User
+   */
+  void insert(User user);
+
+  /**
    * 사용자 객체의 고유 아이디로 조회
    *
    * @param id UUID
    * @return Optional<User>
    */
   Optional<User> findById(UUID id);
-
 
   /**
    * 사용자 이메일로 조회
@@ -49,12 +55,19 @@ public interface UserRepository {
   List<User> findAll();
 
   /**
-   * 사용자 저장
+   * 사용자 저장 또는 업데이트
    *
    * @param user User
    * @return User
    */
   User save(User user);
+
+  /**
+   * 사용자 업데이트 (존재하지 않으면 예외)
+   *
+   * @param user User
+   */
+  void update(User user);
 
   /**
    * 사용자 객체의 고유 아이디로 삭제

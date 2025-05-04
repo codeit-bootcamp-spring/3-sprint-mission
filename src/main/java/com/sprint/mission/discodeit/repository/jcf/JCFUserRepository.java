@@ -14,6 +14,14 @@ public class JCFUserRepository implements UserRepository {
   private final Map<UUID, User> users = new HashMap<>();
 
   @Override
+  public void insert(User user) {
+    if (users.containsKey(user.getId())) {
+      throw new IllegalArgumentException("이미 존재하는 사용자입니다. [ID: " + user.getId() + "]");
+    }
+    users.put(user.getId(), user);
+  }
+
+  @Override
   public Optional<User> findById(UUID id) {
     return Optional.ofNullable(users.get(id));
   }
@@ -28,12 +36,13 @@ public class JCFUserRepository implements UserRepository {
   @Override
   public Optional<User> findByName(String name) {
     return users.values().stream()
-        .filter(user -> user.getName().equals(name)).findFirst();
+        .filter(user -> user.getName().equals(name))
+        .findFirst();
   }
 
   @Override
   public Optional<User> findByNameWithPassword(String name, String password) {
-    return findAll().stream()
+    return users.values().stream()
         .filter(user -> user.getName().equals(name) && user.getPassword().equals(password))
         .findFirst();
   }
@@ -47,6 +56,14 @@ public class JCFUserRepository implements UserRepository {
   public User save(User user) {
     users.put(user.getId(), user);
     return user;
+  }
+
+  @Override
+  public void update(User user) {
+    if (!users.containsKey(user.getId())) {
+      throw new IllegalArgumentException("존재하지 않는 사용자입니다. [ID: " + user.getId() + "]");
+    }
+    users.put(user.getId(), user);
   }
 
   @Override
