@@ -5,17 +5,20 @@ import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContent.ContentType;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.ReadStatusService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.List;
@@ -31,7 +34,7 @@ public class TestInitializer {
 
   public static void initializeAndTest(UserService userService, ChannelService channelService,
       MessageService messageService, UserStatusService userStatusService, AuthService authService,
-      BinaryContentService binaryContentService) {
+      BinaryContentService binaryContentService, ReadStatusService readStatusService) {
     log.info("=== 테스트 시작 ===");
 
     User user1 = setupUser(userService, "user1@test.com", "길동쓰1", "pwd1234");
@@ -50,7 +53,7 @@ public class TestInitializer {
     createMessage(messageService, publicChannel, user1);
     createMessageWithAttachment(messageService, binaryContentService, privateChannel, user2);
 
-    testReadStatus(userStatusService, publicChannel, user1);
+    testReadStatus(readStatusService, publicChannel, user1);
 
     printTestResults(userService, channelService, messageService);
   }
@@ -110,10 +113,13 @@ public class TestInitializer {
     log.info("메시지와 첨부파일 생성 완료: {}", message.getId());
   }
 
-  private static void testReadStatus(UserStatusService userStatusService, Channel channel,
+  private static void testReadStatus(ReadStatusService readStatusService, Channel channel,
       User user) {
-    log.info("읽기 상태 확인: 사용자 {}, 채널 {}", user.getId(), channel.getId());
-    userStatusService.updateByUserId(user.getId());  // 사용자의 읽기 상태 업데이트
+    // 생성 시 바로 초기화되며 필요 시 업데이트
+    ReadStatus readStatus = readStatusService.create(
+        new ReadStatusCreateRequest(user.getId(), channel.getId()));
+    log.info("읽기 상태 확인: 사용자 {}, 채널 {}, 마지막 읽은 시간 {}", user.getId(), channel.getId(),
+        readStatus.getLastReadAt());
   }
 
   private static void printTestResults(UserService userService, ChannelService channelService,

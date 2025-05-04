@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.ReadStatusService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import org.springframework.boot.SpringApplication;
@@ -24,9 +25,10 @@ public class DiscodeitApplication {
     UserStatusService userStatusService = context.getBean(UserStatusService.class);
     AuthService authService = context.getBean(AuthService.class);
     BinaryContentService binaryContentService = context.getBean(BinaryContentService.class);
+    ReadStatusService readStatusService = context.getBean(ReadStatusService.class);
 
     // 테스트 실행
     TestInitializer.initializeAndTest(userService, channelService, messageService,
-        userStatusService, authService, binaryContentService);
+        userStatusService, authService, binaryContentService, readStatusService);
   }
 }
