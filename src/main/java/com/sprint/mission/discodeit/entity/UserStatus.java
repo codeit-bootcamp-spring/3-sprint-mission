@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 
-public class UserStatus {
+public class UserStatus implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Getter

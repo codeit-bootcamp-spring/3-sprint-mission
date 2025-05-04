@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -7,6 +8,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import java.util.Optional;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -14,7 +16,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 @SpringBootApplication
 public class DiscodeitApplication {
 	static User setupUser(UserService userService) {
-		User user = userService.create("okodee", "okodee@naver.com", "woody1234");
+		UserCreateRequest request = new UserCreateRequest("okodee", "okodee@naver.com", "okodee1234");
+		User user = userService.create(request, Optional.empty());
 		return user;
 	}
 
@@ -38,9 +41,9 @@ public class DiscodeitApplication {
 
 		// 셋업
 		User user = setupUser(userService);
-		Channel channel = setupChannel(channelService);
+//		Channel channel = setupChannel(channelService);
 		// 테스트
-		messageCreateTest(messageService, channel, user);
+//		messageCreateTest(messageService, channel, user);
 	}
 
 }

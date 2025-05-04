@@ -67,4 +67,8 @@ public class User implements Serializable {
                 ", updatedAt='" + getUpdatedAt() + '\'' +
                 '}';
     }
+
+    public void setProfileId(UUID id) {
+        this.profileId = id;
+    }
 }

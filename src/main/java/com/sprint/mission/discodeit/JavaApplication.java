@@ -1,26 +1,32 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.repository.file.FileBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import java.util.Optional;
 
 public class JavaApplication {
     static User setupUser(UserService userService) {
-        User user = userService.create("okodee", "okodee@naver.com", "woody1234");
-        return user;
+        UserCreateRequest request = new UserCreateRequest("okodee", "okodee@naver.com", "okodee1234");
+        return userService.create(request, Optional.empty());
     }
 
     static Channel setupChannel(ChannelService channelService) {
@@ -36,11 +42,13 @@ public class JavaApplication {
     public static void main(String[] args) {
         // 레포지토리 초기화
         UserRepository userRepository = new FileUserRepository();
+        BinaryContentRepository binaryContentRepository = new FileBinaryContentRepository();
+        UserStatusRepository userStatusRepository = new FileUserStatusRepository();
         ChannelRepository channelRepository = new FileChannelRepository();
         MessageRepository messageRepository = new FileMessageRepository();
 
         // 서비스 초기화
-        UserService userService = new BasicUserService(userRepository);
+        UserService userService = new BasicUserService(userRepository, binaryContentRepository, userStatusRepository);
         ChannelService channelService = new BasicChannelService(channelRepository);
         MessageService messageService = new BasicMessageService(messageRepository, channelRepository, userRepository);
 

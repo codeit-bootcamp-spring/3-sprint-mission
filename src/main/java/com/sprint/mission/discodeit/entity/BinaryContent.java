@@ -13,7 +13,7 @@ public class BinaryContent {
     @Getter
     private Instant createdAt;
 
-    public BinaryContent(UUID id) {
+    public BinaryContent(byte[] id) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         //
