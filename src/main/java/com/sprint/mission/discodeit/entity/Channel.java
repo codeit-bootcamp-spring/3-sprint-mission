@@ -1,70 +1,47 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
-// 채널
+@Getter
 public class Channel implements Serializable {
     private static final long serialVersionUID = 1L;
 
     // 필드 정의
     private final UUID channelId;
-    private final Long createdAt;
-    private Long updatedAt;
+    private final Instant createdAt;
+    private Instant updatedAt;
     private String channelName;                          // 채널명
     private ChannelType channelType;                         // 채널 유형
-    private String category;                           // 분류
+    private String description;                           // 분류
 
 
     // 생성자
-    public Channel(ChannelType channelType, String channelName, String category) {
+    public Channel(ChannelType channelType, String channelName, String description) {
         this.channelId = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+        this.createdAt = Instant.now();
 
         this.channelType = channelType;
         this.channelName = channelName;
-        this.category = category;
-    }
-
-    // Getter
-
-    public UUID getChannelId() {
-        return channelId;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public ChannelType getChannelType() {
-        return channelType;
-    }
-
-    public String getCategory() {
-        return category;
+        this.description = description;
     }
 
 
     // Update
-    public void update(String newChannelName, String newCategory) {
+    public void update(String newChannelName, String newDescription) {
         boolean updated = false;
         if (newChannelName != null && !newChannelName.equals(this.channelName)) {
             this.channelName = newChannelName;
             updated = true;
         }
-        if (newCategory != null && !newCategory.equals(this.category)) {
-            this.category = newCategory;
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = description;
         }
         if (updated) {
-            this.updatedAt = System.currentTimeMillis();
+            this.updatedAt = Instant.now();
         } else {
             throw new IllegalArgumentException("No field to update");
         }
