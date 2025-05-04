@@ -163,7 +163,6 @@ public class BasicMessageService implements MessageService {
     boolean isEdited = !message.getCreatedAt().equals(message.getUpdatedAt());
     Instant timestamp = isEdited ? message.getUpdatedAt() : message.getCreatedAt();
 
-    // Instant를 Date로 변환
     String formattedDate = DATE_FORMAT.format(Date.from(timestamp));
 
     Optional<UserDto> senderOpt = userService.find(message.getSenderId());

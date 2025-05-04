@@ -21,5 +21,4 @@ public interface UserRepository {
 
   // 유저 삭제
   void delete(UUID id);
-
 }

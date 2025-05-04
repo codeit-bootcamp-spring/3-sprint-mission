@@ -9,11 +9,11 @@ import java.util.UUID;
 @Getter
 public class UserStatus implements Serializable {
   private static final long serialVersionUID = 1L;
-  private final UUID id;
+  private final UUID id; // UserStatus의 고유ID
   private final Instant createdAt;
   private Instant updatedAt;
 
-  private UUID userId;
+  private UUID userId; // 온/오프 상태에 속한 사용자ID - User도메인
 
   public UserStatus(UUID userId) {
     this.id = UUID.randomUUID();

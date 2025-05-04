@@ -1,33 +1,33 @@
-//package com.sprint.mission.discodeit;
-//
-//import com.sprint.mission.discodeit.entity.Channel;
-//import com.sprint.mission.discodeit.entity.Message;
-//import com.sprint.mission.discodeit.entity.User;
-//import com.sprint.mission.discodeit.repository.ChannelRepository;
-//import com.sprint.mission.discodeit.repository.MessageRepository;
-//import com.sprint.mission.discodeit.repository.UserRepository;
-//import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
-//import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
-//import com.sprint.mission.discodeit.repository.file.FileUserRepository;
-//import com.sprint.mission.discodeit.repository.jcf.JcfChannelRepository;
-//import com.sprint.mission.discodeit.repository.jcf.JcfMessageRepository;
-//import com.sprint.mission.discodeit.repository.jcf.JcfUserRepository;
-//import com.sprint.mission.discodeit.service.ChannelService;
-//import com.sprint.mission.discodeit.service.UserService;
-//import com.sprint.mission.discodeit.service.basic.BasicChannelService;
-//import com.sprint.mission.discodeit.service.basic.BasicMessageService;
-//import com.sprint.mission.discodeit.service.basic.BasicUserService;
-//import com.sprint.mission.discodeit.service.factory.ServiceFactory;
-//import com.sprint.mission.discodeit.service.file.FileMessageService;
-//import com.sprint.mission.discodeit.service.jcf.JcfMessageService;
-//
-//import java.util.HashMap;
-//import java.util.List;
-//import java.util.Map;
-//import java.util.UUID;
-//
-//public class JavaApplication {
-//  public static void main(String[] args) {
+package com.sprint.mission.discodeit;
+
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JcfChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JcfMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JcfUserRepository;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.service.factory.ServiceFactory;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.jcf.JcfMessageService;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+public class JavaApplication {
+  public static void main(String[] args) {
 //    // JCF*Repository  구현체를 활용하여 테스트
 ////    UserRepository userRepo = new JcfUserRepository();
 ////    ChannelRepository channelRepo = new JcfChannelRepository();
@@ -248,5 +248,5 @@
 //    } catch (SecurityException e) {
 //      System.out.println("예외 발생: " + e.getMessage()); // 예상: 채널에 접근할 수 있는 권한이 없습니다.
 //    }
-//  }
-//}
+ }
+}

@@ -29,7 +29,7 @@ public class JcfChannelRepository implements ChannelRepository {
     if (!channelMap.containsKey(channel.getId())) {
       throw new IllegalArgumentException("채널을 찾을 수 없습니다: " + channel.getId());
     }
-    channelMap.put(channel.getId(), channel);  // 이미 존재하는 채널을 덮어씌운다
+    channelMap.put(channel.getId(), channel);
   }
 
   @Override

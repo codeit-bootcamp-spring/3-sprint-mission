@@ -4,10 +4,7 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 public class FileUserStatusRepository implements UserStatusRepository {
@@ -16,17 +13,23 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
   @Override
   public UserStatus save(UserStatus status) {
-    store.put(status.getUserId(), status);
+    store.put(status.getId(), status);
     return status;
   }
 
   @Override
-  public Optional<UserStatus> find(UUID userId) {
-    return Optional.ofNullable(store.get(userId));
+  public Optional<UserStatus> find(UUID id) {
+    return Optional.ofNullable(store.get(id));
   }
 
   @Override
-  public void delete(UUID userId) {
-    store.remove(userId); // 삭제
+  public List<UserStatus> findAll() {
+    return new ArrayList<>(store.values());
+  }
+
+  @Override
+  public void delete(UUID id) {
+    store.remove(id);
   }
 }
+

@@ -7,6 +7,6 @@ import java.util.UUID;
 
 public interface BinaryContentRepository {
   BinaryContent save(BinaryContent content);
-  Optional<BinaryContent> find(UUID id);  // 추가된 메서드
+  Optional<BinaryContent> find(UUID id);
   void delete(UUID id);
 }

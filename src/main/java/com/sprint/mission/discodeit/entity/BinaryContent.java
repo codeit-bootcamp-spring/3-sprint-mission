@@ -22,7 +22,7 @@ public class BinaryContent {
   }
 
   public BinaryContent(String fileName, UUID userId, UUID messageId) {
-    this(fileName, userId); // 중복 코드 방지
+    this(fileName, userId);
     this.messageId = messageId;
   }
 

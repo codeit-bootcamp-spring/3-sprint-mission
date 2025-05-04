@@ -66,7 +66,7 @@ public class BasicChannelService implements ChannelService {
 
     // 채널 생성 시 참여자와 ReadStatus 처리
     List<User> members = new ArrayList<>();
-    members.add(ownerUser); // 기본적으로 소유자는 포함
+    members.add(ownerUser);
 
     Channel channel = new Channel(request.channelName(), ownerUser, members, ChannelType.PRIVATE);
     // ReadStatus 생성 (참여자들에 대해 ReadStatus 설정)
@@ -76,7 +76,7 @@ public class BasicChannelService implements ChannelService {
       members.add(member);
       // ReadStatus 생성 로직 추가
       ReadStatus readStatus = new ReadStatus(member.getId(), channel.getId());
-      readStatusRepository.save(readStatus); // 메모리에 저장
+      readStatusRepository.save(readStatus);
     }
 
     return channelRepository.save(channel);
@@ -135,7 +135,6 @@ public class BasicChannelService implements ChannelService {
           return false;
         })
         .map(channel -> {
-          // 각 채널에 대해 가장 최근 메시지 시간 조회
           List<Message> messages = messageRepository.findByChannelId(channel.getId());
           LocalDateTime lastMessageTime = messages.stream()
               .map(Message::getCreatedAt)
@@ -143,7 +142,6 @@ public class BasicChannelService implements ChannelService {
               .max(LocalDateTime::compareTo)
               .orElse(null);
 
-          // PRIVATE 채널인 경우 멤버 ID 리스트 추가
           List<UUID> memberIds = null;
           if (channel.getChannelType() == ChannelType.PRIVATE) {
             memberIds = channel.getChannelMembers().stream()
@@ -151,7 +149,6 @@ public class BasicChannelService implements ChannelService {
                 .collect(Collectors.toList());
           }
 
-          // ChannelDto로 변환
           return new ChannelDto(
               channel.getId(),
               channel.getChannelName(),
@@ -197,14 +194,14 @@ public class BasicChannelService implements ChannelService {
 
     // 2. 관련된 메시지 삭제
     List<Message> messages = messageRepository.findByChannelId(channelId);
-    messageRepository.deleteAll(messages); // 해당 채널에 관련된 메시지 삭제
+    messageRepository.deleteAll(messages);
 
     // 3. 관련된 읽음 상태(읽은 메시지) 삭제
     List<ReadStatus> readStatuses = readStatusRepository.findByChannelId(channelId);
-    readStatusRepository.deleteAll(readStatuses); // 해당 채널의 읽음 상태 삭제
+    readStatusRepository.deleteAll(readStatuses);
 
     // 4. 채널 삭제
-    channelRepository.delete(channelId);// 채널 삭제
+    channelRepository.delete(channelId);
   }
 
 

@@ -6,50 +6,64 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class FileReadStatusRepository implements ReadStatusRepository {
 
-  private final Map<UUID, Map<UUID, ReadStatus>> readStatusMap = new HashMap<>();
+  private final Map<UUID, ReadStatus> storage = new HashMap<>();
 
   @Override
   public ReadStatus save(ReadStatus readStatus) {
-    readStatusMap.computeIfAbsent(readStatus.getChannelId(), channelId -> new HashMap<>())
-        .put(readStatus.getUserId(), readStatus);
+    storage.put(readStatus.getId(), readStatus);
     return readStatus;
   }
 
   @Override
-  public ReadStatus find(UUID userId, UUID channelId) {
-    Map<UUID, ReadStatus> channelStatus = readStatusMap.get(channelId);
-    return (channelStatus != null) ? channelStatus.get(userId) : null;
+  public Optional<ReadStatus> findById(UUID id) {
+    return Optional.ofNullable(storage.get(id));
   }
 
   @Override
-  public void updateLastReadAt(UUID userId, UUID channelId, Instant newReadAt) {
-    ReadStatus readStatus = find(userId, channelId);
-    if (readStatus != null) {
-      readStatus.updateLastReadAt(newReadAt);
-    }
+  public Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId) {
+    return storage.values().stream()
+        .filter(rs -> rs.getUserId().equals(userId) && rs.getChannelId().equals(channelId))
+        .findFirst();
+  }
+
+  @Override
+  public List<ReadStatus> findAllByUserId(UUID userId) {
+    return storage.values().stream()
+        .filter(rs -> rs.getUserId().equals(userId))
+        .collect(Collectors.toList());
   }
 
   @Override
   public List<ReadStatus> findByChannelId(UUID channelId) {
-    return new ArrayList<>(readStatusMap.getOrDefault(channelId, Collections.emptyMap()).values());
+    return storage.values().stream()
+        .filter(rs -> rs.getChannelId().equals(channelId))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public void updateLastReadAt(UUID id, Instant newReadAt) {
+    ReadStatus rs = storage.get(id);
+    if (rs != null) {
+      rs.updateLastReadAt(newReadAt);
+    }
+  }
+
+  @Override
+  public void deleteById(UUID id) {
+    storage.remove(id);
   }
 
   @Override
   public void deleteAll(List<ReadStatus> readStatuses) {
-    for (ReadStatus rs : readStatuses) {
-      Map<UUID, ReadStatus> channelStatus = readStatusMap.get(rs.getChannelId());
-      if (channelStatus != null) {
-        channelStatus.remove(rs.getUserId());
-        // 만약 Map이 비어 있으면 제거
-        if (channelStatus.isEmpty()) {
-          readStatusMap.remove(rs.getChannelId());
-        }
-      }
+    for (ReadStatus readStatus : readStatuses) {
+      storage.remove(readStatus.getId());
     }
   }
 }
+
 
