@@ -5,45 +5,36 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 
 import java.util.*;
 
-// TODO 나중에 Repository객체를 연결해야함
 public class JCFChannelRepository implements ChannelRepository {
-    Map<UUID, Channel> channelMap;
+    private final Map<UUID, Channel> data;
 
     public JCFChannelRepository() {
-        this.channelMap = new HashMap<UUID, Channel>();
+        this.data = new HashMap<>();
     }
 
     @Override
-    public void create(Channel channel) { // Channel channel1 = new Channel(id, name, description)을 받아서 파라미터로 쓰면 됨
-        this.channelMap.put(channel.getId(), channel);
+    public Channel save(Channel channel) {
+        this.data.put(channel.getId(), channel);
+        return channel;
     }
 
     @Override
-    public Channel findById(UUID id) {
-
-        return this.channelMap.get(id);
+    public Optional<Channel> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
     public List<Channel> findAll() {
-        List<Channel> channels = new ArrayList<>(channelMap.values());
-
-        return channels;
+        return this.data.values().stream().toList();
     }
 
     @Override
-    public void update(UUID id, String newName, String newDescription) {
-        Channel channel = this.channelMap.get(id);
-        if (channel != null) {
-            channel.updateChannel(newName, newDescription);
-        }
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
     }
 
-    public void delete(UUID id) {
-//        if (!this.channelMap.containsKey(id)) {
-//            throw new NoSuchElementException(id + "ID를 가진 채널을 찾을 수 없습니다."); // 비즈니스 로직
-//        }
-        this.channelMap.remove(id);
+    @Override
+    public void deleteById(UUID id) {
+        this.data.remove(id);
     }
-
 }

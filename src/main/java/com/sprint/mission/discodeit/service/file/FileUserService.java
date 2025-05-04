@@ -69,7 +69,7 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public User foundUser(UUID id) { // R
+    public User findById(UUID id) { // R
         List<User> users = loadUsers(path); // 유저 리스트 역직렬화 // 객체 하나하나 역직렬화 아님
 
         for (User user : users) {

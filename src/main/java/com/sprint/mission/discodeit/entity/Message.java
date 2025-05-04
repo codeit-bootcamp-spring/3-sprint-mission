@@ -1,41 +1,43 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-public class Message extends Base {
+@Getter
+public class Message implements Serializable {
 
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    //
+    private String content;
+    //
+    private UUID channelId;
     private UUID authorId;
-    private UUID channelId; // 이걸 Channel 클래스와 어떻게 연결시키지
-    private String content; // message는 결국 HashSet이야
-
+    //
+    private List<UUID> attachmentIds;
 
     public Message(String content, UUID channelId, UUID authorId) {
-        super();
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.ofEpochSecond(Instant.now().getEpochSecond());
+        //
         this.content = content;
         this.channelId = channelId;
         this.authorId = authorId;
+        //
+        this.attachmentIds = new ArrayList<>(); // 하나가 아닐 수도 있음. 여러개를 받아야 함
     }
 
-
-    // Getter Methods
-    public String getContent() {
-        return content;
-    }
-
-    public UUID getChannelId() {
-        return channelId;
-    }
-
-    public UUID getAuthorId() {
-        return authorId;
-    }
-
-
-    // Update Method
-
-    public void updateMessage(String newContent) {
+    public void update(String newContent) {
         boolean anyValueUpdated = false;
         if (newContent != null && !newContent.equals(this.content)) {
             this.content = newContent;
@@ -43,19 +45,19 @@ public class Message extends Base {
         }
 
         if (anyValueUpdated) {
-            super.updateUpdatedAt(Instant.now().getEpochSecond());
+            this.updatedAt = Instant.ofEpochSecond(Instant.now().getEpochSecond());
         }
     }
 
-    @Override
-    public String toString() {
-        return "Message{" +
-                "message='" + getContent() + '\'' +
-                ", id='" + getId() + '\'' +
-                ", channelId='" + getChannelId() + '\'' +
-                ", authorId='" + getAuthorId() + '\'' +
-                ", createdAt='" + getCreatedAt() + '\'' +
-                ", updatedAt='" + getUpdatedAt() + '\'' +
-                '}';
+    public void update(UUID attachmentId) {
+        boolean anyValueUpdated = false;
+        if (attachmentId != null && !attachmentId.equals(this.attachmentIds)) {
+            this.attachmentIds.add(attachmentId);
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.ofEpochSecond(Instant.now().getEpochSecond());
+        }
     }
 }
