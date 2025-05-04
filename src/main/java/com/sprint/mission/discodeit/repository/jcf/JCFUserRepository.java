@@ -2,42 +2,44 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 
 public class JCFUserRepository implements UserRepository {
-    private final Map<UUID, User> data;
-
-    public JCFUserRepository() {
-        this.data = new HashMap<>();
-    }
+    private final Map<UUID, User> store = new HashMap<>();
 
     @Override
     public User save(User user) {
-        this.data.put(user.getId(), user);
+        store.put(user.getId(), user);
         return user;
     }
 
     @Override
     public Optional<User> findById(UUID id) {
-        return Optional.ofNullable(this.data.get(id));
+        return Optional.ofNullable(store.get(id));
     }
 
     @Override
     public List<User> findAll() {
-        return this.data.values().stream().toList();
+        return new ArrayList<>(store.values());
     }
 
     @Override
     public boolean existsById(UUID id) {
-        return this.data.containsKey(id);
+        return store.containsKey(id);
     }
 
     @Override
     public void deleteById(UUID id) {
-        this.data.remove(id);
+        store.remove(id);
     }
 }

@@ -4,26 +4,37 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
+import lombok.Setter;
 
+@Setter
 @Getter
 public class User implements Serializable {
     private static final long serialVersionUID = -7340272091383763402L;
 
     private UUID id;
-    private UUID profileid;
     private Instant createdAt;
     private Instant updatedAt;
     private String username;
     private String email;
     private String password;
+    private boolean profileImage;
+    private UUID profileId;
 
-    public User(String username, String email, String password) {
+
+    public User(String username, String email, String password, boolean content) {
         this.id = UUID.randomUUID();
-        this.profileid = UUID.randomUUID();
         this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         this.username = username;
         this.email = email;
         this.password = password;
+        this.profileImage = content;
+        this.profileId = null;
+    }
+
+    public void setProfileId(UUID profileId) {
+        this.profileId = profileId;
+        this.profileImage = true;
     }
 
     @Override
