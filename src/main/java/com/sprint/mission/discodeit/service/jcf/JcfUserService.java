@@ -1,13 +1,20 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class JcfUserService implements UserService {
   private final List<User> data = new ArrayList<>();
+  private final UserStatusRepository userStatusRepository;
   /*
       JcfUserService → JcfChannelService에 의존
       유저가 탈퇴할 때 그 유저가 만든 채널도 삭제해야한다. 속한 채널에서도 그 유저가 사라져야 한다.
@@ -21,71 +28,87 @@ public class JcfUserService implements UserService {
     this.channelService = channelService;
   }
 
+  public JcfUserService(UserStatusRepository userStatusRepository) {
+    this.userStatusRepository = userStatusRepository;
+  }
+
   @Override
-  public User createUser(String username, String email) {
+  public User createUser(UserCreateRequest userRequest, Optional<BinaryContentCreateRequest> profileCreateRequest) {
+    String username = userRequest.username();
+    String email = userRequest.email();
     if (isEmailDuplicate(email)) {
       throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + email);
     }
-    User user = new User(username, email);
+    User user = new User(username, email, userRequest.password());
     data.add(user);
     return user;
   }
 
   @Override
-  public Optional<User> getUserById(UUID id) {
+  public Optional<UserDto> find(UUID id) {
     return data.stream()
-        .filter(e -> e.getId().equals(id))
-        .findFirst(); // UUID는 유일하므로 첫 번째 결과 반환. 만약 비어있으면 Optional.empty()를 반환
-    //.orElse(null); // 유저가 없으면 null 반환
-    //  .orElseThrow(() -> new IllegalArgumentException("조회할 User를 찾지 못했습니다."));
-  /*
-    //직관적인 foreach문
-    for (User user : users) {
-      if (user.getId().equals(id)) {
-        return user;
-      }
-    }
-    throw new IllegalArgumentException("조회할 User를 찾지 못했습니다.");
-  */
+        .filter(user -> user.getId().equals(id))
+        .map(user -> {
+          boolean hasProfileImage = user.getProfileId() != null;
+          boolean isOnline = userStatusRepository.find(user.getId())
+              .map(status -> status.checkUserConnect())
+              .orElse(false);
+          return new UserDto(user, hasProfileImage, isOnline);
+        })
+        .findFirst();
   }
 
   @Override
-  public List<User> getAllUsers() {
-    return new ArrayList<>(data);
+  public List<UserDto> findAll() {
+    return data.stream()
+        .map(user -> {
+          boolean hasProfileImage = user.getProfileId() != null;
+          boolean isOnline = userStatusRepository.find(user.getId())
+              .map(status -> status.checkUserConnect())
+              .orElse(false);
+          return new UserDto(user, hasProfileImage, isOnline);
+        })
+        .collect(Collectors.toList());
   }
 
+  @Override
+  public User update(UUID userId, UserUpdateRequest userUpdateRequest, Optional<BinaryContentCreateRequest> profileCreateRequest) {
+    return null;
+  }
+
+
   public void updateUserName(UUID id, String name) {
-    User user = getUserById(id)
-        .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저를 찾을 수 없습니다: " + id));
-    user.updateName(name);
+//    User user = find(id)
+//        .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저를 찾을 수 없습니다: " + id));
+//    user.updateName(name);
   }
 
   public void updateUserEmail(UUID id, String email) {
-    User user = getUserById(id)
-        .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저를 찾을 수 없습니다: " + id));
-
-    if (user.getEmail().equalsIgnoreCase(email)) {
-      throw new IllegalArgumentException("기존과 동일한 이메일입니다.");
-    }
-
-    if (isEmailDuplicate(email)) {
-      throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + email);
-    }
-
-    user.updateEmail(email);
+//    User user = find(id)
+//        .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저를 찾을 수 없습니다: " + id));
+//
+//    if (user.getEmail().equalsIgnoreCase(email)) {
+//      throw new IllegalArgumentException("기존과 동일한 이메일입니다.");
+//    }
+//
+//    if (isEmailDuplicate(email)) {
+//      throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + email);
+//    }
+//
+//    user.updateEmail(email);
   }
 
   @Override
-  public void deleteUser(UUID id) { // 유저가 삭제되면, 그 유저가 만든 채널도 함께 삭제되도록 연동이 필요
-    User user = getUserById(id)
-        .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저를 찾을 수 없습니다: " + id));
-
-    if (channelService != null) {
-      channelService.deleteChannelsCreatedByUser(id);   // 유저가 만든 채널 삭제
-      channelService.removeUserFromAllChannels(id);     // 유저가 참여한 채널에서 탈퇴
-    }
-
-    data.remove(user);
+  public void delete(UUID id) { // 유저가 삭제되면, 그 유저가 만든 채널도 함께 삭제되도록 연동이 필요
+//    User user = find(id)
+//        .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저를 찾을 수 없습니다: " + id));
+//
+//    if (channelService != null) {
+//      channelService.deleteChannelsCreatedByUser(id);   // 유저가 만든 채널 삭제
+//      channelService.removeUserFromAllChannels(id);     // 유저가 참여한 채널에서 탈퇴
+//    }
+//
+//    data.remove(user);
   }
 
   private boolean isEmailDuplicate(String email) {

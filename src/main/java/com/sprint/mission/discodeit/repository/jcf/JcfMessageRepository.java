@@ -30,6 +30,11 @@ public class JcfMessageRepository implements MessageRepository {
   }
 
   @Override
+  public void deleteAll(List<Message> messages) {
+
+  }
+
+  @Override
   public List<Message> findByChannelId(UUID channelId) {
     return channelMessagesMap.getOrDefault(channelId, Collections.emptyList());
   }

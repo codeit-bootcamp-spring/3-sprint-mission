@@ -16,15 +16,12 @@ public interface MessageRepository {
   // 메시지를 삭제
   void delete(UUID messageId);
 
+  // 여러 메시지를 한 번에 삭제
+  void deleteAll(List<Message> messages);
+
   // 특정 채널에 속한 모든 메시지를 조회
   List<Message> findByChannelId(UUID channelId);
 
   // 특정 유저가 보낸 모든 메시지를 조회
   List<Message> findBySenderId(UUID senderId);
-
-//  // 특정 채널에서 메시지를 제거
-//  void removeFromChannel(UUID channelId, Message message);
-//
-//  // 특정 유저의 메시지 목록에서 메시지를 제거
-//  void removeFromUser(UUID userId, Message message);
 }

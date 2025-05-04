@@ -48,7 +48,7 @@ public class JcfChannelRepository implements ChannelRepository {
   @Override
   public void removeUserFromAllChannels(UUID userId) {
     for (Channel channel : channelMap.values()) {
-      channel.getChannelUsers().removeIf(user -> user.getId().equals(userId));
+      channel.getChannelMembers().removeIf(user -> user.getId().equals(userId));
     }
   }
 }

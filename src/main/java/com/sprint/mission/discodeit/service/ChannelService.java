@@ -1,5 +1,9 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 
@@ -11,22 +15,27 @@ public interface ChannelService {
   // 채널 생성, 조회(단건 , 다건), 수정, 삭제 + 멤버 추가/ 삭제
 
   // 1. 채널 생성
-  Channel createChannel(String channelName, User ownerUser);
+  //Channel createChannel(String channelName, User ownerUser);
+  Channel create(PublicChannelCreateRequest request);
+  Channel create(PrivateChannelCreateRequest request);
 
   // 2. 단일 채널 조회
-  Optional<Channel> getChannelById(UUID channelId);
+  //Optional<Channel> getChannelById(UUID channelId);
+  Optional<ChannelDto> find(UUID channelId);
 
   // 3. 전체 채널 조회
-  List<Channel> getAllChannels();
+  //List<Channel> getAllChannels();
+  List<ChannelDto> findAllByUserId(UUID userId);
 
   // 4. 채널 이름 수정
-  void updateChannelName(UUID channelId, String channelName);
+  //void updateChannelName(UUID channelId, String channelName);
+  Channel update(UUID channelId, PublicChannelUpdateRequest request);
 
   // 채널 소유자 변경 ... 채널 소유자가 탈퇴한다면? 채널도 삭제된다. <- 이 전제로 1) 필요없는 메서드로 진행
   // 2) 채널 소유자가 떠나도 채널이 유지되어야 하는 경우에는 해당 메서드가 필요
   //void updateChannelOwner(UUID channelId, UUID ownerUserId);
 
-  // 5. 채널 삭제(채널 소유자만 삭제 가능)
+  // 5. 채널 삭제
   void deleteChannel(UUID channelId);
 
   // 6. 멤버 추가

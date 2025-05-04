@@ -3,10 +3,12 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageDataStore;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
+@Repository
 public class FileMessageRepository implements MessageRepository {
   private static final String FILE_PATH = "messages.ser";
 
@@ -72,6 +74,13 @@ public class FileMessageRepository implements MessageRepository {
           .getOrDefault(message.getSenderId(), new ArrayList<>())
           .remove(message);
       saveData();
+    }
+  }
+
+  @Override
+  public void deleteAll(List<Message> messages) {
+    for (Message message : messages) {
+      delete(message.getId());
     }
   }
 

@@ -3,11 +3,13 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.AbstractFileRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public class FileChannelRepository extends AbstractFileRepository<Channel, UUID> implements ChannelRepository {
   private static final String FILE_PATH = "channels.ser";
 
@@ -50,7 +52,7 @@ public class FileChannelRepository extends AbstractFileRepository<Channel, UUID>
   @Override
   public void removeUserFromAllChannels(UUID userId) {
     for (Channel channel : dataMap.values()) {
-      channel.getChannelUsers().removeIf(user -> user.getId().equals(userId));
+      channel.getChannelMembers().removeIf(user -> user.getId().equals(userId));
     }
     saveData();
   }

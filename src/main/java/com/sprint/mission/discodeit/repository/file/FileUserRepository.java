@@ -3,11 +3,13 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.AbstractFileRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public class FileUserRepository extends AbstractFileRepository<User, UUID> implements UserRepository {
   private static final String FILE_PATH = "users.ser";
 
