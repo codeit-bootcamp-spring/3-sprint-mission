@@ -5,7 +5,9 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Repository("jcfReadStatusRepository")
@@ -15,22 +17,21 @@ import java.util.UUID;
         havingValue = "jcf"
 )
 public class JCFReadStatusRepository implements ReadStatusRepository {
-    @Override
-    public void save(ReadStatus readStatus) {
-    }
+    private static final Map<UUID, ReadStatus> readStatuses = new HashMap<>();
 
     @Override
-    public ReadStatus loadById(UUID id) {
-        return null;
-    }
+    public void save(ReadStatus readStatus) { readStatuses.put(readStatus.getId(), readStatus); }
+
+    @Override
+    public ReadStatus loadById(UUID id) { return readStatuses.get(id); }
 
     @Override
     public List<ReadStatus> loadAllByUserId(UUID id) {
-        return List.of();
+        return readStatuses.values().stream()
+                .filter(readStatus -> readStatus.getUserId().equals(id)).toList();
     }
 
     @Override
-    public void deleteByUserId(UUID userId) {
-    }
+    public void deleteByUserId(UUID userId) { readStatuses.remove(userId); }
 
 }

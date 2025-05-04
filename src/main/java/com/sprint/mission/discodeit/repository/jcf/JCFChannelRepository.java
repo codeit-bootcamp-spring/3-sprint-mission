@@ -51,15 +51,6 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public void delete(UUID id) {
-        if (!channels.containsKey(id)) {
-            throw new NoSuchElementException("[Channel] 유효하지 않은 사용자입니다. (userId: " + id + ")");
-        }
-
-        channels.remove(id);
-    }
-
-    @Override
     public void join(UUID userId, UUID channelId) {
         Channel ch = loadById(channelId);
 
@@ -83,5 +74,14 @@ public class JCFChannelRepository implements ChannelRepository {
         ch.leave(userId);
         save(ch);
         System.out.println("[Channel] 채널에서 탈퇴했습니다. (userId: " + userId + ", channelId: " + channelId + ")");
+    }
+
+    @Override
+    public void delete(UUID id) {
+        if (!channels.containsKey(id)) {
+            throw new NoSuchElementException("[Channel] 유효하지 않은 사용자입니다. (userId: " + id + ")");
+        }
+
+        channels.remove(id);
     }
 }

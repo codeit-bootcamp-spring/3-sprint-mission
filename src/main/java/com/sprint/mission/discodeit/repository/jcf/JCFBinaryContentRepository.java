@@ -5,7 +5,9 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Repository("jcfBinaryContentRepository")
@@ -15,29 +17,26 @@ import java.util.UUID;
         havingValue = "jcf"
 )
 public class JCFBinaryContentRepository implements BinaryContentRepository {
+    private static final Map<UUID, BinaryContent> binaryContents = new HashMap<>();
 
     @Override
-    public void save(BinaryContent userProfileImage) {
-
-    }
+    public void save(BinaryContent userProfileImage) { binaryContents.put(userProfileImage.getId(), userProfileImage); }
 
     @Override
-    public BinaryContent loadByUserId(UUID userId) {
-        return null;
-    }
+    public BinaryContent loadByUserId(UUID userId) { return binaryContents.get(userId); }
 
     @Override
-    public BinaryContent loadById(UUID userId) {
-        return null;
-    }
+    public BinaryContent loadById(UUID id) { return binaryContents.get(id); }
 
     @Override
-    public List<BinaryContent> loadAll() {
-        return List.of();
-    }
+    public List<BinaryContent> loadAll() { return binaryContents.values().stream().toList(); }
 
     @Override
     public void delete(UUID id, UUID userId) {
-
+        if (userId == null) {
+            binaryContents.remove(id);
+        } else {
+            binaryContents.remove(userId);
+        }
     }
 }

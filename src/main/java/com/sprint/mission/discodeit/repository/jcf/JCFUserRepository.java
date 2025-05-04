@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.dto.entity.BinaryContent;
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.dto.entity.User;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -45,11 +43,6 @@ public class JCFUserRepository implements UserRepository {
     public List<User> loadAll() {
         return users.values().stream().toList();
     }
-
-//    @Override
-//    public BinaryContent update(UUID userId, BinaryContentCreateRequest binaryContentCreateRequest) {
-//        return null;
-//    }
 
     @Override
     public void deleteById(UUID id) {

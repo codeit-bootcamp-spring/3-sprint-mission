@@ -44,18 +44,16 @@ public class JCFMessageRepository implements MessageRepository {
     @Override
     public void update(UUID id, String content) {
         Message msg = loadById(id);
-        //Message msg = messages.get(id);
-
         msg.update(content);
     }
 
     @Override
-    public void deleteById(UUID id) {
-        messages.remove(id);
-    }
+    public void deleteById(UUID id) { messages.remove(id); }
 
     @Override
     public void deleteByChannelId(UUID channelId) {
-
+        loadByChannelId(channelId).stream()
+                .map(Message::getId)
+                .forEach(this::deleteById);
     }
 }

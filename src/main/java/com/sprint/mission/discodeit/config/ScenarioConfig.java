@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
-import com.sprint.mission.discodeit.flow.TestScenario;
+import com.sprint.mission.discodeit.TestScenario;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.*;
 import com.sprint.mission.discodeit.service.basic.*;
@@ -145,7 +145,8 @@ public class ScenarioConfig {
         return new BasicMessageService(userRepository, channelRepository, messageRepository);
     }
 
-    @Bean("fileTest")
+//    @Bean("fileTest")
+    @Bean("testScenario")
     @ConditionalOnProperty(name="discodeit.repository.type", havingValue="file")
     public TestScenario fileTestExecutor (
             @Qualifier("fileUserService") UserService userService,
@@ -159,7 +160,8 @@ public class ScenarioConfig {
         return new TestScenario(userService, userStatusService, readStatusService, binaryContentService, authService, channelService, messageService);
     }
 
-    @Bean("jcfTest")
+    //    @Bean("jcfTest")
+    @Bean("testScenario")
     @ConditionalOnProperty(name="discodeit.repository.type", havingValue="jcf")
     public TestScenario jcfTestExecutor (
             @Qualifier("jcfUserService") UserService userService,

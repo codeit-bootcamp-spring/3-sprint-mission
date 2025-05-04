@@ -116,7 +116,7 @@ public class FileMessageRepository implements MessageRepository {
         }
     }
 
-
+    @Override
     public void deleteByChannelId(UUID channelId) {
         loadByChannelId(channelId).stream()
                 .map(Message::getId)

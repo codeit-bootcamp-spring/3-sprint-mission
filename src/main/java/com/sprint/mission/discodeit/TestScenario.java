@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.flow;
+package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.dto.request.*;
 import com.sprint.mission.discodeit.dto.entity.Channel;
