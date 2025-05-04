@@ -1,6 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -14,53 +18,30 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-public class Channel implements Serializable {
+@Getter
+public class Channel extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
-
-    private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
     private String name;
+    private ChannelType type;
+    private String description;
 
+    public Channel() {
+        super();
+        this.name = "";
+        this.description = "";
+        this.type = ChannelType.PRIVATE;
+    }
 
-    public Channel(String name) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+    public Channel(String name, String description) {
+        super();
         this.name = name;
+        this.description = description;
+        this.type = ChannelType.PUBLIC;
     }
 
-    public void setUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
-    }
 
     public void setName(String name) {
         this.name = name;
-        setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
-        return "Channel2{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", name='" + name + '\'' +
-                '}';
+        this.updatedAt = Instant.now();
     }
 }
