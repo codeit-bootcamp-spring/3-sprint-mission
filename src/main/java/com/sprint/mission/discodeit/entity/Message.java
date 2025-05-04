@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
@@ -37,6 +38,7 @@ public class Message implements Serializable {
         this.content = content;
         this.channelId = channelId;
         this.authorId = authorId;
+        this.attachmentIds = new ArrayList<>();
     }
 
     public void update(String newContent) {
@@ -49,6 +51,10 @@ public class Message implements Serializable {
         if (anyValueUpdated) {
             this.updatedAt = Instant.now();
         }
+    }
+
+    public void addBinaryContent(UUID fileId) {
+        this.attachmentIds.add(fileId);
     }
 
     @Override
