@@ -1,39 +1,51 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
+import lombok.Getter;
 
+@Getter
 public class Channel implements Serializable {
-    private final UUID id;
-    private final long createdAt;
-    private long updatedAt;
-    private String name;
 
-    public Channel(String name) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = this.createdAt;
-        this.name = name;
-    }
+  @Serial
+  private static final long serialVersionUID = 7955482681221044662L;
+  private final UUID id;
+  private final Instant createdAt;
+  private Instant updatedAt;
+  private String description;
+  private boolean isPrivate;
+  private String name;
 
-    public UUID getId() {
-        return id;
-    }
+  public Channel(String name) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    this.updatedAt = this.createdAt;
+    this.name = name;
+  }
 
-    public long getCreatedAt() {
-        return createdAt;
-    }
+  public Channel(String name, String description, boolean isPrivate) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    this.updatedAt = this.createdAt;
+    this.name = name;
+    this.description = description;
+    this.isPrivate = isPrivate;
+  }
 
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
+  public void updateName(String name) {
+    this.name = name;
+    this.updatedAt = Instant.now();
+  }
 
-    public String getName() {
-        return name;
+  public void update(String name, String description) {
+    if (name != null) {
+      this.name = name;
     }
-
-    public void updateName(String name) {
-        this.name = name;
-        this.updatedAt = System.currentTimeMillis();
+    if (description != null) {
+      this.description = description;
     }
+    this.updatedAt = Instant.now();
+  }
 }

@@ -5,7 +5,10 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 
 import java.io.*;
 import java.util.*;
+import org.springframework.stereotype.Repository;
 
+
+@Repository
 public class FileMessageRepository implements MessageRepository {
   private final String filePath = "messages.dat";
   private final Map<UUID, Message> data;

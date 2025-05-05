@@ -2,11 +2,23 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
-import java.io.*;
-import java.util.*;
 
+@Repository
 public class FileUserRepository implements UserRepository {
+
   private final String filePath = "users.dat";
   private final Map<UUID, User> data;
 
@@ -26,6 +38,22 @@ public class FileUserRepository implements UserRepository {
   }
 
   @Override
+  public User findByUsername(String username) {
+    return data.values().stream()
+        .filter(user -> user.getUsername().equals(username))
+        .findFirst()
+        .orElse(null);
+  }
+
+  @Override
+  public User findByEmail(String email) {
+    return data.values().stream()
+        .filter(user -> user.getEmail().equals(email))
+        .findFirst()
+        .orElse(null);
+  }
+
+  @Override
   public List<User> findAll() {
     return new ArrayList<>(data.values());
   }
@@ -36,6 +64,7 @@ public class FileUserRepository implements UserRepository {
     saveToFile();
   }
 
+
   private void saveToFile() {
     try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
       oos.writeObject(data);
@@ -44,10 +73,12 @@ public class FileUserRepository implements UserRepository {
     }
   }
 
-  @SuppressWarnings("unchecked")
+
   private Map<UUID, User> loadFromFile() {
     File file = new File(filePath);
-    if (!file.exists()) return new HashMap<>();
+    if (!file.exists()) {
+      return new HashMap<>();
+    }
 
     try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
       return (Map<UUID, User>) ois.readObject();
