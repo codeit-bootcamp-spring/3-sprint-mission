@@ -26,7 +26,7 @@ import java.util.UUID;
  */
 
 @Repository
-@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JcfMessageRepository implements MessageRepository {
     public final Map<UUID, Message> data = new HashMap<>();
 

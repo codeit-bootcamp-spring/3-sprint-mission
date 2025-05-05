@@ -33,7 +33,7 @@ public class FileBinaryContentService implements BinaryContentService {
     public BinaryContentCreateResponse create(BinaryContentCreateRequest request) {
         byte[] attachment = Optional.ofNullable(request.attachment()).orElseThrow(() -> new IllegalArgumentException("no request.getAttachment"));
         BinaryContent binaryContent = binaryContentRepository.createBinaryContent(attachment);
-        return new BinaryContentCreateResponse(binaryContent.getId(), binaryContent.getUpdatedAt(), binaryContent.getAttachment());
+        return new BinaryContentCreateResponse(binaryContent.getId(), binaryContent.getAttachment());
     }
 
     public BinaryContent find(UUID attachmentId) {

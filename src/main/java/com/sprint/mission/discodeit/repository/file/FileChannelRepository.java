@@ -30,7 +30,7 @@ import java.util.UUID;
  */
 
 
-@ConditionalOnProperty(name = "repository.type", havingValue = "file")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
 @RequiredArgsConstructor
 public class FileChannelRepository implements ChannelRepository {

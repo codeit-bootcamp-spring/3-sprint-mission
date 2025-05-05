@@ -14,6 +14,6 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 29.        doungukkim       최초 생성
  */
-public record BinaryContentCreateResponse(UUID id, Instant updatedAt, byte[] attachment) {
+public record BinaryContentCreateResponse(UUID id, byte[] attachment) {
 }
 

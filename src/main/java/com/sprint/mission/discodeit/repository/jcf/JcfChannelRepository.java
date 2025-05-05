@@ -28,7 +28,7 @@ import java.util.UUID;
  */
 
 @Repository
-@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JcfChannelRepository implements ChannelRepository {
 
     Map<UUID, Channel> data = new HashMap<>();

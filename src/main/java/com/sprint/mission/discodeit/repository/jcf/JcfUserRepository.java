@@ -22,7 +22,7 @@ import java.util.*;
  */
 
 @Repository
-@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JcfUserRepository implements UserRepository {
 
     Map<UUID, User> data = new HashMap<>();

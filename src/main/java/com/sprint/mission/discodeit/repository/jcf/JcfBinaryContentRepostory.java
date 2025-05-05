@@ -20,7 +20,7 @@ import java.util.*;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 @Repository
 public class JcfBinaryContentRepostory implements BinaryContentRepository {
     private final Map<UUID, BinaryContent> data = new HashMap<>();

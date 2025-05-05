@@ -30,7 +30,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     public BinaryContentCreateResponse create(BinaryContentCreateRequest request) {
         byte[] attachment = request.attachment();
         BinaryContent binaryContent = binaryContentRepository.createBinaryContent(attachment);
-        return new BinaryContentCreateResponse(binaryContent.getId(), binaryContent.getUpdatedAt(), binaryContent.getAttachment());
+        return new BinaryContentCreateResponse(binaryContent.getId(), binaryContent.getAttachment());
     }
 
     @Override

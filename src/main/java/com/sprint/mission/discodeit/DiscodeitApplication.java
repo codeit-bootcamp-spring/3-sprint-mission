@@ -359,13 +359,9 @@ public class DiscodeitApplication {
 		} catch (Exception e) {
 			System.out.println("예기치 못한 오류 발생: "+e);
 		}
-
-
-
 	}
+}
 
-
-		}
 
 
 

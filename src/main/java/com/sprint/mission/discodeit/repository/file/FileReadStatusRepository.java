@@ -28,7 +28,7 @@ import java.util.*;
  * 2025. 4. 26.        doungukkim       최초 생성
  */
 
-@ConditionalOnProperty(name = "repository.type", havingValue = "file")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
 @RequiredArgsConstructor
 public class FileReadStatusRepository implements ReadStatusRepository {

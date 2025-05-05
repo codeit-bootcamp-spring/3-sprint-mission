@@ -21,7 +21,7 @@ import java.util.*;
  */
 
 @Repository
-@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class jcfReadStatusRepository implements ReadStatusRepository{
 
     Map<UUID, ReadStatus> data = new HashMap<>();

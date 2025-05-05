@@ -32,7 +32,7 @@ import java.util.UUID;
  * 2025. 4. 24.        doungukkim       최초 생성
  */
 
-@ConditionalOnProperty(name = "repository.type", havingValue = "file")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
 @RequiredArgsConstructor
 public class FileBinaryContentRepository implements BinaryContentRepository {
