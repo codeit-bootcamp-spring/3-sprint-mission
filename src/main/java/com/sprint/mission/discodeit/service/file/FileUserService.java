@@ -1,17 +1,28 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
-
-import java.io.*;
-import java.util.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class FileUserService implements UserService {
+
   private final String filePath = "users.dat";
   private final Map<UUID, User> data = loadFromFile();
 
-  public FileUserService(UserRepository userRepository) {
+  @Override
+  public UserResponse create(UserCreateRequest request) {
+    throw new UnsupportedOperationException("FileUserService에서는 이 기능을 지원하지 않습니다.");
   }
 
   @Override
@@ -23,13 +34,13 @@ public class FileUserService implements UserService {
   }
 
   @Override
-  public User findById(UUID id) {
-    return data.get(id);
+  public UserResponse findById(UUID id) {
+    throw new UnsupportedOperationException("FileUserService에서는 이 기능을 지원하지 않습니다.");
   }
 
   @Override
-  public List<User> findAll() {
-    return new ArrayList<>(data.values());
+  public List<UserResponse> findAll() {
+    throw new UnsupportedOperationException("FileUserService에서는 이 기능을 지원하지 않습니다.");
   }
 
   @Override
@@ -43,6 +54,11 @@ public class FileUserService implements UserService {
   }
 
   @Override
+  public UserResponse update(UserUpdateRequest request) {
+    throw new UnsupportedOperationException("FileUserService에서는 이 기능을 지원하지 않습니다.");
+  }
+
+  @Override
   public User delete(UUID id) {
     User user = data.get(id);
     if (user != null) {
@@ -53,22 +69,18 @@ public class FileUserService implements UserService {
   }
 
   private void saveToFile() {
-    try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
-      out.writeObject(data);
+    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
+      oos.writeObject(data);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  @SuppressWarnings("unchecked")
   private Map<UUID, User> loadFromFile() {
-    File file = new File(filePath);
-    if (!file.exists()) return new HashMap<>();
-
-    try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
-      return (Map<UUID, User>) in.readObject();
+    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
+      return (Map<UUID, User>) ois.readObject();
     } catch (IOException | ClassNotFoundException e) {
-      throw new RuntimeException(e);
+      return new HashMap<>();
     }
   }
 }

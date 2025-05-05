@@ -38,6 +38,22 @@ public class FileUserRepository implements UserRepository {
   }
 
   @Override
+  public User findByUsername(String username) {
+    return data.values().stream()
+        .filter(user -> user.getUsername().equals(username))
+        .findFirst()
+        .orElse(null);
+  }
+
+  @Override
+  public User findByEmail(String email) {
+    return data.values().stream()
+        .filter(user -> user.getEmail().equals(email))
+        .findFirst()
+        .orElse(null);
+  }
+
+  @Override
   public List<User> findAll() {
     return new ArrayList<>(data.values());
   }
@@ -47,6 +63,7 @@ public class FileUserRepository implements UserRepository {
     data.remove(id);
     saveToFile();
   }
+
 
   private void saveToFile() {
     try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {

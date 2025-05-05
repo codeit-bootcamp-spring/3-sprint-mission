@@ -1,37 +1,45 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 
 @RequiredArgsConstructor
 @Service
 public class BasicMessageService implements MessageService {
 
   private final MessageRepository messageRepository;
-  private final UserRepository userRepository;
-  private final ChannelRepository channelRepository;
-
+  private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public Message create(UUID userId, UUID channelId, String content) {
-    // Check if user and channel exist
-    if (userRepository.findById(userId) == null) {
-      throw new IllegalArgumentException("User not found: " + userId);
-    }
-    if (channelRepository.findById(channelId) == null) {
-      throw new IllegalArgumentException("Channel not found: " + channelId);
+  public Message create(MessageCreateRequest request) {
+    Message message = new Message(
+        request.getUserId(),
+        request.getChannelId(),
+        request.getContent()
+    );
+    messageRepository.save(message);
+
+    if (request.getAttachments() != null) {
+      for (byte[] file : request.getAttachments()) {
+        BinaryContent content = new BinaryContent(
+            request.getUserId(),
+            message.getId(),
+            file
+        );
+        binaryContentRepository.save(content);
+      }
     }
 
-    Message message = new Message(userId, channelId, content);
-    messageRepository.save(message);
     return message;
   }
 
@@ -41,15 +49,17 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public List<Message> findAll() {
-    return messageRepository.findAll();
+  public List<Message> findAllByChannelId(UUID channelId) {
+    return messageRepository.findAll().stream()
+        .filter(m -> m.getChannelId().equals(channelId))
+        .collect(Collectors.toList());
   }
 
   @Override
-  public Message update(UUID id, String newContent) {
-    Message message = messageRepository.findById(id);
+  public Message update(MessageUpdateRequest request) {
+    Message message = messageRepository.findById(request.getMessageId());
     if (message != null) {
-      message.updateContent(newContent);
+      message.update(request.getContent());
       messageRepository.save(message);
     }
     return message;
@@ -59,6 +69,7 @@ public class BasicMessageService implements MessageService {
   public Message delete(UUID id) {
     Message message = messageRepository.findById(id);
     if (message != null) {
+      binaryContentRepository.deleteByMessageId(id);
       messageRepository.delete(id);
     }
     return message;
