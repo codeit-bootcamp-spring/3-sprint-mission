@@ -1,0 +1,35 @@
+package com.sprint.mission.discodeit.repository.jcf;
+
+import com.sprint.mission.discodeit.dto.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+@Repository("jcfUserStatusRepository")
+@ConditionalOnProperty(
+        prefix = "discodeit.repository",
+        name = "type",
+        havingValue = "jcf"
+)
+public class JCFUserStatusRepository implements UserStatusRepository {
+    private final Map<UUID, UserStatus> userStatuses = new HashMap<>();
+
+    @Override
+    public void save(UserStatus userStatus) { userStatuses.put(userStatus.getUserId(), userStatus); }
+
+    @Override
+    public UserStatus loadById(UUID id) { return userStatuses.get(id); }
+
+    @Override
+    public List<UserStatus> loadAll() { return userStatuses.values().stream().toList(); }
+
+    @Override
+    public void deleteById(UUID id) {
+        userStatuses.remove(id);
+    }
+}
