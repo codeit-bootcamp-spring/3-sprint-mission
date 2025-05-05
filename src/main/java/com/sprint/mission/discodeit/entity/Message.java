@@ -1,48 +1,51 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
-public class Message implements Serializable { // 직렬화를 위해 Serializable 구현
-    private static final long serialVersionUID = 1L; // 클래스 버전
+public class Message implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    private final UUID id; // 고유 메시지 ID
-    private final long createdAt; // 메시지 생성 시간
-    private long updatedAt; // 메시지 마지막 수정 시간
+    private final UUID id;
+    private final Instant createdAt;
+    private Instant updatedAt;
 
-    private final UUID userId; // 작성자 ID (User와 연관)
-    private final UUID channelId; // 채널 ID (Channel과 연관)
-    private String content; // 메시지 내용
+    private final UUID userId;
+    private final UUID channelId;
+    private String content;
 
-    // 생성자: 메시지 생성 시 ID, 시간 자동 설정
     public Message(UUID userId, UUID channelId, String content) {
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+        this.createdAt = Instant.now();
         this.updatedAt = this.createdAt;
         this.userId = userId;
         this.channelId = channelId;
         this.content = content;
     }
 
-    public void setContent(String newContent) { // 메시지 내용 업데이트
+    public void setContent(String newContent) {
         this.content = newContent;
     }
 
-    public void updateUpdatedAt() { // 메시지 수정 시간 업데이트
-        this.updatedAt = System.currentTimeMillis();
+    public void updateUpdatedAt() {
+        this.updatedAt = Instant.now();
     }
 
+    public void updateContent(String content) {
+        this.content = content;
+        this.updatedAt = Instant.now();
+    }
 
-    // Getter 메서드
     public UUID getId() {
         return id;
     }
 
-    public long getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public long getUpdatedAt() {
+    public Instant getUpdatedAt() {
         return updatedAt;
     }
 
@@ -56,12 +59,6 @@ public class Message implements Serializable { // 직렬화를 위해 Serializab
 
     public String getContent() {
         return content;
-    }
-
-    // 메시지 내용 수정
-    public void updateContent(String content) {
-        this.content = content;
-        this.updatedAt = System.currentTimeMillis();
     }
 
     @Override
