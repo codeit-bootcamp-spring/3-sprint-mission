@@ -2,118 +2,97 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import com.sprint.mission.discodeit.repository.storage.FileStorage;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 public class FileUserRepository implements UserRepository {
 
-  private final String FILE_PATH;
-  private Map<UUID, User> users = new HashMap<>();
+  private final FileStorage fileStorage;
 
-  private FileUserRepository(String filePath) {
-    this.FILE_PATH = filePath;
-    loadData();
+  private FileUserRepository(FileStorage fileStorage) {
+    this.fileStorage = fileStorage;
   }
 
-  public static FileUserRepository from(String filePath) {
-    return new FileUserRepository(filePath);
+  public static FileUserRepository create(FileStorage fileStorage) {
+    return new FileUserRepository(fileStorage);
   }
 
-  public static FileUserRepository createDefault() {
-    return new FileUserRepository("data/users.ser");
+  @Override
+  public void insert(User user) {
+    Optional<User> existing = findById(user.getId());
+    if (existing.isPresent()) {
+      throw new IllegalArgumentException("이미 존재하는 사용자입니다. [ID: " + user.getId() + "]");
+    }
+    fileStorage.saveObject(user.getId(), user);
   }
 
   @Override
   public Optional<User> findById(UUID id) {
-    loadData();
-    return Optional.ofNullable(users.get(id));
+    try {
+      return Optional.of((User) fileStorage.readObject(id));
+    } catch (Exception e) {
+      return Optional.empty();
+    }
   }
 
   @Override
   public Optional<User> findByEmail(String email) {
-    loadData();
-    return users.values().stream()
+    return findAll().stream()
         .filter(user -> user.getEmail().equals(email))
         .findFirst();
   }
 
   @Override
-  public List<User> findByNameContains(String name) {
-    loadData();
-    return users.values().stream()
-        .filter(user -> user.getName().contains(name))
-        .toList();
+  public Optional<User> findByName(String name) {
+    return findAll().stream()
+        .filter(user -> user.getName().equals(name))
+        .findFirst();
+  }
+
+  @Override
+  public Optional<User> findByNameWithPassword(String name, String password) {
+    return findAll().stream()
+        .filter(user -> user.getName().equals(name) && user.getPassword().equals(password))
+        .findFirst();
   }
 
   @Override
   public List<User> findAll() {
-    loadData();
-    return new ArrayList<>(users.values());
+    List<Object> allObjects = fileStorage.readAll();
+    List<User> users = new ArrayList<>();
+    for (Object obj : allObjects) {
+      if (obj instanceof User) {
+        users.add((User) obj);
+      }
+    }
+    return users;
   }
 
   @Override
   public User save(User user) {
-    loadData();
-    users.put(user.getId(), user);
-    saveData();
+    Optional<User> existing = findById(user.getId());
+    if (existing.isPresent()) {
+      fileStorage.updateObject(user.getId(), user);
+    } else {
+      fileStorage.saveObject(user.getId(), user);
+    }
     return user;
   }
 
   @Override
-  public void deleteById(UUID id) {
-    loadData();
-    users.remove(id);
-    saveData();
+  public void update(User user) {
+    Optional<User> existing = findById(user.getId());
+    if (existing.isEmpty()) {
+      throw new IllegalArgumentException("존재하지 않는 사용자입니다. [ID: " + user.getId() + "]");
+    }
+    fileStorage.updateObject(user.getId(), user);
   }
 
-  @SuppressWarnings("unchecked")
-  private void loadData() {
-    File file = new File(FILE_PATH);
-    if (!file.exists() || file.length() == 0) {
-      createDataFile();
-      return;
-    }
-
-    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-      Object obj = ois.readObject();
-      if (obj instanceof Map<?, ?> map) {
-        users = (Map<UUID, User>) map;
-      }
-    } catch (IOException | ClassNotFoundException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void saveData() {
-    File file = new File(FILE_PATH);
-    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
-      oos.writeObject(users);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void createDataFile() {
-    File file = new File(FILE_PATH);
-    File parentDir = file.getParentFile();
-    if (parentDir != null && !parentDir.exists()) {
-      parentDir.mkdirs();
-    }
-
-    try {
-      file.createNewFile();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  @Override
+  public void delete(UUID id) {
+    fileStorage.deleteObject(id);
   }
 }

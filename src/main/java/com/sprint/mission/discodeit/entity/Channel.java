@@ -1,104 +1,111 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.common.exception.ChannelException;
+import com.sprint.mission.discodeit.common.model.Auditable;
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.ToString;
 
-/**
- * 채널 정보 관리
- * <p>
- * 공통 속성(고유 아이디, 생성/수정 시간) 관리는 {@link Base} 객체에 위임하여 컴포지션 방식으로 구현한다.
- * <ul>
- *   <li>채널명</li>
- *   <li>생성자</li>
- *   <li>참여자 목록</li>
- * </ul>
- */
-public class Channel implements Serializable {
+@Getter
+@ToString(callSuper = true)
+@Builder(toBuilder = true, access = AccessLevel.PRIVATE)
+public class Channel extends Auditable implements Serializable {
 
   @Serial
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 4947061877205205272L;
 
-  private final Base base;
-  private final User creator;
+  public enum ChannelType {
+    PUBLIC,
+    PRIVATE
+  }
+
+  private final UUID creatorId;
   private String name;
-  private List<User> participants = new ArrayList<>();
+  private String description;
+  private final Set<UUID> participants = new HashSet<>();
+  private final ChannelType type;
 
-  // 외부에서 직접 객체 생성 방지.
-  private Channel(User creator, String name) {
-    this.base = new Base();
-    this.creator = creator;
-    this.name = name;
-    this.participants.add(creator);
+  // 생성자에서 참여자 추가하지 않음
+  private Channel(UUID creatorId, ChannelType type) {
+    this.creatorId = Objects.requireNonNull(creatorId);
+    this.name = null;
+    this.description = null;
+    this.type = type != null ? type : ChannelType.PUBLIC;
   }
 
-  // 정적 팩토리 메서드로 명시적인 생성
-  public static Channel create(User creator, String name) {
-    return new Channel(creator, name);
+  private Channel(UUID creatorId, String name, String description, ChannelType type) {
+    this.creatorId = Objects.requireNonNull(creatorId);
+    this.name = Objects.requireNonNull(name);
+    this.description = description != null ? description : "";
+    this.type = type != null ? type : ChannelType.PUBLIC;
   }
 
-  // 채널 정보 관리
-  public String getName() {
-    return name;
+  public static Channel create(UUID creatorId, String name, String description) {
+    Channel channel = new Channel(creatorId, name, description, ChannelType.PUBLIC);
+    channel.touch();
+    return channel;
+  }
+
+  public static Channel createPublic(UUID creatorId, String name, String description) {
+    return create(creatorId, name, description);
+  }
+
+  public static Channel createPrivate(UUID creatorId) {
+    Channel channel = new Channel(creatorId, ChannelType.PRIVATE);
+    channel.touch();
+    return channel;
   }
 
   public void updateName(String name) {
     this.name = name;
-    base.setUpdatedAt();
+    touch();
   }
 
-  // 참여자 관리
-  public boolean addParticipant(User user) {
-    if (!participants.contains(user)) {
-      participants.add(user);
-      base.setUpdatedAt();
-      return true;
+  public void updateDescription(String description) {
+    this.description = description;
+    touch();
+  }
+
+  public void addParticipant(UUID userId) throws ChannelException {
+    if (participants.contains(userId)) {
+      throw ChannelException.participantAlreadyExists(userId, this.getId());
     }
-    return false;
+    participants.add(userId);
+    touch();
   }
 
-  public List<User> getParticipants() {
-    return new ArrayList<>(participants);
+  public List<UUID> getParticipants() {
+    return List.copyOf(participants);
   }
 
-  public boolean removeParticipant(UUID userId) {
-    boolean removed = participants.removeIf(user -> user.getId().equals(userId));
-    if (removed) {
-      base.setUpdatedAt();
+  public void removeParticipant(UUID userId) throws ChannelException {
+    if (!participants.contains(userId)) {
+      throw ChannelException.participantNotFound(userId, this.getId());
     }
-    return removed;
+    participants.remove(userId);
+    touch();
   }
 
-  // Base 위임 메서드
-  public UUID getId() {
-    return base.getId();
+  public boolean isParticipant(UUID userId) {
+    return participants.contains(userId);
   }
 
-  public long getCreatedAt() {
-    return base.getCreatedAt();
+  public boolean isNotParticipant(UUID userId) {
+    return !isParticipant(userId);
   }
 
-  public long getUpdatedAt() {
-    return base.getUpdatedAt();
-  }
-
-  // 참조 정보 getter
-  public User getCreator() {
-    return creator;
-  }
-
-  @Override
-  public String toString() {
-    return "Channel{" +
-        "id=" + getId() +
-        ", createdAt=" + getCreatedAt() +
-        ", updatedAt=" + getUpdatedAt() +
-        ", name='" + name + '\'' +
-        ", creator=" + creator.getName() +
-        ", participants=" + participants +
-        '}';
+  public boolean matchesFilter(UUID creatorId, String name) {
+    boolean matchesCreator = (creatorId == null || this.creatorId.equals(creatorId));
+    boolean matchesName = (name == null || (this.name != null && this.name.contains(name)));
+    return matchesCreator && matchesName;
   }
 
   @Override
@@ -110,11 +117,11 @@ public class Channel implements Serializable {
       return false;
     }
     Channel channel = (Channel) o;
-    return getId().equals(channel.getId());
+    return Objects.equals(getId(), channel.getId());
   }
 
   @Override
   public int hashCode() {
-    return getId().hashCode();
+    return Objects.hash(getId());
   }
 }
