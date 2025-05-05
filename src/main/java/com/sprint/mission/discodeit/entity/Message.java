@@ -1,6 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -14,64 +21,41 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-public class Message implements Serializable {
+@Getter
+public class Message extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
-
-    private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
-    private String content;
-    private UUID senderId;
+    private final UUID senderId;
     private UUID channelId;
+    private List<UUID> attachmentIds;
+    private String content;
+
 
     public Message(UUID senderId, UUID channelId, String content) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+        super();
         this.senderId = senderId;
         this.channelId = channelId;
         this.content = content;
     }
 
-    public void setUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
+    public Message(UUID senderId, UUID channelId, List<UUID> attachmentIds) {
+        super();
+        this.senderId = senderId;
+        this.channelId = channelId;
+        this.attachmentIds = attachmentIds;
+    }
+
+    public void setAttachmentIds(List<UUID> attachmentIds) {
+        this.attachmentIds = attachmentIds;
+        this.updatedAt = Instant.now();
     }
 
     public void setContent(String content) {
         this.content = content;
-        setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public void setSenderId(UUID senderId) {
-        this.senderId = senderId;
-        setUpdatedAt(System.currentTimeMillis());
+        this.updatedAt = Instant.now();
     }
 
     public void setChannelId(UUID channelId) {
         this.channelId = channelId;
-        setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public UUID getSenderId() {
-        return senderId;
-    }
-
-    public UUID getChannelId() {
-        return channelId;
+        this.updatedAt = Instant.now();
     }
 }

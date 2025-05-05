@@ -17,9 +17,13 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 public interface UserRepository {
-    User createUserByName(String name);
-    User findUserById(UUID userId);
-    List<User> findAllUsers();
+    User createUserByName(String username, String email, String password);
+    User createUserByName(String username, String email, String password, UUID profileId);
+    User findUserById(UUID userId); // both : throw
+    List<User> findAllUsers(); // both: emptyList
+    void updateProfileIdById(UUID userId, UUID profileId); // both: throw
     void updateUserById(UUID userId, String name);
     void deleteUserById(UUID userId);
+    boolean isUniqueUsername(String username);
+    boolean isUniqueEmail(String email);
 }

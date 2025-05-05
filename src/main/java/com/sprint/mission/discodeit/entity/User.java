@@ -1,6 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import java.awt.*;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -14,51 +19,61 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
-public class User implements Serializable {
+@Getter
+public class User extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
-    private String username;
 
-    public User(String username) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+    private String username;
+    private String password;
+    private String email;
+    private UUID profileId;
+
+
+    public User(String username, String email, String password) {
+        super();
         this.username = username;
+        this.email = email;
+        this.password = password;
     }
 
-    public void setUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
+    public User(String username, String password, String email, UUID profileId) {
+        super();
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.profileId = profileId;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+        this.updatedAt = Instant.now();
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+        this.updatedAt = Instant.now();
+    }
+
+    public void setProfileId(UUID profileId) {
+        this.profileId = profileId;
+        this.updatedAt = Instant.now();
     }
 
     public void setUsername(String username) {
         this.username = username;
-        setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getUsername() {
-        return username;
+        this.updatedAt = Instant.now();
     }
 
     @Override
     public String toString() {
-        return "User2{" +
+        return "User{" +
                 "id=" + id +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", profileId=" + profileId +
                 '}';
     }
 }

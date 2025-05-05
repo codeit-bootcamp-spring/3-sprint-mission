@@ -1,10 +1,13 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.Dto.channel.*;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.util.FilePathUtil;
-import com.sprint.mission.discodeit.util.FileSerializer;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
@@ -21,38 +24,41 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
+@Service
+@Profile("file")
+@RequiredArgsConstructor
 public class FileChannelService implements ChannelService {
-    FileChannelRepository fcr = new FileChannelRepository();
+    private final FileChannelRepository fileChannelRepository;
 
-    @Override
-    public Channel createChannel(String name) {
-        Objects.requireNonNull(name, "이름을 입력 없음: FileChannelService.createChannel");
-        return fcr.createChannelByName(name);
-    }
 
+    // empty
     @Override
-    public Channel findChannelById(UUID channelId) {
-        Objects.requireNonNull(channelId, "체널 아이디 입력 없음: FileChannelService.findChannelById");
-        Channel result = fcr.findChannelById(channelId);
-        Objects.requireNonNull(result, "찾는 채널 없음: FileChannelService.findChannelById");
-        return result;
+    public List<ChannelFindResponse> findAllByUserId(ChannelFindByUserIdRequest request) {
+        return List.of();
     }
+    // empty
+    @Override
+    public ChannelFindResponse find(ChannelFindRequest request) {
+        return null;
+    }
+    // empty
+    @Override
+    public ChannelCreateResponse createChannel(PrivateChannelCreateRequest request) {
+        return null;
+    }
+    // empty
+    @Override
+    public ChannelCreateResponse createChannel(PublicChannelCreateRequest request) {
+        return null;
+    }
+    // empty
+    @Override
+    public void update(ChannelUpdateRequest request) {}
 
-    @Override
-    public List<Channel> findAllChannel() {
-        return fcr.findAllChannel();
-    }
-
-    @Override
-    public void updateChannel(UUID channelId, String name) {
-        Objects.requireNonNull(channelId, "채널 아이디 입력 없음: FileChannelService.updateChannel");
-        Objects.requireNonNull(name, "이름 입력 없음: FileChannelService.updateChannel");
-        fcr.updateChannel(channelId, name);
-    }
 
     @Override
     public void deleteChannel(UUID channelId) {
         Objects.requireNonNull(channelId, "no channelId: FileChannelService.deleteChannel");
-        fcr.deleteChannel(channelId);
+        fileChannelRepository.deleteChannel(channelId);
     }
 }

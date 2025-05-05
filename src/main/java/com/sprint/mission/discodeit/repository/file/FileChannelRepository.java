@@ -2,15 +2,18 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.util.FilePathUtil;
+import com.sprint.mission.discodeit.util.FilePathProperties;
 import com.sprint.mission.discodeit.util.FileSerializer;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,24 +28,38 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
+
+
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
+@Repository
+@RequiredArgsConstructor
 public class FileChannelRepository implements ChannelRepository {
-    FilePathUtil filePathUtil = new FilePathUtil();
-    FileSerializer fileSerializer = new FileSerializer();
+    private final FilePathProperties filePathUtil;
 
 
     @Override
-    public Channel createChannelByName(String name) {
-        Channel channel = new Channel(name);
+    public Channel createPrivateChannelByName() {
+        Channel channel = new Channel();
         Path path = filePathUtil.getChannelFilePath(channel.getId());
-        fileSerializer.writeFile(path,channel);
+        FileSerializer.writeFile(path,channel);
+        return channel;
+    }
+
+    @Override
+    public Channel createPublicChannelByName(String name, String description) {
+        Channel channel = new Channel(name, description);
+        Path path = filePathUtil.getChannelFilePath(channel.getId());
+        FileSerializer.writeFile(path,channel);
         return channel;
     }
 
     @Override
     public Channel findChannelById(UUID channelId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
-        return fileSerializer.readFile(path, Channel.class);
-
+        if (!Files.exists(path)) {
+            return null;
+        }
+        return FileSerializer.readFile(path, Channel.class);
     }
 
     @Override
@@ -51,7 +68,7 @@ public class FileChannelRepository implements ChannelRepository {
         Path directory = filePathUtil.getChannelDirectory();
 
         if (!Files.exists(directory)) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
 
         try {
@@ -80,14 +97,18 @@ public class FileChannelRepository implements ChannelRepository {
         if (!Files.exists(path)) {
             throw new RuntimeException("파일 없음: FileChannelRepository.updateChannel");
         }
-        Channel channel = fileSerializer.readFile(path, Channel.class);
+        Channel channel = FileSerializer.readFile(path, Channel.class);
         channel.setName(name);
-        fileSerializer.writeFile(path, channel);
+        FileSerializer.writeFile(path, channel);
     }
 
     @Override
     public void deleteChannel(UUID channelId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
+
+        if (!Files.exists(path)) {
+            throw new IllegalStateException("삭제할 파일 없음");
+        }
 
         try{
             Files.delete(path);
