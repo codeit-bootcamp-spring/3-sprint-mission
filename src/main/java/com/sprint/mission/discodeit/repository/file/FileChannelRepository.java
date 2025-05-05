@@ -1,13 +1,15 @@
-package com.sprint.mission.discodeit.repository.File;
+package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Repository
 public class FileChannelRepository implements ChannelRepository {
 
     private final Path dir = Paths.get(System.getProperty("user.dir"), "data", "channels");
@@ -23,13 +25,14 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public void save(Channel channel) {
+    public Channel save(Channel channel) {
         Path filePath = dir.resolve(channel.getId().toString().concat(".ser"));
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
             oos.writeObject(channel);
         } catch (IOException e) {
             throw new RuntimeException("채널 저장 실패", e);
         }
+        return channel;
     }
 
     @Override

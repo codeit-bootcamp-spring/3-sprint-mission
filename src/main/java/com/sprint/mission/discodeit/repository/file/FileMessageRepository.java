@@ -1,13 +1,15 @@
-package com.sprint.mission.discodeit.repository.File;
+package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Repository
 public class FileMessageRepository implements MessageRepository {
 
     private final Path dir = Paths.get(System.getProperty("user.dir"), "data", "messages");
@@ -23,13 +25,14 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void save(Message message) {
+    public Message save(Message message) {
         Path filePath = dir.resolve(message.getId().toString().concat(".ser"));
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
             oos.writeObject(message);
         } catch (IOException e) {
             throw new RuntimeException("메시지 저장 실패", e);
         }
+        return message;
     }
 
     @Override

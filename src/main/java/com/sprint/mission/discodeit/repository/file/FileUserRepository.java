@@ -1,13 +1,15 @@
-package com.sprint.mission.discodeit.repository.File;
+package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Repository
 public class FileUserRepository implements UserRepository {
 
     private final Path userDir = Paths.get(System.getProperty("user.dir"), "data", "users");
@@ -23,13 +25,14 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public void save(User user) {
+    public User save(User user) {
         Path filePath = userDir.resolve(user.getId().toString().concat(".ser"));
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
             oos.writeObject(user);
         } catch (IOException e) {
             throw new RuntimeException("유저 저장 실패", e);
         }
+        return user;
     }
 
     @Override

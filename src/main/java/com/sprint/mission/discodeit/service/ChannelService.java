@@ -16,4 +16,5 @@ public interface ChannelService {
     Channel update(Channel channel);
 
     void delete(UUID id);
+
 }
