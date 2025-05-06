@@ -1,51 +1,46 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
+import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.*;
 
-public class Channel extends BaseEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private String channelName;
-    private final Set<UUID> userIds = new HashSet<>();
-    private final List<UUID> messageIds = new ArrayList<>();
+@Getter
+public class Channel implements Serializable {
 
-    public Channel(String channelName) {
-        this.channelName = channelName;
+    @Serial
+    private static final long serialVersionUID = 3253334103732539416L;
+
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private ChannelType type;
+    private String name;
+    private String description;
+
+    public Channel(ChannelType type, String name, String description) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        this.updatedAt = createdAt;
+        this.type = type;
+        this.name = name;
+        this.description = description;
     }
 
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public void updateChannelName(String channelName) {
-        this.channelName = channelName;
-        updateTime();
-    }
-
-    public Set<UUID> getUserIds() {
-        return userIds;
-    }
-
-    public List<UUID> getMessageIds() { return messageIds; }
-
-    public void addUser(UUID userId) {
-        userIds.add(userId);
-        updateTime();
-    }
-
-    public void addMessage(UUID messageId) {
-        messageIds.add(messageId);
-        updateTime();
-    }
-
-    @Override
-    public String toString() {
-        return "Channel{" +
-                "channelName='" + channelName + '\'' +
-                ", userIds=" + userIds +
-                ", messageIds=" + messageIds +
-                ", createdAt=" + new Date(getCreatedAt()) +
-                ", updatedAt=" + new Date(getUpdatedAt()) +
-                '}';
+    public void update(String newName, String newDescription) {
+        boolean updated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            updated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            updated = true;
+        }
+        if (updated) {
+            this.updatedAt = Instant.now();
+        }
     }
 }
