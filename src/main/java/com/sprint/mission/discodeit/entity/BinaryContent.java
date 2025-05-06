@@ -14,29 +14,19 @@ public class BinaryContent implements Serializable {
     @Serial
     private static final long serialVersionUID = 1887370024504996215L;
 
-    private final UUID id;
-    private final Instant createdAt;
+    private UUID id;
+    private Instant createdAt;
+    private String fileName;
+    private Long size;
+    private String contentType;
+    private byte[] bytes;
 
-    private final byte[] data;
-    private final String contentType;
-    private final String fileName;
-
-    public BinaryContent(byte[] data, String contentType, String fileName) {
+    public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.data = data;
-        this.contentType = contentType;
         this.fileName = fileName;
-    }
-
-    @Override
-    public String toString() {
-        return "BinaryContent{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", data=" + Arrays.toString(data) +
-                ", contentType='" + contentType + '\'' +
-                ", fileName='" + fileName + '\'' +
-                '}';
+        this.size = size;
+        this.contentType = contentType;
+        this.bytes = bytes;
     }
 }

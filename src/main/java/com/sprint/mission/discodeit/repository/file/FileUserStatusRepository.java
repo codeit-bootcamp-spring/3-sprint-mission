@@ -2,57 +2,111 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
+@Repository
 public class FileUserStatusRepository implements UserStatusRepository {
-    private static final String FILE_PATH = "data/user-statuses.ser";
-    private Map<UUID, UserStatus> data;
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
 
     public FileUserStatusRepository() {
-        this.data = load();
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", UserStatus.class.getSimpleName());
+        if (Files.notExists(DIRECTORY)) {
+            try {
+                Files.createDirectories(DIRECTORY);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
     }
 
     @Override
     public UserStatus save(UserStatus userStatus) {
-        data.put(userStatus.getId(), userStatus);
-        saveToFile();
+        Path path = resolvePath(userStatus.getId());
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
+            oos.writeObject(userStatus);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return userStatus;
     }
 
     @Override
     public Optional<UserStatus> findById(UUID id) {
-        return Optional.ofNullable(data.get(id));
+        Path path = resolvePath(id);
+        if (!Files.exists(path)) return Optional.empty();
+        try (
+                FileInputStream fis = new FileInputStream(path.toFile());
+                ObjectInputStream ois = new ObjectInputStream(fis)
+        ) {
+            return Optional.of((UserStatus) ois.readObject());
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Optional<UserStatus> findByUserId(UUID userId) {
+        return findAll().stream()
+                .filter(us -> us.getUserId().equals(userId))
+                .findFirst();
     }
 
     @Override
     public List<UserStatus> findAll() {
-        return new ArrayList<>(data.values());
+        try {
+            return Files.list(DIRECTORY)
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (UserStatus) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return Files.exists(resolvePath(id));
     }
 
     @Override
     public void deleteById(UUID id) {
-        data.remove(id);
-        saveToFile();
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<UUID, UserStatus> load() {
-        File file = new File(FILE_PATH);
-        if (!file.exists()) return new HashMap<>();
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, UserStatus>) ois.readObject();
-        } catch (Exception e) {
-            return new HashMap<>();
-        }
-    }
-
-    private void saveToFile() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
-            oos.writeObject(data);
+        try {
+            Files.deleteIfExists(resolvePath(id));
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void deleteByUserId(UUID userId) {
+        findByUserId(userId).ifPresent(status -> deleteById(status.getId()));
     }
 }

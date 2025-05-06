@@ -13,51 +13,28 @@ public class Message implements Serializable {
     @Serial
     private static final long serialVersionUID = 5140283631663474458L;
 
-    private final UUID id;
-    private final Instant createdAt;
+    private UUID id;
+    private Instant createdAt;
     private Instant updatedAt;
-    private String msgContent;
-    private final UUID authorId;
-    private final UUID channelId;
-    private final List<UUID> attachmentIds = new ArrayList<>();
+    private String content;
+    private UUID channelId;
+    private UUID authorId;
+    private List<UUID> attachmentIds;
 
-    public Message(String msgContent, UUID authorId, UUID channelId) {
+    public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = createdAt;
-        this.msgContent = msgContent;
-        this.authorId = authorId;
+        this.content = content;
         this.channelId = channelId;
+        this.authorId = authorId;
+        this.attachmentIds = attachmentIds;
     }
 
-    public void updateTime() {
-        this.updatedAt = Instant.now();
-    }
-
-    public void updateMsgContent(String msgContent) {
-        this.msgContent = msgContent;
-        updateTime();
-    }
-
-    public boolean isUpdated() {
-        return !Objects.equals(getUpdatedAt(), getCreatedAt());
-    }
-
-    public void addAttachment(UUID attachmentId) {
-        this.attachmentIds.add(attachmentId);
-        updateTime();
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        Instant displayTime = isUpdated() ? getUpdatedAt() : getCreatedAt();
-        sb.append("[").append(Date.from(displayTime)).append("] ");
-        sb.append(msgContent);
-        if (isUpdated()) {
-            sb.append(" (수정됨)");
+    public void update(String newContent) {
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            this.updatedAt = Instant.now();
         }
-        sb.append(" [").append(authorId).append("] ");
-        return sb.toString();
     }
 }

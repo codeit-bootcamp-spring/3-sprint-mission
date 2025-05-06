@@ -13,63 +13,34 @@ public class Channel implements Serializable {
     @Serial
     private static final long serialVersionUID = 3253334103732539416L;
 
-    private final UUID id;
-    private final Instant createdAt;
+    private UUID id;
+    private Instant createdAt;
     private Instant updatedAt;
-    private String channelName;
-    private String description;
     private ChannelType type;
-    private final Set<UUID> userIds = new HashSet<>();
-    private final List<UUID> messageIds = new ArrayList<>();
+    private String name;
+    private String description;
 
-    public Channel(String channelName, String description, ChannelType type) {
+    public Channel(ChannelType type, String name, String description) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = createdAt;
-        this.channelName = channelName;
-        this.description = description;
         this.type = type;
+        this.name = name;
+        this.description = description;
     }
 
-    public void updateTime() {
-        this.updatedAt = Instant.now();
-    }
-
-    public void updateChannel(String channelName, String description) {
-        boolean anyValueUpdated = false;
-        if (channelName != null && !channelName.equals(this.channelName)) {
-            this.channelName = channelName;
-            anyValueUpdated = true;
+    public void update(String newName, String newDescription) {
+        boolean updated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            updated = true;
         }
-        if (description != null && !description.equals(this.description)) {
-            this.description = description;
-            anyValueUpdated = true;
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            updated = true;
         }
-        if (anyValueUpdated) {
-            updateTime();
+        if (updated) {
+            this.updatedAt = Instant.now();
         }
-    }
-
-    public void addUser(UUID userId) {
-        userIds.add(userId);
-        updateTime();
-    }
-
-    public void addMessage(UUID messageId) {
-        messageIds.add(messageId);
-        updateTime();
-    }
-
-    @Override
-    public String toString() {
-        return "Channel{" +
-                "channelName='" + channelName + '\'' +
-                ", type=" + type +
-                ",description='" + description + '\'' +
-                ", userIds=" + userIds +
-                ", messageIds=" + messageIds +
-                ", createdAt=" + Date.from(createdAt) +
-                ", updatedAt=" + Date.from(updatedAt) +
-                '}';
     }
 }

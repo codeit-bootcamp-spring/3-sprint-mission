@@ -6,8 +6,12 @@ import java.util.*;
 
 
 public interface UserRepository {
-    User save(User user); // 저장 로직
-    Optional<User> findById(UUID userId); // 저장 로직
-    List<User> findAll(); // 저장 로직
-    void deleteById(UUID userId); // 저장 로직
+    User save(User user);
+    Optional<User> findById(UUID id);
+    Optional<User> findByUsername(String username);
+    List<User> findAll();
+    boolean existsById(UUID id);
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
+    void deleteById(UUID id);
 }
