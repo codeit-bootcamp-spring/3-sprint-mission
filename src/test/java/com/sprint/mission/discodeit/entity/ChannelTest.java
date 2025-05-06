@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-import com.sprint.mission.discodeit.common.exception.ChannelException;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel.ChannelType;
+import com.sprint.mission.discodeit.exception.ChannelException;
 import com.sprint.mission.discodeit.fixture.ChannelFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import java.time.Instant;

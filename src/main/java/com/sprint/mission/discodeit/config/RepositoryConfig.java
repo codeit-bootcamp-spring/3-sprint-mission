@@ -27,7 +27,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RepositoryConfig {
 
-  // UserRepository
   @Bean
   @ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "file")
   public UserRepository fileUserRepository(RepositoryProperties props) {
@@ -41,7 +40,6 @@ public class RepositoryConfig {
     return new JCFUserRepository();
   }
 
-  // UserStatusRepository
   @Bean
   @ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "file")
   public UserStatusRepository fileUserStatusRepository(RepositoryProperties props) {
@@ -56,7 +54,6 @@ public class RepositoryConfig {
     return new JCFUserStatusRepository();
   }
 
-  // ChannelRepository
   @Bean
   @ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "file")
   public ChannelRepository fileChannelRepository(RepositoryProperties props) {
@@ -70,7 +67,6 @@ public class RepositoryConfig {
     return new JCFChannelRepository();
   }
 
-  // MessageRepository
   @Bean
   @ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "file")
   public MessageRepository fileMessageRepository(RepositoryProperties props) {
@@ -84,7 +80,6 @@ public class RepositoryConfig {
     return new JCFMessageRepository();
   }
 
-  // BinaryContentRepository
   @Bean
   @ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "file")
   public BinaryContentRepository fileBinaryContentRepository(RepositoryProperties props) {
@@ -98,8 +93,7 @@ public class RepositoryConfig {
   public BinaryContentRepository jcfBinaryContentRepository() {
     return new JCFBinaryContentRepository();
   }
-
-  // ReadStatusRepository
+  
   @Bean
   @ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "file")
   public ReadStatusRepository fileReadStatusRepository(RepositoryProperties props) {

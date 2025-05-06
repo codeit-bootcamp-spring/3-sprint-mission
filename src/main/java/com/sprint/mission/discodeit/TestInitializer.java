@@ -67,7 +67,7 @@ public class TestInitializer {
       User user) {
     authService.login(new LoginRequest(user.getName(), user.getPassword()));
     UserStatus userStatus = userStatusService.updateByUserId(user.getId());
-    log.info("유저 로그인 완료: 이름: {}, 상태: {}, UUID: {}", user.getName(), userStatus.isCurrentlyActive(),
+    log.info("유저 로그인 완료: 이름: {}, 상태: {}, UUID: {}", user.getName(), userStatus.isOnline(),
         user.getId());
   }
 

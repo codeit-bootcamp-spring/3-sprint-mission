@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.common.model.ImmutableAuditable;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
@@ -36,7 +35,7 @@ public class BinaryContent extends ImmutableAuditable implements Serializable {
   }
 
   // 바이너리 데이터 정보
-  private final byte[] data;
+  private final byte[] bytes;
   private final String fileName;
   private final String mimeType;
 
@@ -45,9 +44,9 @@ public class BinaryContent extends ImmutableAuditable implements Serializable {
   private final UUID userId;
   private UUID messageId;
 
-  private BinaryContent(byte[] data, String fileName, String mimeType, ContentType contentType,
+  private BinaryContent(byte[] bytes, String fileName, String mimeType, ContentType contentType,
       UUID userId, UUID messageId) {
-    this.data = data;
+    this.bytes = bytes;
     this.fileName = fileName;
     this.mimeType = mimeType;
     this.contentType = contentType;
@@ -55,11 +54,11 @@ public class BinaryContent extends ImmutableAuditable implements Serializable {
     this.messageId = messageId;
   }
 
-  public static BinaryContent createProfileImage(byte[] data, String fileName, String mimeType,
+  public static BinaryContent createProfileImage(byte[] bytes, String fileName, String mimeType,
       UUID userId) {
     Objects.requireNonNull(userId, "컨텐트 생성 시 유저 id는 필수입니다.");
     return BinaryContent.builder()
-        .data(Objects.requireNonNull(data))
+        .bytes(Objects.requireNonNull(bytes))
         .fileName(Objects.requireNonNull(fileName))
         .mimeType(Objects.requireNonNull(mimeType))
         .contentType(ContentType.PROFILE_IMAGE)
@@ -68,10 +67,11 @@ public class BinaryContent extends ImmutableAuditable implements Serializable {
         .build();
   }
 
-  public static BinaryContent createMessageAttachment(byte[] data, String fileName, String mimeType,
+  public static BinaryContent createMessageAttachment(byte[] bytes, String fileName,
+      String mimeType,
       UUID messageId) {
     return BinaryContent.builder()
-        .data(Objects.requireNonNull(data))
+        .bytes(Objects.requireNonNull(bytes))
         .fileName(Objects.requireNonNull(fileName))
         .mimeType(Objects.requireNonNull(mimeType))
         .contentType(ContentType.MESSAGE_ATTACHMENT)

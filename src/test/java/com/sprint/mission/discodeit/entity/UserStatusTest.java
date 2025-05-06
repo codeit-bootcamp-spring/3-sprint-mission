@@ -29,7 +29,7 @@ public class UserStatusTest {
           () -> assertThat(userStatus.getId()).isNotNull(),
           () -> assertThat(userStatus.getCreatedAt()).isNotNull(),
           () -> assertThat(userStatus.getUpdatedAt()).isEqualTo(userStatus.getCreatedAt()),
-          () -> assertThat(userStatus.isCurrentlyActive()).isTrue()
+          () -> assertThat(userStatus.isOnline()).isTrue()
       );
     }
   }
@@ -58,7 +58,7 @@ public class UserStatusTest {
     void shouldBeActiveWithinFiveMinutes() {
       UserStatus userStatus = UserStatusFixture.createValidUserStatus(UUID.randomUUID());
 
-      assertThat(userStatus.isCurrentlyActive()).isTrue();
+      assertThat(userStatus.isOnline()).isTrue();
     }
 
     @Test
@@ -66,7 +66,7 @@ public class UserStatusTest {
     void shouldBeInactiveAfterFiveMinutes() {
       UserStatus userStatus = UserStatusFixture.createOfflineUserStatus(UUID.randomUUID());
 
-      assertThat(userStatus.isCurrentlyActive()).isFalse();
+      assertThat(userStatus.isOnline()).isFalse();
     }
   }
 

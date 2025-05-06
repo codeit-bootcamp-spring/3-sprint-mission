@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.sprint.mission.discodeit.dto.ChannelResponse;
-import com.sprint.mission.discodeit.dto.data.MessageResponse;
-import com.sprint.mission.discodeit.dto.data.PrivateChannelResponse;
-import com.sprint.mission.discodeit.dto.data.PublicChannelResponse;
-import com.sprint.mission.discodeit.dto.data.UserResponse;
+import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.PrivateChannelResponse;
+import com.sprint.mission.discodeit.dto.response.PublicChannelResponse;
+import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;

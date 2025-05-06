@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.common.model.Auditable;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import java.io.Serial;
 import java.io.Serializable;

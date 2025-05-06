@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.common.model.Auditable;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Duration;
@@ -56,7 +55,7 @@ public class UserStatus extends Auditable implements Serializable {
    *
    * @return 현재 접속 중인 유저이면 true, 아니면 false
    */
-  public boolean isCurrentlyActive() {
+  public boolean isOnline() {
     Instant now = Instant.now();
     Duration duration = Duration.between(lastActiveAt, now);
     return duration.compareTo(ACTIVE_DURATION) <= 0;

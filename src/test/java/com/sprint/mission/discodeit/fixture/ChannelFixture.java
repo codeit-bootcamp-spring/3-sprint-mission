@@ -36,9 +36,9 @@ public class ChannelFixture {
    */
   public static Channel createCustomPublicChannelWithParticipant(
       PublicChannelCreateRequest request) {
-    Channel channel = Channel.createPublic(request.creator(), request.name(),
+    Channel channel = Channel.createPublic(request.creatorId(), request.name(),
         request.description());
-    channel.addParticipant(request.creator());
+    channel.addParticipant(request.creatorId());
     return channel;
   }
 
@@ -71,7 +71,7 @@ public class ChannelFixture {
    * Public 채널 생성 (Request 기반) - 참여자 미포함
    */
   public static Channel createCustomPublicChannel(PublicChannelCreateRequest request) {
-    return Channel.createPublic(request.creator(), request.name(), request.description());
+    return Channel.createPublic(request.creatorId(), request.name(), request.description());
   }
 
   /**

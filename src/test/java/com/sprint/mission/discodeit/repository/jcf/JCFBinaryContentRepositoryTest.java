@@ -61,7 +61,7 @@ class JCFBinaryContentRepositoryTest {
 
     // then
     assertNotNull(savedContent.getId());
-    assertEquals(contentToSave.getData(), savedContent.getData());
+    assertEquals(contentToSave.getBytes(), savedContent.getBytes());
     assertEquals(contentToSave.getFileName(), savedContent.getFileName());
     assertEquals(contentToSave.getMimeType(), savedContent.getMimeType());
   }

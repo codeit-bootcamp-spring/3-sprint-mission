@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.common.exception.ChannelException;
-import com.sprint.mission.discodeit.common.model.Auditable;
+import com.sprint.mission.discodeit.exception.ChannelException;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashSet;

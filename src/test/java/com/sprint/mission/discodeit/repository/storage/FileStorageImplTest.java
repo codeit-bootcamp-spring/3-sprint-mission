@@ -9,7 +9,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.fixture.ChannelFixture;
 import com.sprint.mission.discodeit.fixture.MessageFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
-import com.sprint.mission.discodeit.testutil.MemoryUtil;
+import com.sprint.mission.discodeit.util.MemoryUtil;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;

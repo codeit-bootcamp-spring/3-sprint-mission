@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.common.exception.FileException;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.FileException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.storage.FileStorage;
 import java.util.List;

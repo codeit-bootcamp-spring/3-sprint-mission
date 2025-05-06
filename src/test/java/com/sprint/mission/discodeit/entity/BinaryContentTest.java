@@ -29,7 +29,7 @@ public class BinaryContentTest {
       assertAll(
           () -> assertNotNull(content.getId(), "ID는 null이 아니어야 한다"),
           () -> assertNotNull(content.getCreatedAt(), "생성 시간은 null이 아니어야 한다"),
-          () -> assertArrayEquals(BinaryContentFixture.getDefaultData(), content.getData(),
+          () -> assertArrayEquals(BinaryContentFixture.getDefaultData(), content.getBytes(),
               "데이터가 올바르게 설정되어야 한다"),
           () -> assertEquals(BinaryContentFixture.getDefaultFileName(), content.getFileName(),
               "파일명이 올바르게 설정되어야 한다"),

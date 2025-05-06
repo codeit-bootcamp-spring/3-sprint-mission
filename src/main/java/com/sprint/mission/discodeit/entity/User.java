@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.common.model.Auditable;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
