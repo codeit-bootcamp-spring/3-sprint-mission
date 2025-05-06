@@ -1,54 +1,37 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
-
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.UUID;
+import lombok.Data;
+import lombok.Getter;
 
+@Data
+@Getter
 public class User implements Serializable {
-    private static final long serialVersionUID = 1L;
     private final UUID id;
-    private final String userid;
+    private final String username;
+    private String email;
     private String password;
     private String name;
-    private final Long createdAt;
-    private Long updatedAt;
+    private UUID profileId;
     private boolean isLogin;
+    private final Instant createdAt;
+    private Instant updatedAt;
+    private Instant loginTime;
 
-    public User(String userid, String password, String name) {
+    public User(String username, String email, String password, String name) {
         this.id = UUID.randomUUID();
-        this.userid = userid;
+        this.username = username;
+        this.email = email;
         this.password = password;
         this.name = name;
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = System.currentTimeMillis();
+        this.profileId = null;
         this.isLogin = false;
-    }
-
-    public UUID getId() {
-
-        return id;
-    }
-
-    public String getUserId() {
-
-        return userid;
-    }
-
-    public String getPassword() {
-
-        return password;
-    }
-
-    public String getName() {
-
-        return name;
-    }
-
-    public boolean getIsLogin() {
-
-        return isLogin;
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+        this.loginTime = Instant.now();
     }
 
     // Date 타입 포매팅
@@ -62,36 +45,48 @@ public class User implements Serializable {
         return formattedUpdatedTime;
     }
 
+    public String getLoginTime() {
+        String formattedLoginTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(loginTime);
+        return formattedLoginTime;
+    }
+
     @Override
     public String toString() {
 
         return "User{" +
 //                "id=" + id +
-                "userid='" + userid + '\'' +
+                "username='" + username + '\'' +
+                ", email='" + email + '\'' +
                 ", name='" + name + '\'' +
                 ", createdAt=" + getCreatedAt() +
                 ", updatedAt=" + getUpdatedAt() +
-                ", isLogin=" + isLogin +
+                ", loginTime=" + getLoginTime() +
+                ", isLogin=" + isLogin() +
                 '}';
-    }
-
-    public void setLogin() {
-        this.isLogin = true;
-    }
-
-    public void setLogout() {
-        this.isLogin = false;
     }
 
     public void updateName(String name) {
         this.name = name;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateEmail(String email) {
+        this.email = email;
+        this.updatedAt = Instant.now();
     }
 
     public void updatePassword(String password) {
         this.password = password;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
+    public void updateProfile(UUID newProfileId) {
+        this.profileId = newProfileId;
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateLoginTime() {
+        this.loginTime = Instant.now();
+    }
 }
 

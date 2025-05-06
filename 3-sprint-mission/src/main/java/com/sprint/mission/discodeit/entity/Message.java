@@ -1,51 +1,33 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+import lombok.Data;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.UUID;
 
+@Data
+@Getter
 public class Message implements Serializable {
-    private static final long serialVersionUID = 1L;
     private String text;
     private final UUID id;
-    private final UUID sender;
-    private final UUID channel;
-    private final Long createdAt;
-    private Long updatedAt;
+    private final UUID authorId;
+    private final UUID channelId;
+    private final Instant createdAt;
+    private Instant updatedAt;
     private boolean updated;
 
 
     public Message(UUID currentUserId, UUID currentChannelId, String text) {
         this.id = UUID.randomUUID();
-        this.sender = currentUserId;
-        this.channel = currentChannelId;
+        this.authorId = currentUserId;
+        this.channelId = currentChannelId;
         this.text = text;
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = System.currentTimeMillis();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         this.updated = false;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    // Sender 이름 반환
-    public UUID getSender() {
-        return sender;
-    }
-
-    // CHannel 이름 반환
-    public UUID getChannel() {
-        return channel;
     }
 
     // Date 타입 포매팅
@@ -65,7 +47,7 @@ public class Message implements Serializable {
         if (!this.updated) {
 
             return //"[channel=" + getChannel() + "] " +
-                    "sender=" + getSender() + " : " +
+                    "sender=" + getAuthorId() + " : " +
                     "Message=" + text + " " +
                     // 포매팅된 date 사용
                     "[createdAt=" + getCreatedAt() + "]"
@@ -73,7 +55,7 @@ public class Message implements Serializable {
         } else {
 
             return //"[channel=" + getChannel() + "] " +
-                    "sender=" + getSender() + " : " +
+                    "sender=" + getAuthorId() + " : " +
                     "Message=" + text + " " +
                     // 포매팅된 date 사용
                     "[createdAt=" + getCreatedAt() + "]" +
@@ -83,14 +65,14 @@ public class Message implements Serializable {
 
     }
 
-    public void updateText(UUID id, String text) {
+    public void updateText(String text) {
         this.text = text;
         updateDateTime();
         updated();
     }
 
     public void updateDateTime() {
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
     public void updated() {

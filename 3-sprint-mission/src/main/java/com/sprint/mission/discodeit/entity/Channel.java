@@ -1,48 +1,39 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
-import com.sprint.mission.discodeit.service.UserService;
+import lombok.Data;
+import lombok.Getter;
 
 import java.io.Serializable;
-import java.sql.Array;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Data
+@Getter
 public class Channel implements Serializable {
-    private static final long serialVersionUID = 1L;
     private final UUID id;
     private String name;
     private final UUID maker;
+    private final boolean isPrivate;
     private List<UUID> entry;
-    private final Long createdAt;
-    private Long updatedAt;
+//    ㄴ DB로 이관하는 경우, 필드값에 List가 들어가는 건 적절치 않음.
+//    차라리 table을 따로 만들어서 관리하는 게 나음.
+    private final Instant createdAt;
+    private Instant updatedAt;
+    private Instant enteredAt;
 
-    public Channel(UUID currentUser, String name) {
+    public Channel(UUID userId, String name, boolean isPrivate) {
         this.id = UUID.randomUUID();
         this.name = name;
-        this.maker = currentUser;
+        this.maker = userId;
+        this.isPrivate = false;
         this.entry = new ArrayList<>();
-        this.entry.add(currentUser);
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = System.currentTimeMillis();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public UUID getMaker() {
-        return maker;
-    }
-
-    public List<UUID> getEntry() {
-        return entry;
+        this.entry.add(userId);
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+        this.enteredAt = Instant.now();
     }
 
     // Date 타입 포매팅
@@ -69,19 +60,23 @@ public class Channel implements Serializable {
     }
 
     public void addEntry(UUID userId) {
-        if (entry == null) {
-            this.entry.add(maker);
-        } else {
-            this.entry.add(userId);
-        }
+        this.entry.add(userId);
     }
 
-    public void updateById(UUID id, String name) {
+    public void addEntry(List<UUID> userIds) {
+        this.entry.addAll(userIds);
+    }
+
+    public void updateName(String name) {
         this.name = name;
         updateDateTime();
     }
 
     public void updateDateTime() {
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateEnteredAt() {
+        this.enteredAt = Instant.now();
     }
 }
