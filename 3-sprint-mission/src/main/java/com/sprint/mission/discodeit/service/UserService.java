@@ -6,16 +6,19 @@ import java.util.List;
 import java.util.UUID;
 
 import com.sprint.mission.discodeit.entity.User;
+import org.springframework.stereotype.Service;
 
 public interface UserService {
-    User create() throws IOException;
+
+    User create(String username, String email, String password, String name) throws IOException;
     User find(UUID id);
-    User findByUserId(String userid);
+    User findByUsername(String username);
     List<User> findByName(String name);
+    User findByEmail(String email);
     List<User> findAll();
-    User update(UUID id) throws IOException;
-    void delete(UUID id);
-    // Login, Logout 메소드
-    User login() throws IOException;
-    void logout(User user);
+    void updateName(UUID id, String name) throws IOException, IllegalAccessException;
+    void updatePassword(UUID id, String password) throws IOException, IllegalAccessException;
+    void updateEmail(UUID id, String email) throws IOException, IllegalAccessException;
+    void updateProfile(UUID id, UUID profileId) throws IOException, IllegalAccessException;
+    void delete(UUID id) throws IOException, IllegalAccessException;
 }
