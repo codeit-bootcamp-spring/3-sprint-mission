@@ -1,44 +1,67 @@
 package com.sprint.mission.discodeit.entity;
 
-
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import lombok.Getter;
 
-public class Message extends Common {
-    private final UUID userId;
-    private final UUID channelId;
+public class Message implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Getter
+    private UUID id;
+
+    @Getter
+    private Instant createdAt;
+
+    @Getter
+    private Instant updatedAt;
+
+    @Getter
     private String content;
 
-    public Message(UUID userId, UUID channelId, String content) {
-        super();
-        this.userId = userId;
-        this.channelId = channelId;
+    @Getter
+    private UUID channelId;
+
+    @Getter
+    private UUID authorId;
+
+    @Getter
+    private List<UUID> attachmentIds;
+
+    public Message(String content, UUID channelId, UUID authorId) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        //
         this.content = content;
+        this.channelId = channelId;
+        this.authorId = authorId;
+        this.attachmentIds = new ArrayList<>();
     }
 
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public UUID getChannelId() {
-        return channelId;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void updateContent(String newContent) {
-        if (newContent != null && !newContent.isEmpty()) {
+    public void update(String newContent) {
+        boolean anyValueUpdated = false;
+        if (newContent != null && !newContent.equals(this.content)) {
             this.content = newContent;
-            super.updateUpdatedAt();
+            anyValueUpdated = true;
         }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
+    }
+
+    public void addBinaryContent(UUID fileId) {
+        this.attachmentIds.add(fileId);
     }
 
     @Override
     public String toString() {
         return "Message{" +
                 "content='" + getContent() + '\'' +
-                ", user='" + getUserId() + '\'' +
+                ", user='" + getAuthorId() + '\'' +
                 ", channel='" + getChannelId() + '\'' +
                 ", id='" + getId() + '\'' +
                 ", createdAt='" + getCreatedAt() + '\'' +

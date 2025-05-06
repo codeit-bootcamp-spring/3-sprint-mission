@@ -1,67 +1,136 @@
-package com.sprint.mission.discodeit.service.file;
-
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.file.FileUserRepository;
-import com.sprint.mission.discodeit.service.UserService;
-import java.util.List;
-import java.util.UUID;
-
-/**
- * FileUserService
- * - File 기반 영속 저장소를 사용하는 UserService 구현체
- * - JCFUserService와 비교하여 다음과 같은 공통점과 차이점이 존재
- *
- * [공통점]
- * UserService 인터페이스를 구현한다.
- * 동일한 CRUD 메서드 시그니처를 가진다.
- * 비즈니스 로직은 동일하게 작동한다.
- *
- * [차이점]
- * 저장 방식이 다르다:
- * - JCFUserService는 메모리 상의 HashMap에만 저장
- * - FileUserService는 저장 이후 파일로 직렬화하여 영속화
- *
- * 초기화 방식이 다르다:
- * - JCFUserService는 빈 Map으로 시작
- * - FileUserService는 파일에서 `store.load()`로 데이터 복원
- *
- * 책임 분리가 명확해진다:
- * - FileUserService는 비즈니스 로직과 저장 로직이 구분되어 있다.
- * - JCFUserService는 Map에 의존
- *
- */
-public class FileUserService implements UserService {
-
-    private final UserRepository userRepository;
-
-    public FileUserService() {
-        this.userRepository = new FileUserRepository();
-    }
-
-    @Override
-    public User createUser(String name) {
-        return userRepository.save(new User(name));
-    }
-
-    @Override
-    public User getUser(UUID id) {
-        return userRepository.findById(id);
-    }
-
-    @Override
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-
-    @Override
-    public User updateUser(User user, String newName) {
-        user.updateName(newName);
-        return userRepository.save(user);
-    }
-
-    @Override
-    public User deleteUser(User user) {
-        return userRepository.delete(user);
-    }
-}
+//package com.sprint.mission.discodeit.service.file;
+//
+//import com.sprint.mission.discodeit.entity.User;
+//import com.sprint.mission.discodeit.service.UserService;
+//import java.io.FileInputStream;
+//import java.io.FileOutputStream;
+//import java.io.IOException;
+//import java.io.ObjectInputStream;
+//import java.io.ObjectOutputStream;
+//import java.nio.file.Files;
+//import java.nio.file.Path;
+//import java.nio.file.Paths;
+//import java.util.List;
+//import java.util.NoSuchElementException;
+//import java.util.Optional;
+//import java.util.UUID;
+//
+//public class FileUserService implements UserService {
+//    private final Path DIRECTORY;
+//    private final String EXTENSION = ".ser";
+//
+//    public FileUserService() {
+//        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", User.class.getSimpleName());
+//        if (Files.notExists(DIRECTORY)) {
+//            try {
+//                Files.createDirectories(DIRECTORY);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//    }
+//
+//    private Path resolvePath(UUID id) {
+//        return DIRECTORY.resolve(id + EXTENSION);
+//    }
+//
+//    @Override
+//    public User create(String username, String email, String password) {
+//        User user = new User(username, email, password);
+//        Path path = resolvePath(user.getId());
+//        try (
+//                FileOutputStream fos = new FileOutputStream(path.toFile());
+//                ObjectOutputStream oos = new ObjectOutputStream(fos)
+//        ) {
+//            oos.writeObject(user);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        return user;
+//    }
+//
+//    @Override
+//    public User find(UUID userId) {
+//        User userNullable = null;
+//        Path path = resolvePath(userId);
+//        if (Files.exists(path)) {
+//            try (
+//                    FileInputStream fis = new FileInputStream(path.toFile());
+//                    ObjectInputStream ois = new ObjectInputStream(fis)
+//            ) {
+//                userNullable = (User) ois.readObject();
+//            } catch (IOException | ClassNotFoundException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//
+//        return Optional.ofNullable(userNullable)
+//                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+//    }
+//
+//    @Override
+//    public List<User> findAll() {
+//        try {
+//            return Files.list(DIRECTORY)
+//                    .filter(path -> path.toString().endsWith(EXTENSION))
+//                    .map(path -> {
+//                        try (
+//                                FileInputStream fis = new FileInputStream(path.toFile());
+//                                ObjectInputStream ois = new ObjectInputStream(fis)
+//                        ) {
+//                            return (User) ois.readObject();
+//                        } catch (IOException | ClassNotFoundException e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                    })
+//                    .toList();
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+//
+//    @Override
+//    public User update(UUID userId, String newUsername, String newEmail, String newPassword) {
+//        User userNullable = null;
+//        Path path = resolvePath(userId);
+//        if (Files.exists(path)) {
+//            try (
+//                    FileInputStream fis = new FileInputStream(path.toFile());
+//                    ObjectInputStream ois = new ObjectInputStream(fis)
+//            ) {
+//                userNullable = (User) ois.readObject();
+//            } catch (IOException | ClassNotFoundException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//
+//        User user = Optional.ofNullable(userNullable)
+//                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+//        user.update(newUsername, newEmail, newPassword);
+//
+//        try(
+//                FileOutputStream fos = new FileOutputStream(path.toFile());
+//                ObjectOutputStream oos = new ObjectOutputStream(fos)
+//        ) {
+//            oos.writeObject(user);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        return user;
+//    }
+//
+//    @Override
+//    public void delete(UUID userId) {
+//        Path path = resolvePath(userId);
+//        if (Files.notExists(path)) {
+//            throw new NoSuchElementException("User with id " + userId + " not found");
+//        }
+//        try {
+//            Files.delete(path);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+//}

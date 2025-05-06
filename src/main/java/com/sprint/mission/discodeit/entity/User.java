@@ -1,32 +1,74 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.UUID;
+import lombok.Getter;
 
-public class User extends Common{
-    private String name;
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    public User(String name) {
-        super();
-        this.name = name;
+    @Getter
+    private UUID id;
+
+    @Getter
+    private Instant createdAt;
+
+    @Getter
+    private Instant updatedAt;
+
+    @Getter
+    private String username;
+
+    @Getter
+    private String email;
+
+    @Getter
+    private String password;
+
+    @Getter
+    private UUID profileId;
+
+    public User(String username, String email, String password) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        //
+        this.username = username;
+        this.email = email;
+        this.password = password;
     }
 
-    public String getName() {
-        return name;
-    }
+    public void update(String newUsername, String newEmail, String newPassword) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
 
-    public void updateName(String newName) {
-        if (newName != null && !newName.isEmpty()) {
-            this.name = newName;
-            super.updateUpdatedAt();
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
         }
     }
 
     @Override
     public String toString() {
         return "User{" +
-                "name='" + getName() + '\'' +
+                "name='" + getUsername() + '\'' +
                 ", id='" + getId() + '\'' +
                 ", createdAt='" + getCreatedAt() + '\'' +
                 ", updatedAt='" + getUpdatedAt() + '\'' +
                 '}';
+    }
+
+    public void setProfileId(UUID id) {
+        this.profileId = id;
     }
 }
