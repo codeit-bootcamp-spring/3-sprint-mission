@@ -26,18 +26,7 @@
             <expand>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="3-sprint-mission" type="f1a62948:ProjectNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="3-sprint-mission" type="f1a62948:ProjectNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="3-sprint-mission" type="f1a62948:ProjectNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="build" type="c8890929:TasksNode$1" />
+                <item name="discodeit" type="f1a62948:ProjectNode" />
               </path>
             </expand>
             <select />
@@ -49,8 +38,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Class" />
         <option value="Interface" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -63,7 +52,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="박인규" />
+        <entry key="$PROJECT_DIR$" value="박인규-sprint2" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -78,12 +67,12 @@
   <component name="GitRewordedCommitMessages">
     <option name="commitMessagesMapping">
       <RewordedCommitMessageMapping>
-        <option name="originalMessage" value="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인" />
-        <option name="rewordedMessage" value="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인" />
+        <option name="originalMessage" value="- File입출력 서비스 구현&#10;  ㄴFileJavaApplication.java에서 구현&#10;  ㄴsrc/files/user.ser,channel.ser,messages.ser 파일로 저장&#10;  ㄴ각 컨트롤에서 int값이 아닌 값을 읽은 경우 다시 재입력 활성화하도록 변경." />
+        <option name="rewordedMessage" value="- File입출력 서비스 구현&#10;  ㄴFileJavaApplication.java에서 구현&#10;  ㄴsrc/files/user.ser,channel.ser,messages.ser 파일로 저장&#10;  ㄴ각 컨트롤에서 int값이 아닌 값을 읽은 경우 다시 재입력 활성화하도록 변경." />
       </RewordedCommitMessageMapping>
     </option>
     <option name="currentCommit" value="1" />
-    <option name="onto" value="82a146a8f4307be6ecf04e42753d99074661b2bf" />
+    <option name="onto" value="cb1670887bd754e10d9f966c2d17e73dfd7b0066" />
   </component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
@@ -109,16 +98,22 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;Application.FileJavaApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Application.JavaApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.3-sprint-mission_01 [:com.sprint.mission.discodeit.DiscodeitApplication.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.3-sprint-mission_01 [:com.sprint.mission.discodeit.FileJavaApplication.main()].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.3-sprint-mission_01 [:com.sprint.mission.discodeit.JavaApplication.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.3-sprint-mission_01 [:com.sprint.mission.discodeit.JavaApplicationFile.main()].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.3-sprint-mission_01 [clean].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.Build 3-sprint-mission_01.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;박인규-sprint1&quot;,
+    &quot;Spring Boot.DiscodeitApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;박인규-sprint3&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/myGitWs/3-sprint-mission_01/src/main/java/com/sprint/mission/discodeit/repository/jcf&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/myGitWs/3-sprint-mission_01&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -145,14 +140,61 @@
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\myGitWs\3-sprint-mission_01\src\main\java" />
     </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.sprint.mission.discodeit.control" />
+      <recent name="com.sprint.mission.discodeit" />
+    </key>
   </component>
-  <component name="RunManager" selected="Gradle.3-sprint-mission_01 [clean]">
-    <configuration name="JavaApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.sprint.mission.discodeit.JavaApplication" />
-      <module name="3-sprint-mission.main" />
+  <component name="RunManager" selected="Application.DiscodeitApplication">
+    <configuration name="DiscodeitApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.sprint.mission.discodeit.DiscodeitApplication" />
+      <module name="discodeit.main" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="com.sprint.mission.discodeit.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="FileJavaApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="ALTERNATIVE_JRE_PATH" value="17" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="MAIN_CLASS_NAME" value="com.sprint.mission.discodeit.FileJavaApplication" />
+      <module name="discodeit.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.sprint.mission.discodeit.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="JavaApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="ALTERNATIVE_JRE_PATH" value="17" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="MAIN_CLASS_NAME" value="com.sprint.mission.discodeit.JavaApplication" />
+      <module name="discodeit.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.sprint.mission.discodeit.JavaApplication" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="JavaApplicationFile" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.sprint.mission.discodeit.JavaApplicationFile" />
+      <module name="3-sprint-mission.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.sprint.mission.discodeit.JavaApplication" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -182,8 +224,19 @@
       <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
+    <configuration name="DiscodeitApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="discodeit.main" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.sprint.mission.discodeit.DiscodeitApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.DiscodeitApplication" />
+        <item itemvalue="Application.FileJavaApplication" />
+        <item itemvalue="Application.JavaApplication" />
+        <item itemvalue="Application.JavaApplicationFile" />
         <item itemvalue="Gradle.3-sprint-mission_01 [clean]" />
       </list>
     </recent_temporary>
@@ -211,6 +264,12 @@
       <workItem from="1744862726134" duration="97000" />
       <workItem from="1744863044772" duration="1056000" />
       <workItem from="1744864265387" duration="6000" />
+      <workItem from="1744880292418" duration="28699000" />
+      <workItem from="1745193084050" duration="3668000" />
+      <workItem from="1745197814897" duration="16715000" />
+      <workItem from="1745385897548" duration="12397000" />
+      <workItem from="1745468217168" duration="31661000" />
+      <workItem from="1745804103129" duration="24154000" />
     </task>
     <task id="LOCAL-00001" summary="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인">
       <option name="closed" value="true" />
@@ -276,7 +335,55 @@
       <option name="project" value="LOCAL" />
       <updated>1744851947136</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="- Application 내부 변수 currentUser와 currentChannel static 제거, private값으로 변경하여 ThreadSafe 구현">
+      <option name="closed" value="true" />
+      <created>1745162250905</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1745162250905</updated>
+    </task>
+    <task id="LOCAL-00010" summary="- File입출력 서비스 구현&#10;  ㄴFileJavaApplication.java에서 구현&#10;  ㄴsrc/files/user.ser,channel.ser,messages.ser 파일로 저장&#10;  ㄴ각 컨트롤에서 int값이 아닌 값을 읽은 경우 다시 재입력 활성화하도록 변경.">
+      <option name="closed" value="true" />
+      <created>1745168772821</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1745168772821</updated>
+    </task>
+    <task id="LOCAL-00011" summary="- File입출력 서비스 구현&#10;  ㄴFileJavaApplication.java에서 구현&#10;  ㄴsrc/files/user.ser,channel.ser,messages.ser 파일로 저장&#10;  ㄴ각 컨트롤에서 int값이 아닌 값을 읽은 경우 다시 재입력 활성화하도록 변경.">
+      <option name="closed" value="true" />
+      <created>1745168806719</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1745168806719</updated>
+    </task>
+    <task id="LOCAL-00012" summary="- File입출력 서비스 구현&#10;  ㄴFileJavaApplication.java에서 구현&#10;  ㄴsrc/files/user.ser,channel.ser,messages.ser 파일로 저장&#10;  ㄴ각 컨트롤에서 int값이 아닌 값을 읽은 경우 다시 재입력 활성화하도록 변경.">
+      <option name="closed" value="true" />
+      <created>1745168836408</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1745168836408</updated>
+    </task>
+    <task id="LOCAL-00013" summary="- Repository 정의함&#10;- Repository 정의하며 Message구조 전반적인 리팩터링">
+      <option name="closed" value="true" />
+      <created>1745401943423</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1745401943423</updated>
+    </task>
+    <task id="LOCAL-00014" summary="- mission2 모범답안 활용&#10;- SpringBoot 적용함&#10;- @SpringBootApplicatin / @Service / @Repository 어노테이션 작성함&#10;-  ConfigurableApplicationContext getBean 활용하여 각 서비스 초기화 적용함&#10;- 셋업,테스트 코드 이용하여 테스트완료">
+      <option name="closed" value="true" />
+      <created>1745833641003</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1745833641003</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -304,7 +411,19 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="박인규-sprint2" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -314,6 +433,12 @@
     <MESSAGE value="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인" />
     <MESSAGE value="- PR 리뷰 코멘트 참고하여 반영&#10;  ㄴ1. {break;} 등의 컨벤션, 줄바꿈, 들여쓰기 등 전반적인 문법 통일&#10;  ㄴ2. Channel entity가 MessageService 객체를 필드값으로 가지는 부분 수정. MessageList 컬렉션을 Channel객체의 UUID를 키값으로 갖는 Map 형태로 구조변경함. &#10;  ㄴ3. 불필요한 호출, 메서드 선언 등 삭제&#10;  ㄴ4. 메서드 호출 시 넘기는 파라미터값을 필요최소로 조정함.예시 : (User user -&gt; String user.getName())&#10;  ㄴ5. 부모 클래스에서 자식 클래스의 메서드를 참조하는 등 잘못된 상속관계 수정." />
     <MESSAGE value="- 경로변경 등 적용 커밋" />
-    <option name="LAST_COMMIT_MESSAGE" value="- 경로변경 등 적용 커밋" />
+    <MESSAGE value="- Application 내부 변수 currentUser와 currentChannel static 제거, private값으로 변경하여 ThreadSafe 구현" />
+    <MESSAGE value="- File입출력 서비스 구현&#10;  ㄴFileJavaApplication.java에서 구현&#10;  ㄴsrc/files/user.ser,channel.ser,messages.ser 파일로 저장&#10;  ㄴ각 컨트롤에서 int값이 아닌 값을 읽은 경우 다시 재입력 활성화하도록 변경." />
+    <MESSAGE value="- Repository 제작. 연결 미완성" />
+    <MESSAGE value="- Repository 정의함. 연결 미완성" />
+    <MESSAGE value="- Repository 정의함&#10;- Repository 정의하며 Message구조 전반적인 리팩터링" />
+    <MESSAGE value="- mission2 모범답안 활용&#10;- SpringBoot 적용함&#10;- @SpringBootApplicatin / @Service / @Repository 어노테이션 작성함&#10;-  ConfigurableApplicationContext getBean 활용하여 각 서비스 초기화 적용함&#10;- 셋업,테스트 코드 이용하여 테스트완료" />
+    <option name="LAST_COMMIT_MESSAGE" value="- mission2 모범답안 활용&#10;- SpringBoot 적용함&#10;- @SpringBootApplicatin / @Service / @Repository 어노테이션 작성함&#10;-  ConfigurableApplicationContext getBean 활용하여 각 서비스 초기화 적용함&#10;- 셋업,테스트 코드 이용하여 테스트완료" />
   </component>
 </project>
