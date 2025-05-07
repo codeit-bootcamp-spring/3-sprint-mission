@@ -1,72 +1,66 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.entitiy.Channel;
 import com.sprint.mission.discodeit.entitiy.Message;
-import com.sprint.mission.discodeit.entitiy.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
-import java.io.*;
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "JCF",matchIfMissing = true)
 public class JCFMessageRepository implements MessageRepository {
 
-    private final CopyOnWriteArrayList<Message> data;
-    private final UserRepository userRepository;
-    private final ChannelRepository channelRepository;
+    private final CopyOnWriteArrayList<Message> data = new CopyOnWriteArrayList<>();
 
-    public JCFMessageRepository(CopyOnWriteArrayList<Message> data, UserRepository userRepository, ChannelRepository channelRepository) {
-        this.data = data;
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
+
+    @Override
+    public Message save(Message message) {
+        data.add(message);
+        return message;
     }
 
     @Override
-    public void save(Message message,User user,Channel channel) {
-        try {
-            if (channel.getMembers().contains(user)) {
-                data.add(message);
-            } else {
-                throw new NoSuchElementException();
-            }
-        }catch (NoSuchElementException e){
-            System.out.println("해당 채널에 존재하지 않는 사용자입니다.");
-        }
+    public List<Message> read() {
+        return data;
     }
 
     @Override
-    public void read() {
-        data.stream()
-                .forEach(System.out::println);
+    public List<Message> readByChannelId(UUID channelId) {
+        List<Message> channelMessages = data.stream()
+                .filter((c)->c.getChannelId().equals(channelId))
+                .collect(Collectors.toList());
+        return channelMessages;
     }
 
     @Override
-    public void readById(UUID id) {
-        data.stream()
-                .filter((n)->n.getId().equals(id))
-                .forEach(System.out::println);
+    public Optional<Message> readById(UUID id) {
+        Optional<Message> message = data.stream()
+                .filter((u)->u.getId().equals(id))
+                .findAny();
+        return message;
     }
+
     @Override
     public void update(UUID id, Message message) {
         data.stream()
-                .filter(mess->mess.getId().equals(id))
-                .forEach(mess->{
-                    mess.updateUpdatedAt(System.currentTimeMillis());
-                    mess.updateEmoticon(message.getEmoticon());
-                    mess.updatePicture(message.getPicture());
-                    mess.updateText(message.getText());});
+                .filter((c)->c.getId().equals(id))
+                .forEach((c)->{
+                    c.setUpdatedAt(Instant.now());
+                    c.setText(message.getText());
+                    c.setAttachmentIds(message.getAttachmentIds());
+                });
     }
 
     @Override
-    public void delete(Message message) {
-        data.remove(message);
+    public void delete(UUID messageId) {
+        data.removeIf(message -> message.getId().equals(messageId));
     }
-    }
+}
+

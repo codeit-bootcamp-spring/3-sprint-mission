@@ -1,153 +1,125 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entitiy.Channel;
 import com.sprint.mission.discodeit.entitiy.Message;
-import com.sprint.mission.discodeit.entitiy.User;
+import com.sprint.mission.discodeit.entitiy.ReadStatus;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.service.MessageService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "File")
 public class FileMessageRepository implements MessageRepository {
 
-    private static final String FILE_PATH = "src/main/java/com/sprint/mission/discodeit/repository/file/data/messages.ser";
+    @Value( "${discodeit.repository.fileDirectory}")
+    private String FILE_Directory;
+    private final String FILE_NAME = "message.ser";
 
-    @Override
-    public void save(Message message,User user,Channel channel) {
+    public Path getFilePath() {
+        return Paths.get(FILE_Directory, FILE_NAME);
+    }
+
+    //File*Repository에서만 사용, 파일을 읽어들여 리스트 반환
+    public List<Message> readFiles() {
+        try {
+            if (!Files.exists(getFilePath()) || Files.size(getFilePath()) == 0) {
+                return new ArrayList<>();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         List<Message> messages = new ArrayList<>();
-        try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
-            while(true){
+        try (ObjectInputStream reader = new ObjectInputStream(new FileInputStream(getFilePath().toFile()))) {
+            while(true) {
                 try {
                     messages.add((Message) reader.readObject());
-                }catch (EOFException e){
+                } catch (EOFException e) {
                     break;
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+        return messages;
+    }
 
-        messages.add(message);
 
-        try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){
-            messages.forEach((c)->{
-                try {
-                    writer.writeObject(c);
-                } catch (IOException e) {
-                    e.printStackTrace();
+    //File*Repository에서만 사용, 만들어 놓은 리스트를 인자로 받아 파일에 쓰기
+    public void writeFiles(List<Message> messages) {
+        try {
+            Files.createDirectories(getFilePath().getParent());
+            try (ObjectOutputStream writer = new ObjectOutputStream(new FileOutputStream(getFilePath().toFile()))) {
+                for (Message message : messages) {
+                    writer.writeObject(message);
                 }
-            });
-            writer.flush();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+
     @Override
-    public void read() {
-        try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
-            while(true){
-                try {
-                    Message message = (Message) reader.readObject();
-                    System.out.println(message);
-                }catch (EOFException e){
-                    break;
-                }
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+    public Message save(Message message) {
+        List<Message> messages = readFiles();
+        messages.add(message);
+        writeFiles(messages);
+        return message;
     }
 
     @Override
-    public void readById(UUID id) {
-        try (ObjectInputStream reader= new ObjectInputStream(new FileInputStream(FILE_PATH))){
-            while(true){
-                try {
-                    Message message = (Message) reader.readObject();
-                    if(message.getId().equals(id)){
-                        System.out.println(message);
-                    }
-                }catch (EOFException e){
-                    break;
-                }
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+    public List<Message> read() {
+        List<Message> messages = readFiles();
+        return messages;
+    }
+
+    @Override
+    public List<Message> readByChannelId(UUID channelId) {
+        List<Message> messages = readFiles();
+        List<Message> channelMessages = messages.stream()
+                .filter((c)->c.getChannelId().equals(channelId))
+                .collect(Collectors.toList());
+        return channelMessages;
+    }
+
+    @Override
+    public Optional<Message> readById(UUID id) {
+        List<Message> messages = readFiles();
+        Optional<Message> message = messages.stream()
+                .filter((u)->u.getId().equals(id))
+                .findAny();
+        return message;
     }
 
     @Override
     public void update(UUID id, Message message) {
-        List<Message> messages = new ArrayList<>();
-        try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
-            while(true){
-                try {
-                    messages.add((Message) reader.readObject());
-                }catch (EOFException e){
-                    break;
-                }
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-
+        List<Message> messages = readFiles();
         messages.stream()
                 .filter((c)->c.getId().equals(id))
-                .forEach((c)->{c.updateText(message.getText());
-                    c.updateUpdatedAt(System.currentTimeMillis());
-                    c.updatePicture(message.getPicture());
-                    c.updateEmoticon(message.getEmoticon());});
-
-        try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){
-            messages.forEach((c)->{
-                try {
-                    writer.writeObject(c);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+                .forEach((c)->{
+                    c.setUpdatedAt(Instant.now());
+                    c.setText(message.getText());
+                    c.setAttachmentIds(message.getAttachmentIds());
+                });
+        writeFiles(messages);
     }
 
     @Override
-    public void delete(Message message) {
-        List<Message> messages = new ArrayList<>();
-        try (ObjectInputStream reader= new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_PATH)))){
-            while(true){
-                try {
-                    messages.add((Message) reader.readObject());
-                }catch (EOFException e){
-                    break;
-                }
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        List<Message> deleteMessages = messages.stream()
-                .filter((c) -> !c.getId().equals(message.getId()))
-                .collect(Collectors.toList());
-
-        try (ObjectOutputStream writer= new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_PATH)))){
-            deleteMessages.forEach((c)->{
-                try {
-                    writer.writeObject(c);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void delete(UUID messageId) {
+        List<Message> messages = readFiles();
+        messages.removeIf(message -> message.getId().equals(messageId));
+        writeFiles(messages);
     }
 }

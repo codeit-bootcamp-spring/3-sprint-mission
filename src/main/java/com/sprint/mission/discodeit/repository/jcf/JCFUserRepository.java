@@ -1,62 +1,70 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.entitiy.Message;
 import com.sprint.mission.discodeit.entitiy.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
-import java.io.*;
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "JCF",matchIfMissing = true)
 public class JCFUserRepository implements UserRepository {
 
-    private final CopyOnWriteArrayList<User> data;
 
-    public JCFUserRepository(CopyOnWriteArrayList<User> data) {
-        this.data = data;
-    }
+    private final CopyOnWriteArrayList<User> data = new CopyOnWriteArrayList<>();
 
     @Override
-    public void save(User user) {
+    public User save(User user) {
         data.add(user);
+        return user;
     }
 
     @Override
-    public void read() {
-        data.stream()
-                .forEach(System.out::println);
+    public Boolean duplicateCheck(User user) {
+        //user의 name이나 Email이 중복인지 검사
+        if(data.stream().anyMatch((c) -> c.getUsername().equals(user.getUsername())) || data.stream().anyMatch((c) -> c.getEmail().equals(user.getEmail())))
+            //중복이면 true
+            return true;
+        else
+            //중복이 아니면 false return
+            return false;
     }
 
     @Override
-    public void readById(UUID id) {
-        data.stream()
-                .filter(user->user.getId().equals(id))
-                .forEach(System.out::println);
+    public List<User> read() {
+        return data;
+    }
+
+    @Override
+    public Optional<User> readById(UUID id) {
+        return data.stream()
+                .filter(user -> user.getId().equals(id))
+                .findAny();
     }
 
     @Override
     public void update(UUID id, User user) {
         data.stream()
-                .filter(u->u.getId().equals(id))
-                .forEach((u)->{
-                    u.updateUpdatedAt(System.currentTimeMillis());
-                    u.updateEmail(user.getEmail());
-                    u.updateFriends(user.getFriends());
-                    u.updatePassword(user.getPassword());
-                    u.updatePhone(user.getPhone());
-                    u.updateStatus(user.getStatus());
-                    u.updateUserName(user.getUserName());
-                    u.updateFriends(user.getFriends());
-                    u.updateIsSpeakerOn(user.getIsSpeakerOn());
-                    u.updateIsMikeOn(user.getIsMikeOn());
+                .filter(u -> u.getId().equals(id))
+                .forEach(u-> {
+                    u.setUpdatedAt(Instant.now());
+                    u.setProfileId(user.getProfileId());
+                    u.setEmail(user.getEmail());
+                    u.setFriends(user.getFriends());
+                    u.setUsername(user.getUsername());
+                    u.setPassword(user.getPassword());
                 });
     }
 
     @Override
-    public void delete(User user) {
-        data.remove(user);
+    public void delete(UUID userId) {
+        data.removeIf(user -> user.getId().equals(userId));
     }
+
 }

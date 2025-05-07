@@ -1,25 +1,36 @@
 package com.sprint.mission.discodeit.entitiy;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
+@Getter
+@Setter
+@NoArgsConstructor
 public class Message implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private UUID id;
-    private Long createdAt;
-    private Long updatedAt;
-    private String emoticon;
-    private String picture;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private UUID channelId;
+    private UUID authorId;
+    private List<UUID> attachmentIds;
     private String text;
 
-    public Message(String emoticon, String picture, String text) {
-        this.emoticon = emoticon;
-        this.picture = picture;
+    public Message(UUID channelId, UUID authorId, List<UUID> attachmentIds, String text) {
+        this.channelId = channelId;
+        this.authorId = authorId;
+        this.attachmentIds = attachmentIds;
         this.text = text;
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+        this.createdAt = Instant.now();
     }
 
     @Override
@@ -28,57 +39,10 @@ public class Message implements Serializable {
                 "id=" + id +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", emoticon='" + emoticon + '\'' +
-                ", picture='" + picture + '\'' +
+                ", channelId=" + channelId +
+                ", authorId=" + authorId +
+                ", attachmentIds=" + attachmentIds +
                 ", text='" + text + '\'' +
                 '}';
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void updateId(UUID id) {
-        this.id = id;
-    }
-
-    public void updateCreatedAt(Long createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void updateUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public void updateEmoticon(String emoticon) {
-        this.emoticon = emoticon;
-    }
-
-    public void updatePicture(String picture) {
-        this.picture = picture;
-    }
-
-    public void updateText(String text) {
-        this.text = text;
-    }
-
-    public String getEmoticon() {
-        return emoticon;
-    }
-
-    public String getPicture() {
-        return picture;
-    }
-
-    public String getText() {
-        return text;
     }
 }
