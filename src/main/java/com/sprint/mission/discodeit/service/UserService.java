@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-
 public interface UserService {
    User create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> portraitCreateRequest);
    UserDTO find(UUID userId);
    List<UserDTO> findAll();
    User update(UUID userId, UserUpdateRequest userUpdateRequest, Optional<BinaryContentCreateRequest> portraitCreateRequest);
    void delete(UUID userId);
+
 }
