@@ -4,7 +4,9 @@ import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
+
 @Getter
 public class Message implements Serializable {
     private static final long serialVersionUID = -6322726657551422728L;
@@ -17,6 +19,7 @@ public class Message implements Serializable {
     //
     private UUID channelId;
     private UUID authorId;
+    private List<UUID> contentIds;
 
 
     public Message(String content, UUID channelId, UUID authorId) {
