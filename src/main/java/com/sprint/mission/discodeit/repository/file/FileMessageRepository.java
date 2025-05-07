@@ -8,8 +8,13 @@ import java.util.*;
 
 public class FileMessageRepository implements MessageRepository {
 
-    private final String fileName = "src/main/java/com/sprint/mission/discodeit/repository/file/messageRepo.ser";
-    private final File file = new File(fileName);
+    private String fileName;
+    private File file;
+
+    public FileMessageRepository(String filePath) {
+        this.fileName = "src/main/java/com/sprint/mission/discodeit/" + filePath + "/messageRepo.ser";
+        this.file = new File(fileName);
+    }
 
     @Override
     public Message save(Message message) {

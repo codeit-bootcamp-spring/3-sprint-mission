@@ -31,9 +31,16 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public List<Channel> findByName(String name) {
+    public List<Channel> findByPrivateChannelUserId(UUID userId) {
         return data.values().stream()
-                .filter(channel -> channel.getChannelName().contains(name))
+                .filter(channel -> channel.getUsers().contains(userId) && channel.isPrivate())
+                .toList();
+    }
+
+    @Override
+    public List<Channel> findByNameContaining(String name) {
+        return data.values().stream()
+                .filter(channel -> !channel.isPrivate() && channel.getChannelName().contains(name))
                 .toList();
     }
 

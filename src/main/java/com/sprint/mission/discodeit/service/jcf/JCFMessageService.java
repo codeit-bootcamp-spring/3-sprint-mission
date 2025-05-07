@@ -35,13 +35,13 @@ public class JCFMessageService implements MessageService {
 
         // 메시지를 보낸 user의 mesagesList에 해당 메시지 추가
         userService.findById(message.getSenderId()).ifPresent(user -> {
-            user.getMessages().add(message);
+            user.getMessages().add(message.getId());
             userService.update(user);
         });
 
         // 메시지를 보낸 channel의 mesagesList에 해당 메시지 추가
         channelService.findById(message.getChannelId()).ifPresent(channel -> {
-            channel.getMessageList().add(message);
+            channel.getMessages().add(message.getId());
             channelService.update(channel);
         });
     }
@@ -95,13 +95,13 @@ public class JCFMessageService implements MessageService {
         if (message != null) {
             // 메시지를 보낸 유저의 메시지 리스트에서 삭제
             userService.findById(message.getSenderId()).ifPresent(user -> {
-                user.getMessages().remove(message); // 유저의 메시지 목록에서 삭제
+                user.getMessages().remove(messageId); // 유저의 메시지 목록에서 삭제
                 userService.update(user); // 변경 정보 적용
             });
 
             // 메시지가 속한 채널의 메시지 리스트에서 해당 메시지를 삭제
             channelService.findById(message.getChannelId()).ifPresent(channel -> {
-                channel.getMessageList().remove(message); // 채녈의 메시지 목록에서 삭제
+                channel.getMessages().remove(messageId); // 채녈의 메시지 목록에서 삭제
                 channelService.update(channel); // 변경 정보 적용
             });
         }

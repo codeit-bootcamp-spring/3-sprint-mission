@@ -8,8 +8,8 @@ import java.util.*;
 
 public class FileUserService implements UserService {
 
-    private final String fileName = "src/main/java/com/sprint/mission/discodeit/service/file/users.ser";
-    private final File file = new File(fileName);
+    private final String FILENAME = "src/main/java/com/sprint/mission/discodeit/service/file/users.ser";
+    private final File file = new File(FILENAME);
 
     @Override
     public void save(User user) { // 저장 로직

@@ -9,7 +9,8 @@ import java.util.UUID;
 public interface ChannelRepository {
     Channel save(Channel channel);
     Optional<Channel> findById(UUID channelId);
-    List<Channel> findByName(String name); // name이 포함된 channel 검색
+    List<Channel> findByPrivateChannelUserId(UUID userId);
+    List<Channel> findByNameContaining(String name);
     List<Channel> findAll();
     void deleteById(UUID channelId);
 }
