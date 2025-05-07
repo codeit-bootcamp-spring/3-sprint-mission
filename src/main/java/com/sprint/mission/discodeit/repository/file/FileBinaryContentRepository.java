@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -16,32 +16,33 @@ import java.util.UUID;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
-public class FileChannelRepository implements ChannelRepository {
+public class FileBinaryContentRepository implements BinaryContentRepository {
     private final Path DIRECTORY;
     private final String EXTENSION = ".ser";
 
-    public FileChannelRepository() {
-        //  현재디렉토리/data/channelDB 디렉토리를 저장할 path로 설정
-        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", Channel.class.getSimpleName());
+    public FileBinaryContentRepository() {
+
+        //  현재디렉토리/data/userDB 디렉토리를 저장할 path로 설정
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", BinaryContent.class.getSimpleName());
         //  지정한 path에 디렉토리 없으면 생성
         if (!Files.exists(this.DIRECTORY)) {
             try {
                 Files.createDirectories(this.DIRECTORY);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
+    // TODO : 나중에 Util로 빼기
     private Path resolvePath(UUID id) {
+        // 객체를 저장할 파일 path 생성
         return this.DIRECTORY.resolve(id + EXTENSION);
     }
 
-
     @Override
-    public Channel save(Channel channel) {
-        // 객체를 저장할 파일 path 생성
-        Path filePath = this.resolvePath(channel.getId());
+    public BinaryContent save(BinaryContent binaryContent) {
+        Path filePath = this.resolvePath(binaryContent.getId());
 
         try (
                 // 파일과 연결되는 스트림 생성
@@ -49,17 +50,18 @@ public class FileChannelRepository implements ChannelRepository {
                 // 객체를 직렬화할 수 있게 바이트 출력 스트림을 감쌈
                 ObjectOutputStream oos = new ObjectOutputStream(fos);
         ) {
-            oos.writeObject(channel);
-            return channel;
+
+            oos.writeObject(binaryContent);
+            return binaryContent;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     @Override
-    public Optional<Channel> findById(UUID channelId) {
-        Path filePath = this.resolvePath(channelId);
+    public Optional<BinaryContent> findById(UUID binaryContentId) {
+        // 객체가 저장된 파일 path
+        Path filePath = this.resolvePath(binaryContentId);
 
         try (
                 // 파일과 연결되는 스트림 생성
@@ -67,52 +69,47 @@ public class FileChannelRepository implements ChannelRepository {
                 // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
                 ObjectInputStream ois = new ObjectInputStream(fis);
         ) {
-            Channel channelNullable = (Channel) ois.readObject();
-            return Optional.ofNullable(channelNullable);
+            BinaryContent binaryContentNullable = (BinaryContent) ois.readObject();
+            return Optional.ofNullable(binaryContentNullable);
         } catch (Exception e) {
-            return Optional.empty();
+            throw new RuntimeException(e);
         }
-
     }
 
     @Override
-    public List<Channel> findAll() {
-        List<Channel> channels = new ArrayList<>();
-
+    public List<BinaryContent> findAll() {
+        List<BinaryContent> binaryContentList = new ArrayList<>();
         try {
             Files.list(this.DIRECTORY).filter(Files::isRegularFile)
                     .forEach((path) -> {
-
-                        try (   // 파일과 연결되는 스트림 생성
-                                FileInputStream fis = new FileInputStream(String.valueOf(path));
-                                // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
-                                ObjectInputStream ois = new ObjectInputStream(fis);
+                        try ( // 파일과 연결되는 스트림 생성
+                              FileInputStream fis = new FileInputStream(String.valueOf(path));
+                              // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
+                              ObjectInputStream ois = new ObjectInputStream(fis);
                         ) {
-                            Channel channel = (Channel) ois.readObject();
-                            channels.add(channel);
+                            BinaryContent binaryContent = (BinaryContent) ois.readObject();
+                            binaryContentList.add(binaryContent);
                         } catch (IOException | ClassNotFoundException e) {
                             throw new RuntimeException(e);
                         }
 
                     });
-
-            return channels;
+            return binaryContentList;
         } catch (IOException e) {
-            return List.of();
+            throw new RuntimeException(e);
         }
-
     }
 
-    public boolean existsById(UUID id) {
-        Path path = resolvePath(id);
+    @Override
+    public boolean existsById(UUID binaryContentId) {
+        Path path = resolvePath(binaryContentId);
         return Files.exists(path);
     }
 
     @Override
-    public void deleteById(UUID channelId) {
+    public void deleteById(UUID binaryContentId) {
         // 객체가 저장된 파일 path
-        Path filePath = this.resolvePath(channelId);
-
+        Path filePath = this.resolvePath(binaryContentId);
         try {
             if (Files.exists(filePath)) {
                 Files.delete(filePath);
@@ -122,7 +119,5 @@ public class FileChannelRepository implements ChannelRepository {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
-
 }

@@ -14,9 +14,12 @@ public interface ChannelRepository {
 
     public List<Channel> findAll();
 
+    //TODO :  이게 필요할거같음!
+//    public List<Message> findAllByUserId(UUID userId);
+
     public boolean existsById(UUID channelId);
 
     public void deleteById(UUID channelId);
 
-    // QUESTION : joinChannel, leavelChannel, readAttendees 도 repo에서 작성해야하나???
+    // XXX : joinChannel, leavelChannel, readAttendees 도 repo에서 작성해야하나???
 }

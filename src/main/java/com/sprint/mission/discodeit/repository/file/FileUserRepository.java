@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -12,6 +14,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileUserRepository implements UserRepository {
     private final Path DIRECTORY;
     private final String EXTENSION = ".ser";
@@ -70,7 +74,7 @@ public class FileUserRepository implements UserRepository {
 
             return Optional.ofNullable(userNullable);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return Optional.empty();
         }
 
     }
@@ -96,17 +100,17 @@ public class FileUserRepository implements UserRepository {
             return users;
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return List.of();
         }
 
     }
 
     @Override
-    public boolean existsById(UUID id) {
-        Path path = resolvePath(id);
+    public boolean existsById(UUID userId) {
+        Path path = resolvePath(userId);
         return Files.exists(path);
     }
-    
+
     @Override
     public void deleteById(UUID userId) {
         // 객체가 저장된 파일 path

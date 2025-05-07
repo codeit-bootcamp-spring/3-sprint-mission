@@ -1,5 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.PublicChannelCreateRequest;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -9,75 +14,65 @@ import java.util.List;
 import java.util.UUID;
 
 public class Channel implements Serializable {
+    @Getter
     private static final Long serialVersionUID = 1L;
-
-    private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
     //
+    @Getter
+    private final UUID id;
+    @Getter
+    private final Instant createdAt;
+    @Getter
+    private Instant updatedAt;
+    //
+    @Getter
     private String name;
+    @Getter
     private ChannelType type;
+    @Getter
     private String description;
+    @Getter
     private UUID ownerId;
+    @Getter
     private List<UUID> attendees;
+    @Getter
     private List<UUID> messages;
+    @Getter
+    @Setter
+    private Instant lastMessageTime;
 
-    public Channel(String name, ChannelType type, String description, UUID ownerId) {
+    public Channel(PublicChannelCreateRequest publicChannelCreateRequest) {
         this.id = UUID.randomUUID();
-        this.createdAt = Instant.now().getEpochSecond();
-        this.updatedAt = Instant.now().getEpochSecond();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         //
-        this.name = name;
-        this.type = type;
-        this.description = description;
-        this.ownerId = ownerId;
+        this.name = publicChannelCreateRequest.name();
+        this.type = publicChannelCreateRequest.type();
+        this.description = publicChannelCreateRequest.description();
+        this.ownerId = publicChannelCreateRequest.ownerId();
         //
-        this.attendees = new ArrayList<>();
+        this.attendees = List.of(this.ownerId);
         this.messages = new ArrayList<>();
     }
 
-    public UUID getId() {
-        return id;
+    public Channel(PrivateChannelCreateRequest privateChannelCreateRequest) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+        //
+        this.type = privateChannelCreateRequest.type();
+        this.ownerId = privateChannelCreateRequest.ownerId();
+        //
+        this.attendees = List.of(this.ownerId);
+        this.messages = new ArrayList<>();
     }
 
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public ChannelType getType() {
-        return type;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public UUID getOwnerId() {
-        return ownerId;
-    }
-
-    public List<UUID> getAttendees() {
-        return attendees;
-    }
-
+    //XXX : channel.addAttendees(), 이게 repository가 아니라 여기 있는게 맞을까?
     public void addAttendee(UUID userId) {
         this.attendees.add(userId);
     }
 
     public void removeAttendee(UUID userId) {
         this.attendees.remove(userId);
-    }
-
-    public List<UUID> getMessages() {
-        return messages;
     }
 
     public void addMessage(UUID messageId) {
@@ -96,7 +91,7 @@ public class Channel implements Serializable {
         }
 
         if (anyValueUpdated) {
-            this.updatedAt = Instant.now().getEpochSecond();
+            this.updatedAt = Instant.now();
         }
     }
 
@@ -105,14 +100,17 @@ public class Channel implements Serializable {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                 .withZone(ZoneId.systemDefault());
 
-        String createdAtFormatted = formatter.format(Instant.ofEpochSecond(createdAt));
-        String updatedAtFormatted = formatter.format(Instant.ofEpochSecond(updatedAt));
+        String createdAtFormatted = formatter.format(createdAt);
+        String updatedAtFormatted = formatter.format(updatedAt);
 
         return "📦 Channel {\n" +
                 "  id         = " + id + "\n" +
                 "  createdAt  = " + createdAtFormatted + "\n" +
                 "  updatedAt  = " + updatedAtFormatted + "\n" +
                 "  name       = '" + name + "'\n" +
+                "  type       = '" + type + "'\n" +
+                "  description = '" + description + "'\n" +
+                "  ownerId     = '" + ownerId + "'\n" +
                 "  attendees  = " + attendees + "\n" +
                 "  messages   = " + messages + "\n" +
                 "}";

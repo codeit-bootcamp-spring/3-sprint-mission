@@ -1,70 +1,51 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.UUID;
 
 public class User implements Serializable {
+    @Getter
     private static final Long serialVersionUID = 1L;
-    private UUID id;
-    private Long createdAt;
-    private Long updatedAt;
     //
+    @Getter
+    private final UUID id;
+    @Getter
+    private final Instant createdAt;
+    @Getter
+    private Instant updatedAt;
+    //
+    @Getter
     private String name;
+    @Getter
     private String email;
+    @Getter
     private String password;
-    private int age;
+    //
+    @Getter
+    private UUID profileId; // BinaryContent의 id
 
-    public User(String name, int age, String email, String password) {
+    public User(String name, String email, String password, UUID profileId) {
         this.id = UUID.randomUUID();
-        this.createdAt = Instant.now().getEpochSecond();
-        this.updatedAt = Instant.now().getEpochSecond();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         //
         this.name = name;
         this.email = email;
         this.password = password;
-        this.age = age;
+        //
+        this.profileId = profileId;
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-
-    public void update(String name, int age, String email, String password) {
+    public void update(String name, String email, String password, UUID profileId) {
         boolean anyValueUpdated = false;
         if (name != null && !name.equals(this.name)) {
             this.name = name;
-            anyValueUpdated = true;
-        }
-        if (age != 0 && age != this.age) {
-            this.age = age;
             anyValueUpdated = true;
         }
         if (email != null && !email.equals(this.email)) {
@@ -75,9 +56,14 @@ public class User implements Serializable {
             this.password = password;
             anyValueUpdated = true;
         }
+        if (profileId != null && !profileId.equals(this.profileId)) {
+            this.profileId = profileId;
+            anyValueUpdated = true;
+        }
 
         if (anyValueUpdated) {
-            this.updatedAt = Instant.now().getEpochSecond();
+            this.updatedAt = Instant.now();
+
         }
     }
 
@@ -87,15 +73,16 @@ public class User implements Serializable {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                 .withZone(ZoneId.systemDefault());
 
-        String createdAtFormatted = formatter.format(Instant.ofEpochSecond(createdAt));
-        String updatedAtFormatted = formatter.format(Instant.ofEpochSecond(updatedAt));
+        String createdAtFormatted = formatter.format(createdAt);
+        String updatedAtFormatted = formatter.format(updatedAt);
 
         return "🙋‍♂️ User {\n" +
                 "  id         = " + id + "\n" +
                 "  createdAt  = " + createdAtFormatted + "\n" +
                 "  updatedAt  = " + updatedAtFormatted + "\n" +
                 "  name       = '" + name + "'\n" +
-                "  age        = " + age + "\n" +
+                "  email       = '" + email + "'\n" +
+                "  profileId       = '" + profileId + "'\n" +
                 "}";
     }
 
@@ -111,20 +98,14 @@ public class User implements Serializable {
                 || (this.id != null && this.id.equals(other.id));
         boolean nameEquals = (this.name == null && other.name == null)
                 || (this.name != null && this.name.equals(other.name));
-        boolean ageEquals = this.age == other.age;
-        return idEquals && nameEquals && ageEquals;
+        boolean emailEquals = (this.email == null && other.email == null)
+                || (this.email != null && this.email.equals(other.email));
+
+        return idEquals && nameEquals && emailEquals;
     }
 
     @Override
     public int hashCode() {
-        int result = 17;
-        if (this.id != null) {
-            result = 31 * result + this.id.hashCode();
-        }
-        if (this.name != null) {
-            result = 31 * result + this.name.hashCode();
-        }
-        result = 31 * result + this.age;
-        return result;
+        return Objects.hash(this.id, this.email, this.name);
     }
 }

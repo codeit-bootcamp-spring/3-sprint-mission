@@ -1,70 +1,102 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.dto.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Service
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
-    //
-    private final UserService userService;
-    private final ChannelService channelService;
+    private final ChannelRepository channelRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
-    public BasicMessageService(MessageRepository messageRepository, UserService userService, ChannelService channelService) {
-        this.messageRepository = messageRepository;
-        this.userService = userService;
-        this.channelService = channelService;
+    @Override
+    public Message create(MessageCreateRequest createRequest) {
+        /* 유저가 해당 채널에 있는지 validation check */
+
+        this.channelRepository.findById(createRequest.channelId())
+                .ifPresent((channel) -> {
+                            if (!channel.getAttendees().contains(createRequest.userId())) {
+                                new Exception("유저가 참여하지 않은 채팅방에는 메세지를 보낼수 없습니다.");
+                            }
+                        }
+                );
+
+        /* 선택적으로 여러개의 첨부파일 같이 등록 가능 */
+        Message message = new Message(createRequest);
+
+        this.messageRepository.save(message);
+
+        /* 채널 lastMessageTime 업데이트 */
+        this.channelRepository.findById(createRequest.channelId()).ifPresent((channel) -> {
+            channel.setLastMessageTime(Instant.now());
+            this.channelRepository.save(channel);
+        });
+        return message;
     }
 
     @Override
-    public Message create(Message message) {
-        return this.messageRepository.save(message);
+    public Message findById(UUID messageId) {
+        Message message = this.messageRepository
+                .findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+
+        return message;
     }
 
     @Override
-    public Message find(UUID messageId) {
-        return this.messageRepository.findById(messageId).orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+    public List<Message> findAllByChannelId(UUID channelId) {
+
+        List<Message> messages = this.messageRepository
+                .findAll()
+                .stream().filter((message) -> {
+                    return message.getChannelId().equals(channelId);
+                }).toList();
+
+
+        return messages;
     }
 
     @Override
-    public List<Message> findAll() {
-        return this.messageRepository.findAll();
-    }
+    public Message update(UUID messageId, MessageUpdateRequest updateRequest) {
+        Message message = this.messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
 
-    @Override
-    public Message update(UUID messageId, String newContent) {
-        Message message = this.find(messageId);
-        message.update(newContent);
+        message.update(updateRequest.newContent(), updateRequest.attachmentIds());
 
-        return this.create(message);
+        /* 업데이트 후 다시 DB 저장 */
+        this.messageRepository.save(message);
+
+        Message updatedMessage = this.messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+
+        return updatedMessage;
     }
 
     @Override
     public void delete(UUID messageId) {
-        if (!messageRepository.existsById(messageId)) {
-            throw new NoSuchElementException("Message with id " + messageId + " not found");
+        Message message = this.messageRepository.findById(messageId).
+                orElseThrow(() -> new NoSuchElementException("Message with messageId " + messageId + " not found"));
+
+        if (message.getAttachmentIds() != null && !message.getAttachmentIds().isEmpty()) {
+            for (UUID binaryContentId : message.getAttachmentIds()) {
+                this.binaryContentRepository.deleteById(binaryContentId);
+            }
         }
+
         this.messageRepository.deleteById(messageId);
     }
 
-    @Override
-    public List<Message> findMessagesByChannel(UUID channelId) {
-        Channel channel = this.channelService.find(channelId);
-        List<UUID> messageIds = channel.getMessages();
-
-        List<Message> messages = new ArrayList<>();
-        messageIds.forEach((messageId) -> {
-            messages.add(this.find(messageId));
-        });
-
-        return messages;
-    }
 }

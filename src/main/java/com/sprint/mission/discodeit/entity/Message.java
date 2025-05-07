@@ -1,67 +1,63 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.MessageCreateRequest;
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 public class Message implements Serializable {
+    @Getter
     private static final long serialVersionUID = 1L;
-
-    private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
     //
+    @Getter
+    private final UUID id;
+    @Getter
+    private final Instant createdAt;
+    @Getter
+    private Instant updatedAt;
+    //
+    @Getter
     private String content;
     //
+    @Getter
     private final UUID userId;
+    @Getter
     private final UUID channelId;
+    @Getter
+    private List<UUID> attachmentIds;  // BinaryContent의 id
 
 
-    public Message(String content, UUID userId, UUID channelId) {
+    public Message(MessageCreateRequest createRequest) {
         this.id = UUID.randomUUID();
-        this.createdAt = Instant.now().getEpochSecond();
-        this.updatedAt = Instant.now().getEpochSecond();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         //
-        this.content = content;
-        this.userId = userId;
-        this.channelId = channelId;
+        this.content = createRequest.content();
+        this.userId = createRequest.userId();
+        this.channelId = createRequest.channelId();
+        this.attachmentIds = createRequest.attachmentIds();
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public UUID getChannelId() {
-        return channelId;
-    }
-
-    public void update(String content) {
+    //QUESTION. updateRequest도 안에 id를 포함할께 아니라 id, 변화될 필드 이렇게 나누는게 나을까?
+    public void update(String content, List<UUID> attachmentIds) {
         boolean anyValueUpdated = false;
         if (content != null && !content.equals(this.content)) {
             this.content = content;
             anyValueUpdated = true;
         }
 
+        if (attachmentIds != null && !attachmentIds.equals(this.attachmentIds)) {
+            this.attachmentIds = attachmentIds;
+            anyValueUpdated = true;
+        }
+
         if (anyValueUpdated) {
-            this.updatedAt = Instant.now().getEpochSecond();
+            this.updatedAt = Instant.now();
         }
     }
 
@@ -70,15 +66,17 @@ public class Message implements Serializable {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                 .withZone(ZoneId.systemDefault());
 
-        String createdAtFormatted = formatter.format(Instant.ofEpochSecond(createdAt));
-        String updatedAtFormatted = formatter.format(Instant.ofEpochSecond(updatedAt));
+        String createdAtFormatted = formatter.format(createdAt);
+        String updatedAtFormatted = formatter.format(updatedAt);
 
         return "💬 Message {\n" +
                 " id         = " + id + "\n" +
                 " createdAt  = " + createdAtFormatted + "\n" +
                 " updatedAt  = " + updatedAtFormatted + "\n" +
                 " content       = '" + content + "'\n" +
-                " sender     = " + userId + "\n" +
+                " userId     = " + userId + "\n" +
+                " channelId     = " + channelId + "\n" +
+                " attachmentIds     = " + attachmentIds + "\n" +
                 "}";
     }
 }
