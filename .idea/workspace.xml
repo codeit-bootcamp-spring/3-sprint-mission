@@ -40,6 +40,7 @@
       <list>
         <option value="Interface" />
         <option value="Class" />
+        <option value="Record" />
       </list>
     </option>
   </component>
@@ -270,6 +271,7 @@
       <workItem from="1745385897548" duration="12397000" />
       <workItem from="1745468217168" duration="31661000" />
       <workItem from="1745804103129" duration="24154000" />
+      <workItem from="1746576529331" duration="9027000" />
     </task>
     <task id="LOCAL-00001" summary="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인">
       <option name="closed" value="true" />
@@ -383,7 +385,23 @@
       <option name="project" value="LOCAL" />
       <updated>1745833641003</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="-">
+      <option name="closed" value="true" />
+      <created>1746618615499</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1746618615499</updated>
+    </task>
+    <task id="LOCAL-00016" summary="-기한 도래로 미완성 제출">
+      <option name="closed" value="true" />
+      <created>1746618644777</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1746618644777</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -439,6 +457,8 @@
     <MESSAGE value="- Repository 정의함. 연결 미완성" />
     <MESSAGE value="- Repository 정의함&#10;- Repository 정의하며 Message구조 전반적인 리팩터링" />
     <MESSAGE value="- mission2 모범답안 활용&#10;- SpringBoot 적용함&#10;- @SpringBootApplicatin / @Service / @Repository 어노테이션 작성함&#10;-  ConfigurableApplicationContext getBean 활용하여 각 서비스 초기화 적용함&#10;- 셋업,테스트 코드 이용하여 테스트완료" />
-    <option name="LAST_COMMIT_MESSAGE" value="- mission2 모범답안 활용&#10;- SpringBoot 적용함&#10;- @SpringBootApplicatin / @Service / @Repository 어노테이션 작성함&#10;-  ConfigurableApplicationContext getBean 활용하여 각 서비스 초기화 적용함&#10;- 셋업,테스트 코드 이용하여 테스트완료" />
+    <MESSAGE value="-" />
+    <MESSAGE value="-기한 도래로 미완성 제출" />
+    <option name="LAST_COMMIT_MESSAGE" value="-기한 도래로 미완성 제출" />
   </component>
 </project>
