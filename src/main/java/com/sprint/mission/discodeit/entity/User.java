@@ -1,49 +1,61 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.text.SimpleDateFormat;
+import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
+import lombok.Getter;
 
-public class User {
-    private final UUID id = UUID.randomUUID();
-    private long createdAt  = System.currentTimeMillis();
-    private long updatedAt;
-    private String name;
+@Getter
+public class User implements Serializable {
+    private static final long serialVersionUID = 5020789657574048869L;
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    //
+    private String username;
+    private String email;
+    private String password;
+    private UUID portraitId;
 
-    public User(String name, long createdAt, long updatedAt) {
-        this.name = name;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
-    public UUID getId() {
-      return id;
-    }
-    public String getName() {
-      return name;
-    }
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getCreatedAt() {
-        String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(createdAt);
-        return formatedTime;
-    }
-    public String getUpdatedAt() {
-        String aformatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(updatedAt);
-        return aformatedTime;
-    }
-    public void setUpdatedAt(long updatedAt) {
-      this.updatedAt = updatedAt;
+    public User(String username, String email, String password) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.ofEpochSecond(Instant.now().getEpochSecond());
+        //
+        this.username = username;
+        this.email = email;
+        this.password = password;
     }
 
-@Override
-public String toString() {
-    String result;
-    if(getCreatedAt().equals(getUpdatedAt())){
-        result = "\n 사용자 이름 : " + name + "\n 생성일 : " + getCreatedAt() + "\n 사용자 UUID : " + id + "\n";
-    } else {
-        result = "\n 사용자 이름 : " + name + "\n 생성일 : " + getCreatedAt() + "\n 수정일 : " + getUpdatedAt() + "\n 사용자 UUID : " + id + "\n";
+        public void update(String newUsername, String newEmail, String newPassword) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.ofEpochSecond(Instant.now().getEpochSecond());
+        }
     }
-    return result;
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                '}';
     }
+}
+

@@ -1,49 +1,56 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.text.SimpleDateFormat;
+import lombok.Getter;
+
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
-public class Message {
-    private final UUID id = UUID.randomUUID();
-    private long createdAt  = System.currentTimeMillis();
-    private long updatedAt;
+@Getter
+public class Message implements Serializable {
+    private static final long serialVersionUID = -6322726657551422728L;
 
-    private int msgNumber;
+    private UUID id;
+    private Long createdAt;
+    private Long updatedAt;
+    //
+    private String content;
+    //
+    private UUID channelId;
+    private UUID authorId;
+    private List<UUID> contentIds;
 
-    private String author;
-    private String textMsg;
 
-
-    public Message(int msgNumber, String author, String textMsg,long createdAt, long updatedAt) {
-        this.msgNumber = msgNumber;
-        this.author = author;
-        this.textMsg = textMsg;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+    public Message(String content, UUID channelId, UUID authorId) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now().getEpochSecond();
+        //
+        this.content = content;
+        this.channelId = channelId;
+        this.authorId = authorId;
     }
-    public UUID getId() {return id;}
-    public int getMsgNumber() {return msgNumber;}
-    public String getAuthor() {return author;}
-    public void setAuthor(String newAuthor) {this.author = newAuthor;}
-    public void setTextMsg(String textMsg) {this.textMsg = textMsg;}
-    public String getTextMsg() {return textMsg;}
+    public void update(String newContent) {
+        boolean anyValueUpdated = false;
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            anyValueUpdated = true;
+        }
 
-    public String getCreatedAt() {
-        String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(createdAt);
-        return formatedTime;}
-    public String getUpdatedAt() {
-        String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(updatedAt);
-        return formatedTime;}
-    public void setUpdatedAt(long updatedAt) {
-        this.updatedAt = updatedAt;}
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now().getEpochSecond();
+        }
+    }
+
     @Override
     public String toString() {
-        String result;
-        if(getCreatedAt().equals(getUpdatedAt())){
-            result = msgNumber + "    | " + author + " : " + textMsg + "  (" + getCreatedAt() + ") : " + getId();
-        } else {
-            result = msgNumber + "    | " + author + " : " + textMsg + "  (" + getCreatedAt() + " / " + getUpdatedAt() + ") : " + getId();
-        }
-        return result;
+        return "Message{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", content='" + content + '\'' +
+                ", channelId=" + channelId +
+                ", authorId=" + authorId +
+                '}';
     }
 }

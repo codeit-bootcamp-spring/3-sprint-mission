@@ -1,57 +1,56 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.jcf.JCFMessageService;
-import java.text.SimpleDateFormat;
+import lombok.Getter;
+
+import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
+@Getter
+public class Channel implements Serializable {
+    private static final long serialVersionUID = -7716860811813642738L;
+    private UUID id;
+    private Long createdAt;
+    private Long updatedAt;
+    //
+    private ChannelType type;
+    private String name;
+    private String description;
 
-public class Channel {
-    private final UUID id = UUID.randomUUID();
-    private long createdAt  = System.currentTimeMillis();
-    private long updatedAt;
-    private String channelName;
-    private String channelDescription;
-    private String channelCreater;
-
-    private JCFMessageService messageService;
-
-
-    public Channel(String channelName, String channelDescription, String channelCreater, long createdAt, long updatedAt) {
-        this.channelName = channelName;
-        this.channelDescription = channelDescription;
-        this.channelCreater = channelCreater;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.messageService = new JCFMessageService();
+    public Channel(ChannelType type, String name, String description) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now().getEpochSecond();
+        //
+        this.type = type;
+        this.name = name;
+        this.description = description;
     }
 
-    public UUID getId() {return id;}
-    public String getCreatedAt() {
-        String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(createdAt);
-        return formatedTime;}
+    public void update(String newName, String newDescription) {
+        boolean anyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            anyValueUpdated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            anyValueUpdated = true;
+        }
 
-    public String getUpdatedAt() {
-        String formatedTime = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(updatedAt);
-        return formatedTime;}
-    public void setUpdatedAt(long updatedAt) {this.updatedAt = updatedAt;}
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now().getEpochSecond();
+        }
+    }
 
-    public String getChannelName() {return channelName;}
-    public void setChannelName(String channelName) {this.channelName = channelName;}
-
-    public String getChannelDescription() {return channelDescription;}
-    public void setChannelDescription(String channelDescription) {this.channelDescription = channelDescription;}
-
-    public String getChannelCreater() {return channelCreater;}
-
-    public JCFMessageService messageService() {return messageService;}
     @Override
     public String toString() {
-        String result;
-        if(getCreatedAt().equals(getUpdatedAt())){
-            result = "채널명 : " + channelName + "   개설자 : " + channelCreater + "   채널설명 : " + channelDescription + "   개설일자 : " + getCreatedAt() + "   UUID : " + getId();
-        } else {
-            result = "채널명 : " + channelName + "   개설자 : " + channelCreater + "   채널설명 : " + channelDescription + "   개설일자 : " + getCreatedAt() + " 수정일자 : " + getUpdatedAt() + "   UUID : " + getId();
-        }
-        return result;
+        return "Channel{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", type=" + type +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
 }
