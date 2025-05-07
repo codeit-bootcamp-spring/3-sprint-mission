@@ -29,7 +29,7 @@ public class JCFMessageService implements MessageService {
 //        return message;
         try {
             channelService.readChannel(channelId);
-            userService.foundUser(authorId);
+            userService.findById(authorId);
         } catch (Exception e) {
             throw e;
         }

@@ -1,69 +1,69 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.time.Instant;
-import java.util.*;
+import com.sprint.mission.discodeit.entity.dto.CreateUserRequest;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
 
-public class User extends Base implements Serializable {
-    private transient String RRN;
+@Getter
+public class User implements Serializable {
 
-    //
     @Serial
-    private static final long serialVersionUID = 1L; // private, final 필수x 권장사항
-    private int age;
-    private String name;
+    private static final long serialVersionUID = 1L;
+
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    //
+    private String username;
     private String email;
+    private String password;
+    //
+    private UserStatus userStatus;
+    private ReadStatus readStatus;
 
+    @Setter
+    private UUID profileId;
 
-    public User(String RRN, String name, int age, String email) {
-        super();
-
-        this.RRN = RRN;
-        this.age = age;
-        this.name = name;
+    public User(String username, String email, String password, UUID profileId) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.ofEpochSecond(Instant.now().getEpochSecond());
+        //
+        this.username = username;
         this.email = email;
+        this.password = password;
+        //
+        this.profileId = profileId;
+        this.userStatus = null;
+        this.readStatus = null;
     }
 
-
-    // Getter Method
-    public String getRRN() { return RRN; }
-
-    public int getAge() { return age; }
-
-    public String getName() { return name; }
-
-    public String getEmail() { return email; }
-
-
-    // Update Method
-    public void updateUser(String newName, String newEmail) {
+    public void update(String newUsername, String newEmail, String newPassword /*,UUID newProfileId*/) {
         boolean anyValueUpdated = false;
-        if (newName != null && !newName.equals(this.name)) {
-            this.name = newName;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
             anyValueUpdated = true;
         }
-
         if (newEmail != null && !newEmail.equals(this.email)) {
             this.email = newEmail;
             anyValueUpdated = true;
         }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+//        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
+//            this.profileId = newProfileId;
+//            anyValueUpdated = true;
+//        }
 
         if (anyValueUpdated) {
-            super.updateUpdatedAt(Instant.now().getEpochSecond());
+            this.updatedAt = Instant.ofEpochSecond(Instant.now().getEpochSecond());
         }
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + getId() +
-                ", RRN='" + getRRN() + '\'' +
-                ", name='" + getName() + '\'' +
-                ", age=" + getAge() +
-                ", email='" + getEmail() + '\'' +
-                ", createdAt='" + getCreatedAt() + '\'' +
-                ", updatedAt='" + getUpdatedAt() + '\'' +
-                '}';
     }
 }
