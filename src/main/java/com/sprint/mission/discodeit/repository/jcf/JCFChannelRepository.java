@@ -6,50 +6,35 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import java.util.*;
 
 public class JCFChannelRepository implements ChannelRepository {
-    private final Map<UUID, Channel> channelMap = new HashMap<>();
+    private final Map<UUID, Channel> data;
 
-    @Override
-    public void save(Channel channel) {
-        channelMap.put(channel.getChannelId(), channel);
+    public JCFChannelRepository() {
+        this.data = new HashMap<>();
     }
 
     @Override
-    public void saveAll(List<Channel> channels) {
-        channelMap.clear();
-        for (Channel channel : channels) {
-            channelMap.put(channel.getChannelId(), channel);
-        }
+    public Channel save(Channel channel) {
+        this.data.put(channel.getChannelId(), channel);
+        return channel;
     }
 
     @Override
-    public List<Channel> loadAll() {
-        return new ArrayList<>(channelMap.values());
+    public Optional<Channel> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
-    public Channel loadById(UUID id) {
-        return channelMap.get(id);
+    public List<Channel> findAll() {
+        return this.data.values().stream().toList();
     }
 
     @Override
-    public List<Channel> loadByName(String name) {
-        List<Channel> result = new ArrayList<>();
-        for (Channel channel : channelMap.values()) {
-            if (channel.getChannelName().equals(name)) {
-                result.add(channel);
-            }
-        }
-        return result;
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
     }
 
     @Override
-    public List<Channel> loadByType(String type) {
-        List<Channel> result = new ArrayList<>();
-        for (Channel channel : channelMap.values()) {
-            if (channel.getChannelType().equals(type)) {
-                result.add(channel);
-            }
-        }
-        return result;
+    public void deleteById(UUID id) {
+        this.data.remove(id);
     }
 }

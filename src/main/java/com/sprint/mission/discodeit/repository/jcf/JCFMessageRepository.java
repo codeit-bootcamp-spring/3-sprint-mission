@@ -6,39 +6,36 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import java.util.*;
 
 public class JCFMessageRepository implements MessageRepository {
-    private final Map<UUID, Message> messageMap = new HashMap<>();
+    private final Map<UUID, Message> data;
 
-    @Override
-    public void save(Message message) {
-        messageMap.put(message.getMessageId(), message);
+    public JCFMessageRepository() {
+        this.data = new HashMap<>();
     }
 
     @Override
-    public void saveAll(List<Message> messages) {
-        messageMap.clear();
-        for (Message message : messages) {
-            messageMap.put(message.getMessageId(), message);
-        }
+    public Message save(Message message) {
+        this.data.put(message.getMessageId(), message);
+        return message;
     }
 
     @Override
-    public List<Message> loadAll() {
-        return new ArrayList<>(messageMap.values());
+    public Optional<Message> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
-    public Message loadById(UUID id) {
-        return messageMap.get(id);
+    public List<Message> findAll() {
+        return this.data.values().stream().toList();
     }
 
     @Override
-    public List<Message> loadByType(String type) {
-        List<Message> result = new ArrayList<>();
-        for (Message message : messageMap.values()) {
-            if (message.getMessageType().equals(type)) {
-                result.add(message);
-            }
-        }
-        return result;
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        this.data.remove(id);
     }
 }
+

@@ -1,6 +1,10 @@
 package com.sprint.mission.discodeit.service;
 
 
+import com.sprint.mission.discodeit.dto.data.ChannelDTO;
+import com.sprint.mission.discodeit.dto.request.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 
 import java.util.List;
@@ -9,17 +13,20 @@ import java.util.UUID;
 // 도메인 모델 별 CRUD(생성, 읽기, 모두 읽기, 수정, 삭제) 기능을 인터페이스로 선언
 public interface ChannelService {
 
-    void createChannel(Channel channel);                 // 생성
+    // 생성 ( PRIVATE & PUBLIC )
+    Channel create(PrivateChannelCreateRequest privateChannelCreateRequest);
 
-    Channel readChannel(UUID id);                        // 특정 채널 조회
+    Channel create(PublicChannelCreateRequest publicChannelCreateRequest);
 
-    List<Channel> readChannelByName(String name);
+    // 특정 채널 조회
+    ChannelDTO find(UUID id);
 
-    List<Channel> readChannelByType(String type);              // 특정 이름의 채널 조회
+    // 유저가 확인 가능한 채널 목록( PRIVATE CHANNEL 포함 )
+    List<ChannelDTO> findAllByUserId(UUID userId);
 
-    List<Channel> readAllChannels();                     // 모든 채널 조회
+    // 특정 채널 정보 수정
+    void update(ChannelUpdateRequest channelUpdateRequest);
 
-    Channel updateChannel(UUID id, Channel channel);     // 특정 채널 정보 수정
-
-    boolean deleteChannel(UUID id);                      // 특정 채널 제거
+    // 특정 채널 제거
+    void delete(UUID id);
 }
