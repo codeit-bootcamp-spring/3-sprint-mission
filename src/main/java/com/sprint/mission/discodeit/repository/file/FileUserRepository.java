@@ -64,6 +64,13 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByUsername(String username) {
+        return this.findAll().stream()
+                .filter(user -> user.getUsername().equals(username))
+                .findFirst();
+    }
+
+    @Override
     public List<User> findAll() {
         try {
             return Files.list(DIRECTORY)
@@ -88,6 +95,16 @@ public class FileUserRepository implements UserRepository {
     public boolean existsById(UUID id) {
         Path path = resolvePath(id);
         return Files.exists(path);
+    }
+    @Override
+    public boolean existsByName(String userName) {
+        return this.findAll().stream()
+                .anyMatch(u -> u.getUsername().equals(userName));
+    }
+    @Override
+    public boolean existsByEmail(String email) {
+        return this.findAll().stream()
+                        .anyMatch(u -> u.getEmail().equals(email));
     }
 
     @Override

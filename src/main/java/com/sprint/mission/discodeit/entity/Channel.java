@@ -5,6 +5,7 @@ import lombok.Getter;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
+
 @Getter
 public class Channel implements Serializable {
     private static final long serialVersionUID = -7716860811813642738L;
