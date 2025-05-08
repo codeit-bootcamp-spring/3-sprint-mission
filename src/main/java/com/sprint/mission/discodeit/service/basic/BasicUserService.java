@@ -79,7 +79,7 @@ public class BasicUserService implements UserService {
                 user.getUsername(),
                 user.getEmail(),
                 isOnline,
-                user.isProfileImage()
+                user.isHasProfileImage()
         );
     }
 
@@ -96,7 +96,7 @@ public class BasicUserService implements UserService {
                             user.getUsername(),
                             user.getEmail(),
                             isOnline,
-                            user.isProfileImage()
+                            user.isHasProfileImage()
                     );
                 })
                 .toList();

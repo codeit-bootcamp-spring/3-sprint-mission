@@ -17,7 +17,7 @@ public class User implements Serializable {
     private String username;
     private String email;
     private String password;
-    private boolean profileImage;
+    private boolean hasProfileImage;
     private UUID profileId;
 
 
@@ -28,13 +28,13 @@ public class User implements Serializable {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.profileImage = content;
+        this.hasProfileImage = content;
         this.profileId = null;
     }
 
     public void setProfileId(UUID profileId) {
         this.profileId = profileId;
-        this.profileImage = true;
+        this.hasProfileImage = true;
     }
 
     @Override
