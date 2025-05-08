@@ -23,8 +23,8 @@ public class BasicAuthService implements AuthService {
 
     @Override
     public UserResponseDTO login(LoginDTO loginDTO) {
-        String name = loginDTO.getName();
-        String password = loginDTO.getPassword();;
+        String name = loginDTO.name();
+        String password = loginDTO.password();;
 
         // 로그인 성공 시 해당 유저의 마지막 접속 시간 변경
         userRepository.findByNameAndPassword(name, password).ifPresent(user -> {
