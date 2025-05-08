@@ -2,32 +2,25 @@ package com.sprint.mission.discodeit.entity;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * 사용자 정보 관리
- * <p>
- * <ul>
- * <li>AuditInfo (id, createdAt, updatedAt)</li>
- * <li>사용자 계정 정보 (email, name, password)</li>
- * <li>참여 채널 목록</li>
- * </ul>
- */
 @Getter
-@ToString(callSuper = true)
-@Builder(toBuilder = true, access = AccessLevel.PRIVATE)
-public class User extends Auditable implements Serializable {
+@ToString
+public class User implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 8019397210486307690L;
-  // 사용자 계정 정보
+
+  private final UUID id;
+  private final Instant createdAt;
+  private Instant updatedAt;
+
   private final String email;
   private String name;
   private String password;
@@ -35,6 +28,8 @@ public class User extends Auditable implements Serializable {
   private UUID profileImageId;
 
   private User(String email, String name, String password, UUID profileImageId) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
     this.email = email;
     this.name = name;
     this.password = password;
@@ -42,20 +37,15 @@ public class User extends Auditable implements Serializable {
   }
 
   public static User create(String email, String name, String password) {
-    User user = new User(email, name, password, null);
-    user.touch();
-    return user;
+    return new User(email, name, password, null);
   }
 
   public static User create(String email, String name, String password, UUID profileImageId) {
-    User user = new User(email, name, password, profileImageId);
-    user.touch();
-    return user;
+    return new User(email, name, password, profileImageId);
   }
 
-  @Override
   public void touch() {
-    super.touch();
+    this.updatedAt = Instant.now();
   }
 
   public void updatePassword(String password) {

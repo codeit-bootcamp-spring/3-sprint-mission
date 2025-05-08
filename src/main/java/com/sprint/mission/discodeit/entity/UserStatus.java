@@ -10,18 +10,24 @@ import lombok.Getter;
 import lombok.ToString;
 
 @Getter
-@ToString(callSuper = true)
-public class UserStatus extends Auditable implements Serializable {
+@ToString
+public class UserStatus implements Serializable {
 
   @Serial
   private static final long serialVersionUID = -7917996053260213133L;
 
   private static final Duration ACTIVE_DURATION = Duration.ofMinutes(5);
 
+  private final UUID id;
+  private final Instant createdAt;
+  private Instant updatedAt;
+
   private final UUID userId;
   private Instant lastActiveAt;
 
   private UserStatus(UUID userId) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
     this.userId = userId;
     this.lastActiveAt = getCreatedAt();
   }
@@ -30,6 +36,10 @@ public class UserStatus extends Auditable implements Serializable {
     UserStatus userStatus = new UserStatus(userId);
     userStatus.touch();
     return userStatus;
+  }
+
+  public void touch() {
+    this.updatedAt = Instant.now();
   }
 
   public void updateLastActiveAt() {

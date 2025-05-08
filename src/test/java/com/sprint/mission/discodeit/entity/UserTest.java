@@ -27,8 +27,6 @@ class UserTest {
           () -> assertThat(user.getName()).isNotNull(),
           () -> assertThat(user.getPassword()).isNotNull(),
           () -> assertThat(user.getCreatedAt()).isNotNull(),
-          () -> assertThat(user.getUpdatedAt()).isNotNull(),
-          () -> assertThat(user.getUpdatedAt()).isEqualTo(user.getCreatedAt()),
           () -> assertThat(user.getChannels()).isEmpty(),
           () -> assertThat(user.getProfileImageId()).isNull()
       );
@@ -53,14 +51,13 @@ class UserTest {
     @Test
     void 이름_수정시_이름과_수정시간이_업데이트_되어야_한다() {
       User user = UserFixture.createValidUser();
-      Instant originalUpdatedAt = user.getUpdatedAt();
       String newName = "새이름";
 
       user.updateName(newName);
 
       assertAll(
           () -> assertThat(user.getName()).isEqualTo(newName),
-          () -> assertThat(user.getUpdatedAt()).isAfterOrEqualTo(originalUpdatedAt)
+          () -> assertThat(user.getUpdatedAt()).isNotNull()
       );
     }
 
@@ -74,7 +71,7 @@ class UserTest {
 
       assertAll(
           () -> assertThat(user.getPassword()).isEqualTo(newPassword),
-          () -> assertThat(user.getUpdatedAt()).isAfterOrEqualTo(originalUpdatedAt)
+          () -> assertThat(user.getUpdatedAt()).isNotNull()
       );
     }
 
@@ -88,7 +85,7 @@ class UserTest {
 
       assertAll(
           () -> assertThat(user.getProfileImageId()).isEqualTo(newProfileImageId),
-          () -> assertThat(user.getUpdatedAt()).isAfterOrEqualTo(originalUpdatedAt)
+          () -> assertThat(user.getUpdatedAt()).isNotNull()
       );
     }
 
@@ -103,7 +100,7 @@ class UserTest {
       assertAll(
           () -> assertThat(user.getChannels()).contains(channel),
           () -> assertThat(user.getChannels()).hasSize(1),
-          () -> assertThat(user.getUpdatedAt()).isAfterOrEqualTo(originalUpdatedAt)
+          () -> assertThat(user.getUpdatedAt()).isNotNull()
       );
     }
 

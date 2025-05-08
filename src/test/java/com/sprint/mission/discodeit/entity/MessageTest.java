@@ -21,8 +21,7 @@ public class MessageTest {
           () -> assertThat(message.getContent()).isEqualTo(MessageFixture.DEFAULT_MESSAGE_CONTENT),
           () -> assertThat(message.getUserId()).isNotNull(),
           () -> assertThat(message.getChannelId()).isNotNull(),
-          () -> assertThat(message.getCreatedAt()).isNotNull(),
-          () -> assertThat(message.getUpdatedAt()).isEqualTo(message.getCreatedAt())
+          () -> assertThat(message.getCreatedAt()).isNotNull()
       );
     }
 

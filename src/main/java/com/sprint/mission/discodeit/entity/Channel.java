@@ -3,20 +3,18 @@ package com.sprint.mission.discodeit.entity;
 import com.sprint.mission.discodeit.exception.ChannelException;
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
 @Getter
-@ToString(callSuper = true)
-@Builder(toBuilder = true, access = AccessLevel.PRIVATE)
-public class Channel extends Auditable implements Serializable {
+@ToString
+public class Channel implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 4947061877205205272L;
@@ -26,14 +24,19 @@ public class Channel extends Auditable implements Serializable {
     PRIVATE
   }
 
+  private final UUID id;
+  private final Instant createdAt;
+  private Instant updatedAt;
+
   private final UUID creatorId;
   private String name;
   private String description;
   private final Set<UUID> participants = new HashSet<>();
   private final ChannelType type;
 
-  // 생성자에서 참여자 추가하지 않음
   private Channel(UUID creatorId, ChannelType type) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
     this.creatorId = Objects.requireNonNull(creatorId);
     this.name = null;
     this.description = null;
@@ -41,6 +44,8 @@ public class Channel extends Auditable implements Serializable {
   }
 
   private Channel(UUID creatorId, String name, String description, ChannelType type) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
     this.creatorId = Objects.requireNonNull(creatorId);
     this.name = Objects.requireNonNull(name);
     this.description = description != null ? description : "";
@@ -48,9 +53,7 @@ public class Channel extends Auditable implements Serializable {
   }
 
   public static Channel create(UUID creatorId, String name, String description) {
-    Channel channel = new Channel(creatorId, name, description, ChannelType.PUBLIC);
-    channel.touch();
-    return channel;
+    return new Channel(creatorId, name, description, ChannelType.PUBLIC);
   }
 
   public static Channel createPublic(UUID creatorId, String name, String description) {
@@ -58,9 +61,11 @@ public class Channel extends Auditable implements Serializable {
   }
 
   public static Channel createPrivate(UUID creatorId) {
-    Channel channel = new Channel(creatorId, ChannelType.PRIVATE);
-    channel.touch();
-    return channel;
+    return new Channel(creatorId, ChannelType.PRIVATE);
+  }
+
+  public void touch() {
+    this.updatedAt = Instant.now();
   }
 
   public void updateName(String name) {
@@ -112,15 +117,14 @@ public class Channel extends Auditable implements Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof Channel channel)) {
       return false;
     }
-    Channel channel = (Channel) o;
-    return Objects.equals(getId(), channel.getId());
+    return Objects.equals(id, channel.id);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getId());
+    return Objects.hash(id);
   }
 }

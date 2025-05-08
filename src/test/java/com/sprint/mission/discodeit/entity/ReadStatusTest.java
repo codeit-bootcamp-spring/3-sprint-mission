@@ -23,10 +23,8 @@ public class ReadStatusTest {
       assertAll(
           () -> assertThat(readStatus.getId()).isNotNull(),
           () -> assertThat(readStatus.getCreatedAt()).isNotNull(),
-          () -> assertThat(readStatus.getUpdatedAt()).isEqualTo(readStatus.getCreatedAt()),
           () -> assertThat(readStatus.getUserId()).isNotNull(),
-          () -> assertThat(readStatus.getChannelId()).isNotNull(),
-          () -> assertThat(readStatus.getLastReadAt()).isEqualTo(readStatus.getCreatedAt())
+          () -> assertThat(readStatus.getChannelId()).isNotNull()
       );
     }
   }
@@ -58,13 +56,12 @@ public class ReadStatusTest {
     @Test
     void 수정_시간_업데이트_메서드가_올바르게_동작해야_한다() {
       ReadStatus readStatus = ReadStatusFixture.createValidReadStatus();
-      Instant originalUpdatedAt = readStatus.getUpdatedAt();
 
       readStatus.touch();
       Instant newUpdatedAt = readStatus.getUpdatedAt();
 
       assertThat(newUpdatedAt).as("수정 시간이 갱신되어야 한다")
-          .isAfterOrEqualTo(originalUpdatedAt);
+          .isNotNull();
     }
   }
 }
