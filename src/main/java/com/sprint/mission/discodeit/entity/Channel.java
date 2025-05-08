@@ -4,7 +4,11 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.time.Instant;
 
+import lombok.Getter;
+
+@Getter
 public class Channel implements Serializable {
 
     private final UUID channelId;
@@ -12,8 +16,8 @@ public class Channel implements Serializable {
     private boolean isPrivate;
     private String password;
     private final UUID ownerChannelId;
-    private final long createdAt;
-    private long updatedAt;
+    private final Instant createdAt;
+    private Instant updatedAt;
     private final Set<UUID> participants; // 참가자 목록
     private static final long serialVersionUID = 1L;
 
@@ -26,29 +30,8 @@ public class Channel implements Serializable {
         this.password = password;
         this.participants = new HashSet<>();
         this.participants.add(ownerChannelId);
-        this.createdAt = System.currentTimeMillis();
+        this.createdAt = Instant.now();
         this.updatedAt = this.createdAt;
-    }
-
-    // getter
-    public UUID getChannelId() {
-        return channelId;
-    }
-
-    public UUID getOwnerChannelId() {
-        return ownerChannelId;
-    }
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public boolean isPrivate() {
-        return isPrivate;
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     public boolean addParticipant(UUID userId) {
@@ -69,17 +52,17 @@ public class Channel implements Serializable {
 
     public void updateChannelName(String channelName) {
         this.channelName = channelName;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
     public void updatePrivate(boolean isPrivate) {
         this.isPrivate = isPrivate;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
     public void updatePassword(String password) {
         this.password = password;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
     @Override

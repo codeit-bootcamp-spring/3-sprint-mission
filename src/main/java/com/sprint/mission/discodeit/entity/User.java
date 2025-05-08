@@ -2,15 +2,18 @@ package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
 import java.util.UUID;
+import java.time.Instant;
+import lombok.Getter;
 
+@Getter
 public class User implements Serializable {
 
     private final UUID userId;
     private String userName;
     private String email;
     private String password;
-    private final long createdAt;
-    private long updatedAt;
+    private final Instant createdAt;
+    private Instant updatedAt;
     private static final long serialVersionUID = 1L;
 
     // 생성자
@@ -19,32 +22,15 @@ public class User implements Serializable {
         this.userName = userName;
         this.email = email;
         this.password = password;
-        this.createdAt = System.currentTimeMillis(); // 현재 시간으로 생성 시간 초기화
+        this.createdAt = Instant.now(); // 현재 시간으로 생성 시간 초기화
         this.updatedAt = this.createdAt;
-    }
-
-    // getter
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     // 이메일 업데이트
     public void updateEmail(String email) {
         if (email != null && !email.isEmpty()) {
             this.email = email;
-            this.updatedAt = System.currentTimeMillis();
+            this.updatedAt = Instant.now();
         }
     }
 
@@ -53,7 +39,7 @@ public class User implements Serializable {
         if (userName != null && !userName.isEmpty()) {
             this.userName = userName;
         }
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
     //비밀번호 업데이트
@@ -61,7 +47,7 @@ public class User implements Serializable {
         if (password != null && !password.isEmpty()) {
             this.password = password;
         }
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
     @Override

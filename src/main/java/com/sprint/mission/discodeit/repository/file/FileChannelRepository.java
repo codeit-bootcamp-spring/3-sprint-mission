@@ -12,9 +12,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Repository;
+
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 
+@Repository
 public class FileChannelRepository implements ChannelRepository {
 
     private final Path dataDirectory;

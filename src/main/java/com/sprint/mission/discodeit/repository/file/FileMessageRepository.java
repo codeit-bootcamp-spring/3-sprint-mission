@@ -13,9 +13,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.stereotype.Repository;
+
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
+@Repository
 public class FileMessageRepository implements MessageRepository {
 
     private final Path dataDirectory;
