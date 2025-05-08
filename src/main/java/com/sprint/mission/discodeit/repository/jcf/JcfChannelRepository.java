@@ -2,9 +2,13 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
+@Repository
 public class JcfChannelRepository implements ChannelRepository {
   private final Map<UUID, Channel> channelMap = new HashMap<>();
 
@@ -15,12 +19,12 @@ public class JcfChannelRepository implements ChannelRepository {
   }
 
   @Override
-  public Optional<Channel> getChannelById(UUID channelId) {
+  public Optional<Channel> findById(UUID channelId) {
     return Optional.ofNullable(channelMap.get(channelId));
   }
 
   @Override
-  public List<Channel> getAllChannels() {
+  public List<Channel> findAll() {
     return new ArrayList<>(channelMap.values());
   }
 
@@ -29,7 +33,7 @@ public class JcfChannelRepository implements ChannelRepository {
     if (!channelMap.containsKey(channel.getId())) {
       throw new IllegalArgumentException("채널을 찾을 수 없습니다: " + channel.getId());
     }
-    channelMap.put(channel.getId(), channel);  // 이미 존재하는 채널을 덮어씌운다
+    channelMap.put(channel.getId(), channel);
   }
 
   @Override
@@ -48,7 +52,7 @@ public class JcfChannelRepository implements ChannelRepository {
   @Override
   public void removeUserFromAllChannels(UUID userId) {
     for (Channel channel : channelMap.values()) {
-      channel.getChannelUsers().removeIf(user -> user.getId().equals(userId));
+      channel.getChannelMembers().removeIf(user -> user.getId().equals(userId));
     }
   }
 }

@@ -1,96 +1,67 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.repository.AbstractFileRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
-import java.io.*;
-import java.util.*;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-public class FileChannelRepository implements ChannelRepository {
-  private static final String FILE_PATH = "channels.ser";
-  private final Map<UUID, Channel> channelData;
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
+@Repository
+public class FileChannelRepository extends AbstractFileRepository<Channel, UUID> implements ChannelRepository {
 
-  public FileChannelRepository() {
-    this.channelData = loadChannelData();
+  public FileChannelRepository(
+      @Value("${discodeit.repository.file-directory}") String fileDirectory
+  ) {
+    super(Paths.get(System.getProperty("user.dir"), fileDirectory, "channel.ser").toString());
   }
 
-  // 직렬화된 파일에서 채널 데이터를 불러옴
-  private Map<UUID, Channel> loadChannelData() {
-    File file = new File(FILE_PATH);
-    if (!file.exists()) {
-      return new HashMap<>();
-    }
-    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-      return (Map<UUID, Channel>) ois.readObject();
-    } catch (IOException | ClassNotFoundException e) {
-      e.printStackTrace();
-      return new HashMap<>();
-    }
-  }
-
-  // 채널 데이터를 파일로 저장
-  private void saveChannelData() {
-    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
-      oos.writeObject(channelData);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  // 1. 채널 생성
   @Override
   public Channel save(Channel channel) {
-    channelData.put(channel.getId(), channel);
-    saveChannelData();
+    super.save(channel, channel.getId());
     return channel;
   }
 
-  // 2. 채널 단건 조회
   @Override
-  public Optional<Channel> getChannelById(UUID channelId) {
-    return Optional.ofNullable(channelData.get(channelId));
+  public Optional<Channel> findById(UUID channelId) {
+    return super.findById(channelId);
   }
 
-  // 3. 채널 전체 조회
   @Override
-  public List<Channel> getAllChannels() {
-    return new ArrayList<>(channelData.values());
+  public List<Channel> findAll() {
+    return super.findAll();
   }
 
-  // 4. 채널 수정 (채널 이름 등 변경사항 반영)
   @Override
   public void update(Channel channel) {
-    if (!channelData.containsKey(channel.getId())) {
-      throw new IllegalArgumentException("해당 채널이 존재하지 않습니다: " + channel.getId());
-    }
-    channelData.put(channel.getId(), channel); // 기존 채널 덮어쓰기
-    saveChannelData();
+    super.update(channel, channel.getId());
   }
 
-  // 5. 채널 삭제
   @Override
   public void delete(UUID channelId) {
-    channelData.remove(channelId);
-    saveChannelData();
+    super.delete(channelId);
   }
 
-  // 6. 유저가 만든 채널 전체 삭제
   @Override
   public void deleteByOwnerId(UUID userId) {
-    channelData.entrySet().removeIf(entry -> entry.getValue().getChannelOwner().getId().equals(userId));
-    saveChannelData();
+    dataMap.entrySet().removeIf(entry -> entry.getValue().getChannelOwner().getId().equals(userId));
+    saveData();
   }
 
-  // 7. 유저가 참여 중인 모든 채널에서 유저 제거
   @Override
   public void removeUserFromAllChannels(UUID userId) {
-    for (Channel channel : channelData.values()) {
-      channel.getChannelUsers().removeIf(user -> user.getId().equals(userId));
+    for (Channel channel : dataMap.values()) {
+      channel.getChannelMembers().removeIf(user -> user.getId().equals(userId));
     }
-    saveChannelData();
+    saveData();
   }
-
-  /*
+    /*
  Repository: 데이터를 영속화(storage)하는 계층
 데이터를 단순히 저장/조회/삭제/갱신
 getChannelById, save, delete, update 같은 CRUD 담당
