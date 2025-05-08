@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.dto.User;
+package com.sprint.mission.discodeit.dto.User;
 
 import java.util.UUID;
 

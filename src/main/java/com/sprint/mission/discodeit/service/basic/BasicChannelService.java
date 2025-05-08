@@ -1,5 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.Channel.ChannelFindRequest;
+import com.sprint.mission.discodeit.dto.Channel.ChannelResponse;
+import com.sprint.mission.discodeit.dto.Channel.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.Channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.Channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -7,11 +12,6 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.dto.Channel.ChannelFindRequest;
-import com.sprint.mission.discodeit.service.dto.Channel.ChannelResponse;
-import com.sprint.mission.discodeit.service.dto.Channel.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.service.dto.Channel.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.service.dto.Channel.PublicChannelCreateRequest;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;

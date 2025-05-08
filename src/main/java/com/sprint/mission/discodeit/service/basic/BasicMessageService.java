@@ -1,14 +1,14 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.Message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.Message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.dto.BinaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.service.dto.Message.MessageCreateRequest;
-import com.sprint.mission.discodeit.service.dto.Message.MessageUpdateRequest;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;

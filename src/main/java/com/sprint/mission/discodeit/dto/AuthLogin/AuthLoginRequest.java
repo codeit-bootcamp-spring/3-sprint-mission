@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.dto.AuthLogin;
+package com.sprint.mission.discodeit.dto.AuthLogin;
 
 import lombok.Builder;
 

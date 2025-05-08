@@ -1,5 +1,17 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.dto.AuthLogin.AuthLoginReponse;
+import com.sprint.mission.discodeit.dto.AuthLogin.AuthLoginRequest;
+import com.sprint.mission.discodeit.dto.Channel.ChannelFindRequest;
+import com.sprint.mission.discodeit.dto.Channel.ChannelResponse;
+import com.sprint.mission.discodeit.dto.Channel.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.Channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.Channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.Message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.User.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.User.UserFindRequest;
+import com.sprint.mission.discodeit.dto.User.UserResponse;
+import com.sprint.mission.discodeit.dto.User.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -9,18 +21,6 @@ import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.dto.AuthLogin.AuthLoginReponse;
-import com.sprint.mission.discodeit.service.dto.AuthLogin.AuthLoginRequest;
-import com.sprint.mission.discodeit.service.dto.Channel.ChannelFindRequest;
-import com.sprint.mission.discodeit.service.dto.Channel.ChannelResponse;
-import com.sprint.mission.discodeit.service.dto.Channel.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.service.dto.Channel.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.service.dto.Channel.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.service.dto.Message.MessageCreateRequest;
-import com.sprint.mission.discodeit.service.dto.User.UserCreateRequest;
-import com.sprint.mission.discodeit.service.dto.User.UserFindRequest;
-import com.sprint.mission.discodeit.service.dto.User.UserResponse;
-import com.sprint.mission.discodeit.service.dto.User.UserUpdateRequest;
 import java.util.List;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -71,7 +71,7 @@ public class DiscodeitApplication {
         AuthLoginReponse authLoginReponse = authService.login(loginRequest);
         System.out.println(authLoginReponse);
         System.out.println("\n====== 유저 단일 조회 테스트 ======");
-        
+
         UserResponse foundUser = userService.find(UserFindRequest.builder()
                 .userId(user1.getId())
                 .build());

@@ -1,5 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.User.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.User.UserFindRequest;
+import com.sprint.mission.discodeit.dto.User.UserResponse;
+import com.sprint.mission.discodeit.dto.User.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -7,10 +11,6 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.dto.User.UserCreateRequest;
-import com.sprint.mission.discodeit.service.dto.User.UserFindRequest;
-import com.sprint.mission.discodeit.service.dto.User.UserResponse;
-import com.sprint.mission.discodeit.service.dto.User.UserUpdateRequest;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
