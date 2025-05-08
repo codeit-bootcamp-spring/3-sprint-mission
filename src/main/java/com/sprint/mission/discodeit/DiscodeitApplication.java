@@ -64,6 +64,7 @@ public class DiscodeitApplication {
 
         System.out.println("\n====== 유저 로그인 테스트 ======");
         AuthLoginRequest loginRequest = AuthLoginRequest.builder()
+                .id(user1.getId())
                 .userName(user1CreateRequest.username())
                 .password(user1CreateRequest.password())
                 .build();

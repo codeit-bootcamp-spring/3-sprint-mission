@@ -82,6 +82,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public List<ChannelResponse> findAllByUserId(UUID userId) {
+
         return channelRepository.findAll().stream()
                 .filter(channel -> {
                     if (channel.getType() == ChannelType.PUBLIC) {
@@ -125,10 +126,10 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.findById(request.id())
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 채널은 없습니다."));
 
-        if (request.type().equals(ChannelType.PUBLIC)) {
-            channel.update(request.name(), request.description());
-        } else {
+        if (request.type().equals(ChannelType.PRIVATE)) {
             throw new RuntimeException("Private 채널은 수정할 수 없습니다. ");
+        } else {
+            channel.update(request.name(), request.description());
         }
 
         return channelRepository.save(channel);
