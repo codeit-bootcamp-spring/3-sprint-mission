@@ -54,4 +54,12 @@ public class JCFUserRepository implements UserRepository {
         return store.values().stream()
                 .anyMatch(user -> user.getEmail().equals(email));
     }
+
+    @Override
+    public Optional<User> findByUserName(String userName) {
+        return store.values().stream()
+                .filter(u -> u.getUsername().equals(userName))
+                .findFirst();
+    }
+
 }

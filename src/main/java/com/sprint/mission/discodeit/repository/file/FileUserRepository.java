@@ -80,6 +80,25 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByUserName(String userName) {
+        try {
+            return Files.list(DIRECTORY)
+                    .filter(p -> p.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+                            return (User) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException("User 전체 조회 중 오류 발생", e);
+                        }
+                    })
+                    .filter(u -> u.getUsername().equals(userName))
+                    .findFirst();
+        } catch (IOException e) {
+            throw new RuntimeException("디렉토리 로드 오류", e);
+        }
+    }
+
+    @Override
     public boolean existsById(UUID id) {
         return Files.exists(resolvePath(id));
     }
