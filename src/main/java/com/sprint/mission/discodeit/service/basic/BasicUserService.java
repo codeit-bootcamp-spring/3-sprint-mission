@@ -29,11 +29,11 @@ public class BasicUserService{
 
     public void save(UserRequestDTO userRequestDTO, BinaryContentDTO binaryContentDTO) {
         if (isDuplicateName(userRequestDTO.getName())) {
-            throw new DuplicateNameException();
+            throw new DuplicateNameException(userRequestDTO.getName());
         }
 
         if (isDuplicateEmail(userRequestDTO.getEmail())) {
-            throw new DuplicateEmailException();
+            throw new DuplicateEmailException(userRequestDTO.getEmail());
         }
 
         User user = UserRequestDTO.toEntity(userRequestDTO);
