@@ -2,19 +2,25 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileReadStatusRepository implements ReadStatusRepository {
 
-    private String fileName;
-    private File file;
+    @Value("${discodeit.repository.file-directory}")
+    private String FILE_DIRECTORY;
+    private final String FILENAME = "readStatusRepo.ser";
 
-    public FileReadStatusRepository(String filePath) {
-        this.fileName = "src/main/java/com/sprint/mission/discodeit/" + filePath + "/readStatusRepo.ser";
-        this.file = new File(fileName);
+    private File getFile() {
+        return new File(FILE_DIRECTORY, FILENAME);
     }
+
     @Override
     public void save(ReadStatus readStatus) {
         // 파일에서 읽어오기
@@ -22,7 +28,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
         data.put(readStatus.getId(), readStatus);
 
-        try (FileOutputStream fos = new FileOutputStream(file);
+        try (FileOutputStream fos = new FileOutputStream(getFile());
              ObjectOutputStream out = new ObjectOutputStream(fos)) {
             out.writeObject(data);
         } catch (IOException e) {
@@ -82,7 +88,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
         data.remove(id);
 
-        try (FileOutputStream fos = new FileOutputStream(file);
+        try (FileOutputStream fos = new FileOutputStream(getFile());
              ObjectOutputStream out = new ObjectOutputStream(fos)) {
             out.writeObject(data);
         } catch (IOException e) {
@@ -97,7 +103,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
         data.entrySet().removeIf(entry -> entry.getValue().getChannelId().equals(channelId));
 
-        try (FileOutputStream fos = new FileOutputStream(file);
+        try (FileOutputStream fos = new FileOutputStream(getFile());
              ObjectOutputStream out = new ObjectOutputStream(fos)) {
             out.writeObject(data);
         } catch (IOException e) {
@@ -113,7 +119,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         data.entrySet().removeIf(entry -> entry.getValue().getChannelId().equals(channelId)
                 && entry.getValue().getUserId().equals(userId));
 
-        try (FileOutputStream fos = new FileOutputStream(file);
+        try (FileOutputStream fos = new FileOutputStream(getFile());
              ObjectOutputStream out = new ObjectOutputStream(fos)) {
             out.writeObject(data);
         } catch (IOException e) {
@@ -124,8 +130,8 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     private Map<UUID, ReadStatus> loadFile() {
         Map<UUID, ReadStatus> data = new HashMap<>();
 
-        if (file.exists()) {
-            try (FileInputStream fis = new FileInputStream(file);
+        if (getFile().exists()) {
+            try (FileInputStream fis = new FileInputStream(getFile());
                  ObjectInputStream in = new ObjectInputStream(fis)) {
                 data = (Map<UUID, ReadStatus>)in.readObject();
             } catch (IOException | ClassNotFoundException e) {

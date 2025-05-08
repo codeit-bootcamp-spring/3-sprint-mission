@@ -2,18 +2,23 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileUserStatusRepository implements UserStatusRepository {
 
-    private String fileName;
-    private File file;
+    @Value("${discodeit.repository.file-directory}")
+    private String FILE_DIRECTORY;
+    private final String FILENAME = "userStatusRepo.ser";
 
-    public FileUserStatusRepository(String filePath) {
-        this.fileName = "src/main/java/com/sprint/mission/discodeit/" + filePath + "/userStatusRepo.ser";
-        this.file = new File(fileName);
+    private File getFile() {
+        return new File(FILE_DIRECTORY, FILENAME);
     }
 
     @Override
@@ -23,7 +28,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
         data.put(userStatus.getId(), userStatus);
 
-        try (FileOutputStream fos = new FileOutputStream(file);
+        try (FileOutputStream fos = new FileOutputStream(getFile());
              ObjectOutputStream out = new ObjectOutputStream(fos)) {
             out.writeObject(data);
         } catch (IOException e) {
@@ -71,7 +76,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
         data.remove(id);
 
-        try (FileOutputStream fos = new FileOutputStream(file);
+        try (FileOutputStream fos = new FileOutputStream(getFile());
              ObjectOutputStream out = new ObjectOutputStream(fos)) {
             out.writeObject(data);
         } catch (IOException e) {
@@ -86,7 +91,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
         data.entrySet().removeIf(entry -> entry.getValue().getUserId().equals(userId));
 
-        try (FileOutputStream fos = new FileOutputStream(file);
+        try (FileOutputStream fos = new FileOutputStream(getFile());
              ObjectOutputStream out = new ObjectOutputStream(fos)) {
             out.writeObject(data);
         } catch (IOException e) {
@@ -97,8 +102,8 @@ public class FileUserStatusRepository implements UserStatusRepository {
     private Map<UUID, UserStatus> loadFile() {
         Map<UUID, UserStatus> data = new HashMap<>();
 
-        if (file.exists()) {
-            try (FileInputStream fis = new FileInputStream(file);
+        if (getFile().exists()) {
+            try (FileInputStream fis = new FileInputStream(getFile());
                  ObjectInputStream in = new ObjectInputStream(fis)) {
                 data = (Map<UUID, UserStatus>)in.readObject();
             } catch (IOException | ClassNotFoundException e) {

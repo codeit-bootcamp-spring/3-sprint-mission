@@ -2,18 +2,23 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileMessageRepository implements MessageRepository {
 
-    private String fileName;
-    private File file;
+    @Value("${discodeit.repository.file-directory}")
+    private String FILE_DIRECTORY;
+    private final String FILENAME = "messageRepo.ser";
 
-    public FileMessageRepository(String filePath) {
-        this.fileName = "src/main/java/com/sprint/mission/discodeit/" + filePath + "/messageRepo.ser";
-        this.file = new File(fileName);
+    private File getFile() {
+        return new File(FILE_DIRECTORY, FILENAME);
     }
 
     @Override
@@ -23,7 +28,7 @@ public class FileMessageRepository implements MessageRepository {
 
         data.put(message.getId(), message);
 
-        try (FileOutputStream fos = new FileOutputStream(file);
+        try (FileOutputStream fos = new FileOutputStream(getFile());
              ObjectOutputStream out = new ObjectOutputStream(fos)) {
             out.writeObject(data);
         } catch (IOException e) {
@@ -91,7 +96,7 @@ public class FileMessageRepository implements MessageRepository {
         data.remove(messageId);
 
         // Message 삭제 후 파일에 덮어쓰기
-        try (FileOutputStream fos = new FileOutputStream(file);
+        try (FileOutputStream fos = new FileOutputStream(getFile());
              ObjectOutputStream out = new ObjectOutputStream(fos)) {
             out.writeObject(data);
         } catch (IOException e) {
@@ -102,8 +107,8 @@ public class FileMessageRepository implements MessageRepository {
     private Map<UUID, Message> loadFile() {
         Map<UUID, Message> data = new HashMap<>();
 
-        if (file.exists()) {
-            try (FileInputStream fis = new FileInputStream(file);
+        if (getFile().exists()) {
+            try (FileInputStream fis = new FileInputStream(getFile());
                  ObjectInputStream in = new ObjectInputStream(fis)) {
                 data = (Map<UUID, Message>)in.readObject();
             } catch (IOException | ClassNotFoundException e) {

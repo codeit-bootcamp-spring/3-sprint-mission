@@ -44,7 +44,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="part1-한동우-sprint1" />
+        <entry key="$PROJECT_DIR$" value="한동우" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -89,7 +89,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.DiscodeitApplication.executor": "Run",
-    "git-widget-placeholder": "한동우-sprint3",
+    "git-widget-placeholder": "한동우-sprint4",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/handongwoo/sprint-mission/3-sprint-mission",
     "node.js.detected.package.eslint": "true",
@@ -242,6 +242,7 @@
       <workItem from="1745800770490" duration="28762000" />
       <workItem from="1745853162298" duration="1278000" />
       <workItem from="1745885023341" duration="32435000" />
+      <workItem from="1746670050937" duration="2543000" />
     </task>
     <servers />
   </component>
