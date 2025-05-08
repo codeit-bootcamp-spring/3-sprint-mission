@@ -59,23 +59,23 @@ public class BasicChannelService implements ChannelService {
                 .toList();
 
         if (channel.getType().equals(ChannelType.PUBLIC)) {
-            return new ChannelResponse(
-                    channel.getId(),
-                    channel.getType(),
-                    channel.getName(),
-                    channel.getDescription(),
-                    recentMessageAt,
-                    null
-            );
+            return ChannelResponse.builder()
+                    .id(channel.getId())
+                    .type(channel.getType())
+                    .name(channel.getName())
+                    .description(channel.getDescription())
+                    .lastMessageAt(recentMessageAt)
+                    .participantIds(null)
+                    .build();
         } else {
-            return new ChannelResponse(
-                    channel.getId(),
-                    channel.getType(),
-                    channel.getName(),
-                    channel.getDescription(),
-                    recentMessageAt,
-                    participantIds
-            );
+            return ChannelResponse.builder()
+                    .id(channel.getId())
+                    .type(channel.getType())
+                    .name(channel.getName())
+                    .description(channel.getDescription())
+                    .lastMessageAt(recentMessageAt)
+                    .participantIds(participantIds)
+                    .build();
         }
 
     }

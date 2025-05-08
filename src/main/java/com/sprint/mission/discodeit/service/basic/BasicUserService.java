@@ -71,13 +71,13 @@ public class BasicUserService implements UserService {
                 .map(status -> status.getUpdatedAt().isAfter(Instant.now().minusSeconds(300)))
                 .orElse(false);
 
-        return new UserResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                isOnline,
-                user.isHasProfileImage()
-        );
+        return UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .isOnline(isOnline)
+                .hasProfileImage(user.isHasProfileImage())
+                .build();
     }
 
     @Override
@@ -88,13 +88,13 @@ public class BasicUserService implements UserService {
                             .map(status -> status.getUpdatedAt().isAfter(Instant.now().minusSeconds(300)))
                             .orElse(false);
 
-                    return new UserResponse(
-                            user.getId(),
-                            user.getUsername(),
-                            user.getEmail(),
-                            isOnline,
-                            user.isHasProfileImage()
-                    );
+                    return UserResponse.builder()
+                            .id(user.getId())
+                            .username(user.getUsername())
+                            .email(user.getEmail())
+                            .isOnline(isOnline)
+                            .hasProfileImage(user.isHasProfileImage())
+                            .build();
                 })
                 .toList();
     }
