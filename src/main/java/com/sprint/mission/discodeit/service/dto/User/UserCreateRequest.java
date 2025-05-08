@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.service.dto.User;
 
+import lombok.Builder;
+
 public record UserCreateRequest(
         String username,
         String email,
@@ -8,4 +10,7 @@ public record UserCreateRequest(
         byte[] profileImage,
         String profileContentType
 ) {
+    @Builder
+    public UserCreateRequest {
+    }
 }

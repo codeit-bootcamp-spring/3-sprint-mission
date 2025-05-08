@@ -39,41 +39,42 @@ public class DiscodeitApplication {
 
         System.out.println("====== 유저 생성 테스트 ======");
 
-        UserCreateRequest request1 = new UserCreateRequest(
-                "user1",
-                "user1@example.com",
-                "password1",
-                false,
-                null,
-                null
-        );
+        UserCreateRequest user1CreateRequest = UserCreateRequest.builder()
+                .username("username1")
+                .email("user1@example.com")
+                .password("password1")
+                .content(false)
+                .profileImage(null)
+                .profileContentType(null)
+                .build();
 
-        UserCreateRequest request2 = new UserCreateRequest(
-                "user2",
-                "user2@example.com",
-                "password2",
-                false,
-                null,
-                null
-        );
+        UserCreateRequest user2CreateRequest = UserCreateRequest.builder()
+                .username("user2")
+                .email("user2@example.com")
+                .password("password2")
+                .content(false)
+                .profileImage(null)
+                .profileContentType(null)
+                .build();
 
-        User user1 = userService.create(request1);
-        User user2 = userService.create(request2);
+        User user1 = userService.create(user1CreateRequest);
+        User user2 = userService.create(user2CreateRequest);
         System.out.println("생성된 유저 1 ID: " + user1.getId());
         System.out.println("생성된 유저 2 ID: " + user2.getId());
 
         System.out.println("\n====== 유저 로그인 테스트 ======");
-        AuthLoginRequest request3 = new AuthLoginRequest(
-                user1.getId(),
-                user1.getUsername(),
-                user1.getPassword()
-        );
-        AuthLoginReponse authLoginReponse = authService.login(request3);
+        AuthLoginRequest loginRequest = AuthLoginRequest.builder()
+                .userName(user1CreateRequest.username())
+                .password(user1CreateRequest.password())
+                .build();
+
+        AuthLoginReponse authLoginReponse = authService.login(loginRequest);
         System.out.println(authLoginReponse);
         System.out.println("\n====== 유저 단일 조회 테스트 ======");
-
-        UserFindRequest findRequest = new UserFindRequest(user1.getId());
-        UserResponse foundUser = userService.find(findRequest);
+        
+        UserResponse foundUser = userService.find(UserFindRequest.builder()
+                .userId(user1.getId())
+                .build());
         System.out.println(foundUser);
 
         System.out.println("\n====== 유저 전체 조회 테스트 ======");
@@ -85,15 +86,15 @@ public class DiscodeitApplication {
 
         System.out.println("\n====== 유저 수정 테스트 ======");
 
-        UserUpdateRequest updateRequest = new UserUpdateRequest(
-                user2.getId(),
-                "new_user2",
-                "new_user2@example.com",
-                "new_password2",
-                false,
-                null,
-                null
-        );
+        UserUpdateRequest updateRequest = UserUpdateRequest.builder()
+                .userId(user2.getId())
+                .newUsername("new_user2")
+                .newEmail("new_user2@example.com")
+                .newPassword("new_password2")
+                .hasProfileImage(false)
+                .newProfileImage(null)
+                .newProfileContentType(null)
+                .build();
 
         User updatedUser = userService.update(updateRequest);
 
@@ -112,23 +113,35 @@ public class DiscodeitApplication {
 
         System.out.println("\n====== 채널 테스트 시작 ======");
 
-        Channel publicChannel = channelService.create(new PublicChannelCreateRequest(
-                "공지사항", "모두가 볼 수 있는 공지"
-        ));
+        PublicChannelCreateRequest publicChannelCreateRequest = PublicChannelCreateRequest.builder()
+                .channelName("공지사항")
+                .description("모두가 볼 수 있는 공지")
+                .build();
+
+        Channel publicChannel = channelService.create(publicChannelCreateRequest);
+
+        PrivateChannelCreateRequest privateChannelCreateRequest = PrivateChannelCreateRequest.builder()
+                .participantsIds(List.of(user1.getId()))
+                .build();
 
         // 3. PRIVATE 채널 생성 (user1만 참여)
-        Channel privateChannel = channelService.create(new PrivateChannelCreateRequest(
-                List.of(user1.getId())
-        ));
+        Channel privateChannel = channelService.create(privateChannelCreateRequest);
 
-        // 4. PUBLIC 채널 조회 테스트
         System.out.println("\n=== PUBLIC 채널 조회 테스트 ===");
-        ChannelResponse publicResponse = channelService.find(new ChannelFindRequest(publicChannel.getId()));
+        ChannelResponse publicResponse = channelService.find(
+                ChannelFindRequest.builder()
+                        .id(publicChannel.getId())
+                        .build()
+        );
         System.out.println(publicResponse);
 
         // 5. PRIVATE 채널 조회 테스트
         System.out.println("\n=== PRIVATE 채널 조회 테스트 ===");
-        ChannelResponse privateResponse = channelService.find(new ChannelFindRequest(privateChannel.getId()));
+        ChannelResponse privateResponse = channelService.find(
+                ChannelFindRequest.builder()
+                        .id(privateChannel.getId())
+                        .build()
+        );
         System.out.println(privateResponse);
 
         // 4. user1이 볼 수 있는 채널 확인
@@ -147,13 +160,19 @@ public class DiscodeitApplication {
         user2Channels.forEach(System.out::println);
 
         System.out.println("\n=== public 채널 업데이트 테스트 ===");
-        ChannelUpdateRequest channelUpdateRequest = new ChannelUpdateRequest(publicChannel.getId(), ChannelType.PUBLIC,
-                "새로운 공지", "업데이트햇음");
+        ChannelUpdateRequest channelUpdateRequest = ChannelUpdateRequest.builder()
+                .id(publicChannel.getId())
+                .type(ChannelType.PUBLIC)
+                .name("새로운 공지")
+                .description("업데이트햇음")
+                .build();
         channelService.update(channelUpdateRequest);
-        publicResponse = channelService.find(new ChannelFindRequest(publicChannel.getId()));
+        publicResponse = channelService.find(ChannelFindRequest.builder()
+                .id(publicChannel.getId())
+                .build());
         System.out.println(publicResponse);
 
-        System.out.println("\n=== public 채널 삭재 테스트 ===");
+        System.out.println("\n=== public 채널 삭제 테스트 ===");
         channelService.delete(publicChannel.getId());
 
         System.out.println("\n=== user2가 볼 수 있는 채널 ===");
@@ -163,11 +182,11 @@ public class DiscodeitApplication {
         // 6. 메시지 테스트 시작
         System.out.println("\n=== 메시지 생성 테스트 ===");
 
-        MessageCreateRequest messageCreateRequest = new MessageCreateRequest(
-                "첫 번째 테스트 메시지입니다.",
-                privateChannel.getId(),
-                user2.getId()
-        );
+        MessageCreateRequest messageCreateRequest = MessageCreateRequest.builder()
+                .content("첫 번째 테스트 메시지입니다.")
+                .channelId(privateChannel.getId())
+                .authorId(user2.getId())
+                .build();
 
         Message createdMessage = messageService.create(messageCreateRequest, null);
         System.out.println("메시지 생성됨: ID = " + createdMessage.getId());
@@ -177,7 +196,5 @@ public class DiscodeitApplication {
 
         System.out.println("조회된 메시지 내용: " + foundMessage.getContent());
         System.out.println("첨부파일 ID들: " + foundMessage.getAttachmentIds());
-
     }
-
 }

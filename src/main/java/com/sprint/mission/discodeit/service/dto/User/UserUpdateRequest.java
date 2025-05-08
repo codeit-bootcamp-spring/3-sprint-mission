@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.service.dto.User;
 
 import java.util.UUID;
+import lombok.Builder;
 
+@Builder
 public record UserUpdateRequest(
         UUID userId,
         String newUsername,
