@@ -54,14 +54,11 @@ public class BasicUserService implements UserService {
     }
 
     private void validateUniqueUser(UserCreateRequest request) {
-        List<User> users = userRepository.findAll();
-        for (User user : users) {
-            if (user.getUsername().equals(request.username())) {
-                throw new IllegalArgumentException("이미 존재하는 이름 입니다.");
-            }
-            if (user.getEmail().equals(request.email())) {
-                throw new IllegalArgumentException("이미 존재하는 이메일 입니다.");
-            }
+        if (userRepository.existsByUsername(request.username())) {
+            throw new IllegalArgumentException("이미 존재하는 이름입니다.");
+        }
+        if (userRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
     }
 
