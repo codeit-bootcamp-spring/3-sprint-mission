@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.dto.channel;
 
-public record UpdateChannelRequest(String newName,
+import java.util.UUID;
+
+public record UpdateChannelRequest(UUID id,
+                                   String newName,
                                    String newDescription) {
 }

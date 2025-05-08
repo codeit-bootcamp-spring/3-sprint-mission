@@ -48,7 +48,7 @@ public class BasicServiceFactory implements ServiceFactory {
 
         // Service 초기화
         this.userService = new BasicUserService(userRepository,userStatusRepository,binaryContentRepository);
-        this.messageService = new BasicMessageService(messageRepository,channelRepository,userRepository,binaryContentRepository);
+        this.messageService = new BasicMessageService(messageRepository,channelRepository,binaryContentRepository);
         this.channelService = new BasicChannelService(channelRepository,messageRepository,readStatusRepository,userRepository);
     }
 
@@ -71,7 +71,7 @@ public class BasicServiceFactory implements ServiceFactory {
     @Override
     public MessageService createMessageService() {
         if(messageService == null){
-            messageService = new BasicMessageService(messageRepository,channelRepository,userRepository,binaryContentRepository);
+            messageService = new BasicMessageService(messageRepository,channelRepository,binaryContentRepository);
         }
         return messageService;
     }

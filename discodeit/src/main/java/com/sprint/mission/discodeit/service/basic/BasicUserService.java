@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,11 +28,8 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
+    private final UserStatusService userStatusService;
 
-    //@RequiredArgsConstructor로 대체되었다.
-//    public BasicUserService(UserRepository userRepository) {
-//        this.userRepository = userRepository;
-//    }
 
     @Override
     public User create(CreateUserRequest request, Optional<AddBinaryContentRequest> addBinaryContentRequest) {
@@ -58,7 +56,6 @@ public class BasicUserService implements UserService {
         Instant now = Instant.now();
         UserStatus userStatus = new UserStatus(newUser.getId(),now);
         userStatusRepository.save(userStatus);
-
         return newUser;
     }
 
@@ -72,7 +69,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<UserDTO> findAll() {
+    public List<User> findAll() {
         return userRepository.findAll()
                 .stream()
                 .map(this::toDTO)
@@ -110,7 +107,6 @@ public class BasicUserService implements UserService {
         Optional.ofNullable(user.getProfiledId())
                 .ifPresent(binaryContentRepository::deleteById);
         userStatusRepository.deleteByUserId(userId);
-
         userRepository.deleteById(userId);
         System.out.println("delete user : " + userId + " success.");
 
@@ -132,18 +128,5 @@ public class BasicUserService implements UserService {
     }
 
 
-    // 온라인 상태 확인
-    private UserDTO toDTO(User user){
-        Boolean online = userStatusRepository.findByUserId(user.getId())
-                .map(UserStatus::isOnline)
-                .orElse(null);
-        // DTO를 활용하여 패스워드 정보를 조회파트에서 제외
-        return new UserDTO(
-                user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getUsername(),
-                user.getEmail(),
-                online);
-    }
+
 }

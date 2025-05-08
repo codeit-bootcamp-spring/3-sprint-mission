@@ -26,52 +26,29 @@ public class User implements Serializable {
         this.password = password;
     }
 
-    // @Getter를 대신 사용하였음
-//    public UUID getId() {
-//        return id;
-//    }
-//
-//    public Long getCreatedAt() {
-//        return createdAt;
-//    }
-//
-//    public Long getUpdatedAt() {
-//        return updatedAt;
-//    }
-//
-//    public String getUsername() {
-//        return username;
-//    }
-//
-//    public String getEmail() {
-//        return email;
-//    }
-//
-//    public String getPassword() {
-//        return password;
-//    }
 
-    public void update(String newUsername, String newEmail, String newPassword, UUID profiledId) {
-        boolean anyValueUpdated = false;
-        if (newUsername != null && !newUsername.equals(this.username)) {
-            this.username = newUsername;
-            anyValueUpdated = true;
+    public void updatePassword(String oldPassword, String newPassword) {
+        if(!oldPassword.equals(this.password)){
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
-        if (newEmail != null && !newEmail.equals(this.email)) {
-            this.email = newEmail;
-            anyValueUpdated = true;
+        if(newPassword==null){
+            throw new IllegalArgumentException("새로운 비밀번호를 입력하지 않으셨습니다.");
         }
-        if (newPassword != null && !newPassword.equals(this.password)) {
-            this.password = newPassword;
-            anyValueUpdated = true;
-        }
-        if(profiledId != null && !profiledId.equals(this.profiledId)){
-            this.profiledId = profiledId;
-            anyValueUpdated = true;
+        if(newPassword.equals(this.password)){
+            throw new IllegalArgumentException("이전 비밀번호와 새로운 비밀번호가 같습니다.");
         }
 
-        if (anyValueUpdated) {
+        this.password = newPassword;
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateProfiledId(UUID newProfiledId){
+        if(newProfiledId != null){
+            this.profiledId = newProfiledId;
             this.updatedAt = Instant.now();
         }
     }
+
+
 }
+

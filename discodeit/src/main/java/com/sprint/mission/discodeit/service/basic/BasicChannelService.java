@@ -27,10 +27,7 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
 
-    // @RequiredArgsConstructor로 대체되었다.
-//    public BasicChannelService(ChannelRepository channelRepository) {
-//        this.channelRepository = channelRepository;
-//    }
+
 
     @Override
     public Channel create(CreatePublicChannelRequest request) {
@@ -57,14 +54,13 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelDTO find(UUID channelId) {
+    public Channel find(UUID channelId) {
         return channelRepository.findById(channelId)
-                        .map(this::toDTO)
                         .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     }
 
     @Override
-    public List<ChannelDTO> findAllByUserId(UUID userId){
+    public List<Channel> findAllByUserId(UUID userId){
         // private 채널 중에서 userID가 있는 채널만 추출
         List<Channel> channelListAll = new ArrayList<>(channelRepository.findAllByUserId(userId)
                 .stream()
@@ -78,18 +74,15 @@ public class BasicChannelService implements ChannelService {
                 .filter(channel -> channel.getType().equals(ChannelType.PUBLIC))
                 .forEach(channelListAll::add);
 
-        return channelListAll
-                .stream()
-                .map(this::toDTO)
-                .toList();
+        return channelListAll.stream().toList();
     }
 
 
 
     @Override
-    public Channel update(UUID channelId, UpdateChannelRequest updateChannelRequest) {
-        Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+    public Channel update(UpdateChannelRequest updateChannelRequest) {
+        Channel channel = channelRepository.findById(updateChannelRequest.id())
+                .orElseThrow(() -> new NoSuchElementException("Channel with id " + updateChannelRequest.id() + " not found"));
 
         if(channel.getType().equals(ChannelType.PRIVATE)){
             throw new IllegalArgumentException("Private 채널은 수정할 수 없습니다!");
@@ -135,27 +128,6 @@ public class BasicChannelService implements ChannelService {
         System.out.println("delete participant : " + userId + " success.");
         channelRepository.save(channel);
 
-
-
     }
 
-
-    public ChannelDTO toDTO(Channel channel){
-        Instant lastMessageAt = messageRepository.findAllByChannelId(channel.getId())
-                .stream()
-                .map(Message::getCreatedAt)
-                .max(Instant::compareTo) // createrAt 기준으로 가장 큰 값이자 가장 최근 값을 가져오는 파트 ( 피드백 3번 )
-                .orElse(Instant.MIN);
-
-        return new ChannelDTO(
-                channel.getId(),
-                channel.getCreatedAt(),
-                channel.getChannelName(),
-                channel.getType(),
-                channel.getDescription(),
-                channel.getParicipantIds(),
-                lastMessageAt
-        );
-
-    }
 }

@@ -7,14 +7,13 @@ import com.sprint.mission.discodeit.dto.message.UpdateMessageRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentType;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -24,62 +23,56 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
+    private final UserStatusRepository userStatusRepository;
 
-    // @RequiredArgsConstructor로 대체되었다.
-//    public BasicMessageService(MessageRepository messageRepository, ChannelRepository channelRepository, UserRepository userRepository) {
-//        this.messageRepository = messageRepository;
-//        this.channelRepository = channelRepository;
-//        this.userRepository = userRepository;
-//    }
 
     @Override
-    public Message create(CreateMessageRequest request, List<AddBinaryContentRequest> contentRequests) {
-        if(request.channelId() == null || request.channelId().equals(new UUID(0L,0L))){  // 피드백 1 - 이상한 파트 수정
+    public Message create(CreateMessageRequest request) {
+        if(request.channelId() == null || request.channelId().equals(new UUID(0L,0L))||!channelRepository.existsById(request.channelId())){  // 피드백 1 - 이상한 파트 수정
             throw new IllegalArgumentException("존재하지 않는 채널입니다!");
         }
-        if(request.authorId() == null || request.authorId().equals(new UUID(0L,0L))){  // 피드백 1 - 이상한 파트 수정
+        if(request.authorId() == null || request.authorId().equals(new UUID(0L,0L))||!userRepository.existsById(request.authorId())){  // 피드백 1 - 이상한 파트 수정
             throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
         }
 
-        List<UUID> attachmentIds = contentRequests.stream()
-                .map(attachmentRequest -> {
-                    String fileName = attachmentRequest.fileName();
-                    BinaryContentType contentType = attachmentRequest.type();
-                    byte[] bytes = attachmentRequest.bytes();
-
-                    BinaryContent binaryContent = new BinaryContent(fileName, contentType, (long)bytes.length, bytes);
-                    BinaryContent cratesBinaryContent = binaryContentRepository.save(binaryContent);
-                    return binaryContentRepository.save(binaryContent).getId();
-                }).toList();
-
-        Message message = new Message(request.content(),request.channelId(),request.authorId(),attachmentIds);
+        Message message = new Message(request.content(),request.channelId(),request.authorId(),null);
+        updateUserStatus(userStatusRepository, message.getAuthorId());
         return messageRepository.save(message);
     }
 
     @Override
-    public MessageDTO find(UUID messageId) {
-        return messageRepository.findById(messageId)
-                .map(this::toDTO)
+    public Message find(UUID messageId) {
+        Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+        updateUserStatus(userStatusRepository, message.getAuthorId());
+        return message;
     }
 
     @Override
-    public List<MessageDTO> findAllByChannelId(UUID channelId) {
+    public List<Message> findAllByChannelId(UUID channelId) {
         return messageRepository.findAllByChannelId(channelId)
                 .stream()
-                .map(this::toDTO)
                 .toList();
     }
 
     @Override
-    public Message update(UUID messageId, UpdateMessageRequest updateMessageRequest) {
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+    public Message update(UpdateMessageRequest updateMessageRequest) {
+        Message message = messageRepository.findById(updateMessageRequest.id())
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + updateMessageRequest.id() + " not found"));
 
         if(updateMessageRequest.newContent() == null || updateMessageRequest.newContent().isBlank()){
             throw new IllegalArgumentException("빈 메시지는 전송할 수 없습니다.");
         }
+
+        for(UUID id: updateMessageRequest.attachmentIds()){
+            if(message.getAttachmentIds().contains(id)){
+                message.getAttachmentIds().remove(id);
+            }else{
+                message.getAttachmentIds().add(id);
+            }
+        }
         message.update(updateMessageRequest.newContent());
+        updateUserStatus(userStatusRepository, message.getAuthorId());
         return messageRepository.save(message);
     }
 
@@ -89,24 +82,15 @@ public class BasicMessageService implements MessageService {
                         .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
         message.getAttachmentIds().forEach(binaryContentRepository::deleteById);
         messageRepository.deleteById(messageId);
+        updateUserStatus(userStatusRepository, message.getAuthorId());
         System.out.println("delete message : " + messageId + " success.");
     }
 
-    public MessageDTO toDTO(Message message){
-        List<UUID> attachmentIds = message.getAttachmentIds();
-        if(attachmentIds.isEmpty()){
-            attachmentIds = new ArrayList<>();
-        }
 
-        return new MessageDTO(
-                message.getId(),
-                message.getCreatedAt(),
-                message.getUpdatedAt(),
-                message.getContent(),
-                message.getAuthorId(),
-                message.getChannelId(),
-                attachmentIds
-        );
+
+    private void updateUserStatus(UserStatusRepository userStatusRepo, UUID userId){
+        UserStatus userStatus = userStatusRepo.findByUserId(userId).orElseThrow(() -> new NoSuchElementException("[error] 존재하지 않는 User ID입니다."));
+        userStatus.update(Instant.now());
     }
 
 }

@@ -31,40 +31,12 @@ public class Message implements Serializable {
         this.attachmentIds = attachmentIds;
     }
 
-// @Getter를 대신 사용하였음
-//    public UUID getId() {
-//        return id;
-//    }
-//
-//    public Long getCreatedAt() {
-//        return createdAt;
-//    }
-//
-//    public Long getUpdatedAt() {
-//        return updatedAt;
-//    }
-//
-//    public String getContent() {
-//        return content;
-//    }
-//
-//    public UUID getChannelId() {
-//        return channelId;
-//    }
-//
-//    public UUID getAuthorId() {
-//        return authorId;
-//    }
 
     public void update(String newContent) {
-        boolean anyValueUpdated = false;
         if (newContent != null && !newContent.equals(this.content)) {
             this.content = newContent;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
             this.updatedAt = Instant.now();
         }
+
     }
 }
