@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.ReadStatusException;
 import com.sprint.mission.discodeit.fixture.ChannelFixture;
 import com.sprint.mission.discodeit.fixture.ReadStatusFixture;
@@ -94,8 +95,10 @@ public class BasicReadStatusServiceTest {
         readStatusService.create(createRequest);
       });
 
+      System.out.println("exception = " + exception);
+
       // then: 예외가 발생해야 함
-      assertEquals(ReadStatusException.INVALID_USER_OR_CHANNEL, exception.getErrorCode());
+      assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
     }
 
     @Test
@@ -110,7 +113,7 @@ public class BasicReadStatusServiceTest {
       });
 
       // then: 예외가 발생해야 함
-      assertEquals(ReadStatusException.INVALID_USER_OR_CHANNEL, exception.getErrorCode());
+      assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
     }
 
     @Test
@@ -128,7 +131,7 @@ public class BasicReadStatusServiceTest {
       });
 
       // then: 예외가 발생해야 함
-      assertEquals(ReadStatusException.DUPLICATE_READ_STATUS, exception.getErrorCode());
+      assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
     }
   }
 
@@ -147,7 +150,7 @@ public class BasicReadStatusServiceTest {
       });
 
       // then: 예외가 발생해야 함
-      assertEquals(ReadStatusException.READ_STATUS_NOT_FOUND, exception.getErrorCode());
+      assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
     }
   }
 
@@ -184,7 +187,7 @@ public class BasicReadStatusServiceTest {
       });
 
       // then: 예외가 발생해야 함
-      assertEquals(ReadStatusException.READ_STATUS_NOT_FOUND, exception.getErrorCode());
+      assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
     }
   }
 }

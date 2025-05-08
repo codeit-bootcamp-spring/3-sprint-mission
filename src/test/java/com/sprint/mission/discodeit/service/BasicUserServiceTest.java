@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.UserException;
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
@@ -123,7 +124,7 @@ class BasicUserServiceTest {
       // when & Then
       UserException exception = assertThrows(UserException.class,
           () -> basicUserService.create(request));
-      assertEquals(UserException.DUPLICATE_EMAIL, exception.getErrorCode());
+      assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
 
       verify(userRepository, times(1)).findByEmail(request.email());
       verify(userRepository, never()).findByName(anyString());
@@ -143,7 +144,7 @@ class BasicUserServiceTest {
       // when & Then
       UserException exception = assertThrows(UserException.class,
           () -> basicUserService.create(request));
-      assertEquals(UserException.DUPLICATE_NAME, exception.getErrorCode());
+      assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
 
       verify(userRepository, times(1)).findByEmail(request.email());
       verify(userRepository, times(1)).findByName(request.name());
