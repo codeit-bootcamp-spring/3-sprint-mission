@@ -105,6 +105,8 @@ public class BasicChannelService implements ChannelService {
             throw new NoSuchElementException("Channel with id " + channelId + " not found");
         }
         channelRepository.deleteById(channelId);
+        messageRepository.deleteByChannelId(channelId);   //   피드백 2 -> 요구사항에 따른 채널 관련 message도 삭제하는 부분
+        readStatusRepository.deleteByChannelId(channelId);  //   '' -> 요구사항에 따른 채널 관련 ReadStatus도 함께 삭제하는 부분
     }
 
     @Override
@@ -142,8 +144,7 @@ public class BasicChannelService implements ChannelService {
         Instant lastMessageAt = messageRepository.findAllByChannelId(channel.getId())
                 .stream()
                 .map(Message::getCreatedAt)
-                .limit(1)
-                .findFirst()
+                .max(Instant::compareTo) // createrAt 기준으로 가장 큰 값이자 가장 최근 값을 가져오는 파트 ( 피드백 3번 )
                 .orElse(Instant.MIN);
 
         return new ChannelDTO(

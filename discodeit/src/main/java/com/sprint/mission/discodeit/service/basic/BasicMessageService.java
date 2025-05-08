@@ -34,10 +34,10 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public Message create(CreateMessageRequest request, List<AddBinaryContentRequest> contentRequests) {
-        if(request.channelId() == null || request.channelId().equals(UUID.randomUUID())){
+        if(request.channelId() == null || request.channelId().equals(new UUID(0L,0L))){  // 피드백 1 - 이상한 파트 수정
             throw new IllegalArgumentException("존재하지 않는 채널입니다!");
         }
-        if(request.authorId() == null || request.authorId().equals(UUID.randomUUID())){
+        if(request.authorId() == null || request.authorId().equals(new UUID(0L,0L))){  // 피드백 1 - 이상한 파트 수정
             throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
         }
 
