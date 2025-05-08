@@ -233,14 +233,4 @@ public class BasicChannelService implements ChannelService {
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널 ID입니다."));
     return new ArrayList<>(channel.getChannelMembers());
   }
-
-  @Override
-  public void deleteChannelsCreatedByUser(UUID userId) {
-    channelRepository.deleteByOwnerId(userId);
-  }
-
-  @Override
-  public void removeUserFromAllChannels(UUID userId) {
-    channelRepository.removeUserFromAllChannels(userId);
-  }
 }

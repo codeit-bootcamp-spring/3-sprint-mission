@@ -40,3 +40,4 @@ out/
 ...
 /src/main/generated/
 *.ser
+.discodeit/

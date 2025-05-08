@@ -1,22 +1,23 @@
-package com.sprint.mission.discodeit.service;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.UserStatusService;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
-public class UserStatusServiceImpl implements UserStatusService {
+public class BasicUserStatusService implements UserStatusService {
 
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
 
-  public UserStatusServiceImpl(UserRepository userRepository, UserStatusRepository userStatusRepository) {
+  public BasicUserStatusService(UserRepository userRepository, UserStatusRepository userStatusRepository) {
     this.userRepository = userRepository;
     this.userStatusRepository = userStatusRepository;
   }

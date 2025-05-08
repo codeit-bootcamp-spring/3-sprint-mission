@@ -1,8 +1,9 @@
-package com.sprint.mission.discodeit.service;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,11 +11,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class BinaryContentServiceImpl implements BinaryContentService {
+public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
 
-  public BinaryContentServiceImpl(BinaryContentRepository binaryContentRepository) {
+  public BasicBinaryContentService(BinaryContentRepository binaryContentRepository) {
     this.binaryContentRepository = binaryContentRepository;
   }
 

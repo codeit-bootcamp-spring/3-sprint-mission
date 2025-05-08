@@ -9,6 +9,18 @@ public abstract class AbstractFileRepository<T extends Serializable, ID> {
 
   protected AbstractFileRepository(String filePath) {
     this.filePath = filePath;
+
+    File directory = new File(new File(filePath).getParent());
+    // filePath는 ~~~/.discodeit/user.ser 파일 전체 경로
+    // .getParent()로 상위 디렉터리 경로(~~~/.discodeit/)를 가져온다. 이 경로를 바탕으로 File 객체를 생성
+    // 초기화 시점은 해당 빈이 DI되는 시점 - FileUserRepository가 빈으로 등록되고 이때 생성자가 호출되고, .discodeit 폴더를 생성
+    if (!directory.exists()) {
+      boolean created = directory.mkdirs();
+      if (!created) { // 권한 or 경로 error
+        throw new IllegalStateException("디렉터리 생성에 실패했습니다.: ");
+      }
+    }
+
     loadData();
   }
 

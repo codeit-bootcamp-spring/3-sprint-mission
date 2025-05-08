@@ -12,6 +12,7 @@ public interface UserRepository {
 
   // 유저 단건 조회 (ID로)
   Optional<User> findById(UUID id);
+  Optional<User> findByUsername(String username);
 
   // 모든 유저 조회
   List<User> findAll();

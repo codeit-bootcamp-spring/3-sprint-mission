@@ -47,9 +47,11 @@ public interface ChannelService {
   // 8. 채널에 속한 멤버 조회
   List<User> getChannelMembers(UUID channelId);
 
+  /* UserService에서 channelService가 아닌 channelRepository를 의존(참조)하므로 더이상 쓰이지 않음
   // 9. 유저가 만든 모든 채널 삭제
   void deleteChannelsCreatedByUser(UUID userId);
 
   // 10. 유저가 참여 중인 모든 채널에서 탈퇴
   void removeUserFromAllChannels(UUID userId);
+   */
 }

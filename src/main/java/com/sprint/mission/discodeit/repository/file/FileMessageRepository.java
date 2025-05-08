@@ -3,23 +3,30 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageDataStore;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.*;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
 public class FileMessageRepository implements MessageRepository {
-  private static final String FILE_PATH = "messages.ser";
 
+  private final String filePath;
   private MessageDataStore dataStore;
 
-  public FileMessageRepository() {
-    loadData();
+  public FileMessageRepository(
+      @Value("${discodeit.repository.file-directory}") String fileDirectory
+  ) {
+    this.filePath = Paths.get(System.getProperty("user.dir"), fileDirectory, "messages.ser").toString();
+    loadData(); // 데이터를 로드
   }
 
   private void loadData() {
-    File file = new File(FILE_PATH);
+    File file = new File(filePath);
     if (!file.exists()) {
       dataStore = new MessageDataStore(); // 초기화
       return;
@@ -33,7 +40,7 @@ public class FileMessageRepository implements MessageRepository {
   }
 
   private void saveData() {
-    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
       oos.writeObject(dataStore);
     } catch (IOException e) {
       e.printStackTrace();

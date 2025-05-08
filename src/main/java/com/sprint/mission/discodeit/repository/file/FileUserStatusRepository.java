@@ -1,35 +1,45 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.AbstractFileRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
-public class FileUserStatusRepository implements UserStatusRepository {
+public class FileUserStatusRepository extends AbstractFileRepository<UserStatus, UUID> implements UserStatusRepository {
 
-  private final Map<UUID, UserStatus> store = new HashMap<>();
+  public FileUserStatusRepository(
+      @Value("${discodeit.repository.file-directory}") String fileDirectory
+  ) {
+    super(Paths.get(System.getProperty("user.dir"), fileDirectory, "userStatus.ser").toString());
+  }
 
   @Override
   public UserStatus save(UserStatus status) {
-    store.put(status.getId(), status);
-    return status;
+    return super.save(status, status.getId());
   }
 
   @Override
   public Optional<UserStatus> find(UUID id) {
-    return Optional.ofNullable(store.get(id));
+    return super.findById(id);
   }
 
   @Override
   public List<UserStatus> findAll() {
-    return new ArrayList<>(store.values());
+    return super.findAll();
   }
 
   @Override
   public void delete(UUID id) {
-    store.remove(id);
+    super.delete(id);
   }
 }
 

@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
@@ -6,20 +6,23 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.ReadStatusService;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class ReadStatusServiceImpl implements ReadStatusService {
+public class BasicReadStatusService implements ReadStatusService {
 
   private final ReadStatusRepository readStatusRepository;
   private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
 
-  public ReadStatusServiceImpl(ReadStatusRepository readStatusRepository, UserRepository userRepository, ChannelRepository channelRepository) {
+  public BasicReadStatusService(ReadStatusRepository readStatusRepository, UserRepository userRepository, ChannelRepository channelRepository) {
     this.readStatusRepository = readStatusRepository;
     this.userRepository = userRepository;
     this.channelRepository = channelRepository;
@@ -58,12 +61,15 @@ public class ReadStatusServiceImpl implements ReadStatusService {
   }
 
   @Override
-  public void updateLastReadAt(UUID id, ReadStatusUpdateRequest request) {
-    ReadStatus existing = readStatusRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("해당 ReadStatus가 존재하지 않습니다."));
+  public ReadStatus update(UUID id, ReadStatusUpdateRequest request) {
+    Instant newLastReadAt = request.newLastReadAt();
+    ReadStatus readStatus = readStatusRepository.findById(id)
+        .orElseThrow(() -> new NoSuchElementException("해당 ReadStatus가 존재하지 않습니다."));
 
-    readStatusRepository.updateLastReadAt(id, request.newReadAt());
+    readStatus.updateLastReadAt(newLastReadAt);
+    return readStatusRepository.save(readStatus);
   }
+
 
   @Override
   public void delete(UUID id) {
