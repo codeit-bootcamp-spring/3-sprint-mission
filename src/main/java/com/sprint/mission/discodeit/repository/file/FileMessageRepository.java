@@ -28,12 +28,7 @@ public class FileMessageRepository implements MessageRepository {
 
         data.put(message.getId(), message);
 
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile(data);
 
         return message;
     }
@@ -96,12 +91,7 @@ public class FileMessageRepository implements MessageRepository {
         data.remove(messageId);
 
         // Message 삭제 후 파일에 덮어쓰기
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile(data);
     }
 
     private Map<UUID, Message> loadFile() {
@@ -117,5 +107,14 @@ public class FileMessageRepository implements MessageRepository {
         }
 
         return data;
+    }
+
+    private void saveFile(Map<UUID, Message> data) {
+        try (FileOutputStream fos = new FileOutputStream(getFile());
+             ObjectOutputStream out = new ObjectOutputStream(fos)) {
+            out.writeObject(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

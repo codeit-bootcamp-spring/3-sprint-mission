@@ -28,12 +28,7 @@ public class FileChannelRepository implements ChannelRepository {
 
         data.put(channel.getId(), channel);
 
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile(data);
 
         return channel;
     }
@@ -87,12 +82,7 @@ public class FileChannelRepository implements ChannelRepository {
         data.remove(channelId);
 
         // Channel 삭제 후 파일에 덮어쓰기
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile(data);
     }
 
     private Map<UUID, Channel> loadFile() {
@@ -108,5 +98,14 @@ public class FileChannelRepository implements ChannelRepository {
         }
 
         return data;
+    }
+
+    private void saveFile(Map<UUID, Channel> data) {
+        try (FileOutputStream fos = new FileOutputStream(getFile());
+             ObjectOutputStream out = new ObjectOutputStream(fos)) {
+            out.writeObject(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

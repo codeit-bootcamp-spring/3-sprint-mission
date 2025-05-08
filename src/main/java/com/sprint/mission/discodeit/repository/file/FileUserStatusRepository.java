@@ -28,12 +28,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
         data.put(userStatus.getId(), userStatus);
 
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile(data);
     }
 
     @Override
@@ -76,12 +71,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
         data.remove(id);
 
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile(data);
     }
 
     @Override
@@ -91,12 +81,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
         data.entrySet().removeIf(entry -> entry.getValue().getUserId().equals(userId));
 
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile(data);
     }
 
     private Map<UUID, UserStatus> loadFile() {
@@ -112,5 +97,14 @@ public class FileUserStatusRepository implements UserStatusRepository {
         }
 
         return data;
+    }
+
+    private void saveFile(Map<UUID, UserStatus> data) {
+        try (FileOutputStream fos = new FileOutputStream(getFile());
+             ObjectOutputStream out = new ObjectOutputStream(fos)) {
+            out.writeObject(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

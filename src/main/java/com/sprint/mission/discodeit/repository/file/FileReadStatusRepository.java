@@ -28,12 +28,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
         data.put(readStatus.getId(), readStatus);
 
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile(data);
     }
 
     @Override
@@ -88,12 +83,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
         data.remove(id);
 
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile(data);
     }
 
     @Override
@@ -103,12 +93,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
         data.entrySet().removeIf(entry -> entry.getValue().getChannelId().equals(channelId));
 
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+       saveFile(data);
     }
 
     @Override
@@ -119,12 +104,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         data.entrySet().removeIf(entry -> entry.getValue().getChannelId().equals(channelId)
                 && entry.getValue().getUserId().equals(userId));
 
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+       saveFile(data);
     }
 
     private Map<UUID, ReadStatus> loadFile() {
@@ -140,5 +120,14 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         }
 
         return data;
+    }
+
+    private void saveFile(Map<UUID, ReadStatus> data) {
+        try (FileOutputStream fos = new FileOutputStream(getFile());
+             ObjectOutputStream out = new ObjectOutputStream(fos)) {
+            out.writeObject(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

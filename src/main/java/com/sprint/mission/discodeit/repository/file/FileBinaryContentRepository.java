@@ -28,12 +28,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
         data.put(binaryContent.getId(), binaryContent);
 
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile(data);
     }
 
     @Override
@@ -75,12 +70,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
         data.remove(id);
 
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile(data);
     }
 
     private Map<UUID, BinaryContent> loadFile() {
@@ -96,5 +86,14 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
         }
 
         return data;
+    }
+
+    private void saveFile(Map<UUID, BinaryContent> data) {
+        try (FileOutputStream fos = new FileOutputStream(getFile());
+             ObjectOutputStream out = new ObjectOutputStream(fos)) {
+            out.writeObject(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

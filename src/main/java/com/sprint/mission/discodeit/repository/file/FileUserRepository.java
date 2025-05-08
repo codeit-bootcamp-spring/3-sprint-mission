@@ -28,12 +28,7 @@ public class FileUserRepository implements UserRepository {
 
         data.put(user.getId(), user);
 
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile(data);
 
         return user;
     }
@@ -112,12 +107,7 @@ public class FileUserRepository implements UserRepository {
         data.remove(userId);
 
         // User 삭제 후 파일에 덮어쓰기
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile(data);
     }
 
     private Map<UUID, User> loadFile() {
@@ -133,5 +123,14 @@ public class FileUserRepository implements UserRepository {
         }
 
         return data;
+    }
+
+    private void saveFile(Map<UUID, User> data) {
+        try (FileOutputStream fos = new FileOutputStream(getFile());
+             ObjectOutputStream out = new ObjectOutputStream(fos)) {
+            out.writeObject(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
