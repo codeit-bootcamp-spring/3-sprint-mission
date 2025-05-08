@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.Channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.Channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -82,42 +83,42 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public List<ChannelResponse> findAllByUserId(UUID userId) {
+        List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
+                .map(ReadStatus::getChannelId)
+                .toList();
 
         return channelRepository.findAll().stream()
-                .filter(channel -> {
-                    if (channel.getType() == ChannelType.PUBLIC) {
-                        return true;
-                    }
-                    List<UUID> participantIds = readStatusRepository.findAllByChannelId(channel.getId()).stream()
-                            .map(ReadStatus::getUserId)
-                            .toList();
-
-                    return participantIds.contains(userId);
-                })
-                .map(channel -> {
-                    Instant recentMessageAt = readStatusRepository.findAllByChannelId(channel.getId()).stream()
-                            .map(ReadStatus::getLastReadAt)
-                            .filter(Objects::nonNull)
-                            .max(Instant::compareTo)
-                            .orElse(null);
-
-                    List<UUID> participantIds = null;
-                    if (channel.getType() == ChannelType.PRIVATE) {
-                        participantIds = readStatusRepository.findAllByChannelId(channel.getId()).stream()
-                                .map(ReadStatus::getUserId)
-                                .toList();
-                    }
-
-                    return new ChannelResponse(
-                            channel.getId(),
-                            channel.getType(),
-                            channel.getName(),
-                            channel.getDescription(),
-                            recentMessageAt,
-                            participantIds
-                    );
-                })
+                .filter(channel ->
+                        channel.getType() == ChannelType.PUBLIC
+                                || mySubscribedChannelIds.contains(channel.getId())
+                )
+                .map(this::toResponse)
                 .toList();
+    }
+
+    private ChannelResponse toResponse(Channel channel) {
+
+        Instant lastMessageAt = messageRepository.findAllByChannelId(channel.getId()).stream()
+                .map(Message::getCreatedAt)
+                .filter(Objects::nonNull)
+                .max(Instant::compareTo)
+                .orElse(null);
+
+        List<UUID> participantIds = null;
+        if (channel.getType() == ChannelType.PRIVATE) {
+            participantIds = readStatusRepository.findAllByChannelId(channel.getId()).stream()
+                    .map(ReadStatus::getUserId)
+                    .toList();
+        }
+
+        return ChannelResponse.builder()
+                .id(channel.getId())
+                .type(channel.getType())
+                .name(channel.getName())
+                .description(channel.getDescription())
+                .lastMessageAt(lastMessageAt)
+                .participantIds(participantIds)
+                .build();
     }
 
 
