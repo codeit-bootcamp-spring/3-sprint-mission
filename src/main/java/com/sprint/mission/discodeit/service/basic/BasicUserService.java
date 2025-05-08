@@ -13,6 +13,7 @@ import com.sprint.mission.discodeit.exception.NotFoundUserStatusException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,13 +22,14 @@ import java.util.UUID;
 
 @Service("basicUserService")
 @RequiredArgsConstructor
-public class BasicUserService{
+public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
 
-    public void save(UserRequestDTO userRequestDTO, BinaryContentDTO binaryContentDTO) {
+    @Override
+    public User create(UserRequestDTO userRequestDTO, BinaryContentDTO binaryContentDTO) {
         if (isDuplicateName(userRequestDTO.getName())) {
             throw new DuplicateNameException(userRequestDTO.getName());
         }
@@ -49,8 +51,11 @@ public class BasicUserService{
 
         userStatusRepository.save(userStatus);
         userRepository.save(user);
+
+        return user;
     }
 
+    @Override
     public UserResponseDTO findById(UUID id) {
         User user = findUser(id);
 
@@ -62,6 +67,7 @@ public class BasicUserService{
         return UserResponseDTO.toDTO(user);
     }
 
+    @Override
     public UserResponseDTO findByName(String name) {
         User user = userRepository.findByName(name)
                 .orElseThrow(() -> new NotFoundUserException(name + " 유저를 찾을 수 없습니다."));
@@ -73,6 +79,7 @@ public class BasicUserService{
         return UserResponseDTO.toDTO(user);
     }
 
+    @Override
     public UserResponseDTO findByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundUserException(email + "을 사용하는 유저를 찾을 수 없습니다."));
@@ -84,6 +91,7 @@ public class BasicUserService{
         return UserResponseDTO.toDTO(user);
     }
 
+    @Override
     public List<UserResponseDTO> findByNameContaining(String name) {
         return userRepository.findByNameContaining(name).stream()
                 .map(user -> {
@@ -94,6 +102,7 @@ public class BasicUserService{
                 .toList();
     }
 
+    @Override
     public List<UserResponseDTO> findAll() {
         List<UserResponseDTO> users = userRepository.findAll().stream()
                 .map(user -> {
@@ -106,6 +115,7 @@ public class BasicUserService{
         return users;
     }
 
+    @Override
     public UserResponseDTO updateProfileImage(UUID id, BinaryContentDTO binaryContentDTO) {
         User user = findUser(id);
         // 기존 프로필 이미지의 아이디
@@ -126,6 +136,7 @@ public class BasicUserService{
         return UserResponseDTO.toDTO(user);
     }
 
+    @Override
     public UserResponseDTO updateUserInfo(UUID id, UserRequestDTO userRequestDTO) {
         User user = findUser(id);
 
@@ -139,6 +150,7 @@ public class BasicUserService{
         return UserResponseDTO.toDTO(user);
     }
 
+    @Override
     public void deleteById(UUID id) {
         User user = findUser(id);
 
@@ -148,6 +160,7 @@ public class BasicUserService{
     }
 
     // 친구 추가 기능
+    @Override
     public void addFriend(UUID id1, UUID id2) {
         User user1 = findUser(id1);
         User user2 = findUser(id2);
@@ -167,6 +180,7 @@ public class BasicUserService{
     }
 
     // 친구 삭제 기능
+    @Override
     public void deleteFriend(UUID id1, UUID id2) {
         User user1 = findUser(id1);
         User user2 = findUser(id2);

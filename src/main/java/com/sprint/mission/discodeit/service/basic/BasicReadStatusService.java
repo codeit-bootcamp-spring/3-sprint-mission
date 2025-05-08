@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.exception.ReadStatusAlreadyExistsException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +19,14 @@ import java.util.UUID;
 
 @Service("basicReadStatusService")
 @RequiredArgsConstructor
-public class BasicReadStatusService {
+public class BasicReadStatusService implements ReadStatusService {
 
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
 
-    public void save(ReadStatusRequestDTO readStatusRequestDTO) {
+    @Override
+    public ReadStatus create(ReadStatusRequestDTO readStatusRequestDTO) {
         if (userRepository.findById(readStatusRequestDTO.getUserId()).isEmpty()) {
             throw new NotFoundUserException();
         }
@@ -43,26 +45,32 @@ public class BasicReadStatusService {
         ReadStatus readStatus = ReadStatusRequestDTO.toEntity(readStatusRequestDTO);
 
         readStatusRepository.save(readStatus);
+
+        return readStatus;
     }
 
+    @Override
     public ReadStatusResponseDTO findById(UUID id) {
         ReadStatus readStatus = findReadStatus(id);
 
         return ReadStatusResponseDTO.toDTO(readStatus);
     }
 
+    @Override
     public List<ReadStatusResponseDTO> findAll() {
         return readStatusRepository.findAll().stream()
                 .map(ReadStatusResponseDTO::toDTO)
                 .toList();
     }
 
+    @Override
     public List<ReadStatusResponseDTO> findAllByUserId(UUID userId) {
         return readStatusRepository.findAllByUserId(userId).stream()
                 .map(ReadStatusResponseDTO::toDTO)
                 .toList();
     }
 
+    @Override
     public ReadStatusResponseDTO update(UUID id, ReadStatusRequestDTO readStatusRequestDTO) {
         ReadStatus readStatus = findReadStatus(id);
 
@@ -72,6 +80,7 @@ public class BasicReadStatusService {
         return ReadStatusResponseDTO.toDTO(readStatus);
     }
 
+    @Override
     public void deleteById(UUID id) {
         readStatusRepository.deleteById(id);
     }

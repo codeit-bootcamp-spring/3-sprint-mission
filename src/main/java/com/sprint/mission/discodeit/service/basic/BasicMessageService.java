@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,14 +24,15 @@ import java.util.UUID;
 
 @Service("basicMessageService")
 @RequiredArgsConstructor
-public class BasicMessageService {
+public class BasicMessageService implements MessageService {
 
     private final MessageRepository messageRepository;
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
 
-    public void save(MessageRequestDTO messageRequestDTO, List<BinaryContentDTO> binaryContentDTOS) {
+    @Override
+    public Message create(MessageRequestDTO messageRequestDTO, List<BinaryContentDTO> binaryContentDTOS) {
         User user = findUser(messageRequestDTO.getSenderId());
         Channel channel = findChannel(messageRequestDTO.getChannelId());
 
@@ -60,14 +62,18 @@ public class BasicMessageService {
             binaryContentRepository.save(binaryContent);
         }
         messageRepository.save(message);
+
+        return message;
     }
 
+    @Override
     public MessageResponseDTO findById(UUID messageId) {
         Message message = findMessage(messageId);
 
         return MessageResponseDTO.toDTO(message);
     }
 
+    @Override
     public List<MessageResponseDTO> findAllByChannelId(UUID channelId) {
         Channel channel = findChannel(channelId);
 
@@ -81,12 +87,14 @@ public class BasicMessageService {
         return channelMessages;
     }
 
+    @Override
     public List<MessageResponseDTO> findAll() {
         return messageRepository.findAll().stream()
                 .map(MessageResponseDTO::toDTO)
                 .toList();
     }
 
+    @Override
     public List<MessageResponseDTO> findAllByUserId(UUID userId) {
         User user = findUser(userId);
 
@@ -101,12 +109,14 @@ public class BasicMessageService {
         return userMessages;
     }
 
+    @Override
     public List<MessageResponseDTO> findMessageByContainingWord(String word) {
         return messageRepository.findMessageByContainingWord(word).stream()
                 .map(MessageResponseDTO::toDTO)
                 .toList();
     }
 
+    @Override
     public MessageResponseDTO updateBinaryContent(UUID messageId, List<BinaryContentDTO> binaryContentDTOS) {
         Message message = findMessage(messageId);
         // 기존 BinaryContent 제거
@@ -132,6 +142,7 @@ public class BasicMessageService {
         return MessageResponseDTO.toDTO(message);
     }
 
+    @Override
     public MessageResponseDTO updateContent(UUID messageId, String content) {
         Message message = findMessage(messageId);
 
@@ -142,6 +153,7 @@ public class BasicMessageService {
         return MessageResponseDTO.toDTO(message);
     }
 
+    @Override
     public void deleteById(UUID messageId) {
         Message message = findMessage(messageId);
 

@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,14 +25,15 @@ import java.util.UUID;
 
 @Service("basicChannelService")
 @RequiredArgsConstructor
-public class BasicChannelService {
+public class BasicChannelService implements ChannelService {
 
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
     private final ReadStatusRepository readStatusRepository;
-    
-    public void savePublicChannel(PublicChannelDTO publicChannelDTO) {
+
+    @Override
+    public Channel createPublicChannel(PublicChannelDTO publicChannelDTO) {
         // 존재하지 않는 사용자를 채널 주인으로 설정하는 경우 예외 처리
         if (userRepository.findById(publicChannelDTO.getChannelMaster()).isEmpty()) {
             throw new NotFoundUserException();
@@ -43,9 +45,12 @@ public class BasicChannelService {
         createReadStatus(channel);
 
         channelRepository.save(channel);
+
+        return channel;
     }
 
-    public void savePrivateChannel(PrivateChannelDTO privateChannelDTO) {
+    @Override
+    public Channel createPrivateChannel(PrivateChannelDTO privateChannelDTO) {
         // 존재하지 않는 사용자를 채널 주인으로 설정하는 경우 예외 처리
         if (userRepository.findById(privateChannelDTO.getChannelMaster()).isEmpty()) {
             throw new NotFoundUserException();
@@ -57,8 +62,11 @@ public class BasicChannelService {
         createReadStatus(channel);
 
         channelRepository.save(channel);
+
+        return channel;
     }
 
+    @Override
     public ChannelResponseDTO findById(UUID channelId) {
         Channel channel = findChannel(channelId);
 
@@ -70,6 +78,7 @@ public class BasicChannelService {
         return channelResponseDTO;
     }
 
+    @Override
     public List<ChannelResponseDTO> findByNameContaining(String name) {
         List<Channel> nameContainingChannels = channelRepository.findByNameContaining(name);
 
@@ -84,6 +93,7 @@ public class BasicChannelService {
                 .toList();
     }
 
+    @Override
     public List<ChannelResponseDTO> findAllByUserId(UUID userId) {
         List<Channel> publicChannels = channelRepository.findAll().stream()
                 .filter(channel -> !channel.isPrivate())
@@ -107,6 +117,7 @@ public class BasicChannelService {
                 .toList();
     }
 
+    @Override
     public List<ChannelResponseDTO> findAll() {
         return channelRepository.findAll().stream()
                 .map(channel -> {
@@ -119,6 +130,7 @@ public class BasicChannelService {
                 .toList();
     }
 
+    @Override
     public ChannelResponseDTO update(UUID channelId, PublicChannelDTO publicChannelDTO) {
         Channel channel = findChannel(channelId);
 
@@ -142,7 +154,8 @@ public class BasicChannelService {
 
         return ChannelResponseDTO.toDTO(channel);
     }
-    
+
+    @Override
     public void deleteById(UUID channelId) {
         // 채널에 속한 User의 channelList에서 해당 채널 삭제
         userRepository.findAll().forEach(user -> {
@@ -161,6 +174,7 @@ public class BasicChannelService {
     }
 
     // 채널에 사용자 추가
+    @Override
     public void addUser(UUID channelId, UUID userId) {
         Channel channel = findChannel(channelId);
         User user = findUser(userId);
@@ -183,6 +197,7 @@ public class BasicChannelService {
     }
 
     // 채널에서 사용자 제거
+    @Override
     public void deleteUser(UUID channelId, UUID userId) {
         Channel channel = findChannel(channelId);
         User user = findUser(userId);

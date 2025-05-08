@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.exception.NotFoundUserException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,16 +20,20 @@ import java.util.UUID;
 
 @Service("basicBinaryContentService")
 @RequiredArgsConstructor
-public class BasicBinaryContentService {
+public class BasicBinaryContentService implements BinaryContentService {
 
     private final BinaryContentRepository binaryContentRepository;
 
-    public void save(BinaryContentDTO binaryContentDTO) {
+    @Override
+    public BinaryContent create(BinaryContentDTO binaryContentDTO) {
         BinaryContent binaryContent = BinaryContentDTO.toEntity(binaryContentDTO);
 
         binaryContentRepository.save(binaryContent);
+
+        return binaryContent;
     }
 
+    @Override
     public BinaryContentResponseDTO findById(UUID id) {
         BinaryContent foundBinaryContent = binaryContentRepository.findById(id)
                 .orElseThrow(NotFoundBinaryContentException::new);
@@ -36,19 +41,21 @@ public class BasicBinaryContentService {
         return BinaryContentResponseDTO.toDTO(foundBinaryContent);
     }
 
-
+    @Override
     public List<BinaryContentResponseDTO> findAll() {
         return binaryContentRepository.findAll().stream()
                 .map(BinaryContentResponseDTO::toDTO)
                 .toList();
     }
 
+    @Override
     public List<BinaryContentResponseDTO> findAllByIdIn(List<UUID> ids) {
         return binaryContentRepository.findAllByIdIn(ids).stream()
                 .map(BinaryContentResponseDTO::toDTO)
                 .toList();
     }
 
+    @Override
     public void deleteById(UUID id) {
         binaryContentRepository.deleteById(id);
     }

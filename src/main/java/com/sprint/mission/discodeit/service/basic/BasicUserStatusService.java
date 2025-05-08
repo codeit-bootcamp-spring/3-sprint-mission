@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.exception.NotFoundUserStatusException;
 import com.sprint.mission.discodeit.exception.UserStatusAlreadyExistsException;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +18,13 @@ import java.util.UUID;
 
 @Service("basicUserStatusService")
 @RequiredArgsConstructor
-public class BasicUserStatusService {
+public class BasicUserStatusService implements UserStatusService {
 
     private final UserStatusRepository userStatusRepository;
     private final UserRepository userRepository;
 
-    public void save(UserStatusRequestDTO userStatusRequestDTO) {
+    @Override
+    public UserStatus create(UserStatusRequestDTO userStatusRequestDTO) {
         if (userRepository.findById(userStatusRequestDTO.getUserId()).isEmpty()) {
             throw new NotFoundUserException();
         }
@@ -34,20 +36,25 @@ public class BasicUserStatusService {
         UserStatus userStatus = UserStatusRequestDTO.toEntity(userStatusRequestDTO);
 
         userStatusRepository.save(userStatus);
+
+        return userStatus;
     }
 
+    @Override
     public UserStatusResponseDTO findById(UUID id) {
         UserStatus userStatus = findUserStatus(id);
 
         return UserStatusResponseDTO.toDTO(userStatus);
     }
 
+    @Override
     public List<UserStatusResponseDTO> findAll() {
         return userStatusRepository.findAll().stream()
                 .map(UserStatusResponseDTO::toDTO)
                 .toList();
     }
 
+    @Override
     public UserStatusResponseDTO update(UUID id, UserStatusRequestDTO userStatusRequestDTO) {
         UserStatus userStatus = findUserStatus(id);
 
@@ -57,6 +64,7 @@ public class BasicUserStatusService {
         return UserStatusResponseDTO.toDTO(userStatus);
     }
 
+    @Override
     public UserStatusResponseDTO updateByUserId(UUID userId) {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(NotFoundUserStatusException::new);
@@ -68,6 +76,7 @@ public class BasicUserStatusService {
         return UserStatusResponseDTO.toDTO(userStatus);
     }
 
+    @Override
     public void deleteById(UUID id) {
         userStatusRepository.deleteById(id);
     }

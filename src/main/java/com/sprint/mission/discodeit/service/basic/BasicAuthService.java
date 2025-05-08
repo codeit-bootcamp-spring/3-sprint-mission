@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.exception.LoginFailedException;
 import com.sprint.mission.discodeit.exception.NotFoundUserStatusException;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +16,12 @@ import java.util.UUID;
 
 @Service("basicAuthService")
 @RequiredArgsConstructor
-public class BasicAuthService {
+public class BasicAuthService implements AuthService {
 
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
 
+    @Override
     public UserResponseDTO login(LoginDTO loginDTO) {
         String name = loginDTO.getName();
         String password = loginDTO.getPassword();;
