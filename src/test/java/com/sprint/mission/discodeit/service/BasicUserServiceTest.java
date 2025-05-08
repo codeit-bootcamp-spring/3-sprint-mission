@@ -25,7 +25,6 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,12 +49,10 @@ class BasicUserServiceTest {
   private BasicUserService basicUserService;
 
   @Nested
-  @DisplayName("유저 생성")
   class Create {
 
     @Test
-    @DisplayName("DTO를 이용하여 새로운 사용자를 생성하고 UserStatus를 함께 생성한다.")
-    void createUser_withDtoAndUserStatus() {
+    void DTO를_이용하여_새로운_사용자를_생성하고_UserStatus를_함께_생성한다() {
       // given
       UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123", null);
       User savedUser = UserFixture.createCustomUser(request);
@@ -82,8 +79,7 @@ class BasicUserServiceTest {
     }
 
     @Test
-    @DisplayName("DTO로 새로운 사용자를 생성하며 선택적으로 프로필 이미지를 같이 등록할 수 있다.")
-    void createUser_withDtoAndProfileImage() {
+    void DTO로_새로운_사용자를_생성하며_선택적으로_프로필_이미지를_같이_등록할_수_있다() {
       // given
       BinaryContent profileImage = BinaryContentFixture.createValidProfileImage(UUID.randomUUID());
       UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123",
@@ -118,8 +114,7 @@ class BasicUserServiceTest {
     }
 
     @Test
-    @DisplayName("이미 사용 중인 이메일로 사용자를 생성하려 하면 예외가 발생한다.")
-    void createUser_duplicateEmail() {
+    void 이미_사용_중인_이메일로_사용자를_생성하려_하면_예외가_발생한다() {
       // given
       UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123", null);
       User existingUser = User.create("test@test.com", "새로운 길동쓰", "pwd123");
@@ -138,8 +133,7 @@ class BasicUserServiceTest {
     }
 
     @Test
-    @DisplayName("이미 사용 중인 username으로 사용자를 생성하려 하면 예외가 발생한다.")
-    void createUser_duplicateUsername() {
+    void 이미_사용_중인_username으로_사용자를_생성하려_하면_예외가_발생한다() {
       // given
       UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123", null);
       User existingUser = User.create("test1@test.com", "길동쓰", "pwd123");
@@ -160,12 +154,10 @@ class BasicUserServiceTest {
   }
 
   @Nested
-  @DisplayName("유저 삭제")
   class Delete {
 
     @Test
-    @DisplayName("프로필 이미지가 있는 사용자를 삭제하면 관련 BinaryContent와 UserStatus도 함께 삭제해야 한다.")
-    void deleteUser_shouldDeleteRelatedEntities() {
+    void 프로필_이미지가_있는_사용자를_삭제하면_관련_도메인_데이터도_함께_삭제해야_한다() {
       // given
       UUID userId = UUID.randomUUID();
       User userToDelete = UserFixture.createCustomUser(
@@ -184,8 +176,7 @@ class BasicUserServiceTest {
     }
 
     @Test
-    @DisplayName("프로필 이미지가 없는 사용자를 삭제해도 관련 UserStatus는 삭제해야 한다.")
-    void deleteUser_shouldDeleteUserStatusEvenWithoutProfileImage() {
+    void 프로필_이미지가_없는_사용자를_삭제해도_관련_UserStatus는_삭제해야_한다() {
       // given
       UUID userId = UUID.randomUUID();
       User userToDelete = UserFixture.createValidUser();
@@ -201,8 +192,7 @@ class BasicUserServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 사용자를 삭제하려고 하면 아무 작업도 수행하지 않아야 한다.")
-    void deleteUser_shouldDoNothingIfUserNotFound() {
+    void 존재하지_않는_사용자를_삭제하려고_하면_아무_작업도_수행하지_않아야_한다() {
       // given
       UUID nonExistingUserId = UUID.randomUUID();
       when(userRepository.findById(nonExistingUserId)).thenReturn(Optional.empty());

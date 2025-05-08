@@ -10,7 +10,7 @@ import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class JCFBinaryContentRepositoryTest {
@@ -22,78 +22,81 @@ class JCFBinaryContentRepositoryTest {
     binaryContentRepository = new JCFBinaryContentRepository();
   }
 
-  @Test
-  @DisplayName("findById로 저장된 BinaryContent를 조회한다.")
-  void findById_returnsSavedBinaryContent() {
-    // given
-    BinaryContent contentToSave = BinaryContentFixture.createValidProfileImage(UUID.randomUUID());
-    BinaryContent savedContent = binaryContentRepository.save(contentToSave);
+  @Nested
+  class Create {
 
-    // when
-    Optional<BinaryContent> foundContent = binaryContentRepository.findById(savedContent.getId());
+    @Test
+    void save로_BinaryContent를_저장하고_ID가_할당된다() {
+      // given
+      BinaryContent contentToSave = BinaryContentFixture.createValidProfileImage(UUID.randomUUID());
 
-    // then
-    assertTrue(foundContent.isPresent());
-    assertEquals(savedContent, foundContent.get());
+      // when
+      BinaryContent savedContent = binaryContentRepository.save(contentToSave);
+
+      // then
+      assertNotNull(savedContent.getId());
+      assertEquals(contentToSave.getBytes(), savedContent.getBytes());
+      assertEquals(contentToSave.getFileName(), savedContent.getFileName());
+      assertEquals(contentToSave.getMimeType(), savedContent.getMimeType());
+    }
   }
 
-  @Test
-  @DisplayName("findById로 존재하지 않는 BinaryContent를 조회하면 Optional.empty()를 반환한다.")
-  void findById_returnsEmptyOptional_whenNotFound() {
-    // given
-    UUID id = UUID.randomUUID();
+  @Nested
+  class Read {
 
-    // when
-    Optional<BinaryContent> foundContent = binaryContentRepository.findById(id);
+    @Test
+    void findById로_저장된_BinaryContent를_조회한다() {
+      // given
+      BinaryContent contentToSave = BinaryContentFixture.createValidProfileImage(UUID.randomUUID());
+      BinaryContent savedContent = binaryContentRepository.save(contentToSave);
 
-    // then
-    assertTrue(foundContent.isEmpty());
-  }
+      // when
+      Optional<BinaryContent> foundContent = binaryContentRepository.findById(savedContent.getId());
 
-  @Test
-  @DisplayName("save로 BinaryContent를 저장하고 ID가 할당된다.")
-  void save_assignsIdAndReturnsBinaryContent() {
-    // given
-    BinaryContent contentToSave = BinaryContentFixture.createValidProfileImage(UUID.randomUUID());
+      // then
+      assertTrue(foundContent.isPresent());
+      assertEquals(savedContent, foundContent.get());
+    }
 
-    // when
-    BinaryContent savedContent = binaryContentRepository.save(contentToSave);
+    @Test
+    void findById로_존재하지_않는_BinaryContent를_조회하면_비어_있는_Optional을_반환한다() {
+      // given
+      UUID id = UUID.randomUUID();
 
-    // then
-    assertNotNull(savedContent.getId());
-    assertEquals(contentToSave.getBytes(), savedContent.getBytes());
-    assertEquals(contentToSave.getFileName(), savedContent.getFileName());
-    assertEquals(contentToSave.getMimeType(), savedContent.getMimeType());
-  }
+      // when
+      Optional<BinaryContent> foundContent = binaryContentRepository.findById(id);
 
-  @Test
-  @DisplayName("deleteById로 저장된 BinaryContent를 삭제하고 조회하면 찾을 수 없다.")
-  void delete_deletesBinaryContent() {
-    // given
-    BinaryContent contentToSave = BinaryContentFixture.createValidMessageAttachment();
-    BinaryContent savedContent = binaryContentRepository.save(contentToSave);
-    UUID idToDelete = savedContent.getId();
+      // then
+      assertTrue(foundContent.isEmpty());
+    }
 
-    // when
-    binaryContentRepository.delete(idToDelete);
-    Optional<BinaryContent> foundContent = binaryContentRepository.findById(idToDelete);
+    @Test
+    void deleteById로_저장된_BinaryContent를_삭제하고_조회하면_찾을_수_없다() {
+      // given
+      BinaryContent contentToSave = BinaryContentFixture.createValidMessageAttachment();
+      BinaryContent savedContent = binaryContentRepository.save(contentToSave);
+      UUID idToDelete = savedContent.getId();
 
-    // then
-    assertTrue(foundContent.isEmpty());
-  }
+      // when
+      binaryContentRepository.delete(idToDelete);
+      Optional<BinaryContent> foundContent = binaryContentRepository.findById(idToDelete);
 
-  @Test
-  @DisplayName("findByUserId로 저장된 BinaryContent를 조회한다.")
-  void findByUserId_returnsSavedBinaryContent() {
-    // given
-    UUID userId = UUID.randomUUID();
-    BinaryContent contentToSave = BinaryContentFixture.createValidProfileImage(userId);
+      // then
+      assertTrue(foundContent.isEmpty());
+    }
 
-    // when
-    binaryContentRepository.save(contentToSave);
-    BinaryContent foundContent = binaryContentRepository.findByUserId(userId).get();
+    @Test
+    void findByUserId로_저장된_BinaryContent를_조회한다() {
+      // given
+      UUID userId = UUID.randomUUID();
+      BinaryContent contentToSave = BinaryContentFixture.createValidProfileImage(userId);
 
-    // then
-    assertThat(foundContent.getUserId()).isEqualTo(userId);
+      // when
+      binaryContentRepository.save(contentToSave);
+      BinaryContent foundContent = binaryContentRepository.findByUserId(userId).get();
+
+      // then
+      assertThat(foundContent.getUserId()).isEqualTo(userId);
+    }
   }
 }

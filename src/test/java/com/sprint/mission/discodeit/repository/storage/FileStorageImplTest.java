@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -53,133 +53,16 @@ class FileStorageImplTest {
     return MessageFixture.createCustomMessage(content, userId, channel);
   }
 
-  private static Stream<Arguments> provideMessages() {
+  public static Stream<Arguments> provideMessages() {
     return Stream.of(
         Arguments.of(List.of("감자", "왕감자", "대홍단감자")),
         Arguments.of(List.of("첫 번째 메시지", "두 번째 메시지", "특별한 메시지"))
     );
   }
 
-  @Test
-  void shouldHandleConcurrentAccess() throws Exception {
-    int threadCount = 10;
-    List<UUID> ids = new CopyOnWriteArrayList<>();
-    List<User> expectedUsers = IntStream.range(0, threadCount)
-        .mapToObj(i -> UserFixture.createValidUser())
-        .toList();
-
-    ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-    IntStream.range(0, threadCount).forEach(i -> {
-      executorService.submit(() -> {
-        User user = expectedUsers.get(i);
-        UUID id = user.getId();
-        fileStorage.saveObject(id, user);
-        ids.add(id);
-      });
-    });
-
-    executorService.shutdown();
-    while (!executorService.isTerminated()) {
-      // 대기
-    }
-
-    List<Object> storedUsers = fileStorage.readAll();
-    assertAll(
-        () -> assertThat(ids).hasSize(threadCount),
-        () -> assertThat(storedUsers).hasSize(threadCount),
-        () -> assertThat(storedUsers).containsExactlyInAnyOrderElementsOf(expectedUsers)
-    );
-  }
-
-  @Test
-  void saveObjectShouldSaveToFile() {
-    Message obj = createDefaultTestMessage();
-    UUID id = obj.getId();
-    fileStorage.saveObject(id, obj);
-
-    List<Object> storedObjects = fileStorage.readAll();
-
-    assertAll(
-        () -> assertThat(storedObjects).hasSize(1),
-        () -> assertThat(storedObjects.get(0)).isEqualTo(obj),
-        () -> assertThat(fileStorage.readObject(id)).isEqualTo(obj)
-    );
-  }
-
-  @Test
-  void readObjectShouldReturnSavedObject() {
-    Message obj1 = createDefaultTestMessage();
-    Message obj2 = createCustomTestMessage("Custom Message");
-    UUID id1 = obj1.getId();
-    UUID id2 = obj2.getId();
-
-    fileStorage.saveObject(id1, obj1);
-    fileStorage.saveObject(id2, obj2);
-
-    Object retrievedObj = fileStorage.readObject(id2);
-
-    assertThat(retrievedObj).isEqualTo(obj2);
-  }
-
-  @Test
-  void updateSingleObjectShouldReplaceFileContent() {
-    Message originalMessage = createDefaultTestMessage();
-    Message updatedMessage = createCustomTestMessage("Updated Message");
-
-    UUID id = originalMessage.getId();
-    fileStorage.saveObject(id, originalMessage);
-    fileStorage.updateObject(id, updatedMessage);
-    List<Object> storedObjects = fileStorage.readAll();
-
-    assertAll(
-        () -> assertThat(storedObjects).hasSize(1),
-        () -> assertThat(storedObjects.get(0)).isEqualTo(updatedMessage),
-        () -> assertThat(fileStorage.readObject(id)).isEqualTo(updatedMessage)
-    );
-  }
-
-  @Test
-  void updateObjectInMultipleShouldPreserveOthers() {
-    MemoryUtil.logMemoryUsage("Before Operation");
-
-    Message firstMessage = createDefaultTestMessage();
-    Message secondMessage = createCustomTestMessage("Second Message");
-    Message updatedMessage = createCustomTestMessage("Updated First Message");
-
-    UUID id1 = firstMessage.getId();
-    UUID id2 = secondMessage.getId();
-
-    fileStorage.saveObject(id1, firstMessage);
-    fileStorage.saveObject(id2, secondMessage);
-
-    fileStorage.updateObject(id1, updatedMessage);
-    List<Object> storedObjects = fileStorage.readAll();
-
-    assertAll(
-        () -> assertThat(storedObjects).hasSize(2),
-        () -> assertThat(storedObjects).contains(updatedMessage, secondMessage),
-        () -> assertThat(fileStorage.readObject(id1)).isEqualTo(updatedMessage),
-        () -> assertThat(fileStorage.readObject(id2)).isEqualTo(secondMessage)
-    );
-  }
-
-  @Test
-  void shouldThrowExceptionIfFileNotFound() {
-    File invalidDirectory = invalidDir;
-    FileStorage invalidStorage = new FileStorageImpl(invalidDirectory.getPath());
-
-    UUID nonExistentId = UUID.randomUUID();
-    try {
-      invalidStorage.readObject(nonExistentId);
-    } catch (RuntimeException e) {
-      assertThat(e).isInstanceOf(RuntimeException.class);
-    }
-  }
-
   @ParameterizedTest
   @MethodSource("provideMessages")
-  @DisplayName("여러 객체 저장 후 저장 상태 확인")
-  void saveMultipleObjectsAndVerify(List<String> messageContents) {
+  void 여러_객체_저장_후_저장_상태_확인(List<String> messageContents) {
     List<Message> objects = messageContents.stream()
         .map(content -> MessageFixture.createCustomMessage(content,
             UserFixture.createValidUser().getId(), ChannelFixture.createValidChannel()))
@@ -198,5 +81,134 @@ class FileStorageImplTest {
           }
         }
     );
+  }
+
+  @Nested
+  class Create {
+
+    @Test
+    void 객체가_정상적으로_저장되어야_한다() {
+      Message obj = createDefaultTestMessage();
+      UUID id = obj.getId();
+      fileStorage.saveObject(id, obj);
+
+      List<Object> storedObjects = fileStorage.readAll();
+
+      assertAll(
+          () -> assertThat(storedObjects).hasSize(1),
+          () -> assertThat(storedObjects.get(0)).isEqualTo(obj),
+          () -> assertThat(fileStorage.readObject(id)).isEqualTo(obj)
+      );
+    }
+
+    @Test
+    void 동시_접근이_가능해야_한다() throws Exception {
+      int threadCount = 10;
+      List<UUID> ids = new CopyOnWriteArrayList<>();
+      List<User> expectedUsers = IntStream.range(0, threadCount)
+          .mapToObj(i -> UserFixture.createValidUser())
+          .toList();
+
+      ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+      IntStream.range(0, threadCount).forEach(i -> {
+        executorService.submit(() -> {
+          User user = expectedUsers.get(i);
+          UUID id = user.getId();
+          fileStorage.saveObject(id, user);
+          ids.add(id);
+        });
+      });
+
+      executorService.shutdown();
+      while (!executorService.isTerminated()) {
+        // 대기
+      }
+
+      List<Object> storedUsers = fileStorage.readAll();
+      assertAll(
+          () -> assertThat(ids).hasSize(threadCount),
+          () -> assertThat(storedUsers).hasSize(threadCount),
+          () -> assertThat(storedUsers).containsExactlyInAnyOrderElementsOf(expectedUsers)
+      );
+    }
+
+    @Test
+    void 파일을_찾을_수_없는_경우_예외가_발생해야_한다() {
+      File invalidDirectory = invalidDir;
+      FileStorage invalidStorage = new FileStorageImpl(invalidDirectory.getPath());
+
+      UUID nonExistentId = UUID.randomUUID();
+      try {
+        invalidStorage.readObject(nonExistentId);
+      } catch (RuntimeException e) {
+        assertThat(e).isInstanceOf(RuntimeException.class);
+      }
+    }
+  }
+
+  @Nested
+  class Read {
+
+    @Test
+    void readObject_메서드는_저장된_객체를_올바르게_반환해야_한다() {
+      Message obj1 = createDefaultTestMessage();
+      Message obj2 = createCustomTestMessage("Custom Message");
+      UUID id1 = obj1.getId();
+      UUID id2 = obj2.getId();
+
+      fileStorage.saveObject(id1, obj1);
+      fileStorage.saveObject(id2, obj2);
+
+      Object retrievedObj = fileStorage.readObject(id2);
+
+      assertThat(retrievedObj).isEqualTo(obj2);
+    }
+
+  }
+
+  @Nested
+  class Update {
+
+    @Test
+    void 업데이트_하면_파일의_객체가_업데이트_되어야_한다() {
+      Message originalMessage = createDefaultTestMessage();
+      Message updatedMessage = createCustomTestMessage("Updated Message");
+
+      UUID id = originalMessage.getId();
+      fileStorage.saveObject(id, originalMessage);
+      fileStorage.updateObject(id, updatedMessage);
+      List<Object> storedObjects = fileStorage.readAll();
+
+      assertAll(
+          () -> assertThat(storedObjects).hasSize(1),
+          () -> assertThat(storedObjects.get(0)).isEqualTo(updatedMessage),
+          () -> assertThat(fileStorage.readObject(id)).isEqualTo(updatedMessage)
+      );
+    }
+
+    @Test
+    void 업데이트_시_다른_객체는_보전되어야_한다() {
+      MemoryUtil.logMemoryUsage("Before Operation");
+
+      Message firstMessage = createDefaultTestMessage();
+      Message secondMessage = createCustomTestMessage("Second Message");
+      Message updatedMessage = createCustomTestMessage("Updated First Message");
+
+      UUID id1 = firstMessage.getId();
+      UUID id2 = secondMessage.getId();
+
+      fileStorage.saveObject(id1, firstMessage);
+      fileStorage.saveObject(id2, secondMessage);
+
+      fileStorage.updateObject(id1, updatedMessage);
+      List<Object> storedObjects = fileStorage.readAll();
+
+      assertAll(
+          () -> assertThat(storedObjects).hasSize(2),
+          () -> assertThat(storedObjects).contains(updatedMessage, secondMessage),
+          () -> assertThat(fileStorage.readObject(id1)).isEqualTo(updatedMessage),
+          () -> assertThat(fileStorage.readObject(id2)).isEqualTo(secondMessage)
+      );
+    }
   }
 }

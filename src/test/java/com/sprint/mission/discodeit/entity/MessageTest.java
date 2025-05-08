@@ -4,20 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.sprint.mission.discodeit.fixture.MessageFixture;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("Message 엔티티 테스트")
 public class MessageTest {
 
   @Nested
-  @DisplayName("메시지 생성")
   class Create {
 
     @Test
-    @DisplayName("메시지가 생성되면 기본 정보가 올바르게 설정되어야 한다")
-    void shouldCreateMessageWithDefaultInfo() {
+    void 메시지가_생성되면_기본_정보가_올바르게_설정되어야_한다() {
       Message message = MessageFixture.createValidMessage();
 
       assertAll(
@@ -31,8 +27,7 @@ public class MessageTest {
     }
 
     @Test
-    @DisplayName("다양한 메시지 내용으로 생성해도 올바르게 설정되어야 한다")
-    void shouldCreateMessageWithVariousContents() {
+    void 다양한_메시지_내용으로_생성해도_올바르게_설정되어야_한다() {
       String specialContent = "특수문자!@#$%^&*() 포함 메시지";
       var messagePack = MessageFixture.createValidMessageWithCustomContent(specialContent);
 
@@ -47,12 +42,10 @@ public class MessageTest {
   }
 
   @Nested
-  @DisplayName("메시지 속성 검증")
-  class Properties {
+  class Read {
 
     @Test
-    @DisplayName("서로 다른 사용자의 메시지는 독립적이어야 한다")
-    void messagesShouldBeIndependent() {
+    void 서로_다른_사용자의_메시지는_독립적이어야_한다() {
       var messagePack1 = MessageFixture.createValidMessageWithCustomContent("메시지 1");
       var messagePack2 = MessageFixture.createValidMessageWithCustomContent("메시지 2");
 

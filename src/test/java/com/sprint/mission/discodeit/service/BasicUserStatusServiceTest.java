@@ -20,7 +20,6 @@ import com.sprint.mission.discodeit.service.basic.BasicUserStatusService;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,14 +42,15 @@ class BasicUserStatusServiceTest {
   private final UUID userId = UUID.randomUUID();
 
   private User user;
+  private UserStatus userStatus;
 
   @BeforeEach
   void init() {
     user = User.create("test@example.com", "TestUser", "password");
+    userStatus = UserStatusFixture.createValidUserStatus(userId);
   }
 
   @Nested
-  @DisplayName("유저 상태 생성")
   class Create {
 
     private UserStatusCreateRequest request;
@@ -61,18 +61,14 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
-    @DisplayName("유효한 요청이면 정상적으로 생성된다")
-    void shouldCreateSuccessfully() {
-      // given
+    void 유효한_요청이면_유저_상태를_생성한다() {
       given(userRepository.findById(userId)).willReturn(Optional.of(user));
       given(userStatusRepository.findByUserId(userId)).willReturn(Optional.empty());
       given(userStatusRepository.save(any(UserStatus.class)))
           .willAnswer(invocation -> invocation.getArgument(0));
 
-      // when
       UserStatus result = userStatusService.create(request);
 
-      // then
       assertThat(result.getUserId()).isEqualTo(userId);
       verify(userRepository).findById(userId);
       verify(userStatusRepository).findByUserId(userId);
@@ -80,8 +76,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 유저이면 예외가 발생한다")
-    void shouldThrowExceptionWhenUserNotFound() {
+    void 존재하지_않는_유저이면_UserException_예외를_던진다() {
       given(userRepository.findById(userId)).willReturn(Optional.empty());
 
       assertThatThrownBy(() -> userStatusService.create(request))
@@ -92,11 +87,10 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
-    @DisplayName("이미 존재하는 상태이면 예외가 발생한다")
-    void shouldThrowExceptionWhenStatusAlreadyExists() {
+    void 이미_존재하는_유저_상태이면_UserStatusException_예외를_던진다() {
       given(userRepository.findById(userId)).willReturn(Optional.of(user));
-      given(userStatusRepository.findByUserId(userId)).willReturn(
-          Optional.of(UserStatusFixture.createValidUserStatus(userId)));
+      given(userStatusRepository.findByUserId(userId))
+          .willReturn(Optional.of(UserStatusFixture.createValidUserStatus(userId)));
 
       assertThatThrownBy(() -> userStatusService.create(request))
           .isInstanceOf(UserStatusException.class);
@@ -108,19 +102,10 @@ class BasicUserStatusServiceTest {
   }
 
   @Nested
-  @DisplayName("유저 상태 조회")
   class Read {
 
-    private UserStatus userStatus;
-
-    @BeforeEach
-    void setUp() {
-      userStatus = UserStatusFixture.createValidUserStatus(userId);
-    }
-
     @Test
-    @DisplayName("ID로 조회할 수 있다")
-    void shouldFindById() {
+    void ID로_유저_상태를_조회한다() {
       UUID statusId = UUID.randomUUID();
       given(userStatusRepository.findById(statusId)).willReturn(Optional.of(userStatus));
 
@@ -131,8 +116,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
-    @DisplayName("userId로 조회할 수 있다")
-    void shouldFindByUserId() {
+    void userId로_유저_상태를_조회한다() {
       given(userStatusRepository.findByUserId(userId)).willReturn(Optional.of(userStatus));
 
       Optional<UserStatus> result = userStatusService.findByUserId(userId);
@@ -143,8 +127,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않으면 예외 발생")
-    void shouldThrowWhenFindByIdNotFound() {
+    void 존재하지_않는_ID로_조회하면_UserStatusException_예외를_던진다() {
       UUID statusId = UUID.randomUUID();
       given(userStatusRepository.findById(statusId)).willReturn(Optional.empty());
 
@@ -156,19 +139,10 @@ class BasicUserStatusServiceTest {
   }
 
   @Nested
-  @DisplayName("Update 메서드")
   class Update {
 
-    private UserStatus userStatus;
-
-    @BeforeEach
-    void setUp() {
-      userStatus = UserStatusFixture.createOfflineUserStatus(userId);
-    }
-
     @Test
-    @DisplayName("ID로 상태를 업데이트할 수 있다")
-    void shouldUpdateSuccessfully() {
+    void ID로_유저_상태를_업데이트한다() {
       UUID statusId = userStatus.getId();
       UserStatusUpdateRequest request = new UserStatusUpdateRequest(statusId);
       given(userStatusRepository.findById(statusId)).willReturn(Optional.of(userStatus));
@@ -181,8 +155,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
-    @DisplayName("userId로 상태를 업데이트할 수 있다")
-    void shouldUpdateByUserIdSuccessfully() {
+    void userId로_유저_상태를_업데이트한다() {
       given(userStatusRepository.findByUserId(userId)).willReturn(Optional.of(userStatus));
 
       UserStatus updated = userStatusService.updateByUserId(userId);
@@ -193,8 +166,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않으면 예외 발생")
-    void shouldThrowWhenUpdateByUserIdNotFound() {
+    void 존재하지_않는_userId로_업데이트하면_UserStatusException_예외를_던진다() {
       given(userStatusRepository.findByUserId(userId)).willReturn(Optional.empty());
 
       assertThatThrownBy(() -> userStatusService.updateByUserId(userId))
@@ -205,19 +177,10 @@ class BasicUserStatusServiceTest {
   }
 
   @Nested
-  @DisplayName("Delete 메서드")
   class Delete {
 
-    private UserStatus userStatus;
-
-    @BeforeEach
-    void setUp() {
-      userStatus = UserStatusFixture.createValidUserStatus(userId);
-    }
-
     @Test
-    @DisplayName("삭제할 수 있다")
-    void shouldDeleteSuccessfully() {
+    void ID로_유저_상태를_삭제한다() {
       UUID statusId = userStatus.getId();
       given(userStatusRepository.findById(statusId)).willReturn(Optional.of(userStatus));
 
@@ -228,8 +191,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않으면 예외 발생")
-    void shouldThrowWhenNotFound() {
+    void 존재하지_않는_ID로_삭제하면_UserStatusException_예외를_던진다() {
       UUID statusId = UUID.randomUUID();
       given(userStatusRepository.findById(statusId)).willReturn(Optional.empty());
 

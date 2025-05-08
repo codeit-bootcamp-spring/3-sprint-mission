@@ -13,7 +13,7 @@ import com.sprint.mission.discodeit.fixture.UserFixture;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,12 +22,10 @@ import org.junit.jupiter.params.provider.ValueSource;
 class ChannelTest {
 
   @Nested
-  @DisplayName("채널 생성")
   class Create {
 
     @Test
-    @DisplayName("채널이 생성되면 기본 정보가 올바르게 설정되어야 한다")
-    void shouldCreateChannelWithDefaultInfo() {
+    void 채널이_생성되면_기본_정보가_올바르게_설정되어야_한다() {
       var creator = UserFixture.createValidUser();
 
       Channel channel = ChannelFixture.createCustomChannelWithParticipant(
@@ -43,8 +41,7 @@ class ChannelTest {
     }
 
     @Test
-    @DisplayName("DTO 파라미터 사용, 채널 타입을 구분해서 생성할 수 있다")
-    void channelCreate_withDTOAndType() {
+    void DTO_파라미터_사용과_채널_타입을_구분해서_생성할_수_있다() {
       var creator = UserFixture.createValidUser();
       PublicChannelCreateRequest publicDto = new PublicChannelCreateRequest(
           creator.getId(), "공개 채널", "공개 채널 설명");
@@ -64,14 +61,13 @@ class ChannelTest {
   }
 
   @Nested
-  @DisplayName("채널 정보 조회")
   class Read {
 
     private Channel channel;
     private User creator;
     private User participant;
 
-    @org.junit.jupiter.api.BeforeEach
+    @BeforeEach
     void setUp() {
       creator = UserFixture.createValidUser();
       channel = ChannelFixture.createCustomChannelWithParticipant(
@@ -81,8 +77,7 @@ class ChannelTest {
     }
 
     @Test
-    @DisplayName("참여자 목록 조회 시 불변성이 보장되어야 한다")
-    void shouldReturnImmutableParticipantsList() {
+    void 참여자_목록_조회_시_불변성이_보장되어야_한다() {
       List<UUID> participants = channel.getParticipants();
 
       assertAll(
@@ -96,14 +91,13 @@ class ChannelTest {
   }
 
   @Nested
-  @DisplayName("채널 정보 수정")
   class Update {
 
     private Channel channel;
     private User creator;
     private Instant originalUpdatedAt;
 
-    @org.junit.jupiter.api.BeforeEach
+    @BeforeEach
     void setUp() {
       creator = UserFixture.createValidUser();
       channel = ChannelFixture.createCustomChannelWithParticipant(
@@ -112,8 +106,7 @@ class ChannelTest {
     }
 
     @Test
-    @DisplayName("채널 이름 수정 시 이름과 수정 시간이 업데이트되어야 한다")
-    void shouldUpdateNameAndTimestamp() {
+    void 채널_이름_수정_시_이름과_수정_시간이_업데이트되어야_한다() {
       String newName = "변경된 채널명";
       channel.updateName(newName);
 
@@ -125,8 +118,7 @@ class ChannelTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"감자", "왕감자", "고구마"})
-    @DisplayName("채널 이름 수정 테스트 여러 데이터")
-    void shouldUpdateNameAndTimestampParameterized(String newName) {
+    void 채널_이름_수정_테스트_여러_데이터(String newName) {
       channel.updateName(newName);
 
       assertAll(
@@ -136,8 +128,7 @@ class ChannelTest {
     }
 
     @Test
-    @DisplayName("새로운 참여자 추가 시 참여자 목록이 올바르게 갱신되어야 한다")
-    void shouldAddNewParticipant() {
+    void 새로운_참여자_추가_시_참여자_목록이_올바르게_갱신되어야_한다() {
       User newParticipant = UserFixture.createValidUser();
       channel.addParticipant(newParticipant.getId());
 
@@ -149,8 +140,7 @@ class ChannelTest {
     }
 
     @Test
-    @DisplayName("중복된 참여자 추가 시 예외가 발생해야 한다")
-    void shouldThrowExceptionForDuplicateParticipant() {
+    void 중복된_참여자_추가_시_예외가_발생해야_한다() {
       assertAll(
           () -> assertThatThrownBy(() -> channel.addParticipant(creator.getId()))
               .isInstanceOf(ChannelException.class),
@@ -159,8 +149,7 @@ class ChannelTest {
     }
 
     @Test
-    @DisplayName("참여자 제거 시 목록에서 삭제되어야 한다")
-    void shouldRemoveParticipant() {
+    void 참여자_제거_시_목록에서_삭제되어야_한다() {
       User participant = UserFixture.createValidUser();
       channel.addParticipant(participant.getId());
 

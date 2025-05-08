@@ -5,23 +5,19 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.sprint.mission.discodeit.fixture.ReadStatusFixture;
 import java.time.Instant;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("ReadStatus 엔티티 테스트")
 public class ReadStatusTest {
 
   @Nested
-  @DisplayName("읽기 상태 생성")
   class Create {
 
     @Test
-    @DisplayName("읽기 상태가 생성되면 기본 정보가 올바르게 설정되어야 한다")
-    void shouldCreateReadStatusWithDefaultInfo() {
+    void 읽기_상태가_생성되면_기본_정보가_올바르게_설정되어야_한다() {
       ReadStatus readStatus = ReadStatusFixture.createValidReadStatus();
 
       assertAll(
@@ -36,12 +32,10 @@ public class ReadStatusTest {
   }
 
   @Nested
-  @DisplayName("읽기 상태 업데이트")
   class Update {
 
     @Test
-    @DisplayName("updateLastReadAt() 호출 시 lastReadAt과 updatedAt이 동시에 갱신되어야 한다")
-    void shouldUpdateBothTimestamps() {
+    void updateLastReadAt_호출_시_lastReadAt과_updatedAt이_동시에_갱신되어야_한다() {
       ReadStatus readStatus = ReadStatusFixture.createValidReadStatus();
 
       Instant beforeUpdate = Instant.now();
@@ -62,8 +56,7 @@ public class ReadStatusTest {
     }
 
     @Test
-    @DisplayName("수정 시간 업데이트 메서드가 올바르게 동작해야 한다")
-    void shouldUpdateTimestamp() {
+    void 수정_시간_업데이트_메서드가_올바르게_동작해야_한다() {
       ReadStatus readStatus = ReadStatusFixture.createValidReadStatus();
       Instant originalUpdatedAt = readStatus.getUpdatedAt();
 

@@ -8,24 +8,21 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import java.util.UUID;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 public class BinaryContentTest {
 
   @Nested
-  @DisplayName("BinaryContent 생성")
   class Create {
 
     @Test
-    @DisplayName("BinaryContent 생성 시 기본 정보가 올바르게 생성되어야 한다")
-    void shouldCreateBinaryContentWithCorrectInfo() {
-      // 테스트용 프로필 이미지를 생성한다
+    void BinaryContent_생성_시_기본_정보가_올바르게_생성되어야_한다() {
+      // given
       UUID userId = UUID.randomUUID();
       BinaryContent content = BinaryContentFixture.createValidProfileImage(userId);
 
-      // BinaryContent 기본 정보 검증
+      // when & then
       assertAll(
           () -> assertNotNull(content.getId(), "ID는 null이 아니어야 한다"),
           () -> assertNotNull(content.getCreatedAt(), "생성 시간은 null이 아니어야 한다"),
@@ -40,14 +37,13 @@ public class BinaryContentTest {
     }
 
     @Test
-    @DisplayName("BinaryContent 생성 시 고유한 ID를 가져야 한다")
-    void shouldHaveUniqueId() {
-      // 테스트용 프로필 이미지를 두 개 생성한다
+    void BinaryContent_생성_시_고유한_ID를_가져야_한다() {
+      // given
       UUID userId = UUID.randomUUID();
       BinaryContent content1 = BinaryContentFixture.createValidProfileImage(userId);
       BinaryContent content2 = BinaryContentFixture.createValidProfileImage(userId);
 
-      // 서로 다른 객체임을 검증
+      // when & then
       assertThat(content1).as("BinaryContent 객체는 서로 달라야 한다").isNotEqualTo(content2);
       assertThat(content1.getId()).as("BinaryContent ID는 고유해야 한다").isNotEqualTo(content2.getId());
     }

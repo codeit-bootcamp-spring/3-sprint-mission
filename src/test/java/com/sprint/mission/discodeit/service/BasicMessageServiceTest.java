@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,12 +50,10 @@ public class BasicMessageServiceTest {
   BasicMessageService messageService;
 
   @Nested
-  @DisplayName("메시지 서비스 테스트")
   class Create {
 
     @Test
-    @DisplayName("메시지를 생성하면 첨부파일 없이도 등록된다")
-    void shouldCreateMessageWithoutAttachments() {
+    void 메시지를_생성하면_첨부파일_없이도_등록된다() {
       UUID userId = UUID.randomUUID();
       UUID channelId = UUID.randomUUID();
       String content = "메시지 내용";
@@ -79,8 +76,7 @@ public class BasicMessageServiceTest {
     }
 
     @Test
-    @DisplayName("첨부파일을 메시지에 연결하면 BinaryContent의 messageId가 업데이트된다")
-    void shouldAttachFilesToMessage() {
+    void 첨부파일을_메시지에_연결하면_BinaryContent의_messageId가_업데이트된다() {
       UUID messageId = UUID.randomUUID();
       UUID attachmentId = UUID.randomUUID();
       BinaryContent attachment = BinaryContentFixture.createValidMessageAttachment();
@@ -95,8 +91,7 @@ public class BasicMessageServiceTest {
     }
 
     @Test
-    @DisplayName("메시지를 생성할 때 첨부파일도 함께 등록된다")
-    void shouldCreateMessageWithAttachments() {
+    void 메시지를_생성할_때_첨부파일도_함께_등록된다() {
       UUID userId = UUID.randomUUID();
       UUID channelId = UUID.randomUUID();
       UUID attachmentId1 = UUID.randomUUID();
@@ -129,12 +124,10 @@ public class BasicMessageServiceTest {
   }
 
   @Nested
-  @DisplayName("메시지 조회")
   class Read {
 
     @Test
-    @DisplayName("특정 채널의 메시지 목록을 조회한다")
-    void shouldFindAllMessagesByChannelId() {
+    void 특정_채널의_메시지_목록을_조회한다() {
       UUID channelId = UUID.randomUUID();
       List<Message> messages = List.of(
           MessageFixture.createValidMessage(),
@@ -152,12 +145,10 @@ public class BasicMessageServiceTest {
   }
 
   @Nested
-  @DisplayName("메시지 업데이트")
   class Update {
 
     @Test
-    @DisplayName("메시지 내용을 DTO로 업데이트한다")
-    void shouldUpdateMessageContentUsingDto() {
+    void 메시지_내용을_DTO로_업데이트한다() {
       UUID messageId = UUID.randomUUID();
       String updatedContent = "수정된 메시지";
 
@@ -174,12 +165,10 @@ public class BasicMessageServiceTest {
   }
 
   @Nested
-  @DisplayName("메시지 삭제")
   class Delete {
 
     @Test
-    @DisplayName("메시지를 삭제하면 첨부파일도 같이 삭제된다")
-    void shouldDeleteMessageAndAttachmentsTogether() {
+    void 메시지를_삭제하면_첨부파일도_같이_삭제된다() {
       UUID messageId = UUID.randomUUID();
       Message message = MessageFixture.createValidMessage();
 

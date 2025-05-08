@@ -18,7 +18,6 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicAuthService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -49,8 +48,7 @@ class BasicAuthServiceTest {
   }
 
   @Test
-  @DisplayName("유효한 credentials로 로그인 시 UserResponse 반환")
-  void loginSuccess() {
+  void 유효한_credentials로_로그인_시_UserResponse_반환() {
     // given
     when(userRepository.findByNameAndPassword(user.getName(), user.getPassword())).thenReturn(
         Optional.ofNullable(user));
@@ -68,8 +66,7 @@ class BasicAuthServiceTest {
   }
 
   @Test
-  @DisplayName("존재하지 않는 사용자 이름으로 로그인 시 예외 발생")
-  void loginFail_UserNotFound() {
+  void 존재하지_않는_사용자_이름으로_로그인_시_예외_발생() {
     // given
     String nonExistingUserName = "non-existing-user";
     String nonExistingPassword = "pwd";

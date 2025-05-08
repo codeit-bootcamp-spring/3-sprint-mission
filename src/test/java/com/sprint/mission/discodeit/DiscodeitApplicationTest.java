@@ -49,7 +49,7 @@ public class DiscodeitApplicationTest {
   }
 
   @Test
-  void integrationTest_shouldWorkProperly() {
+  void 통합_테스트는_성공해야_한다_괄호_열고_희망_괄호_닫고() {
     log.info("임시 파일 경로: " + tempDir.toAbsolutePath());
 
     // 1. 사용자 생성

@@ -6,20 +6,16 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.sprint.mission.discodeit.fixture.UserStatusFixture;
 import java.time.Instant;
 import java.util.UUID;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("UserStatus 엔티티 테스트")
 public class UserStatusTest {
 
   @Nested
-  @DisplayName("유저 상태 생성")
   class Create {
 
     @Test
-    @DisplayName("유저 생성 시 유저 상태가 올바르게 생성되어야 한다")
-    void shouldCreateUserStatus() {
+    void 유저_생성_시_유저_상태가_올바르게_생성되어야_한다() {
       UserStatus userStatus = UserStatusFixture.createValidUserStatus(UUID.randomUUID());
 
       assertAll(
@@ -35,12 +31,10 @@ public class UserStatusTest {
   }
 
   @Nested
-  @DisplayName("유저 상태 업데이트")
   class Update {
 
     @Test
-    @DisplayName("마지막 활동 시간 업데이트시 시간과 수정 시간이 갱신되어야 한다")
-    void shouldUpdateLastActiveAt() {
+    void 마지막_활동_시간_업데이트시_시간과_수정_시간이_갱신되어야_한다() {
       UserStatus userStatus = UserStatusFixture.createValidUserStatus(UUID.randomUUID());
       Instant originalUpdatedAt = userStatus.getUpdatedAt();
       Instant originalLastActiveAt = userStatus.getLastActiveAt();
@@ -54,16 +48,14 @@ public class UserStatusTest {
     }
 
     @Test
-    @DisplayName("5분 미만 경과한 사용자는 활성 상태여야 한다")
-    void shouldBeActiveWithinFiveMinutes() {
+    void 사용자는_활성_상태여야_한다() {
       UserStatus userStatus = UserStatusFixture.createValidUserStatus(UUID.randomUUID());
 
       assertThat(userStatus.isOnline()).isTrue();
     }
 
     @Test
-    @DisplayName("5분 이상 경과한 사용자는 비활성 상태여야 한다")
-    void shouldBeInactiveAfterFiveMinutes() {
+    void 사용자는_비활성_상태여야_한다() {
       UserStatus userStatus = UserStatusFixture.createOfflineUserStatus(UUID.randomUUID());
 
       assertThat(userStatus.isOnline()).isFalse();
@@ -71,12 +63,10 @@ public class UserStatusTest {
   }
 
   @Nested
-  @DisplayName("객체 동등성 및 해시코드")
-  class EqualsAndHashCode {
+  class Read {
 
     @Test
-    @DisplayName("동일한 속성을 가져도 고유한 아이디를 가진다")
-    void equalsSameProperties() {
+    void 동일한_속성을_가져도_고유한_아이디를_가진다() {
       UUID userId = UUID.randomUUID();
       UserStatus userStatus1 = UserStatusFixture.createValidUserStatus(userId);
       UserStatus userStatus2 = UserStatusFixture.createValidUserStatus(userId);
@@ -88,8 +78,7 @@ public class UserStatusTest {
     }
 
     @Test
-    @DisplayName("서로 다른 속성을 가진 두 유저 상태 객체는 equals 비교시 false를 반환해야 한다")
-    void equalsDifferentProperties() {
+    void 서로_다른_속성을_가진_두_유저_상태_객체는_equals_비교시_false를_반환해야_한다() {
       UserStatus userStatus1 = UserStatusFixture.createValidUserStatus(UUID.randomUUID());
       UserStatus userStatus2 = UserStatusFixture.createValidUserStatus(UUID.randomUUID());
 
@@ -100,21 +89,14 @@ public class UserStatusTest {
     }
 
     @Test
-    @DisplayName("동일 객체 equals 비교시 true를 반환해야 한다")
-    void equalsSameObject() {
+    void 동일_객체_equals_비교시_true를_반환해야_한다() {
       UserStatus userStatus = UserStatusFixture.createValidUserStatus(UUID.randomUUID());
 
       assertThat(userStatus.equals(userStatus)).isTrue();
     }
-  }
-
-  @Nested
-  @DisplayName("문자열 표현")
-  class ToStringTest {
 
     @Test
-    @DisplayName("toString 메서드는 유저 상태의 모든 필드를 포함해야 한다")
-    void toStringShouldContainAllFields() {
+    void toString_메서드는_유저_상태의_모든_필드를_포함해야_한다() {
       UserStatus userStatus = UserStatusFixture.createValidUserStatus(UUID.randomUUID());
 
       String toString = userStatus.toString();

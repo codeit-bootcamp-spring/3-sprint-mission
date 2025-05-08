@@ -11,7 +11,6 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.basic.BasicBinaryContentService;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,12 +28,10 @@ class BasicBinaryContentServiceTest {
   private BasicBinaryContentService binaryContentService;
 
   @Nested
-  @DisplayName("컨텐트 생성")
   class Create {
 
     @Test
-    @DisplayName("프로필 이미지를 성공적으로 생성해야 한다")
-    void createProfileImage_success() {
+    void 프로필_이미지를_성공적으로_생성해야_한다() {
       UUID userId = UUID.randomUUID();
       BinaryContent expected = BinaryContentFixture.createValidProfileImage(userId);
 
@@ -58,12 +55,10 @@ class BasicBinaryContentServiceTest {
   }
 
   @Nested
-  @DisplayName("컨텐트 조회")
   class Read {
 
     @Test
-    @DisplayName("BinaryContent를 ID로 조회한다")
-    void find_success() {
+    void BinaryContent를_ID로_조회한다() {
       UUID id = UUID.randomUUID();
       BinaryContent content = BinaryContentFixture.createValidProfileImage(UUID.randomUUID());
 
@@ -77,12 +72,10 @@ class BasicBinaryContentServiceTest {
   }
 
   @Nested
-  @DisplayName("컨텐트 삭제")
   class Delete {
 
     @Test
-    @DisplayName("BinaryContent를 ID로 삭제한다")
-    void delete_success() {
+    void BinaryContent를_ID로_삭제한다() {
       UUID id = UUID.randomUUID();
       // 현재 delete는 반환값이 없으므로 예외만 안 터지면 성공
       binaryContentService.delete(id);
