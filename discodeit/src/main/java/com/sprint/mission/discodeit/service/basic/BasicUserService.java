@@ -1,9 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.AddBinaryContentRequest;
-import com.sprint.mission.discodeit.dto.user.CreateUserRequest;
-import com.sprint.mission.discodeit.dto.user.UpdateUserRequest;
-import com.sprint.mission.discodeit.dto.user.UserDTO;
+import com.sprint.mission.discodeit.dto.user.*;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentType;
 import com.sprint.mission.discodeit.entity.User;
@@ -61,10 +59,9 @@ public class BasicUserService implements UserService {
 
 
     @Override
-    public UserDTO find(UUID userId) {
-            User findUser = userRepository.findById(userId)
+    public User find(UUID userId) {
+            return userRepository.findById(userId)
                     .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-            return toDTO(findUser);
 
     }
 
@@ -72,30 +69,28 @@ public class BasicUserService implements UserService {
     public List<User> findAll() {
         return userRepository.findAll()
                 .stream()
-                .map(this::toDTO)
                 .toList();
     }
 
     @Override
-    public User update(UUID userId, UpdateUserRequest updateUserRequest, Optional<AddBinaryContentRequest> addBinaryContentRequest) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+    public User updatePassword(UpdatePasswordRequest updatePasswordRequest) {
+        User user = userRepository.findById(updatePasswordRequest.userId())
+                .orElseThrow(() -> new NoSuchElementException("User with id " + updatePasswordRequest.userId() + " not found"));
 
-        UUID nullableProfileId = addBinaryContentRequest
-                .map(profileRequest -> {
-                    Optional.ofNullable(user.getProfiledId())
-                            .ifPresent(binaryContentRepository::deleteById);
-                    String fileName = profileRequest.fileName();
-                    BinaryContentType contentType = profileRequest.type();
-                    byte[] bytes = profileRequest.bytes();
-                    BinaryContent binaryContent = new BinaryContent(fileName, contentType, (long)bytes.length, bytes);
-                    return binaryContentRepository.save(binaryContent).getId();
-                })
-                .orElse(null);
+            user.updatePassword(updatePasswordRequest.oldPassword(),updatePasswordRequest.newPassword());
+            return userRepository.save(user);
+    }
 
-        String newPassword = updateUserRequest.newPassword();
-        user.update(updateUserRequest.newUsername(), updateUserRequest.newEmail(), updateUserRequest.newPassword(),nullableProfileId);
+
+    public User updateProfile(UpdateProfileRequest updateProfileRequest) {
+        User user = userRepository.findById(updateProfileRequest.userId())
+                .orElseThrow(() -> new NoSuchElementException("User with id " + updateProfileRequest.userId() + " not found"));
+        user.updateProfiledId(updateProfileRequest.newProfiledId());
+        UserStatus userStatus = userStatusService.findByUserId(user.getId());
+        userStatus.update(Instant.now());
+        userStatusRepository.save(userStatus);
         return userRepository.save(user);
+
     }
 
     @Override

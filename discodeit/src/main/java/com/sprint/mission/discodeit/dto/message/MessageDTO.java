@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Builder
 public record MessageDTO(UUID id,
-                         Instant cratedAt,
+                         Instant creatdAt,
                          Instant updatedAt,
                          String content,
                          UUID authorId,
@@ -19,7 +19,7 @@ public record MessageDTO(UUID id,
     public static MessageDTO fromDomain(Message message) {
         return MessageDTO.builder()
                 .id(message.getId())
-                .cratedAt(message.getCreatedAt())
+                .creatdAt(message.getCreatedAt())
                 .updatedAt(message.getUpdatedAt())
                 .content(message.getContent())
                 .authorId(message.getAuthorId())

@@ -6,9 +6,11 @@ import com.sprint.mission.discodeit.repository.file.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.service.basic.BasicUserStatusService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,9 +26,11 @@ public class BasicServiceFactory implements ServiceFactory {
     private UserStatusRepository userStatusRepository;
     private BinaryContentRepository binaryContentRepository;
 
+
     private UserService userService;
     private ChannelService channelService;
     private MessageService messageService;
+    private UserStatusService userStatusService;
 
 
 
@@ -47,15 +51,16 @@ public class BasicServiceFactory implements ServiceFactory {
 
 
         // Service 초기화
-        this.userService = new BasicUserService(userRepository,userStatusRepository,binaryContentRepository);
-        this.messageService = new BasicMessageService(messageRepository,channelRepository,binaryContentRepository);
+        this.userStatusService = new BasicUserStatusService(userStatusRepository,userRepository);
+        this.userService = new BasicUserService(userRepository,userStatusRepository,binaryContentRepository,userStatusService);
+        this.messageService = new BasicMessageService(messageRepository,channelRepository,userRepository,binaryContentRepository,userStatusRepository);
         this.channelService = new BasicChannelService(channelRepository,messageRepository,readStatusRepository,userRepository);
     }
 
     @Override
     public UserService createUserService() {
         if(userService == null){
-            userService = new BasicUserService(userRepository,userStatusRepository,binaryContentRepository);
+            userService = new BasicUserService(userRepository,userStatusRepository,binaryContentRepository,userStatusService);
         }
         return userService;
     }
@@ -71,7 +76,7 @@ public class BasicServiceFactory implements ServiceFactory {
     @Override
     public MessageService createMessageService() {
         if(messageService == null){
-            messageService = new BasicMessageService(messageRepository,channelRepository,binaryContentRepository);
+            messageService = new BasicMessageService(messageRepository,channelRepository,userRepository,binaryContentRepository,userStatusRepository);
         }
         return messageService;
     }

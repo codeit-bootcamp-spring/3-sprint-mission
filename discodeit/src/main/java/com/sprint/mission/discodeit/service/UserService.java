@@ -10,9 +10,8 @@ import java.util.UUID;
 
 public interface UserService {
     User create(CreateUserRequest request, Optional<AddBinaryContentRequest> addBinaryContentRequest);
-    UserDTO find(UUID userId);
+    User find(UUID userId);
     List<User> findAll();
-    User update(UpdateUserRequest updateUserRequest);
     User updatePassword(UpdatePasswordRequest updatePasswordRequest);
     User updateProfile(UpdateProfileRequest updateProfileRequest);
     void delete(UUID userId);
