@@ -110,24 +110,26 @@ public class MessageController {
     }
 
     private List<BinaryContentDTO> resolveFileRequest(List<MultipartFile> attachedFiles) {
-
-        if (attachedFiles.isEmpty()) {
+        if (attachedFiles == null || attachedFiles.isEmpty()) {
             return Collections.emptyList();
-        } else {
-            List<BinaryContentDTO> binaryContentList = new ArrayList<>();
-            for (MultipartFile file : attachedFiles) {
-                try {
-                    binaryContentList.add(new BinaryContentDTO(
-                            file.getOriginalFilename(),
-                            file.getContentType(),
-                            file.getBytes()
-                    ));
-                } catch (IOException e) {
-                    throw new UncheckedIOException("파일 변환 중 오류 발생", e);
-                }
-            }
-
-            return binaryContentList;
         }
+
+        List<BinaryContentDTO> binaryContentList = new ArrayList<>();
+        for (MultipartFile file : attachedFiles) {
+            if (file.isEmpty()) {
+                continue;
+            }
+            try {
+                binaryContentList.add(new BinaryContentDTO(
+                        file.getOriginalFilename(),
+                        file.getContentType(),
+                        file.getBytes()
+                ));
+            } catch (IOException e) {
+                throw new UncheckedIOException("파일 변환 중 오류 발생", e);
+            }
+        }
+
+        return binaryContentList;
     }
 }
