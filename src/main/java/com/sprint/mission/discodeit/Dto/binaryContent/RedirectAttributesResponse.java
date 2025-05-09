@@ -1,19 +1,19 @@
 package com.sprint.mission.discodeit.Dto.binaryContent;
 
-import java.time.Instant;
-import java.util.UUID;
-
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.binaryContent
- * fileName       : BinaryContentCreateResponse
+ * fileName       : RedirectAttributesResponse
  * author         : doungukkim
- * date           : 2025. 4. 29.
+ * date           : 2025. 5. 9.
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 29.        doungukkim       최초 생성
+ * 2025. 5. 9.        doungukkim       최초 생성
  */
-public record BinaryContentCreateResponse(UUID id) {
+public record RedirectAttributesResponse(
+        String message,
+        String img,
+        String singleFileDescription
+) {
 }
-

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.Dto.user.UserCreateResponse;
 import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadRequest;
 import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadResponse;
@@ -14,6 +15,8 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -39,39 +42,51 @@ public class BasicUserService  implements UserService {
 
 
     @Override
-    public UserCreateResponse create(UserCreateRequest userCreateRequest) {
-        boolean usernameNotUnique = !userRepository.isUniqueUsername(userCreateRequest.getUsername());
-        boolean emailNotUnique = !userRepository.isUniqueEmail(userCreateRequest.getEmail());
+    public UserCreateResponse create(UserCreateRequest userCreateRequest,
+                                     Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+
+        boolean usernameNotUnique = !userRepository.isUniqueUsername(userCreateRequest.username());
+        boolean emailNotUnique = !userRepository.isUniqueEmail(userCreateRequest.email());
 
         if (usernameNotUnique || emailNotUnique) {
             throw new IllegalStateException("not unique username or email");
         }
 
-        // 이미지 여부 확인
-        if (userCreateRequest.getImage() == null) {
-            // 이미지 처리 없음
-            User user = userRepository.createUserByName(userCreateRequest.getUsername(), userCreateRequest.getEmail(), userCreateRequest.getPassword());
-            UserStatus userStatus = userStatusRepository.createUserStatus(user.getId());
-            return new UserCreateResponse(
-                    user.getId(),
-                    user.getUsername(),
-                    user.getEmail(),
-                    user.getProfileId(),
-                    userStatus.getId()
-            );
-        } else{
-            // 이미지 처리 있음
-            UUID profileId = binaryContentRepository.createBinaryContent(userCreateRequest.getImage()).getId();
-            User user = userRepository.createUserByName(userCreateRequest.getUsername(), userCreateRequest.getEmail(), userCreateRequest.getPassword(), profileId);
-            UserStatus userStatus = userStatusRepository.createUserStatus(user.getId());
-            return new UserCreateResponse(
-                    user.getId(),
-                    user.getUsername(),
-                    user.getEmail(),
-                    user.getProfileId(),
-                    userStatus.getId()
-            );
+
+        BinaryContent nullableProfile = optionalProfileCreateRequest
+                .map(
+                        profileRequest -> {
+                            String filename = profileRequest.fileName();
+                            String contentType = profileRequest.contentType();
+                            byte[] bytes = profileRequest.bytes();
+//                            binaryContentRepository.createBinaryContent(filename, (long) bytes.length, contentType, bytes);
+                            return binaryContentRepository.createBinaryContent(filename, (long) bytes.length, contentType, bytes);
+                        }
+                ).orElse(null);
+
+        User user;
+        if (nullableProfile == null) {
+            user = userRepository.createUserByName(
+                    userCreateRequest.username(),
+                    userCreateRequest.email(),
+                    userCreateRequest.password());
+        } else {
+
+            user = userRepository.createUserByName(
+                    userCreateRequest.username(),
+                    userCreateRequest.email(),
+                    userCreateRequest.password(),
+                    nullableProfile.getId());
         }
+        UserStatus userStatus = userStatusRepository.createUserStatus(user.getId());
+
+        return new UserCreateResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                nullableProfile != null ? nullableProfile.getId() : null,
+                userStatus.getId()
+        );
     }
 
 
@@ -122,42 +137,46 @@ public class BasicUserService  implements UserService {
 
 
 
-
+    // ❗️❗️❗️수정 필요
     @Override
     public ProfileUploadResponse updateImage(ProfileUploadRequest request) {
-        UUID userId = request.userId();
-        byte[] newImage = request.image();
-        User user = userRepository.findUserById(userId); // throw
-        UUID profileId = userRepository.findUserById(userId).getProfileId(); // throw
-
-
-        if (profileId == null) {
-            // 없음 객체 생성
-            // binary content 생성
-            BinaryContent binaryContent = binaryContentRepository.createBinaryContent(newImage);
-            // 프로필 아이디 유저에 추가
-            userRepository.updateProfileIdById(userId, binaryContent.getId()); //throw
-
-            user = userRepository.findUserById(userId); //throw
-        } else{
-            // binary content 프로필 변경
-            binaryContentRepository.updateImage(profileId, newImage); // throw
-        }
-        return new ProfileUploadResponse(
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getProfileId());
+//        UUID userId = request.userId();
+//        byte[] newImage = request.image();
+//        User user = userRepository.findUserById(userId); // throw
+//        UUID profileId = userRepository.findUserById(userId).getProfileId(); // throw
+//
+//
+//        if (profileId == null) {
+//            // 없음 객체 생성
+//            // binary content 생성
+//            BinaryContent binaryContent = binaryContentRepository.createBinaryContent(newImage);
+//            // 프로필 아이디 유저에 추가
+//            userRepository.updateProfileIdById(userId, binaryContent.getId()); //throw
+//
+//            user = userRepository.findUserById(userId); //throw
+//        } else{
+//            // binary content 프로필 변경
+//            binaryContentRepository.updateImage(profileId, newImage); // throw
+//        }
+//        return new ProfileUploadResponse(
+//                user.getCreatedAt(),
+//                user.getUpdatedAt(),
+//                user.getId(),
+//                user.getUsername(),
+//                user.getEmail(),
+//                user.getProfileId());
+        return null;
     }
 
     // not required
     @Override
-    public void updateUser(UUID userId, String name) {
+    public ResponseEntity<?> updateUser(UUID userId, String name) {
         Objects.requireNonNull(userId, "user 아이디 입력 없음: BasicUserService.updateUser");
         Objects.requireNonNull(name, "이름 입력 없음: BasicUserService.updateUser");
         userRepository.updateUserById(userId, name);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Map.of("message", "name updated " + name));
     }
 
 

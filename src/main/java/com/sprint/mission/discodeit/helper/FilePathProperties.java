@@ -1,6 +1,8 @@
-package com.sprint.mission.discodeit.util;
+package com.sprint.mission.discodeit.helper;
 
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +24,11 @@ import java.util.UUID;
  * 2025. 4. 14.        doungukkim       최초 생성
  */
 @Component
+@Getter
 @ConfigurationProperties(prefix = "discodeit.repository")
 public class FilePathProperties {
 
+    @Setter
     private String fileDirectory;
 
     private Path userDirectory;
@@ -65,33 +69,9 @@ public class FilePathProperties {
         }
     }
 
-    public void setFileDirectory(String fileDirectory) {
-        this.fileDirectory = fileDirectory;
-    }
-
-    public Path getUserDirectory() {
-        return userDirectory;
-    }
-
-    public Path getChannelDirectory() {
-        return channelDirectory;
-    }
-
-    public Path getMessageDirectory() {
-        return messageDirectory;
-    }
-
-    public Path getUserStatusDirectory() {
-        return userStatusDirectory;
-    }
-
-    public Path getBinaryContentDirectory() {
-        return binaryContentDirectory;
-    }
-
-    public Path getReadStatusDirectory() {
-        return readStatusDirectory;
-    }
+//    public void setFileDirectory(String fileDirectory) {
+//        this.fileDirectory = fileDirectory;
+//    }
 
     public Path getUserFilePath(UUID id) {
         return userDirectory.resolve(id + TO_SER);

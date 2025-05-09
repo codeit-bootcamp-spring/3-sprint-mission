@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.util.FilePathProperties;
-import com.sprint.mission.discodeit.util.FileSerializer;
+import com.sprint.mission.discodeit.helper.FilePathProperties;
+import com.sprint.mission.discodeit.helper.FileSerializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;

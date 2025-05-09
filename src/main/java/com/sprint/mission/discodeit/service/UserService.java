@@ -1,13 +1,18 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.Dto.user.UserCreateResponse;
 import com.sprint.mission.discodeit.Dto.user.UserFindResponse;
 import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadRequest;
 import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadResponse;
 import com.sprint.mission.discodeit.entity.User;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -23,7 +28,8 @@ import java.util.UUID;
  */
 public interface UserService {
 
-    UserCreateResponse create(UserCreateRequest userCreateDto);
+    UserCreateResponse create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profile);
+//    UserCreateResponse create(UserCreateRequest userCreateRequest);
 
     UserFindResponse findUserById(UUID userId);
 
@@ -31,7 +37,7 @@ public interface UserService {
 
     ProfileUploadResponse updateImage(ProfileUploadRequest request);
     // not required
-    void updateUser(UUID userId, String name);
+    ResponseEntity<?> updateUser(UUID userId, String name);
 
     void deleteUser(UUID userId);
 

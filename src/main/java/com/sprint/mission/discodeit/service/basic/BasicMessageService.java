@@ -60,23 +60,27 @@ public class BasicMessageService implements MessageService{
     }
 
     // binary content
+    // ❗️❗️❗️
     @Override
     public MessageAttachmentsCreateResponse createMessage(MessageAttachmentsCreateRequest request) {
-        Channel channel = Optional.ofNullable(channelRepository.findChannelById(request.channelId())).orElseThrow(() -> new IllegalStateException("채널 없음: BasicMessageService.createMessage"));
-        User user = Optional.ofNullable(userRepository.findUserById(request.senderId())).orElseThrow(() -> new IllegalStateException("유저 없음: BasicMessageService.createMessage"));
-        List<byte[]> attachments = request.attachments();
-
-        List<UUID> attachmentIds = attachments.stream()
-                .map(attachment -> binaryContentRepository.createBinaryContent(attachment).getId())
-                .toList();
-
-        Message message = messageRepository.createMessageWithAttachments(user.getId(), channel.getId(), attachmentIds);
-        return new MessageAttachmentsCreateResponse(
-                message.getId(),
-                message.getSenderId(),
-                message.getChannelId(),
-                message.getAttachmentIds()
-        );
+//        Channel channel = Optional.ofNullable(channelRepository.findChannelById(request.channelId())).orElseThrow(() -> new IllegalStateException("채널 없음: BasicMessageService.createMessage"));
+//        User user = Optional.ofNullable(userRepository.findUserById(request.senderId())).orElseThrow(() -> new IllegalStateException("유저 없음: BasicMessageService.createMessage"));
+//        List<byte[]> attachments = request.attachments();
+//
+//        List<UUID> attachmentIds = attachments.stream()
+//                .map(attachment -> binaryContentRepository.createBinaryContent().getId())
+//                .toList();
+//
+//        // ⭐️️ 실제 사진 저장 로직 추가 필요
+//
+//        Message message = messageRepository.createMessageWithAttachments(user.getId(), channel.getId(), attachmentIds);
+//        return new MessageAttachmentsCreateResponse(
+//                message.getId(),
+//                message.getSenderId(),
+//                message.getChannelId(),
+//                message.getAttachmentIds()
+//        );
+        return null;
     }
 
     // not required

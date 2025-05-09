@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.util.FilePathProperties;
-import com.sprint.mission.discodeit.util.FileSerializer;
+import com.sprint.mission.discodeit.helper.FilePathProperties;
+import com.sprint.mission.discodeit.helper.FileSerializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 
@@ -63,23 +62,20 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
 
     @Override
-    public BinaryContent createBinaryContent(byte[] image) {
-        BinaryContent binaryContent = new BinaryContent(image);
+    public BinaryContent createBinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
+        BinaryContent binaryContent = new BinaryContent(fileName, size, contentType, bytes);
         Path path = filePathUtil.getBinaryContentFilePath(binaryContent.getId());
         FileSerializer.writeFile(path, binaryContent);
         return binaryContent;
     }
 
-    @Override
-    public BinaryContent updateImage(UUID profileId, byte[] image) {
-        Path path = filePathUtil.getBinaryContentFilePath(profileId);
-        if (!Files.exists(path)) throw new IllegalStateException("no image to update");
-
-        BinaryContent binaryContent = FileSerializer.readFile(path, BinaryContent.class);
-        binaryContent.setAttachment(image);
-        FileSerializer.writeFile(path, binaryContent);
-        return binaryContent;
-    }
+//    @Override
+//    public BinaryContent createBinaryContent(UUID id) {
+//        BinaryContent binaryContent = new BinaryContent(id);
+//        Path path = filePathUtil.getBinaryContentFilePath(binaryContent.getId());
+//        FileSerializer.writeFile(path, binaryContent);
+//        return binaryContent;
+//    }
 
     @Override
     public void deleteBinaryContentById(UUID attachmentId) {

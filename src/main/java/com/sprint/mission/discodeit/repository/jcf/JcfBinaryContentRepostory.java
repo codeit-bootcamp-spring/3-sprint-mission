@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
+import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -49,21 +50,28 @@ public class JcfBinaryContentRepostory implements BinaryContentRepository {
     }
 
     @Override
-    public BinaryContent createBinaryContent(byte[] image) {
-        BinaryContent binaryContent = new BinaryContent(image);
+    public BinaryContent createBinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
+        BinaryContent binaryContent = new BinaryContent(fileName, size, contentType, bytes);
         data.put(binaryContent.getId(), binaryContent);
         return binaryContent;
     }
 
-    @Override
-    public BinaryContent updateImage(UUID profileId, byte[] image) {
-        if (data.get(profileId) == null) {
-            throw new IllegalStateException("no image to update");
-        }
-        BinaryContent binaryContent = data.get(profileId);
-        binaryContent.setAttachment(image);
-        return binaryContent;
-    }
+//    @Override
+//    public BinaryContent createBinaryContent(UUID id) {
+//        BinaryContent binaryContent = new BinaryContent(id);
+//        data.put(id, binaryContent);
+//        return binaryContent;
+//    }
+
+    //    @Override
+//    public BinaryContent updateImage(UUID profileId, byte[] image) {
+//        if (data.get(profileId) == null) {
+//            throw new IllegalStateException("no image to update");
+//        }
+//        BinaryContent binaryContent = data.get(profileId);
+//        binaryContent.setAttachment(image);
+//        return binaryContent;
+//    }
 
 
     @Override

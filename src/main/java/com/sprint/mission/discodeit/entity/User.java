@@ -36,7 +36,7 @@ public class User extends BaseEntity implements Serializable {
         this.password = password;
     }
 
-    public User(String username, String password, String email, UUID profileId) {
+    public User(String username, String email, String password, UUID profileId) {
         super();
         this.username = username;
         this.password = password;
