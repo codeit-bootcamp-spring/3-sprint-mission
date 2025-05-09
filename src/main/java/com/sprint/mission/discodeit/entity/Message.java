@@ -3,7 +3,9 @@ package com.sprint.mission.discodeit.entity;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.ToString;
@@ -23,26 +25,31 @@ public class Message implements Serializable {
   private final UUID userId;
   private final UUID channelId;
   private Instant deletedAt;
+  private Set<UUID> attachmentIds;
 
-  private Message(String content, UUID userId, UUID channelId, Instant deletedAt) {
+  private Message(
+      String content,
+      UUID userId,
+      UUID channelId,
+      Instant deletedAt,
+      Set<UUID> attachmentIds
+  ) {
     this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
     this.content = content;
     this.userId = userId;
     this.channelId = channelId;
     this.deletedAt = deletedAt;
+    this.attachmentIds = attachmentIds != null ? attachmentIds : new HashSet<>();
   }
 
-  public static Message create(String content, UUID userId, UUID channelId) {
-    return new Message(content, userId, channelId, null);
+  public static Message create(String content, UUID userId, UUID channelId,
+      Set<UUID> attachmentIds) {
+    return new Message(content, userId, channelId, null, attachmentIds);
   }
 
   public void touch() {
     this.updatedAt = Instant.now();
-  }
-
-  public String getContent() {
-    return deletedAt != null ? "삭제된 메시지입니다." : content;
   }
 
   public void updateContent(String content) {
@@ -50,6 +57,10 @@ public class Message implements Serializable {
       this.content = content;
       touch();
     }
+  }
+
+  public void isDeleted() {
+    this.deletedAt = Instant.now();
   }
 
   public void delete() {

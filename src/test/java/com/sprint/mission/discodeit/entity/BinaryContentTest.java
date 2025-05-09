@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
-import java.util.UUID;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -19,8 +18,7 @@ public class BinaryContentTest {
     @Test
     void BinaryContent_생성_시_기본_정보가_올바르게_생성되어야_한다() {
       // given
-      UUID userId = UUID.randomUUID();
-      BinaryContent content = BinaryContentFixture.createValidProfileImage(userId);
+      BinaryContent content = BinaryContentFixture.createValid();
 
       // when & then
       assertAll(
@@ -30,18 +28,18 @@ public class BinaryContentTest {
               "데이터가 올바르게 설정되어야 한다"),
           () -> assertEquals(BinaryContentFixture.getDefaultFileName(), content.getFileName(),
               "파일명이 올바르게 설정되어야 한다"),
-          () -> assertEquals(BinaryContentFixture.getDefaultMimeType(), content.getMimeType(),
+          () -> assertEquals(BinaryContentFixture.getDefaultMimeType(), content.getContentType(),
               "MIME 타입이 올바르게 설정되어야 한다"),
-          () -> assertEquals(userId, content.getUserId(), "사용자 ID가 올바르게 설정되어야 한다")
+          () -> assertEquals(BinaryContentFixture.getDefaultData().length, content.getSize(),
+              "파일 크기가 올바르게 설정되어야 한다")
       );
     }
 
     @Test
     void BinaryContent_생성_시_고유한_ID를_가져야_한다() {
       // given
-      UUID userId = UUID.randomUUID();
-      BinaryContent content1 = BinaryContentFixture.createValidProfileImage(userId);
-      BinaryContent content2 = BinaryContentFixture.createValidProfileImage(userId);
+      BinaryContent content1 = BinaryContentFixture.createValid();
+      BinaryContent content2 = BinaryContentFixture.createValid();
 
       // when & then
       assertThat(content1).as("BinaryContent 객체는 서로 달라야 한다").isNotEqualTo(content2);

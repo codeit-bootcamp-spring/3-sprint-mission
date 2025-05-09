@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
@@ -9,6 +10,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.basic.BasicBinaryContentService;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Nested;
@@ -31,26 +33,24 @@ class BasicBinaryContentServiceTest {
   class Create {
 
     @Test
-    void 프로필_이미지를_성공적으로_생성해야_한다() {
-      UUID userId = UUID.randomUUID();
-      BinaryContent expected = BinaryContentFixture.createValidProfileImage(userId);
+    void BinaryContent를_생성한다() {
+      BinaryContent expected = BinaryContentFixture.createValid();
 
       when(binaryContentRepository.save(any())).thenReturn(expected);
 
       var request = new BinaryContentCreateRequest(
-          expected.getBytes(),
           expected.getFileName(),
-          expected.getMimeType(),
           expected.getContentType(),
-          expected.getUserId(),
-          null
+          expected.getBytes()
       );
 
       BinaryContent result = binaryContentService.create(request);
 
       assertThat(result).isNotNull();
-      assertThat(result.getUserId()).isEqualTo(userId);
-      assertThat(result.getContentType()).isEqualTo(BinaryContent.ContentType.PROFILE_IMAGE);
+      assertThat(result.getFileName()).isEqualTo(expected.getFileName());
+      assertThat(result.getContentType()).isEqualTo(expected.getContentType());
+      assertThat(result.getBytes()).isEqualTo(expected.getBytes());
+      verify(binaryContentRepository).save(any());
     }
   }
 
@@ -60,7 +60,7 @@ class BasicBinaryContentServiceTest {
     @Test
     void BinaryContent를_ID로_조회한다() {
       UUID id = UUID.randomUUID();
-      BinaryContent content = BinaryContentFixture.createValidProfileImage(UUID.randomUUID());
+      BinaryContent content = BinaryContentFixture.createValid();
 
       when(binaryContentRepository.findById(id)).thenReturn(Optional.of(content));
 
@@ -68,6 +68,7 @@ class BasicBinaryContentServiceTest {
 
       assertThat(found).isNotNull();
       assertThat(found.getFileName()).isEqualTo(content.getFileName());
+      verify(binaryContentRepository).findById(id);
     }
   }
 
@@ -77,8 +78,33 @@ class BasicBinaryContentServiceTest {
     @Test
     void BinaryContent를_ID로_삭제한다() {
       UUID id = UUID.randomUUID();
-      // 현재 delete는 반환값이 없으므로 예외만 안 터지면 성공
+
       binaryContentService.delete(id);
+
+      verify(binaryContentRepository).delete(id);
+    }
+  }
+
+  @Nested
+  class FindAllByIdIn {
+
+    @Test
+    void 여러_ID로_BinaryContent_목록을_조회한다() {
+      UUID id1 = UUID.randomUUID();
+      UUID id2 = UUID.randomUUID();
+
+      BinaryContent content1 = BinaryContentFixture.createValid();
+      BinaryContent content2 = BinaryContentFixture.createValid();
+
+      when(binaryContentRepository.findById(id1)).thenReturn(Optional.of(content1));
+      when(binaryContentRepository.findById(id2)).thenReturn(Optional.of(content2));
+
+      List<BinaryContent> result = binaryContentService.findAllByIdIn(List.of(id1, id2));
+
+      assertThat(result).hasSize(2);
+      assertThat(result).contains(content1, content2);
+      verify(binaryContentRepository).findById(id1);
+      verify(binaryContentRepository).findById(id2);
     }
   }
 }

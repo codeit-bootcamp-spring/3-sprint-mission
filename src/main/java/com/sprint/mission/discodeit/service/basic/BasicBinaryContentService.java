@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.BinaryContentException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import java.util.List;
@@ -17,24 +18,17 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Override
   public BinaryContent create(BinaryContentCreateRequest request) {
-    BinaryContent binaryContent;
-    if (request.contentType() == BinaryContent.ContentType.PROFILE_IMAGE) {
-      binaryContent = BinaryContent.createProfileImage(
-          request.data(),
-          request.fileName(),
-          request.mimeType(),
-          request.userId()
-      );
-    } else if (request.contentType() == BinaryContent.ContentType.MESSAGE_ATTACHMENT) {
-      binaryContent = BinaryContent.createMessageAttachment(
-          request.data(),
-          request.fileName(),
-          request.mimeType(),
-          request.messageId()
-      );
-    } else {
-      throw new IllegalArgumentException("지원하지 않는 BinaryContent 타입입니다: " + request.contentType());
+    if (request.bytes() == null || request.fileName() == null || request.contentType() == null) {
+      throw BinaryContentException.invalidRequest();
     }
+
+    BinaryContent binaryContent = BinaryContent.create(
+        request.fileName(),
+        (long) request.bytes().length,
+        request.contentType(),
+        request.bytes()
+    );
+
     return binaryContentRepository.save(binaryContent);
   }
 

@@ -53,12 +53,14 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public List<ChannelResponse> findAllByUserId(UUID userId) {
-    List<UUID> mySubscribedChannelIds = readStatusRepository.findByUserId(userId).stream()
+    List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
         .map(ReadStatus::getChannelId)
         .toList();
 
     return channelRepository.findAll().stream()
-        .filter(channel -> mySubscribedChannelIds.contains(channel.getId()))
+        .filter(
+            channel -> channel.getType() == ChannelType.PUBLIC || mySubscribedChannelIds.contains(
+                channel.getId()))
         .map(this::toResponse)
         .collect(Collectors.toList());
   }
@@ -83,23 +85,6 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public void addParticipant(UUID channelId, UUID userId) throws ChannelException {
-    Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> ChannelException.notFound(channelId));
-    // TODO: 참여자 추가 로직 수정
-    readStatusRepository.save(ReadStatus.create(userId, channelId));
-    channelRepository.save(channel);
-  }
-
-  @Override
-  public void removeParticipant(UUID channelId, UUID userId) throws ChannelException {
-    Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> ChannelException.notFound(channelId));
-    // TODO: 참여자 제거 로직 수정
-    channelRepository.save(channel);
-  }
-
-  @Override
   public Optional<ChannelResponse> delete(UUID channelId) {
     Optional<Channel> deleted = channelRepository.findById(channelId);
     deleted.ifPresent(channel -> {
@@ -108,7 +93,7 @@ public class BasicChannelService implements ChannelService {
           .filter(m -> m.getChannelId().equals(channelId))
           .forEach(m -> messageRepository.delete(m.getId()));
       // 연관된 읽음 상태 삭제
-      readStatusRepository.findByChannelId(channelId)
+      readStatusRepository.findAllByChannelId(channelId)
           .forEach(rs -> readStatusRepository.delete(rs.getId()));
       // 채널 삭제
       channelRepository.delete(channelId);
@@ -125,7 +110,7 @@ public class BasicChannelService implements ChannelService {
 
     List<UUID> participantIds = new ArrayList<>();
     if (channel.getType().equals(ChannelType.PRIVATE)) {
-      readStatusRepository.findByChannelId(channel.getId())
+      readStatusRepository.findAllByChannelId(channel.getId())
           .stream()
           .map(ReadStatus::getUserId)
           .forEach(participantIds::add);

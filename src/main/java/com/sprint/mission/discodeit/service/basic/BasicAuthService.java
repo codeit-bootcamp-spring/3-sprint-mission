@@ -18,10 +18,13 @@ public class BasicAuthService implements AuthService {
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
 
-  @Override
   public UserResponse login(LoginRequest request) {
-    User user = userRepository.findByNameAndPassword(request.userName(), request.password())
-        .orElseThrow(AuthException::invalidCredentials);
+    User user = userRepository.findByName(request.userName())
+        .orElseThrow(AuthException::usernameNotFound);
+
+    if (!user.getPassword().equals(request.password())) {
+      throw AuthException.invalidPassword();
+    }
 
     return toUserResponse(user);
   }

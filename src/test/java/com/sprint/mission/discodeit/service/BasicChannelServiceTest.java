@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
@@ -113,13 +114,16 @@ class BasicChannelServiceTest {
           new ReadStatusCreateRequest(user.getId(), privateChannel.getId()));
       ReadStatus rs2 = ReadStatusFixture.createFromRequest(
           new ReadStatusCreateRequest(user.getId(), publicChannel.getId()));
-      Message ms1 = MessageFixture.createCustomMessage("testMessage", user.getId(), privateChannel);
-      Message ms2 = MessageFixture.createCustomMessage("testMessage", user.getId(), publicChannel);
+      Message ms1 = MessageFixture.createCustom(
+          new MessageCreateRequest("testMessage", user.getId(), privateChannel.getId()));
+      Message ms2 = MessageFixture.createCustom(
+          new MessageCreateRequest("testMessage", user.getId(), publicChannel.getId()));
 
-      when(readStatusRepository.findByUserId(any())).thenReturn(List.of(rs1, rs2));
+      when(readStatusRepository.findAllByUserId(any())).thenReturn(List.of(rs1, rs2));
       when(channelRepository.findAll()).thenReturn(List.of(privateChannel, publicChannel));
       when(messageRepository.findAll()).thenReturn(List.of(ms1, ms2));
-      when(readStatusRepository.findByChannelId(privateChannel.getId())).thenReturn(List.of(rs1));
+      when(readStatusRepository.findAllByChannelId(privateChannel.getId())).thenReturn(
+          List.of(rs1));
 
       List<ChannelResponse> result = channelService.findAllByUserId(user.getId());
 
@@ -137,7 +141,7 @@ class BasicChannelServiceTest {
         }
       }
 
-      verify(readStatusRepository).findByUserId(any());
+      verify(readStatusRepository).findAllByUserId(any());
     }
   }
 
@@ -188,12 +192,12 @@ class BasicChannelServiceTest {
       UUID channelId = UUID.randomUUID();
       Channel channel = Channel.createPublic("general", "desc");
 
-      Message message = Message.create("hello", UUID.randomUUID(), channelId);
+      Message message = Message.create("hello", UUID.randomUUID(), channelId, null);
       ReadStatus status = ReadStatus.create(UUID.randomUUID(), channelId);
 
       when(channelRepository.findById(channelId)).thenReturn(Optional.of(channel));
       when(messageRepository.findAll()).thenReturn(List.of(message));
-      when(readStatusRepository.findByChannelId(channelId)).thenReturn(List.of(status));
+      when(readStatusRepository.findAllByChannelId(channelId)).thenReturn(List.of(status));
 
       Optional<ChannelResponse> result = channelService.delete(channelId);
 

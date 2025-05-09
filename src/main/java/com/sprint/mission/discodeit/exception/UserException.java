@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.exception;
 
+import java.text.MessageFormat;
 import java.util.UUID;
 
 public class UserException extends BusinessException {
@@ -9,7 +10,10 @@ public class UserException extends BusinessException {
   }
 
   public static UserException notFound(UUID userId) {
-    return new UserException(ErrorCode.NOT_FOUND, "유저를 찾을 수 없습니다. [UserID: " + userId + "]");
+    return new UserException(
+        ErrorCode.NOT_FOUND,
+        MessageFormat.format("유저를 찾을 수 없습니다. [UserID: {0}]", userId)
+    );
   }
 
   public static UserException notParticipant() {

@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.exception.ChannelException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,24 +50,6 @@ public interface ChannelService {
    * @return 업데이트된 채널 객체
    */
   Optional<ChannelResponse> update(PublicChannelUpdateRequest request);
-
-  /**
-   * 채널에 참여자를 추가한다
-   *
-   * @param channelId 채널 ID
-   * @param userId    추가할 사용자 ID
-   * @throws ChannelException
-   */
-  void addParticipant(UUID channelId, UUID userId) throws ChannelException;
-
-  /**
-   * 채널에서 참여자를 제거한다
-   *
-   * @param channelId 채널 ID
-   * @param userId    제거할 사용자 ID
-   * @throws ChannelException
-   */
-  void removeParticipant(UUID channelId, UUID userId) throws ChannelException;
 
   /**
    * 채널을 삭제한다

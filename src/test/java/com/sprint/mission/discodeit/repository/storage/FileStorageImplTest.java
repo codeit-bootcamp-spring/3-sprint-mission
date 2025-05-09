@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository.storage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -44,13 +45,14 @@ class FileStorageImplTest {
   }
 
   private Message createDefaultTestMessage() {
-    return MessageFixture.createValidMessage();
+    return MessageFixture.createValid();
   }
 
   private Message createCustomTestMessage(String content) {
     User user = UserFixture.createValidUser();
     Channel channel = ChannelFixture.createPublic();
-    return MessageFixture.createCustomMessage(content, user.getId(), channel);
+    return MessageFixture.createCustom(
+        new MessageCreateRequest(content, user.getId(), channel.getId()));
   }
 
   public static Stream<Arguments> provideMessages() {
@@ -64,8 +66,8 @@ class FileStorageImplTest {
   @MethodSource("provideMessages")
   void 여러_객체_저장_후_저장_상태_확인(List<String> messageContents) {
     List<Message> objects = messageContents.stream()
-        .map(content -> MessageFixture.createCustomMessage(content,
-            UserFixture.createValidUser().getId(), ChannelFixture.createPublic()))
+        .map(content -> MessageFixture.createCustom(new MessageCreateRequest(content,
+            UserFixture.createValidUser().getId(), ChannelFixture.createPublic().getId())))
         .toList();
 
     objects.forEach(msg -> fileStorage.saveObject(msg.getId(), msg));

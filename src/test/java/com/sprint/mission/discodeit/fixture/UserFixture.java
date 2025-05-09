@@ -57,7 +57,7 @@ public class UserFixture {
    */
   public static User createValidUserWithProfileImage() {
     User user = createValidUser();
-    BinaryContent profileImage = BinaryContentFixture.createValidProfileImage(user.getId());
+    BinaryContent profileImage = BinaryContentFixture.createValid();
     user.updateProfileId(profileImage.getId());
     return user;
   }

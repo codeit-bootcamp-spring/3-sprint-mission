@@ -37,8 +37,7 @@ public interface ReadStatusRepository {
    * @param userId UUID
    * @return List<ReadStatus>
    */
-  // TODO: 반환 타입에 따라 find, findAll 모든 Service, Repository 메서드명 수정
-  List<ReadStatus> findByUserId(UUID userId);
+  List<ReadStatus> findAllByUserId(UUID userId);
 
   /**
    * 채널 id로 조회
@@ -46,7 +45,7 @@ public interface ReadStatusRepository {
    * @param channelId UUID
    * @return List<ReadStatus>
    */
-  List<ReadStatus> findByChannelId(UUID channelId);
+  List<ReadStatus> findAllByChannelId(UUID channelId);
 
   /**
    * 모든 ReadStatus 조회

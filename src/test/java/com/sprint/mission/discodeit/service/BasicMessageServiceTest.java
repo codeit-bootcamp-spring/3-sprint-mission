@@ -3,18 +3,17 @@ package com.sprint.mission.discodeit.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.fixture.ChannelFixture;
 import com.sprint.mission.discodeit.fixture.MessageFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
@@ -25,7 +24,6 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -58,16 +56,14 @@ public class BasicMessageServiceTest {
       UUID channelId = UUID.randomUUID();
       String content = "메시지 내용";
 
-      MessageCreateRequest request = new MessageCreateRequest(content, userId, channelId,
-          Optional.empty());
+      MessageCreateRequest request = new MessageCreateRequest(content, userId, channelId);
       Channel channel = ChannelFixture.createPublic();
 
       when(userRepository.findById(userId)).thenReturn(Optional.of(UserFixture.createValidUser()));
-      when(channelRepository.findById(channelId)).thenReturn(
-          Optional.of(channel));
+      when(channelRepository.findById(channelId)).thenReturn(Optional.of(channel));
       when(messageRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-      Message result = messageService.create(request);
+      Message result = messageService.create(request, List.of());
 
       assertNotNull(result.getId());
       verify(messageRepository).save(any());
@@ -75,49 +71,32 @@ public class BasicMessageServiceTest {
     }
 
     @Test
-    void 첨부파일을_메시지에_연결하면_BinaryContent의_messageId가_업데이트된다() {
-      UUID messageId = UUID.randomUUID();
-      UUID attachmentId = UUID.randomUUID();
-      BinaryContent attachment = BinaryContentFixture.createValidMessageAttachment();
-
-      when(messageRepository.findById(messageId)).thenReturn(
-          Optional.of(MessageFixture.createValidMessage()));
-      when(binaryContentRepository.findById(attachmentId)).thenReturn(Optional.of(attachment));
-
-      messageService.attachFilesToMessage(messageId, List.of(attachmentId));
-
-      verify(binaryContentRepository).save(any());
-    }
-
-    @Test
     void 메시지를_생성할_때_첨부파일도_함께_등록된다() {
       UUID userId = UUID.randomUUID();
       UUID channelId = UUID.randomUUID();
-      UUID attachmentId1 = UUID.randomUUID();
-      UUID attachmentId2 = UUID.randomUUID();
 
-      MessageCreateRequest request = new MessageCreateRequest(
-          "첨부파일 메시지",
-          userId,
-          channelId,
-          Optional.of(Set.of(attachmentId1, attachmentId2))
-      );
+      BinaryContentCreateRequest binaryRequest1 = new BinaryContentCreateRequest(
+          "file1.jpg", "image/jpeg", new byte[]{1, 2, 3, 4});
+      BinaryContentCreateRequest binaryRequest2 = new BinaryContentCreateRequest(
+          "file2.jpg", "image/png", new byte[]{5, 6, 7, 8});
 
       Channel channel = ChannelFixture.createPublic();
 
       when(userRepository.findById(userId)).thenReturn(Optional.of(UserFixture.createValidUser()));
       when(channelRepository.findById(channelId)).thenReturn(Optional.of(channel));
-      when(binaryContentRepository.findById(attachmentId1)).thenReturn(
-          Optional.of(BinaryContentFixture.createValidMessageAttachment()));
-      when(binaryContentRepository.findById(attachmentId2)).thenReturn(
-          Optional.of(BinaryContentFixture.createValidMessageAttachment()));
-      when(messageRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+      when(binaryContentRepository.save(any(BinaryContent.class))).thenAnswer(
+          invocation -> invocation.getArgument(0));
+      when(messageRepository.save(any(Message.class))).thenAnswer(
+          invocation -> invocation.getArgument(0));
 
-      Message result = messageService.create(request);
+      MessageCreateRequest request = new MessageCreateRequest("첨부파일 메시지", userId, channelId);
+
+      // when
+      Message result = messageService.create(request, List.of(binaryRequest1, binaryRequest2));
 
       assertNotNull(result.getId());
       verify(messageRepository).save(any());
-      verify(binaryContentRepository, atLeast(1)).save(any());
+      verify(binaryContentRepository, times(2)).save(any());
     }
   }
 
@@ -128,13 +107,13 @@ public class BasicMessageServiceTest {
     void 특정_채널의_메시지_목록을_조회한다() {
       UUID channelId = UUID.randomUUID();
       List<Message> messages = List.of(
-          MessageFixture.createValidMessage(),
-          MessageFixture.createValidMessage()
+          MessageFixture.createValid(),
+          MessageFixture.createValid()
       );
 
       when(messageRepository.findAllByChannelId(channelId)).thenReturn(messages);
 
-      List<MessageResponse> result = messageService.findAllByChannelId(channelId);
+      List<Message> result = messageService.findAllByChannelId(channelId);
 
       assertNotNull(result);
       assertEquals(2, result.size());
@@ -150,7 +129,7 @@ public class BasicMessageServiceTest {
       UUID messageId = UUID.randomUUID();
       String updatedContent = "수정된 메시지";
 
-      Message message = MessageFixture.createValidMessage();
+      Message message = MessageFixture.createValid();
       when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
 
       MessageUpdateRequest updateRequest = new MessageUpdateRequest(messageId, updatedContent);
@@ -166,16 +145,16 @@ public class BasicMessageServiceTest {
   class Delete {
 
     @Test
-    void 메시지를_삭제하면_첨부파일도_같이_삭제된다() {
+    void 메시지를_삭제하면_첨부파일도_삭제된다() {
       UUID messageId = UUID.randomUUID();
-      Message message = MessageFixture.createValidMessage();
+      Message message = MessageFixture.createValid();
 
       when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
 
       messageService.delete(messageId);
 
       verify(messageRepository).save(any());
-      verify(binaryContentRepository).deleteAllByMessageId(messageId);
+      verify(binaryContentRepository).delete(any(UUID.class));
     }
   }
 }

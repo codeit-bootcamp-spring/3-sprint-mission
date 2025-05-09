@@ -50,8 +50,7 @@ class BasicAuthServiceTest {
   @Test
   void 유효한_credentials로_로그인_시_UserResponse_반환() {
     // given
-    when(userRepository.findByNameAndPassword(user.getName(), user.getPassword())).thenReturn(
-        Optional.ofNullable(user));
+    when(userRepository.findByName(user.getName())).thenReturn(Optional.of(user));
 
     // when
     UserResponse response = authService.login(loginRequest);
@@ -62,7 +61,7 @@ class BasicAuthServiceTest {
         .usingRecursiveComparison()
         .isEqualTo(toUserResponse(user));
 
-    verify(userRepository).findByNameAndPassword(loginRequest.userName(), loginRequest.password());
+    verify(userRepository).findByName(loginRequest.userName());
   }
 
   @Test
@@ -72,7 +71,7 @@ class BasicAuthServiceTest {
     String nonExistingPassword = "pwd";
     LoginRequest nonExistingRequest = new LoginRequest(nonExistingUserName, nonExistingPassword);
     given(
-        userRepository.findByNameAndPassword(nonExistingUserName, nonExistingPassword)).willReturn(
+        userRepository.findByName(nonExistingUserName)).willReturn(
         Optional.empty());
 
     // When & Then
@@ -80,7 +79,7 @@ class BasicAuthServiceTest {
         () -> authService.login(nonExistingRequest),
         "예외 메시지 검증");
 
-    verify(userRepository).findByNameAndPassword(nonExistingUserName, nonExistingPassword);
+    verify(userRepository).findByName(nonExistingUserName);
   }
 
   private UserResponse toUserResponse(User user) {

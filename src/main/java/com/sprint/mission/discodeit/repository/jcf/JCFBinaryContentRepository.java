@@ -2,9 +2,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,28 +21,14 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
   }
 
   @Override
-  public Optional<BinaryContent> findById(UUID id) {
-    return Optional.ofNullable(binaryContentMap.get(id));
-  }
-
-  @Override
-  public List<BinaryContent> findAllByMessageId(UUID messageId) {
-    return binaryContentMap.values().stream()
-        .filter(content -> Objects.equals(content.getMessageId(), messageId))
-        .toList();
-  }
-
-  @Override
-  public Optional<BinaryContent> findByUserId(UUID userId) {
-    return binaryContentMap.values().stream()
-        .filter(content -> Objects.equals(content.getUserId(), userId))
-        .findFirst();
-  }
-
-  @Override
   public BinaryContent save(BinaryContent binaryContent) {
     binaryContentMap.put(binaryContent.getId(), binaryContent);
     return binaryContent;
+  }
+
+  @Override
+  public Optional<BinaryContent> findById(UUID id) {
+    return Optional.ofNullable(binaryContentMap.get(id));
   }
 
   @Override
@@ -57,16 +41,10 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
   }
 
   @Override
-  public void delete(UUID id) {
-    if (!binaryContentMap.containsKey(id)) {
-      throw new IllegalArgumentException("바이너리 컨텐트를 찾을 수 없습니다. [ID: " + id + "]");
+  public void delete(UUID binaryContentId) {
+    if (!binaryContentMap.containsKey(binaryContentId)) {
+      throw new IllegalArgumentException("바이너리 컨텐트를 찾을 수 없습니다. [ID: " + binaryContentId + "]");
     }
-    binaryContentMap.remove(id);
-  }
-
-  @Override
-  public void deleteAllByMessageId(UUID messageId) {
-    binaryContentMap.values()
-        .removeIf(content -> Objects.equals(content.getMessageId(), messageId));
+    binaryContentMap.remove(binaryContentId);
   }
 }

@@ -60,7 +60,7 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
   }
 
   @Override
-  public List<ReadStatus> findByUserId(UUID userId) {
+  public List<ReadStatus> findAllByUserId(UUID userId) {
     return userToStatusIdsMap.getOrDefault(userId, List.of()).stream()
         .map(this::findById)
         .filter(Optional::isPresent)
@@ -69,7 +69,7 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
   }
 
   @Override
-  public List<ReadStatus> findByChannelId(UUID channelId) {
+  public List<ReadStatus> findAllByChannelId(UUID channelId) {
     return channelToStatusIdsMap.getOrDefault(channelId, List.of()).stream()
         .map(this::findById)
         .filter(Optional::isPresent)

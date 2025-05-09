@@ -50,7 +50,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   public List<ReadStatus> findAllByUserId(UUID userId) {
-    return readStatusRepository.findByUserId(userId);
+    return readStatusRepository.findAllByUserId(userId);
   }
 
   @Override

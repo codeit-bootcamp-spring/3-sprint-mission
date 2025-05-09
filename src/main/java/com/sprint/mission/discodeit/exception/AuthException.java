@@ -9,4 +9,12 @@ public class AuthException extends BusinessException {
   public static AuthException invalidCredentials() {
     return new AuthException(ErrorCode.UNAUTHORIZED, "일치하는 회원 정보가 없습니다.");
   }
+
+  public static AuthException usernameNotFound() {
+    return new AuthException(ErrorCode.UNAUTHORIZED, "username이 일치하지 않습니다.");
+  }
+
+  public static AuthException invalidPassword() {
+    return new AuthException(ErrorCode.UNAUTHORIZED, "password가 일치하지 않습니다.");
+  }
 }

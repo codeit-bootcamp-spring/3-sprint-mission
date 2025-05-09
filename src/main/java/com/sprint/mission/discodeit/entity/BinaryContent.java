@@ -27,57 +27,44 @@ public class BinaryContent implements Serializable {
   private final Instant createdAt;
   private Instant updatedAt;
 
-  private final byte[] bytes;
   private final String fileName;
-  private final String mimeType;
-  private final ContentType contentType;
-  private final UUID userId;
-  private UUID messageId;
+  private Long size;
+  private final String contentType;
+  private final byte[] bytes;
 
-  private BinaryContent(UUID id, Instant createdAt, Instant updatedAt, byte[] bytes,
-      String fileName, String mimeType, ContentType contentType,
-      UUID userId, UUID messageId) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.bytes = bytes;
+  private BinaryContent(
+      UUID id,
+      Instant createdAt,
+      Instant updatedAt,
+      String fileName,
+      Long size,
+      String contentType,
+      byte[] bytes
+  ) {
+    this.id = id != null ? id : UUID.randomUUID();
+    this.createdAt = createdAt != null ? createdAt : Instant.now();
+    this.updatedAt = updatedAt;
     this.fileName = fileName;
-    this.mimeType = mimeType;
+    this.size = size;
     this.contentType = contentType;
-    this.userId = userId;
-    this.messageId = messageId;
+    this.bytes = bytes;
   }
 
-  public static BinaryContent createProfileImage(byte[] bytes, String fileName, String mimeType,
-      UUID userId) {
-    Objects.requireNonNull(userId, "컨텐트 생성 시 유저 id는 필수입니다.");
+  public static BinaryContent create(
+      String fileName,
+      Long size,
+      String contentType,
+      byte[] bytes
+  ) {
     return BinaryContent.builder()
-        .bytes(Objects.requireNonNull(bytes))
+        .id(UUID.randomUUID())
+        .createdAt(Instant.now())
+        .updatedAt(null)
         .fileName(Objects.requireNonNull(fileName))
-        .mimeType(Objects.requireNonNull(mimeType))
-        .contentType(ContentType.PROFILE_IMAGE)
-        .userId(userId)
-        .messageId(null)
-        .build();
-  }
-
-  public static BinaryContent createMessageAttachment(byte[] bytes, String fileName,
-      String mimeType,
-      UUID messageId) {
-    return BinaryContent.builder()
+        .size(size)
+        .contentType(Objects.requireNonNull(contentType))
         .bytes(Objects.requireNonNull(bytes))
-        .fileName(Objects.requireNonNull(fileName))
-        .mimeType(Objects.requireNonNull(mimeType))
-        .contentType(ContentType.MESSAGE_ATTACHMENT)
-        .userId(null)
-        .messageId(messageId)
         .build();
-  }
-
-  public void attachToMessage(UUID messageId) {
-    if (this.messageId != null) {
-      throw new IllegalStateException("이미 메시지에 연결된 파일입니다.");
-    }
-    this.messageId = Objects.requireNonNull(messageId, "메시지 ID는 null일 수 없습니다.");
   }
 
   @Override

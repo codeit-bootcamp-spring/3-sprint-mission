@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.exception.FileException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.storage.FileStorage;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,21 +38,6 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
   }
 
   @Override
-  public Optional<BinaryContent> findByUserId(UUID userId) {
-    return findAll().stream()
-        .filter(content -> content.getUserId() != null && content.getUserId().equals(userId))
-        .findFirst();
-  }
-
-  @Override
-  public List<BinaryContent> findAllByMessageId(UUID messageId) {
-    return findAll().stream()
-        .filter(
-            content -> content.getMessageId() != null && content.getMessageId().equals(messageId))
-        .toList();
-  }
-
-  @Override
   public BinaryContent save(BinaryContent binaryContent) {
     Optional<BinaryContent> existing = findById(binaryContent.getId());
     if (existing.isPresent()) {
@@ -74,29 +58,11 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
   }
 
   @Override
-  public void delete(UUID id) {
+  public void delete(UUID binaryContentId) {
     try {
-      fileStorage.deleteObject(id);
+      fileStorage.deleteObject(binaryContentId);
     } catch (FileException e) {
       throw new RuntimeException("컨텐트 삭제 실패: " + e.getMessage(), e);
     }
-  }
-
-  @Override
-  public void deleteAllByMessageId(UUID messageId) {
-    List<BinaryContent> contentsToDelete = findAllByMessageId(messageId);
-    for (BinaryContent content : contentsToDelete) {
-      try {
-        fileStorage.deleteObject(content.getId());
-      } catch (FileException e) {
-        throw new RuntimeException("메시지 ID로 컨텐트 삭제 실패: " + e.getMessage(), e);
-      }
-    }
-  }
-
-  private List<BinaryContent> findAll() {
-    return fileStorage.readAll().stream()
-        .map(obj -> (BinaryContent) obj)
-        .toList();
   }
 }

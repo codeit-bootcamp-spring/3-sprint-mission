@@ -1,10 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.exception.ChannelException;
 import com.sprint.mission.discodeit.exception.UserException;
@@ -32,50 +31,40 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public Message create(String content, UUID userId, UUID channelId)
-      throws UserException, ChannelException {
-    userRepository.findById(userId)
-        .orElseThrow(() -> UserException.notFound(userId));
+  public Message create(MessageCreateRequest messageCreateRequest,
+      List<BinaryContentCreateRequest> binaryContentCreateRequests) throws ChannelException {
+    userRepository.findById(messageCreateRequest.userId())
+        .orElseThrow(() -> UserException.notFound(messageCreateRequest.userId()));
 
-    Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> ChannelException.notFound(channelId));
+    channelRepository.findById(messageCreateRequest.channelId())
+        .orElseThrow(() -> ChannelException.notFound(messageCreateRequest.channelId()));
 
-    Message message = Message.create(content, userId, channelId);
+    Set<UUID> attachmentIds = binaryContentCreateRequests.stream()
+        .map(attachmentRequest -> {
+          String fileName = attachmentRequest.fileName();
+          String contentType = attachmentRequest.contentType();
+          byte[] bytes = attachmentRequest.bytes();
+
+          BinaryContent binaryContent = BinaryContent.create(fileName, (long) bytes.length,
+              contentType, bytes);
+          BinaryContent createdBinaryContent = binaryContentRepository.save(binaryContent);
+          return createdBinaryContent.getId();
+        }).collect(Collectors.toSet());
+
+    Message message = Message.create(messageCreateRequest.content(), messageCreateRequest.userId(),
+        messageCreateRequest.channelId(),
+        attachmentIds);
+
     return messageRepository.save(message);
   }
 
   @Override
-  public Message create(MessageCreateRequest request) throws ChannelException {
-    userRepository.findById(request.userId())
-        .orElseThrow(() -> ChannelException.notFound(request.userId()));
-
-    Channel channel = channelRepository.findById(request.channelId())
-        .orElseThrow(() -> ChannelException.notFound(request.channelId()));
-
-    Message message = Message.create(request.content(), request.userId(), request.channelId());
-    Message savedMessage = messageRepository.save(message);
-
-    Set<UUID> attachmentIds = request.attachmentIds().orElse(Set.of());
-
-    attachmentIds.forEach(attachmentId -> {
-      binaryContentRepository.findById(attachmentId).ifPresent(content -> {
-        content.attachToMessage(savedMessage.getId());
-        binaryContentRepository.save(content);
-      });
-    });
-
-    return savedMessage;
-  }
-
-
-  @Override
-  public Optional<MessageResponse> findById(UUID id) {
-    return messageRepository.findById(id)
-        .map(this::toResponse);
+  public Optional<Message> findById(UUID id) {
+    return messageRepository.findById(id);
   }
 
   @Override
-  public List<MessageResponse> searchMessages(UUID channelId, UUID userId, String content) {
+  public List<Message> searchMessages(UUID channelId, UUID userId, String content) {
     return messageRepository.findAll().stream()
         .filter(m -> m.getDeletedAt() == null)
         .filter(m ->
@@ -83,78 +72,35 @@ public class BasicMessageService implements MessageService {
                 (userId == null || m.getUserId().equals(userId)) &&
                 (content == null || m.getContent().contains(content)))
         .sorted(Comparator.comparing(Message::getCreatedAt))
-        .map(this::toResponse)
         .collect(Collectors.toList());
   }
 
   @Override
-  public List<MessageResponse> findAllByChannelId(UUID channelId) {
+  public List<Message> findAllByChannelId(UUID channelId) {
     return messageRepository.findAllByChannelId(channelId).stream()
         .filter(m -> m.getDeletedAt() == null)
         .sorted(Comparator.comparing(Message::getCreatedAt))
-        .map(this::toResponse)
         .collect(Collectors.toList());
   }
 
   @Override
-  public Optional<MessageResponse> updateContent(MessageUpdateRequest request) {
+  public Optional<Message> updateContent(MessageUpdateRequest request) {
     return messageRepository.findById(request.messageId())
         .map(message -> {
           message.updateContent(request.newContent());
           return messageRepository.save(message);
-        })
-        .map(this::toResponse);
+        });
   }
 
   @Override
-  public Optional<MessageResponse> delete(UUID id) {
+  public Optional<Message> delete(UUID id) {
     return messageRepository.findById(id)
         .filter(m -> m.getDeletedAt() == null)
         .map(m -> {
-          // 관련 첨부파일 모두 삭제
-          binaryContentRepository.deleteAllByMessageId(id);
+          binaryContentRepository.delete(id);
 
           m.delete();
           return messageRepository.save(m);
-        })
-        .map(this::toResponse);
-  }
-
-  @Override
-  public Optional<MessageResponse> attachFilesToMessage(UUID messageId, List<UUID> attachmentIds) {
-    Message message = messageRepository.findById(messageId)
-        .orElseThrow(() -> new RuntimeException("Message not found"));
-
-    attachmentIds.forEach(attachmentId -> {
-      binaryContentRepository.findById(attachmentId).ifPresent(content -> {
-        content.attachToMessage(messageId);
-        binaryContentRepository.save(content);
-      });
-    });
-
-    return Optional.of(toResponse(message));
-  }
-
-  private MessageResponse toResponse(Message message) {
-    // 첨부파일 목록 조회
-    List<BinaryContent> attachments = binaryContentRepository.findAllByMessageId(message.getId());
-
-    List<MessageResponse.AttachmentResponse> attachmentResponses = attachments.stream()
-        .map(content -> new MessageResponse.AttachmentResponse(
-            content.getId(),
-            content.getFileName(),
-            content.getMimeType(),
-            content.getBytes().length
-        ))
-        .collect(Collectors.toList());
-
-    return new MessageResponse(
-        message.getId(),
-        message.getContent(),
-        message.getUserId(),
-        message.getChannelId(),
-        message.getCreatedAt(),
-        attachmentResponses
-    );
+        });
   }
 }
