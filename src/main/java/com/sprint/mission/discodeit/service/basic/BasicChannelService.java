@@ -61,6 +61,13 @@ public class BasicChannelService implements ChannelService {
         joinChannel(channel);
         createReadStatus(channel);
 
+        // 초대 받은 유저의 채널 리스트에 해당 채널 반영
+        for (UUID userId : privateChannelDTO.users()) {
+            User user = findUser(userId);
+            user.getChannels().add(channel.getId());
+            userRepository.save(user);
+        }
+
         channelRepository.save(channel);
 
         return channel;
