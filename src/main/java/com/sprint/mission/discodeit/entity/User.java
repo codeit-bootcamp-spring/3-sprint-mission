@@ -9,21 +9,23 @@ import lombok.Getter;
 public class User implements Serializable {
 
     private final UUID userId;
-    private String userName;
+    private String username;
     private String email;
     private String password;
     private final Instant createdAt;
     private Instant updatedAt;
     private static final long serialVersionUID = 1L;
+    private UUID profileId;
 
     // 생성자
-    public User(String userName, String email, String password) {
+    public User(String username, String email, String password, UUID profileId) {
         this.userId = UUID.randomUUID();
-        this.userName = userName;
+        this.username = username;
         this.email = email;
         this.password = password;
         this.createdAt = Instant.now(); // 현재 시간으로 생성 시간 초기화
         this.updatedAt = this.createdAt;
+        this.profileId = profileId;
     }
 
     // 이메일 업데이트
@@ -35,9 +37,9 @@ public class User implements Serializable {
     }
 
     // 사용자명 업데이트
-    public void updateUserName(String userName) {
-        if (userName != null && !userName.isEmpty()) {
-            this.userName = userName;
+    public void updateUsername(String username) {
+        if (username != null && !username.isEmpty()) {
+            this.username = username;
         }
         this.updatedAt = Instant.now();
     }
@@ -50,9 +52,17 @@ public class User implements Serializable {
         this.updatedAt = Instant.now();
     }
 
+    //프로필 아이디 업데이트
+    public void updateProfileId(UUID profileId) {
+        if (profileId != null) {
+            this.profileId = profileId;
+        }
+        this.updatedAt = Instant.now();
+    }
+
     @Override
     public String toString() {
-        return "User [userId=" + userId + ", userName=" + userName + ", email=" + email + ", createdAt=" + createdAt
+        return "User [userId=" + userId + ", username=" + username + ", email=" + email + ", createdAt=" + createdAt
                 + ", updatedAt=" + updatedAt + ", password=" + password + "]";
     }
 }
