@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusRequestDTO;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDTO;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.NotFoundUserException;
 import com.sprint.mission.discodeit.exception.NotFoundUserStatusException;
@@ -25,11 +26,11 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatus create(UserStatusRequestDTO userStatusRequestDTO) {
-        if (userRepository.findById(userStatusRequestDTO.getUserId()).isEmpty()) {
+        if (userRepository.findById(userStatusRequestDTO.userId()).isEmpty()) {
             throw new NotFoundUserException();
         }
 
-        if (userStatusRepository.findByUserId(userStatusRequestDTO.getUserId()).isPresent()) {
+        if (userStatusRepository.findByUserId(userStatusRequestDTO.userId()).isPresent()) {
             throw new UserStatusAlreadyExistsException();
         }
 
@@ -55,22 +56,21 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public UserStatusResponseDTO update(UUID id, UserStatusRequestDTO userStatusRequestDTO) {
+    public UserStatusResponseDTO update(UUID id, UserStatusUpdateDTO userStatusUpdateDTO) {
         UserStatus userStatus = findUserStatus(id);
 
-        userStatus.updateLastLoginTime(userStatusRequestDTO.getLastLoginTime());
+        userStatus.updateLastLoginTime(userStatusUpdateDTO.lastLoginTime());
         userStatusRepository.save(userStatus);
 
         return UserStatusResponseDTO.toDTO(userStatus);
     }
 
     @Override
-    public UserStatusResponseDTO updateByUserId(UUID userId) {
+    public UserStatusResponseDTO updateByUserId(UUID userId, UserStatusUpdateDTO userStatusUpdateDTO) {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(NotFoundUserStatusException::new);
 
-        // 현재 시각으로 마지막 접속 시간 변경
-        userStatus.updateLastLoginTime(Instant.now());
+        userStatus.updateLastLoginTime(userStatusUpdateDTO.lastLoginTime());
         userStatusRepository.save(userStatus);
 
         return UserStatusResponseDTO.toDTO(userStatus);

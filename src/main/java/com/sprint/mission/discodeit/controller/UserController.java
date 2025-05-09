@@ -2,6 +2,9 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDTO;
 import com.sprint.mission.discodeit.dto.user.UserRequestDTO;
+import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDTO;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -10,14 +13,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Optional;
+import java.util.List;
+import java.util.UUID;
 
 /* API 구현 절차
  * 1. 엔드포인트(End-Point)
@@ -52,6 +53,84 @@ public class UserController {
         User createdUser = userService.create(userRequestDTO, profileRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+    }
+
+    @RequestMapping(path = "/find/{userId}", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<UserResponseDTO> findById(@PathVariable UUID userId) {
+        UserResponseDTO foundUser = userService.findById(userId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(foundUser);
+    }
+
+    @RequestMapping(path = "/findByName", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<UserResponseDTO> findByName(@RequestParam String name) {
+        UserResponseDTO foundUser = userService.findByName(name);
+
+        return ResponseEntity.status(HttpStatus.OK).body(foundUser);
+    }
+
+    @RequestMapping(path = "/findByEmail", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<UserResponseDTO> findByEmail(@RequestParam String email) {
+        UserResponseDTO foundUser = userService.findByEmail(email);
+
+        return ResponseEntity.status(HttpStatus.OK).body(foundUser);
+    }
+
+    @RequestMapping(path = "/findByNameContaining", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<List<UserResponseDTO>> findByNameContaining(@RequestParam String name) {
+        List<UserResponseDTO> foundUsers = userService.findByNameContaining(name);
+
+        return ResponseEntity.status(HttpStatus.OK).body(foundUsers);
+    }
+
+    @RequestMapping(path = "/findAll", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<List<UserResponseDTO>> findAll() {
+        List<UserResponseDTO> allUsers = userService.findAll();
+
+        return ResponseEntity.status(HttpStatus.OK).body(allUsers);
+    }
+
+    @RequestMapping(path = "/updateProfile",
+            method = RequestMethod.PUT,
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseBody
+    public ResponseEntity<UserResponseDTO> updateProfileImage(@RequestParam UUID id,
+                                                              @RequestPart(value = "profile", required = false) MultipartFile profile) {
+        BinaryContentDTO profileRequest = resolveProfileRequest(profile);
+
+        UserResponseDTO updatedUser = userService.updateProfileImage(id, profileRequest);
+
+        return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
+    }
+
+    @RequestMapping(path = "/updateUserInfo", method = RequestMethod.PUT)
+    @ResponseBody
+    public ResponseEntity<UserResponseDTO> updateUserInfo(@RequestParam UUID id,
+                                                          @RequestBody UserRequestDTO userRequestDTO) {
+        UserResponseDTO updatedUser = userService.updateUserInfo(id, userRequestDTO);
+
+        return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
+    }
+
+    @RequestMapping(path ="/delete/{userId}", method = RequestMethod.DELETE)
+    @ResponseBody
+    public ResponseEntity<String> deleteById(@PathVariable UUID userId) {
+        userService.deleteById(userId);
+
+        return ResponseEntity.status(HttpStatus.OK).body("[Success]: 사용자 삭제 성공!");
+    }
+
+    @RequestMapping(path = "/updateUserStatus/{userId}", method = RequestMethod.PUT)
+    @ResponseBody
+    public ResponseEntity<UserStatusResponseDTO> updateUserStatus(@PathVariable UUID userId, @RequestBody UserStatusUpdateDTO userStatusUpdateDTO) {
+        UserStatusResponseDTO userStatusResponseDTO = userStatusService.updateByUserId(userId, userStatusUpdateDTO);
+
+        return ResponseEntity.status(HttpStatus.OK).body(userStatusResponseDTO);
     }
 
     // MultipartFile 타입의 요청 값을 BinaryContentDTO 타입으로 변환하기 위한 메서드
