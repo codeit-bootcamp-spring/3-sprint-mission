@@ -35,7 +35,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public Channel createPublicChannel(PublicChannelDTO publicChannelDTO) {
         // 존재하지 않는 사용자를 채널 주인으로 설정하는 경우 예외 처리
-        if (userRepository.findById(publicChannelDTO.getChannelMaster()).isEmpty()) {
+        if (userRepository.findById(publicChannelDTO.channelMaster()).isEmpty()) {
             throw new NotFoundUserException();
         }
 
@@ -52,7 +52,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public Channel createPrivateChannel(PrivateChannelDTO privateChannelDTO) {
         // 존재하지 않는 사용자를 채널 주인으로 설정하는 경우 예외 처리
-        if (userRepository.findById(privateChannelDTO.getChannelMaster()).isEmpty()) {
+        if (userRepository.findById(privateChannelDTO.channelMaster()).isEmpty()) {
             throw new NotFoundUserException();
         }
 
@@ -140,14 +140,14 @@ public class BasicChannelService implements ChannelService {
         }
 
         // 존재하지 않는 사용자를 채널 주인으로 설정하는 경우 예외 처리
-        if (userRepository.findById(publicChannelDTO.getChannelMaster()).isEmpty()) {
+        if (userRepository.findById(publicChannelDTO.channelMaster()).isEmpty()) {
             throw new NotFoundUserException();
         }
 
         // 변경 사항 적용
-        channel.updateChannelName(publicChannelDTO.getChannelName());
-        channel.updateChannelMaster(publicChannelDTO.getChannelMaster());
-        channel.updateDescription(publicChannelDTO.getDescription());
+        channel.updateChannelName(publicChannelDTO.channelName());
+        channel.updateChannelMaster(publicChannelDTO.channelMaster());
+        channel.updateDescription(publicChannelDTO.description());
         joinChannel(channel);
 
         channelRepository.save(channel);
@@ -157,6 +157,8 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public void deleteById(UUID channelId) {
+        Channel channel = findChannel(channelId);
+
         // 채널에 속한 User의 channelList에서 해당 채널 삭제
         userRepository.findAll().forEach(user -> {
             if (user.getChannels().removeIf(id -> id.equals(channelId))) {
@@ -165,9 +167,7 @@ public class BasicChannelService implements ChannelService {
         });
 
         // 채널에 있는 모든 메시지 삭제
-        channelRepository.findById(channelId).ifPresent(channel -> {
-            channel.getMessages().forEach(messageRepository::deleteById);
-        });
+        channel.getMessages().forEach(messageRepository::deleteById);
 
         readStatusRepository.deleteByChannelId(channelId);
         channelRepository.deleteById(channelId);
@@ -214,12 +214,14 @@ public class BasicChannelService implements ChannelService {
     }
 
     private void joinChannel(Channel channel) {
-        userRepository.findById(channel.getChannelMaster()).ifPresent(user -> {
-            // 채널 주인은 채널 생성 시 채널에 입장
+        User user = findUser(channel.getChannelMaster());
+
+        // 채널 주인은 채널 생성 시 채널에 입장
+        if (!user.getChannels().contains(channel.getId())) {
             user.getChannels().add(channel.getId());
             channel.getUsers().add(user.getId());
             userRepository.save(user);
-        });
+        }
     }
 
     private void createReadStatus(Channel channel) {

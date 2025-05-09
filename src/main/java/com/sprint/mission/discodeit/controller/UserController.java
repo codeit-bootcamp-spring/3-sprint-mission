@@ -95,24 +95,24 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(allUsers);
     }
 
-    @RequestMapping(path = "/updateProfile",
+    @RequestMapping(path = "/updateProfile/{userId}",
             method = RequestMethod.PUT,
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseBody
-    public ResponseEntity<UserResponseDTO> updateProfileImage(@RequestParam UUID id,
+    public ResponseEntity<UserResponseDTO> updateProfileImage(@PathVariable UUID userId,
                                                               @RequestPart(value = "profile", required = false) MultipartFile profile) {
         BinaryContentDTO profileRequest = resolveProfileRequest(profile);
 
-        UserResponseDTO updatedUser = userService.updateProfileImage(id, profileRequest);
+        UserResponseDTO updatedUser = userService.updateProfileImage(userId, profileRequest);
 
         return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
     }
 
-    @RequestMapping(path = "/updateUserInfo", method = RequestMethod.PUT)
+    @RequestMapping(path = "/updateUserInfo/{userId}", method = RequestMethod.PUT)
     @ResponseBody
-    public ResponseEntity<UserResponseDTO> updateUserInfo(@RequestParam UUID id,
+    public ResponseEntity<UserResponseDTO> updateUserInfo(@PathVariable UUID userId,
                                                           @RequestBody UserRequestDTO userRequestDTO) {
-        UserResponseDTO updatedUser = userService.updateUserInfo(id, userRequestDTO);
+        UserResponseDTO updatedUser = userService.updateUserInfo(userId, userRequestDTO);
 
         return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
     }
