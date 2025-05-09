@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 public class BasicUserService implements UserService {
 
   private static final Logger log = LogManager.getLogger(BasicUserService.class);
-  //  private static final Logger log = LogManager.getLogger(UserServiceImpl.class);
+
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
@@ -103,8 +103,8 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public Optional<UserResponse> update(UserUpdateRequest request) {
-    return userRepository.findById(request.id())
+  public Optional<UserResponse> update(UUID userId, UserUpdateRequest request) {
+    return userRepository.findById(userId)
         .map(user -> {
           if (request.name() != null && !request.name().equals(user.getName())) {
             validateUserName(request.name());
@@ -129,7 +129,10 @@ public class BasicUserService implements UserService {
       Optional.ofNullable(user.getProfileId())
           .ifPresent(binaryContentRepository::delete);
 
-      userStatusRepository.delete(id);
+      userStatusRepository.findByUserId(id).ifPresent(status -> {
+        userStatusRepository.delete(status.getId());
+      });
+      
       return toUserResponse(user);
     });
   }
