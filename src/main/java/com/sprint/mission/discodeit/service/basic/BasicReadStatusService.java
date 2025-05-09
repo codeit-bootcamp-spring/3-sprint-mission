@@ -27,16 +27,16 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public ReadStatus create(ReadStatusRequestDTO readStatusRequestDTO) {
-        if (userRepository.findById(readStatusRequestDTO.getUserId()).isEmpty()) {
+        if (userRepository.findById(readStatusRequestDTO.userId()).isEmpty()) {
             throw new NotFoundUserException();
         }
 
-        if (channelRepository.findById(readStatusRequestDTO.getChannelId()).isEmpty()) {
+        if (channelRepository.findById(readStatusRequestDTO.channelId()).isEmpty()) {
             throw new NotFoundChannelException();
         }
 
-        UUID channelId = readStatusRequestDTO.getChannelId();
-        UUID userId = readStatusRequestDTO.getUserId();
+        UUID channelId = readStatusRequestDTO.channelId();
+        UUID userId = readStatusRequestDTO.userId();
 
         if (readStatusRepository.findByChannelIdAndUserId(channelId, userId).isPresent()) {
             throw new ReadStatusAlreadyExistsException();
@@ -74,7 +74,7 @@ public class BasicReadStatusService implements ReadStatusService {
     public ReadStatusResponseDTO update(UUID id, ReadStatusRequestDTO readStatusRequestDTO) {
         ReadStatus readStatus = findReadStatus(id);
 
-        readStatus.updateLastReadTime(readStatusRequestDTO.getLastReadTime());
+        readStatus.updateLastReadTime(readStatusRequestDTO.lastReadTime());
         readStatusRepository.save(readStatus);
 
         return ReadStatusResponseDTO.toDTO(readStatus);
