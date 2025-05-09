@@ -23,17 +23,14 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   public ReadStatus create(ReadStatusCreateRequest request) {
-    // 유저 존재 확인
     userRepository.findById(request.userId())
         .orElseThrow(
             () -> ReadStatusException.invalidUserOrChannel(request.userId(), request.channelId()));
 
-    // 채널 존재 확인
     channelRepository.findById(request.channelId())
         .orElseThrow(
             () -> ReadStatusException.invalidUserOrChannel(request.userId(), request.channelId()));
 
-    // 중복 체크
     readStatusRepository.findByUserIdAndChannelId(request.userId(), request.channelId())
         .ifPresent(existingStatus -> {
           throw ReadStatusException.duplicate(request.userId(), request.channelId());
@@ -58,18 +55,15 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   public ReadStatus update(UUID id) {
-    // ReadStatus 조회
     ReadStatus readStatus = readStatusRepository.findById(id)
         .orElseThrow(() -> ReadStatusException.notFound(id));
 
-    // lastReadAt 업데이트
     readStatus.updateLastReadAt();
     return readStatusRepository.save(readStatus);
   }
 
   @Override
   public void delete(UUID id) {
-    // 삭제 전에 존재하는지 확인
     if (readStatusRepository.findById(id).isEmpty()) {
       throw ReadStatusException.notFound(id);
     }

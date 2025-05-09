@@ -40,10 +40,6 @@ public class BasicMessageService implements MessageService {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> ChannelException.notFound(channelId));
 
-    if (channel.isNotParticipant(userId)) {
-      throw ChannelException.participantNotFound(userId, channelId);
-    }
-
     Message message = Message.create(content, userId, channelId);
     return messageRepository.save(message);
   }
@@ -55,10 +51,6 @@ public class BasicMessageService implements MessageService {
 
     Channel channel = channelRepository.findById(request.channelId())
         .orElseThrow(() -> ChannelException.notFound(request.channelId()));
-
-    if (channel.isNotParticipant(request.userId())) {
-      throw ChannelException.participantNotFound(request.userId(), request.channelId());
-    }
 
     Message message = Message.create(request.content(), request.userId(), request.channelId());
     Message savedMessage = messageRepository.save(message);

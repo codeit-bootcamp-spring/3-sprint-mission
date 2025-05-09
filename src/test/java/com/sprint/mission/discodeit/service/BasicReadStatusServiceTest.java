@@ -21,8 +21,6 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicReadStatusService;
 import java.util.Optional;
 import java.util.UUID;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -34,7 +32,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class BasicReadStatusServiceTest {
 
-  private static final Logger log = LogManager.getLogger(BasicReadStatusServiceTest.class);
   @Mock
   private ReadStatusRepository readStatusRepository;
 
@@ -47,16 +44,21 @@ public class BasicReadStatusServiceTest {
   @InjectMocks
   private BasicReadStatusService readStatusService;
 
+  private User user;
+  private Channel channel;
   private UUID userId;
   private UUID channelId;
-  private ReadStatusCreateRequest createRequest;
+  private ReadStatusCreateRequest request;
+  private ReadStatus readStatus;
 
   @BeforeEach
   public void setUp() {
-    // Fixture를 활용해 User와 Channel을 생성
-    userId = UUID.randomUUID();
-    channelId = UUID.randomUUID();
-    createRequest = new ReadStatusCreateRequest(userId, channelId);
+    user = UserFixture.createValidUser();
+    channel = ChannelFixture.createPublic();
+    userId = user.getId();
+    channelId = channel.getId();
+    request = new ReadStatusCreateRequest(userId, channelId);
+    readStatus = ReadStatusFixture.createFromRequest(request);
   }
 
   @Nested
@@ -64,21 +66,14 @@ public class BasicReadStatusServiceTest {
 
     @Test
     public void 읽기_상태가_정상적으로_생성돼야_한다() {
-      // given: Fixture를 사용해 mock 사용자와 채널을 생성
-      User mockUser = UserFixture.createValidUser();
-      Channel mockChannel = ChannelFixture.createValidChannel();
+      when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+      when(channelRepository.findById(channelId)).thenReturn(Optional.of(channel));
+      when(readStatusRepository.save(any(ReadStatus.class))).thenReturn(readStatus);
 
-      when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
-      when(channelRepository.findById(channelId)).thenReturn(Optional.of(mockChannel));
+      ReadStatus createdStatus = readStatusService.create(request);
 
-      // 추가: save() 메소드가 실제로 생성된 ReadStatus 객체를 반환하도록 mock 설정
-      ReadStatus mockReadStatus = ReadStatusFixture.createReadStatus(createRequest);
-      when(readStatusRepository.save(any(ReadStatus.class))).thenReturn(mockReadStatus);
+      System.out.println("createdStatus = " + createdStatus);
 
-      // when: create 메소드 호출
-      ReadStatus createdStatus = readStatusService.create(createRequest);
-
-      // then: 생성된 ReadStatus가 null이 아니어야 함
       assertNotNull(createdStatus);
       assertEquals(userId, createdStatus.getUserId());
       assertEquals(channelId, createdStatus.getChannelId());
@@ -90,14 +85,10 @@ public class BasicReadStatusServiceTest {
       // given: 사용자가 존재하지 않음
       when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-      // when: create 메소드 호출
       ReadStatusException exception = assertThrows(ReadStatusException.class, () -> {
-        readStatusService.create(createRequest);
+        readStatusService.create(request);
       });
 
-      System.out.println("exception = " + exception);
-
-      // then: 예외가 발생해야 함
       assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
     }
 
@@ -107,30 +98,26 @@ public class BasicReadStatusServiceTest {
       when(userRepository.findById(userId)).thenReturn(Optional.of(UserFixture.createValidUser()));
       when(channelRepository.findById(channelId)).thenReturn(Optional.empty());
 
-      // when: create 메소드 호출
       ReadStatusException exception = assertThrows(ReadStatusException.class, () -> {
-        readStatusService.create(createRequest);
+        readStatusService.create(request);
       });
 
-      // then: 예외가 발생해야 함
       assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
     }
 
     @Test
     public void 읽기_상태_생성_시_중복되는_경우_예외가_발생해야_한다() {
       // given: 중복된 ReadStatus가 존재
-      when(userRepository.findById(userId)).thenReturn(Optional.of(UserFixture.createValidUser()));
+      when(userRepository.findById(userId)).thenReturn(Optional.of(user));
       when(channelRepository.findById(channelId)).thenReturn(
-          Optional.of(ChannelFixture.createValidChannel()));
+          Optional.of(channel));
       when(readStatusRepository.findByUserIdAndChannelId(userId, channelId))
-          .thenReturn(Optional.of(ReadStatusFixture.createReadStatus(createRequest)));
+          .thenReturn(Optional.of(readStatus));
 
-      // when: create 메소드 호출
       ReadStatusException exception = assertThrows(ReadStatusException.class, () -> {
-        readStatusService.create(createRequest);
+        readStatusService.create(request);
       });
 
-      // then: 예외가 발생해야 함
       assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
     }
   }
@@ -141,15 +128,12 @@ public class BasicReadStatusServiceTest {
     @Test
     public void 존재하지_않는_읽기_상태를_조회_시도하면_예외가_발생해야_한다() {
       // given: ReadStatus 객체가 리포지토리에 존재하지 않음
-      ReadStatus readStatus = ReadStatusFixture.createValidReadStatus();
-      when(readStatusRepository.findById(readStatus.getId())).thenReturn(Optional.empty());
+      when(readStatusRepository.findById(userId)).thenReturn(Optional.empty());
 
-      // when: find 메소드 호출
       ReadStatusException exception = assertThrows(ReadStatusException.class, () -> {
-        readStatusService.find(readStatus.getId());
+        readStatusService.find(userId);
       });
 
-      // then: 예외가 발생해야 함
       assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
     }
   }
@@ -159,15 +143,11 @@ public class BasicReadStatusServiceTest {
 
     @Test
     public void 읽기_상태는_정상적으로_업데이트_돼야_한다() {
-      // given: 기존 ReadStatus 객체가 리포지토리에 존재
-      ReadStatus readStatus = ReadStatusFixture.createValidReadStatus();
       when(readStatusRepository.findById(readStatus.getId())).thenReturn(Optional.of(readStatus));
       when(readStatusRepository.save(any(ReadStatus.class))).thenReturn(readStatus);
 
-      // when: update 메소드 호출
       ReadStatus updatedStatus = readStatusService.update(readStatus.getId());
 
-      // then: lastReadAt이 업데이트 되었는지 확인
       assertNotNull(updatedStatus);
     }
   }
@@ -178,15 +158,12 @@ public class BasicReadStatusServiceTest {
     @Test
     public void 존재하지_않는_읽기_상태_삭제_시도하면_예외가_발생해야_한다() {
       // given: 삭제할 ReadStatus 객체가 없음
-      UUID id = UUID.randomUUID();
-      when(readStatusRepository.findById(id)).thenReturn(Optional.empty());
+      when(readStatusRepository.findById(userId)).thenReturn(Optional.empty());
 
-      // when: delete 메소드 호출
       ReadStatusException exception = assertThrows(ReadStatusException.class, () -> {
-        readStatusService.delete(id);
+        readStatusService.delete(userId);
       });
 
-      // then: 예외가 발생해야 함
       assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
     }
   }

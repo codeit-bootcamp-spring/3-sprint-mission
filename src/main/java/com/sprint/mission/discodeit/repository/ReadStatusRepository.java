@@ -37,6 +37,7 @@ public interface ReadStatusRepository {
    * @param userId UUID
    * @return List<ReadStatus>
    */
+  // TODO: 반환 타입에 따라 find, findAll 모든 Service, Repository 메서드명 수정
   List<ReadStatus> findByUserId(UUID userId);
 
   /**

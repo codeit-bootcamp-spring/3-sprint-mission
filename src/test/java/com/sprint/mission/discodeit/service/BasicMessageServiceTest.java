@@ -60,8 +60,7 @@ public class BasicMessageServiceTest {
 
       MessageCreateRequest request = new MessageCreateRequest(content, userId, channelId,
           Optional.empty());
-      Channel channel = ChannelFixture.createValidChannel();
-      channel.addParticipant(userId); // 유저를 명시적으로 추가
+      Channel channel = ChannelFixture.createPublic();
 
       when(userRepository.findById(userId)).thenReturn(Optional.of(UserFixture.createValidUser()));
       when(channelRepository.findById(channelId)).thenReturn(
@@ -104,8 +103,7 @@ public class BasicMessageServiceTest {
           Optional.of(Set.of(attachmentId1, attachmentId2))
       );
 
-      Channel channel = ChannelFixture.createValidChannel();
-      channel.addParticipant(userId);
+      Channel channel = ChannelFixture.createPublic();
 
       when(userRepository.findById(userId)).thenReturn(Optional.of(UserFixture.createValidUser()));
       when(channelRepository.findById(channelId)).thenReturn(Optional.of(channel));

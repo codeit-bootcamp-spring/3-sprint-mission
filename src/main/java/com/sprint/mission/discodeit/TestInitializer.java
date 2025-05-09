@@ -46,8 +46,8 @@ public class TestInitializer {
     addProfileImageToUser(userService, user1);
     addProfileImageToUser(userService, user2);
 
-    Channel publicChannel = createPublicChannel(channelService, user1.getId());
-    Channel privateChannel = createPrivateChannel(channelService, user1.getId(),
+    Channel publicChannel = createPublicChannel(channelService);
+    Channel privateChannel = createPrivateChannel(channelService,
         List.of(user1.getId(), user2.getId()));
 
     createMessage(messageService, publicChannel, user1);
@@ -81,17 +81,17 @@ public class TestInitializer {
     }
   }
 
-  private static Channel createPublicChannel(ChannelService channelService, UUID creatorId) {
+  private static Channel createPublicChannel(ChannelService channelService) {
     Channel channel = channelService.createPublic(
-        new PublicChannelCreateRequest(creatorId, "공지 채널", "공지사항을 위한 채널"));
+        new PublicChannelCreateRequest("공지 채널", "공지사항을 위한 채널"));
     log.info("Public 채널 생성 완료: {}", channel.getId());
     return channel;
   }
 
-  private static Channel createPrivateChannel(ChannelService channelService, UUID creatorId,
+  private static Channel createPrivateChannel(ChannelService channelService,
       List<UUID> participantIds) {
     Channel channel = channelService.createPrivate(
-        new PrivateChannelCreateRequest(creatorId, participantIds));
+        new PrivateChannelCreateRequest(participantIds));
     log.info("Private 채널 생성 완료: {}", channel.getId());
     return channel;
   }
@@ -129,9 +129,10 @@ public class TestInitializer {
     log.info("모든 사용자:");
     userService.findAll().forEach(user -> log.info(user.toString()));
 
-    log.info("모든 채널:");
-    channelService.findByCreatorIdOrName(null, null)
-        .forEach(channel -> log.info(channel.toString()));
+// TODO: 채널 조회 수정
+//    log.info("모든 채널:");
+//    channelService.findByCreatorIdOrName(null, null)
+//        .forEach(channel -> log.info(channel.toString()));
 
     log.info("모든 메시지:");
     messageService.searchMessages(null, null, null)

@@ -48,9 +48,9 @@ class FileStorageImplTest {
   }
 
   private Message createCustomTestMessage(String content) {
-    Channel channel = ChannelFixture.createValidChannel();
-    UUID userId = channel.getCreatorId();
-    return MessageFixture.createCustomMessage(content, userId, channel);
+    User user = UserFixture.createValidUser();
+    Channel channel = ChannelFixture.createPublic();
+    return MessageFixture.createCustomMessage(content, user.getId(), channel);
   }
 
   public static Stream<Arguments> provideMessages() {
@@ -65,7 +65,7 @@ class FileStorageImplTest {
   void 여러_객체_저장_후_저장_상태_확인(List<String> messageContents) {
     List<Message> objects = messageContents.stream()
         .map(content -> MessageFixture.createCustomMessage(content,
-            UserFixture.createValidUser().getId(), ChannelFixture.createValidChannel()))
+            UserFixture.createValidUser().getId(), ChannelFixture.createPublic()))
         .toList();
 
     objects.forEach(msg -> fileStorage.saveObject(msg.getId(), msg));
