@@ -75,6 +75,11 @@ public class FileReadStatusRepository implements ReadStatusRepository {
             return Optional.empty();
         }
     }
+    
+    @Override
+    public List<ReadStatus> findAllByUserId(UUID userId) {
+        return this.findAll().stream().filter((readStatus) -> readStatus.getUserId().equals(userId)).toList();
+    }
 
     @Override
     public List<ReadStatus> findAllByChannelId(UUID channelId) {
@@ -124,5 +129,10 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void deleteAllByChannelId(UUID channelId) {
+        this.findAllByChannelId(channelId).forEach((channel) -> this.deleteById(channel.getId()));
     }
 }

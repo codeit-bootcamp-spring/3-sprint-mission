@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.UserResponse;
+import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
@@ -57,14 +57,12 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse find(UUID userId) {
+    public UserDto find(UUID userId) {
         User user = this.userRepository
                 .findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
-        UserStatus userStatus = this.userStatusRepository.findByUserId(userId).orElseThrow(() -> new NoSuchElementException("userStatus with userId " + userId + " not found"));
-
-        return new UserResponse(user.getId(), user.getName(), user.getEmail(), user.getProfileId(), userStatus);
+        return this.toDto(user);
     }
 
 
@@ -74,14 +72,10 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<UserResponse> findAll() {
-        List<UserResponse> users = this.userRepository.findAll()
+    public List<UserDto> findAll() {
+        List<UserDto> users = this.userRepository.findAll()
                 .stream()
-                .map(user -> {
-                    UserStatus userStatus = this.userStatusRepository.findByUserId(user.getId()).orElseThrow(() -> new NoSuchElementException("userStatus with userId " + user.getId() + " not found"));
-
-                    return new UserResponse(user.getId(), user.getName(), user.getEmail(), user.getProfileId(), userStatus);
-                })
+                .map(this::toDto)
                 .toList();
 
         return users;
@@ -145,5 +139,13 @@ public class BasicUserService implements UserService {
                 .anyMatch((user) -> {
                     return user.getEmail().equals(email) || user.getName().equals(name);
                 });
+    }
+
+    //Q. 왜 프라이빗이지?
+    private UserDto toDto(User user) {
+        Boolean online = userStatusRepository.findByUserId(user.getId())
+                .map(UserStatus::isOnline)
+                .orElse(null);
+        return new UserDto(user.getId(), user.getName(), user.getEmail(), user.getProfileId(), online);
     }
 }

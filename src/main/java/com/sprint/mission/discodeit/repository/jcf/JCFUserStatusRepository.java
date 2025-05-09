@@ -50,4 +50,9 @@ public class JCFUserStatusRepository implements UserStatusRepository {
     public void deleteById(UUID userStatusId) {
         this.data.remove(userStatusId);
     }
+
+    @Override
+    public void deleteByUserId(UUID userId) {
+        this.findByUserId(userId).ifPresent(userStatus -> this.deleteById(userStatus.getId()));
+    }
 }
