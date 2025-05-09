@@ -86,7 +86,7 @@ class BasicUserServiceTest {
       UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123",
           profileImage);
       User savedUser = UserFixture.createCustomUser(request);
-      savedUser.updateProfileImageId(profileImage.getId()); // User 객체에 프로필 이미지 ID 설정
+      savedUser.updateProfileId(profileImage.getId()); // User 객체에 프로필 이미지 ID 설정
       UserStatus savedUserStatus = UserStatusFixture.createValidUserStatus(savedUser.getId());
 
       when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
@@ -103,14 +103,14 @@ class BasicUserServiceTest {
       assertNotNull(createdUserResponse);
       assertEquals(request.email(), createdUserResponse.email());
       assertEquals(request.name(), createdUserResponse.name());
-      assertEquals(profileImage.getId(), createdUserResponse.profileImageId()); // 응답 DTO 확인
+      assertEquals(profileImage.getId(), createdUserResponse.profileId());
       assertNotNull(createdUserResponse.id());
 
       verify(userRepository, times(1)).findByEmail(request.email());
       verify(userRepository, times(1)).findByName(request.name());
-      verify(userRepository, times(2)).save(userCaptor.capture()); // User 저장 시 캡처
+      verify(userRepository, times(2)).save(userCaptor.capture());
       assertEquals(profileImage.getId(),
-          userCaptor.getValue().getProfileImageId()); // 저장된 User의 profileImageId 확인
+          userCaptor.getValue().getProfileId());
       verify(userStatusRepository, times(1)).save(any(UserStatus.class));
     }
 
@@ -172,7 +172,7 @@ class BasicUserServiceTest {
 
       // then
       verify(userRepository, times(1)).delete(userId);
-      verify(binaryContentRepository, times(1)).delete(userToDelete.getProfileImageId());
+      verify(binaryContentRepository, times(1)).delete(userToDelete.getProfileId());
       verify(userStatusRepository, times(1)).delete(userId);
     }
 

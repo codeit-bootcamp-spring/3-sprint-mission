@@ -84,7 +84,16 @@ class BasicAuthServiceTest {
   }
 
   private UserResponse toUserResponse(User user) {
-    Optional<UserStatus> userStatus = userStatusRepository.findById(user.getId());
-    return UserResponse.from(user, userStatus);
+    Boolean isOnline = userStatusRepository.findByUserId(user.getId())
+        .map(UserStatus::isOnline).orElse(null);
+    return new UserResponse(
+        user.getId(),
+        user.getCreatedAt(),
+        user.getUpdatedAt(),
+        user.getName(),
+        user.getEmail(),
+        user.getProfileId(),
+        Boolean.TRUE.equals(isOnline)
+    );
   }
 }

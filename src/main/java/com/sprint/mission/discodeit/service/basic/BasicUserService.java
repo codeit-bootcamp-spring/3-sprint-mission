@@ -60,7 +60,7 @@ public class BasicUserService implements UserService {
         binaryContentRepository.save(request.profileImage());
         profileImageId = request.profileImage().getId();
 
-        savedUser.updateProfileImageId(profileImageId);
+        savedUser.updateProfileId(profileImageId);
         userRepository.save(savedUser);
       }
     } catch (Exception e) {
@@ -114,7 +114,7 @@ public class BasicUserService implements UserService {
             user.updatePassword(request.password());
           }
           if (request.profileImageId() != null) {
-            user.updateProfileImageId(request.profileImageId());
+            user.updateProfileId(request.profileImageId());
           }
           User savedUser = userRepository.save(user);
           return toUserResponse(savedUser);
@@ -126,7 +126,7 @@ public class BasicUserService implements UserService {
     return userRepository.findById(id).map(user -> {
       userRepository.delete(id);
 
-      Optional.ofNullable(user.getProfileImageId())
+      Optional.ofNullable(user.getProfileId())
           .ifPresent(binaryContentRepository::delete);
 
       userStatusRepository.delete(id);
@@ -135,7 +135,16 @@ public class BasicUserService implements UserService {
   }
 
   private UserResponse toUserResponse(User user) {
-    Optional<UserStatus> userStatus = userStatusRepository.findByUserId(user.getId());
-    return UserResponse.from(user, userStatus);
+    Boolean isOnline = userStatusRepository.findByUserId(user.getId())
+        .map(UserStatus::isOnline).orElse(null);
+    return new UserResponse(
+        user.getId(),
+        user.getCreatedAt(),
+        user.getUpdatedAt(),
+        user.getName(),
+        user.getEmail(),
+        user.getProfileId(),
+        Boolean.TRUE.equals(isOnline)
+    );
   }
 }
