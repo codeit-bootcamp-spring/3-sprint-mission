@@ -13,12 +13,14 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
+@Service
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;

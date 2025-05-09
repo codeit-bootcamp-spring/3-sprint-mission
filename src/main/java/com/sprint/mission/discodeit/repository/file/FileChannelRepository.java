@@ -2,21 +2,19 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.dto.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
-@Repository("fileChannelRepository")
-@ConditionalOnProperty(
-        prefix = "discodeit.repository",
-        name = "type",
-        havingValue = "file"
-)
+@Repository
+@Profile("file")
 public class FileChannelRepository implements ChannelRepository {
     private static final String DIR = "data/channels/";
 

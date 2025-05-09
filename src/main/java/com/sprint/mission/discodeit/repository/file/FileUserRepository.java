@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.dto.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
@@ -13,12 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Repository("fileUserRepository")
-@ConditionalOnProperty(
-        prefix = "discodeit.repository",
-        name = "type",
-        havingValue = "file"
-)
+@Repository
+@Profile("file")
 public class FileUserRepository implements UserRepository {
     private static final String DIR = "data/users/";
 

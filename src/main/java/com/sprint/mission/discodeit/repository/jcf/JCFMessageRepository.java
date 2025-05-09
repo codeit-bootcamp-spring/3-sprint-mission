@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.dto.entity.Message;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -10,12 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@Repository("jcfMessageRepository")
-@ConditionalOnProperty(
-        prefix = "discodeit.repository",
-        name = "type",
-        havingValue = "jcf"
-)
+@Repository
+@Profile("jcf")
 public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID, Message> messages = new HashMap<>();
 

@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.dto.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -10,12 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@Repository("jcfBinaryContentRepository")
-@ConditionalOnProperty(
-        prefix = "discodeit.repository",
-        name = "type",
-        havingValue = "jcf"
-)
+@Repository
+@Profile("jcf")
 public class JCFBinaryContentRepository implements BinaryContentRepository {
     private static final Map<UUID, BinaryContent> binaryContents = new HashMap<>();
 

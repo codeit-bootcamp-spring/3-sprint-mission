@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.dto.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -10,12 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@Repository("jcfReadStatusRepository")
-@ConditionalOnProperty(
-        prefix = "discodeit.repository",
-        name = "type",
-        havingValue = "jcf"
-)
+@Repository
+@Profile("jcf")
 public class JCFReadStatusRepository implements ReadStatusRepository {
     private static final Map<UUID, ReadStatus> readStatuses = new HashMap<>();
 

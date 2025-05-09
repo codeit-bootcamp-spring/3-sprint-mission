@@ -8,10 +8,12 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
+@Service
 @RequiredArgsConstructor
 public class BasicReadStatusService implements ReadStatusService {
     private final ReadStatusRepository readStatusRepository;

@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,7 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class DiscodeitApplication implements CommandLineRunner {
     private final TestScenario testScenario;
 
-    public DiscodeitApplication(@Qualifier("testScenario") TestScenario testScenario) {
+    public DiscodeitApplication(TestScenario testScenario) {
         this.testScenario = testScenario;
     }
 

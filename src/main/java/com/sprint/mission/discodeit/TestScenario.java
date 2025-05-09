@@ -5,10 +5,12 @@ import com.sprint.mission.discodeit.dto.entity.Channel;
 import com.sprint.mission.discodeit.dto.entity.Message;
 import com.sprint.mission.discodeit.dto.entity.User;
 import com.sprint.mission.discodeit.service.*;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.IntStream;
 
+@Component
 public class TestScenario {
     private final UserService userService;
     private final UserStatusService userStatusService;
