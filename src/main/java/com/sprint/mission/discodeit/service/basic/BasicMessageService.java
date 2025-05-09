@@ -19,6 +19,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,8 +34,8 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public Message create(MessageRequestDTO messageRequestDTO, List<BinaryContentDTO> binaryContentDTOS) {
-        User user = findUser(messageRequestDTO.getSenderId());
-        Channel channel = findChannel(messageRequestDTO.getChannelId());
+        User user = findUser(messageRequestDTO.senderId());
+        Channel channel = findChannel(messageRequestDTO.channelId());
 
         // Repository 저장용 데이터
         List<BinaryContent> binaryContents = convertBinaryContentDTOS(binaryContentDTOS);
@@ -98,7 +99,6 @@ public class BasicMessageService implements MessageService {
     public List<MessageResponseDTO> findAllByUserId(UUID userId) {
         User user = findUser(userId);
 
-        // 이 부분 질문하기
         List<MessageResponseDTO> userMessages = user.getMessages().stream()
                 .map(messageId -> {
                     Message message = findMessage(messageId);
@@ -110,7 +110,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<MessageResponseDTO> findMessageByContainingWord(String word) {
+    public List<MessageResponseDTO> findAllByContainingWord(String word) {
         return messageRepository.findMessageByContainingWord(word).stream()
                 .map(MessageResponseDTO::toDTO)
                 .toList();

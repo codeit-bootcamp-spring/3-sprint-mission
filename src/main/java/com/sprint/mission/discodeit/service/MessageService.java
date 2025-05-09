@@ -12,7 +12,7 @@ public interface MessageService {
     List<MessageResponseDTO> findAllByChannelId(UUID channelId);
     List<MessageResponseDTO> findAll();
     List<MessageResponseDTO> findAllByUserId(UUID userId);
-    List<MessageResponseDTO> findMessageByContainingWord(String word);
+    List<MessageResponseDTO> findAllByContainingWord(String word);
     MessageResponseDTO updateBinaryContent(UUID messageId, List<BinaryContentDTO> binaryContentDTOS);
     MessageResponseDTO updateContent(UUID messageId, String content);
     void deleteById(UUID messageId);
