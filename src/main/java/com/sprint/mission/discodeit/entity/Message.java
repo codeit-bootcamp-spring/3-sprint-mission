@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.entity;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
@@ -13,39 +12,36 @@ public class Message implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 3163684452300404179L;
-  private final UUID id;
-  private final Instant createdAt;
+
+  private UUID id;
+  private Instant createdAt;
   private Instant updatedAt;
 
-  private final UUID channelId;
-  private final UUID authorId;
+  private UUID channelId;
+  private UUID authorId;
   private String content;
 
-  private final List<UUID> attachmentIds;
+  private List<UUID> attachmentIds;
 
-  public Message(UUID authorId, UUID channelId, String content) {
+
+  public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
     this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
-    this.updatedAt = this.createdAt;
-    this.authorId = authorId;
+    //
+    this.content = content;
     this.channelId = channelId;
-    this.content = content;
-    this.attachmentIds = new ArrayList<>();
+    this.authorId = authorId;
+    this.attachmentIds = attachmentIds;
   }
 
-  public void update(String content) {
-    this.content = content;
-    this.updatedAt = Instant.now();
-  }
-
-
-  public void addAttachment(UUID binaryContentId) {
-    this.attachmentIds.add(binaryContentId);
-    this.updatedAt = Instant.now();
-  }
-
-  public void removeAttachment(UUID binaryContentId) {
-    this.attachmentIds.remove(binaryContentId);
-    this.updatedAt = Instant.now();
+  public void update(String newContent) {
+    boolean anyValueUpdated = false;
+    if (newContent != null && !newContent.equals(this.content)) {
+      this.content = newContent;
+      anyValueUpdated = true;
+    }
+    if (anyValueUpdated) {
+      this.updatedAt = Instant.now();
+    }
   }
 }
