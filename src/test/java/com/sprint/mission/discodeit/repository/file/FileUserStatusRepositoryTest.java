@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.fixture.UserStatusFixture;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,11 +20,9 @@ class FileUserStatusRepositoryTest {
 
   private UserStatusRepository userStatusRepository;
 
-  // 각 테스트가 실행될 때마다 새로 생성되도록 초기화
   @BeforeEach
   void setUp() {
-    // FileStorageImpl 객체를 통해 저장소 초기화
-    userStatusRepository = FileUserStatusRepository.create(new FileStorageImpl(tempDir.toString()));
+    userStatusRepository = new FileUserStatusRepository(tempDir.toString());
   }
 
   @Nested

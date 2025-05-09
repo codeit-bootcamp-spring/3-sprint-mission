@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,8 +22,7 @@ class FileBinaryContentRepositoryTest {
 
   @BeforeEach
   void setUp() {
-    binaryContentRepository = FileBinaryContentRepository.create(
-        new FileStorageImpl(tempDir.toString()));
+    binaryContentRepository = new FileBinaryContentRepository(tempDir.toString());
   }
 
   @Nested

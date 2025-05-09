@@ -5,4 +5,11 @@ spring:
 discodeit:
   repository:
     type: file   # jcf | file
-    file-directory: .discodeit
+    file-directory:
+      folder: .discodeit
+      user: "/user"
+      user-status: "/user-status"
+      channel: "/channel"
+      message: "/message"
+      binary-content: "/binary-content"
+      read-status: "/read-status"

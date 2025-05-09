@@ -3,21 +3,26 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.repository.storage.FileStorage;
+import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Repository;
 
+@Primary
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file", matchIfMissing = true)
 public class FileUserStatusRepository implements UserStatusRepository {
 
   private final FileStorage fileStorage;
 
-  private FileUserStatusRepository(FileStorage fileStorage) {
-    this.fileStorage = fileStorage;
-  }
-
-  public static FileUserStatusRepository create(FileStorage fileStorage) {
-    return new FileUserStatusRepository(fileStorage);
+  public FileUserStatusRepository(
+      @Value("${discodeit.repository.file-directory.folder:data}${discodeit.repository.file-directory.user-status:/user-status}") String fileDirectory) {
+    this.fileStorage = new FileStorageImpl(fileDirectory);
   }
 
   @Override

@@ -3,20 +3,25 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.storage.FileStorage;
+import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Repository;
 
+@Primary
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file", matchIfMissing = true)
 public class FileMessageRepository implements MessageRepository {
 
   private final FileStorage fileStorage;
 
-  private FileMessageRepository(FileStorage fileStorage) {
-    this.fileStorage = fileStorage;
-  }
-
-  public static FileMessageRepository create(FileStorage fileStorage) {
-    return new FileMessageRepository(fileStorage);
+  public FileMessageRepository(
+      @Value("${discodeit.repository.file-directory.folder:data}${discodeit.repository.file-directory.message:/message}") String fileDirectory) {
+    this.fileStorage = new FileStorageImpl(fileDirectory);
   }
 
   @Override
