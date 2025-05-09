@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.UserStatusException;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Duration;
@@ -26,6 +28,9 @@ public class UserStatus implements Serializable {
   private Instant lastActiveAt;
 
   private UserStatus(UUID userId) {
+    if (userId == null) {
+      throw new UserStatusException(ErrorCode.INVALID_INPUT, "userId는 필수입니다.");
+    }
     this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
     this.userId = userId;
@@ -48,11 +53,18 @@ public class UserStatus implements Serializable {
   }
 
   public void updateLastActiveAt(Instant instant) {
+    if (instant == null) {
+      throw new UserStatusException(ErrorCode.INVALID_INPUT, "lastActiveAt는 필수입니다.");
+    }
     this.lastActiveAt = instant;
     this.updatedAt = Instant.now();
   }
 
   public boolean isOnline() {
+    if (lastActiveAt == null) {
+      throw new UserStatusException(ErrorCode.INVALID_INPUT,
+          "lastActiveAt 값이 null이므로 isOnline을 판단할 수 없습니다.");
+    }
     return lastActiveAt.isAfter(Instant.now().minus(ACTIVE_DURATION));
   }
 
@@ -61,15 +73,14 @@ public class UserStatus implements Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof UserStatus userStatus)) {
       return false;
     }
-    UserStatus UserStatus = (UserStatus) o;
-    return Objects.equals(getId(), UserStatus.getId());
+    return Objects.equals(id, userStatus.id);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getId());
+    return Objects.hash(id);
   }
 }
