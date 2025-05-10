@@ -17,9 +17,9 @@ import java.util.UUID;
  * 2025. 4. 27.        doungukkim       최초 생성
  */
 
-public record ChannelUpdateRequest
-        (UUID channelId,
-         String name
+public record ChannelUpdateRequest(
+        String channelId,
+        String name
         ) {
         public ChannelUpdateRequest {
                 Objects.requireNonNull(channelId, "no channelId in request");

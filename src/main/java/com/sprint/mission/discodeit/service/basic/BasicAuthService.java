@@ -9,6 +9,8 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -37,7 +39,7 @@ public class BasicAuthService implements AuthService {
     private final UserStatusRepository userStatusRepository;
 
 
-    public LoginResponse login(LoginRequest request) {
+    public ResponseEntity<?> login(LoginRequest request) {
         String username = request.username();
         String password = request.password();
 
@@ -45,7 +47,7 @@ public class BasicAuthService implements AuthService {
         for (User user : users) {
             if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
                 UserStatus userStatus = userStatusRepository.findUserStatusByUserId(user.getId());
-                return new LoginResponse(
+                LoginResponse loginResponse = new LoginResponse(
                         user.getId(),
                         user.getCreatedAt(),
                         user.getUpdatedAt(),
@@ -54,6 +56,9 @@ public class BasicAuthService implements AuthService {
                         user.getProfileId(),
                         userStatusRepository.isOnline(userStatus.getId())
                 );
+                return ResponseEntity
+                        .status(HttpStatus.OK)
+                        .body(loginResponse);
             }
         }
         throw new RuntimeException("로그인 시도. 일치하는 유저 없습니다.");

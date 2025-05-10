@@ -31,9 +31,9 @@ public interface UserService {
     UserCreateResponse create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profile);
 //    UserCreateResponse create(UserCreateRequest userCreateRequest);
 
-    UserFindResponse findUserById(UUID userId);
+    ResponseEntity<?> findUserById(UUID userId);
 
-    List<UserFindResponse> findAllUsers();
+    ResponseEntity<?> findAllUsers();
 
     ProfileUploadResponse updateImage(ProfileUploadRequest request);
     // not required

@@ -1,10 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.Dto.user.UserCreateResponse;
-import com.sprint.mission.discodeit.Dto.user.UserDeleteRequest;
-import com.sprint.mission.discodeit.Dto.user.UserUpdateNameRequest;
+import com.sprint.mission.discodeit.Dto.user.*;
 import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadRequest;
 import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadResponse;
 import com.sprint.mission.discodeit.service.UserService;
@@ -17,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -55,7 +53,6 @@ public class UserController {
     @ResponseBody
     @RequestMapping(
             path = "/create"
-//            , method = RequestMethod.POST
             , consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     public ResponseEntity<?> create(
@@ -75,15 +72,27 @@ public class UserController {
     @RequestMapping(
             path = "/changeName",
             method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE
-    )
+            consumes = MediaType.APPLICATION_JSON_VALUE)
     private ResponseEntity<?> changeName(@RequestBody UserUpdateNameRequest request) {
         UUID uuid = UUID.fromString(request.userId());
         return userService.updateUser(uuid, request.name());
     }
 
+    @RequestMapping(path = "/findById", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> findUserById(@RequestBody UesrFindRequest userFindRequest) {
+        UUID uuid = Objects.requireNonNull(UUID.fromString(userFindRequest.userId()));
+
+        return userService.findUserById(uuid);
+    }
+
+    @RequestMapping(path = "/findAll", method = RequestMethod.GET)
+//    @GetMapping("/findAll")
+    public ResponseEntity<?> findAll(){
+        return userService.findAllUsers();
+    }
+
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
-        if(profileFile.isEmpty()) {
+        if (profileFile.isEmpty()) {
             return Optional.empty();
         } else {
             try {
@@ -99,13 +108,6 @@ public class UserController {
         }
     }
 
-    //    @RequestBody   // 이미지 업데이트
-    @RequestMapping(path = "/update", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ProfileUploadResponse> uppdate(
-            @RequestBody ProfileUploadRequest profileUploadRequest) {
-
-        return null;
-    }
 
     @RequestMapping(path = "/delete", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> delete(@RequestBody UserDeleteRequest request) {

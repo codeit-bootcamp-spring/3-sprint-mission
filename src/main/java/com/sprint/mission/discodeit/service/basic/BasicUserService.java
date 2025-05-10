@@ -92,7 +92,7 @@ public class BasicUserService  implements UserService {
 
 
     @Override
-    public UserFindResponse findUserById(UUID userId) {
+    public ResponseEntity<?> findUserById(UUID userId) {
         Objects.requireNonNull(userId, "User 아이디 입력 없음: BasicUserService.findUserById");
         User user = userRepository.findUserById(userId); // throw
 
@@ -100,7 +100,7 @@ public class BasicUserService  implements UserService {
 
         boolean online = userStatusRepository.isOnline(userStatus.getId()); // throw
 
-        return new UserFindResponse(
+        UserFindResponse userFindResponse = new UserFindResponse(
                 user.getId(),
                 user.getCreatedAt(),
                 user.getUpdatedAt(),
@@ -108,11 +108,12 @@ public class BasicUserService  implements UserService {
                 user.getEmail(),
                 user.getProfileId(),
                 online);
+        return ResponseEntity.status(HttpStatus.OK).body(userFindResponse);
     }
 
 
     @Override
-    public List<UserFindResponse> findAllUsers() {
+    public ResponseEntity<?> findAllUsers() {
         List<User> users = userRepository.findAllUsers(); // emptyList
         List<UserFindResponse> userFindResponses = new ArrayList<>();
 
@@ -132,7 +133,7 @@ public class BasicUserService  implements UserService {
                     user.getProfileId(),
                     online));
         }
-        return userFindResponses;
+        return ResponseEntity.status(HttpStatus.OK).body(userFindResponses);
     }
 
 
