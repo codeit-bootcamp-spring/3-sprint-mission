@@ -1,84 +1,58 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class Message implements Serializable {
-    private static final long serialVersionUID = -953021662940755622L;
-    private static int counter = 1;
+    private static final long serialVersionUID = 85772952824868174L;
 
-    private int number;
     private UUID id;
-    private long createdAt;
-    private long updateAt;
-    private String message;
+    private Instant createdAt;
+    private Instant updatedAt;
 
-    public Message(String message) {
-        this.number = counter++;
+    private String content;
+
+    private UUID channelId;
+    private UUID authorId;
+    private List<UUID> attachmentIds;
+
+    public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updateAt = System.currentTimeMillis();
-        this.message = message;
-    }
+        this.createdAt = Instant.now();
 
-    public void updateMessage(String message) {
-        this.number = counter++;
-        this.message = message;
-        this.updateAt = System.currentTimeMillis();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public long getUpdateAt() {
-        return updateAt;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public int getNumber() {
-        return number;
-    }
-
-    public static void setCounter(int counter) {
-        Message.counter = counter;
-    }
-
-    public void setNumber(int number) {
-        this.number = number;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public void setCreatedAt(long createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void setUpdateAt(long updateAt) {
-        this.updateAt = updateAt;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
+        this.content = content;
+        this.channelId = channelId;
+        this.authorId = authorId;
+        this.attachmentIds = attachmentIds;
     }
 
     @Override
     public String toString() {
         return "Message{" +
-                "number=" + number +
-                ", id=" + id +
+                "id=" + id +
                 ", createdAt=" + createdAt +
-                ", updateAt=" + updateAt +
-                ", message='" + message + '\'' +
+                ", updatedAt=" + updatedAt +
+                ", content='" + content + '\'' +
+                ", channelId=" + channelId +
+                ", authorId=" + authorId +
                 '}';
+    }
+
+    public void update(String newContent) {
+        boolean anyValueUpdated = false;
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 }

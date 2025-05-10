@@ -2,85 +2,92 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.DefaultChannelFactory;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileChannelRepository implements ChannelRepository {
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
 
-    private final String FILEPATH = "channels.ser";
-    private Map<Integer, Channel> channelMap;
-
-    public FileChannelRepository() {
-        channelMap = loadChannels();
-        if (channelMap == null || channelMap.isEmpty()) {
-            channelMap = new HashMap<>();
-            for (Channel ch : DefaultChannelFactory.getChannel()) {
-                channelMap.put(ch.getChannelNumber(), ch);
-            }
-            saveChannels();
-        } else {
-            int max = channelMap.keySet().stream().mapToInt(Integer::intValue).max().orElse(0);
-            Channel.setCounter(max + 1);
-        }
-    }
-
-    private Map<Integer, Channel> loadChannels() {
-        File file = new File(FILEPATH);
-        if (!file.exists()) {
-            return null;
-        }
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<Integer, Channel>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private void saveChannels() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILEPATH))) {
-            oos.writeObject(channelMap);
+    public FileChannelRepository(@Value("${discodeit.repository.file-directory}") String directory) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), directory, Channel.class.getSimpleName());
+        try {
+            Files.createDirectories(DIRECTORY);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Channel 디렉토리 생성 오류", e);
+        }
+    }
+
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
+    }
+
+    @Override
+    public Channel save(Channel channel) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(
+                new FileOutputStream(resolvePath(channel.getId()).toFile()))) {
+            oos.writeObject(channel);
+        } catch (IOException e) {
+            throw new RuntimeException("Channel 저장 오류", e);
+        }
+        return channel;
+    }
+
+    @Override
+    public Optional<Channel> findById(UUID id) {
+        Path path = resolvePath(id);
+        if (Files.exists(path)) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+                return Optional.of((Channel) ois.readObject());
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException("Channel 읽기 오류", e);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public List<Channel> findAll() {
+        try {
+            return Files.list(DIRECTORY)
+                    .filter(p -> p.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+                            return (Channel) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException("Channel 목록 읽기 오류", e);
+                        }
+                    }).toList();
+        } catch (IOException e) {
+            throw new RuntimeException("Channel 디렉토리 탐색 오류", e);
         }
     }
 
     @Override
-    public void saveChannel(Channel channel) {
-        channelMap.put(channel.getChannelNumber(), channel);
-        saveChannels();
+    public boolean existsById(UUID id) {
+        return Files.exists(resolvePath(id));
     }
 
     @Override
-    public Channel updateChannel(Channel channel) {
-        if (channelMap.containsKey(channel.getChannelNumber())) {
-            channelMap.put(channel.getChannelNumber(), channel);
-            saveChannels();
-            return channel;
+    public void deleteById(UUID id) {
+        try {
+            Files.deleteIfExists(resolvePath(id));
+        } catch (IOException e) {
+            throw new RuntimeException("Channel 삭제 오류", e);
         }
-        return null;
-    }
-
-    @Override
-    public void deleteChannel(int channelNumber) {
-        channelMap.remove(channelNumber);
-        saveChannels();
-    }
-
-    @Override
-    public Channel findChannel(int channelNumber) {
-        return channelMap.get(channelNumber);
-    }
-
-    @Override
-    public Map<Integer, Channel> findAllChannel() {
-        return channelMap;
     }
 }

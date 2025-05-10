@@ -2,16 +2,21 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Message;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface MessageRepository {
+    Message save(Message message);
 
-    void saveMessage(Message message);
+    Optional<Message> findById(UUID id);
 
-    void updateMessage(Message message);
+    List<Message> findAll();
 
-    void deleteMessage(int messageNumber);
+    List<Message> findAllByChannelId(UUID channelId);
 
-    Message findMessage(int messageNumber);
+    void deleteAllByChannelId(UUID channelId);
 
-    List<Message> findAllMessage();
+    boolean existsById(UUID id);
+
+    void deleteById(UUID id);
 }

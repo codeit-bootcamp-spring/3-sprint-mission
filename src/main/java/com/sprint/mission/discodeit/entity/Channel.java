@@ -1,83 +1,53 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
+import lombok.Getter;
 
+@Getter
 public class Channel implements Serializable {
-    private static final long serialVersionUID = -8345660952343662023L;
-    private static int counter = 1;
-
-    private int number;
-    private String channelName;
+    private static final long serialVersionUID = -7977352704315297579L;
     private UUID id;
-    private long createdAt;
-    private long updateAt;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private ChannelType type;
+    private String name;
+    private String description;
 
-    public Channel(String channelName) {
-        this.number = counter++;
-        this.channelName = channelName;
+    public Channel(ChannelType type, String name, String description) {
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updateAt = System.currentTimeMillis();
-    }
-
-    public void updateChannel(String channelName) {
-        this.channelName = channelName;
-        this.updateAt = System.currentTimeMillis();
-    }
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public int getChannelNumber() {
-        return number;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdateAt() {
-        return updateAt;
-    }
-
-    public static void setCounter(int newCounter) {
-        counter = newCounter;
-    }
-
-    public void setNumber(int number) {
-        this.number = number;
-    }
-
-    public void setChannelName(String channelName) {
-        this.channelName = channelName;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public void setCreatedAt(long createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void setUpdateAt(long updateAt) {
-        this.updateAt = updateAt;
+        this.createdAt = Instant.now();
+        this.type = type;
+        this.name = name;
+        this.description = description;
     }
 
     @Override
     public String toString() {
         return "Channel{" +
-                "number=" + number +
-                ", channelName='" + channelName + '\'' +
-                ", id=" + id +
+                "id=" + id +
                 ", createdAt=" + createdAt +
-                ", updateAt=" + updateAt +
+                ", updatedAt=" + updatedAt +
+                ", type=" + type +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
                 '}';
+    }
+
+    public void update(String newName, String newDescription) {
+        boolean anyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            anyValueUpdated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 }

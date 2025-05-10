@@ -1,97 +1,140 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.User.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.User.UserFindRequest;
+import com.sprint.mission.discodeit.dto.User.UserResponse;
+import com.sprint.mission.discodeit.dto.User.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import java.util.Scanner;
+import java.time.Instant;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
+@RequiredArgsConstructor
 public class BasicUserService implements UserService {
-    private final UserRepository userRepo;
-    private static Scanner sc = new Scanner(System.in);
-
-    public BasicUserService(UserRepository userRepo) {
-        this.userRepo = userRepo;
-    }
+    private final UserRepository userRepository;
+    private final UserStatusRepository userStatusRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public User registerUser() {
-        System.out.println("안녕하세요. DisCodeit에 오신 걸 환영합니다.");
-        System.out.println("사용자의 이름을 입력해 주세요.");
+    public User create(UserCreateRequest request) {
+        validateUniqueUser(request);
 
-        while (true) {
-            String name = sc.nextLine();
-            User newUser;
-            boolean isDuplicate = userRepo.findAllUser().stream()
-                    .anyMatch(u -> u.getUsername().equals(name.trim()));
+        User user = new User(request.username(), request.email(), request.password(), request.content());
 
-            if (isDuplicate) {
-                System.out.println("이미 존재하는 이름입니다. 다시 입력해주세요.");
-            } else {
-                newUser = new User(name.trim());
-                userRepo.saveUser(newUser);
-                System.out.println("새로운 프로필이 생성되었습니다.");
-                return newUser;
-            }
+        if (request.content()) { //주강사님이 동적정적 바인딩? 불러오는거 안배웠다고 null로 표기하라고 하셨습니다.
+            BinaryContent profile = new BinaryContent(
+                    null,
+                    null,
+                    null
+
+            );
+            binaryContentRepository.save(profile);
+            user.setProfileId(profile.getId());
         }
 
+        User savedUser = userRepository.save(user);
+
+        UserStatus status = new UserStatus(
+                Instant.now(),
+                savedUser.getId()
+        );
+        userStatusRepository.save(status);
+
+        return savedUser;
     }
 
-
-    @Override
-    public void createNewUserNames(String existingName, String newName) {
-        String trimmedNewName = newName.trim();
-
-        boolean isDuplicate = userRepo.findAllUser().stream()
-                .anyMatch(u -> u.getUsername().equals(trimmedNewName));
-
-        if (isDuplicate) {
-            System.out.println("이미 존재하는 이름입니다.");
-        } else {
-            User newUser = new User(trimmedNewName);
-            userRepo.saveUser(newUser);
-            System.out.println("새로운 프로필이 생성되었습니다.");
+    private void validateUniqueUser(UserCreateRequest request) {
+        if (userRepository.existsByUsername(request.username())) {
+            throw new IllegalArgumentException("이미 존재하는 이름입니다.");
+        }
+        if (userRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
     }
 
     @Override
-    public void outputAllUsersInfo() {
-        for (User u : userRepo.findAllUser()) {
-            System.out.println(u);
+    public UserResponse find(UserFindRequest request) {
+        User user = userRepository.findById(request.userId())
+                .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저는 없습니다."));
+
+        boolean isOnline = userStatusRepository.findByUserId(user.getId())
+                .map(status -> status.getUpdatedAt().isAfter(Instant.now().minusSeconds(300)))
+                .orElse(false);
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .isOnline(isOnline)
+                .hasProfileImage(user.isHasProfileImage())
+                .build();
+    }
+
+    @Override
+    public List<UserResponse> findAll() {
+        return userRepository.findAll().stream()
+                .map(user -> {
+                    boolean isOnline = userStatusRepository.findByUserId(user.getId())
+                            .map(status -> status.getUpdatedAt().isAfter(Instant.now().minusSeconds(300)))
+                            .orElse(false);
+
+                    return UserResponse.builder()
+                            .id(user.getId())
+                            .username(user.getUsername())
+                            .email(user.getEmail())
+                            .isOnline(isOnline)
+                            .hasProfileImage(user.isHasProfileImage())
+                            .build();
+                })
+                .toList();
+    }
+
+    @Override
+    public User update(UserUpdateRequest request) {
+        User user = userRepository.findById(request.userId())
+                .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저는 없습니다."));
+
+        user.update(request.newUsername(), request.newEmail(), request.newPassword());
+
+        if (request.hasProfileImage()) {
+            BinaryContent profile = new BinaryContent(
+                    null,
+                    null,
+                    null
+            );
+            binaryContentRepository.save(profile);
+            user.setProfileId(profile.getId());
         }
+
+        userRepository.save(user);
+
+        userStatusRepository.findByUserId(user.getId()).ifPresent(status -> {
+            status.update(Instant.now());
+            userStatusRepository.save(status);
+        });
+
+        return userRepository.save(user);
     }
 
     @Override
-    public void outputOneUserInfo(UUID uuid) {
-        userRepo.findAllUser().stream()
-                .filter(u -> u.getId().equals(uuid))
-                .forEach(System.out::println);
-    }
-
-    @Override
-    public void updateUserName(User user, String newName) {
-        if (user.getUsername().equals(newName.trim())) {
-            System.out.println("프로필 이름은 중복 될 수 없습니다.");
-        } else {
-            user.setUsername(newName);
-            userRepo.updateUser(user);
+    public void delete(UUID userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("해당 id를 가진 유저는 없습니다.");
         }
-    }
+        userRepository.deleteById(userId);
 
-    @Override
-    public void deleteUserName(int userNumber) {
-        userRepo.deleteUser(userNumber);
-    }
-
-    @Override
-    public User changeUser(int userNumber) {
-        return userRepo.findUser(userNumber);
-    }
-
-    @Override
-    public void login(int loginNumber) {
-        if (userRepo.findUser(loginNumber) == null) {
-            throw new RuntimeException("해당 번호의 유저가 존재하지 않습니다");
+        if (userStatusRepository.existsById(userId)) {
+            userStatusRepository.deleteById(userId);
         }
     }
 }

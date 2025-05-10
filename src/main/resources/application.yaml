@@ -1,0 +1,4 @@
+discodeit:
+  repository:
+    type: file  # 또는 file
+    file-directory: .discodeit

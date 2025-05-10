@@ -1,22 +1,22 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.User.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.User.UserFindRequest;
+import com.sprint.mission.discodeit.dto.User.UserResponse;
+import com.sprint.mission.discodeit.dto.User.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
+import java.util.List;
 import java.util.UUID;
 
+
 public interface UserService {
-    public User registerUser();
+    public User create(UserCreateRequest userCreateRequest);
 
-    public void createNewUserNames(String existingName, String newName);
+    public UserResponse find(UserFindRequest userFindRequest);
 
-    public void outputAllUsersInfo();
+    public List<UserResponse> findAll();
 
-    public void outputOneUserInfo(UUID uuid);
+    public User update(UserUpdateRequest request);
 
-    public void updateUserName(User user, String newName);
-
-    public void deleteUserName(int userNumber);
-
-    public User changeUser(int userNumber);
-
-    public void login(int loginNumber);
+    public void delete(UUID userId);
 }
