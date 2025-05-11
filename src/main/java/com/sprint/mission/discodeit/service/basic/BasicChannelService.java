@@ -1,15 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.channel.ChannelMemberRequestDTO;
 import com.sprint.mission.discodeit.dto.channel.ChannelResponseDTO;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelDTO;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.NotFoundChannelException;
-import com.sprint.mission.discodeit.exception.NotFoundMessageException;
-import com.sprint.mission.discodeit.exception.NotFoundUserException;
-import com.sprint.mission.discodeit.exception.PrivateChannelModificationException;
+import com.sprint.mission.discodeit.exception.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -182,19 +180,20 @@ public class BasicChannelService implements ChannelService {
 
     // 채널에 사용자 추가
     @Override
-    public void addUser(UUID channelId, UUID userId) {
-        Channel channel = findChannel(channelId);
-        User user = findUser(userId);
+    public void inviteUser(ChannelMemberRequestDTO channelMemberRequestDTO) {
+        Channel channel = findChannel(channelMemberRequestDTO.channelId());
+        User user = findUser(channelMemberRequestDTO.userId());
+
+        UUID channelId = channel.getId();
+        UUID userId = user.getId();
+
+        if (channel.getUsers().contains(userId)) {
+            throw new UserAlreadyInChannelException(user.getName() + "은 이미 채널에 있습니다.");
+        }
 
         // Channel의 userList에 해당 user 추가
-        if (!channel.getUsers().contains(userId)) {
-            channel.getUsers().add(userId);
-        }
-
-        // User의 channelList에 해당 channel 추가
-        if (!user.getChannels().contains(channelId)) {
-            user.getChannels().add(channelId);
-        }
+        channel.getUsers().add(userId);
+        user.getChannels().add(channelId);
 
         ReadStatus readStatus = new ReadStatus(userId, channelId, Instant.now());
 
@@ -205,9 +204,16 @@ public class BasicChannelService implements ChannelService {
 
     // 채널에서 사용자 제거
     @Override
-    public void deleteUser(UUID channelId, UUID userId) {
-        Channel channel = findChannel(channelId);
-        User user = findUser(userId);
+    public void kickUser(ChannelMemberRequestDTO channelMemberRequestDTO) {
+        Channel channel = findChannel(channelMemberRequestDTO.channelId());
+        User user = findUser(channelMemberRequestDTO.userId());
+
+        UUID channelId = channel.getId();
+        UUID userId = user.getId();
+
+        if (!channel.getUsers().contains(userId)) {
+            throw new UserNotInChannelException(user.getName() + "은 채널에 속해있지 않습니다.");
+        }
 
         // Channel의 userList에 해당 user 추가
         channel.getUsers().remove(userId);

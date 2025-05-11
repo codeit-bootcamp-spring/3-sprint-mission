@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.channel.ChannelMemberRequestDTO;
 import com.sprint.mission.discodeit.dto.channel.ChannelResponseDTO;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelDTO;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelDTO;
@@ -84,5 +85,21 @@ public class ChannelController {
         channelService.deleteById(channelId);
 
         return ResponseEntity.status(HttpStatus.OK).body("[Success]: 채널 삭제 성공!");
+    }
+
+    @RequestMapping(path = "/inviteUser", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<String> inviteUser(@RequestBody ChannelMemberRequestDTO channelMemberRequestDTO) {
+        channelService.inviteUser(channelMemberRequestDTO);
+
+        return ResponseEntity.status(HttpStatus.OK).body("[Success]: 유저 초대 성공!");
+    }
+
+    @RequestMapping(path = "/kickUser", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<String> kickUser(@RequestBody ChannelMemberRequestDTO channelMemberRequestDTO) {
+        channelService.kickUser(channelMemberRequestDTO);
+
+        return ResponseEntity.status(HttpStatus.OK).body("[Success]: 유저 추방 성공!");
     }
 }
