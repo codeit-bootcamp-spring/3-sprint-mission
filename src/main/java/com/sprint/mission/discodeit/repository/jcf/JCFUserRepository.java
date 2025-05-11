@@ -6,13 +6,15 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JCFUserRepository implements UserRepository {
     private final Map<UUID, User> data;
 
     public JCFUserRepository() {
-        data = new HashMap<>();
+        data = new ConcurrentHashMap<>();
     }
 
     @Override
