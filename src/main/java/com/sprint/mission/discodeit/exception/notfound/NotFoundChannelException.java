@@ -1,6 +1,6 @@
-package com.sprint.mission.discodeit.exception;
+package com.sprint.mission.discodeit.exception.notfound;
 
-public class NotFoundChannelException extends RuntimeException {
+public class NotFoundChannelException extends NotFoundException {
     public NotFoundChannelException() {
         super("존재하지 않는 채널입니다.");
     }

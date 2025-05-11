@@ -149,7 +149,7 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.OK).body("[Success]: 친구 삭제 성공!");
     }
-    
+
     // MultipartFile 타입의 요청 값을 BinaryContentDTO 타입으로 변환하기 위한 메서드
     private BinaryContentDTO resolveProfileRequest(MultipartFile profile) {
         if (profile.isEmpty()) {

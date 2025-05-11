@@ -1,6 +1,6 @@
-package com.sprint.mission.discodeit.exception;
+package com.sprint.mission.discodeit.exception.notfound;
 
-public class NotFoundUserException extends RuntimeException {
+public class NotFoundUserException extends NotFoundException {
 
     public NotFoundUserException() {
         super("존재하지 않는 사용자입니다.");

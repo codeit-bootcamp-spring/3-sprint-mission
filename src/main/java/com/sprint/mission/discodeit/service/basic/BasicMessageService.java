@@ -7,9 +7,9 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.NotFoundChannelException;
-import com.sprint.mission.discodeit.exception.NotFoundMessageException;
-import com.sprint.mission.discodeit.exception.NotFoundUserException;
+import com.sprint.mission.discodeit.exception.notfound.NotFoundChannelException;
+import com.sprint.mission.discodeit.exception.notfound.NotFoundMessageException;
+import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
 import com.sprint.mission.discodeit.exception.UserNotInChannelException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -19,7 +19,6 @@ import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 

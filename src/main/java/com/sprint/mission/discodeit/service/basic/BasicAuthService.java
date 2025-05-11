@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.dto.auth.LoginDTO;
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.LoginFailedException;
-import com.sprint.mission.discodeit.exception.NotFoundUserStatusException;
+import com.sprint.mission.discodeit.exception.notfound.NotFoundUserStatusException;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;

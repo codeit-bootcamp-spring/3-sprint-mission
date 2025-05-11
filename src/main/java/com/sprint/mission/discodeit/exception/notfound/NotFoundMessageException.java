@@ -1,6 +1,6 @@
-package com.sprint.mission.discodeit.exception;
+package com.sprint.mission.discodeit.exception.notfound;
 
-public class NotFoundMessageException extends RuntimeException {
+public class NotFoundMessageException extends NotFoundException {
     public NotFoundMessageException() {
         super("존재하지 않는 메시지입니다.");
     }

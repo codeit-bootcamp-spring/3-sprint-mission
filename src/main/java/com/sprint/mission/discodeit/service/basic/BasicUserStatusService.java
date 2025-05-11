@@ -4,16 +4,15 @@ import com.sprint.mission.discodeit.dto.userstatus.UserStatusRequestDTO;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDTO;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDTO;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.NotFoundUserException;
-import com.sprint.mission.discodeit.exception.NotFoundUserStatusException;
-import com.sprint.mission.discodeit.exception.UserStatusAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
+import com.sprint.mission.discodeit.exception.notfound.NotFoundUserStatusException;
+import com.sprint.mission.discodeit.exception.alreadyexist.UserStatusAlreadyExistsException;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
