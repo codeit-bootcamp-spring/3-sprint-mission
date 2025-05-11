@@ -24,6 +24,7 @@ public class User implements Serializable {
     private String email;
     private String phoneNumber;
     private String statusMessage;
+
     // BinaryContent 참조 ID
     private UUID profileId;
 

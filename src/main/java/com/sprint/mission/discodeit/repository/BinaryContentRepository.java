@@ -12,7 +12,7 @@ public interface BinaryContentRepository {
 
     Optional<BinaryContent> findById(UUID id);
 
-    List<BinaryContent> findAll();
+    List<BinaryContent> findAllByIdIn(List<UUID> ids);
 
     boolean existsById(UUID userId);
 

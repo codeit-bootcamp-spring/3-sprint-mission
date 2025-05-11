@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
-@Service("BasicMessageService")
+@Service
 public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
     //
@@ -50,7 +50,7 @@ public class BasicMessageService implements MessageService {
                         mcr.getFileName(),
                         mcr.getFileData(),
                         mcr.getFileType(),
-                        mcr.getFileSize()
+                        mcr.getFileData().length
                 )).getId())
                         .collect(Collectors.toList());
 

@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.dto.request.*;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -15,7 +14,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+
 
 @SpringBootApplication
 public class DiscodeitApplication {
@@ -37,29 +36,17 @@ public class DiscodeitApplication {
         return user;
     }
 
-    static Channel setupChannel(ChannelService channelService, UUID userId) {
+    static Channel setupChannel(ChannelService channelService) {
         List<Channel> channels = new ArrayList<>();
 
-        // PUBLIC CHANNEL
         PublicChannelCreateRequest publicChannelCreateRequest = new PublicChannelCreateRequest(
                 "Test",
-                ChannelType.PUBLIC,
                 "공지 채널"
         );
         Channel publicChannel = channelService.create(publicChannelCreateRequest);
         System.out.println("PUBLIC CHANNEL CREATED : " + publicChannel.getChannelName());
-        channels.add(publicChannel);
 
-        // PRIVATE CHANNEL
-        PrivateChannelCreateRequest privateChannelCreateRequest = new PrivateChannelCreateRequest(
-                ChannelType.PRIVATE,
-                // 단일 유저만 참여함
-                List.of(userId)
-        );
-        Channel privateChanel = channelService.create(privateChannelCreateRequest);
-        System.out.println("PRIVATE CHANNEL CREATED");
-        channels.add(privateChanel);
-        return privateChanel;
+        return publicChannel;
     }
 
     static void messageCreateTest(MessageService messageService, Channel channel, User author) {
@@ -78,20 +65,20 @@ public class DiscodeitApplication {
     }
 
     public static void main(String[] args) {
+
         ConfigurableApplicationContext context = SpringApplication.run(DiscodeitApplication.class, args);
 
+        // 서비스 초기화
         UserService userService = context.getBean(UserService.class);
         ChannelService channelService = context.getBean(ChannelService.class);
         MessageService messageService = context.getBean(MessageService.class);
 
         // 셋업
         User user = setupUser(userService);
-        Channel channel = setupChannel(channelService, user.getUserId());
+        Channel channel = setupChannel(channelService);
 
         // 테스트
         messageCreateTest(messageService, channel, user);
-
-
     }
 
 }

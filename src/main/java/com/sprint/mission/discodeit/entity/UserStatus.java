@@ -21,16 +21,25 @@ public class UserStatus implements Serializable {
     private Instant lastOnlineAt;
 
     // 생성자
-    public UserStatus(UUID userId) {
+    public UserStatus(UUID userId, Instant lastOnlineAt) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
+        //
         this.userId = userId;
+        this.lastOnlineAt = lastOnlineAt;
     }
 
     // Update 메서드
-    public void update() {
-        this.updatedAt = Instant.now();
-        this.lastOnlineAt = Instant.now();
+    public void update(Instant lastOnlineAt) {
+        boolean updated = false;
+        if (lastOnlineAt != null && lastOnlineAt.equals(this.lastOnlineAt)) {
+            this.lastOnlineAt = lastOnlineAt;
+            updated = true;
+        }
+
+        if (updated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
     // 온라인 상태 판별 메서드 정의
