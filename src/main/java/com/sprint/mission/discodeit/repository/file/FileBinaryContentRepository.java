@@ -2,12 +2,14 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
@@ -16,6 +18,12 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     @Value("${discodeit.repository.file-directory}")
     private String FILE_DIRECTORY;
     private final String FILENAME = "binaryContentRepo.ser";
+    private final Map<UUID, BinaryContent> data = new ConcurrentHashMap<>();
+
+    @PostConstruct
+    public void init() {
+        data.putAll(loadFile());
+    }
 
     private File getFile() {
         return new File(FILE_DIRECTORY, FILENAME);
@@ -23,19 +31,12 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     @Override
     public void save(BinaryContent binaryContent) {
-        // 파일에서 읽어오기
-        Map<UUID, BinaryContent> data = loadFile();
-
         data.put(binaryContent.getId(), binaryContent);
-
-        saveFile(data);
+        saveFile();
     }
 
     @Override
     public Optional<BinaryContent> findById(UUID id) {
-        // 파일에서 읽어오기
-        Map<UUID, BinaryContent> data = loadFile();
-
         Optional<BinaryContent> foundBinaryContent = data.entrySet().stream()
                 .filter(entry -> entry.getKey().equals(id))
                 .map(Map.Entry::getValue)
@@ -46,17 +47,11 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     @Override
     public List<BinaryContent> findAll() {
-        // 파일에서 읽어오기
-        Map<UUID, BinaryContent> data = loadFile();
-
         return new ArrayList<>(data.values());
     }
 
     @Override
     public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
-        // 파일에서 읽어오기
-        Map<UUID, BinaryContent> data = loadFile();
-
         return data.entrySet().stream()
                 .filter(entry -> ids.contains(entry.getKey()))
                 .map(Map.Entry::getValue)
@@ -65,12 +60,8 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     @Override
     public void deleteById(UUID id) {
-        // 파일에서 읽어오기
-        Map<UUID, BinaryContent> data = loadFile();
-
         data.remove(id);
-
-        saveFile(data);
+        saveFile();
     }
 
     private Map<UUID, BinaryContent> loadFile() {
@@ -88,7 +79,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
         return data;
     }
 
-    private void saveFile(Map<UUID, BinaryContent> data) {
+    private synchronized void saveFile() {
         try (FileOutputStream fos = new FileOutputStream(getFile());
              ObjectOutputStream out = new ObjectOutputStream(fos)) {
             out.writeObject(data);

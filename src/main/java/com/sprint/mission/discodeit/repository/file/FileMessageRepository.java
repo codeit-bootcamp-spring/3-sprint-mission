@@ -2,12 +2,14 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
@@ -16,6 +18,12 @@ public class FileMessageRepository implements MessageRepository {
     @Value("${discodeit.repository.file-directory}")
     private String FILE_DIRECTORY;
     private final String FILENAME = "messageRepo.ser";
+    private final Map<UUID, Message> data = new ConcurrentHashMap<>();
+
+    @PostConstruct
+    public void init() {
+        data.putAll(loadFile());
+    }
 
     private File getFile() {
         return new File(FILE_DIRECTORY, FILENAME);
@@ -23,21 +31,15 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public Message save(Message message) {
-        // 파일에서 읽어오기
-        Map<UUID, Message> data = loadFile();
-
         data.put(message.getId(), message);
 
-        saveFile(data);
+        saveFile();
 
         return message;
     }
 
     @Override
     public Optional<Message> findById(UUID messageId) {
-        // 파일에서 읽어오기
-        Map<UUID, Message> data = loadFile();
-
         Optional<Message> foundMessage = data.entrySet().stream()
                 .filter(entry -> entry.getKey().equals(messageId))
                 .map(Map.Entry::getValue)
@@ -48,17 +50,11 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public List<Message> findAll() {
-        // 파일에서 읽어오기
-        Map<UUID, Message> data = loadFile();
-
         return new ArrayList<>(data.values());
     }
 
     @Override
     public List<Message> findMessagesByChannelId(UUID channelId) {
-        // 파일에서 읽어오기
-        Map<UUID, Message> data = loadFile();
-
         return data.values().stream()
                 .filter(message -> message.getChannelId().equals(channelId))
                 .toList();
@@ -66,9 +62,6 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public List<Message> findMessagesByUserId(UUID userId) {
-        // 파일에서 읽어오기
-        Map<UUID, Message> data = loadFile();
-
         return data.values().stream()
                 .filter(message -> message.getSenderId().equals(userId))
                 .toList();
@@ -76,9 +69,6 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public List<Message> findMessageByContainingWord(String word) {
-        // 파일에서 읽어오기
-        Map<UUID, Message> data = loadFile();
-
         return data.values().stream()
                 .filter(message -> message.getContent().contains(word))
                 .toList();
@@ -86,12 +76,9 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public void deleteById(UUID messageId) {
-        Map<UUID, Message> data = loadFile();
-
         data.remove(messageId);
-
         // Message 삭제 후 파일에 덮어쓰기
-        saveFile(data);
+        saveFile();
     }
 
     private Map<UUID, Message> loadFile() {
@@ -109,7 +96,7 @@ public class FileMessageRepository implements MessageRepository {
         return data;
     }
 
-    private void saveFile(Map<UUID, Message> data) {
+    private synchronized void saveFile() {
         try (FileOutputStream fos = new FileOutputStream(getFile());
              ObjectOutputStream out = new ObjectOutputStream(fos)) {
             out.writeObject(data);
