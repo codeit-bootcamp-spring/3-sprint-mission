@@ -19,7 +19,8 @@ import java.util.UUID;
  * 2025. 4. 24.        doungukkim       최초 생성
  */
 public interface BinaryContentRepository {
-    BinaryContent createBinaryContent(String fileName, Long size, String contentType, byte[] bytes);
+    BinaryContent createBinaryContent(String fileName, Long size, String contentType, byte[] bytes, String extension);
+
 //    BinaryContent createBinaryContent(UUID id);
     //    BinaryContent findBinaryContentByUserId(UUID userId);
 //    BinaryContent updateImage(UUID profileId, byte[] image); // both : throw

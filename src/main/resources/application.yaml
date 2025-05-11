@@ -3,7 +3,7 @@ server:
 
 discodeit:
   repository:
-    type: file  # jcf | file
+    type: jcf  # jcf | file
     file-directory: src/main/java/com/sprint/mission/data/
 
 # Spring 설정

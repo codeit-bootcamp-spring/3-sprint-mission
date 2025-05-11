@@ -20,7 +20,7 @@ import java.util.UUID;
  */
 public interface BinaryContentService {
 
-    BinaryContentCreateResponse create(String fileName, Long size, String contentType, byte[] bytes);
+    BinaryContentCreateResponse create(String fileName, Long size, String contentType, byte[] bytes, String extension);
 
     BinaryContent find(UUID attachmentId);
 

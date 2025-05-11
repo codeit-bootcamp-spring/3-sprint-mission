@@ -35,8 +35,6 @@ import java.util.UUID;
 public class FileUserRepository implements UserRepository {
     private final FilePathProperties filePathProperties;
 
-
-
     @Override
     public User createUserByName(String name, String email, String password) {
         User user = new User(name, email, password );

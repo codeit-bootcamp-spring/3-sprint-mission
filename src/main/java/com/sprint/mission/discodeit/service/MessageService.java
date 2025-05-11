@@ -1,8 +1,11 @@
 package com.sprint.mission.discodeit.service;
 
 
+import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.Dto.message.*;
 import com.sprint.mission.discodeit.entity.Message;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,9 +24,11 @@ import java.util.UUID;
  */
 public interface MessageService {
 
-    MessageCreateResponse createMessage(MessageCreateRequest request);
+    ResponseEntity<MessageCreateResponse> createMessage(MessageCreateRequest request);
 
-    MessageAttachmentsCreateResponse createMessage(MessageAttachmentsCreateRequest request);
+    ResponseEntity<?> createMessage(
+            MessageAttachmentsCreateRequest MessageAttachmentRequest,
+            BinaryContentCreateRequest binaryContentRequest);
     // not required
     Message findMessageById(UUID messageId);
     // not required

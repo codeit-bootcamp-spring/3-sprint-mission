@@ -62,8 +62,8 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
 
     @Override
-    public BinaryContent createBinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
-        BinaryContent binaryContent = new BinaryContent(fileName, size, contentType, bytes);
+    public BinaryContent createBinaryContent(String fileName, Long size, String contentType, byte[] bytes, String extension) {
+        BinaryContent binaryContent = new BinaryContent(fileName, size, contentType, bytes, extension);
         Path path = filePathUtil.getBinaryContentFilePath(binaryContent.getId());
         FileSerializer.writeFile(path, binaryContent);
         return binaryContent;

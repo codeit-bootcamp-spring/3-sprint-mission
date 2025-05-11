@@ -50,8 +50,8 @@ public class JcfBinaryContentRepostory implements BinaryContentRepository {
     }
 
     @Override
-    public BinaryContent createBinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
-        BinaryContent binaryContent = new BinaryContent(fileName, size, contentType, bytes);
+    public BinaryContent createBinaryContent(String fileName, Long size, String contentType, byte[] bytes, String extension) {
+        BinaryContent binaryContent = new BinaryContent(fileName, size, contentType, bytes, extension);
         data.put(binaryContent.getId(), binaryContent);
         return binaryContent;
     }

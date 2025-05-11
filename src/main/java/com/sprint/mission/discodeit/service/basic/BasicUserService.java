@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.Dto.user.UserFindResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -18,7 +19,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -39,11 +43,14 @@ public class BasicUserService  implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
+    private final FileUploadUtils fileUploadUtils;
 
 
     @Override
-    public UserCreateResponse create(UserCreateRequest userCreateRequest,
-                                     Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+    public UserCreateResponse create(
+            UserCreateRequest userCreateRequest,
+            Optional<BinaryContentCreateRequest> optionalProfileCreateRequest
+    ) {
 
         boolean usernameNotUnique = !userRepository.isUniqueUsername(userCreateRequest.username());
         boolean emailNotUnique = !userRepository.isUniqueEmail(userCreateRequest.email());
@@ -59,9 +66,11 @@ public class BasicUserService  implements UserService {
                             String filename = profileRequest.fileName();
                             String contentType = profileRequest.contentType();
                             byte[] bytes = profileRequest.bytes();
+                            String extension = profileRequest.fileName().substring(filename.lastIndexOf("."));
 //                            binaryContentRepository.createBinaryContent(filename, (long) bytes.length, contentType, bytes);
-                            return binaryContentRepository.createBinaryContent(filename, (long) bytes.length, contentType, bytes);
+                            return binaryContentRepository.createBinaryContent(filename, (long) bytes.length, contentType, bytes, extension);
                         }
+
                 ).orElse(null);
 
         User user;
@@ -71,7 +80,22 @@ public class BasicUserService  implements UserService {
                     userCreateRequest.email(),
                     userCreateRequest.password());
         } else {
+            // 사진 저장 로직 (BinaryContent 객체 생성 -> 유저 생성 -> 파일 BinaryContent ID로 저장)
+            String uploadPath = fileUploadUtils.getUploadPath("img/profile");
 
+            String originalFileName = nullableProfile.getFileName();
+            String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+            String newFileName = nullableProfile.getId() + extension;
+
+            File profileImage = new File(uploadPath, newFileName);
+            // 사진 저장
+            try(FileOutputStream fos = new FileOutputStream(profileImage)){
+                fos.write(nullableProfile.getBytes());
+            } catch (IOException e) {
+                throw new RuntimeException("image not saved", e);
+            }
+
+            // USER 객체 생성
             user = userRepository.createUserByName(
                     userCreateRequest.username(),
                     userCreateRequest.email(),
@@ -87,6 +111,9 @@ public class BasicUserService  implements UserService {
                 nullableProfile != null ? nullableProfile.getId() : null,
                 userStatus.getId()
         );
+
+//        BinaryContent 생성 -> (분기)이미지 없을 경우 -> User 생성 -> userStatus 생성 -> return response
+//                           -> (분기)이미지 있을 경우 -> User 생성 -> attachment 저장 -> userStatus 생성 -> return response
     }
 
 

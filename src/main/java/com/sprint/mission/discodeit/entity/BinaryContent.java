@@ -32,9 +32,10 @@ public class BinaryContent implements Serializable {
     private final Long size;
     private final String contentType;
     private final byte[] bytes;
+    private final String extension;
 
 
-    public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
+    public BinaryContent(String fileName, Long size, String contentType, byte[] bytes, String extension) {
         this.createdAt = Instant.now();
         this.id = UUID.randomUUID();
 
@@ -42,5 +43,6 @@ public class BinaryContent implements Serializable {
         this.size = size;
         this.contentType = contentType;
         this.bytes = bytes;
+        this.extension = extension;
     }
 }

@@ -32,7 +32,7 @@ public class FileUploadUtils {
         File directory = new File(uploadPath);
 
         if (!directory.exists()) {
-            boolean created = directory.mkdir();
+            boolean created = directory.mkdirs();
             if (!created) {
                 throw new RuntimeException(uploadPath);
             }
