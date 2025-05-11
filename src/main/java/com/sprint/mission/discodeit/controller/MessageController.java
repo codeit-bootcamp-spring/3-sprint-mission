@@ -80,7 +80,7 @@ public class MessageController {
         return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
     }
 
-    @RequestMapping(path = "/updateAttatchFiles",
+    @RequestMapping(path = "/updateAttachFiles",
             method = RequestMethod.PUT,
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseBody
