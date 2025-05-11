@@ -55,9 +55,9 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
-    @RequestMapping(path = "/find/{userId}", method = RequestMethod.GET)
+    @RequestMapping(path = "/find", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<UserResponseDTO> findById(@PathVariable UUID userId) {
+    public ResponseEntity<UserResponseDTO> findById(@RequestParam UUID userId) {
         UserResponseDTO foundUser = userService.findById(userId);
 
         return ResponseEntity.status(HttpStatus.OK).body(foundUser);
@@ -95,11 +95,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(allUsers);
     }
 
-    @RequestMapping(path = "/updateProfile/{userId}",
+    @RequestMapping(path = "/updateProfile",
             method = RequestMethod.PUT,
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseBody
-    public ResponseEntity<UserResponseDTO> updateProfileImage(@PathVariable UUID userId,
+    public ResponseEntity<UserResponseDTO> updateProfileImage(@RequestParam UUID userId,
                                                               @RequestPart(value = "profile", required = false) MultipartFile profile) {
         BinaryContentDTO profileRequest = resolveProfileRequest(profile);
 
@@ -108,26 +108,26 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
     }
 
-    @RequestMapping(path = "/updateUserInfo/{userId}", method = RequestMethod.PUT)
+    @RequestMapping(path = "/updateUserInfo", method = RequestMethod.PUT)
     @ResponseBody
-    public ResponseEntity<UserResponseDTO> updateUserInfo(@PathVariable UUID userId,
+    public ResponseEntity<UserResponseDTO> updateUserInfo(@RequestParam UUID userId,
                                                           @RequestBody UserRequestDTO userRequestDTO) {
         UserResponseDTO updatedUser = userService.updateUserInfo(userId, userRequestDTO);
 
         return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
     }
 
-    @RequestMapping(path ="/delete/{userId}", method = RequestMethod.DELETE)
+    @RequestMapping(path ="/delete", method = RequestMethod.DELETE)
     @ResponseBody
-    public ResponseEntity<String> deleteById(@PathVariable UUID userId) {
+    public ResponseEntity<String> deleteById(@RequestParam UUID userId) {
         userService.deleteById(userId);
 
         return ResponseEntity.status(HttpStatus.OK).body("[Success]: 사용자 삭제 성공!");
     }
 
-    @RequestMapping(path = "/updateUserStatus/{userId}", method = RequestMethod.PUT)
+    @RequestMapping(path = "/updateUserStatus", method = RequestMethod.PUT)
     @ResponseBody
-    public ResponseEntity<UserStatusResponseDTO> updateUserStatus(@PathVariable UUID userId, @RequestBody UserStatusUpdateDTO userStatusUpdateDTO) {
+    public ResponseEntity<UserStatusResponseDTO> updateUserStatus(@RequestParam UUID userId, @RequestBody UserStatusUpdateDTO userStatusUpdateDTO) {
         UserStatusResponseDTO userStatusResponseDTO = userStatusService.updateByUserId(userId, userStatusUpdateDTO);
 
         return ResponseEntity.status(HttpStatus.OK).body(userStatusResponseDTO);

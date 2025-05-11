@@ -40,17 +40,17 @@ public class MessageController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
     }
 
-    @RequestMapping(path = "/find/{messageId}", method = RequestMethod.GET)
+    @RequestMapping(path = "/find", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<MessageResponseDTO> findById(@PathVariable UUID messageId) {
+    public ResponseEntity<MessageResponseDTO> findById(@RequestParam UUID messageId) {
         MessageResponseDTO foundMessage = messageService.findById(messageId);
 
         return ResponseEntity.status(HttpStatus.OK).body(foundMessage);
     }
 
-    @RequestMapping(path = "/findAllByChannel/{channelId}", method = RequestMethod.GET)
+    @RequestMapping(path = "/findAllByChannel", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<List<MessageResponseDTO>> findAllByChannelId(@PathVariable UUID channelId) {
+    public ResponseEntity<List<MessageResponseDTO>> findAllByChannelId(@RequestParam UUID channelId) {
         List<MessageResponseDTO> foundMessages = messageService.findAllByChannelId(channelId);
 
         return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
@@ -64,9 +64,9 @@ public class MessageController {
         return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
     }
 
-    @RequestMapping(path = "/findAllByUser/{userId}", method = RequestMethod.GET)
+    @RequestMapping(path = "/findAllByUser", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<List<MessageResponseDTO>> findAllByUserId(@PathVariable UUID userId) {
+    public ResponseEntity<List<MessageResponseDTO>> findAllByUserId(@RequestParam UUID userId) {
         List<MessageResponseDTO> foundMessages = messageService.findAllByUserId(userId);
 
         return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
@@ -80,11 +80,11 @@ public class MessageController {
         return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
     }
 
-    @RequestMapping(path = "/updateAttatchFiles/{messageId}",
+    @RequestMapping(path = "/updateAttatchFiles",
             method = RequestMethod.PUT,
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseBody
-    public ResponseEntity<MessageResponseDTO> updateBinaryContent(@PathVariable UUID messageId,
+    public ResponseEntity<MessageResponseDTO> updateBinaryContent(@RequestParam UUID messageId,
                                                                   @RequestPart(value = "attachedFiles", required = false) List<MultipartFile> attachedFiles) {
         List<BinaryContentDTO> binaryContentDTOS = resolveFileRequest(attachedFiles);
 
@@ -93,17 +93,17 @@ public class MessageController {
         return ResponseEntity.status(HttpStatus.OK).body(updatedMessage);
     }
 
-    @RequestMapping(path = "/updateContent/{messageId}", method = RequestMethod.PUT)
+    @RequestMapping(path = "/updateContent", method = RequestMethod.PUT)
     @ResponseBody
-    public ResponseEntity<MessageResponseDTO> updateContent(@PathVariable UUID messageId, String content) {
+    public ResponseEntity<MessageResponseDTO> updateContent(@RequestParam UUID messageId, String content) {
         MessageResponseDTO updatedMessage = messageService.updateContent(messageId, content);
 
         return ResponseEntity.status(HttpStatus.OK).body(updatedMessage);
     }
 
-    @RequestMapping(path = "/delete/{messageId}", method = RequestMethod.DELETE)
+    @RequestMapping(path = "/delete", method = RequestMethod.DELETE)
     @ResponseBody
-    public ResponseEntity<String> deleteById(@PathVariable UUID messageId) {
+    public ResponseEntity<String> deleteById(@RequestParam UUID messageId) {
         messageService.deleteById(messageId);
 
         return ResponseEntity.status(HttpStatus.OK).body("[Success]: 메시지 삭제 성공!");

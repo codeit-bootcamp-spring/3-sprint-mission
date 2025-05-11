@@ -37,9 +37,9 @@ public class ChannelController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
     }
 
-    @RequestMapping(path = "/find/{channelId}", method = RequestMethod.GET)
+    @RequestMapping(path = "/find", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<ChannelResponseDTO> findById(@PathVariable UUID channelId) {
+    public ResponseEntity<ChannelResponseDTO> findById(@RequestParam UUID channelId) {
         ChannelResponseDTO foundChannel = channelService.findById(channelId);
 
         return ResponseEntity.status(HttpStatus.OK).body(foundChannel);
@@ -53,9 +53,9 @@ public class ChannelController {
         return ResponseEntity.status(HttpStatus.OK).body(foundChannels);
     }
 
-    @RequestMapping(path = "/findAll/{userId}", method = RequestMethod.GET)
+    @RequestMapping(path = "/findAllByUser", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<List<ChannelResponseDTO>> findAllByUserId(@PathVariable UUID userId) {
+    public ResponseEntity<List<ChannelResponseDTO>> findAllByUserId(@RequestParam UUID userId) {
         List<ChannelResponseDTO> foundChannels = channelService.findAllByUserId(userId);
 
         return ResponseEntity.status(HttpStatus.OK).body(foundChannels);
@@ -69,18 +69,18 @@ public class ChannelController {
         return ResponseEntity.status(HttpStatus.OK).body(allChannels);
     }
 
-    @RequestMapping(path = "/update/{channelId}", method = RequestMethod.PUT)
+    @RequestMapping(path = "/update", method = RequestMethod.PUT)
     @ResponseBody
-    public ResponseEntity<ChannelResponseDTO> update(@PathVariable UUID channelId,
+    public ResponseEntity<ChannelResponseDTO> update(@RequestParam UUID channelId,
                                                      @RequestBody PublicChannelDTO publicChannelDTO) {
         ChannelResponseDTO updatedChannel = channelService.update(channelId, publicChannelDTO);
 
         return ResponseEntity.status(HttpStatus.OK).body(updatedChannel);
     }
 
-    @RequestMapping(path = "/delete/{channelId}", method = RequestMethod.DELETE)
+    @RequestMapping(path = "/delete", method = RequestMethod.DELETE)
     @ResponseBody
-    public ResponseEntity<String> deleteById(@PathVariable UUID channelId) {
+    public ResponseEntity<String> deleteById(@RequestParam UUID channelId) {
         channelService.deleteById(channelId);
 
         return ResponseEntity.status(HttpStatus.OK).body("[Success]: 채널 삭제 성공!");
