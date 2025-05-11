@@ -20,6 +20,7 @@ public class UserStatus implements Serializable {
     private Instant updatedAt;
     private final UUID userId;
     private Instant lastLoginTime;
+    private static final long LOGIN_TIMEOUT_MINUTES = 5L;
 
     public UserStatus(UUID userId) {
         this.id = UUID.randomUUID();
@@ -48,7 +49,7 @@ public class UserStatus implements Serializable {
 
         Duration timeDiff = Duration.between(this.lastLoginTime, now);
 
-        return timeDiff.toMinutes() <= 5;
+        return timeDiff.toMinutes() <= LOGIN_TIMEOUT_MINUTES;
     }
 
     @Override
