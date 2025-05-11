@@ -1,15 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDTO;
+import com.sprint.mission.discodeit.dto.user.FriendReqeustDTO;
 import com.sprint.mission.discodeit.dto.user.UserRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.DuplicateEmailException;
-import com.sprint.mission.discodeit.exception.DuplicateNameException;
-import com.sprint.mission.discodeit.exception.NotFoundUserException;
-import com.sprint.mission.discodeit.exception.NotFoundUserStatusException;
+import com.sprint.mission.discodeit.exception.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -30,12 +28,12 @@ public class BasicUserService implements UserService {
 
     @Override
     public User create(UserRequestDTO userRequestDTO, BinaryContentDTO binaryContentDTO) {
-        if (isDuplicateName(userRequestDTO.getName())) {
-            throw new DuplicateNameException(userRequestDTO.getName());
+        if (isDuplicateName(userRequestDTO.name())) {
+            throw new DuplicateNameException(userRequestDTO.name());
         }
 
-        if (isDuplicateEmail(userRequestDTO.getEmail())) {
-            throw new DuplicateEmailException(userRequestDTO.getEmail());
+        if (isDuplicateEmail(userRequestDTO.email())) {
+            throw new DuplicateEmailException(userRequestDTO.email());
         }
 
         User user = UserRequestDTO.toEntity(userRequestDTO);
@@ -140,10 +138,10 @@ public class BasicUserService implements UserService {
     public UserResponseDTO updateUserInfo(UUID id, UserRequestDTO userRequestDTO) {
         User user = findUser(id);
 
-        user.updateName(userRequestDTO.getName());
-        user.updateEmail(userRequestDTO.getEmail());
-        user.updatePassword(userRequestDTO.getPassword());
-        user.updateIntroduction(userRequestDTO.getIntroduction());
+        user.updateName(userRequestDTO.name());
+        user.updateEmail(userRequestDTO.email());
+        user.updatePassword(userRequestDTO.password());
+        user.updateIntroduction(userRequestDTO.introduction());
 
         userRepository.save(user);
 
@@ -161,16 +159,13 @@ public class BasicUserService implements UserService {
 
     // 친구 추가 기능
     @Override
-    public void addFriend(UUID id1, UUID id2) {
-        User user1 = findUser(id1);
-        User user2 = findUser(id2);
+    public void addFriend(FriendReqeustDTO friendReqeustDTO) {
+        User user1 = findUser(friendReqeustDTO.user1());
+        User user2 = findUser(friendReqeustDTO.user2());
 
         // 두 User 각각의 friendList에 추가
         if (!user1.getFriends().contains(user2.getId())) {
             user1.getFriends().add(user2.getId());
-        }
-
-        if (!user2.getFriends().contains(user1.getId())) {
             user2.getFriends().add(user1.getId());
         }
 
@@ -181,9 +176,13 @@ public class BasicUserService implements UserService {
 
     // 친구 삭제 기능
     @Override
-    public void deleteFriend(UUID id1, UUID id2) {
-        User user1 = findUser(id1);
-        User user2 = findUser(id2);
+    public void deleteFriend(FriendReqeustDTO friendReqeustDTO) {
+        User user1 = findUser(friendReqeustDTO.user1());
+        User user2 = findUser(friendReqeustDTO.user2());
+
+        if (!user1.getFriends().contains(user2.getId())) {
+            throw new NotFriendsException(user1.getName() + "와(과) " + user2.getName() + "은 친구가 아닙니다.");
+        }
 
         // 두 User 각각의 friendList에서 제거
         user1.getFriends().remove(user2.getId());

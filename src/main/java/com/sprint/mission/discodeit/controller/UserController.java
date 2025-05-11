@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDTO;
+import com.sprint.mission.discodeit.dto.user.FriendReqeustDTO;
 import com.sprint.mission.discodeit.dto.user.UserRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDTO;
@@ -133,6 +134,22 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userStatusResponseDTO);
     }
 
+    @RequestMapping(path = "/addFriend", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<String> addFriend(@RequestBody FriendReqeustDTO friendReqeustDTO) {
+        userService.addFriend(friendReqeustDTO);
+
+        return ResponseEntity.status(HttpStatus.OK).body("[Success]: 친구 추가 성공!");
+    }
+
+    @RequestMapping(path = "/deleteFriend", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<String> deleteFriend(@RequestBody FriendReqeustDTO friendReqeustDTO) {
+        userService.deleteFriend(friendReqeustDTO);
+
+        return ResponseEntity.status(HttpStatus.OK).body("[Success]: 친구 삭제 성공!");
+    }
+    
     // MultipartFile 타입의 요청 값을 BinaryContentDTO 타입으로 변환하기 위한 메서드
     private BinaryContentDTO resolveProfileRequest(MultipartFile profile) {
         if (profile.isEmpty()) {
