@@ -11,7 +11,7 @@ public interface BinaryContentService {
     // 생성
     BinaryContent create(BinaryContentCreateRequestDTO createRequestDTO);
     // 전체 조회
-    List<BinaryContent> findAllByIdIn(Set<UUID> idSet);
+    List<BinaryContent> findAllByIdIn(List<UUID> ids);
     // 조회 (ID)
     BinaryContent find(UUID id);
     // 삭제

@@ -24,11 +24,14 @@ public class BasicAuthService implements AuthService {
      */
     @Override
     public User login(UserLoginRequestDTO loginRequestDTO) {
-        User user = userRepository.findByUserName(loginRequestDTO.userName())
+        String userName = loginRequestDTO.userName();
+        String password = loginRequestDTO.password();
+
+        User user = userRepository.findByUserName(userName)
                 .orElseThrow(()-> new NoSuchElementException("일치하는 유저가 없습니다."));
 
         // 패스워드 일치 확인
-        if (!user.getPassword().equals(loginRequestDTO.password())) {
+        if (!user.getPassword().equals(password)) {
             throw new NoSuchElementException("패스워드가 일치하지 않습니다.");
         }
         return user;

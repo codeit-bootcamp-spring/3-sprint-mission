@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -18,12 +19,14 @@ public class Message implements Serializable {
     private Instant createdAt;
     private Instant updatedAt;
 
-    private String content;             // 메시지 내용
+    private String content;// 메시지 내용
+    private boolean isUpdated;          // 메시지 수정 여부
+
     private UUID authorId;              // 송신자 id
     private UUID channelId;             // 채널 id
     private List<UUID> attachmentIds;   // 첨부파일 리스트
-    private boolean isUpdated;          // 메시지 수정 여부
 
+    @Builder
     public Message(String content, UUID authorId, UUID channelId, List<UUID> attachmentIds) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();

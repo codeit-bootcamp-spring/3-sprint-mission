@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.dto.Channel;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 
 import java.time.Instant;
 import java.util.List;
@@ -8,24 +9,20 @@ import java.util.UUID;
 
 public record ChannelDTO(
         UUID id,
-        Instant createdAt,
-        Instant updatedAt,
         String channelName,
         String description,
-        boolean isPrivate,
+        ChannelType type,
         Instant lastMessageAt,
-        List<UUID> userIdList
+        List<UUID> participantIds
 ) {
     public static ChannelDTO from(Channel ch, Instant lastMessageAt, List<UUID> userIdList) {
         return new ChannelDTO(
                 ch.getId(),
-                ch.getCreatedAt(),
-                ch.getUpdatedAt(),
                 ch.getChannelName(),
                 ch.getDescription(),
-                ch.isPrivate(),
+                ch.getType(),
                 lastMessageAt,
-                ch.isPrivate() ? userIdList : null
+                userIdList
         );
     }
 

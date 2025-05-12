@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -22,6 +23,7 @@ public class User implements Serializable {
     private String password;        // 비밀번호
     private UUID profileId;         // 프로필 사진
 
+    @Builder
     public User(String userName, String email, String password, UUID profileId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();

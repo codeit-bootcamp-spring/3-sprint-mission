@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -21,14 +22,15 @@ public class ReadStatus implements Serializable {
     private UUID channelId;         // 채널ID
     private Instant lastReadAt;     // 메시지를 마지막으로 읽은 시간
 
-    public ReadStatus(UUID userId, UUID channelId) {
+    @Builder
+    public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
 
         this.userId = userId;
         this.channelId = channelId;
-        this.lastReadAt = Instant.now();
+        this.lastReadAt = lastReadAt;
     }
 
     public void update(Instant lastReadAt) {

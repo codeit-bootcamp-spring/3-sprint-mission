@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -42,8 +43,14 @@ public class BasicUserStatusService implements UserStatusService {
             throw new IllegalStateException("이미 존재하는 UserStatus입니다.");
         }
 
+        Instant lastAccessedAt = createRequestDTO.lastAccessedAt();
+
         // UserStatus 생성
-        UserStatus userStatus = new UserStatus(userId);
+        UserStatus userStatus = UserStatus.builder()
+                .userId(userId)
+                .lastAccessedAt(lastAccessedAt)
+                .build();
+
         return userStatus;
     }
 
@@ -96,8 +103,10 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
                 .orElseThrow(() -> new NoSuchElementException("해당 ID의 UserStatus가 존재하지 않습니다."));
 
+        Instant lastAccessedAt = updateRequestDTO.lastAccessedAt();
+
         // UserStatus 수정
-        userStatus.update(updateRequestDTO.lastAccessedAt());
+        userStatus.update(lastAccessedAt);
 
         // 데이터 저장
         userStatusRepository.save(userStatus);
@@ -117,8 +126,10 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저ID의 UserStatus가 존재하지 않습니다."));
 
+        Instant lastAccessedAt = updateRequestDTO.lastAccessedAt();
+
         // UserStatus 수정
-        userStatus.update(updateRequestDTO.lastAccessedAt());
+        userStatus.update(lastAccessedAt);
 
         // 데이터 저장
         userStatusRepository.save(userStatus);

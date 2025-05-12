@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -19,24 +20,17 @@ public class Channel implements Serializable {
 
     private String channelName;     // 채널 이름
     private String description;     // 채널 설명
-    private boolean isPrivate;      // 비공개채널 여부
+    private ChannelType type;       // 채널 타입
 
-    public Channel(boolean isPrivate) {
+    @Builder
+    public Channel(ChannelType type, String channelName, String description) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
 
-        this.isPrivate = isPrivate;
-    }
-
-    public Channel(String channelName, String description, boolean isPrivate) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-
+        this.type = type;
         this.channelName = channelName;
         this.description = description;
-        this.isPrivate = isPrivate;
     }
 
     public void update(String newChannelName, String newDescription) {

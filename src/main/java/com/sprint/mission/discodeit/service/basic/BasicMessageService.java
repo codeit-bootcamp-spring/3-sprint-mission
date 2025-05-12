@@ -37,28 +37,45 @@ public class BasicMessageService implements MessageService {
      */
     @Override
     public Message create(MessageCreateRequestDTO createRequestDTO, List<BinaryContentCreateRequestDTO> binaryContentCreateRequestsDTO) {
+        UUID authorId = createRequestDTO.authorId();
+        UUID channelId = createRequestDTO.channelId();
+
         // 작성자, 채널 유효성 검사
         if (!userRepository.existsById(createRequestDTO.authorId())) {
             throw new NoSuchElementException("존재하지 않는 사용자입니다.");
-        } else if (!channelRepository.existsById(createRequestDTO.channelId())) {
+        }
+        if (!channelRepository.existsById(createRequestDTO.channelId())) {
             throw new NoSuchElementException("존재하지 않는 채널입니다.");
         }
 
         // 첨부파일 저장
         List<UUID> binaryContents = new ArrayList<>();
         for (BinaryContentCreateRequestDTO dto : binaryContentCreateRequestsDTO) {
-            BinaryContent content = new BinaryContent(dto.content());
-            binaryContentRepository.save(content);
-            binaryContents.add(content.getId());
+            String fileName = dto.fileName();
+            String contentType = dto.contentType();
+            byte[] content = dto.content();
+
+            BinaryContent binaryContent = BinaryContent.builder()
+                    .fileName(fileName)
+                    .size((long)content.length)
+                    .contentType(contentType)
+                    .content(content)
+                    .build();
+
+            binaryContentRepository.save(binaryContent);
+            binaryContents.add(binaryContent.getId());
         }
 
+        String content = createRequestDTO.content();
+
         // 메시지 생성
-        Message msg = new Message(
-                createRequestDTO.content(),
-                createRequestDTO.authorId(),
-                createRequestDTO.channelId(),
-                binaryContents
-        );
+        Message msg = Message.builder()
+                .content(content)
+                .authorId(authorId)
+                .channelId(channelId)
+                .attachmentIds(binaryContents)
+                .build();
+
         messageRepository.save(msg);
         return msg;
     }
@@ -100,8 +117,11 @@ public class BasicMessageService implements MessageService {
         Message msg = messageRepository.findById(messageId)
                 .orElseThrow(()->new NoSuchElementException("해당 메시지를 찾을 수 없습니다."));
 
+        String newContent = updateRequestDTO.newContent();
+
         // 메시지 수정
-        msg.update(updateRequestDTO.newContent());
+        msg.update(newContent);
+
         messageRepository.save(msg);
         return msg;
     }
@@ -117,11 +137,11 @@ public class BasicMessageService implements MessageService {
         Message msg = messageRepository.findById(messageId)
                 .orElseThrow(()->new NoSuchElementException("해당 메시지를 찾을 수 없습니다."));
 
-        // 메시지 삭제
-        messageRepository.deleteById(messageId);
-
         // 관련 도메인 삭제 (BinaryContent)
         msg.getAttachmentIds()
                 .forEach(binaryContentRepository::deleteById);
+
+        // 메시지 삭제
+        messageRepository.deleteById(messageId);
     }
 }

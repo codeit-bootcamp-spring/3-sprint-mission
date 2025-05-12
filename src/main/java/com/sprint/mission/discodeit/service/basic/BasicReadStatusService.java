@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -38,7 +39,8 @@ public class BasicReadStatusService implements ReadStatusService {
         // 관련된 Channel, User가 존재하지 않으면 예외처리
         if (!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException("해당 ID의 채널이 존재하지 않습니다.");
-        } else if (!userRepository.existsById(userId)) {
+        }
+        if (!userRepository.existsById(userId)) {
             throw new NoSuchElementException("해당 ID의 유저가 존재하지 않습니다.");
         }
         // 같은 Channel, User와 관련된 객체가 이미 존재하면 예외처리
@@ -46,8 +48,14 @@ public class BasicReadStatusService implements ReadStatusService {
             throw new IllegalStateException("이미 존재하는 ReadStatus입니다.");
         }
 
+        Instant lastReadAt = createRequestDTO.lastReadAt();
+
         // ReadStatus 생성
-        ReadStatus readStatus = new ReadStatus(userId, channelId);
+        ReadStatus readStatus = ReadStatus.builder()
+                .channelId(channelId)
+                .userId(userId)
+                .lastReadAt(lastReadAt)
+                .build();
 
         // 데이터 저장
         readStatusRepository.save(readStatus);
@@ -91,8 +99,10 @@ public class BasicReadStatusService implements ReadStatusService {
         ReadStatus readStatus = readStatusRepository.findById(id)
                 .orElseThrow(()->new NoSuchElementException("해당 ID의 ReadStatus를 찾을 수 없습니다."));
 
+        Instant lastReadAt = updateRequestDTO.lastReadAt();
+
         // ReadStatus 수정
-        readStatus.update(updateRequestDTO.lastReadAt());
+        readStatus.update(lastReadAt);
 
         // 데이터 저장
         readStatusRepository.save(readStatus);

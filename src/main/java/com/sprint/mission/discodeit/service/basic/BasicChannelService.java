@@ -4,9 +4,7 @@ import com.sprint.mission.discodeit.dto.Channel.ChannelDTO;
 import com.sprint.mission.discodeit.dto.Channel.PrivateChannelCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.Channel.PublicChannelCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.Channel.PublicChannelUpdateRequestDTO;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -14,8 +12,10 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -35,12 +35,16 @@ public class BasicChannelService implements ChannelService {
      */
     @Override
     public Channel create(PublicChannelCreateRequestDTO createRequestDTO) {
+        String name = createRequestDTO.name();
+        String description = createRequestDTO.description();
+
         // 채널 생성
-        Channel ch = new Channel(
-                createRequestDTO.name(),
-                createRequestDTO.description(),
-                false
-        );
+        Channel ch = Channel.builder()
+                .type(ChannelType.PUBLIC)
+                .channelName(name)
+                .description(description)
+                .build();
+
         channelRepository.save(ch);
         return ch;
     }
@@ -54,14 +58,21 @@ public class BasicChannelService implements ChannelService {
     @Override
     public Channel create(PrivateChannelCreateRequestDTO createRequestDTO) {
         // 채널 생성
-        Channel ch = new Channel(true);
+        Channel ch = Channel.builder()
+                .type(ChannelType.PRIVATE)
+                .build();
 
         // User별 ReadStatus 생성
-        ReadStatus readStatus = new ReadStatus(createRequestDTO.userId(), ch.getId());
+        createRequestDTO.participantIds().stream()
+                .map(userId -> ReadStatus.builder()
+                        .userId(userId)
+                        .channelId(ch.getId())
+                        .lastReadAt(Instant.now())
+                        .build())
+                .forEach(readStatusRepository::save);
 
         // 데이터 저장
         channelRepository.save(ch);
-        readStatusRepository.save(readStatus);
         return ch;
     }
 
@@ -78,7 +89,7 @@ public class BasicChannelService implements ChannelService {
                 .orElse(null);
 
         // PRIVATE 채널인 경우 참여한 User의 id 정보 포함
-        if (ch.isPrivate()) {
+        if (ch.getType().equals(ChannelType.PRIVATE)) {
             List<UUID> userIdList = readStatusRepository.findUserIdByChannelId(ch.getId());
             return ChannelDTO.from(ch,
                     msg != null ? msg.getCreatedAt() : null,
@@ -99,18 +110,20 @@ public class BasicChannelService implements ChannelService {
     public List<ChannelDTO> findAllByUserId(UUID userId) {
         List<Channel> channelList = channelRepository.findAll();
 
+        //유저가 속한 채널 ID
+        Set<UUID> userChannelIds = readStatusRepository.findByUserId(userId).stream()
+                .map(ReadStatus::getChannelId)
+                .collect(Collectors.toSet());
+
         return channelList.stream()
-                .filter(ch -> {
-                    // PRIVATE 채널인 경우 유저가 포함된 채널만 반환
-                    if (ch.isPrivate()) {
-                        List<UUID> userIdList = readStatusRepository.findUserIdByChannelId(ch.getId());
-                        return userIdList.contains(userId);
-                    } else {
-                        return true;
-                    }
-                })
+                .filter(ch ->
+                    // PUBLIC 채널 + PRIVATE 채널인 경우 유저가 포함된 채널만 반환
+                    ch.getType().equals(ChannelType.PUBLIC)
+                            || userChannelIds.contains(ch.getId())
+                )
                 .map(this::buildChannelDTO)
                 .collect(Collectors.toList());
+
     }
 
     /**
@@ -124,6 +137,7 @@ public class BasicChannelService implements ChannelService {
     public ChannelDTO find(UUID channelId) {
         Channel ch = channelRepository.findById(channelId)
                 .orElseThrow(()->new NoSuchElementException("해당 ID의 채널이 존재하지 않습니다."));
+
         return buildChannelDTO(ch);
     }
 
@@ -138,19 +152,21 @@ public class BasicChannelService implements ChannelService {
      */
     @Override
     public Channel update(UUID channelId, PublicChannelUpdateRequestDTO updateRequestDTO) {
+        // 채널 유효성 검사
         Channel ch = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다."));
 
         // PRIVATE 채널 예외처리
-        if (ch.isPrivate()) {
+        if (ch.getType().equals(ChannelType.PRIVATE)) {
           throw new IllegalArgumentException("PRIVATE 채널은 수정할 수 없습니다.");
         }
 
+        String newName = updateRequestDTO.newName();
+        String newDescription = updateRequestDTO.newDescription();
+
         // 채널 수정
-        ch.update(
-                updateRequestDTO.newName(),
-                updateRequestDTO.newDescription()
-        );
+        ch.update(newName, newDescription);
+
         channelRepository.save(ch);
         return ch;
     }
@@ -162,8 +178,9 @@ public class BasicChannelService implements ChannelService {
      */
     @Override
     public void delete(UUID channelId) {
-        // 채널 삭제
-        channelRepository.deleteById(channelId);
+        // 채널 유효성 검사
+        channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널입니다."));
 
         // 관련 도메인 삭제
         messageRepository.findByChannelId(channelId).stream()
@@ -173,5 +190,8 @@ public class BasicChannelService implements ChannelService {
         readStatusRepository.findByChannelId(channelId).stream()
                 .map(ReadStatus::getId)
                 .forEach(readStatusRepository::deleteById);
+
+        // 채널 삭제
+        channelRepository.deleteById(channelId);
     }
 }

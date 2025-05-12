@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,35 +35,53 @@ public class BasicUserService implements UserService {
      * @throws IllegalStateException 유저명/이메일 중복시 예외처리
      */
     @Override
-    public User create(UserCreateRequestDTO userCreateRequestDTO, Optional<BinaryContentCreateRequestDTO> profileCreateRequestDTO) {
+    public User create(UserCreateRequestDTO userCreateRequestDTO, BinaryContentCreateRequestDTO profileCreateRequestDTO) {
+        String userName = userCreateRequestDTO.userName();
+        String email = userCreateRequestDTO.email();
+
         // username, email 중복체크
-        if (userRepository.existsByUserName(userCreateRequestDTO.userName())) {
+        if (userRepository.existsByUserName(userName)) {
             throw new IllegalStateException("이미 존재하는 유저명입니다. 다른 유저명을 입력해주세요.");
-        } else if (userRepository.existsByEmail(userCreateRequestDTO.email())) {
+        }
+        if (userRepository.existsByEmail(email)) {
             throw new IllegalStateException("이미 존재하는 이메일입니다. 다른 이메일을 입력해주세요.");
         }
 
         // BinaryContent 생성
-        boolean isProfileCreated = profileCreateRequestDTO.isPresent();
+        boolean isProfileCreated = profileCreateRequestDTO != null;
         BinaryContent binaryContent = null;
+
         // 프로필 파라미터가 있는 경우
         if (isProfileCreated) {
-            binaryContent = new BinaryContent(
-                    profileCreateRequestDTO.get().content()
-            );
+            String fileName = profileCreateRequestDTO.fileName();
+            String contentType = profileCreateRequestDTO.contentType();
+            byte[] content = profileCreateRequestDTO.content();
+
+            binaryContent = BinaryContent.builder()
+                    .contentType(contentType)
+                    .fileName(fileName)
+                    .content(content)
+                    .size((long) content.length)
+                    .build();
+
             binaryContentRepository.save(binaryContent);
         }
 
+        String password = userCreateRequestDTO.password();
+
         // 유저 생성
-        User user = new User(
-                userCreateRequestDTO.userName(),
-                userCreateRequestDTO.email(),
-                userCreateRequestDTO.password(),
-                isProfileCreated ? binaryContent.getId(): null
-        );
+        User user = User.builder()
+                .userName(userName)
+                .email(email)
+                .password(password)
+                .profileId(isProfileCreated ? binaryContent.getId(): null)
+                .build();
 
         // UserStatus 생성
-        UserStatus userStatus = new UserStatus(user.getId());
+        UserStatus userStatus = UserStatus.builder()
+                .userId(user.getId())
+                .lastAccessedAt(Instant.now())
+                .build();
 
         // 데이터 저장
         userRepository.save(user);
@@ -118,26 +137,48 @@ public class BasicUserService implements UserService {
      * @throws NoSuchElementException 해당 ID의 유저가 존재하지 않는 경우
      */
     @Override
-    public User update(UUID userId, UserUpdateRequestDTO updateRequestDTO, Optional<BinaryContentCreateRequestDTO> profileCreateRequestDTO) {
+    public User update(UUID userId, UserUpdateRequestDTO updateRequestDTO, BinaryContentCreateRequestDTO profileCreateRequestDTO) {
+        // 유저 유효성 검사
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 ID의 유저가 존재하지 않습니다."));
 
+        String newUsername = updateRequestDTO.newUsername();
+        String newEmail = updateRequestDTO.newEmail();
+
+        if (userRepository.existsByUserName(newUsername)) {
+            throw new IllegalStateException("이미 존재하는 유저명입니다. 다른 유저명을 입력해주세요.");
+        }
+        if (userRepository.existsByEmail(newEmail)) {
+            throw new IllegalStateException("이미 존재하는 이메일입니다. 다른 이메일을 입력해주세요.");
+        }
+
         // BinaryContent 생성
-        boolean isProfileCreated = profileCreateRequestDTO.isPresent();
+        boolean isProfileCreated = profileCreateRequestDTO != null;
         BinaryContent binaryContent = null;
+
         // 프로필 파라미터가 있는 경우
         if (isProfileCreated) {
-            binaryContent = new BinaryContent(
-                    profileCreateRequestDTO.get().content()
-            );
+            String fileName = profileCreateRequestDTO.fileName();
+            String contentType = profileCreateRequestDTO.contentType();
+            byte[] content = profileCreateRequestDTO.content();
+
+            binaryContent = BinaryContent.builder()
+                    .fileName(fileName)
+                    .size((long) content.length)
+                    .contentType(contentType)
+                    .content(content)
+                    .build();
+
             binaryContentRepository.save(binaryContent);
         }
 
+        String newPassword = updateRequestDTO.newPassword();
+
         // 유저 수정
         user.update(
-                updateRequestDTO.newUsername(),
-                updateRequestDTO.newEmail(),
-                updateRequestDTO.newPassword(),
+                newUsername,
+                newEmail,
+                newPassword,
                 isProfileCreated ? binaryContent.getId(): null
         );
 
@@ -158,16 +199,16 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("해당 ID의 유저가 존재하지 않습니다."));
 
         UUID userStatusId = userStatusRepository.findByUserId(userId)
-                .map(userStatus -> userStatus.getId())
+                .map(UserStatus::getId)
                 .orElseThrow(()-> new NoSuchElementException("해당 유저ID의 UserStatus가 존재하지 않습니다."));
-
-        // 유저 삭제
-        userRepository.deleteById(userId);
 
         // 관련 도메인 삭제 (BinaryContent, UserStatus)
         userStatusRepository.deleteById(userStatusId);
         if (user.getProfileId() != null) {
             binaryContentRepository.deleteById(user.getProfileId());
         }
+
+        // 유저 삭제
+        userRepository.deleteById(userId);
     }
 }

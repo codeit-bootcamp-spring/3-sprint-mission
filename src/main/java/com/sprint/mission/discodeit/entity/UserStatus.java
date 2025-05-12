@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -20,13 +22,14 @@ public class UserStatus implements Serializable {
     private UUID userId;                // 유저ID
     private Instant lastAccessedAt;     // 마지막으로 확인된 접속시간
 
-    public UserStatus(UUID userId) {
+    @Builder
+    public UserStatus(UUID userId, Instant lastAccessedAt) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
 
         this.userId = userId;
-        this.lastAccessedAt = Instant.now();
+        this.lastAccessedAt = lastAccessedAt;
     }
 
     public void update(Instant lastAccessedAt) {
@@ -35,6 +38,9 @@ public class UserStatus implements Serializable {
     }
 
     public boolean isOnline() {
-        return this.lastAccessedAt.isAfter(Instant.now().minusSeconds(300));
+
+        Instant instantFiveMinuteAgo = Instant.now().minus(Duration.ofMinutes(5));
+
+        return this.lastAccessedAt.isAfter(instantFiveMinuteAgo);
     }
 }
