@@ -132,7 +132,7 @@ public class BasicUserService implements UserService {
       userStatusRepository.findByUserId(id).ifPresent(status -> {
         userStatusRepository.delete(status.getId());
       });
-      
+
       return toUserResponse(user);
     });
   }

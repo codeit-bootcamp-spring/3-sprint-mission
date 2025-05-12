@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -12,7 +13,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.AuthException;
 import com.sprint.mission.discodeit.fixture.UserFixture;
-import com.sprint.mission.discodeit.fixture.UserStatusFixture;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicAuthService;
@@ -43,7 +43,7 @@ class BasicAuthServiceTest {
   @BeforeEach
   void setUp() {
     user = UserFixture.createValidUser();
-    userStatus = UserStatusFixture.createValidUserStatus(user.getId());
+    userStatus = mock(UserStatus.class);
     loginRequest = new LoginRequest(user.getName(), user.getPassword());
   }
 
@@ -51,6 +51,7 @@ class BasicAuthServiceTest {
   void 유효한_credentials로_로그인_시_UserResponse_반환() {
     // given
     when(userRepository.findByName(user.getName())).thenReturn(Optional.of(user));
+    when(userStatusRepository.findByUserId(user.getId())).thenReturn(Optional.of(userStatus));
 
     // when
     UserResponse response = authService.login(loginRequest);
@@ -62,6 +63,7 @@ class BasicAuthServiceTest {
         .isEqualTo(toUserResponse(user));
 
     verify(userRepository).findByName(loginRequest.userName());
+    verify(userStatus).updateLastActiveAt();
   }
 
   @Test

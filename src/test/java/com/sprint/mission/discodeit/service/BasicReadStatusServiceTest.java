@@ -72,8 +72,6 @@ public class BasicReadStatusServiceTest {
 
       ReadStatus createdStatus = readStatusService.create(request);
 
-      System.out.println("createdStatus = " + createdStatus);
-
       assertNotNull(createdStatus);
       assertEquals(userId, createdStatus.getUserId());
       assertEquals(channelId, createdStatus.getChannelId());

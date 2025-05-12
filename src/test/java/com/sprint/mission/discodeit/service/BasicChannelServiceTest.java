@@ -86,8 +86,6 @@ class BasicChannelServiceTest {
 
       Channel result = channelService.createPublic(publicRequest);
 
-      System.out.println("result = " + result);
-
       assertEquals(publicRequest.name(), result.getName());
       assertEquals(ChannelType.PUBLIC, result.getType());
       verify(channelRepository).save(any());

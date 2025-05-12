@@ -150,32 +150,36 @@ class BasicUserServiceTest {
 
     @Test
     void 프로필_이미지가_있는_사용자를_삭제하면_프로필이미지도_함께_삭제한다() {
-      UUID userId = UUID.randomUUID();
       BinaryContent profileImage = BinaryContentFixture.createValid();
       User userToDelete = UserFixture.createCustomUser(
           new UserCreateRequest("test@test.com", "길동쓰", "pwd123", profileImage));
+      UUID userId = userToDelete.getId();
+      UserStatus userStatusToDelete = UserStatusFixture.createValidUserStatus(userToDelete.getId());
       userToDelete.updateProfileId(profileImage.getId());
 
       when(userRepository.findById(userId)).thenReturn(Optional.of(userToDelete));
+      when(userStatusRepository.findByUserId(userId)).thenReturn(Optional.of(userStatusToDelete));
 
       basicUserService.delete(userId);
 
       verify(userRepository).delete(userId);
       verify(binaryContentRepository).delete(userToDelete.getProfileId());
-      verify(userStatusRepository).delete(userId);
+      verify(userStatusRepository).delete(userStatusToDelete.getId());
     }
 
     @Test
     void 프로필_이미지가_없는_사용자를_삭제해도_UserStatus는_삭제해야_한다() {
-      UUID userId = UUID.randomUUID();
       User userToDelete = UserFixture.createValidUser();
+      UUID userId = userToDelete.getId();
+      UserStatus userStatusToDelete = UserStatusFixture.createValidUserStatus(userToDelete.getId());
 
       when(userRepository.findById(userId)).thenReturn(Optional.of(userToDelete));
+      when(userStatusRepository.findByUserId(userId)).thenReturn(Optional.of(userStatusToDelete));
 
       basicUserService.delete(userId);
 
       verify(userRepository).delete(userId);
-      verify(userStatusRepository).delete(userId);
+      verify(userStatusRepository).delete(userStatusToDelete.getId());
       verify(binaryContentRepository, never()).delete(any());
     }
 

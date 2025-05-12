@@ -8,13 +8,8 @@ public enum ErrorCode {
   ALREADY_EXISTS("error.already_exists", "E409"),
   PROCESSING_ERROR("error.processing_error", "E500"),
 
-  FILE_READ_ERROR("error.file.read_error", "F001"),
-  FILE_WRITE_ERROR("error.file.write_error", "F002"),
-  FILE_NOT_FOUND("error.file.not_found", "F003"),
-  INVALID_POSITION("error.file.invalid_position", "F004"),
-  SERIALIZATION_ERROR("error.file.serialization_error", "F005"),
-  DELETE_ERROR("error.file.delete_error", "F006"),
-  OPTIMIZATION_ERROR("error.file.optimization_error", "F007");
+  INVALID_NAME("error.auth.invalid_name", "A001"),
+  INVALID_PASSWORD("error.auth.invalid_password", "A002");
 
   private final String messageKey;
   private final String code;

@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.exception.FileException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.storage.FileStorage;
 import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
@@ -66,7 +65,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
   public void delete(UUID binaryContentId) {
     try {
       fileStorage.deleteObject(binaryContentId);
-    } catch (FileException e) {
+    } catch (RuntimeException e) {
       throw new RuntimeException("컨텐트 삭제 실패: " + e.getMessage(), e);
     }
   }
