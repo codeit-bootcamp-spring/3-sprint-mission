@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -70,7 +71,8 @@ public class BasicMessageService implements MessageService {
         .filter(m ->
             (channelId == null || m.getChannelId().equals(channelId)) &&
                 (userId == null || m.getUserId().equals(userId)) &&
-                (content == null || m.getContent().contains(content)))
+                (Objects.equals(content, "") || content == null || m.getContent()
+                    .contains(content)))
         .sorted(Comparator.comparing(Message::getCreatedAt))
         .collect(Collectors.toList());
   }
@@ -84,8 +86,8 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public Optional<Message> updateContent(MessageUpdateRequest request) {
-    return messageRepository.findById(request.messageId())
+  public Optional<Message> updateContent(UUID messageId, MessageUpdateRequest request) {
+    return messageRepository.findById(messageId)
         .map(message -> {
           message.updateContent(request.newContent());
           return messageRepository.save(message);
@@ -97,8 +99,7 @@ public class BasicMessageService implements MessageService {
     return messageRepository.findById(id)
         .filter(m -> m.getDeletedAt() == null)
         .map(m -> {
-          binaryContentRepository.delete(id);
-
+          m.getAttachmentIds().forEach(binaryContentRepository::delete);
           m.delete();
           return messageRepository.save(m);
         });

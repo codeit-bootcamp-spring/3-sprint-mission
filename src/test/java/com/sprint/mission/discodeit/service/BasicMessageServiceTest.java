@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.fixture.ChannelFixture;
 import com.sprint.mission.discodeit.fixture.MessageFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
@@ -132,9 +133,9 @@ public class BasicMessageServiceTest {
       Message message = MessageFixture.createValid();
       when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
 
-      MessageUpdateRequest updateRequest = new MessageUpdateRequest(messageId, updatedContent);
+      MessageUpdateRequest updateRequest = new MessageUpdateRequest(updatedContent);
 
-      messageService.updateContent(updateRequest);
+      messageService.updateContent(messageId, updateRequest);
 
       assertEquals(updatedContent, message.getContent());
       verify(messageRepository).save(any());
@@ -147,7 +148,11 @@ public class BasicMessageServiceTest {
     @Test
     void 메시지를_삭제하면_첨부파일도_삭제된다() {
       UUID messageId = UUID.randomUUID();
-      Message message = MessageFixture.createValid();
+      MessageCreateRequest messageRequest = new MessageCreateRequest("테스트 메시지", UUID.randomUUID(),
+          UUID.randomUUID());
+      BinaryContent attachment = BinaryContentFixture.createValid();
+      Message message = MessageFixture.createCustomWithAttachments(messageRequest,
+          List.of(attachment.getId()));
 
       when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
 

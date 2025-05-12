@@ -52,7 +52,7 @@ public interface MessageService {
    * @param request MessageUpdateRequest
    * @return 업데이트된 메시지 객체
    */
-  Optional<Message> updateContent(MessageUpdateRequest request);
+  Optional<Message> updateContent(UUID messageId, MessageUpdateRequest request);
 
   /**
    * 메시지를 삭제한다
