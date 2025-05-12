@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDTO;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -22,11 +23,11 @@ public class UserStatus implements Serializable {
     private Instant lastLoginTime;
     private static final long LOGIN_TIMEOUT_MINUTES = 5L;
 
-    public UserStatus(UUID userId) {
+    public UserStatus(UUID userId, Instant lastLoginTime) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.userId = userId;
-        this.lastLoginTime = Instant.now();
+        this.lastLoginTime = lastLoginTime;
     }
 
     public void updateLastLoginTime(Instant lastLoginTime) {
@@ -50,6 +51,16 @@ public class UserStatus implements Serializable {
         Duration timeDiff = Duration.between(this.lastLoginTime, now);
 
         return timeDiff.toMinutes() <= LOGIN_TIMEOUT_MINUTES;
+    }
+
+    public static UserStatusResponseDTO toDTO(UserStatus userStatus) {
+        UserStatusResponseDTO userStatusResponseDTO = new UserStatusResponseDTO(userStatus.getId(),
+                userStatus.getCreatedAt(),
+                userStatus.getUpdatedAt(),
+                userStatus.getUserId(),
+                userStatus.getLastLoginTime());
+
+        return userStatusResponseDTO;
     }
 
     @Override

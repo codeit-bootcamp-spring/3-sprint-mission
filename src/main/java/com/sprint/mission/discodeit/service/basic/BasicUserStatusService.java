@@ -4,9 +4,9 @@ import com.sprint.mission.discodeit.dto.userstatus.UserStatusRequestDTO;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDTO;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDTO;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.alreadyexist.UserStatusAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserStatusException;
-import com.sprint.mission.discodeit.exception.alreadyexist.UserStatusAlreadyExistsException;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -33,7 +33,7 @@ public class BasicUserStatusService implements UserStatusService {
             throw new UserStatusAlreadyExistsException();
         }
 
-        UserStatus userStatus = UserStatusRequestDTO.toEntity(userStatusRequestDTO);
+        UserStatus userStatus = UserStatusRequestDTO.fromDTO(userStatusRequestDTO);
 
         userStatusRepository.save(userStatus);
 
@@ -44,13 +44,13 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusResponseDTO findById(UUID id) {
         UserStatus userStatus = findUserStatus(id);
 
-        return UserStatusResponseDTO.toDTO(userStatus);
+        return UserStatus.toDTO(userStatus);
     }
 
     @Override
     public List<UserStatusResponseDTO> findAll() {
         return userStatusRepository.findAll().stream()
-                .map(UserStatusResponseDTO::toDTO)
+                .map(UserStatus::toDTO)
                 .toList();
     }
 
@@ -61,7 +61,7 @@ public class BasicUserStatusService implements UserStatusService {
         userStatus.updateLastLoginTime(userStatusUpdateDTO.lastLoginTime());
         userStatusRepository.save(userStatus);
 
-        return UserStatusResponseDTO.toDTO(userStatus);
+        return UserStatus.toDTO(userStatus);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class BasicUserStatusService implements UserStatusService {
         userStatus.updateLastLoginTime(userStatusUpdateDTO.lastLoginTime());
         userStatusRepository.save(userStatus);
 
-        return UserStatusResponseDTO.toDTO(userStatus);
+        return UserStatus.toDTO(userStatus);
     }
 
     @Override

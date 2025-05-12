@@ -19,6 +19,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,7 +50,7 @@ public class BasicUserService implements UserService {
             binaryContentRepository.save(profileImage);
         }
 
-        UserStatus userStatus = new UserStatus(user.getId());
+        UserStatus userStatus = new UserStatus(user.getId(), Instant.now());
 
         userStatusRepository.save(userStatus);
         userRepository.save(user);
