@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.UUID;
 import java.time.Instant;
 
@@ -15,6 +16,7 @@ public class Message implements Serializable {
     private final UUID channelId;
     private final Instant createdAt;
     private Instant updatedAt;
+    private List<UUID> attachmentIds;
     private static final long serialVersionUID = 1L;
 
     // 생성자
@@ -28,9 +30,9 @@ public class Message implements Serializable {
     }
 
     //  메시지 내용 수정
-    public void updateContent(String content) {
-        if (content != null && !content.isEmpty()) {
-            this.content = content;
+    public void updateContent(String newContent) {
+        if (newContent != null && !newContent.isEmpty()) {
+            this.content = newContent;
             this.updatedAt = Instant.now(); // 수정 시간 갱신
         }
     }
@@ -40,4 +42,5 @@ public class Message implements Serializable {
         return "Message [messageId=" + messageId + ", content=" + content + ", authorId=" + authorId + ", channelId="
                 + channelId + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "]";
     }
+
 }
