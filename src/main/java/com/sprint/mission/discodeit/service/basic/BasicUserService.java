@@ -44,7 +44,7 @@ public class BasicUserService implements UserService {
 
         // 프로필 이미지를 등록한 경우
         if (binaryContentDTO != null) {
-            BinaryContent profileImage = BinaryContentDTO.toEntity(binaryContentDTO);
+            BinaryContent profileImage = BinaryContentDTO.fromDTO(binaryContentDTO);
             user.updateProfileID(profileImage.getId());
             binaryContentRepository.save(profileImage);
         }
@@ -126,7 +126,7 @@ public class BasicUserService implements UserService {
 
         // 프로필 이미지 변경
         if (binaryContentDTO != null) {
-            BinaryContent profileImage = BinaryContentDTO.toEntity(binaryContentDTO);
+            BinaryContent profileImage = BinaryContentDTO.fromDTO(binaryContentDTO);
             user.updateProfileID(profileImage.getId());
             userRepository.save(user);
             binaryContentRepository.save(profileImage);

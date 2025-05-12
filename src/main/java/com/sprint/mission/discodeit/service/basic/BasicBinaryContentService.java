@@ -20,7 +20,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContent create(BinaryContentDTO binaryContentDTO) {
-        BinaryContent binaryContent = BinaryContentDTO.toEntity(binaryContentDTO);
+        BinaryContent binaryContent = BinaryContentDTO.fromDTO(binaryContentDTO);
 
         binaryContentRepository.save(binaryContent);
 
@@ -32,20 +32,20 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContent foundBinaryContent = binaryContentRepository.findById(id)
                 .orElseThrow(NotFoundBinaryContentException::new);
 
-        return BinaryContentResponseDTO.toDTO(foundBinaryContent);
+        return BinaryContent.toDTO(foundBinaryContent);
     }
 
     @Override
     public List<BinaryContentResponseDTO> findAll() {
         return binaryContentRepository.findAll().stream()
-                .map(BinaryContentResponseDTO::toDTO)
+                .map(BinaryContent::toDTO)
                 .toList();
     }
 
     @Override
     public List<BinaryContentResponseDTO> findAllByIdIn(List<UUID> ids) {
         return binaryContentRepository.findAllByIdIn(ids).stream()
-                .map(BinaryContentResponseDTO::toDTO)
+                .map(BinaryContent::toDTO)
                 .toList();
     }
 

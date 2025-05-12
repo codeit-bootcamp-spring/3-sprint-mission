@@ -178,7 +178,7 @@ public class BasicMessageService implements MessageService {
 
     private List<BinaryContent> convertBinaryContentDTOS(List<BinaryContentDTO> binaryContentDTOS) {
         return binaryContentDTOS.stream()
-                .map(BinaryContentDTO::toEntity)
+                .map(BinaryContentDTO::fromDTO)
                 .toList();
     }
 

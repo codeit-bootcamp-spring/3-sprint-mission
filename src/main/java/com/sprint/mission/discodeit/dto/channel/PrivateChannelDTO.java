@@ -7,13 +7,10 @@ import java.util.UUID;
 
 public record PrivateChannelDTO(UUID channelMaster, List<UUID> users) {
 
-    public static Channel toEntity(PrivateChannelDTO privateChannelDTO) {
-        Channel channel = new Channel();
+    public static Channel fromDTO(PrivateChannelDTO privateChannelDTO) {
+        Channel channel = new Channel(privateChannelDTO.channelMaster(),
+                privateChannelDTO.users());
 
-        channel.updateChannelMaster(privateChannelDTO.channelMaster());
-        // privateChannel의 userList 추가
-        privateChannelDTO.users().forEach(channel::updateUsers);
-        channel.updatePrivate(true);
         return channel;
     }
 }

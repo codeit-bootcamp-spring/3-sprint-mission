@@ -41,7 +41,7 @@ public class BasicChannelService implements ChannelService {
             throw new NotFoundUserException();
         }
 
-        Channel channel = PublicChannelDTO.toEntity(publicChannelDTO);
+        Channel channel = PublicChannelDTO.fromDTO(publicChannelDTO);
 
         joinChannel(channel);
         createReadStatus(channel);
@@ -58,7 +58,7 @@ public class BasicChannelService implements ChannelService {
             throw new NotFoundUserException();
         }
 
-        Channel channel = PrivateChannelDTO.toEntity(privateChannelDTO);
+        Channel channel = PrivateChannelDTO.fromDTO(privateChannelDTO);
 
         joinChannel(channel);
         createReadStatus(channel);
@@ -80,9 +80,8 @@ public class BasicChannelService implements ChannelService {
         Channel channel = findChannel(channelId);
 
         Instant lastMessageTime = getLastMessageTime(channel);
-        ChannelResponseDTO channelResponseDTO = ChannelResponseDTO.toDTO(channel);
-
-        channelResponseDTO.setLastMessageTime(lastMessageTime);
+        channel.updateLastMessageTime(lastMessageTime);
+        ChannelResponseDTO channelResponseDTO = Channel.toDTO(channel);
 
         return channelResponseDTO;
     }
@@ -94,8 +93,8 @@ public class BasicChannelService implements ChannelService {
         return nameContainingChannels.stream()
                 .map(channel -> {
                     Instant lastMessageTime = getLastMessageTime(channel);
-                    ChannelResponseDTO channelResponseDTO = ChannelResponseDTO.toDTO(channel);
-                    channelResponseDTO.setLastMessageTime(lastMessageTime);
+                    channel.updateLastMessageTime(lastMessageTime);
+                    ChannelResponseDTO channelResponseDTO = Channel.toDTO(channel);
 
                     return channelResponseDTO;
                 })
@@ -118,8 +117,8 @@ public class BasicChannelService implements ChannelService {
         return channels.stream()
                 .map(channel -> {
                     Instant lastMessageTime = getLastMessageTime(channel);
-                    ChannelResponseDTO channelResponseDTO = ChannelResponseDTO.toDTO(channel);
-                    channelResponseDTO.setLastMessageTime(lastMessageTime);
+                    channel.updateLastMessageTime(lastMessageTime);
+                    ChannelResponseDTO channelResponseDTO = Channel.toDTO(channel);
 
                     return channelResponseDTO;
                 })
@@ -131,8 +130,8 @@ public class BasicChannelService implements ChannelService {
         return channelRepository.findAll().stream()
                 .map(channel -> {
                     Instant lastMessageTime = getLastMessageTime(channel);
-                    ChannelResponseDTO channelResponseDTO = ChannelResponseDTO.toDTO(channel);
-                    channelResponseDTO.setLastMessageTime(lastMessageTime);
+                    channel.updateLastMessageTime(lastMessageTime);
+                    ChannelResponseDTO channelResponseDTO = Channel.toDTO(channel);
 
                     return channelResponseDTO;
                 })
@@ -161,7 +160,7 @@ public class BasicChannelService implements ChannelService {
 
         channelRepository.save(channel);
 
-        return ChannelResponseDTO.toDTO(channel);
+        return Channel.toDTO(channel);
     }
 
     @Override
