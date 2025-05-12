@@ -26,16 +26,16 @@ import java.util.UUID;
  */
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/api/binary-contents")
+@RequestMapping("/api/binaryContent")
 public class BinaryContentController {
 
     private final BinaryContentService binaryContentService;
 
     /* 바이너리 파일 한개 다운로드 */
-    @RequestMapping(path = "/{binaryContentId}", method = RequestMethod.GET)
+    @RequestMapping(path = "/find", method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<BinaryContent> find(
-            @PathVariable String binaryContentId
+            @RequestParam String binaryContentId
     ) {
         BinaryContent binaryContent = binaryContentService.find(parseStringToUuid(binaryContentId));
         return ResponseEntity.ok().body(binaryContent);

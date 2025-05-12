@@ -80,10 +80,11 @@ public class UserController {
     }
 
     /* 유저 조회 All */
-    @RequestMapping(path = "/users", method = RequestMethod.GET)
+    @RequestMapping(path = "/user/findAll", method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<List<UserDto>> findAll() {
         List<UserDto> users = userService.findAll();
+        System.out.println(users.toString());
         return ResponseEntity.ok().body(users);
     }
 
