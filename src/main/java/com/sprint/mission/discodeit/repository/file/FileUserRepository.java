@@ -3,21 +3,26 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.storage.FileStorage;
+import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Repository;
 
+@Primary
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file", matchIfMissing = true)
 public class FileUserRepository implements UserRepository {
 
   private final FileStorage fileStorage;
 
-  private FileUserRepository(FileStorage fileStorage) {
-    this.fileStorage = fileStorage;
-  }
-
-  public static FileUserRepository create(FileStorage fileStorage) {
-    return new FileUserRepository(fileStorage);
+  public FileUserRepository(
+      @Value("${discodeit.repository.file-directory.folder:data}${discodeit.repository.file-directory.user:/user}") String fileDirectory) {
+    this.fileStorage = new FileStorageImpl(fileDirectory);
   }
 
   @Override
@@ -53,7 +58,7 @@ public class FileUserRepository implements UserRepository {
   }
 
   @Override
-  public Optional<User> findByNameWithPassword(String name, String password) {
+  public Optional<User> findByNameAndPassword(String name, String password) {
     return findAll().stream()
         .filter(user -> user.getName().equals(name) && user.getPassword().equals(password))
         .findFirst();

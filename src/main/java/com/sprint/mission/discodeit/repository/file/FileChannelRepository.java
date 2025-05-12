@@ -3,20 +3,25 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.storage.FileStorage;
+import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Repository;
 
+@Primary
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file", matchIfMissing = true)
 public class FileChannelRepository implements ChannelRepository {
 
   private final FileStorage fileStorage;
 
-  private FileChannelRepository(FileStorage fileStorage) {
-    this.fileStorage = fileStorage;
-  }
-
-  public static FileChannelRepository create(FileStorage fileStorage) {
-    return new FileChannelRepository(fileStorage);
+  public FileChannelRepository(
+      @Value("${discodeit.repository.file-directory.folder:data}${discodeit.repository.file-directory.channel:/channel}") String fileDirectory) {
+    this.fileStorage = new FileStorageImpl(fileDirectory);
   }
 
   @Override

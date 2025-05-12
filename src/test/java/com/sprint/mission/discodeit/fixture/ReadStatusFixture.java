@@ -8,26 +8,18 @@ import com.sprint.mission.discodeit.entity.User;
 public class ReadStatusFixture {
 
   /**
-   * ReadStatus를 생성한다 (Request 기반)
+   * 기본 유효한 ReadStatus 생성
    */
-  public static ReadStatus createReadStatus(ReadStatusCreateRequest request) {
-    return ReadStatus.create(request.userId(), request.channelId());
-  }
-
-  /**
-   * ReadStatus를 생성한다 (직접 ID 전달)
-   */
-  public static ReadStatus createReadStatusByIds(java.util.UUID userId, java.util.UUID channelId) {
-    return ReadStatus.create(userId, channelId);
-  }
-
-  /**
-   * 기본 ReadStatus를 생성한다. 유저와 채널도 함께 생성되며, 유저는 채널의 참여자로 등록된다.
-   */
-  public static ReadStatus createValidReadStatus() {
+  public static ReadStatus create() {
     User user = UserFixture.createValidUser();
-    Channel channel = ChannelFixture.createCustomChannelWithParticipant(user,
-        ChannelFixture.DEFAULT_CHANNEL_NAME, ChannelFixture.DEFAULT_CHANNEL_DESCRIPTION);
+    Channel channel = ChannelFixture.createPrivate();
     return ReadStatus.create(user.getId(), channel.getId());
+  }
+
+  /**
+   * ReadStatusCreateRequest DTO 기반으로 ReadStatus 생성
+   */
+  public static ReadStatus createFromRequest(ReadStatusCreateRequest dto) {
+    return ReadStatus.create(dto.userId(), dto.channelId());
   }
 }

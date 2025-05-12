@@ -57,8 +57,8 @@ public class UserFixture {
    */
   public static User createValidUserWithProfileImage() {
     User user = createValidUser();
-    BinaryContent profileImage = BinaryContentFixture.createValidProfileImage(user.getId());
-    user.updateProfileImageId(profileImage.getId());
+    BinaryContent profileImage = BinaryContentFixture.createValid();
+    user.updateProfileId(profileImage.getId());
     return user;
   }
 
@@ -72,11 +72,20 @@ public class UserFixture {
   /**
    * UserCreateRequest를 기반으로 User를 생성한다.
    */
-  public static User createCustomUser(UserCreateRequest dto) {
+  public static User createCustomUser(UserCreateRequest dto, BinaryContent profileImage) {
     UUID profileImageId = null;
-    if (dto.profileImage() != null) {
-      profileImageId = dto.profileImage().getId();
+
+    if (profileImage != null) {
+      String fileName = profileImage.getFileName();
+      String contentType = profileImage.getContentType();
+      byte[] bytes = profileImage.getBytes();
+
+      BinaryContent savedProfileImage = BinaryContent.create(fileName, (long) fileName.length(),
+          contentType, bytes);
+
+      profileImageId = savedProfileImage.getId();
     }
+
     return User.create(dto.email(), dto.name(), dto.password(), profileImageId);
   }
 }

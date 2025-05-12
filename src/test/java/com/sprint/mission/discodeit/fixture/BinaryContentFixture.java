@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.fixture;
 
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import java.util.UUID;
 
 public class BinaryContentFixture {
 
@@ -10,35 +10,19 @@ public class BinaryContentFixture {
   private static final byte[] DEFAULT_DATA = new byte[]{1, 2, 3};
 
   /**
-   * 기본 프로필 이미지를 생성한다.
+   * 기본 BinaryContent 객체를 생성한다.
    */
-  public static BinaryContent createValidProfileImage(UUID userId) {
-    return BinaryContent.createProfileImage(DEFAULT_DATA, DEFAULT_FILE_NAME, DEFAULT_MIME_TYPE,
-        userId);
+  public static BinaryContent createValid() {
+    return BinaryContent.create(DEFAULT_FILE_NAME, (long) DEFAULT_DATA.length, DEFAULT_MIME_TYPE,
+        DEFAULT_DATA);
   }
 
   /**
-   * 기본 메시지 첨부파일을 생성한다.
+   * 커스텀 BinaryContent 객체를 생성한다.
    */
-  public static BinaryContent createValidMessageAttachment() {
-    return BinaryContent.createMessageAttachment(DEFAULT_DATA, DEFAULT_FILE_NAME, DEFAULT_MIME_TYPE,
-        null);
-  }
-
-  /**
-   * 커스텀 프로필 이미지를 생성한다.
-   */
-  public static BinaryContent createCustomProfileImage(byte[] data, String fileName,
-      String mimeType, UUID userId) {
-    return BinaryContent.createProfileImage(data, fileName, mimeType, userId);
-  }
-
-  /**
-   * 커스텀 메시지 첨부파일을 생성한다.
-   */
-  public static BinaryContent createCustomMessageAttachment(byte[] data, String fileName,
-      String mimeType) {
-    return BinaryContent.createMessageAttachment(data, fileName, mimeType, null);
+  public static BinaryContent createCustom(BinaryContentCreateRequest dto) {
+    return BinaryContent.create(dto.fileName(), (long) dto.bytes().length, dto.contentType(),
+        dto.bytes());
   }
 
   /**

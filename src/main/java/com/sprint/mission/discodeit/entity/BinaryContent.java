@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.common.model.ImmutableAuditable;
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -10,81 +10,61 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * 이미지, 파일 등 바이너리 데이터를 표현하는 도메인 모델
- * <p>
- * 수정 불가능한 도메인 모델로 간주하므로 updatedAt 필드는 정의하지 않음
- * <p>
- * <ul>
- * <li>AuditInfo (id, createdAt)</li>
- * <li>바이너리 데이터</li>
- * <li>파일명</li>
- * <li>MIME 타입</li>
- * </ul>
- */
 @Getter
-@ToString(callSuper = true)
+@ToString
 @Builder(toBuilder = true, access = AccessLevel.PRIVATE)
-public class BinaryContent extends ImmutableAuditable implements Serializable {
+public class BinaryContent implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 8121899659000317030L;
 
   public enum ContentType {
-    PROFILE_IMAGE,          // userId 필수, messageId null
-    MESSAGE_ATTACHMENT      // messageId 필수, userId null
+    PROFILE_IMAGE,
+    MESSAGE_ATTACHMENT
   }
 
-  // 바이너리 데이터 정보
-  private final byte[] data;
+  private final UUID id;
+  private final Instant createdAt;
+  private Instant updatedAt;
+
   private final String fileName;
-  private final String mimeType;
+  private Long size;
+  private final String contentType;
+  private final byte[] bytes;
 
-  // 참조 정보
-  private final ContentType contentType;
-  private final UUID userId;
-  private UUID messageId;
-
-  private BinaryContent(byte[] data, String fileName, String mimeType, ContentType contentType,
-      UUID userId, UUID messageId) {
-    this.data = data;
+  private BinaryContent(
+      UUID id,
+      Instant createdAt,
+      Instant updatedAt,
+      String fileName,
+      Long size,
+      String contentType,
+      byte[] bytes
+  ) {
+    this.id = id != null ? id : UUID.randomUUID();
+    this.createdAt = createdAt != null ? createdAt : Instant.now();
+    this.updatedAt = updatedAt;
     this.fileName = fileName;
-    this.mimeType = mimeType;
+    this.size = size;
     this.contentType = contentType;
-    this.userId = userId;
-    this.messageId = messageId;
+    this.bytes = bytes;
   }
 
-  public static BinaryContent createProfileImage(byte[] data, String fileName, String mimeType,
-      UUID userId) {
-    Objects.requireNonNull(userId, "컨텐트 생성 시 유저 id는 필수입니다.");
+  public static BinaryContent create(
+      String fileName,
+      Long size,
+      String contentType,
+      byte[] bytes
+  ) {
     return BinaryContent.builder()
-        .data(Objects.requireNonNull(data))
+        .id(UUID.randomUUID())
+        .createdAt(Instant.now())
+        .updatedAt(null)
         .fileName(Objects.requireNonNull(fileName))
-        .mimeType(Objects.requireNonNull(mimeType))
-        .contentType(ContentType.PROFILE_IMAGE)
-        .userId(userId)
-        .messageId(null)
+        .size(size)
+        .contentType(Objects.requireNonNull(contentType))
+        .bytes(Objects.requireNonNull(bytes))
         .build();
-  }
-
-  public static BinaryContent createMessageAttachment(byte[] data, String fileName, String mimeType,
-      UUID messageId) {
-    return BinaryContent.builder()
-        .data(Objects.requireNonNull(data))
-        .fileName(Objects.requireNonNull(fileName))
-        .mimeType(Objects.requireNonNull(mimeType))
-        .contentType(ContentType.MESSAGE_ATTACHMENT)
-        .userId(null)
-        .messageId(messageId)
-        .build();
-  }
-
-  public void attachToMessage(UUID messageId) {
-    if (this.messageId != null) {
-      throw new IllegalStateException("이미 메시지에 연결된 파일입니다.");
-    }
-    this.messageId = Objects.requireNonNull(messageId, "메시지 ID는 null일 수 없습니다.");
   }
 
   @Override
@@ -92,15 +72,14 @@ public class BinaryContent extends ImmutableAuditable implements Serializable {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof BinaryContent)) {
+    if (!(o instanceof BinaryContent binaryContent)) {
       return false;
     }
-    BinaryContent that = (BinaryContent) o;
-    return Objects.equals(getId(), that.getId());
+    return Objects.equals(id, binaryContent.id);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getId());
+    return Objects.hash(id);
   }
 }
