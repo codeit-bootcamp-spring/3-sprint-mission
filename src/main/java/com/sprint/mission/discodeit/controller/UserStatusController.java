@@ -23,12 +23,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * 2025. 5. 9.        doungukkim       최초 생성
  */
 @Controller
-@RequestMapping("api/userStatus")
+@RequestMapping("api/user-status")
 @RequiredArgsConstructor
 public class UserStatusController {
     private final UserStatusService userStatusService;
 
-    @RequestMapping(path = "/updateTime", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/update-time", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateTime(@RequestBody UserStatusUpdateByUserIdRequest request) {
         return userStatusService.updateByUserId(request.getUserId(), request.getNewTime());
     }

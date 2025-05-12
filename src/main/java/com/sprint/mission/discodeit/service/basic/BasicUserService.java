@@ -47,7 +47,7 @@ public class BasicUserService  implements UserService {
 
 
     @Override
-    public UserCreateResponse create(
+    public ResponseEntity<?> create(
             UserCreateRequest userCreateRequest,
             Optional<BinaryContentCreateRequest> optionalProfileCreateRequest
     ) {
@@ -56,6 +56,7 @@ public class BasicUserService  implements UserService {
         boolean emailNotUnique = !userRepository.isUniqueEmail(userCreateRequest.email());
 
         if (usernameNotUnique || emailNotUnique) {
+
             throw new IllegalStateException("not unique username or email");
         }
 
@@ -104,14 +105,14 @@ public class BasicUserService  implements UserService {
         }
         UserStatus userStatus = userStatusRepository.createUserStatus(user.getId());
 
-        return new UserCreateResponse(
+        UserCreateResponse userCreateResponse = new UserCreateResponse(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
                 nullableProfile != null ? nullableProfile.getId() : null,
                 userStatus.getId()
         );
-
+        return ResponseEntity.status(HttpStatus.CREATED).body(userCreateResponse);
 //        BinaryContent 생성 -> (분기)이미지 없을 경우 -> User 생성 -> userStatus 생성 -> return response
 //                           -> (분기)이미지 있을 경우 -> User 생성 -> attachment 저장 -> userStatus 생성 -> return response
     }

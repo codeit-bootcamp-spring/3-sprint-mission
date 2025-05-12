@@ -28,7 +28,7 @@ import java.util.UUID;
  */
 public interface UserService {
 
-    UserCreateResponse create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profile);
+    ResponseEntity<?> create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profile);
 //    UserCreateResponse create(UserCreateRequest userCreateRequest);
 
     ResponseEntity<?> findUserById(UUID userId);

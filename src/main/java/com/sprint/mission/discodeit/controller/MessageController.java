@@ -46,7 +46,7 @@ public class MessageController {
     }
 
     @ResponseBody
-    @RequestMapping(path = "/createAttachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(path = "/create-attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createAttachment(
             @RequestPart("messageAttachmentsCreateRequest") MessageAttachmentsCreateRequest request,
             @RequestPart(value = "attachment") List<MultipartFile> attachmentFiles
@@ -65,7 +65,7 @@ public class MessageController {
     }
 
     @ResponseBody
-    @RequestMapping(path = "/updateMessage", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/update-message", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateMessage(@RequestBody MessageUpdateRequest request) {
 //        UUID messageId, String content
         return messageService.updateMessage(request);
@@ -78,7 +78,7 @@ public class MessageController {
     }
 
     @ResponseBody
-    @RequestMapping(path = "/findChannelMessages")
+    @RequestMapping(path = "/find-channel-messages")
     public ResponseEntity<?> findChannelMessages(@RequestParam UUID channelId) {
         return messageService.findAllByChannelId(channelId);
     }

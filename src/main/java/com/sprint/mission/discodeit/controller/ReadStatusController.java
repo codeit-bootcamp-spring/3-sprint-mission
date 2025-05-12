@@ -23,7 +23,7 @@ import java.util.UUID;
  * 2025. 5. 11.        doungukkim       최초 생성
  */
 @Controller
-@RequestMapping("api/readStatus/*")
+@RequestMapping("api/read-status/*")
 @RequiredArgsConstructor
 public class ReadStatusController {
     private final ReadStatusService readStatusService;
@@ -39,13 +39,13 @@ public class ReadStatusController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/updateTime", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/update-time", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateTime(@RequestBody ReadStatusUpdateRequest request) {
         return readStatusService.update(request);
     }
 
     @ResponseBody
-    @RequestMapping(value = "/findReadStatuses")
+    @RequestMapping(value = "/find-read-statuses")
     public ResponseEntity<?> findReadStatuses(@RequestParam UUID userId) {
         return readStatusService.findAllByUserId(userId);
     }

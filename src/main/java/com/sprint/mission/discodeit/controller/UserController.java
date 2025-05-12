@@ -65,13 +65,11 @@ public class UserController {
                 Optional.ofNullable(profileFile)
                         .flatMap(this::resolveProfileRequest);
 
-        UserCreateResponse userCreateResponse = userService.create(request, profileRequest);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(userCreateResponse);
+        return userService.create(request, profileRequest);
     }
 
     @RequestMapping(
-            path = "/changeName",
+            path = "/change-name",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     private ResponseEntity<?> changeName(@RequestBody UserUpdateNameRequest request) {
@@ -79,13 +77,13 @@ public class UserController {
         return userService.updateUser(uuid, request.name());
     }
 
-    @RequestMapping(path = "/findById", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/find-by-id", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> findUserById(@RequestBody UesrFindRequest userFindRequest) {
         UUID uuid = Objects.requireNonNull(userFindRequest.userId());
         return userService.findUserById(uuid);
     }
 
-    @RequestMapping(path = "/findAll", method = RequestMethod.GET)
+    @RequestMapping(path = "/find-all", method = RequestMethod.GET)
     public ResponseEntity<?> findAll(){
         return userService.findAllUsers();
     }

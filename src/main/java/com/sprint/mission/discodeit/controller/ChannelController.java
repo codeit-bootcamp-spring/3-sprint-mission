@@ -35,19 +35,19 @@ public class ChannelController {
 
 
     @ResponseBody
-    @RequestMapping(path = "/createPublic", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/create-public", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> create(@RequestBody PublicChannelCreateRequest request) {
         return channelService.createChannel(request);
     }
 
     @ResponseBody
-    @RequestMapping(path = "/createPrivate", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/create-private", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> create(@RequestBody PrivateChannelCreateRequest request) {
         return channelService.createChannel(request);
     }
 
     @ResponseBody
-    @RequestMapping(path = "/changeName", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/change-name", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> changeName(@RequestBody ChannelUpdateRequest request) {
         return channelService.update(request);
     }
@@ -59,7 +59,7 @@ public class ChannelController {
     }
 
     @ResponseBody
-    @RequestMapping(path = "/findChannels", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/find-channels", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> findChannels(@RequestBody ChannelFindByUserIdRequest request) {
         return channelService.findAllByUserId(request);
     }
