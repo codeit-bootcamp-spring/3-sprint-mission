@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.utility;
+package com.sprint.mission.discodeit.validator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,17 +46,10 @@ public class PasswordValidator {
         }
 
         // 최소 8자 이상
-        if (password.length() < 8) {
+        if (password.length() <= 8) {
             errors.add("비밀번호는 최소 8자 이상이어야 합니다");
         }
 
         return errors;
-    }
-
-    // 유효성 검사
-    // 검증 시 문제 없음 : true 반환
-    // 검증 시 발생한 에러 메세지 존재 : false 반환
-    public static boolean isValidPassword(String password) {
-        return getPasswordValidationErrors(password).isEmpty();
     }
 }

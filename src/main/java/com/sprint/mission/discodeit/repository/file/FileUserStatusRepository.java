@@ -104,7 +104,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     public void deleteById(UUID userId) {
         Path path = resolvePath(userId);
         try {
-            Files.delete(path);
+            Files.deleteIfExists(path);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
