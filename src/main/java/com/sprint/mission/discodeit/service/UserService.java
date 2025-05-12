@@ -29,16 +29,15 @@ import java.util.UUID;
 public interface UserService {
 
     ResponseEntity<?> create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profile);
-//    UserCreateResponse create(UserCreateRequest userCreateRequest);
 
     ResponseEntity<?> findUserById(UUID userId);
 
     ResponseEntity<?> findAllUsers();
 
-    ProfileUploadResponse updateImage(ProfileUploadRequest request);
+    ResponseEntity<?> updateImage(ProfileUploadRequest request, MultipartFile file);
+
     // not required
     ResponseEntity<?> updateUser(UUID userId, String name);
 
-    void deleteUser(UUID userId);
-
+    ResponseEntity<?> deleteUser(UUID userId);
 }

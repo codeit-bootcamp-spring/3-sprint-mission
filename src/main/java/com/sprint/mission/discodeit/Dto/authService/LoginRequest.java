@@ -19,7 +19,6 @@ import java.util.Objects;
 public record LoginRequest
     (String username,
     String password)
-
 {
     public LoginRequest {
         Objects.requireNonNull(username, "no username in request");

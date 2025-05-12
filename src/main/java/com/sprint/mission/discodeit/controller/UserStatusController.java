@@ -1,11 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.Dto.userStatus.UserStatusUpdateByUserIdRequest;
-import com.sprint.mission.discodeit.Dto.userStatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +28,6 @@ public class UserStatusController {
 
     @RequestMapping(path = "/update-time", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateTime(@RequestBody UserStatusUpdateByUserIdRequest request) {
-        return userStatusService.updateByUserId(request.getUserId(), request.getNewTime());
+        return userStatusService.updateByUserId(request.userId(), request.newTime());
     }
 }

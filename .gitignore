@@ -39,4 +39,5 @@ out/
 ### VS Code ###
 .vscode/
 *.ser
-/uploadedFiles
+/files
+/data

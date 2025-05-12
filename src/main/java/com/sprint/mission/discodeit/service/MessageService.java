@@ -26,9 +26,8 @@ public interface MessageService {
 
     ResponseEntity<MessageCreateResponse> createMessage(MessageCreateRequest request);
 
-    ResponseEntity<?> createMessage(
-            MessageAttachmentsCreateRequest MessageAttachmentRequest,
-            List<BinaryContentCreateRequest> binaryContentRequest);
+    ResponseEntity<?> createMessage(MessageAttachmentsCreateRequest MessageAttachmentRequest,
+                                    List<BinaryContentCreateRequest> binaryContentRequest);
     // not required
     Message findMessageById(UUID messageId);
     // not required

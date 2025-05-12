@@ -4,7 +4,7 @@ server:
 discodeit:
   repository:
     type: file  # jcf | file
-    file-directory: src/main/java/com/sprint/mission/data/
+    file-directory: data/
 
 # Spring 설정
 spring:
@@ -39,7 +39,4 @@ file:
     # OS별 외부 파일 저장 경로 설정
     all:
       # 윈도우 OS용 파일 업로드 기본 경로
-      path: ./uploadedFiles
-#    mac:
-#      # macOS용 파일 업로드 기본 경로
-#      path: ./uploadedFiles
+      path: ./files

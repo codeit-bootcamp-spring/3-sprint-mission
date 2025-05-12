@@ -17,12 +17,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -40,7 +38,7 @@ import java.util.*;
 @Service("basicMessageService")
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService{
-
+    private static final String ATTACHMENT_PATH = "img/attachments";
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
@@ -57,7 +55,6 @@ public class BasicMessageService implements MessageService{
 
     }
 
-    // message
     // binary content
     @Override
     public ResponseEntity<?> createMessage(
@@ -80,7 +77,7 @@ public class BasicMessageService implements MessageService{
                     singleRequest.fileName().substring(singleRequest.fileName().lastIndexOf("."))
             );
             // 이미지 저장
-            String uploadFile = fileUploadUtils.getUploadPath("img/attachments");
+            String uploadFile = fileUploadUtils.getUploadPath(ATTACHMENT_PATH);
 
             String originalFileName = attachment.getFileName();
             String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
@@ -96,7 +93,6 @@ public class BasicMessageService implements MessageService{
 
             attachmentIds.add(attachment.getId());
         }
-
 
         // 이미지 메세지 생성
         Message messageWithAttachments = messageRepository.createMessageWithAttachments(
@@ -168,7 +164,7 @@ public class BasicMessageService implements MessageService{
             for (UUID attachmentId : attachmentIds) {
                 BinaryContent attachment = binaryContentRepository.findById(attachmentId);
                 if (attachment != null) {
-                    String directory = fileUploadUtils.getUploadPath("img/attachments");
+                    String directory = fileUploadUtils.getUploadPath(ATTACHMENT_PATH);
                     String extension = attachment.getExtension();
                     String fileName = attachmentId + extension;
                     File file = new File(directory, fileName);

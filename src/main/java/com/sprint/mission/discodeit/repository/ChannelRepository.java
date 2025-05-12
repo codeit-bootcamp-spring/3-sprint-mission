@@ -20,7 +20,7 @@ import java.util.UUID;
 public interface ChannelRepository {
     Channel createPrivateChannelByName();
     Channel createPublicChannelByName(String name, String description);
-    Channel findChannelById(UUID channelId);
+    Channel findChannelById(UUID channelId); // null
     List<Channel> findAllChannel();
     void updateChannel(UUID channelId, String name);
     void deleteChannel(UUID channelId); // file | jcf : throw exception

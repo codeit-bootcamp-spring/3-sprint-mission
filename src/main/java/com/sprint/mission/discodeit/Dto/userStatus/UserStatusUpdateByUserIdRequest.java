@@ -16,23 +16,5 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 5. 9.        doungukkim       최초 생성
  */
-@Getter
-public class UserStatusUpdateByUserIdRequest {
-    private final UUID userId;
-    private final Instant newTime;
-
-    public UserStatusUpdateByUserIdRequest(String userId, String newTime) {
-
-
-        this.userId = UUID.fromString(userId);
-        if((newTime == null) || ( newTime.isBlank())){
-            this.newTime = Instant.now();
-        } else{
-            try{
-                this.newTime = Instant.parse(newTime);
-            } catch (Exception e) {
-                throw new RuntimeException("wrong Instant input");
-            }
-        }
-    }
+public record UserStatusUpdateByUserIdRequest(UUID userId, Instant newTime) {
 }

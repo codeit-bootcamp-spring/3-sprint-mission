@@ -39,7 +39,6 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ResponseEntity<ChannelCreateResponse> createChannel(PrivateChannelCreateRequest request) {
-
         List<UUID> userIds = request.userIds().stream().map(UUID::fromString).toList();
 
         // channel 생성
@@ -124,7 +123,6 @@ public class BasicChannelService implements ChannelService {
                 }
             }
         }
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(response);
@@ -185,17 +183,11 @@ public class BasicChannelService implements ChannelService {
                 .findChannelById(channelId)).orElseThrow(() -> new RuntimeException("no channel repository"));
 
         if (channel.getType().equals(ChannelType.PUBLIC)) {
-//            Optional.ofNullable(channelId)
-//                    .orElseThrow(() -> new IllegalArgumentException("채널 아이디 입력 없음: BasicChannelService.update"));
-//            Optional.ofNullable(request.name())
-//                    .orElseThrow(() -> new IllegalArgumentException("이름 입력 없음: BasicChannelService.update"));
-
             channelRepository.updateChannel(channelId, request.name());
         } else {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "only public channel can change the name"));
-//            throw new IllegalArgumentException("only public channel can change the name");
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "channel updated to " + request.name()));
@@ -203,7 +195,6 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ResponseEntity<?> deleteChannel(String stringChannelId) {
-//        Objects.requireNonNull(stringChannelId, "no channelId: BasicChannelService.deleteChannel");
         Objects.requireNonNull(stringChannelId, "no channelI");
         UUID channelId = UUID.fromString(stringChannelId);
 

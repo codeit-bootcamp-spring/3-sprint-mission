@@ -34,11 +34,6 @@ import java.util.UUID;
 public class MessageController {
     private final MessageService messageService;
 
-//    [v] 메시지를 보낼 수 있다.
-//    [v] 메시지를 수정할 수 있다.
-//    [v] 메시지를 삭제할 수 있다.
-//    [v] 특정 채널의 메시지 목록을 조회할 수 있다.
-
     @ResponseBody
     @RequestMapping(path = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createMessage(@RequestBody MessageCreateRequest request) {
@@ -51,15 +46,12 @@ public class MessageController {
             @RequestPart("messageAttachmentsCreateRequest") MessageAttachmentsCreateRequest request,
             @RequestPart(value = "attachment") List<MultipartFile> attachmentFiles
     ) throws IOException {
-
         List<BinaryContentCreateRequest> attachmentRequests = new ArrayList<>();
         for (MultipartFile att : attachmentFiles) {
-
             attachmentRequests.add(new BinaryContentCreateRequest(
                     att.getOriginalFilename(),
                     att.getContentType(),
                     att.getBytes()));
-
         }
         return messageService.createMessage(request, attachmentRequests);
     }
@@ -67,7 +59,6 @@ public class MessageController {
     @ResponseBody
     @RequestMapping(path = "/update-message", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateMessage(@RequestBody MessageUpdateRequest request) {
-//        UUID messageId, String content
         return messageService.updateMessage(request);
     }
 

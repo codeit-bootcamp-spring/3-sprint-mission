@@ -11,9 +11,6 @@ package com.sprint.mission.discodeit.Dto.binaryContent;
  * -----------------------------------------------------------
  * 2025. 5. 9.        doungukkim       최초 생성
  */
-public record RedirectAttributesResponse(
-        String message,
-        String img,
-        String singleFileDescription
+public record RedirectAttributesResponse(String message, String img, String singleFileDescription
 ) {
 }

@@ -32,7 +32,6 @@ public class BasicUserStatusService implements UserStatusService {
     private final UserStatusRepository userStatusRepository;
     private final UserRepository userRepository;
 
-    //    user -> exception, userstatus -> exception
     @Override
     public UserStatusCreateResponse create(UserStatusCreateRequest request) {
         UUID userId = request.userId();
@@ -56,13 +55,10 @@ public class BasicUserStatusService implements UserStatusService {
         return userStatusRepository.findById(userStatusId);
     }
 
-
     @Override
     public List<UserStatus> findAll() {
         return userStatusRepository.findAllUserStatus();
     }
-
-
 
     @Override
     public void update(UserStatusUpdateRequest request) {

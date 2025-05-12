@@ -20,12 +20,16 @@ import java.util.Objects;
  */
 
 
-public record UserCreateRequest (
-    String username,
-    String email,
-    String password
+public record UserCreateRequest(
+        String username,
+        String email,
+        String password
 
-){
-
+) {
+    public UserCreateRequest {
+        Objects.requireNonNull(username, "no username in request");
+        Objects.requireNonNull(email, "no email in request");
+        Objects.requireNonNull(password, "no password in request");
+    }
 }
 

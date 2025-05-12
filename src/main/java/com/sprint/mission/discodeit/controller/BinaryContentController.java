@@ -8,9 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -25,13 +23,13 @@ import java.util.UUID;
  * 2025. 5. 11.        doungukkim       최초 생성
  */
 @Controller
-@RequestMapping("api/binary-content/*")
+@RequestMapping("api/binaryContent/*")
 @RequiredArgsConstructor
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
 
 
-    @RequestMapping(path = "/find-attachment", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/findAttachment", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> findAttachment(@RequestBody BinaryContentFindRequest request) {
         return binaryContentService.findAllByIdIn(request);
     }
