@@ -65,7 +65,7 @@ public class UserStatus implements Serializable {
       throw new UserStatusException(ErrorCode.INVALID_INPUT,
           "lastActiveAt 값이 null이므로 isOnline을 판단할 수 없습니다.");
     }
-    return lastActiveAt.isAfter(Instant.now().minus(ACTIVE_DURATION));
+    return this.lastActiveAt.isAfter(Instant.now().minus(ACTIVE_DURATION));
   }
 
   @Override

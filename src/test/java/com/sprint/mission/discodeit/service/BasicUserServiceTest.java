@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -54,8 +55,8 @@ class BasicUserServiceTest {
 
     @Test
     void DTO를_이용하여_새로운_사용자를_생성하고_UserStatus를_함께_생성한다() {
-      UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123", null);
-      User savedUser = UserFixture.createCustomUser(request);
+      UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123");
+      User savedUser = UserFixture.createCustomUser(request, null);
       UserStatus savedUserStatus = UserStatusFixture.createValidUserStatus(savedUser.getId());
 
       when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
@@ -63,7 +64,7 @@ class BasicUserServiceTest {
       when(userRepository.save(any(User.class))).thenReturn(savedUser);
       when(userStatusRepository.save(any(UserStatus.class))).thenReturn(savedUserStatus);
 
-      UserResponse createdUserResponse = basicUserService.create(request);
+      UserResponse createdUserResponse = basicUserService.create(request, null);
 
       assertNotNull(createdUserResponse);
       assertEquals(request.email(), createdUserResponse.email());
@@ -78,44 +79,49 @@ class BasicUserServiceTest {
 
     @Test
     void DTO로_새로운_사용자를_생성하며_프로필_이미지를_같이_등록할_수_있다() {
-      BinaryContent profileImage = BinaryContentFixture.createValid();
-      UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123",
-          profileImage);
-      User savedUser = UserFixture.createCustomUser(request);
-      savedUser.updateProfileId(profileImage.getId());
+      BinaryContent binaryContent = BinaryContentFixture.createValid();
+      BinaryContentCreateRequest profileImage = new BinaryContentCreateRequest(
+          binaryContent.getFileName(),
+          binaryContent.getContentType(),
+          binaryContent.getBytes()
+      );
+      UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123");
+      User savedUser = UserFixture.createCustomUser(request, binaryContent);
+      savedUser.updateProfileId(binaryContent.getId());
       UserStatus savedUserStatus = UserStatusFixture.createValidUserStatus(savedUser.getId());
 
       when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
       when(userRepository.findByName(request.name())).thenReturn(Optional.empty());
       when(userRepository.save(any(User.class))).thenReturn(savedUser);
       when(userStatusRepository.save(any(UserStatus.class))).thenReturn(savedUserStatus);
+      when(binaryContentRepository.save(any(BinaryContent.class))).thenReturn(binaryContent);
 
       ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
-      UserResponse createdUserResponse = basicUserService.create(request);
+      UserResponse createdUserResponse = basicUserService.create(request, profileImage);
 
       assertNotNull(createdUserResponse);
       assertEquals(request.email(), createdUserResponse.email());
       assertEquals(request.name(), createdUserResponse.name());
-      assertEquals(profileImage.getId(), createdUserResponse.profileId());
+      assertEquals(binaryContent.getId(), createdUserResponse.profileId());
       assertNotNull(createdUserResponse.id());
 
       verify(userRepository).findByEmail(request.email());
       verify(userRepository).findByName(request.name());
       verify(userRepository, times(2)).save(userCaptor.capture());
-      assertEquals(profileImage.getId(), userCaptor.getValue().getProfileId());
+      assertEquals(binaryContent.getId(), userCaptor.getValue().getProfileId());
       verify(userStatusRepository).save(any(UserStatus.class));
     }
 
     @Test
     void 이미_사용_중인_이메일로_사용자를_생성하려_하면_예외가_발생한다() {
-      UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123", null);
+      UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123");
       User existingUser = User.create("test@test.com", "다른사람", "pwd123");
 
       when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(existingUser));
 
       UserException exception = assertThrows(UserException.class,
-          () -> basicUserService.create(request));
+          () -> basicUserService.create(request, null));
       assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
 
       verify(userRepository).findByEmail(request.email());
@@ -127,14 +133,14 @@ class BasicUserServiceTest {
 
     @Test
     void 이미_사용_중인_username으로_사용자를_생성하려_하면_예외가_발생한다() {
-      UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123", null);
+      UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123");
       User existingUser = User.create("다른@test.com", "길동쓰", "pwd123");
 
       when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
       when(userRepository.findByName(request.name())).thenReturn(Optional.of(existingUser));
 
       UserException exception = assertThrows(UserException.class,
-          () -> basicUserService.create(request));
+          () -> basicUserService.create(request, null));
       assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
 
       verify(userRepository).findByEmail(request.email());
@@ -152,7 +158,7 @@ class BasicUserServiceTest {
     void 프로필_이미지가_있는_사용자를_삭제하면_프로필이미지도_함께_삭제한다() {
       BinaryContent profileImage = BinaryContentFixture.createValid();
       User userToDelete = UserFixture.createCustomUser(
-          new UserCreateRequest("test@test.com", "길동쓰", "pwd123", profileImage));
+          new UserCreateRequest("test@test.com", "길동쓰", "pwd123"), null);
       UUID userId = userToDelete.getId();
       UserStatus userStatusToDelete = UserStatusFixture.createValidUserStatus(userToDelete.getId());
       userToDelete.updateProfileId(profileImage.getId());

@@ -26,7 +26,10 @@ public class BasicAuthService implements AuthService {
       throw AuthException.invalidPassword();
     }
 
-    userStatusRepository.findByUserId(user.getId()).ifPresent(UserStatus::updateLastActiveAt);
+    userStatusRepository.findByUserId(user.getId()).ifPresent(status -> {
+      status.updateLastActiveAt();
+      userStatusRepository.save(status);
+    });
 
     return toUserResponse(user);
   }

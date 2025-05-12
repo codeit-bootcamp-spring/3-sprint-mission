@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.UserException;
@@ -29,7 +31,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public UserResponse create(UserCreateRequest request) {
+  public UserResponse create(UserCreateRequest request, BinaryContentCreateRequest profileImage) {
     validateUserEmail(request.email());
     validateUserName(request.name());
 
@@ -37,7 +39,7 @@ public class BasicUserService implements UserService {
         request.email(),
         request.name(),
         request.password(),
-        null // profileImageId는 나중에 세팅
+        null
     );
     User savedUser = userRepository.save(newUser);
 
@@ -46,9 +48,14 @@ public class BasicUserService implements UserService {
     try {
       UUID profileImageId = null;
 
-      if (request.profileImage() != null && request.profileImage().getId() != null) {
-        binaryContentRepository.save(request.profileImage());
-        profileImageId = request.profileImage().getId();
+      if (profileImage != null) {
+        String fileName = profileImage.fileName();
+        String contentType = profileImage.contentType();
+        byte[] bytes = profileImage.bytes();
+
+        BinaryContent binaryContent = BinaryContent.create(fileName, (long) fileName.length(),
+            contentType, bytes);
+        profileImageId = binaryContentRepository.save(binaryContent).getId();
 
         savedUser.updateProfileId(profileImageId);
         userRepository.save(savedUser);

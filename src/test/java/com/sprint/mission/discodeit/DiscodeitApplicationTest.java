@@ -44,7 +44,8 @@ public class DiscodeitApplicationTest {
 
   @DynamicPropertySource
   static void overrideProperties(DynamicPropertyRegistry registry) {
-    registry.add("discodeit.repository.file-directory", () -> tempDir.toAbsolutePath().toString());
+    registry.add("discodeit.repository.file-directory.folder",
+        () -> tempDir.toAbsolutePath().toString());
   }
 
   @Test
@@ -53,7 +54,7 @@ public class DiscodeitApplicationTest {
 
     // 1. 사용자 생성
     UserResponse user = userService.create(
-        new UserCreateRequest("test@test.com", "길동쓰", "pwd123", null));
+        new UserCreateRequest("test@test.com", "길동쓰", "pwd123"), null);
     assertNotNull(user.id(), "사용자 ID 생성 확인");
 
     // 2. Public 채널 생성
