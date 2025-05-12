@@ -53,20 +53,20 @@ public class BasicReadStatusService implements ReadStatusService {
     public ReadStatusResponseDTO findById(UUID id) {
         ReadStatus readStatus = findReadStatus(id);
 
-        return ReadStatusResponseDTO.toDTO(readStatus);
+        return ReadStatus.toDTO(readStatus);
     }
 
     @Override
     public List<ReadStatusResponseDTO> findAll() {
         return readStatusRepository.findAll().stream()
-                .map(ReadStatusResponseDTO::toDTO)
+                .map(ReadStatus::toDTO)
                 .toList();
     }
 
     @Override
     public List<ReadStatusResponseDTO> findAllByUserId(UUID userId) {
         return readStatusRepository.findAllByUserId(userId).stream()
-                .map(ReadStatusResponseDTO::toDTO)
+                .map(ReadStatus::toDTO)
                 .toList();
     }
 
@@ -77,7 +77,7 @@ public class BasicReadStatusService implements ReadStatusService {
         readStatus.updateLastReadTime(readStatusRequestDTO.lastReadTime());
         readStatusRepository.save(readStatus);
 
-        return ReadStatusResponseDTO.toDTO(readStatus);
+        return ReadStatus.toDTO(readStatus);
     }
 
     @Override
