@@ -70,7 +70,7 @@ public class BasicMessageService implements MessageService {
     public MessageResponseDTO findById(UUID messageId) {
         Message message = findMessage(messageId);
 
-        return MessageResponseDTO.toDTO(message);
+        return Message.toDTO(message);
     }
 
     @Override
@@ -80,7 +80,7 @@ public class BasicMessageService implements MessageService {
         List<MessageResponseDTO> channelMessages = channel.getMessages().stream()
                 .map(messageId -> {
                     Message message = findMessage(messageId);
-                    return MessageResponseDTO.toDTO(message);
+                    return Message.toDTO(message);
                 })
                 .toList();
 
@@ -90,7 +90,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public List<MessageResponseDTO> findAll() {
         return messageRepository.findAll().stream()
-                .map(MessageResponseDTO::toDTO)
+                .map(Message::toDTO)
                 .toList();
     }
 
@@ -101,7 +101,7 @@ public class BasicMessageService implements MessageService {
         List<MessageResponseDTO> userMessages = user.getMessages().stream()
                 .map(messageId -> {
                     Message message = findMessage(messageId);
-                    return MessageResponseDTO.toDTO(message);
+                    return Message.toDTO(message);
                 })
                 .toList();
 
@@ -111,7 +111,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public List<MessageResponseDTO> findAllByContainingWord(String word) {
         return messageRepository.findMessageByContainingWord(word).stream()
-                .map(MessageResponseDTO::toDTO)
+                .map(Message::toDTO)
                 .toList();
     }
 
@@ -138,7 +138,7 @@ public class BasicMessageService implements MessageService {
         }
         messageRepository.save(message);
 
-        return MessageResponseDTO.toDTO(message);
+        return Message.toDTO(message);
     }
 
     @Override
@@ -149,7 +149,7 @@ public class BasicMessageService implements MessageService {
 
         messageRepository.save(message);
 
-        return MessageResponseDTO.toDTO(message);
+        return Message.toDTO(message);
     }
 
     @Override
