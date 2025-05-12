@@ -34,7 +34,7 @@ public class MessageController {
         return ResponseEntity.ok(messageDTO);
     }
 
-    @RequestMapping(method = RequestMethod.PUT)
+    @RequestMapping(method = RequestMethod.PATCH)
     public ResponseEntity<MessageDTO> updateMessage(@RequestBody UpdateMessageRequest updateMessageRequest) {
         Message message = messageService.update(updateMessageRequest);
         return ResponseEntity.ok(MessageDTO.fromDomain(message));

@@ -10,9 +10,43 @@
 <div class="container">
     <h1>사용자 목록</h1>
     <div class="user-list" id="userList">
-        <!-- Users will be dynamically inserted here -->
+        <!-- 사용자 목록이 동적으로 삽입될 부분 -->
     </div>
 </div>
-<script src="script.js"></script>
+
+<script>
+    // 사용자 목록 동적 로드
+    document.addEventListener("DOMContentLoaded", async () => {
+        const userList = document.getElementById("userList");
+
+        try {
+            const response = await fetch("http://localhost:8080/api/user/findAll");
+            const users = await response.json();
+
+            users.forEach(user => {
+                const userItem = document.createElement("div");
+                userItem.classList.add("user-item");
+
+                userItem.innerHTML = `
+                    <div class="user-info">
+                        <img src="${user.profileUrl ? user.profileUrl : 'default-avatar.png'}" alt="프로필" class="avatar"/>
+                        <div class="details">
+                            <h2>${user.username ? user.username : 'Unknown User'}</h2>
+                            <p>${user.email}</p>
+                        </div>
+                    </div>
+                    <span class="status ${user.online ? 'status-online' : 'status-offline'}">
+                        ${user.online ? '온라인' : '오프라인'}
+                    </span>
+                `;
+
+                userList.appendChild(userItem);
+            });
+        } catch (error) {
+            console.error("사용자 목록 로드 오류:", error);
+            userList.innerHTML = "<p>사용자 목록을 불러오는 중 오류가 발생했습니다.</p>";
+        }
+    });
+</script>
 </body>
 </html>

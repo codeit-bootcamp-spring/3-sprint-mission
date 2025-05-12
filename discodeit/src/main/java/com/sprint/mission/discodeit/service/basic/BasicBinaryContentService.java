@@ -18,6 +18,8 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContent create(CreateBinaryContentRequest createBinaryContentRequest) {
+
+
         BinaryContent binaryContent = new BinaryContent(
                 createBinaryContentRequest.fileName(),
                 createBinaryContentRequest.type(),

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.AddBinaryContentRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentRequest;
 import com.sprint.mission.discodeit.dto.user.*;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentType;
@@ -30,7 +31,7 @@ public class BasicUserService implements UserService {
 
 
     @Override
-    public User create(CreateUserRequest request, Optional<AddBinaryContentRequest> addBinaryContentRequest) {
+    public User create(CreateUserRequest request, Optional<CreateBinaryContentRequest> createBinaryContentRequest) {
         if (isUsernameDuplicate(request.username())) {
             throw new IllegalArgumentException("!! 이미 존재하는 유저 이름입니다 !!");
         }
@@ -39,10 +40,10 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("!! 이미 존재하는 email 입니다 !!");
         }
 
-        UUID nullableProfileId = addBinaryContentRequest
+        UUID nullableProfileId = createBinaryContentRequest
                 .map(profileRequest -> {
                     String fileName = profileRequest.fileName();
-                    BinaryContentType contentType = profileRequest.type();
+                    String contentType = profileRequest.type();
                     byte[] bytes = profileRequest.bytes();
                     BinaryContent binaryContent = new BinaryContent(fileName, contentType, (long)bytes.length, bytes);
                     return binaryContentRepository.save(binaryContent).getId();

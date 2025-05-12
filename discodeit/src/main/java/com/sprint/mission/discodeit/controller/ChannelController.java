@@ -75,7 +75,7 @@ public class ChannelController {
                 return ResponseEntity.ok(PublicChannelDTO.fromDomain(channel, lastMessageAt));
         }
 
-        @RequestMapping(value = "/private", method = RequestMethod.DELETE)
+        @RequestMapping(method = RequestMethod.DELETE)
         public ResponseEntity<String> deleteChannel(@RequestParam("id") UUID channelId) {
 
                 channelService.delete(channelId);
