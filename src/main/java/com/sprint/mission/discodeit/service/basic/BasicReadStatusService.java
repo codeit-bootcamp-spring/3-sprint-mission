@@ -26,11 +26,11 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     public ReadStatus create(ReadStatusCreateRequest createRequest) {
         // 1. `Channel`이나`User`가 존재하지 않으면 예외 발생
-        if (this.userRepository.existsById(createRequest.userId())) {
+        if (!this.userRepository.existsById(createRequest.userId())) {
             throw new NoSuchElementException("User with id " + createRequest.userId() + " not found");
         }
 
-        if (this.channelRepository.existsById(createRequest.channelId())) {
+        if (!this.channelRepository.existsById(createRequest.channelId())) {
             throw new NoSuchElementException("Channel with id " + createRequest.channelId() + " not found");
         }
 
@@ -81,7 +81,7 @@ public class BasicReadStatusService implements ReadStatusService {
         if (!readStatusRepository.existsById(readStatusId)) {
             throw new NoSuchElementException("ReadStatus with id " + readStatusId + " not found");
         }
-        
+
         this.readStatusRepository.deleteById(readStatusId);
     }
 }

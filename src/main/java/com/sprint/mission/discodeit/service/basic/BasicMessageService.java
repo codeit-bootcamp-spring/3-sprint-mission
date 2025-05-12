@@ -40,7 +40,6 @@ public class BasicMessageService implements MessageService {
         if (!attendeeIds.contains(createRequest.userId())) {
             throw new IllegalAccessException("유저가 참여하지 않은 채팅방에는 메세지를 보낼수 없습니다.");
         }
-
         /* 첨부 파일 생성, 선택적으로 여러개의 첨부파일 같이 등록 가능 */
         List<UUID> attachmentIds = binaryContentCreateRequests.stream().map((attachmentRequest) -> {
             BinaryContent binaryContent = new BinaryContent(attachmentRequest.fileName(), (long) attachmentRequest.bytes().length, attachmentRequest.contentType(), attachmentRequest.bytes());

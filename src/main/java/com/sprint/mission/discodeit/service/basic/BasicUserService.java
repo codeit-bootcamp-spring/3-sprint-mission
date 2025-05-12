@@ -137,7 +137,7 @@ public class BasicUserService implements UserService {
 
         return users.stream()
                 .anyMatch((user) -> {
-                    return user.getEmail().equals(email) || user.getName().equals(name);
+                    return user.getEmail().equals(email) && user.getName().equals(name);
                 });
     }
 
