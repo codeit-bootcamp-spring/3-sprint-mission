@@ -3,22 +3,11 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface UserService {
-
-  /**
-   * 새로운 사용자를 생성한다
-   *
-   * @param email    사용자 email
-   * @param name     사용자 이름
-   * @param password 사용자 비밀번호
-   * @return 생성된 사용자 객체
-   */
-  User create(String email, String name, String password);
 
   /**
    * 새로운 사용자를 생성한다

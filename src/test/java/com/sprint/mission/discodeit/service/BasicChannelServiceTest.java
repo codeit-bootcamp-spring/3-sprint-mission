@@ -84,10 +84,10 @@ class BasicChannelServiceTest {
     void 공개_채널_생성_시_PUBLIC_타입의_채널이_생성된다() {
       when(channelRepository.save(any(Channel.class))).thenReturn(publicChannel);
 
-      Channel result = channelService.createPublic(publicRequest);
+      ChannelResponse result = channelService.create(publicRequest);
 
-      assertEquals(publicRequest.name(), result.getName());
-      assertEquals(ChannelType.PUBLIC, result.getType());
+      assertEquals(publicRequest.name(), result.name());
+      assertEquals(ChannelType.PUBLIC, result.type());
       verify(channelRepository).save(any());
     }
 
@@ -96,10 +96,10 @@ class BasicChannelServiceTest {
       when(readStatusRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
       when(channelRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-      Channel result = channelService.createPrivate(privateRequest);
+      ChannelResponse result = channelService.create(privateRequest);
 
       verify(readStatusRepository).save(any());
-      verify(channelRepository).save(result);
+      verify(channelRepository).save(any(Channel.class));
     }
   }
 

@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
-import com.sprint.mission.discodeit.entity.Channel;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,7 +16,7 @@ public interface ChannelService {
    * @param request ChannelCreateRequest
    * @return 생성된 채널 객체
    */
-  Channel createPublic(PublicChannelCreateRequest request);
+  ChannelResponse create(PublicChannelCreateRequest request);
 
   /**
    * 새로운 비공개 채널을 생성한다
@@ -25,7 +24,7 @@ public interface ChannelService {
    * @param request ChannelCreateRequest
    * @return 생성된 채널 객체
    */
-  Channel createPrivate(PrivateChannelCreateRequest request);
+  ChannelResponse create(PrivateChannelCreateRequest request);
 
   /**
    * ID로 채널을 조회한다

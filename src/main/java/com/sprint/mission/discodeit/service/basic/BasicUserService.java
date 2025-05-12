@@ -29,16 +29,6 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public User create(String email, String name, String password) {
-    validateUserEmail(email);
-    validateUserName(name);
-    User newUser = User.create(email, name, password);
-    User user = userRepository.save(newUser);
-    userStatusRepository.save(UserStatus.create(user.getId()));
-    return user;
-  }
-
-  @Override
   public UserResponse create(UserCreateRequest request) {
     validateUserEmail(request.email());
     validateUserName(request.name());

@@ -32,18 +32,20 @@ public class BasicChannelService implements ChannelService {
   private final MessageRepository messageRepository;
 
   @Override
-  public Channel createPublic(PublicChannelCreateRequest dto) {
+  public ChannelResponse create(PublicChannelCreateRequest dto) {
     Channel channel = Channel.createPublic(dto.name(), dto.description());
-    return channelRepository.save(channel);
+    Channel savedChannel = channelRepository.save(channel);
+    return toResponse(savedChannel);
   }
 
   @Override
-  public Channel createPrivate(PrivateChannelCreateRequest dto) {
+  public ChannelResponse create(PrivateChannelCreateRequest dto) {
     Channel channel = Channel.createPrivate();
     for (UUID participantId : dto.participantIds()) {
       readStatusRepository.save(ReadStatus.create(participantId, channel.getId()));
     }
-    return channelRepository.save(channel);
+    Channel savedChannel = channelRepository.save(channel);
+    return toResponse(savedChannel);
   }
 
   @Override
