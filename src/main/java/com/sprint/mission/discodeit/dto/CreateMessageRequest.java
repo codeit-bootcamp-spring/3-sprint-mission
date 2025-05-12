@@ -6,4 +6,4 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public record CreateMessageRequest(UUID channelId, UUID authorId, String text, Optional<List<CreateBinaryContentRequest>> attachments) {}
+public record CreateMessageRequest(UUID channelId, UUID authorId, String text) {}
