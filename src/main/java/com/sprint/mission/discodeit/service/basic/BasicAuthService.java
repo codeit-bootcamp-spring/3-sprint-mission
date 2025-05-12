@@ -17,16 +17,17 @@ public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDto login(LoginRequest loginRequest) {
-        Optional<User> matchedUser = userRepository.findAll().stream()
-                .filter(user -> Objects.equals(user.getUsername(), loginRequest.username()) &&
-                        Objects.equals(user.getPassword(), loginRequest.password()))
-                .findFirst();
+    public User login(LoginRequest loginRequest) {
+        String username = loginRequest.username();
+        String password = loginRequest.password();
 
-        User user = matchedUser.orElseThrow(() ->
-                new NoSuchElementException("Invalid username or password.")
-        );
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User with username " + username + " not found"));
 
-        return new UserDto(user, false);
+        if (!user.getPassword().equals(password)) {
+            throw new IllegalArgumentException("Wrong password");
+        }
+
+        return user;
     }
 }

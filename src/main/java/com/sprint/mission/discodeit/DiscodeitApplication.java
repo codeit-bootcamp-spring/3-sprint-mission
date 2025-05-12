@@ -30,7 +30,7 @@ public class DiscodeitApplication {
 
 	static Channel setupChannel(ChannelService channelService) {
 		PublicChannelCreateRequest request = new PublicChannelCreateRequest("공지", "공지 채널입니다.");
-		Channel channel = channelService.createPublic(request);
+		Channel channel = channelService.create(request);
 		return channel;
 	}
 
@@ -40,27 +40,15 @@ public class DiscodeitApplication {
 		System.out.println("메시지 생성: " + message.getId());
 	}
 
-	static void loginTest(AuthService authService) {
-		try {
-			LoginRequest request = new LoginRequest("okodee", "okodee1234");
-			UserDto userDto = authService.login(request);
-			System.out.println("로그인 성공: " + userDto.username() + ", 이메일: " + userDto.email());
-		} catch (IllegalArgumentException e) {
-			System.out.println("로그인 실패: " + e.getMessage());
-		}
-	}
-
 	public static void main(String[] args) {
 		ConfigurableApplicationContext context = SpringApplication.run(DiscodeitApplication.class, args);
 		// 서비스 초기화
 		UserService userService = context.getBean(UserService.class);
 		ChannelService channelService = context.getBean(ChannelService.class);
 		MessageService messageService = context.getBean(MessageService.class);
-		AuthService authService = context.getBean(AuthService.class);
 
 		// 셋업
 		User user = setupUser(userService);
-		loginTest(authService);
 		Channel channel = setupChannel(channelService);
 		// 테스트
 		messageCreateTest(messageService, channel, user);

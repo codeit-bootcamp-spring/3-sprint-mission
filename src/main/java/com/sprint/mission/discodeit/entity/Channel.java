@@ -5,25 +5,16 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 
+@Getter
 public class Channel implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Getter
     private UUID id;
-
-    @Getter
     private Instant createdAt;
-
-    @Getter
     private Instant updatedAt;
-
-    @Getter
+    //
     private ChannelType type;
-
-    @Getter
     private String name;
-
-    @Getter
     private String description;
 
     public Channel(ChannelType type, String name, String description) {
