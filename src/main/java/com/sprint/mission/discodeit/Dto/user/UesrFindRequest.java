@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.Dto.user;
 
+import java.util.UUID;
+
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.user
  * fileName       : UesrFindRequest
@@ -11,5 +13,5 @@ package com.sprint.mission.discodeit.Dto.user;
  * -----------------------------------------------------------
  * 2025. 5. 9.        doungukkim       최초 생성
  */
-public record UesrFindRequest(String userId) {
+public record UesrFindRequest(UUID userId) {
 }

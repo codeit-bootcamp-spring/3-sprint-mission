@@ -221,8 +221,22 @@ public class BasicUserService  implements UserService {
         userStatusRepository.deleteById(userStatus.getId()); // throw
 
         if (user.getProfileId() != null) { // 프로필 있으면
+            BinaryContent profile = binaryContentRepository.findById(user.getProfileId());
+
+            String directory = fileUploadUtils.getUploadPath("img/profile");
+            String extension = profile.getExtension();
+            String fileName = user.getProfileId() + extension;
+            File file = new File(directory, fileName);
+
+            if (file.exists()) {
+                boolean delete = file.delete();
+                if (!delete) {
+                    throw new RuntimeException("could not delete file");
+                }
+            }
             // BinaryContent 삭제
             binaryContentRepository.deleteBinaryContentById(user.getProfileId()); // throw
+
         }
         // User 삭제
         userRepository.deleteUserById(userId); // throw

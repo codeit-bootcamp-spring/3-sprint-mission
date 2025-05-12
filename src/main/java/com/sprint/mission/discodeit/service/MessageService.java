@@ -28,17 +28,17 @@ public interface MessageService {
 
     ResponseEntity<?> createMessage(
             MessageAttachmentsCreateRequest MessageAttachmentRequest,
-            BinaryContentCreateRequest binaryContentRequest);
+            List<BinaryContentCreateRequest> binaryContentRequest);
     // not required
     Message findMessageById(UUID messageId);
     // not required
     List<Message> findAllMessages();
 
-    List<Message> findAllByChannelId(UUID channelId);
+    ResponseEntity<List<Message>> findAllByChannelId(UUID channelId);
 
-    void updateMessage(MessageUpdateRequest request);
+    ResponseEntity<?> updateMessage(MessageUpdateRequest request);
 
-    void deleteMessage(UUID messageId);
+    ResponseEntity<?> deleteMessage(UUID messageId);
 
 
 

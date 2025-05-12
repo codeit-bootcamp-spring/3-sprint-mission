@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.Dto.user;
 
+import java.util.UUID;
+
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.user
  * fileName       : UserUpdateNameRequest
@@ -11,5 +13,5 @@ package com.sprint.mission.discodeit.Dto.user;
  * -----------------------------------------------------------
  * 2025. 5. 9.        doungukkim       최초 생성
  */
-public record UserUpdateNameRequest(String userId, String name) {
+public record UserUpdateNameRequest(UUID userId, String name) {
 }

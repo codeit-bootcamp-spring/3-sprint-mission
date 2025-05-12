@@ -7,12 +7,11 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic
@@ -32,9 +31,10 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ReadStatusRepository readStatusRepository;
 
     @Override
-    public ReadStatusCreateResponse create(ReadStatusCreateRequest request) {
+    public ResponseEntity<ReadStatusCreateResponse> create(ReadStatusCreateRequest request) {
         ReadStatus readStatus = readStatusRepository.createByUserId(request.userId(), request.channelId());
-        return new ReadStatusCreateResponse(readStatus.getId(), readStatus.getUserId(), readStatus.getChannelId());
+        ReadStatusCreateResponse readStatusCreateResponse = new ReadStatusCreateResponse(readStatus.getId(), readStatus.getUserId(), readStatus.getChannelId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(readStatusCreateResponse);
     }
 
     @Override
@@ -43,17 +43,22 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public List<ReadStatus> findAllByUserId(UUID userId) {
-        return Optional.ofNullable(readStatusRepository.findAllByUserId(userId))
-                .orElseThrow(()->new IllegalStateException("userId로 찾을 수 없음: BasicReadStatusService.findAllByUserId"));
+    public ResponseEntity<List<ReadStatus>> findAllByUserId(UUID userId) {
+        List<ReadStatus> readStatusList = Optional.ofNullable(readStatusRepository.findAllByUserId(userId))
+                .orElseThrow(() -> new IllegalStateException("userId로 찾을 수 없음: BasicReadStatusService.findAllByUserId"));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(readStatusList);
     }
 
     @Override
-    public void update(ReadStatusUpdateRequest request) {
+    public ResponseEntity<?> update(ReadStatusUpdateRequest request) {
         readStatusRepository.updateUpdatedTime(
                 request.readStatusId(),
                 request.newTime()
         );
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Map.of("message", "time updated" + request.newTime()));
     }
 
     @Override

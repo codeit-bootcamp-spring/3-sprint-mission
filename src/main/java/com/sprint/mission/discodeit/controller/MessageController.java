@@ -3,20 +3,18 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.Dto.message.MessageAttachmentsCreateRequest;
 import com.sprint.mission.discodeit.Dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.Dto.message.MessageCreateResponse;
+import com.sprint.mission.discodeit.Dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -36,10 +34,10 @@ import java.util.UUID;
 public class MessageController {
     private final MessageService messageService;
 
-//    [ ] 메시지를 보낼 수 있다.
-//    [ ] 메시지를 수정할 수 있다.
-//    [ ] 메시지를 삭제할 수 있다.
-//    [ ] 특정 채널의 메시지 목록을 조회할 수 있다.
+//    [v] 메시지를 보낼 수 있다.
+//    [v] 메시지를 수정할 수 있다.
+//    [v] 메시지를 삭제할 수 있다.
+//    [v] 특정 채널의 메시지 목록을 조회할 수 있다.
 
     @ResponseBody
     @RequestMapping(path = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -50,16 +48,39 @@ public class MessageController {
     @ResponseBody
     @RequestMapping(path = "/createAttachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createAttachment(
-            @RequestPart("messageAttachmentsCreateRequest")MessageAttachmentsCreateRequest request,
-            @RequestPart(value = "attachment") MultipartFile attachmentFile
-            ) throws IOException {
+            @RequestPart("messageAttachmentsCreateRequest") MessageAttachmentsCreateRequest request,
+            @RequestPart(value = "attachment") List<MultipartFile> attachmentFiles
+    ) throws IOException {
 
-        BinaryContentCreateRequest attachmentRequest = new BinaryContentCreateRequest(
-                attachmentFile.getOriginalFilename(),
-                attachmentFile.getContentType(),
-                attachmentFile.getBytes());
+        List<BinaryContentCreateRequest> attachmentRequests = new ArrayList<>();
+        for (MultipartFile att : attachmentFiles) {
 
-        return messageService.createMessage(request, attachmentRequest);
+            attachmentRequests.add(new BinaryContentCreateRequest(
+                    att.getOriginalFilename(),
+                    att.getContentType(),
+                    att.getBytes()));
+
+        }
+        return messageService.createMessage(request, attachmentRequests);
+    }
+
+    @ResponseBody
+    @RequestMapping(path = "/updateMessage", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateMessage(@RequestBody MessageUpdateRequest request) {
+//        UUID messageId, String content
+        return messageService.updateMessage(request);
+    }
+
+    @ResponseBody
+    @RequestMapping(path = "/delete")
+    public ResponseEntity<?> updateMessage(@RequestParam UUID messageId) {
+        return messageService.deleteMessage(messageId);
+    }
+
+    @ResponseBody
+    @RequestMapping(path = "/findChannelMessages")
+    public ResponseEntity<?> findChannelMessages(@RequestParam UUID channelId) {
+        return messageService.findAllByChannelId(channelId);
     }
 
 }

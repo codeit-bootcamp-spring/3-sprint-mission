@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -48,11 +49,74 @@ public class BasicMessageService implements MessageService{
 
 
     @Override
-    public List<Message> findAllByChannelId(UUID channelId) {
-        return Optional.ofNullable(messageRepository.findMessagesByChannelId(channelId)).orElse(Collections.emptyList());
+    public ResponseEntity<List<Message>> findAllByChannelId(UUID channelId) {
+        List<Message> messageList = Optional.ofNullable(messageRepository.findMessagesByChannelId(channelId)).orElse(Collections.emptyList());
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(messageList);
+
     }
 
     // message
+    // binary content
+    @Override
+    public ResponseEntity<?> createMessage(
+            MessageAttachmentsCreateRequest request,
+            List<BinaryContentCreateRequest> binaryContentRequests)
+    {
+        Optional.ofNullable(channelRepository.findChannelById(request.channelId())).orElseThrow(() -> new IllegalStateException("채널 없음: BasicMessageService.createMessage"));
+        Optional.ofNullable(userRepository.findUserById(request.senderId())).orElseThrow(() -> new IllegalStateException("유저 없음: BasicMessageService.createMessage"));
+        // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
+
+        List<UUID> attachmentIds = new ArrayList<>();
+
+        for (BinaryContentCreateRequest singleRequest : binaryContentRequests) {
+            // BinaryContent 생성
+            BinaryContent attachment = binaryContentRepository.createBinaryContent(
+                    singleRequest.fileName(),
+                    (long) singleRequest.bytes().length,
+                    singleRequest.contentType(),
+                    singleRequest.bytes(),
+                    singleRequest.fileName().substring(singleRequest.fileName().lastIndexOf("."))
+            );
+            // 이미지 저장
+            String uploadFile = fileUploadUtils.getUploadPath("img/attachments");
+
+            String originalFileName = attachment.getFileName();
+            String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+            String newFileName = attachment.getId() + extension;
+
+            File attachmentFile = new File(uploadFile, newFileName);
+            // 사진 저장
+            try (FileOutputStream fos = new FileOutputStream(attachmentFile)) {
+                fos.write(attachment.getBytes());
+            } catch (IOException e) {
+                throw new RuntimeException("attachment not saved", e);
+            }
+
+            attachmentIds.add(attachment.getId());
+        }
+
+
+        // 이미지 메세지 생성
+        Message messageWithAttachments = messageRepository.createMessageWithAttachments(
+                request.senderId(),
+                request.channelId(),
+                attachmentIds);
+
+        // body
+        MessageAttachmentsCreateResponse messageAttachmentsCreateResponse = new MessageAttachmentsCreateResponse(
+                messageWithAttachments.getId(),
+                messageWithAttachments.getSenderId(),
+                messageWithAttachments.getChannelId(),
+                messageWithAttachments.getAttachmentIds());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(messageAttachmentsCreateResponse);
+        // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
+    }
+
     @Override
     public ResponseEntity<MessageCreateResponse> createMessage(MessageCreateRequest request) {
         Channel channel = Optional.ofNullable(channelRepository.findChannelById(request.channelId())).orElseThrow(() -> new IllegalStateException("채널 없음: BasicMessageService.createMessage"));
@@ -72,80 +136,6 @@ public class BasicMessageService implements MessageService{
                 .body(messageCreateResponse);
     }
 
-    // binary content
-    // ❗️❗️❗️
-    @Override
-    public ResponseEntity<?> createMessage(
-            MessageAttachmentsCreateRequest request,
-            BinaryContentCreateRequest binaryContentRequest)
-    {
-        Optional.ofNullable(channelRepository.findChannelById(request.channelId())).orElseThrow(() -> new IllegalStateException("채널 없음: BasicMessageService.createMessage"));
-        Optional.ofNullable(userRepository.findUserById(request.senderId())).orElseThrow(() -> new IllegalStateException("유저 없음: BasicMessageService.createMessage"));
-//        List<byte[]> attachments = request.attachments();
-
-//        createBinaryContent(String fileName, Long size, String contentType, byte[] bytes)
-
-        List<UUID> attachmentIds = new ArrayList<>();
-
-        // 단건 잘 되는지 테스트용
-        BinaryContent attachment = binaryContentRepository.createBinaryContent(
-                binaryContentRequest.fileName(),
-                (long) binaryContentRequest.bytes().length,
-                binaryContentRequest.contentType(),
-                binaryContentRequest.bytes(),
-                binaryContentRequest.fileName().substring(binaryContentRequest.fileName().lastIndexOf("."))
-        );
-
-        // file 저장 로직
-        String uploadFile = fileUploadUtils.getUploadPath("img/attachments");
-
-        String originalFileName = attachment.getFileName();
-        String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-        String newFileName = attachment.getId() + extension;
-
-        File attachmentFile = new File(uploadFile, newFileName);
-        // 사진 저장
-        try (FileOutputStream fos = new FileOutputStream(attachmentFile)) {
-            fos.write(attachment.getBytes());
-        } catch (IOException e) {
-            throw new RuntimeException("attachment not saved", e);
-        }
-//        binaryContentRequest를 리스트로 받게 바꿀 떈 아래를 사용
-//        List<UUID> attachmentIds = attachments.stream()
-//                .map(attachment -> binaryContentRepository.createBinaryContent().getId())
-//                .toList();
-//
-//        // ⭐️️ 실제 사진 저장 로직 추가 필요
-//
-         // uuid 리스트로 저장
-        attachmentIds.add(attachment.getId());
-
-        // 이미지 메세지 생성
-        Message messageWithAttachments = messageRepository.createMessageWithAttachments(
-                request.senderId(),
-                request.channelId(),
-                attachmentIds);
-//        Message message = messageRepository.createMessageWithAttachments(user.getId(), channel.getId(), attachmentIds);
-//        return new MessageAttachmentsCreateResponse(
-//                message.getId(),
-//                message.getSenderId(),
-//                message.getChannelId(),
-//                message.getAttachmentIds()
-//        );
-
-//        UUID id, UUID senderId, UUID channelId, List<UUID> attachmentIds
-        MessageAttachmentsCreateResponse messageAttachmentsCreateResponse = new MessageAttachmentsCreateResponse(
-                messageWithAttachments.getId(),
-                messageWithAttachments.getSenderId(),
-                messageWithAttachments.getChannelId(),
-                messageWithAttachments.getAttachmentIds());
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(messageAttachmentsCreateResponse);
-        // BinaryContent 생성 -> 이미지 저장 -> uuid로 변환 -> 메세지 생성
-    }
-
     // not required
     @Override
     public Message findMessageById(UUID messageId) {
@@ -161,21 +151,41 @@ public class BasicMessageService implements MessageService{
 
 
     @Override
-    public void updateMessage(MessageUpdateRequest request) {
+    public ResponseEntity<?> updateMessage(MessageUpdateRequest request) {
         messageRepository.updateMessageById(request.messageId(),request.content());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Map.of("message", "message updated"));
     }
 
 
     @Override
-    public void deleteMessage(UUID messageId) {
+    public ResponseEntity<?> deleteMessage(UUID messageId) {
         Optional.ofNullable(messageId).orElseThrow(() -> new IllegalArgumentException("require message Id : BasicMessageService.deleteMessage"));
         // attachments 삭제
         List<UUID> attachmentIds = Optional.ofNullable(messageRepository.findMessageById(messageId).getAttachmentIds()).orElse(null);
         if (attachmentIds != null) {
             for (UUID attachmentId : attachmentIds) {
+                BinaryContent attachment = binaryContentRepository.findById(attachmentId);
+                if (attachment != null) {
+                    String directory = fileUploadUtils.getUploadPath("img/attachments");
+                    String extension = attachment.getExtension();
+                    String fileName = attachmentId + extension;
+                    File file = new File(directory, fileName);
+
+                    if (file.exists()) {
+                        boolean delete = file.delete();
+                        if (!delete) {
+                            throw new RuntimeException("could not delete file");
+                        }
+                    }
+                }
                 binaryContentRepository.deleteBinaryContentById(attachmentId); // throw exception if deletion fails
             }
         }
         messageRepository.deleteMessageById(messageId);  // throw exception
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(Map.of("message", "message deleted"));
     }
 }

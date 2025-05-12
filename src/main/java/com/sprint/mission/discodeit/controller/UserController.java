@@ -75,19 +75,17 @@ public class UserController {
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     private ResponseEntity<?> changeName(@RequestBody UserUpdateNameRequest request) {
-        UUID uuid = UUID.fromString(request.userId());
+        UUID uuid = request.userId();
         return userService.updateUser(uuid, request.name());
     }
 
     @RequestMapping(path = "/findById", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> findUserById(@RequestBody UesrFindRequest userFindRequest) {
-        UUID uuid = Objects.requireNonNull(UUID.fromString(userFindRequest.userId()));
-
+        UUID uuid = Objects.requireNonNull(userFindRequest.userId());
         return userService.findUserById(uuid);
     }
 
     @RequestMapping(path = "/findAll", method = RequestMethod.GET)
-//    @GetMapping("/findAll")
     public ResponseEntity<?> findAll(){
         return userService.findAllUsers();
     }
@@ -112,7 +110,7 @@ public class UserController {
 
     @RequestMapping(path = "/delete", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> delete(@RequestBody UserDeleteRequest request) {
-        UUID uuid = UUID.fromString(request.userId());
+        UUID uuid = request.userId();
         userService.deleteUser(uuid);
         return ResponseEntity.ok("삭제 성공");
     }
