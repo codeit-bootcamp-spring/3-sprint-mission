@@ -38,14 +38,16 @@ public class BasicUserService implements UserService {
         if (this.hasSameEmailOrName(userCreateRequest.name(), userCreateRequest.email())) {
             throw new DuplicateUserException();
         }
+        User user;
         // 1. 프로필 이미지 있으면 생성하고 유저 생성
-        profileCreateRequest.map(binaryContentCreateRequest -> {
-            BinaryContent profileBinaryContent = this.binaryContentService.create(binaryContentCreateRequest);
-            User user = new User(userCreateRequest.name(), userCreateRequest.email(), userCreateRequest.password(), profileBinaryContent.getId());
-            return null;
-        });
-        // 2. 프로필 이미지 없을때 유저 생성
-        User user = new User(userCreateRequest.name(), userCreateRequest.email(), userCreateRequest.password(), null);
+        if (!Optional.ofNullable(profileCreateRequest).isEmpty()) {
+            user = profileCreateRequest.map(binaryContentCreateRequest -> {
+                BinaryContent profileBinaryContent = this.binaryContentService.create(binaryContentCreateRequest);
+                return new User(userCreateRequest.name(), userCreateRequest.email(), userCreateRequest.password(), profileBinaryContent.getId());
+            }).orElseThrow(() -> new IllegalStateException("Profile create request or user create request is missing"));
+        } else {    // 2. 프로필 이미지 없을때 유저 생성
+            user = new User(userCreateRequest.name(), userCreateRequest.email(), userCreateRequest.password(), null);
+        }
         // 3. DB저장
         this.userRepository.save(user);
         // 4. UserStatus 인스턴스 생성
