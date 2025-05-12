@@ -40,7 +40,7 @@ public class BasicUserService implements UserService {
             throw new DuplicateEmailException(userRequestDTO.email());
         }
 
-        User user = UserRequestDTO.toEntity(userRequestDTO);
+        User user = UserRequestDTO.fromDTO(userRequestDTO);
 
         // 프로필 이미지를 등록한 경우
         if (binaryContentDTO != null) {
@@ -66,7 +66,7 @@ public class BasicUserService implements UserService {
         // 마지막 접속 시간 확인
         user.updateisLogin(userStatus.isLogin());
 
-        return UserResponseDTO.toDTO(user);
+        return User.toDTO(user);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class BasicUserService implements UserService {
 
         user.updateisLogin(userStatus.isLogin());
 
-        return UserResponseDTO.toDTO(user);
+        return User.toDTO(user);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class BasicUserService implements UserService {
 
         user.updateisLogin(userStatus.isLogin());
 
-        return UserResponseDTO.toDTO(user);
+        return User.toDTO(user);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class BasicUserService implements UserService {
                 .map(user -> {
                     UserStatus userStatus = findUserStatus(user.getId());
                     user.updateisLogin(userStatus.isLogin());
-                    return UserResponseDTO.toDTO(user);
+                    return User.toDTO(user);
                 })
                 .toList();
     }
@@ -110,7 +110,7 @@ public class BasicUserService implements UserService {
                 .map(user -> {
                     UserStatus userStatus = findUserStatus(user.getId());
                     user.updateisLogin(userStatus.isLogin());
-                    return UserResponseDTO.toDTO(user);
+                    return User.toDTO(user);
                 })
                 .toList();
 
@@ -135,7 +135,7 @@ public class BasicUserService implements UserService {
             userRepository.save(user);
         }
 
-        return UserResponseDTO.toDTO(user);
+        return User.toDTO(user);
     }
 
     @Override
@@ -149,7 +149,7 @@ public class BasicUserService implements UserService {
 
         userRepository.save(user);
 
-        return UserResponseDTO.toDTO(user);
+        return User.toDTO(user);
     }
 
     @Override

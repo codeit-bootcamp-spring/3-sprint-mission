@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.auth.LoginDTO;
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.LoginFailedException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserStatusException;
@@ -36,7 +37,7 @@ public class BasicAuthService implements AuthService {
         });
 
         return userRepository.findByNameAndPassword(name, password)
-                .map(UserResponseDTO::toDTO)
+                .map(User::toDTO)
                 .orElseThrow(LoginFailedException::new);
     }
 
