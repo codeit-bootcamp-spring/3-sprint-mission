@@ -10,5 +10,5 @@ import java.util.UUID;
 @AllArgsConstructor
 public final class UserStatusCreateRequest {
     private UUID userId;
-    Instant lastOnlineAt;
+    private Instant lastOnlineAt;
 }

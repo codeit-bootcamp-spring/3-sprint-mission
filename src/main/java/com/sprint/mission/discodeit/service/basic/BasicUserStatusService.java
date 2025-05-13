@@ -49,8 +49,8 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatus update(UUID id, UserStatusUpdateRequest userStatusUpdateRequest) {
         Instant newLastOnline = userStatusUpdateRequest.getLastOnlineAt();
 
-        UserStatus userStatus = userStatusRepository.findById(userStatusUpdateRequest.getUserId())
-                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userStatusUpdateRequest.getUserId() + " not found"));
+        UserStatus userStatus = userStatusRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + id + " not found"));
 
         userStatus.update(newLastOnline);
 
@@ -59,12 +59,11 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest userStatusUpdateRequest) {
-        Instant newLastOnline = userStatusUpdateRequest.getLastOnlineAt();
+        Instant newLastOnlineAt = userStatusUpdateRequest.getLastOnlineAt();
 
-        UserStatus userStatus = userStatusRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userId + " not found"));
-
-        userStatus.update(newLastOnline);
+        UserStatus userStatus = userStatusRepository.findByUserId(userId)
+                .orElseThrow(() -> new NoSuchElementException("UserStatus with userId " + userId + " not found"));
+        userStatus.update(newLastOnlineAt);
 
         return userStatusRepository.save(userStatus);
     }

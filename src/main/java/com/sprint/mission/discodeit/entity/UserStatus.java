@@ -44,8 +44,8 @@ public class UserStatus implements Serializable {
 
     // 온라인 상태 판별 메서드 정의
     public boolean isOnline() {
-        return lastOnlineAt != null &&
-                // 마지막 접속 시간과 현재 시간의 간격이 5분 이내
-                Duration.between(lastOnlineAt, Instant.now()).toMinutes() <= 5;
+        Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
+
+        return lastOnlineAt.isAfter(instantFiveMinutesAgo);
     }
 }

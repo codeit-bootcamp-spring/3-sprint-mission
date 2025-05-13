@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.NoSuchElementException;
+
 
 @RequiredArgsConstructor
 @RequestMapping("/api/login")
@@ -35,9 +37,14 @@ public class AuthController {
 
             User user = authService.login(loginRequest);
 
-            // 활동 상태( 유동적 )
-            UserStatus userStatus = userStatusService.find(user.getUserId());
-            boolean isOnline = userStatus.isOnline();
+            boolean isOnline = false;
+            try {
+                // 활동 상태( 유동적 )
+                UserStatus userStatus = userStatusService.find(user.getUserId());
+                isOnline = userStatus.isOnline();
+            } catch (NoSuchElementException e) {
+                // 상태정보가 없으면 기본값( false ) 유지
+            }
 
             // 로그인 성공 시
             UserDTO userDTO = new UserDTO(

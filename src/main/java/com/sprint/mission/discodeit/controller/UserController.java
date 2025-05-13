@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /* API 구현 절차
@@ -197,58 +198,18 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 
-
-    // 사용자 온라인 정보 수정
     @RequestMapping(
-            path = "/{userId}/status"
-            , method = RequestMethod.PATCH
+            value = "/{userId}/status",
+            method = RequestMethod.PATCH
     )
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> updateStatus(
-            @PathVariable UUID userId
+    public ResponseEntity<UserStatus> updateUserStatus(
+            @PathVariable UUID userId,
+            @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
     ) {
-        // UserService와 UserStatusService를 활용한 구현
-        // 온라인 상태 확인 : UserStatus의 isOnline 메서드
-        UserDTO userDTO = userService.find(userId);
-
-        // 조회 실패 시
-        if (userDTO == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("messge", "User not found"));
-        }
-
-        // UserStatus 조회
-        UserStatus userStatus = userStatusService.find(userId);
-
-        // UserStatus가 존재하지않을 시
-        if (userStatus == null) {
-            Instant now = Instant.now();
-            userStatus = new UserStatus(userId, now);
-            userStatusService.create(new UserStatusCreateRequest(userId, now));
-        }
-
-
-        // 상태 기록
-        Instant now = Instant.now();
-        UserStatusUpdateRequest userStatusUpdateRequest = new UserStatusUpdateRequest(userId, now);
         UserStatus updatedStatus = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
 
-        // 상태 업데이트 실패 시
-        if (updatedStatus == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Failed to update user status"));
-        }
-
-        // 현재 상태 판별
-        boolean isOnline = updatedStatus.isOnline();
-        String activityStatus = isOnline ? "ONLINE" : "OFFLINE";
-
-        // 응답 메세지 구성
-        Map<String, Object> response = new HashMap<>();
-        response.put("유저 정보", userDTO);
-        response.put("활동 상태", activityStatus);
-        response.put("마지막 접속 시간", updatedStatus.getLastOnlineAt());
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedStatus);
     }
+
 }

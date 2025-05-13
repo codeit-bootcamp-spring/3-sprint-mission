@@ -27,12 +27,12 @@ public class PasswordValidator {
 
         // (?=.*[a-z]) : 소문자 포함
         if (!password.matches(".*[a-z].*")) {
-            errors.add("소문자를 포함해야 합니다");
+            errors.add("알파벳 소문자를 포함해야 합니다");
         }
 
         // (?=.*[A-Z]) : 대문자 포함
         if (!password.matches(".*[A-Z].*")) {
-            errors.add("대문자를 포함해야 합니다");
+            errors.add("알파벳 대문자를 포함해야 합니다");
         }
 
         // (?=.*\\d) : 숫자 포함
@@ -46,7 +46,7 @@ public class PasswordValidator {
         }
 
         // 최소 8자 이상
-        if (password.length() <= 8) {
+        if (password.length() < 8) {
             errors.add("비밀번호는 최소 8자 이상이어야 합니다");
         }
 
