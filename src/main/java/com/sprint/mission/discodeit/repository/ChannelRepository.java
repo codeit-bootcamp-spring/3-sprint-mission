@@ -10,9 +10,7 @@ import java.util.UUID;
 
 public interface ChannelRepository {
 
-    public Channel createChannel(ChannelCreateDto channelCreateDto);
-
-    public Channel createChannel(ChannelCreatePrivateDto channelCreatePrivateDto);
+    public Channel createChannel(Channel channel);
 
     public Optional<Channel> getChannel (GetPublicChannelRequestDto getPublicChannelRequestDto);
 
@@ -20,12 +18,12 @@ public interface ChannelRepository {
 
     public List<Channel> findAllByUserId (UUID userId);
 
-    public boolean deleteChannel (UUID id, User user);
+    public boolean deleteChannel (UUID id, UUID userId);
 
-    public boolean modifyChannel (ChannelUpdateRequestDto channelUpdateRequestDto);
+    public boolean modifyChannel (Channel channel);
 
     public boolean kickOutChannel (UUID channelId, User kickUser, User admin);
 
-    public boolean joinChannel(Channel channel, User user);
+    public boolean joinChannel(UUID channelId, User user);
 
 }

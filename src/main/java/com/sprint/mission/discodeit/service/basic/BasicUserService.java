@@ -4,12 +4,9 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.entity.dto.binaryContent.BinaryContentCreateRequestDto;
-import com.sprint.mission.discodeit.entity.dto.binaryContent.BinaryContentType;
-import com.sprint.mission.discodeit.entity.dto.binaryContent.BinaryOwnerType;
 import com.sprint.mission.discodeit.entity.dto.user.UserCreateDto;
 import com.sprint.mission.discodeit.entity.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.dto.user.UserUpdateRequestDto;
-import com.sprint.mission.discodeit.entity.dto.userStatus.UserStatusCreateRequestDto;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -32,34 +29,29 @@ public class BasicUserService implements UserService {
     private final ChannelRepository channelRepository;
 
     @Override
-    public User createUser(UserCreateDto userCreateDto) {
-        User user = userRepository.createUser(userCreateDto);
+    public UserResponseDto createUser(UserCreateDto userCreateDto, BinaryContentCreateRequestDto binaryContentCreateRequestDto) {
+        User user = new User(userCreateDto);
+        userRepository.createUser(user);
 
-        UserStatusCreateRequestDto userStatusCreateRequestDto = new UserStatusCreateRequestDto(user.getId(), Instant.now());
-        UserStatus userStatus = userStatusRepository.createUserStatus(userStatusCreateRequestDto);
+        UserStatus userStatus = new UserStatus(user.getId(), Instant.now());
+        userStatusRepository.createUserStatus(userStatus);
 
-        if (userCreateDto.getProfileImage() != null) {
-            BinaryContentCreateRequestDto binaryContentCreateRequestDto = new BinaryContentCreateRequestDto(user.getId(), BinaryContentType.PROFILE_IMAGE, BinaryOwnerType.USER, userCreateDto.getProfileImage());
-            BinaryContent binaryContent = binaryContentRepository.createBinaryContent(binaryContentCreateRequestDto);
+        if (binaryContentCreateRequestDto.getData() != null) {
+            BinaryContent binaryContent = new BinaryContent(user.getId(), binaryContentCreateRequestDto.getContentType(), binaryContentCreateRequestDto.getFileContentType(), binaryContentCreateRequestDto.getData().get(0));
+            binaryContentRepository.createBinaryContent(binaryContent);
             user.setProfileImage(binaryContent.getData());
         }
-        return user;
+        return createUserResponseDto(user);
     }
 
     @Override
     public Optional<UserResponseDto> getUser(UUID id) {
-        Optional<User> user = userRepository.getUser(id);
+        User user = userRepository.getUser(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 입니다."));
 
-        userStatusRepository.findAllStatus().forEach(userStatus -> {
-            if (userStatus.getUserId().equals(id)) {
-                user.get().setOnline(userStatus.isOnline(Instant.now()));
-            }
-        });
+        BinaryContent profileImg = binaryContentRepository.findProfileImageByOwnerId(user.getId());
+        user.setProfileImage(profileImg.getData());
 
-        BinaryContent profileImg = binaryContentRepository.findBinaryContentById(user.get().getId());
-        user.get().setProfileImage(profileImg.getData());
-
-        return Optional.of(createUserResponseDto(user.get()));
+        return Optional.of(createUserResponseDto(user));
     }
 
     @Override
@@ -67,7 +59,7 @@ public class BasicUserService implements UserService {
         List<UserResponseDto> userResponseDtos = new ArrayList<>();
 
         userRepository.getAllUsers().forEach(user -> {
-            BinaryContent profileImage = binaryContentRepository.findBinaryContentById(user.getId());
+            BinaryContent profileImage = binaryContentRepository.findProfileImageByOwnerId(user.getId());
             user.setProfileImage(profileImage.getData());
             userResponseDtos.add(createUserResponseDto(user));
         });
@@ -75,7 +67,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public boolean modifyUser(UserUpdateRequestDto userUpdateRequestDto) {
+    public boolean modifyUser(UserUpdateRequestDto userUpdateRequestDto, BinaryContentCreateRequestDto binaryContentCreateRequestDto) {
         boolean isPasswordChange = userUpdateRequestDto.getOldPassword() != null
                 && userUpdateRequestDto.getNewPassword() != null;
         boolean isProfileChange = userUpdateRequestDto.getUserProfile() != null
@@ -83,16 +75,23 @@ public class BasicUserService implements UserService {
 
         boolean success = true;
 
+        User user = userRepository.getUser(userUpdateRequestDto.getUserId()).orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 입니다."));
+
         // 비밀번호 변경
         if (isPasswordChange) {
-            success = userRepository.modifyUser(userUpdateRequestDto);
+            if (!user.getPassword().equals(userUpdateRequestDto.getOldPassword())) {
+                user.setPassword(userUpdateRequestDto.getNewPassword());
+                success = userRepository.modifyUser(user);
+            } else {
+                success = false;
+            }
         }
 
         // 프로필 변경
         if (isProfileChange) {
 //            바이너리 파일 수정 로직
-            BinaryContentCreateRequestDto binaryContentCreateRequestDto = new BinaryContentCreateRequestDto(userUpdateRequestDto.getUserId(), BinaryContentType.PROFILE_IMAGE, BinaryOwnerType.USER, userUpdateRequestDto.getUserProfile());
-            binaryContentRepository.createBinaryContent(binaryContentCreateRequestDto);
+            BinaryContent binaryContent = new BinaryContent(userUpdateRequestDto.getUserId(), binaryContentCreateRequestDto.getContentType(), binaryContentCreateRequestDto.getFileContentType(), binaryContentCreateRequestDto.getData().get(0));
+            binaryContentRepository.createBinaryContent(binaryContent);
         }
 
         if (!isPasswordChange && !isProfileChange) {
@@ -100,30 +99,25 @@ public class BasicUserService implements UserService {
             return false;
         }
 
+        UserStatus userStatus = userStatusRepository.findByUserId(user.getId()).orElseThrow(() -> new NoSuchElementException(("존재하지 않는 데이터 입니다.")));
+        userStatus.update(Instant.now());
+        userStatusRepository.updateUserStatus(userStatus);
+
         return success;
     }
 
     @Override
     public boolean deleteUser(UUID id) {
-        Optional<User> userOpt = userRepository.getUser(id);
+        User user = userRepository.getUser(id).orElseThrow(() -> new NoSuchElementException("존재 하지 않는 유저입니다."));
 
-        if (userOpt.isEmpty()) {
-            System.out.println("존재하지 않는 사용자입니다.");
-            return false;
-        }
-
-        userOpt.ifPresent(user -> {
-            user.getChannels().forEach(channel -> {
-                channel.removeMember(user);
-            });
-            if (!user.getChannels().isEmpty()) {
-                new HashSet<>(user.getChannels()).forEach(channel ->
-                        channelRepository.deleteChannel(channel.getId(), user)
-                );
-            }
+        user.getChannels().forEach(channel -> {
+            channel.removeMember(user);
         });
-
-        User user = userOpt.get();
+        if (!user.getChannels().isEmpty()) {
+            new HashSet<>(user.getChannels()).forEach(channel ->
+                    channelRepository.deleteChannel(channel.getId(), user.getId())
+            );
+        }
 
         if (userRepository.deleteUser(id)) {
             // UserStatus 삭제
@@ -137,11 +131,22 @@ public class BasicUserService implements UserService {
             }
 
         }
-        System.out.println("성공적으로 삭제되었습니다.");
         return true;
     }
 
     private UserResponseDto createUserResponseDto(User user) {
-        return new UserResponseDto(user.getId(), user.getUserName(), user.isOnline(), user.getProfileImage(), user.getCreatedAt(), user.getUpdatedAt());
+        boolean isOnline = userStatusRepository.findByUserId(user.getId())
+                .map(UserStatus::isOnline)
+                .orElse(false);
+
+        return new UserResponseDto(
+                user.getId(),
+                user.getUserName(),
+                isOnline,
+                user.getProfileImage(),
+                user.getEmail(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        );
     }
 }

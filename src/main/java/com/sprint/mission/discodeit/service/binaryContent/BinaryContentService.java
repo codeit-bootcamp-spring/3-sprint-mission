@@ -10,9 +10,9 @@ public interface BinaryContentService {
 
     public BinaryContent createBinaryContent(BinaryContentCreateRequestDto binaryContentCreateRequestDto);
 
-    public BinaryContent findBinaryContentById(UUID id);
+    public BinaryContent findProfileImageByOwnerId(UUID ownerId);
 
-    public List<BinaryContent> findAllBinaryContentById(UUID id);
+    public List<BinaryContent> findAllAttachmentsByOwnerId(UUID ownerId);
 
     public boolean deleteBinaryContentById(UUID id);
 }

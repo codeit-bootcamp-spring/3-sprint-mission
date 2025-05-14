@@ -17,9 +17,9 @@ public class User extends Period implements Serializable {
 
     private String userName;
     private String password;
+    private String email;
     private Set<Channel> channels;
     private byte[] profileImage;
-    private boolean isOnline;
 
     public User() {
     }
@@ -29,7 +29,7 @@ public class User extends Period implements Serializable {
         this.userName = userCreateDto.getUsername();
         this.password = userCreateDto.getPassword();
         this.channels = new HashSet<>();
-        this.isOnline = true;
+        this.email = userCreateDto.getEmail();
     }
 
     public void setUserName(String userName) {
@@ -40,16 +40,6 @@ public class User extends Period implements Serializable {
     public void setPassword(String password) {
         this.password = password;
         update();
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + super.getId() +
-                ", userName='" + userName + '\'' +
-                ", createdAt=" + super.getCreatedAt() +
-                ", updatedAt=" + super.getUpdatedAt() +
-                '}';
     }
 
     @Override

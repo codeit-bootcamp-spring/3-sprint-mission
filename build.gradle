@@ -30,10 +30,8 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-	implementation("org.springframework:spring-aop:6.2.3")
-
-	implementation("org.aspectj:aspectjweaver:1.9.21")
-	implementation("org.aspectj:aspectjrt:1.9.21")
+	implementation 'org.aspectj:aspectjweaver'
+	implementation 'org.aspectj:aspectjrt'
 }
 
 tasks.named('test') {

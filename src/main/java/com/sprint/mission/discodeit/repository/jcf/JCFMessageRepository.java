@@ -1,14 +1,14 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.dto.message.MessageCreateRequestDto;
-import com.sprint.mission.discodeit.entity.dto.message.MessageDeleteRequestDto;
-import com.sprint.mission.discodeit.entity.dto.message.MessageUpdateRequestDto;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
@@ -25,14 +25,10 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message createMessage(MessageCreateRequestDto messageCreateRequestDto) {
-        List<Message> messages = this.messages.get(messageCreateRequestDto.getChannelId());
-        if (messages == null) {
-            messages = new ArrayList<>();
-        }
-        Message message = new Message(messageCreateRequestDto.getUserId(), messageCreateRequestDto.getMessageContent());
+    public Message createMessage(Message message, UUID channelId) {
+        List<Message> messages = this.messages.get(channelId);
         messages.add(message);
-        this.messages.put(messageCreateRequestDto.getChannelId(), messages);
+        this.messages.put(channelId, messages);
         return message;
     }
 
@@ -42,16 +38,16 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public boolean updateMessage(MessageUpdateRequestDto messageUpdateRequestDto) {
-        List<Message> messages = this.messages.get(messageUpdateRequestDto.getChannelId());
+    public boolean updateMessage(Message message, UUID channelId) {
+        List<Message> messages = this.messages.get(channelId);
         if (messages == null) {
             return false;
         }
 
-        for (Message message : messages) {
-            if (message.getId().equals(messageUpdateRequestDto.getMessageId())) {
-                if (message.getSender().equals(messageUpdateRequestDto.getUserId())) {
-                    message.setContent(messageUpdateRequestDto.getMessageContent());
+        for (Message msg : messages) {
+            if (msg.getId().equals(message.getId())) {
+                if (msg.getSender().equals(message.getSender())) {
+                    msg.setContent(message.getContent());
                     return true;
                 }
             }
@@ -60,17 +56,17 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void deleteMessage(MessageDeleteRequestDto messageDeleteRequestDto) {
-        List<Message> messages = this.messages.get(messageDeleteRequestDto.getChannelId());
+    public boolean deleteMessage(Message message, UUID channelId) {
+        List<Message> messages = this.messages.get(channelId);
 
-        for (Message message : messages) {
-            if (message.getId().equals(messageDeleteRequestDto.getMessageId())) {
-                if (message.getSender().equals(messageDeleteRequestDto.getUserId())) {
+        for (Message msg : messages) {
+            if (msg.getId().equals(message.getId())) {
+                if (msg.getSender().equals(message.getSender())) {
                     messages.remove(message);
-                    System.out.println("메세지가 삭제 되었습니다.");
-                    return;
+                    return true;
                 }
             }
         }
+        return false;
     }
 }

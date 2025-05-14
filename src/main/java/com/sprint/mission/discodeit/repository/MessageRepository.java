@@ -1,19 +1,16 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.dto.message.MessageCreateRequestDto;
-import com.sprint.mission.discodeit.entity.dto.message.MessageDeleteRequestDto;
-import com.sprint.mission.discodeit.entity.dto.message.MessageUpdateRequestDto;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface MessageRepository {
-    public Message createMessage(MessageCreateRequestDto messageCreateRequestDto);
+    public Message createMessage(Message message, UUID channelId);
 
     public List<Message> getChannelMessages(UUID channelId);
 
-    public boolean updateMessage(MessageUpdateRequestDto messageUpdateRequestDto);
+    public boolean updateMessage(Message message, UUID channelId);
 
-    public void deleteMessage(MessageDeleteRequestDto messageDeleteRequestDto);
+    public boolean deleteMessage(Message message, UUID channelId);
 }

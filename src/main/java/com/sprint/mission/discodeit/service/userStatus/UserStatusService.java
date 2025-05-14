@@ -18,4 +18,6 @@ public interface UserStatusService {
     public boolean updateUserStatus(UserStatusUpdateRequestDto userStatusUpdateRequestDto);
 
     public boolean updateByUserId(UUID userId);
+
+    public boolean deleteUserStatus(UUID statusId);
 }

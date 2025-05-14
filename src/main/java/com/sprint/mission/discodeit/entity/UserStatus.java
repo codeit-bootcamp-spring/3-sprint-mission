@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -21,8 +22,21 @@ public class UserStatus extends Period implements Serializable {
         this.lastActivityAt = lastActivityAt;
     }
 
+    public void update(Instant lastActiveAt) {
+        boolean anyValueUpdated = false;
+        if (lastActiveAt != null && !lastActiveAt.equals(this.lastActivityAt)) {
+            this.lastActivityAt = lastActiveAt;
+            anyValueUpdated = true;
+        }
 
-    public boolean isOnline(Instant now) {
-        return now.isAfter(lastActivityAt.plusSeconds(300));
+        if (anyValueUpdated) {
+            this.lastActivityAt = Instant.now();
+        }
+    }
+
+    public boolean isOnline() {
+        Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
+
+        return lastActivityAt.isAfter(instantFiveMinutesAgo);
     }
 }

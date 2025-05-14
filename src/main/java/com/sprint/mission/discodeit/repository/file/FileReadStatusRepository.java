@@ -1,15 +1,13 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.dto.readStatus.ReadStatusCreateRequestDto;
-import com.sprint.mission.discodeit.entity.dto.readStatus.ReadStatusUpdateRequestDto;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
@@ -20,89 +18,69 @@ public class FileReadStatusRepository extends AbstractFileRepository<UUID, Set<R
     }
 
     @Override
-    public ReadStatus createReadStatus(ReadStatusCreateRequestDto readStatusCreateRequestDto) {
+    public ReadStatus createReadStatus(ReadStatus readStatus) {
         Map<UUID, Set<ReadStatus>> statuses = loadFromFile();
-        ReadStatus readStatus = new ReadStatus(readStatusCreateRequestDto.getUserId(), readStatusCreateRequestDto.getChannelId());
-        readStatus.setJoinedAt(Instant.now());
-        if (!statuses.containsKey(readStatusCreateRequestDto.getChannelId())) {
-            Set<ReadStatus> statusSet = new HashSet<>();
-            statusSet.add(readStatus);
-            statuses.put(readStatusCreateRequestDto.getChannelId(), statusSet);
-            saveToFile(statuses);
-            return readStatus;
-        }
-        statuses.get(readStatus.getChannelId()).add(readStatus);
+        Set<ReadStatus> statusSet = statuses.computeIfAbsent(
+                readStatus.getChannelId(),
+                k -> new HashSet<>()
+        );
+        statusSet.add(readStatus);
         saveToFile(statuses);
         return readStatus;
     }
 
     @Override
-    public ReadStatus findReadStatusById(UUID readStatusId) {
-        Map<UUID, Set<ReadStatus>> statuses = loadFromFile();
-        for (Set<ReadStatus> readStatusSet : statuses.values()) {
-            for (ReadStatus readStatus : readStatusSet) {
-                if (readStatus.getId().equals(readStatusId)) {
-                    return readStatus;
-                }
-            }
-        }
-        throw new NoSuchElementException("존재하지 않는 데이터 입니다.");
+    public Optional<ReadStatus> findReadStatusById(UUID readStatusId) {
+        return loadFromFile().values().stream()
+                .flatMap(Set::stream)
+                .filter(status -> status.getId().equals(readStatusId))
+                .findFirst();
     }
 
     @Override
     public List<ReadStatus> findAllByUserId(UUID userId) {
-        Map<UUID, Set<ReadStatus>> statuses = loadFromFile();
-        List<ReadStatus> readStatuses = new ArrayList<>();
-        for (Set<ReadStatus> readStatusSet : statuses.values()) {
-            for (ReadStatus readStatus : readStatusSet) {
-                if (readStatus.getUserId().equals(userId)) {
-                    readStatuses.add(readStatus);
-                }
-            }
-        }
-        return readStatuses;
+        return loadFromFile().values().stream()
+                .flatMap(Set::stream)
+                .filter(status -> status.getUserId().equals(userId))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public boolean updateReadStatus(ReadStatusUpdateRequestDto readStatusUpdateRequestDto) {
+    public boolean updateReadStatus(ReadStatus readStatus) {
         Map<UUID, Set<ReadStatus>> statuses = loadFromFile();
-        for (Map.Entry<UUID, Set<ReadStatus>> entry : statuses.entrySet()) {
-            for (ReadStatus readStatus : entry.getValue()) {
-                if (readStatus.getId().equals(readStatusUpdateRequestDto.getStatusId())) {
-                    readStatus.setJoinedAt(readStatusUpdateRequestDto.getNowTime());
-                    saveToFile(statuses);
-                    return true;
-                }
+        boolean updated = false;
+
+        for (Set<ReadStatus> statusSet : statuses.values()) {
+            if (statusSet.removeIf(rs -> rs.getId().equals(readStatus.getId()))) {
+                statusSet.add(readStatus);
+                updated = true;
+                break;
             }
         }
-        return false;
+
+        if (updated) {
+            saveToFile(statuses);
+        }
+        return updated;
     }
+
 
     @Override
-    public boolean deleteReadStatus(UUID readStatusId) {
+    public boolean deleteReadStatus(UUID statusId) {
         Map<UUID, Set<ReadStatus>> statuses = loadFromFile();
-        Iterator<Map.Entry<UUID, Set<ReadStatus>>> mapIterator = statuses.entrySet().iterator();
+        boolean deleted = false;
 
-        while (mapIterator.hasNext()) {
-            Map.Entry<UUID, Set<ReadStatus>> entry = mapIterator.next();
-            Set<ReadStatus> readStatusSet = entry.getValue();
-
-            Iterator<ReadStatus> setIterator = readStatusSet.iterator();
-            while (setIterator.hasNext()) {
-                ReadStatus readStatus = setIterator.next();
-                if (readStatus.getId().equals(readStatusId)) {
-                    setIterator.remove();
-
-                    // Value 비었으면 Key도 같이 삭제
-                    if (readStatusSet.isEmpty()) {
-                        mapIterator.remove();
-                    }
-
-                    saveToFile(statuses);
-                    return true;
-                }
+        for (Set<ReadStatus> statusSet : statuses.values()) {
+            if (statusSet.removeIf(status -> status.getId().equals(statusId))) {
+                deleted = true;
+                break;
             }
         }
-        return false;
+
+        if (deleted) {
+            saveToFile(statuses);
+        }
+        return deleted;
     }
+
 }

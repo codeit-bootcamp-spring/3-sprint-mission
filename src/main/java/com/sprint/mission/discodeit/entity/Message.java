@@ -2,11 +2,13 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.common.Period;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.UUID;
 
 @Getter
+@Setter
 public class Message extends Period implements Serializable {
     private static final long serialVersionUID = 1L;
 

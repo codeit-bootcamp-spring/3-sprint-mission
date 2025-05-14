@@ -1,13 +1,14 @@
 package com.sprint.mission.discodeit.entity.dto.channel;
 
-import com.sprint.mission.discodeit.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
 public class ChannelCreateDto {
-    private User admin;
+    private UUID adminId;
     private String name;
     private String description;
 

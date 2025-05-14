@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.dto.user.UserCreateDto;
-import com.sprint.mission.discodeit.entity.dto.user.UserUpdateRequestDto;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -19,8 +17,7 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public User createUser(UserCreateDto userCreateDto) {
-        User user = new User(userCreateDto);
+    public User createUser(User user) {
         users.put(user.getId(), user);
         return user;
     }
@@ -36,29 +33,14 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public boolean modifyUser(UserUpdateRequestDto userUpdateRequestDto) {
-        if (!users.containsKey(userUpdateRequestDto.getUserId())) {
-            return false;
-        }
-        User user = users.get(userUpdateRequestDto.getUserId());
-
-        if (user.getPassword().equals(userUpdateRequestDto.getOldPassword())) {
-            user.setPassword(userUpdateRequestDto.getNewPassword());
-            return true;
-        }else {
-            System.out.println("비밀번호가 일치하지 않습니다.");
-            return false;
-        }
-
+    public boolean modifyUser(User user) {
+        users.put(user.getId(), user);
+        return true;
     }
 
     @Override
     public boolean deleteUser(UUID id) {
-        if (!users.containsKey(id)) {
-            throw new NoSuchElementException("존재하지 않는 유저 입니다.");
-        } else {
-            users.remove(id);
-            return true;
-        }
+        users.remove(id);
+        return true;
     }
 }
