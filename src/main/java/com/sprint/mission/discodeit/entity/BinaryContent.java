@@ -9,26 +9,23 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.UUID;
 
-@Getter
 public class BinaryContent implements Serializable {
+    @Getter
     private static final Long serialVersionUID = 1L;
+    @Getter
     private final UUID id;
+    @Getter
     private final Instant createdAt;
     //
-    private String fileName;
-    private Long size;
-    private String contentType;
-    private byte[] bytes;
+    @Getter
+    private final byte[] byteArray;
 
 
-    public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
+    public BinaryContent(byte[] byteArray) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         //
-        this.fileName = fileName;
-        this.size = size;
-        this.contentType = contentType;
-        this.bytes = bytes;
+        this.byteArray = byteArray;
     }
 
     @Override

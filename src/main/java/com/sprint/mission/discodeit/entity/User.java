@@ -9,18 +9,25 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.UUID;
 
-@Getter
 public class User implements Serializable {
+    @Getter
     private static final Long serialVersionUID = 1L;
     //
+    @Getter
     private final UUID id;
+    @Getter
     private final Instant createdAt;
+    @Getter
     private Instant updatedAt;
     //
+    @Getter
     private String name;
+    @Getter
     private String email;
+    @Getter
     private String password;
     //
+    @Getter
     private UUID profileId; // BinaryContent의 id
 
     public User(String name, String email, String password, UUID profileId) {

@@ -19,5 +19,4 @@ public interface UserStatusRepository {
 
     public void deleteById(UUID userStatusId);
 
-    public void deleteByUserId(UUID userId);
 }
