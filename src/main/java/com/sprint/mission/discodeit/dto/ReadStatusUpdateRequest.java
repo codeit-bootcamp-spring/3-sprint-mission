@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.dto;
 
-import java.util.UUID;
+import java.time.Instant;
 
-//수정 대상 객체의 id 파라미터, 수정할 값 파라미터
-public record ReadStatusUpdateRequest(UUID readStatusId, Boolean isRead) {
+// 수정할 값 파라미터
+public record ReadStatusUpdateRequest(Instant lastReadAt) {
 }
 
