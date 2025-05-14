@@ -56,7 +56,6 @@ public class JCFUserRepository implements UserRepository {
                     u.setUpdatedAt(Instant.now());
                     u.setProfileId(user.getProfileId());
                     u.setEmail(user.getEmail());
-                    u.setFriends(user.getFriends());
                     u.setUsername(user.getUsername());
                     u.setPassword(user.getPassword());
                 });
