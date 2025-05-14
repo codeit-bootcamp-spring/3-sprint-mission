@@ -1,8 +1,9 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.dto.user.UserCreateDto;
+import com.sprint.mission.discodeit.entity.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.entity.dto.user.UserUpdateRequestDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,13 +12,13 @@ import java.util.UUID;
 public interface UserService {
 
 
-    public User createUser(User user);
+    public User createUser(UserCreateDto userCreateDto);
 
-    public Optional<User> getUser(UUID id);
+    public Optional<UserResponseDto> getUser(UUID id);
 
-    public List<User> getAllUsers();
+    public List<UserResponseDto> getAllUsers();
 
-    public boolean modifyPassword(UUID id, String password, String newPassword);
+    public boolean modifyUser(UserUpdateRequestDto userUpdateRequestDto);
 
     public boolean deleteUser(UUID id);
 

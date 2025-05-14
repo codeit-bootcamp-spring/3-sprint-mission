@@ -1,10 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.common.Period;
+import com.sprint.mission.discodeit.entity.dto.channel.ChannelCreatePrivateDto;
+import com.sprint.mission.discodeit.entity.dto.channel.ChannelType;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.util.*;
 
+@Getter
 public class Channel extends Period implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -13,6 +17,7 @@ public class Channel extends Period implements Serializable {
     private String description;
     private Set<User> members;
     private List<Message> messages;
+    private ChannelType type;
 
     public Channel() {}
 
@@ -21,9 +26,18 @@ public class Channel extends Period implements Serializable {
         this.channelAdmin = user;
         this.name = name;
         this.description = description;
+        this.type = ChannelType.PUBLIC;
         this.members = new HashSet<>();
         this.messages = new ArrayList<>();
         user.getChannels().add(this);
+    }
+
+    public Channel(ChannelCreatePrivateDto channelCreatePrivateDto) {
+        super();
+        this.channelAdmin = channelCreatePrivateDto.getAdmin();
+        this.members = new HashSet<>();
+        this.messages = new ArrayList<>();
+        this.type = ChannelType.PRIVATE;
     }
 
     public void addMember(User user) {
@@ -36,36 +50,8 @@ public class Channel extends Period implements Serializable {
         this.members.remove(user);
     }
 
-    public void setMembers(Set<User> members) {
-        this.members = members;
-    }
-
-    public void setMessages(List<Message> messages) {
-        this.messages = messages;
-    }
-
     public UUID getId() {
         return super.getId();
-    }
-
-    public Long getCreatedAt() {
-        return super.getCreatedAt();
-    }
-
-    public Long getUpdatedAt() {
-        return super.getUpdatedAt();
-    }
-
-    public List<Message> getMessages() {
-        return messages;
-    }
-
-    public Set<User> getMembers() {
-        return members;
-    }
-
-    public User getChannelAdmin() {
-        return channelAdmin;
     }
 
     public void setChannelAdmin(User channelAdmin) {
@@ -73,17 +59,9 @@ public class Channel extends Period implements Serializable {
         update();
     }
 
-    public String getName() {
-        return name;
-    }
-
     public void setName(String name) {
         this.name = name;
         update();
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public void setDescription(String description) {
@@ -94,14 +72,12 @@ public class Channel extends Period implements Serializable {
     @Override
     public String toString() {
         return "Channel{" +
-                "id=" + super.getId() +
-                ", channelAdmin=" + channelAdmin +
+                "channelAdmin=" + channelAdmin +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", members=" + members +
-                ", createdAt=" + super.getCreatedAt() +
-                ", updatedAt=" + super.getUpdatedAt() +
-                '}';
+                ", messages=" + messages +
+                ", type=" + type +
+                "} " + super.toString();
     }
-
 }

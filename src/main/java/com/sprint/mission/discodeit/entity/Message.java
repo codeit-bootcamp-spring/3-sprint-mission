@@ -1,39 +1,21 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.common.Period;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.util.UUID;
 
+@Getter
 public class Message extends Period implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private User sender;
+    private UUID sender;
     private String content;
 
-    public UUID getId() {
-        return super.getId();
-    }
-
-    public Long getCreatedAt() {
-        return super.getCreatedAt();
-    }
-
-    public Long getUpdatedAt() {
-        return super.getUpdatedAt();
-    }
-
-    public User getSender() {
-        return sender;
-    }
-
-    public void setSender(User sender) {
+    public void setSender(UUID sender) {
         this.sender = sender;
         update();
-    }
-
-    public String getContent() {
-        return content;
     }
 
     public void setContent(String content) {
@@ -41,7 +23,7 @@ public class Message extends Period implements Serializable {
         update();
     }
 
-    public Message(User sender, String content) {
+    public Message(UUID sender, String content) {
         super();
         this.sender = sender;
         this.content = content;
