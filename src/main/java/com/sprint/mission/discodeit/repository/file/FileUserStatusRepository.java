@@ -2,40 +2,42 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileUserStatusRepository implements UserStatusRepository {
 
-    private String fileName;
-    private File file;
+    @Value("${discodeit.repository.file-directory}")
+    private String FILE_DIRECTORY;
+    private final String FILENAME = "userStatusRepo.ser";
+    private final Map<UUID, UserStatus> data = new ConcurrentHashMap<>();
 
-    public FileUserStatusRepository(String filePath) {
-        this.fileName = "src/main/java/com/sprint/mission/discodeit/" + filePath + "/userStatusRepo.ser";
-        this.file = new File(fileName);
+    @PostConstruct
+    public void init() {
+        data.putAll(loadFile());
+    }
+
+    private File getFile() {
+        return new File(FILE_DIRECTORY, FILENAME);
     }
 
     @Override
     public void save(UserStatus userStatus) {
-        // 파일에서 읽어오기
-        Map<UUID, UserStatus> data = loadFile();
-
         data.put(userStatus.getId(), userStatus);
 
-        try (FileOutputStream fos = new FileOutputStream(file);
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile();
     }
 
     @Override
     public Optional<UserStatus> findById(UUID id) {
-        // 파일에서 읽어오기
-        Map<UUID, UserStatus> data = loadFile();
-
         Optional<UserStatus> foundUserStatus = data.entrySet().stream()
                 .filter(entry -> entry.getKey().equals(id))
                 .map(Map.Entry::getValue)
@@ -46,9 +48,6 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     @Override
     public Optional<UserStatus> findByUserId(UUID userId) {
-        // 파일에서 읽어오기
-        Map<UUID, UserStatus> data = loadFile();
-
         Optional<UserStatus> foundUserStatus = data.values().stream()
                 .filter(userStatus -> userStatus.getUserId().equals(userId))
                 .findFirst();
@@ -58,47 +57,28 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     @Override
     public List<UserStatus> findAll() {
-        // 파일에서 읽어오기
-        Map<UUID, UserStatus> data = loadFile();
-
         return new ArrayList<>(data.values());
     }
 
     @Override
     public void deleteById(UUID id) {
-        // 파일에서 읽어오기
-        Map<UUID, UserStatus> data = loadFile();
-
         data.remove(id);
 
-        try (FileOutputStream fos = new FileOutputStream(file);
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile();
     }
 
     @Override
     public void deleteByUserId(UUID userId) {
-        // 파일에서 읽어오기
-        Map<UUID, UserStatus> data = loadFile();
-
         data.entrySet().removeIf(entry -> entry.getValue().getUserId().equals(userId));
 
-        try (FileOutputStream fos = new FileOutputStream(file);
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        saveFile();
     }
 
     private Map<UUID, UserStatus> loadFile() {
         Map<UUID, UserStatus> data = new HashMap<>();
 
-        if (file.exists()) {
-            try (FileInputStream fis = new FileInputStream(file);
+        if (getFile().exists()) {
+            try (FileInputStream fis = new FileInputStream(getFile());
                  ObjectInputStream in = new ObjectInputStream(fis)) {
                 data = (Map<UUID, UserStatus>)in.readObject();
             } catch (IOException | ClassNotFoundException e) {
@@ -107,5 +87,14 @@ public class FileUserStatusRepository implements UserStatusRepository {
         }
 
         return data;
+    }
+
+    private synchronized void saveFile() {
+        try (FileOutputStream fos = new FileOutputStream(getFile());
+             ObjectOutputStream out = new ObjectOutputStream(fos)) {
+            out.writeObject(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

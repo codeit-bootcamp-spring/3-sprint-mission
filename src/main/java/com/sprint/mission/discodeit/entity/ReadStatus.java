@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDTO;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -32,6 +33,17 @@ public class ReadStatus implements Serializable {
     public void updateLastReadTime(Instant lastReadTime) {
         this.updatedAt = Instant.now();
         this.lastReadTime = lastReadTime;
+    }
+
+    public static ReadStatusResponseDTO toDTO(ReadStatus readStatus) {
+        ReadStatusResponseDTO readStatusResponseDTO = new ReadStatusResponseDTO(readStatus.getId(),
+                readStatus.getCreatedAt(),
+                readStatus.getUpdatedAt(),
+                readStatus.getUserId(),
+                readStatus.getChannelId(),
+                readStatus.getLastReadTime());
+
+        return readStatusResponseDTO;
     }
 
     @Override
