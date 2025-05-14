@@ -17,9 +17,11 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 public interface MessageRepository {
-    Message createMessageByUserIdAndChannelId(UUID senderId, UUID channelId, String content);
-    Message findMessageById(UUID messageId);
-    List<Message> findAllMessages();
+    Message createMessageWithContent(UUID senderId, UUID channelId, String content);
+    Message findMessageById(UUID messageId); // file: null | jcf: null
+    List<Message> findAllMessages(); // file: emptyList | jcf: emptyList
     void updateMessageById(UUID messageId, String content);
-    void deleteMessageById(UUID messageId);
+    void deleteMessageById(UUID messageId); // file, jcf: throw exception
+    List<Message> findMessagesByChannelId(UUID channelId);
+    Message createMessageWithAttachments(UUID userId, UUID channelId, List<UUID> attachments);
 }

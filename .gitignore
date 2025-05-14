@@ -1,25 +1,11 @@
+HELP.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### IntelliJ IDEA ###
-.v1
-.files
-.idea
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
-*.iml
-*.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-
-### Eclipse ###
+### STS ###
 .apt_generated
 .classpath
 .factorypath
@@ -28,8 +14,18 @@ out/
 .springBeans
 .sts4-cache
 bin/
+/data/*.ser
 !**/src/main/**/bin/
 !**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
 
 ### NetBeans ###
 /nbproject/private/
@@ -40,14 +36,3 @@ bin/
 
 ### VS Code ###
 .vscode/
-
-### Mac OS ###
-.DS_Store
-*.ser
-src/main/java/com/sprint/mission/discodeit/files/channel/4297ff9f-4091-4340-83bf-27c131e100f0.ser
-src/main/java/com/sprint/mission/discodeit/files/channel/52de63a1-30e9-45f2-bc7f-3d1e2b70f11b.ser
-src/main/java/com/sprint/mission/discodeit/files/channel/89ef3724-737b-4640-a502-3e768734f6ee.ser
-src/main/java/com/sprint/mission/discodeit/files/channel/90fd3869-f20a-4211-a1cf-d9935e9e0b72.ser
-src/main/java/com/sprint/mission/discodeit/files/user/c4704c92-2532-48e8-8655-125fdbd729e9.ser
-src/main/java/com/sprint/mission/discodeit/files/user/eb26d05d-2679-4d7f-9fbf-7ae13e7ec736.ser
-src/main/java/com/sprint/mission/discodeit/files/user/f62b467b-8363-4131-a631-0954fb262bb1.ser
