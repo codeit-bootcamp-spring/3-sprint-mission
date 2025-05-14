@@ -2,9 +2,13 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
+@Repository
 public class JcfMessageRepository implements MessageRepository {
 
   private final Map<UUID, Message> messageMap = new HashMap<>();
@@ -26,11 +30,12 @@ public class JcfMessageRepository implements MessageRepository {
 
   @Override
   public void delete(UUID messageId) {
-    Message msg = messageMap.remove(messageId);
-    if (msg != null) {
-      removeFromChannel(msg.getChannelId(), msg);
-      removeFromUser(msg.getSenderId(), msg);
-    }
+    messageMap.remove(messageId);
+  }
+
+  @Override
+  public void deleteAll(List<Message> messages) {
+
   }
 
   @Override
@@ -43,13 +48,13 @@ public class JcfMessageRepository implements MessageRepository {
     return userMessagesMap.getOrDefault(senderId, Collections.emptyList());
   }
 
-  @Override
-  public void removeFromChannel(UUID channelId, Message message) {
-    channelMessagesMap.getOrDefault(channelId, new ArrayList<>()).remove(message);
-  }
-
-  @Override
-  public void removeFromUser(UUID userId, Message message) {
-    userMessagesMap.getOrDefault(userId, new ArrayList<>()).remove(message);
-  }
+//  @Override
+//  public void removeFromChannel(UUID channelId, Message message) {
+//    channelMessagesMap.getOrDefault(channelId, new ArrayList<>()).remove(message);
+//  }
+//
+//  @Override
+//  public void removeFromUser(UUID userId, Message message) {
+//    userMessagesMap.getOrDefault(userId, new ArrayList<>()).remove(message);
+//  }
 }

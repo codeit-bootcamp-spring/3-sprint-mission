@@ -1,10 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -13,30 +10,48 @@ public class User implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private final UUID id;
-  private final Long createdAt;
-  private Long updatedAt;
+  private final Instant createdAt;
+  private Instant updatedAt;
 
   private String username;
   private String email;
+  private UUID profileId;
+  private String password;
 
-  public User(String username, String email) {
+  public User(String username, String email, String password) {
     this.id = UUID.randomUUID();
-    this.createdAt = System.currentTimeMillis();
-    this.updatedAt = System.currentTimeMillis();
+    this.createdAt = Instant.now();
+    this.updatedAt = Instant.now();
 
     this.username = username;
     this.email = email;
+    this.password = password;
   }
+
+  public User(String username, String email) {
+   this.id = UUID.randomUUID();
+   this.createdAt = Instant.now();
+   this.updatedAt = Instant.now();
+   this.username = username;
+   this.email = email;
+   this.password = null;
+  }
+
 
   public void updateName(String username) {
     this.username = username;
-    updatedAt = System.currentTimeMillis();
+    updatedAt = Instant.now();
   }
 
   public void updateEmail(String email) {
     this.email = email;
-    updatedAt = System.currentTimeMillis();
+    updatedAt = Instant.now();
   }
+
+//  public void setProfileId(UUID profileId) {
+//    this.profileId = profileId;
+//    this.updatedAt = Instant.now();
+//  }
 
   @Override
   public String toString() {

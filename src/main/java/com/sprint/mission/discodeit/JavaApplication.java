@@ -17,9 +17,6 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
-import com.sprint.mission.discodeit.service.factory.ServiceFactory;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
-import com.sprint.mission.discodeit.service.jcf.JcfMessageService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +25,7 @@ import java.util.UUID;
 
 public class JavaApplication {
   public static void main(String[] args) {
+    /*
     // JCF*Repository  구현체를 활용하여 테스트
 //    UserRepository userRepo = new JcfUserRepository();
 //    ChannelRepository channelRepo = new JcfChannelRepository();
@@ -248,5 +246,7 @@ public class JavaApplication {
     } catch (SecurityException e) {
       System.out.println("예외 발생: " + e.getMessage()); // 예상: 채널에 접근할 수 있는 권한이 없습니다.
     }
-  }
+
+     */
+ }
 }
