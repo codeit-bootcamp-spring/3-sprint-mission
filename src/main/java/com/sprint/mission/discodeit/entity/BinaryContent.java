@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDTO;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -16,21 +15,20 @@ public class BinaryContent implements Serializable {
     private String mimeType;
     private byte[] data;
 
-    public BinaryContent(String fileName, String mimeType, byte[] data) {
+    public BinaryContent() {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.fileName = fileName;
-        this.mimeType = mimeType;
-        this.data = data;
     }
 
-    public static BinaryContentResponseDTO toDTO(BinaryContent binaryContent) {
-        BinaryContentResponseDTO binaryContentResponseDTO = new BinaryContentResponseDTO(binaryContent.getId(),
-                binaryContent.getCreatedAt(),
-                binaryContent.getFileName(),
-                binaryContent.getMimeType(),
-                binaryContent.getData());
+    public void updateFileName(String fileName) {
+        this.fileName = fileName;
+    }
 
-        return binaryContentResponseDTO;
+    public void updateMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    public void updateData(byte[] data) {
+        this.data = data;
     }
 }

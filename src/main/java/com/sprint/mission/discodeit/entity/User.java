@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -26,13 +25,9 @@ public class User implements Serializable {
     private List<UUID> channels;
     private List<UUID> messages;
 
-    public User(String name, String email, String password, String introduction) {
+    public User() {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.introduction = introduction;
         this.isLogin = true;
         this.friends = new ArrayList<>();
         this.channels = new ArrayList<>();
@@ -66,22 +61,6 @@ public class User implements Serializable {
 
     public void updateisLogin(boolean isLogin) {
         this.isLogin = isLogin;
-    }
-
-    public static UserResponseDTO toDTO(User user) {
-        UserResponseDTO userResponseDTO = new UserResponseDTO(user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getName(),
-                user.getEmail(),
-                user.getProfileId(),
-                user.getIntroduction(),
-                user.isLogin(),
-                user.getFriends(),
-                user.getChannels(),
-                user.getMessages());
-
-        return userResponseDTO;
     }
 
     @Override

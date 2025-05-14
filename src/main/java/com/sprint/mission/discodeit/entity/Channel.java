@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelResponseDTO;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -19,29 +18,14 @@ public class Channel implements Serializable {
     private boolean isPrivate;
     private final List<UUID> users;
     private final List<UUID> messages;
-    private Instant lastMessageTime;
 
-    public Channel(String channelName, UUID channelMaster, String description) {
+    public Channel() {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.channelName = channelName;
-        this.channelMaster = channelMaster;
-        this.description = description;
-        this.isPrivate = false;
         this.users = new ArrayList<>();
         this.messages = new ArrayList<>();
     }
 
-    public Channel(UUID channelMaster, List<UUID> users) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.channelName = "";
-        this.channelMaster = channelMaster;
-        this.description = "";
-        this.isPrivate = true;
-        this.users = users;
-        this.messages = new ArrayList<>();
-    }
     public void updateChannelName(String channelName) {
         this.channelName = channelName;
         this.updatedAt = Instant.now();
@@ -57,25 +41,16 @@ public class Channel implements Serializable {
         this.updatedAt = Instant.now();
     }
 
-    public void updateLastMessageTime(Instant lastMessageTime) {
-        this.lastMessageTime = lastMessageTime;
+    public void updatePrivate(boolean aPrivate) {
+        this.isPrivate = aPrivate;
     }
 
-    public static ChannelResponseDTO toDTO(Channel channel) {
-        ChannelResponseDTO channelResponseDTO = new ChannelResponseDTO(
-                channel.getId(),
-                channel.getCreatedAt(),
-                channel.getUpdatedAt(),
-                channel.getChannelName(),
-                channel.getChannelMaster(),
-                channel.getDescription(),
-                channel.isPrivate(),
-                channel.getUsers(),
-                channel.getMessages(),
-                channel.getLastMessageTime()
-        );
+    public void updateUsers(UUID userId) {
+        this.users.add(userId);
+    }
 
-        return channelResponseDTO;
+    public void updateMessages(UUID messageId) {
+        this.messages.add(messageId);
     }
 
     @Override
