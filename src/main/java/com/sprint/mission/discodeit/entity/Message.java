@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -21,13 +20,12 @@ public class Message implements Serializable {
     private final UUID channelId;
     private List<UUID> attachmentIds;
 
-    public Message(UUID senderId, UUID channelId, String content, List<UUID> attachmentIds) {
+    public Message(UUID senderId, UUID channelId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.content = content;
         this.senderId = senderId;
         this.channelId = channelId;
-        this.attachmentIds = attachmentIds;
+        this.attachmentIds = new ArrayList<>();
     }
 
     public void updateContent(String content) {
@@ -37,18 +35,6 @@ public class Message implements Serializable {
 
     public void updateAttachmentIds(List<UUID> attachmentIds) {
         this.attachmentIds = attachmentIds;
-    }
-
-    public static MessageResponseDTO toDTO(Message message) {
-        MessageResponseDTO messageResponseDTO = new MessageResponseDTO(message.getId(),
-                message.getCreatedAt(),
-                message.getUpdatedAt(),
-                message.getContent(),
-                message.getSenderId(),
-                message.getChannelId(),
-                message.getAttachmentIds());
-
-        return messageResponseDTO;
     }
 
     @Override
