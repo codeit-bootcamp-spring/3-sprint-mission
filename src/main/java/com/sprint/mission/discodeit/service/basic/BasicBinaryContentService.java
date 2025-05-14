@@ -15,9 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -27,14 +25,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public BinaryContent create(BinaryContentCreateRequest createRequest) {
         //TODO : 에러처리
-        BinaryContent binaryContent = new BinaryContent(
-                createRequest.fileName(),
-                (long) createRequest.bytes().length,
-                createRequest.contentType(),
-                createRequest.bytes()
-        );
+        byte[] byteArray = this.imageToByteArray(createRequest.contentFile());
+        BinaryContent binaryContent = new BinaryContent(byteArray);
+        this.binaryContentRepository.save(binaryContent);
 
-        return this.binaryContentRepository.save(binaryContent);
+        return binaryContent;
     }
 
     //reference : https://www.geeksforgeeks.org/java-program-to-convert-byte-array-to-image/
@@ -82,24 +77,32 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContent find(UUID binaryContentId) {
-        return this.binaryContentRepository
+        BinaryContent binaryContent = this.binaryContentRepository
                 .findById(binaryContentId)
                 .orElseThrow(() -> new NoSuchElementException("binaryContent with id " + binaryContentId + " not found"));
+
+        return binaryContent;
     }
 
 
     // Reference : https://www.baeldung.com/java-filter-collection-by-list
     @Override
     public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
-        return this.binaryContentRepository.findAllByIdIn(binaryContentIds);
+        // TODO : 잘 작동하는지 확인할것
+        List<BinaryContent> binaryContents = this.binaryContentRepository.findAll();
+        Set<UUID> binaryContentIdsSet = new HashSet<>(binaryContentIds);
+
+        List<BinaryContent> filteredBinaryContents = binaryContents.stream().filter(binaryContentIdsSet::contains).toList();
+
+        return filteredBinaryContents;
     }
 
     @Override
     public void delete(UUID binaryContentId) {
-        if (!this.binaryContentRepository.existsById(binaryContentId)) {
-            throw new NoSuchElementException("binaryContent with id " + binaryContentId + " not found");
-        }
-        
+        BinaryContent binaryContent = this.binaryContentRepository
+                .findById(binaryContentId)
+                .orElseThrow(() -> new NoSuchElementException("binaryContent with id " + binaryContentId + " not found"));
+
         this.binaryContentRepository.deleteById(binaryContentId);
     }
 }

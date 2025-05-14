@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
@@ -15,7 +14,7 @@ import java.util.UUID;
 public interface MessageService {
 
     //TODO: 객체 생성 후 -> create 함수.  validation과 관계없이 객체 생성을 먼저 하는데 괜찮은가? -> 생성자에서 체크할것
-    public Message create(MessageCreateRequest createRequest, List<BinaryContentCreateRequest> binaryContentCreateRequests) throws IllegalAccessException;
+    public Message create(MessageCreateRequest createRequest);
 
     public Message findById(UUID messageId);
 

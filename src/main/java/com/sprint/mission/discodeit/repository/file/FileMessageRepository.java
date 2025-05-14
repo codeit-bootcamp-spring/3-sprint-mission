@@ -37,6 +37,7 @@ public class FileMessageRepository implements MessageRepository {
         return DIRECTORY.resolve(id + EXTENSION);
     }
 
+
     @Override
     public Message save(Message message) {
 
@@ -106,6 +107,7 @@ public class FileMessageRepository implements MessageRepository {
         return this.findAll().stream().filter((message) -> message.getChannelId().equals(channelId)).toList();
     }
 
+
     @Override
     public boolean existsById(UUID id) {
         Path path = resolvePath(id);
@@ -127,11 +129,6 @@ public class FileMessageRepository implements MessageRepository {
             throw new RuntimeException(e);
         }
 
-    }
-
-    @Override
-    public void deleteAllByChannelId(UUID channelId) {
-        this.findAllByChannelId(channelId).forEach(message -> this.deleteById(message.getId()));
     }
 
 }

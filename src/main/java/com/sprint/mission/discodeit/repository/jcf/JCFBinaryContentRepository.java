@@ -34,13 +34,6 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
-    public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
-        return this.findAll().stream()
-                .filter(content -> ids.contains(content.getId()))
-                .toList();
-    }
-
-    @Override
     public boolean existsById(UUID binaryContentId) {
         return this.data.containsKey(binaryContentId);
     }

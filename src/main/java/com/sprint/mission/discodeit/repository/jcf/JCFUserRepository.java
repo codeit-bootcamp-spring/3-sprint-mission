@@ -29,16 +29,6 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> findByUsername(String username) {
-        return this.findAll().stream().filter((user) -> user.getName().equals(username)).findFirst();
-    }
-
-    @Override
-    public Optional<User> findByEmail(String userEmail) {
-        return this.findAll().stream().filter((user) -> user.getEmail().equals(userEmail)).findFirst();
-    }
-
-    @Override
     public List<User> findAll() {
         return new ArrayList<>(this.data.values());
     }
@@ -52,15 +42,4 @@ public class JCFUserRepository implements UserRepository {
     public void deleteById(UUID userId) {
         this.data.remove(userId);
     }
-
-    @Override
-    public boolean existsByEmail(String email) {
-        return this.findAll().stream().anyMatch((user) -> user.getEmail().equals(email));
-    }
-
-    @Override
-    public boolean existsByUsername(String username) {
-        return this.findAll().stream().anyMatch((user) -> user.getName().equals(username));
-    }
-
 }

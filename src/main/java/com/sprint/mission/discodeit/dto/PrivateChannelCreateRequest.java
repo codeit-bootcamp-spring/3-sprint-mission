@@ -1,8 +1,9 @@
 package com.sprint.mission.discodeit.dto;
 
-import java.util.List;
+import com.sprint.mission.discodeit.entity.ChannelType;
+
 import java.util.UUID;
 
-public record PrivateChannelCreateRequest(UUID ownerId, List<UUID> attendeeIds) {
+public record PrivateChannelCreateRequest(ChannelType type, UUID ownerId) {
 }
 

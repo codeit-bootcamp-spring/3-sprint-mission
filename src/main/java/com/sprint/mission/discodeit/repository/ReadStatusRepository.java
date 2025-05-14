@@ -11,8 +11,6 @@ public interface ReadStatusRepository {
 
     public Optional<ReadStatus> findById(UUID readStatusId);
 
-    public List<ReadStatus> findAllByUserId(UUID userId);
-
     public List<ReadStatus> findAllByChannelId(UUID channelId);
 
     public List<ReadStatus> findAll();
@@ -20,6 +18,4 @@ public interface ReadStatusRepository {
     public boolean existsById(UUID readStatusId);
 
     public void deleteById(UUID readStatusId);
-
-    public void deleteAllByChannelId(UUID channelId);
 }
