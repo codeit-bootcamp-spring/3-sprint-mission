@@ -100,9 +100,8 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
         binaryContents.stream()
                 .filter((c)->c.getId().equals(id))
                 .forEach((c)->{
-                    c.setName(binaryContent.getName());
                     c.setContentType(binaryContent.getContentType());
-                    c.setBytes(binaryContent.getBytes());
+                    c.setContent(binaryContent.getContent());
                 });
         writeFiles(binaryContents);
     }

@@ -15,28 +15,20 @@ public class UserStatus implements Serializable {
     private Instant createdAt;
     private Instant updatedAt;
     private UUID userId;
-    private Boolean online;
 
     public UserStatus(UUID userId) {
         this.userId = userId;
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.updatedAt = Instant.now(); // updatedAt 초기화 추가
-        this.online = true; // 초기 상태를 온라인으로 설정
     }
 
     public Boolean IsOnline(){
-        if (updatedAt == null) {
-            return false;
-        }
-
         Instant now = Instant.now();
-        if (now.minusSeconds(300).isAfter(updatedAt)) {
-            return online = false;
-        } else {
-            return online = true;
+        if(now.minusSeconds(300).isAfter(updatedAt)){
+            return false;
+        }else{
+            return true;
         }
-
     }
 
     @Override
