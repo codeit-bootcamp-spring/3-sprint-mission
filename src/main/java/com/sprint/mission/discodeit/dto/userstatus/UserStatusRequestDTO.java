@@ -1,26 +1,15 @@
 package com.sprint.mission.discodeit.dto.userstatus;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
-import lombok.Getter;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Getter
-public class UserStatusRequestDTO {
+public record UserStatusRequestDTO(UUID userId, Instant lastLoginTime) {
 
-    private UUID userId;
-    private Instant lastLoginTime;
-
-    public UserStatusRequestDTO(UUID userId, Instant lastLoginTime) {
-        this.userId = userId;
-        this.lastLoginTime = lastLoginTime;
-    }
-
-    public static UserStatus toEntity(UserStatusRequestDTO userStatusRequestDTO) {
-        UserStatus userStatus = new UserStatus(userStatusRequestDTO.getUserId());
-
-        userStatus.updateLastLoginTime(userStatusRequestDTO.getLastLoginTime());
+    public static UserStatus fromDTO(UserStatusRequestDTO userStatusRequestDTO) {
+        UserStatus userStatus = new UserStatus(userStatusRequestDTO.userId(),
+                userStatusRequestDTO.lastLoginTime());
 
         return userStatus;
     }
