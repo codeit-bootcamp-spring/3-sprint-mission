@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.user.LoginRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,9 +19,9 @@ public class AuthController {
         private final AuthService authService;
 
         @RequestMapping(value = "/login", method = RequestMethod.POST)
-        public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+        public ResponseEntity<User> login(@RequestBody LoginRequest request) {
             User login = authService.login(request);
-            return ResponseEntity.ok("사용자 ID : " + login.getId() + " 인 유저가 로그인하였습니다." );
+            return ResponseEntity.status(HttpStatus.OK).body(login);
 
         }
 

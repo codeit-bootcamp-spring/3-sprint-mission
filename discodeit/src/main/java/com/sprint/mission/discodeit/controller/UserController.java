@@ -100,8 +100,9 @@ public class UserController {
     }
 
 
-    @RequestMapping(value = "/{userId}")
-    public ResponseEntity<UserDTO> updateUserStatus(@PathVariable("userId") UUID userId, @RequestBody UpdateUserStatusRequest updateUserStatusRequest) {
+    @RequestMapping(value = "/{userId}/userStatus")
+    public ResponseEntity<UserDTO> updateUserStatus(@PathVariable("userId") UUID userId,
+                                                    @RequestBody UpdateUserStatusRequest updateUserStatusRequest) {
         User user = userService.find(userId);
         UserStatus userStatus = userStatusService.findByUserId(userId);
         userStatus.update(updateUserStatusRequest.newLastActiveAt());
