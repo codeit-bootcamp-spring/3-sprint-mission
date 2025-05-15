@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.PublicChannelCreateRequest;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,75 +7,35 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
+@Getter
 public class Channel implements Serializable {
-    @Getter
     private static final Long serialVersionUID = 1L;
     //
-    @Getter
     private final UUID id;
-    @Getter
     private final Instant createdAt;
-    @Getter
     private Instant updatedAt;
     //
-    @Getter
     private String name;
-    @Getter
     private ChannelType type;
-    @Getter
     private String description;
-    @Getter
     private UUID ownerId;
-    @Getter
-    private List<UUID> attendees;
-    @Getter
-    private List<UUID> messages;
-    @Getter
     @Setter
-    private Instant lastMessageTime;
+    private Instant lastMessageAt;
 
-    public Channel(PublicChannelCreateRequest publicChannelCreateRequest) {
+    public Channel(ChannelType type, UUID ownerId, String name, String description) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         //
-        this.name = publicChannelCreateRequest.name();
-        this.type = publicChannelCreateRequest.type();
-        this.description = publicChannelCreateRequest.description();
-        this.ownerId = publicChannelCreateRequest.ownerId();
+        this.name = name;
+        this.type = type;
+        this.description = description;
+        this.ownerId = ownerId;
         //
-        this.attendees = List.of(this.ownerId);
-        this.messages = new ArrayList<>();
     }
 
-    public Channel(PrivateChannelCreateRequest privateChannelCreateRequest) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-        //
-        this.type = privateChannelCreateRequest.type();
-        this.ownerId = privateChannelCreateRequest.ownerId();
-        //
-        this.attendees = List.of(this.ownerId);
-        this.messages = new ArrayList<>();
-    }
-
-    //XXX : channel.addAttendees(), 이게 repository가 아니라 여기 있는게 맞을까?
-    public void addAttendee(UUID userId) {
-        this.attendees.add(userId);
-    }
-
-    public void removeAttendee(UUID userId) {
-        this.attendees.remove(userId);
-    }
-
-    public void addMessage(UUID messageId) {
-        this.messages.add(messageId);
-    }
 
     public void update(String name, String description) {
         boolean anyValueUpdated = false;
@@ -111,8 +69,6 @@ public class Channel implements Serializable {
                 "  type       = '" + type + "'\n" +
                 "  description = '" + description + "'\n" +
                 "  ownerId     = '" + ownerId + "'\n" +
-                "  attendees  = " + attendees + "\n" +
-                "  messages   = " + messages + "\n" +
                 "}";
     }
 }

@@ -20,5 +20,5 @@ public interface MessageRepository {
 
     public void deleteById(UUID messageId);
 
-
+    public void deleteAllByChannelId(UUID channelId);
 }

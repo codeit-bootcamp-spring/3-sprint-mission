@@ -1,3 +1,7 @@
+# server 설정
+server:
+  port: 8080
+
 # application.yaml
 discodeit:
   repository:

@@ -80,6 +80,16 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByUsername(String username) {
+        return this.findAll().stream().filter((user) -> user.getName().equals(username)).findFirst();
+    }
+
+    @Override
+    public Optional<User> findByEmail(String userEmail) {
+        return this.findAll().stream().filter((user) -> user.getEmail().equals(userEmail)).findFirst();
+    }
+
+    @Override
     public List<User> findAll() {
         List<User> users = new ArrayList<>();
         try {
@@ -125,6 +135,16 @@ public class FileUserRepository implements UserRepository {
             throw new RuntimeException(e);
         }
 
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return this.findAll().stream().anyMatch((user) -> user.getEmail().equals(email));
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        return this.findAll().stream().anyMatch((user) -> user.getName().equals(username));
     }
 
 }
