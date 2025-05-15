@@ -17,12 +17,14 @@ public class BinaryContent implements Serializable {
 
     private UUID id;
     private Instant createdAt;
+    private String name;
     private String contentType;
-    private byte[] content;
+    private byte[] bytes;
 
-    public BinaryContent(String contentType, byte[] content) {
+    public BinaryContent(String name, String contentType, byte[] bytes) {
         this.contentType = contentType;
-        this.content = content;
+        this.bytes = bytes;
+        this.name = name;
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
     }
@@ -33,8 +35,9 @@ public class BinaryContent implements Serializable {
         return "BinaryContent{" +
                 "id=" + id +
                 ", createdAt=" + createdAt +
+                ", name='" + name + '\'' +
                 ", contentType='" + contentType + '\'' +
-                ", content=" + Arrays.toString(content) +
+                ", bytes=" + Arrays.toString(bytes) +
                 '}';
     }
 }

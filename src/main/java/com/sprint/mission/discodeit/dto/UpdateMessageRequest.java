@@ -4,5 +4,5 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public record UpdateMessageRequest(UUID id, String text, Optional<List<UUID>> attachmentIds) {
+public record UpdateMessageRequest(UUID id, String text) {
 }
