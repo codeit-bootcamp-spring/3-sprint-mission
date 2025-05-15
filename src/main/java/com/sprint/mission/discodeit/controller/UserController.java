@@ -187,8 +187,9 @@ public class UserController {
 
     // 모든 사용자 조회( GET )
     @RequestMapping(
-            path = "/users"
+            path = "/findAll"
             , method = RequestMethod.GET
+            , produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
     public ResponseEntity<List<UserDTO>> findAll() {

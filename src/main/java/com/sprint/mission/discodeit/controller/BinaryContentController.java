@@ -11,11 +11,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/binary-content")
+@RequestMapping("/api/binaryContent/find")
 @Controller
 public class BinaryContentController {
 
@@ -50,9 +51,10 @@ public class BinaryContentController {
     @RequestMapping(
             path = "/single"
             , method = RequestMethod.GET
+            , produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    public ResponseEntity<byte[]> findBinaryContent(
+    public ResponseEntity<BinaryContent> findBinaryContent(
             @RequestParam("id") UUID id
     ) {
         BinaryContent binary = binaryContentService.find(id);
@@ -62,16 +64,15 @@ public class BinaryContentController {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
 
-        // BinaryContent의 헤더 정보 설정( 사용자 관점에서 처리하기 용이하도록 )
-        // 사용자 편의성 및 일관된 파일 처리를 위함
-        HttpHeaders headers = new HttpHeaders();
-
-        // 파일 타입 헤더 설정 : 파일의 MIME 타입을 받은 후 적절한 객체로 변환
-        headers.setContentType(MediaType.parseMediaType(binary.getFileType()));
-        // 응답 처리 헤더 설정 : 파일을 다운로드하도록 지정하며, 해당 파일의 이름을 정의함
-        headers.setContentDisposition(ContentDisposition.attachment().filename(binary.getFileName()).build());
+        BinaryContent response = new BinaryContent(
+                binary.getFileName(),
+                binary.getFileData(),
+                binary.getFileType(),
+                binary.getFileSize()
+        );
 
         // 파일의 실제 데이터, 설정된 헤더 정보 포함, 상태코드( 200 ) 반환
-        return new ResponseEntity<>(binary.getFileData(), headers, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(response);
     }
 }
