@@ -21,6 +21,7 @@ public class BasicAuthService implements AuthService {
 
         if (user.getUsername().equals(request.userName()) && user.getPassword().equals(request.password())) {
             return AuthLoginReponse.builder()
+                    .id(user.getId())
                     .userName(user.getUsername())
                     .email(user.getEmail())
                     .build();
