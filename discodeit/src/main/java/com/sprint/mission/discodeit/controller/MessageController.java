@@ -25,6 +25,12 @@ public class MessageController {
         return ResponseEntity.ok(MessageDTO.fromDomain(message));
     }
 
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity<MessageDTO> find(@RequestParam("id") UUID messageId) {
+        Message message = messageService.find(messageId);
+        return ResponseEntity.ok(MessageDTO.fromDomain(message));
+    }
+
     @RequestMapping(value = "{channelId}", method = RequestMethod.GET)
     public ResponseEntity<List<MessageDTO>> findAllMessageByChannelId(@PathVariable("channelId") UUID channelId) {
         List<Message> messageList = messageService.findAllByChannelId(channelId);
@@ -45,9 +51,6 @@ public class MessageController {
         messageService.delete(messageId);
         return ResponseEntity.ok("메시지 ID : " + messageId + "삭제 완료");
     }
-
-
-
 
 
 }

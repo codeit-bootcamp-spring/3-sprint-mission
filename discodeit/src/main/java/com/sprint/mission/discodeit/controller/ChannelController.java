@@ -68,7 +68,7 @@ public class ChannelController {
                 return ResponseEntity.ok(channelDTOs);
         }
 
-        @RequestMapping(value = "/public", method = RequestMethod.PATCH) // private는 수정이 불가능하여 public 채널만 일부 수정을 위해 RequestMethod.PATCH 사용
+        @RequestMapping(value = "/public", method = RequestMethod.PATCH)
         public ResponseEntity<PublicChannelDTO> updateChannel(@RequestBody UpdateChannelRequest updateChannelRequest) {
                 Channel channel = channelService.update(updateChannelRequest);
                 Instant lastMessageAt = getLastMessageAt(channel.getId());

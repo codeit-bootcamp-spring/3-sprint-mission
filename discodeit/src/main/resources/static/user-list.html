@@ -4,7 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>사용자 목록</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .details h2 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .details p {
+            margin: 2px 0 0;
+            font-size: 0.875rem;
+            color: #555;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.875rem;
+            color: #fff;
+        }
+
+        .status-online {
+            background-color: #38a169;
+        }
+
+        .status-offline {
+            background-color: #e53e3e;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -15,12 +87,11 @@
 </div>
 
 <script>
-    // 사용자 목록 동적 로드
     document.addEventListener("DOMContentLoaded", async () => {
         const userList = document.getElementById("userList");
 
         try {
-            const response = await fetch("http://localhost:8080/api/user/findAll");
+            const response = await fetch("http://localhost:8080/api/users/findAll");
             const users = await response.json();
 
             users.forEach(user => {
@@ -50,3 +121,4 @@
 </script>
 </body>
 </html>
+
