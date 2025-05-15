@@ -1,57 +1,54 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class JCFChannelRepository implements ChannelRepository {
-    private static JCFChannelRepository instance;
-    private final Map<UUID, Channel> data = new HashMap<>();
+
+    private static volatile JCFChannelRepository instance;
+    private final Map<UUID, Channel> channels = new ConcurrentHashMap<>();
 
     private JCFChannelRepository() {}
 
     public static JCFChannelRepository getInstance() {
-        if (instance == null) {
-            instance = new JCFChannelRepository();
+        JCFChannelRepository result = instance;
+        if (result == null) {
+            synchronized (JCFChannelRepository.class) {
+                result = instance;
+                if (result == null) {
+                    instance = result = new JCFChannelRepository();
+                }
+            }
         }
-        return instance;
-    }
-
-    // 테스트용 메서드
-    public static void clearInstance() {
-        if (instance != null) {
-            instance.clearData();
-            instance = null;
-        }
-    }
-
-    public void clearData() {
-        data.clear();
+        return result;
     }
 
     @Override
     public Channel save(Channel channel) {
-        data.put(channel.getChannelId(), channel);
+        channels.put(channel.getChannelId(), channel);
         return channel;
     }
 
     @Override
-    public Channel findById(UUID channelId) {
-        return data.get(channelId);
+    public Optional<Channel> findById(UUID channelId) {
+        return Optional.ofNullable(channels.get(channelId));
     }
 
     @Override
     public List<Channel> findAll() {
-        return new ArrayList<>(data.values());
+        return new ArrayList<>(channels.values());
+    }
+
+    @Override
+    public boolean existsById(UUID channelId) {
+        return channels.containsKey(channelId);
     }
 
     @Override
     public void deleteById(UUID channelId) {
-        data.remove(channelId);
+        channels.remove(channelId);
     }
 }
