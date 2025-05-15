@@ -9,17 +9,24 @@ import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDTO;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
 
 /* API 구현 절차
  * 1. 엔드포인트(End-Point)
@@ -33,7 +40,7 @@ import java.util.UUID;
  *      - 응답 데이터 정의
  *      - (옵션) 응답 헤더 정의
  */
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/user")
 public class UserController {
@@ -42,10 +49,7 @@ public class UserController {
   private final UserStatusService userStatusService;
 
   // 신규 유저 생성 요청
-  @RequestMapping(path = "/create",
-      method = RequestMethod.POST,
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @ResponseBody
+  @PostMapping(path = "/users", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<User> create(@RequestPart("userRequest") UserRequestDTO userRequestDTO,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
 
@@ -56,51 +60,36 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
   }
 
-  @RequestMapping(path = "/find", method = RequestMethod.GET)
-  @ResponseBody
-  public ResponseEntity<UserResponseDTO> findById(@RequestParam UUID userId) {
+  @GetMapping(path = "/users/{userId}")
+  public ResponseEntity<UserResponseDTO> findById(@PathVariable UUID userId) {
     UserResponseDTO foundUser = userService.findById(userId);
 
     return ResponseEntity.status(HttpStatus.OK).body(foundUser);
   }
 
-  @RequestMapping(path = "/findByName", method = RequestMethod.GET)
-  @ResponseBody
-  public ResponseEntity<UserResponseDTO> findByName(@RequestParam String name) {
-    UserResponseDTO foundUser = userService.findByName(name);
+  @GetMapping(path = "/users/name")
+  public ResponseEntity<List<UserResponseDTO>> findByName(@RequestParam String name) {
+    List<UserResponseDTO> foundUser = userService.findByNameContaining(name);
 
     return ResponseEntity.status(HttpStatus.OK).body(foundUser);
   }
 
-  @RequestMapping(path = "/findByEmail", method = RequestMethod.GET)
-  @ResponseBody
+  @GetMapping(path = "/users/email")
   public ResponseEntity<UserResponseDTO> findByEmail(@RequestParam String email) {
     UserResponseDTO foundUser = userService.findByEmail(email);
 
     return ResponseEntity.status(HttpStatus.OK).body(foundUser);
   }
 
-  @RequestMapping(path = "/findByNameContaining", method = RequestMethod.GET)
-  @ResponseBody
-  public ResponseEntity<List<UserResponseDTO>> findByNameContaining(@RequestParam String name) {
-    List<UserResponseDTO> foundUsers = userService.findByNameContaining(name);
-
-    return ResponseEntity.status(HttpStatus.OK).body(foundUsers);
-  }
-
-  @RequestMapping(path = "/findAll", method = RequestMethod.GET)
-  @ResponseBody
+  @GetMapping(path = "/users")
   public ResponseEntity<List<UserResponseDTO>> findAll() {
     List<UserResponseDTO> allUsers = userService.findAll();
 
     return ResponseEntity.status(HttpStatus.OK).body(allUsers);
   }
 
-  @RequestMapping(path = "/updateProfile",
-      method = RequestMethod.PUT,
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @ResponseBody
-  public ResponseEntity<UserResponseDTO> updateProfileImage(@RequestParam UUID userId,
+  @PatchMapping(path = "/users/{userId}/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<UserResponseDTO> updateProfileImage(@PathVariable UUID userId,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
     BinaryContentDTO profileRequest = resolveProfileRequest(profile);
 
@@ -109,26 +98,23 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
   }
 
-  @RequestMapping(path = "/updateUserInfo", method = RequestMethod.PUT)
-  @ResponseBody
-  public ResponseEntity<UserResponseDTO> updateUserInfo(@RequestParam UUID userId,
+  @PatchMapping(path = "/users/{userId}/info")
+  public ResponseEntity<UserResponseDTO> updateUserInfo(@PathVariable UUID userId,
       @RequestBody UserRequestDTO userRequestDTO) {
     UserResponseDTO updatedUser = userService.updateUserInfo(userId, userRequestDTO);
 
     return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
   }
 
-  @RequestMapping(path = "/delete", method = RequestMethod.DELETE)
-  @ResponseBody
-  public ResponseEntity<String> deleteById(@RequestParam UUID userId) {
+  @DeleteMapping(path = "/users/{userId}")
+  public ResponseEntity<String> deleteById(@PathVariable UUID userId) {
     userService.deleteById(userId);
 
     return ResponseEntity.status(HttpStatus.OK).body("[Success]: 사용자 삭제 성공!");
   }
 
-  @RequestMapping(path = "/updateUserStatus", method = RequestMethod.PUT)
-  @ResponseBody
-  public ResponseEntity<UserStatusResponseDTO> updateUserStatus(@RequestParam UUID userId,
+  @PatchMapping(path = "/users/{userId}/userStatus")
+  public ResponseEntity<UserStatusResponseDTO> updateUserStatus(@PathVariable UUID userId,
       @RequestBody UserStatusUpdateDTO userStatusUpdateDTO) {
     UserStatusResponseDTO userStatusResponseDTO = userStatusService.updateByUserId(userId,
         userStatusUpdateDTO);
@@ -136,16 +122,14 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.OK).body(userStatusResponseDTO);
   }
 
-  @RequestMapping(path = "/addFriend", method = RequestMethod.POST)
-  @ResponseBody
+  @PostMapping(path = "/users/friends")
   public ResponseEntity<String> addFriend(@RequestBody FriendReqeustDTO friendReqeustDTO) {
     userService.addFriend(friendReqeustDTO);
 
     return ResponseEntity.status(HttpStatus.OK).body("[Success]: 친구 추가 성공!");
   }
 
-  @RequestMapping(path = "/deleteFriend", method = RequestMethod.POST)
-  @ResponseBody
+  @DeleteMapping(path = "/users/friends")
   public ResponseEntity<String> deleteFriend(@RequestBody FriendReqeustDTO friendReqeustDTO) {
     userService.deleteFriend(friendReqeustDTO);
 

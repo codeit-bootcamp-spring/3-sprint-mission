@@ -71,18 +71,6 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public UserResponseDTO findByName(String name) {
-    User user = userRepository.findByName(name)
-        .orElseThrow(() -> new NotFoundUserException(name + " 유저를 찾을 수 없습니다."));
-
-    UserStatus userStatus = findUserStatus(user.getId());
-
-    user.updateisLogin(userStatus.isLogin());
-
-    return User.toDTO(user);
-  }
-
-  @Override
   public UserResponseDTO findByEmail(String email) {
     User user = userRepository.findByEmail(email)
         .orElseThrow(() -> new NotFoundUserException(email + "을 사용하는 유저를 찾을 수 없습니다."));
@@ -123,7 +111,10 @@ public class BasicUserService implements UserService {
     User user = findUser(id);
     // 기존 프로필 이미지의 아이디
     UUID profileImageId = user.getProfileId();
-    binaryContentRepository.deleteById(profileImageId);
+
+    if (profileImageId != null) {
+      binaryContentRepository.deleteById(profileImageId);
+    }
 
     // 프로필 이미지 변경
     if (binaryContentDTO != null) {
