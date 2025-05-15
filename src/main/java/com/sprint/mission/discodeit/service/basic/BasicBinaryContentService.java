@@ -12,7 +12,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Service("BinaryContentService")
+@Service
 @RequiredArgsConstructor
 public class BasicBinaryContentService implements BinaryContentService {
 
@@ -21,11 +21,14 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContent create(BinaryContentCreateRequest binaryContentCreateRequest) {
+        // File size
+        byte[] size = binaryContentCreateRequest.getFileData();
+
         BinaryContent binaryContent = new BinaryContent(
                 binaryContentCreateRequest.getFileName(),
                 binaryContentCreateRequest.getFileData(),
                 binaryContentCreateRequest.getFileType(),
-                binaryContentCreateRequest.getFileSize()
+                size.length
         );
         return binaryContentRepository.save(binaryContent);
     }
@@ -38,7 +41,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
-        return binaryContentRepository.findAll().stream()
+        return binaryContentRepository.findAllByIdIn(ids).stream()
                 .filter(binaryContent -> ids.contains(binaryContent.getId()))
                 .collect(Collectors.toList());
     }

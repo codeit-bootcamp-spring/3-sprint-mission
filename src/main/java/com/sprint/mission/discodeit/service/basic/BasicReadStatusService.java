@@ -10,13 +10,14 @@ import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-@Service("ReadStatusService")
+@Service
 public class BasicReadStatusService implements ReadStatusService {
 
     private final ReadStatusRepository readStatusRepository;
@@ -27,6 +28,7 @@ public class BasicReadStatusService implements ReadStatusService {
     public ReadStatus create(ReadStatusCreateRequest readStatusCreateRequest) {
         UUID userId = readStatusCreateRequest.getUserId();
         UUID channelId = readStatusCreateRequest.getChannelId();
+        Instant lastReadAt = readStatusCreateRequest.getLastReadAt();
 
         // 의존관계 유효성( 존재하지 않는다면 예외 발생 )
         if (!channelRepository.existsById(channelId)) {
@@ -48,7 +50,8 @@ public class BasicReadStatusService implements ReadStatusService {
         // Create
         ReadStatus readStatus = new ReadStatus(
                 userId,
-                channelId
+                channelId,
+                lastReadAt
         );
         return readStatusRepository.save(readStatus);
     }
@@ -68,12 +71,14 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public ReadStatus update(ReadStatusUpdateRequest readStatusUpdateRequest) {
+    public ReadStatus update(UUID id ,ReadStatusUpdateRequest readStatusUpdateRequest) {
+
+        Instant newLastReadAt = readStatusUpdateRequest.getNewLastReadAt();
         ReadStatus readStatus = readStatusRepository.findById(readStatusUpdateRequest.getId())
                 .orElseThrow(() -> new NoSuchElementException("ReadStatus with id " + readStatusUpdateRequest.getId() + " not found"));
 
         // Update
-        readStatus.update();
+        readStatus.update(newLastReadAt);
         return readStatusRepository.save(readStatus);
     }
 

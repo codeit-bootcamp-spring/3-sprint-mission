@@ -38,7 +38,7 @@ public class Channel implements Serializable {
             updated = true;
         }
         if (newDescription != null && !newDescription.equals(this.description)) {
-            this.description = description;
+            this.description = newDescription;
         }
         if (updated) {
             this.updatedAt = Instant.now();

@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class MessageUpdateRequest {
+public final class MessageUpdateRequest {
     private final String messageContent;
 }

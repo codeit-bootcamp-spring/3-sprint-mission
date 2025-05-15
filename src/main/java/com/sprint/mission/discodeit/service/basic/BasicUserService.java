@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 
 // Lombok( 생성자 대체 )
 @RequiredArgsConstructor
-@Service("BasicUserService")
+@Service
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
@@ -52,6 +53,7 @@ public class BasicUserService implements UserService {
 
         // 선택적 프로필 이미지 생성 ( 있을 수도, 없을 수도 )
         UUID profileId = null;
+
         // isPresent() : 인자값에 값이 존재한다면 true  | 선택적 여부 판별
         if (binaryContentCreateRequest.isPresent()) {
             BinaryContentCreateRequest bccr = binaryContentCreateRequest.get();
@@ -59,7 +61,7 @@ public class BasicUserService implements UserService {
                     bccr.getFileName(),
                     bccr.getFileData(),
                     bccr.getFileType(),
-                    bccr.getFileSize()
+                    bccr.getFileData().length
             );
             // 생성한 정보를 토대로 저장
             binaryContentRepository.save(binaryContent);
@@ -79,8 +81,11 @@ public class BasicUserService implements UserService {
         );
         userRepository.save(user);
 
+        // 현재 시간 적용
+        Instant now = Instant.now();
+
         // UserStatus 동시 생성하기
-        UserStatus userStatus = new UserStatus(user.getUserId());
+        UserStatus userStatus = new UserStatus(user.getUserId(), now);
         userStatusRepository.save(userStatus);
 
         return user;
@@ -92,17 +97,20 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
         // 온라인 여부
-        boolean isOnline = userStatusRepository.findByUserId(user.getUserId())
+        boolean isOnline = userStatusRepository.findById(user.getUserId())
                 .map(UserStatus::isOnline)
                 .orElse(false);
 
         // 조회 정보 반환
         return new UserDTO(
                 user.getUserId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
                 user.getUserName(),
                 user.getEmail(),
                 user.getPhoneNumber(),
                 user.getStatusMessage(),
+                user.getProfileId(),
                 isOnline
         );
     }
@@ -114,16 +122,19 @@ public class BasicUserService implements UserService {
         return users.stream()
                 // 온라인 여부 판별 후 해당 정보 값을 dto로 반환
                 .map(user -> {
-                    boolean isOnline = userStatusRepository.findByUserId(user.getUserId())
+                    boolean isOnline = userStatusRepository.findById(user.getUserId())
                             .map(UserStatus::isOnline)
                             .orElse(false);
 
                     return new UserDTO(
                             user.getUserId(),
+                            user.getCreatedAt(),
+                            user.getUpdatedAt(),
                             user.getUserName(),
                             user.getEmail(),
                             user.getPhoneNumber(),
                             user.getStatusMessage(),
+                            user.getProfileId(),
                             isOnline
                     );
                 })
@@ -143,7 +154,7 @@ public class BasicUserService implements UserService {
                     request.getFileName(),
                     request.getFileData(),
                     request.getFileType(),
-                    request.getFileSize()
+                    request.getFileData().length
             );
             // BinaryContent 저장 ( >> 업데이트 )
             binaryContentRepository.save(profileImage);
@@ -185,9 +196,11 @@ public class BasicUserService implements UserService {
 
     @Override
     public void delete(UUID userId) {
+
         if (!userRepository.existsById(userId)) {
             throw new NoSuchElementException("User with id " + userId + " not found");
         }
+
         // cascade 옵션 적용 ( BinaryContent && UserStatus )
         binaryContentRepository.deleteById(userId);
         userStatusRepository.deleteById(userId);

@@ -5,8 +5,8 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-// pwd update 별도 관리
-public class UserPasswordUpdateRequest {
+// 보안성 향상의 목적으로 pwd update 별도 관리
+public final class UserPasswordUpdateRequest {
     String currentPassword;
     String newPassword;
 }
