@@ -14,17 +14,18 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthController {
-    private final AuthService authService;
 
-    /* 유저 로그인 */
-    @RequestMapping(value = "/login"
-            , method = RequestMethod.POST)
-    public ResponseEntity<User> login(
-            @RequestBody LoginRequest loginRequest
-    ) {
-        User user = this.authService.login(loginRequest);
+  private final AuthService authService;
 
-        return ResponseEntity.ok().body(user);
-    }
+  /* 유저 로그인 */
+  @RequestMapping(value = "login"
+      , method = RequestMethod.POST)
+  public ResponseEntity<User> login(
+      @RequestBody LoginRequest loginRequest
+  ) {
+    User user = this.authService.login(loginRequest);
+
+    return ResponseEntity.ok().body(user);
+  }
 
 }

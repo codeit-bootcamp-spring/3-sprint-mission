@@ -3,13 +3,16 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 
 /* API 구현 절차
@@ -29,37 +32,37 @@ import java.util.UUID;
 @RequestMapping("/api/binaryContent")
 public class BinaryContentController {
 
-    private final BinaryContentService binaryContentService;
+  private final BinaryContentService binaryContentService;
 
-    /* 바이너리 파일 한개 다운로드 */
-    @RequestMapping(path = "/find", method = RequestMethod.GET)
-    @ResponseBody
-    public ResponseEntity<BinaryContent> find(
-            @RequestParam String binaryContentId
-    ) {
-        BinaryContent binaryContent = binaryContentService.find(parseStringToUuid(binaryContentId));
-        return ResponseEntity.ok().body(binaryContent);
+  /* 바이너리 파일 한개 다운로드 */
+  @RequestMapping(path = "find", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<BinaryContent> find(
+      @RequestParam String binaryContentId
+  ) {
+    BinaryContent binaryContent = binaryContentService.find(parseStringToUuid(binaryContentId));
+    return ResponseEntity.ok().body(binaryContent);
+  }
+
+  /* 바이너리 파일 여러개 다운로드 */
+  @RequestMapping(path = "/findAllByIdIn", method = RequestMethod.POST)
+  @ResponseBody
+  public ResponseEntity<List<BinaryContent>> findAllByIdIn(
+      @RequestBody List<UUID> binaryContentIds
+  ) {
+    List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+    return ResponseEntity.ok().body(binaryContents);
+  }
+
+
+  //FIXME : util로 빼기 (모든 컨트롤러에서 중복됨)
+  /* String 타입 -> UUID 타입으로 변경 */
+  private UUID parseStringToUuid(String id) {
+    try {
+      return UUID.fromString(id);
+    } catch (IllegalArgumentException e) {
+      throw new RuntimeException("올바른 파라미터 형식이 아닙니다.");
     }
-
-    /* 바이너리 파일 여러개 다운로드 */
-    @RequestMapping(path = "/download", method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity<List<BinaryContent>> findAllByIdIn(
-            @RequestBody List<UUID> binaryContentIds
-    ) {
-        List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
-        return ResponseEntity.ok().body(binaryContents);
-    }
-
-
-    //FIXME : util로 빼기 (모든 컨트롤러에서 중복됨)
-    /* String 타입 -> UUID 타입으로 변경 */
-    private UUID parseStringToUuid(String id) {
-        try {
-            return UUID.fromString(id);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("올바른 파라미터 형식이 아닙니다.");
-        }
-    }
+  }
 
 }
