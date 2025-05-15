@@ -11,41 +11,43 @@ import java.util.UUID;
 @NoArgsConstructor
 public class UserStatus implements Serializable {
 
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private UUID userId;
-    private Boolean online;
+  private static final int TIMEOUT_SECONDS = 300;
 
-    public UserStatus(UUID userId) {
-        this.userId = userId;
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now(); // updatedAt 초기화 추가
-        this.online = true; // 초기 상태를 온라인으로 설정
+  private UUID id;
+  private Instant createdAt;
+  private Instant updatedAt;
+  private UUID userId;
+  private Boolean online;
+
+  public UserStatus(UUID userId) {
+    this.userId = userId;
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    this.updatedAt = Instant.now(); // updatedAt 초기화 추가
+    this.online = true; // 초기 상태를 온라인으로 설정
+  }
+
+  public Boolean IsOnline() {
+    if (updatedAt == null) {
+      return false;
     }
 
-    public Boolean IsOnline(){
-        if (updatedAt == null) {
-            return false;
-        }
-
-        Instant now = Instant.now();
-        if (now.minusSeconds(300).isAfter(updatedAt)) {
-            return online = false;
-        } else {
-            return online = true;
-        }
-
+    Instant now = Instant.now();
+    if (now.minusSeconds(TIMEOUT_SECONDS).isAfter(updatedAt)) {
+      return online = false;
+    } else {
+      return online = true;
     }
 
-    @Override
-    public String toString() {
-        return "UserStatus{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", userId=" + userId +
-                '}';
-    }
+  }
+
+  @Override
+  public String toString() {
+    return "UserStatus{" +
+        "id=" + id +
+        ", createdAt=" + createdAt +
+        ", updatedAt=" + updatedAt +
+        ", userId=" + userId +
+        '}';
+  }
 }
