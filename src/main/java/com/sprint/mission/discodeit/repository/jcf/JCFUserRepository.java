@@ -1,17 +1,18 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 
 public class JCFUserRepository implements UserRepository {
     private static JCFUserRepository instance;
-    private final Map<UUID, User> data = new HashMap<>();
+    private final Map<UUID, User> data = new ConcurrentHashMap<>();
 
     private JCFUserRepository() {}
 
@@ -42,8 +43,8 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public User findById(UUID userId) {
-        return data.get(userId);
+    public Optional<User> findById(UUID userId) {
+        return Optional.ofNullable(data.get(userId));
     }
 
     @Override
@@ -54,5 +55,23 @@ public class JCFUserRepository implements UserRepository {
     @Override
     public void deleteById(UUID userId) {
         data.remove(userId);
+    }
+
+    @Override
+    public Optional<User> findByUsername(String username) {
+        return data.values().stream()
+                .filter(user -> user.getUsername().equals(username))
+                .findFirst();
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return data.containsKey(id);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return data.values().stream()
+                .anyMatch(user -> user.getEmail().equals(email));
     }
 }

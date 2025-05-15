@@ -9,18 +9,23 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 
+@Repository
 public class FileChannelRepository implements ChannelRepository {
 
     private final Path dataDirectory;
 
-    public FileChannelRepository() {
-        this.dataDirectory = Paths.get(System.getProperty("user.dir"), "data", "channels");
+    public FileChannelRepository(@Value("${discodeit.repository.file-directory}") String baseDir) {
+        this.dataDirectory = Paths.get(System.getProperty("user.dir"), baseDir, "channels");
         if (!Files.exists(dataDirectory)) {
             try {
                 Files.createDirectories(dataDirectory);
@@ -60,12 +65,12 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel findById(UUID channelId) {
+    public Optional<Channel> findById(UUID channelId) {
         Path channelPath = getChannelPath(channelId);
         if (Files.exists(channelPath)) {
-            return loadChannel(channelPath);
+            return Optional.of(loadChannel(channelPath));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -78,6 +83,11 @@ public class FileChannelRepository implements ChannelRepository {
         } catch (IOException e) {
             throw new RuntimeException("채널 목록 로드 실패", e);
         }
+    }
+
+    @Override
+    public boolean existsById(UUID channelId) {
+        return Files.exists(getChannelPath(channelId));
     }
 
     @Override

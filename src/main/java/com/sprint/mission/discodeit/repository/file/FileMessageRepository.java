@@ -12,16 +12,22 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.Comparator;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
+@Repository
 public class FileMessageRepository implements MessageRepository {
 
     private final Path dataDirectory;
 
-    public FileMessageRepository() {
-        this.dataDirectory = Paths.get(System.getProperty("user.dir"), "data", "messages");
+    public FileMessageRepository(@Value("${discodeit.repository.file-directory}") String baseDir) {
+        this.dataDirectory = Paths.get(System.getProperty("user.dir"), baseDir, "messages");
         if (!Files.exists(dataDirectory)) {
             try {
                 Files.createDirectories(dataDirectory);
@@ -61,12 +67,12 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message findById(UUID messageId) {
+    public Optional<Message> findById(UUID messageId) {
         Path messagePath = getMessagePath(messageId);
         if (Files.exists(messagePath)) {
-            return loadMessage(messagePath);
+            return Optional.of(loadMessage(messagePath));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -92,6 +98,13 @@ public class FileMessageRepository implements MessageRepository {
     public List<Message> findByAuthorId(UUID authorId) {
         return findAll().stream()
                 .filter(m -> m.getAuthorId().equals(authorId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Message> findAllByChannelIdOrderByCreatedAtAsc(UUID channelId) {
+        return findByChannelId(channelId).stream()
+                .sorted(Comparator.comparing(Message::getCreatedAt))
                 .collect(Collectors.toList());
     }
 

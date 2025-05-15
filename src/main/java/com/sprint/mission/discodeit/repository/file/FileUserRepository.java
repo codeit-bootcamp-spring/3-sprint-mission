@@ -9,20 +9,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
+
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 
+@Repository
 public class FileUserRepository implements UserRepository {
 
     private final Path dataDirectory;
     private final Object lock = new Object();
 
-    public FileUserRepository() {
-        this.dataDirectory = Paths.get(System.getProperty("user.dir"), "data", "users");
+    public FileUserRepository(@Value("${discodeit.repository.file-directory}") String baseDir) {
+        this.dataDirectory = Paths.get(System.getProperty("user.dir"), baseDir, "users");
         if (!Files.exists(dataDirectory)) {
             try {
                 Files.createDirectories(dataDirectory);
@@ -66,13 +71,13 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public User findById(UUID userId) {
+    public Optional<User> findById(UUID userId) {
         synchronized (lock) {
             Path userPath = getUserPath(userId);
             if (Files.exists(userPath)) {
-                return loadUser(userPath);
+                return Optional.of(loadUser(userPath));
             }
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -96,6 +101,30 @@ public class FileUserRepository implements UserRepository {
             } catch (IOException e) {
                 throw new RuntimeException("사용자 삭제 실패: " + userId, e);
             }
+        }
+    }
+
+    @Override
+    public Optional<User> findByUsername(String username) {
+        synchronized (lock) {
+            return findAll().stream()
+                    .filter(user -> user.getUsername().equals(username))
+                    .findFirst();
+        }
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        synchronized (lock) {
+            return Files.exists(getUserPath(id));
+        }
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        synchronized (lock) {
+            return findAll().stream()
+                    .anyMatch(user -> user.getEmail().equals(email));
         }
     }
 }
