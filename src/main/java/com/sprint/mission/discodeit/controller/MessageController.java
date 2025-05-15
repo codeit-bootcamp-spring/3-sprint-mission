@@ -5,32 +5,34 @@ import com.sprint.mission.discodeit.dto.message.MessageRequestDTO;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/message")
+@RequestMapping("/api/messages")
 public class MessageController {
 
   private final MessageService messageService;
 
-  @RequestMapping(path = "/create",
-      method = RequestMethod.POST,
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @ResponseBody
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Message> create(
       @RequestPart("messageRequest") MessageRequestDTO messageRequestDTO,
       @RequestPart(value = "attachedFiles", required = false) List<MultipartFile> attachedFiles) {
@@ -41,40 +43,35 @@ public class MessageController {
     return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
   }
 
-  @RequestMapping(path = "/find", method = RequestMethod.GET)
-  @ResponseBody
-  public ResponseEntity<MessageResponseDTO> findById(@RequestParam UUID messageId) {
+  @GetMapping(path = "/{messageId}")
+  public ResponseEntity<MessageResponseDTO> findById(@PathVariable UUID messageId) {
     MessageResponseDTO foundMessage = messageService.findById(messageId);
 
     return ResponseEntity.status(HttpStatus.OK).body(foundMessage);
   }
 
-  @RequestMapping(path = "/findAllByChannel", method = RequestMethod.GET)
-  @ResponseBody
+  @GetMapping(path = "/channels")
   public ResponseEntity<List<MessageResponseDTO>> findAllByChannelId(@RequestParam UUID channelId) {
     List<MessageResponseDTO> foundMessages = messageService.findAllByChannelId(channelId);
 
     return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
   }
 
-  @RequestMapping(path = "/findAll", method = RequestMethod.GET)
-  @ResponseBody
+  @GetMapping
   public ResponseEntity<List<MessageResponseDTO>> findAll() {
     List<MessageResponseDTO> foundMessages = messageService.findAll();
 
     return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
   }
 
-  @RequestMapping(path = "/findAllByUser", method = RequestMethod.GET)
-  @ResponseBody
+  @GetMapping(path = "/users")
   public ResponseEntity<List<MessageResponseDTO>> findAllByUserId(@RequestParam UUID userId) {
     List<MessageResponseDTO> foundMessages = messageService.findAllByUserId(userId);
 
     return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
   }
 
-  @RequestMapping(path = "/findAllByWord", method = RequestMethod.GET)
-  @ResponseBody
+  @GetMapping(path = "/word")
   public ResponseEntity<List<MessageResponseDTO>> findAllByContainingWord(
       @RequestParam String word) {
     List<MessageResponseDTO> foundMessages = messageService.findAllByContainingWord(word);
@@ -82,11 +79,8 @@ public class MessageController {
     return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
   }
 
-  @RequestMapping(path = "/updateAttachFiles",
-      method = RequestMethod.PUT,
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @ResponseBody
-  public ResponseEntity<MessageResponseDTO> updateBinaryContent(@RequestParam UUID messageId,
+  @PatchMapping(path = "/{messageId}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<MessageResponseDTO> updateBinaryContent(@PathVariable UUID messageId,
       @RequestPart(value = "attachedFiles", required = false) List<MultipartFile> attachedFiles) {
     List<BinaryContentDTO> binaryContentDTOS = resolveFileRequest(attachedFiles);
 
@@ -96,18 +90,16 @@ public class MessageController {
     return ResponseEntity.status(HttpStatus.OK).body(updatedMessage);
   }
 
-  @RequestMapping(path = "/updateContent", method = RequestMethod.PUT)
-  @ResponseBody
-  public ResponseEntity<MessageResponseDTO> updateContent(@RequestParam UUID messageId,
+  @PatchMapping(path = "/{messageId}")
+  public ResponseEntity<MessageResponseDTO> updateContent(@PathVariable UUID messageId,
       String content) {
     MessageResponseDTO updatedMessage = messageService.updateContent(messageId, content);
 
     return ResponseEntity.status(HttpStatus.OK).body(updatedMessage);
   }
 
-  @RequestMapping(path = "/delete", method = RequestMethod.DELETE)
-  @ResponseBody
-  public ResponseEntity<String> deleteById(@RequestParam UUID messageId) {
+  @DeleteMapping(path = "/{messageId}")
+  public ResponseEntity<String> deleteById(@PathVariable UUID messageId) {
     messageService.deleteById(messageId);
 
     return ResponseEntity.status(HttpStatus.OK).body("[Success]: 메시지 삭제 성공!");

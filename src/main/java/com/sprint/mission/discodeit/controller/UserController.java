@@ -42,14 +42,14 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/user")
+@RequestMapping("/api/users")
 public class UserController {
 
   private final UserService userService;
   private final UserStatusService userStatusService;
 
   // 신규 유저 생성 요청
-  @PostMapping(path = "/users", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<User> create(@RequestPart("userRequest") UserRequestDTO userRequestDTO,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
 
@@ -60,35 +60,35 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
   }
 
-  @GetMapping(path = "/users/{userId}")
+  @GetMapping(path = "/{userId}")
   public ResponseEntity<UserResponseDTO> findById(@PathVariable UUID userId) {
     UserResponseDTO foundUser = userService.findById(userId);
 
     return ResponseEntity.status(HttpStatus.OK).body(foundUser);
   }
 
-  @GetMapping(path = "/users/name")
+  @GetMapping(path = "/name")
   public ResponseEntity<List<UserResponseDTO>> findByName(@RequestParam String name) {
     List<UserResponseDTO> foundUser = userService.findByNameContaining(name);
 
     return ResponseEntity.status(HttpStatus.OK).body(foundUser);
   }
 
-  @GetMapping(path = "/users/email")
+  @GetMapping(path = "/email")
   public ResponseEntity<UserResponseDTO> findByEmail(@RequestParam String email) {
     UserResponseDTO foundUser = userService.findByEmail(email);
 
     return ResponseEntity.status(HttpStatus.OK).body(foundUser);
   }
 
-  @GetMapping(path = "/users")
+  @GetMapping
   public ResponseEntity<List<UserResponseDTO>> findAll() {
     List<UserResponseDTO> allUsers = userService.findAll();
 
     return ResponseEntity.status(HttpStatus.OK).body(allUsers);
   }
 
-  @PatchMapping(path = "/users/{userId}/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PatchMapping(path = "/{userId}/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserResponseDTO> updateProfileImage(@PathVariable UUID userId,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
     BinaryContentDTO profileRequest = resolveProfileRequest(profile);
@@ -98,7 +98,7 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
   }
 
-  @PatchMapping(path = "/users/{userId}/info")
+  @PatchMapping(path = "/{userId}/info")
   public ResponseEntity<UserResponseDTO> updateUserInfo(@PathVariable UUID userId,
       @RequestBody UserRequestDTO userRequestDTO) {
     UserResponseDTO updatedUser = userService.updateUserInfo(userId, userRequestDTO);
@@ -106,14 +106,14 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
   }
 
-  @DeleteMapping(path = "/users/{userId}")
+  @DeleteMapping(path = "/{userId}")
   public ResponseEntity<String> deleteById(@PathVariable UUID userId) {
     userService.deleteById(userId);
 
     return ResponseEntity.status(HttpStatus.OK).body("[Success]: 사용자 삭제 성공!");
   }
 
-  @PatchMapping(path = "/users/{userId}/userStatus")
+  @PatchMapping(path = "/{userId}/userStatus")
   public ResponseEntity<UserStatusResponseDTO> updateUserStatus(@PathVariable UUID userId,
       @RequestBody UserStatusUpdateDTO userStatusUpdateDTO) {
     UserStatusResponseDTO userStatusResponseDTO = userStatusService.updateByUserId(userId,
@@ -122,14 +122,14 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.OK).body(userStatusResponseDTO);
   }
 
-  @PostMapping(path = "/users/friends")
+  @PostMapping(path = "/friends")
   public ResponseEntity<String> addFriend(@RequestBody FriendReqeustDTO friendReqeustDTO) {
     userService.addFriend(friendReqeustDTO);
 
     return ResponseEntity.status(HttpStatus.OK).body("[Success]: 친구 추가 성공!");
   }
 
-  @DeleteMapping(path = "/users/friends")
+  @DeleteMapping(path = "/friends")
   public ResponseEntity<String> deleteFriend(@RequestBody FriendReqeustDTO friendReqeustDTO) {
     userService.deleteFriend(friendReqeustDTO);
 

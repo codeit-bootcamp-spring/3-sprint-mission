@@ -4,26 +4,31 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDTO;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/binaryContent")
+@RequestMapping("/api/binaryContents")
 public class BinaryContentController {
 
   private final BinaryContentService binaryContentService;
 
-  @RequestMapping(path = "/create", method = RequestMethod.POST)
-  @ResponseBody
+  @PostMapping
   public ResponseEntity<BinaryContent> create(
       @RequestPart(value = "file") MultipartFile multipartFile) {
     BinaryContentDTO binaryContentDTO = resolveFileRequest(multipartFile);
@@ -33,33 +38,29 @@ public class BinaryContentController {
     return ResponseEntity.status(HttpStatus.CREATED).body(binaryContent);
   }
 
-  @RequestMapping(path = "/find", method = RequestMethod.GET)
-  @ResponseBody
-  public ResponseEntity<BinaryContentResponseDTO> findById(@RequestParam UUID binaryContentId) {
+  @GetMapping(path = "/{binaryContentId}")
+  public ResponseEntity<BinaryContentResponseDTO> findById(@PathVariable UUID binaryContentId) {
     BinaryContentResponseDTO foundBinaryContent = binaryContentService.findById(binaryContentId);
 
     return ResponseEntity.status(HttpStatus.OK).body(foundBinaryContent);
   }
 
-  @RequestMapping(path = "/findAll", method = RequestMethod.GET)
-  @ResponseBody
-  public ResponseEntity<List<BinaryContentResponseDTO>> findAll() {
-    List<BinaryContentResponseDTO> allBinaryContents = binaryContentService.findAll();
+  @GetMapping
+  public ResponseEntity<List<BinaryContentResponseDTO>> findAll(
+      @RequestBody(required = false) List<UUID> ids) {
+    List<BinaryContentResponseDTO> binaryContents;
 
-    return ResponseEntity.status(HttpStatus.OK).body(allBinaryContents);
+    if (ids == null) {
+      binaryContents = binaryContentService.findAll();
+    } else {
+      binaryContents = binaryContentService.findAllByIdIn(ids);
+    }
+
+    return ResponseEntity.status(HttpStatus.OK).body(binaryContents);
   }
 
-  @RequestMapping(path = "/findAllByIdIn", method = RequestMethod.GET)
-  @ResponseBody
-  public ResponseEntity<List<BinaryContentResponseDTO>> findAllByIdIn(@RequestBody List<UUID> ids) {
-    List<BinaryContentResponseDTO> foundBinaryContents = binaryContentService.findAllByIdIn(ids);
-
-    return ResponseEntity.status(HttpStatus.OK).body(foundBinaryContents);
-  }
-
-  @RequestMapping(path = "/delete", method = RequestMethod.DELETE)
-  @ResponseBody
-  public ResponseEntity<String> deleteById(@RequestParam UUID binaryContentId) {
+  @DeleteMapping("/{binaryContentId}")
+  public ResponseEntity<String> deleteById(@PathVariable UUID binaryContentId) {
     binaryContentService.deleteById(binaryContentId);
 
     return ResponseEntity.status(HttpStatus.CREATED).body("[Success]: 파일 삭제 성공!");
