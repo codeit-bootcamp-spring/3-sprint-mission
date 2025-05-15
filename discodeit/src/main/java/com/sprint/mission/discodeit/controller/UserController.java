@@ -26,110 +26,118 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
-    private final UserStatusService userStatusService;
 
-    @RequestMapping(method =  RequestMethod.POST)
-    public ResponseEntity<UserDTO> createUser(@RequestPart(value = "request") CreateUserRequest request,
-                                              @RequestPart(value = "profile", required = false) MultipartFile profile
-                                              ) {
-        if (profile == null || profile.isEmpty()) {
-            User user = userService.create(request); // 프로필 없이 사용자 생성
-            boolean online = userStatusService.findByUserId(user.getId()).isOnline();
+  private final UserService userService;
+  private final UserStatusService userStatusService;
 
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(UserDTO.fromDomain(user, online));
-        }
+  @PostMapping
+  public ResponseEntity<UserDTO> createUser(
+      @RequestPart(value = "request") CreateUserRequest request,
+      @RequestPart(value = "profile", required = false) MultipartFile profile
+  ) {
+    if (profile == null || profile.isEmpty()) {
+      User user = userService.create(request); // 프로필 없이 사용자 생성
+      boolean online = userStatusService.findByUserId(user.getId()).isOnline();
 
-        CreateBinaryContentRequest profileRequest = resolveProfileRequest(profile);
-
-        User user = userService.create(request, profileRequest);
-        System.out.println("유저 프로필 : " + user.getProfileId() );
-        boolean online = userStatusService.findByUserId(user.getId()).isOnline();
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(UserDTO.fromDomain(user, online));
-
+      return ResponseEntity.status(HttpStatus.CREATED)
+          .body(UserDTO.fromDomain(user, online));
     }
 
+    CreateBinaryContentRequest profileRequest = resolveProfileRequest(profile);
+
+    User user = userService.create(request, profileRequest);
+    System.out.println("유저 프로필 : " + user.getProfileId()); // 프로필이 있는 사용자 생성
+    boolean online = userStatusService.findByUserId(user.getId()).isOnline();
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(UserDTO.fromDomain(user, online));
+
+  }
 
 
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<UserDTO> findUser(@RequestParam("id") UUID userId) {
-        User user = userService.find(userId);
-        boolean online = userStatusService.findByUserId(user.getId())
-                .isOnline();
-        return ResponseEntity.ok(UserDTO.fromDomain(user, online));
+  @GetMapping("/{userId}")
+  public ResponseEntity<UserDTO> findUser(@PathVariable("userId") UUID userId) {
+    User user = userService.find(userId);
+    boolean online = userStatusService.findByUserId(user.getId())
+        .isOnline();
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(UserDTO.fromDomain(user, online));
+  }
+
+
+  @GetMapping
+  public ResponseEntity<List<UserDTO>> findAllUsers() {
+    List<UserDTO> userDTOList = userService.findAll().stream()
+        .map(user -> {
+          boolean online = userStatusService.findByUserId(user.getId())
+              .isOnline();
+          return UserDTO.fromDomain(user, online);
+        }).collect(Collectors.toList());
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(userDTOList);
+  }
+
+  @PatchMapping("/{userId}")
+  public ResponseEntity<UserDTO> update(@PathVariable("userId") UUID userId,
+      @RequestPart UpdateUserRequest updateUserRequest,
+      @RequestPart(value = "profile", required = false) MultipartFile profile) {
+    if (profile == null || profile.isEmpty()) {
+      User user = userService.update(userId, updateUserRequest);
+      userStatusService.findByUserId(userId).update(Instant.now());
+      boolean online = userStatusService.findByUserId(userId)
+          .isOnline();
+      return ResponseEntity
+          .status(HttpStatus.OK)
+          .body(UserDTO.fromDomain(user, online));
     }
 
+    CreateBinaryContentRequest profileRequest = resolveProfileRequest(profile);
 
-    @RequestMapping(value = "/findAll",method = RequestMethod.GET)
-    public ResponseEntity<List<UserDTO>> findAllUsers() {
-        List<UserDTO> userDTOList = userService.findAll().stream()
-                .map(user -> {
-                    boolean online = userStatusService.findByUserId(user.getId())
-                            .isOnline();
-                    return UserDTO.fromDomain(user, online);
-                }).collect(Collectors.toList());
-        return ResponseEntity.ok(userDTOList);
+    User user = userService.update(userId, updateUserRequest, profileRequest);
+    userStatusService.findByUserId(userId).update(Instant.now());
+    boolean online = userStatusService.findByUserId(userId)
+        .isOnline();
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(UserDTO.fromDomain(user, online));
+  }
+
+
+  @PatchMapping("/{userId}/status")
+  public ResponseEntity<UserDTO> updateUserStatus(
+      @PathVariable("userId") UUID userId,
+      @RequestBody UpdateUserStatusRequest updateUserStatusRequest) {
+    User user = userService.find(userId);
+    UserStatus userStatus = userStatusService.findByUserId(userId);
+    userStatus.update(updateUserStatusRequest.newLastActiveAt());
+    boolean online = userStatusService.findByUserId(user.getId())
+        .isOnline();
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(UserDTO.fromDomain(user, online));
+  }
+
+
+  @DeleteMapping("/{userId}")
+  public ResponseEntity<String> deleteUser(@PathVariable("userId") UUID userId) {
+    userService.delete(userId);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body("사용자 ID : " + userId + " 삭제 성공");
+  }
+
+  private CreateBinaryContentRequest resolveProfileRequest(MultipartFile profileFile) {
+    try {
+      CreateBinaryContentRequest binaryContentCreateRequest = new CreateBinaryContentRequest(
+          profileFile.getOriginalFilename(),
+          profileFile.getContentType(),
+          profileFile.getBytes()
+      );
+      return binaryContentCreateRequest;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-
-    @RequestMapping(value = "/{userId}",method = RequestMethod.PATCH)
-    public ResponseEntity<UserDTO> update(  @PathVariable("userId") UUID userId,
-                                            @RequestPart UpdateUserRequest updateUserRequest,
-                                            @RequestPart(value = "profile", required = false) MultipartFile profile)
-    {
-        if (profile == null || profile.isEmpty()) {
-            User user = userService.update(userId, updateUserRequest);
-            userStatusService.findByUserId(userId).update(Instant.now());
-            boolean online = userStatusService.findByUserId(userId)
-                    .isOnline();
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(UserDTO.fromDomain(user, online));
-        }
-
-        CreateBinaryContentRequest profileRequest = resolveProfileRequest(profile);
-
-        User user = userService.update(userId, updateUserRequest, profileRequest);
-        userStatusService.findByUserId(userId).update(Instant.now());
-        boolean online = userStatusService.findByUserId(userId)
-                .isOnline();
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(UserDTO.fromDomain(user, online));
-    }
-
-
-    @RequestMapping(value = "/{userId}/userStatus")
-    public ResponseEntity<UserDTO> updateUserStatus(@PathVariable("userId") UUID userId,
-                                                    @RequestBody UpdateUserStatusRequest updateUserStatusRequest) {
-        User user = userService.find(userId);
-        UserStatus userStatus = userStatusService.findByUserId(userId);
-        userStatus.update(updateUserStatusRequest.newLastActiveAt());
-        boolean online = userStatusService.findByUserId(user.getId())
-                .isOnline();
-        return ResponseEntity.ok(UserDTO.fromDomain(user, online));
-    }
-
-
-
-    @RequestMapping(value = "/{userId}",method = RequestMethod.DELETE)
-    public ResponseEntity<String> deleteUser(@PathVariable("userId") UUID userId) {
-        userService.delete(userId);
-        return ResponseEntity.ok("사용자 ID : " + userId + " 삭제 성공 ");
-    }
-
-    private CreateBinaryContentRequest resolveProfileRequest(MultipartFile profileFile) {
-        try {
-            CreateBinaryContentRequest binaryContentCreateRequest = new CreateBinaryContentRequest(
-                    profileFile.getOriginalFilename(),
-                    profileFile.getContentType(),
-                    profileFile.getBytes()
-            );
-            return binaryContentCreateRequest;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+  }
 
 }

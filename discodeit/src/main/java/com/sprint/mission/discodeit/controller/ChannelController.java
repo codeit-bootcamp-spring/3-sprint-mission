@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,78 +22,88 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/channels")
 @RequiredArgsConstructor
 public class ChannelController {
-        private final ChannelService channelService;
-        private final MessageRepository messageRepository;
 
-        @RequestMapping(value = "/public",method = RequestMethod.POST)
-        public ResponseEntity<PublicChannelDTO> createPublicChannel(@RequestBody CreatePublicChannelRequest createPublicChannelRequest) {
-                Channel publicChannel = channelService.create(createPublicChannelRequest);
-                Instant lastMessageAt = getLastMessageAt(publicChannel.getId());
-                return ResponseEntity.ok(PublicChannelDTO.fromDomain(publicChannel, lastMessageAt));
-        }
+  private final ChannelService channelService;
+  private final MessageRepository messageRepository;
 
-        @RequestMapping(value = "/private",method = RequestMethod.POST)
-        public ResponseEntity<PrivateChannelDTO> createPrivateChannel(@RequestBody CreatePrivateChannelRequest createPrivateChannelRequest) {
-                Channel privateChannel = channelService.create(createPrivateChannelRequest);
-                Instant lastMessageAt = getLastMessageAt(privateChannel.getId());
-                return ResponseEntity.ok(PrivateChannelDTO.fromDomain(privateChannel, lastMessageAt));
-        }
+  @PostMapping("/public")
+  public ResponseEntity<Channel> createPublicChannel(
+      @RequestBody CreatePublicChannelRequest createPublicChannelRequest) {
+    Channel publicChannel = channelService.create(createPublicChannelRequest);
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(publicChannel);
+  }
 
-        @RequestMapping(value = "/public",method = RequestMethod.GET)
-        public ResponseEntity<PublicChannelDTO> findPublicChannel(@RequestParam("id") UUID channelId) {
-                Channel publicChannel = channelService.find(channelId);
-                Instant lastMessageAt = getLastMessageAt(publicChannel.getId());
-                return ResponseEntity.ok(PublicChannelDTO.fromDomain(publicChannel, lastMessageAt));
-        }
+  @PostMapping("/private")
+  public ResponseEntity<Channel> createPrivateChannel(
+      @RequestBody CreatePrivateChannelRequest createPrivateChannelRequest) {
+    Channel privateChannel = channelService.create(createPrivateChannelRequest);
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(privateChannel);
+  }
 
-        @RequestMapping(value = "/private",method = RequestMethod.GET)
-        public ResponseEntity<PrivateChannelDTO> findPrivateChannel(@RequestParam("id") UUID channelId) {
-                Channel privateChannel = channelService.find(channelId);
-                Instant lastMessageAt = getLastMessageAt(privateChannel.getId());
-                return ResponseEntity.ok(PrivateChannelDTO.fromDomain(privateChannel, lastMessageAt));
-        }
+  //  @RequestMapping(value = "/public", method = RequestMethod.GET)
+  @GetMapping("find/public/{channelId}")
+  public ResponseEntity<PublicChannelDTO> findPublicChannel(
+      @PathVariable("channelId") UUID channelId) {
+    Channel publicChannel = channelService.find(channelId);
+    Instant lastMessageAt = getLastMessageAt(publicChannel.getId());
+    return ResponseEntity.ok(PublicChannelDTO.fromDomain(publicChannel, lastMessageAt));
+  }
 
-        @RequestMapping(value = "/{userId}/channel-list",method = RequestMethod.GET)
-        public ResponseEntity<List<Object>> findAllChannelByUserId(@PathVariable("userId") UUID userId) {
-                List<Channel> channelList = channelService.findAllByUserId(userId);
+  @GetMapping("find/private/{channelId}")
+  public ResponseEntity<PrivateChannelDTO> findPrivateChannel(
+      @PathVariable("channelId") UUID channelId) {
+    Channel privateChannel = channelService.find(channelId);
+    Instant lastMessageAt = getLastMessageAt(privateChannel.getId());
+    return ResponseEntity.ok(PrivateChannelDTO.fromDomain(privateChannel, lastMessageAt));
+  }
 
-                List<Object> channelDTOs = channelList.stream()
-                        .map(channel -> {
-                                Instant lastMessageAt = getLastMessageAt(channel.getId());
-                                return channel.getType().equals(ChannelType.PRIVATE)
-                                        ? PrivateChannelDTO.fromDomain(channel, lastMessageAt)
-                                        : PublicChannelDTO.fromDomain(channel, lastMessageAt);
-                        })
-                        .collect(Collectors.toList());
+  @GetMapping
+  public ResponseEntity<List<ChannelDTO>> findAllChannelByUserId(
+      @RequestParam("userId") UUID userId) {
+    List<Channel> channelList = channelService.findAllByUserId(userId);
 
-                return ResponseEntity.ok(channelDTOs);
-        }
+    List<ChannelDTO> channelDTOs = channelList.stream()
+        .map(channel -> {
+          Instant lastMessageAt = getLastMessageAt(channel.getId());
+          return ChannelDTO.fromDomain(channel, lastMessageAt);
+        })
+        .toList();
 
-        @RequestMapping(value = "/{channelId}", method = RequestMethod.PATCH)
-        public ResponseEntity<PublicChannelDTO> updateChannel(@PathVariable("channelId") UUID channelId,
-                @RequestBody UpdateChannelRequest updateChannelRequest) {
-                Channel channel = channelService.update(channelId,updateChannelRequest);
-                Instant lastMessageAt = getLastMessageAt(channel.getId());
-                return ResponseEntity.ok(PublicChannelDTO.fromDomain(channel, lastMessageAt));
-        }
+    return ResponseEntity.status(HttpStatus.OK).body(channelDTOs);
+  }
 
-        @RequestMapping(value = "/{channelId}", method = RequestMethod.DELETE)
-        public ResponseEntity<String> deleteChannel(@PathVariable("channelId") UUID channelId) {
+  @PatchMapping("/{channelId}")
+  public ResponseEntity<Channel> updateChannel(@PathVariable("channelId") UUID channelId,
+      @RequestBody UpdateChannelRequest updateChannelRequest) {
+    Channel channel = channelService.update(channelId, updateChannelRequest);
+    Instant lastMessageAt = getLastMessageAt(channel.getId());
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(channel);
+  }
 
-                channelService.delete(channelId);
-                return ResponseEntity.ok("채널 ID : " + channelId + "삭제 완료");
-        }
+  @DeleteMapping("/{channelId}")
+  public ResponseEntity<String> deleteChannel(@PathVariable("channelId") UUID channelId) {
+
+    channelService.delete(channelId);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .build();
+  }
 
 
-
-        private Instant getLastMessageAt(UUID channelId) { // 가장 최근 메시지 생성 시간을 가져오는 메서드
-                return messageRepository.findAllByChannelId(channelId)
-                        .stream()
-                        .sorted(Comparator.comparing(Message::getCreatedAt).reversed())
-                        .map(Message::getCreatedAt)
-                        .limit(1)
-                        .findFirst()
-                        .orElse(Instant.MIN);
-        }
+  private Instant getLastMessageAt(UUID channelId) { // 가장 최근 메시지 생성 시간을 가져오는 메서드
+    return messageRepository.findAllByChannelId(channelId)
+        .stream()
+        .sorted(Comparator.comparing(Message::getCreatedAt).reversed())
+        .map(Message::getCreatedAt)
+        .limit(1)
+        .findFirst()
+        .orElse(Instant.MIN);
+  }
 
 }

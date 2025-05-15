@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.message.UpdateMessageRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,41 +18,49 @@ import java.util.UUID;
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
 public class MessageController {
-    private final MessageService messageService;
 
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<MessageDTO> createMessage(@RequestBody CreateMessageRequest createMessageRequest) {
-        Message message = messageService.create(createMessageRequest);
-        return ResponseEntity.ok(MessageDTO.fromDomain(message));
-    }
+  private final MessageService messageService;
 
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<MessageDTO> find(@RequestParam("id") UUID messageId) {
-        Message message = messageService.find(messageId);
-        return ResponseEntity.ok(MessageDTO.fromDomain(message));
-    }
+  @PostMapping
+  public ResponseEntity<Message> createMessage(
+      @RequestBody CreateMessageRequest createMessageRequest) {
+    Message message = messageService.create(createMessageRequest);
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(message);
+  }
 
-    @RequestMapping(value = "{channelId}", method = RequestMethod.GET)
-    public ResponseEntity<List<MessageDTO>> findAllMessageByChannelId(@PathVariable("channelId") UUID channelId) {
-        List<Message> messageList = messageService.findAllByChannelId(channelId);
-        List<MessageDTO> messageDTO = messageList.stream()
-                .map(MessageDTO::fromDomain)
-                .toList();
-        return ResponseEntity.ok(messageDTO);
-    }
+  @GetMapping(value = "/{id}")
+  public ResponseEntity<MessageDTO> find(@PathVariable("id") UUID messageId) {
+    Message message = messageService.find(messageId);
+    return ResponseEntity.ok(MessageDTO.fromDomain(message));
+  }
 
-    @RequestMapping(value = "{messageId}",method = RequestMethod.PATCH)
-    public ResponseEntity<MessageDTO> updateMessage(@PathVariable("messageId") UUID messageId,
-                                                    @RequestBody UpdateMessageRequest updateMessageRequest) {
-        Message message = messageService.update(messageId,updateMessageRequest);
-        return ResponseEntity.ok(MessageDTO.fromDomain(message));
-    }
+  @GetMapping
+  public ResponseEntity<List<Message>> findAllMessageByChannelId(
+      @RequestParam("channelId") UUID channelId) {
+    List<Message> messageList = messageService.findAllByChannelId(channelId);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(messageList);
+  }
 
-    @RequestMapping(value = "/{messageId}",method = RequestMethod.DELETE)
-    public ResponseEntity<String> deleteMessage(@PathVariable("messageId") UUID messageId) {
-        messageService.delete(messageId);
-        return ResponseEntity.ok("메시지 ID : " + messageId + "삭제 완료");
-    }
+  @PatchMapping("/{messageId}")
+  public ResponseEntity<Message> updateMessage(@PathVariable("messageId") UUID messageId,
+      @RequestBody UpdateMessageRequest updateMessageRequest) {
+    Message message = messageService.update(messageId, updateMessageRequest);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(message);
+  }
+
+  @DeleteMapping("/{messageId}")
+  public ResponseEntity<String> deleteMessage(@PathVariable("messageId") UUID messageId) {
+    messageService.delete(messageId);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body("메시지 ID : " + messageId + " 삭제 성공");
+  }
 
 
 }

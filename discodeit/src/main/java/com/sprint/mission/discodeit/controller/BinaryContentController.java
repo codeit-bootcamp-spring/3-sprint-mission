@@ -14,17 +14,20 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 public class BinaryContentController {
-    private final BinaryContentService binaryContentService;
+
+  private final BinaryContentService binaryContentService;
 
 
-    @RequestMapping(value = "{id}", method = RequestMethod.GET)
-    public ResponseEntity<BinaryContent> findBinaryContentById(@PathVariable("id") UUID contentId) {
-        return ResponseEntity.ok(binaryContentService.findById(contentId));
-    }
+  @GetMapping("/{binaryContentId}")
+  public ResponseEntity<BinaryContent> findBinaryContentById(
+      @PathVariable("binaryContentId") UUID contentId) {
+    return ResponseEntity.ok(binaryContentService.findById(contentId));
+  }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<BinaryContent>> findAllBinaryContentByIds(@RequestBody List<UUID> contentIds) {
-        return ResponseEntity.ok(binaryContentService.findAllByIdIn(contentIds));
-    }
+  @GetMapping
+  public ResponseEntity<List<BinaryContent>> findAllBinaryContentByIds(
+      @RequestBody List<UUID> contentIds) {
+    return ResponseEntity.ok(binaryContentService.findAllByIdIn(contentIds));
+  }
 
 }
