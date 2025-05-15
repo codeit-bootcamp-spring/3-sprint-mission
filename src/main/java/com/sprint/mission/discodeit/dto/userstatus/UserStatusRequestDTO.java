@@ -7,10 +7,10 @@ import java.util.UUID;
 
 public record UserStatusRequestDTO(UUID userId, Instant lastLoginTime) {
 
-    public static UserStatus fromDTO(UserStatusRequestDTO userStatusRequestDTO) {
-        UserStatus userStatus = new UserStatus(userStatusRequestDTO.userId(),
-                userStatusRequestDTO.lastLoginTime());
+  public static UserStatus toEntity(UserStatusRequestDTO userStatusRequestDTO) {
+    UserStatus userStatus = new UserStatus(userStatusRequestDTO.userId(),
+        userStatusRequestDTO.lastLoginTime());
 
-        return userStatus;
-    }
+    return userStatus;
+  }
 }

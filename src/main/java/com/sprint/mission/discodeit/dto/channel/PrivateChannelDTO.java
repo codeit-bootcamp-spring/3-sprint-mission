@@ -7,10 +7,10 @@ import java.util.UUID;
 
 public record PrivateChannelDTO(UUID channelMaster, List<UUID> users) {
 
-    public static Channel fromDTO(PrivateChannelDTO privateChannelDTO) {
-        Channel channel = new Channel(privateChannelDTO.channelMaster(),
-                privateChannelDTO.users());
+  public static Channel toEntity(PrivateChannelDTO privateChannelDTO) {
+    Channel channel = new Channel(privateChannelDTO.channelMaster(),
+        privateChannelDTO.users());
 
-        return channel;
-    }
+    return channel;
+  }
 }

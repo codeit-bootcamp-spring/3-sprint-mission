@@ -6,11 +6,11 @@ import java.util.UUID;
 
 public record PublicChannelDTO(String channelName, UUID channelMaster, String description) {
 
-    public static Channel fromDTO(PublicChannelDTO publicChannelDTO) {
-        Channel channel = new Channel(publicChannelDTO.channelName(),
-                publicChannelDTO.channelMaster,
-                publicChannelDTO.description());
+  public static Channel toEntity(PublicChannelDTO publicChannelDTO) {
+    Channel channel = new Channel(publicChannelDTO.channelName(),
+        publicChannelDTO.channelMaster,
+        publicChannelDTO.description());
 
-        return channel;
-    }
+    return channel;
+  }
 }
