@@ -86,12 +86,11 @@ public class UserController {
     }
 
     // 모든 사용자 조회
-    @RequestMapping(path = "/find-all"
+    @RequestMapping(path = "/findAll"
             , method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<List<UserDto>> findAll() {
-        List<UserDto> users = userService.findAll();
-        return ResponseEntity.status(HttpStatus.OK).body(users);
+        return ResponseEntity.ok(userService.findAll());
     }
 
     // 사용자 온라인 상태 업데이트
