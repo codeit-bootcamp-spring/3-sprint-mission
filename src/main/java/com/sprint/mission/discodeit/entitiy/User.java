@@ -6,7 +6,6 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -24,13 +23,13 @@ public class User implements Serializable {
     private String username;
     private String password;
     private String email;
-    private List<UUID> friends;
+    private Map<UUID,User> friends;
 
-    public User(UUID profileId, String username, String password, String email) {
-        this.profileId = profileId;
+    public User(String username, String password, String email, Map<UUID,User> friends) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.friends = friends;
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
     }
@@ -39,12 +38,12 @@ public class User implements Serializable {
     public String toString() {
         return "User{" +
                 "id=" + id +
-                ", profileId=" + profileId +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", username='" + username + '\'' +
+                ", userName='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", email='" + email + '\'' +
+                ", friends=" + friends +
                 '}';
     }
 }
