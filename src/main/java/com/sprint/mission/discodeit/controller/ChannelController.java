@@ -61,7 +61,7 @@ public class ChannelController {
 
     // 공개 채널 수정( PUT )
     @RequestMapping(
-            path = "/{channelId}"
+            path = "/public-channel/{channelId}"
             , method = RequestMethod.PUT
             , consumes = MediaType.APPLICATION_JSON_VALUE
             , produces = MediaType.APPLICATION_JSON_VALUE

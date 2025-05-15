@@ -126,7 +126,7 @@ public class UserController {
             @PathVariable UUID userId
             , @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest
             , @RequestPart(value = "profile", required = false) MultipartFile profile
-            ) {
+    ) {
         User updatedUser = userService.update(
                 userId,
                 userUpdateRequest,

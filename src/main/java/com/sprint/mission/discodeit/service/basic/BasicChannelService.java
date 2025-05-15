@@ -163,10 +163,10 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(UUID channelId,ChannelUpdateRequest channelUpdateRequest) {
+    public Channel update(UUID channelId, ChannelUpdateRequest channelUpdateRequest) {
         // 유효성
-        Channel channel = channelRepository.findById(channelUpdateRequest.getChannelId())
-                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelUpdateRequest.getChannelId() + " not found"));
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
 
         // PRIVATE CHANNEL : 수정 금지
         if (channel.getChannelType() == ChannelType.PRIVATE) {

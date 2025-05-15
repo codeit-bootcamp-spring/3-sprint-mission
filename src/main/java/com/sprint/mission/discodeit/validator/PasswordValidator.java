@@ -15,15 +15,20 @@ public class PasswordValidator {
         List<String> errors = new ArrayList<>();
 
         // 에러 메시지
+        // 공란 불가
         if (password == null || password.isEmpty()) {
             errors.add("비밀번호는 공란일 수 없습니다, 비밀번호를 입력해주세요.");
             // 공란은 추가 검증 없이 실패 처리
             return errors;
         }
 
-
         // 검증할 대상.matches(검증할 정규식) : 대상의 정규식을 검토하여 확인하고 결과에 따라 true 혹은 false 반환
         // true : 정규식이 충족됨
+
+        // 한글 미허용
+        if (password.matches(".*[\\uAC00-\\uD7A3\\u3131-\\u318E].*")) {
+            errors.add("비밀번호에 한글을 포함할 수 없습니다");
+        }
 
         // (?=.*[a-z]) : 소문자 포함
         if (!password.matches(".*[a-z].*")) {
