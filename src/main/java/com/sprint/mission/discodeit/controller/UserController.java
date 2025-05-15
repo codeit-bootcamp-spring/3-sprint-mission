@@ -32,86 +32,65 @@ import java.util.UUID;
  *  - 응답 데이터 정의
  *  - (옵션) 응답 헤더 정의
  * */
-@Controller
+@RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/user")
+@RequestMapping("/api")
 public class UserController {
 
-    private final UserService userService;
-    private final UserStatusService userStatusService;
+  private final UserService userService;
+  private final UserStatusService userStatusService;
 
-    //신규 유저 생성 요청
-    @RequestMapping(path = "/create", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @ResponseBody
-    public ResponseEntity<User> create(@RequestPart("createUserRequest") CreateUserRequest createUserRequest, @RequestPart(value = "profile", required = false) MultipartFile profile) {
-        Optional<CreateBinaryContentRequest> profileRequest = Optional.ofNullable(profile)
-                .flatMap(this::resolveProfileRequest);
-        User createdUser = userService.create(createUserRequest, profileRequest);
+  //신규 유저 생성 요청
+  @PostMapping(value = "/users", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<User> create(
+      @RequestPart("createUserRequest") CreateUserRequest createUserRequest,
+      @RequestPart(value = "profile", required = false) MultipartFile profile) {
+    Optional<CreateBinaryContentRequest> profileRequest = Optional.ofNullable(profile)
+        .flatMap(Converter::resolveProfileRequest);
+    User createdUser = userService.create(createUserRequest, profileRequest);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
-    }
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+  }
 
-    //MultipartFile 타입의 요청값을 CreateBinaryContentRequest 타입으로 변환하기 위한 메서드
-    private Optional<CreateBinaryContentRequest> resolveProfileRequest(MultipartFile profile) {
-        if (profile.isEmpty()) {
-            //컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 비어있다면:
-            return Optional.empty();
-        } else {
-            //컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 존재한다면:
-            try {
-                CreateBinaryContentRequest createBinaryContentRequest = new CreateBinaryContentRequest(
-                        profile.getOriginalFilename(),
-                        profile.getContentType(),
-                        profile.getBytes()
-                );
-                return Optional.of(createBinaryContentRequest);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 
-    //유저 조회 요청
-    @RequestMapping(path = "/find", method = RequestMethod.GET)
-    @ResponseBody
-    public ResponseEntity<UserDto> read(@RequestParam UUID userId) {
-        UserDto findUserRespond = userService.find(userId);
-        return ResponseEntity.status(HttpStatus.OK).body(findUserRespond);
-    }
+  //유저 조회 요청
+  @GetMapping("/users/{userId}")
+  public ResponseEntity<UserDto> read(@PathVariable UUID userId) {
+    UserDto findUserRespond = userService.find(userId);
+    return ResponseEntity.status(HttpStatus.OK).body(findUserRespond);
+  }
 
-    //유저 전체 조회 요청
-    @RequestMapping(path = "/findAll", method = RequestMethod.GET)
-    @ResponseBody
-    public ResponseEntity<List<UserDto>> findAll() {
-        List<UserDto> all = userService.findAll();
-        return ResponseEntity.status(HttpStatus.OK).body(all);
-    }
+  //유저 전체 조회 요청
+  @GetMapping("/users")
+  public ResponseEntity<List<UserDto>> findAll() {
+    List<UserDto> all = userService.findAll();
+    return ResponseEntity.status(HttpStatus.OK).body(all);
+  }
 
-    //유저 수정 요청
-    @RequestMapping(path = "/update", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @ResponseBody
-    public ResponseEntity<String> update(@RequestPart("updateUserRequest") UpdateUserRequest updateUserRequest, @RequestPart(value = "profile", required = false) MultipartFile profile) {
-        Optional<CreateBinaryContentRequest> profileRequest = Optional.ofNullable(profile)
-                .flatMap(this::resolveProfileRequest);
-        userService.update(updateUserRequest, profileRequest);
-        return ResponseEntity.status(HttpStatus.OK).body("유저 데이터 수정 성공");
-    }
+  //유저 수정 요청
+  @PutMapping(value = "/users", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<String> update(
+      @RequestPart("updateUserRequest") UpdateUserRequest updateUserRequest,
+      @RequestPart(value = "profile", required = false) MultipartFile profile) {
+    Optional<CreateBinaryContentRequest> profileRequest = Optional.ofNullable(profile)
+        .flatMap(Converter::resolveProfileRequest);
+    userService.update(updateUserRequest, profileRequest);
+    return ResponseEntity.status(HttpStatus.OK).body("유저 데이터 수정 성공");
+  }
 
-    //유저 삭제 요청
-    @RequestMapping(path = "/delete", method = RequestMethod.DELETE)
-    @ResponseBody
-    public ResponseEntity<String> delete(@RequestParam UUID userId) {
-        userService.delete(userId);
-        return ResponseEntity.status(HttpStatus.OK).body("유저 데이터 삭제 성공");
-    }
+  //유저 삭제 요청
+  @DeleteMapping("/users")
+  public ResponseEntity<String> delete(@RequestParam UUID userId) {
+    userService.delete(userId);
+    return ResponseEntity.status(HttpStatus.OK).body("유저 데이터 삭제 성공");
+  }
 
-    //유저 온라인상태 업데이트
-    @RequestMapping(path = "/online", method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity<UserStatus> updateOnlineStatus(@RequestParam UUID userId){
-        UpdateUserStatusRequest updateUserStatusRequest = new UpdateUserStatusRequest(null,userId);
-        userStatusService.updateByUserId(updateUserStatusRequest);
-        UserStatus userStatus = userStatusService.findByUserId(userId);
-        return ResponseEntity.status(HttpStatus.OK).body(userStatus);
-    }
+  //유저 온라인상태 업데이트
+  @PatchMapping("/users")
+  public ResponseEntity<UserStatus> updateOnlineStatus(@RequestParam UUID userId) {
+    UpdateUserStatusRequest updateUserStatusRequest = new UpdateUserStatusRequest(null, userId);
+    userStatusService.updateByUserId(updateUserStatusRequest);
+    UserStatus userStatus = userStatusService.findByUserId(userId);
+    return ResponseEntity.status(HttpStatus.OK).body(userStatus);
+  }
 }

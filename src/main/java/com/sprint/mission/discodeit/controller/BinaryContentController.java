@@ -10,25 +10,25 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@Controller
-@RequestMapping("/api/binaryContent")
+@RestController
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class BinaryContentController {
 
-    private final BinaryContentService binaryContentService;
+  private final BinaryContentService binaryContentService;
 
-    @RequestMapping(path = "/findAll",method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
-    public ResponseEntity<List<BinaryContent>> findAll(@RequestParam List<UUID> binaryContentIds){
-        List<BinaryContent> allByIdIn = binaryContentService.findAllByIdIn(binaryContentIds);
-        return ResponseEntity.ok().body(allByIdIn);
-    }
+  @GetMapping("/binary-contents")
+  public ResponseEntity<List<BinaryContent>> findAll(
+      @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
+    List<BinaryContent> allByIdIn = binaryContentService.findAllByIdIn(binaryContentIds);
+    return ResponseEntity.ok().body(allByIdIn);
+  }
 
-    @RequestMapping(path = "/find", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
-    public ResponseEntity<BinaryContent> find(@RequestParam UUID binaryContentId){
-        BinaryContent allByIdIn = binaryContentService.find(binaryContentId);
-        return ResponseEntity.ok().body(allByIdIn);
-    }
+  @GetMapping(value = "/binary-contents/{binaryContentId}")
+  public ResponseEntity<BinaryContent> find(
+      @PathVariable("binaryContentId") UUID binaryContentId) {
+    BinaryContent allByIdIn = binaryContentService.find(binaryContentId);
+    return ResponseEntity.ok().body(allByIdIn);
+  }
 
 }

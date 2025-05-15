@@ -17,4 +17,5 @@ spring:
 
 springdoc:
   api-docs:
+    title: openapi_3_0
     path: /api-docs
