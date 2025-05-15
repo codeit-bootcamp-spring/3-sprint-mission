@@ -41,7 +41,7 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
                 .filter((c)->c.getId().equals(id))
                 .forEach((c)->{
                     c.setContentType(binaryContent.getContentType());
-                    c.setBytes(binaryContent.getBytes());
+                    c.setContent(binaryContent.getContent());
                 });
     }
 

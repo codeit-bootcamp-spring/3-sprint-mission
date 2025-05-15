@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.CreateBinaryContentRequest;
 import com.sprint.mission.discodeit.entitiy.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,16 +10,14 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class BasicBinaryContentService implements BinaryContentService {
+public class BasicBinaryContentService {
 
     private final BinaryContentRepository binaryContentRepository;
 
-    @Override
     public BinaryContent create(CreateBinaryContentRequest request){
-        return binaryContentRepository.save(new BinaryContent(request.filename(), request.contentType(), request.bytes()));
+        return binaryContentRepository.save(new BinaryContent(request.contentType(), request.content()));
     }
 
-    @Override
     public BinaryContent find(UUID binaryContentId){
         Optional<BinaryContent> binaryContent = binaryContentRepository.readById(binaryContentId);
         try {
@@ -35,7 +32,6 @@ public class BasicBinaryContentService implements BinaryContentService {
         }
     }
 
-    @Override
     public List<BinaryContent> findAllByIdIn(List<UUID> uuidList){
         List<BinaryContent> binaryContentList = new ArrayList<>();
         for(UUID uuid : uuidList){
@@ -47,7 +43,6 @@ public class BasicBinaryContentService implements BinaryContentService {
         return binaryContentList;
     }
 
-    @Override
     public void delete(UUID binaryContentId){
         binaryContentRepository.delete(binaryContentId);
     }

@@ -7,7 +7,6 @@ import com.sprint.mission.discodeit.entitiy.User;
 import com.sprint.mission.discodeit.entitiy.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sun.jdi.request.DuplicateRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,12 +18,11 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class BasicUserStatusService implements UserStatusService {
+public class BasicUserStatusService {
 
     private final UserStatusRepository userStatusRepository;
     private final UserRepository userRepository;
 
-    @Override
     public UserStatus create(CreateUserStatusRequest request){
         Optional<User> user = userRepository.readById(request.userId());
         try {
@@ -46,7 +44,6 @@ public class BasicUserStatusService implements UserStatusService {
         }
     }
 
-    @Override
     public UserStatus find(UUID userStatusId){
         Optional<UserStatus> userStatus = userStatusRepository.readById(userStatusId);
         try {
@@ -61,17 +58,14 @@ public class BasicUserStatusService implements UserStatusService {
         }
     }
 
-    @Override
     public UserStatus findByUserId(UUID userId) {
         return userStatusRepository.readByUserId(userId).orElseThrow(NoSuchElementException::new);
     }
 
-    @Override
     public List<UserStatus> findAll(){
         return userStatusRepository.read();
     }
 
-    @Override
     public void update(UpdateUserStatusRequest request) {
         Optional<UserStatus> userStatus = userStatusRepository.readById(request.id());
         try {
@@ -85,7 +79,6 @@ public class BasicUserStatusService implements UserStatusService {
         }
     }
 
-    @Override
     public void updateByUserId(UpdateUserStatusRequest request){
         Optional<User> user = userRepository.readById(request.userId());
         try {
@@ -103,7 +96,6 @@ public class BasicUserStatusService implements UserStatusService {
         }
     }
 
-    @Override
     public void delete(UUID userStatusId){
         userStatusRepository.delete(userStatusId);
     }

@@ -8,7 +8,6 @@ import com.sprint.mission.discodeit.entitiy.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.ReadStatusService;
 import com.sun.jdi.request.DuplicateRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,13 +19,12 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class BasicReadStatusService implements ReadStatusService {
+public class BasicReadStatusService {
 
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
 
-    @Override
     public ReadStatus create(CreateReadStatusRequest request){
         Optional<User> user = userRepository.readById(request.userId());
         Optional<Channel> channel = channelRepository.readById(request.channelId());
@@ -48,7 +46,6 @@ public class BasicReadStatusService implements ReadStatusService {
             return null;
         }
     }
-    @Override
     public ReadStatus find(UUID id){
         Optional<ReadStatus> readStatus = readStatusRepository.readById(id);
         try {
@@ -62,12 +59,11 @@ public class BasicReadStatusService implements ReadStatusService {
             return null;
         }
     }
-    @Override
+
     public List<ReadStatus> findAllByUserId(UUID userId){
         return readStatusRepository.readByUserId(userId);
     }
 
-    @Override
     public void update(UpdateReadStatusRequest request){
         Optional<ReadStatus> readStatus = readStatusRepository.readById(request.id());
         try {
@@ -81,7 +77,7 @@ public class BasicReadStatusService implements ReadStatusService {
         }
 
     }
-    @Override
+
     public void delete(UUID readStatusId){
         readStatusRepository.delete(readStatusId);
     }
