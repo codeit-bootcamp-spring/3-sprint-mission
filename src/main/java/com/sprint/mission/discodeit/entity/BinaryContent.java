@@ -27,25 +27,22 @@ public class BinaryContent implements Serializable {
 
     private final Instant createdAt;
     private final UUID id;
-    private byte[] attachment;
+
+    private final String fileName;
+    private final Long size;
+    private final String contentType;
+    private final byte[] bytes;
+    private final String extension;
 
 
-    public BinaryContent(byte[] image) {
-        this.attachment = image;
+    public BinaryContent(String fileName, Long size, String contentType, byte[] bytes, String extension) {
         this.createdAt = Instant.now();
         this.id = UUID.randomUUID();
-    }
 
-    public void setAttachment(byte[] attachment) {
-        this.attachment = attachment;
-    }
-
-    @Override
-    public String toString() {
-        return "BinaryContent{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", image=" + Arrays.toString(attachment) +
-                '}';
+        this.fileName = fileName;
+        this.size = size;
+        this.contentType = contentType;
+        this.bytes = bytes;
+        this.extension = extension;
     }
 }

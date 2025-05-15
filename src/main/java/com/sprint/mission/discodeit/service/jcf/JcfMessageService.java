@@ -26,50 +26,50 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Profile("jcf")
-public class JcfMessageService implements MessageService {
+public class JcfMessageService {
     private final UserService userService;
     private final ChannelService channelService;
     private final JcfMessageRepository jcfMessageRepository;
 
     public final Map<UUID, Message> data = new HashMap<>();
-
-
-    // empty
-    @Override
-    public MessageCreateResponse createMessage(MessageCreateRequest request) {
-        return null;
-    }
-    // empty
-    @Override
-    public MessageAttachmentsCreateResponse createMessage(MessageAttachmentsCreateRequest request) {
-        return null;
-    }
-
-    // empty
-    @Override
-    public void updateMessage(MessageUpdateRequest request) {}
-
-    // empty
-    @Override
-    public List<Message> findAllByChannelId(UUID channelId) {
-        return List.of();
-    }
-
-    @Override
-    public Message findMessageById(UUID messageId) {
-        return jcfMessageRepository.findMessageById(messageId);
-    }
-
-    @Override
-    public List<Message> findAllMessages() {
-        return jcfMessageRepository.findAllMessages();
-    }
-
-    // this has to be updated
-    @Override
-    public void deleteMessage(UUID messageId) {
-        Objects.requireNonNull(messageId, "requre message id: JcfMessageService.deleteMessage");
-        jcfMessageRepository.deleteMessageById(messageId);
-    }
+//
+//
+//    // empty
+//    @Override
+//    public MessageCreateResponse createMessage(MessageCreateRequest request) {
+//        return null;
+//    }
+//    // empty
+//    @Override
+//    public MessageAttachmentsCreateResponse createMessage(MessageAttachmentsCreateRequest request) {
+//        return null;
+//    }
+//
+//    // empty
+//    @Override
+//    public void updateMessage(MessageUpdateRequest request) {}
+//
+//    // empty
+//    @Override
+//    public List<Message> findAllByChannelId(UUID channelId) {
+//        return List.of();
+//    }
+//
+//    @Override
+//    public Message findMessageById(UUID messageId) {
+//        return jcfMessageRepository.findMessageById(messageId);
+//    }
+//
+//    @Override
+//    public List<Message> findAllMessages() {
+//        return jcfMessageRepository.findAllMessages();
+//    }
+//
+//    // this has to be updated
+//    @Override
+//    public void deleteMessage(UUID messageId) {
+//        Objects.requireNonNull(messageId, "requre message id: JcfMessageService.deleteMessage");
+//        jcfMessageRepository.deleteMessageById(messageId);
+//    }
 
 }

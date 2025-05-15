@@ -22,9 +22,9 @@ import java.util.UUID;
 @Getter
 public class ChannelFindResponse {
 
-    private Channel channel;
-    private Instant recentMessageTime;
-    private ChannelType type;
+    private final Channel channel;
+    private final Instant recentMessageTime;
+    private final ChannelType type;
     private List<UUID> userIds;
 
     // public

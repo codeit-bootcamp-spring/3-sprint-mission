@@ -27,38 +27,38 @@ import java.util.UUID;
 @Service
 @Profile("file")
 @RequiredArgsConstructor
-public class FileChannelService implements ChannelService {
+public class FileChannelService {
     private final FileChannelRepository fileChannelRepository;
 
-
-    // empty
-    @Override
-    public List<ChannelFindResponse> findAllByUserId(ChannelFindByUserIdRequest request) {
-        return List.of();
-    }
-    // empty
-    @Override
-    public ChannelFindResponse find(ChannelFindRequest request) {
-        return null;
-    }
-    // empty
-    @Override
-    public ChannelCreateResponse createChannel(PrivateChannelCreateRequest request) {
-        return null;
-    }
-    // empty
-    @Override
-    public ChannelCreateResponse createChannel(PublicChannelCreateRequest request) {
-        return null;
-    }
-    // empty
-    @Override
-    public void update(ChannelUpdateRequest request) {}
-
-
-    @Override
-    public void deleteChannel(UUID channelId) {
-        Objects.requireNonNull(channelId, "no channelId: FileChannelService.deleteChannel");
-        fileChannelRepository.deleteChannel(channelId);
-    }
+//
+//    // empty
+//    @Override
+//    public List<ChannelFindResponse> findAllByUserId(ChannelFindByUserIdRequest request) {
+//        return List.of();
+//    }
+//    // empty
+//    @Override
+//    public ChannelFindResponse find(ChannelFindRequest request) {
+//        return null;
+//    }
+//    // empty
+//    @Override
+//    public ChannelCreateResponse createChannel(PrivateChannelCreateRequest request) {
+//        return null;
+//    }
+//    // empty
+//    @Override
+//    public ChannelCreateResponse createChannel(PublicChannelCreateRequest request) {
+//        return null;
+//    }
+//    // empty
+//    @Override
+//    public void update(ChannelUpdateRequest request) {}
+//
+//
+//    @Override
+//    public void deleteChannel(UUID channelId) {
+//        Objects.requireNonNull(channelId, "no channelId: FileChannelService.deleteChannel");
+//        fileChannelRepository.deleteChannel(channelId);
+//    }
 }

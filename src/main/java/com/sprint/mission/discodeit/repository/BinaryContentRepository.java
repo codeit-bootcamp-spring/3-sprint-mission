@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository;
 
+import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 
 import java.util.List;
@@ -18,10 +19,11 @@ import java.util.UUID;
  * 2025. 4. 24.        doungukkim       최초 생성
  */
 public interface BinaryContentRepository {
-    BinaryContent createBinaryContent(byte[] image);
+    BinaryContent createBinaryContent(String fileName, Long size, String contentType, byte[] bytes, String extension);
 
+//    BinaryContent createBinaryContent(UUID id);
     //    BinaryContent findBinaryContentByUserId(UUID userId);
-    BinaryContent updateImage(UUID profileId, byte[] image); // both : throw
+//    BinaryContent updateImage(UUID profileId, byte[] image); // both : throw
 
     void deleteBinaryContentById(UUID attachmentId); // file, jcf : throw exception
 

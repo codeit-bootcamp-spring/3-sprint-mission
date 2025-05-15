@@ -31,7 +31,8 @@ import java.util.Optional;
 @Service
 @Profile("jcf")
 //@ConditionalOnProperty(name = "service.mode", havingValue = "jcf")
-public class JcfAuthService implements AuthService {
+public class JcfAuthService {
+
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
 

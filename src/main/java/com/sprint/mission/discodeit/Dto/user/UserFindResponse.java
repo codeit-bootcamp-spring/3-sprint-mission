@@ -25,6 +25,6 @@ public record UserFindResponse
      String username,
      String email,
      UUID profileId,
-     boolean isOnline){
+     boolean online){
 
 }

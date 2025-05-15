@@ -8,13 +8,12 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic
@@ -33,7 +32,6 @@ public class BasicUserStatusService implements UserStatusService {
     private final UserStatusRepository userStatusRepository;
     private final UserRepository userRepository;
 
-    //    user -> exception, userstatus -> exception
     @Override
     public UserStatusCreateResponse create(UserStatusCreateRequest request) {
         UUID userId = request.userId();
@@ -57,13 +55,10 @@ public class BasicUserStatusService implements UserStatusService {
         return userStatusRepository.findById(userStatusId);
     }
 
-
     @Override
     public List<UserStatus> findAll() {
         return userStatusRepository.findAllUserStatus();
     }
-
-
 
     @Override
     public void update(UserStatusUpdateRequest request) {
@@ -74,11 +69,12 @@ public class BasicUserStatusService implements UserStatusService {
 
 
     @Override
-    public void updateByUserId(UUID userId, Instant newTime) {
+    public ResponseEntity<?> updateByUserId(UUID userId, Instant newTime) {
         userStatusRepository.updateByUserId(
                 Objects.requireNonNull(userId, "no userId in param"),
                 Objects.requireNonNull(newTime, "no userId in param")
         );
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "online status updated"));
     }
 
     @Override

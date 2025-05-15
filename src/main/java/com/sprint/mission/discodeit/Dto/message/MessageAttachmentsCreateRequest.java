@@ -20,11 +20,10 @@ import java.util.UUID;
 
 public record MessageAttachmentsCreateRequest
         (UUID senderId,
-         UUID channelId,
-         List<byte[]> attachments) {
+         UUID channelId
+        ) {
     public MessageAttachmentsCreateRequest {
         Objects.requireNonNull(senderId,"no senderId in request");
         Objects.requireNonNull(channelId, "no channelId in request");
-        Objects.requireNonNull(attachments, "no attachments in request");
     }
 }

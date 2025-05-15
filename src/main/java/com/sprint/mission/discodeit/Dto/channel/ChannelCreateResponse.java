@@ -19,11 +19,11 @@ import java.util.UUID;
  */
 @Getter
 public class ChannelCreateResponse {
-    private UUID id;
-    private ChannelType type;
-    private Instant updatedAt;
-    private String name;
-    private String description;
+    private final UUID id;
+    private final ChannelType type;
+    private final Instant updatedAt;
+    private final String name;
+    private final String description;
 
     public ChannelCreateResponse(UUID id, ChannelType type, Instant updatedAt) {
         this.id = id;

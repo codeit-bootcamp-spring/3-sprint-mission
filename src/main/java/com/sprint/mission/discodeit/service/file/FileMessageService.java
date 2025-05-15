@@ -28,54 +28,54 @@ import java.util.UUID;
 @Service
 @Profile("file")
 @RequiredArgsConstructor
-public class FileMessageService implements MessageService {
+public class FileMessageService {
     private final FileMessageRepository fileMessageRepository;
     private final UserService userService;
     private final ChannelService channelService;
 
-    // empty
-    @Override
-    public void updateMessage(MessageUpdateRequest request) {
-
-    }
-
-    // empty
-    @Override
-    public List<Message> findAllByChannelId(UUID channelId) {
-        return List.of();
-    }
-
-    // empty
-    @Override
-    public MessageCreateResponse createMessage(MessageCreateRequest request) {
-        return null;
-    }
-    // empty
-    @Override
-    public MessageAttachmentsCreateResponse createMessage(MessageAttachmentsCreateRequest request) {
-        return null;
-    }
-
-
-
-    @Override
-    public Message findMessageById(UUID messageId) {
-        Objects.requireNonNull(messageId, "no messageId: FileMessageService.findMessageById");
-        Message messageById = fileMessageRepository.findMessageById(messageId);
-        Objects.requireNonNull(messageById, "no message in DB: FileMessageService.findMessageById");
-        return messageById;
-    }
-
-    @Override
-    public List<Message> findAllMessages() {
-        return fileMessageRepository.findAllMessages();
-    }
-
-
-    // this has to be updated
-    @Override
-    public void deleteMessage(UUID messageId) {
-        Objects.requireNonNull(messageId, "require message Id : FileMessageService.deleteMessage");
-        fileMessageRepository.deleteMessageById(messageId);
-    }
+//    // empty
+//    @Override
+//    public void updateMessage(MessageUpdateRequest request) {
+//
+//    }
+//
+//    // empty
+//    @Override
+//    public List<Message> findAllByChannelId(UUID channelId) {
+//        return List.of();
+//    }
+//
+//    // empty
+//    @Override
+//    public MessageCreateResponse createMessage(MessageCreateRequest request) {
+//        return null;
+//    }
+//    // empty
+//    @Override
+//    public MessageAttachmentsCreateResponse createMessage(MessageAttachmentsCreateRequest request) {
+//        return null;
+//    }
+//
+//
+//
+//    @Override
+//    public Message findMessageById(UUID messageId) {
+//        Objects.requireNonNull(messageId, "no messageId: FileMessageService.findMessageById");
+//        Message messageById = fileMessageRepository.findMessageById(messageId);
+//        Objects.requireNonNull(messageById, "no message in DB: FileMessageService.findMessageById");
+//        return messageById;
+//    }
+//
+//    @Override
+//    public List<Message> findAllMessages() {
+//        return fileMessageRepository.findAllMessages();
+//    }
+//
+//
+//    // this has to be updated
+//    @Override
+//    public void deleteMessage(UUID messageId) {
+//        Objects.requireNonNull(messageId, "require message Id : FileMessageService.deleteMessage");
+//        fileMessageRepository.deleteMessageById(messageId);
+////    }
 }

@@ -1,11 +1,7 @@
 package com.sprint.mission.discodeit.Dto.channel;
 
-import lombok.Getter;
-
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.user
@@ -17,16 +13,18 @@ import java.util.UUID;
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
  * 2025. 4. 25.        doungukkim       최초 생성
- */@Getter
-public class PublicChannelCreateRequest {
-    String channelName;
-    String description;
-    List<UUID> userIds;
+ */
 
-    public PublicChannelCreateRequest(Set<UUID> userIds, String channelName, String description) {
-        this.userIds = Objects.requireNonNull(userIds, "no userIds in request").stream().toList();
-        this.channelName = Objects.requireNonNull(channelName, "no channelName in request");
+public record PublicChannelCreateRequest(
+        String channelName,
+        String description,
+        Set<String> userIds) {
 
-        this.description = Objects.requireNonNull(description, "no description in request");
+    public PublicChannelCreateRequest {
+        Objects.requireNonNull(channelName, "no channelName in request");
+        Objects.requireNonNull(description, "no description in request");
+        if ((userIds == null) || (userIds.isEmpty())) {
+            throw new RuntimeException("request must need one or more ids");
+        }
     }
 }

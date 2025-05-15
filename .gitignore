@@ -6,6 +6,8 @@ build/
 !**/src/test/**/build/
 
 ### STS ###
+.data/
+.uploadedFiles/
 .apt_generated
 .classpath
 .factorypath
@@ -36,3 +38,6 @@ out/
 
 ### VS Code ###
 .vscode/
+*.ser
+/files
+/data

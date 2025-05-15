@@ -1,10 +1,9 @@
 package com.sprint.mission.discodeit.Dto.channel;
 
-import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.User;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
+import lombok.Setter;
 
-import java.time.Instant;
 import java.util.*;
 
 /**
@@ -19,9 +18,12 @@ import java.util.*;
  * 2025. 4. 25.        doungukkim       최초 생성
  */
 
-public record PrivateChannelCreateRequest(List<UUID> userIds) {
-    public PrivateChannelCreateRequest(Set<UUID>userIds) {
-        this(Objects.requireNonNull(userIds, "no userIds in request").stream().toList());
+public record PrivateChannelCreateRequest(Set<String> userIds) {
+    @JsonCreator
+    public PrivateChannelCreateRequest {
+        if ((userIds == null) || (userIds.isEmpty())) {
+            throw new RuntimeException("request must need one or more ids");
+        }
     }
 }
 

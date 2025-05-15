@@ -1,21 +1,21 @@
-package com.sprint.mission.discodeit.Dto.channel;
+package com.sprint.mission.discodeit.Dto.user;
 
 import java.util.Objects;
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.Dto.channel
- * fileName       : ChannelCreateRequest
+ * packageName    : com.sprint.mission.discodeit.Dto.user
+ * fileName       : UesrDeleteRequest
  * author         : doungukkim
- * date           : 2025. 4. 29.
+ * date           : 2025. 5. 9.
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 29.        doungukkim       최초 생성
+ * 2025. 5. 9.        doungukkim       최초 생성
  */
-public record ChannelCreateRequest(UUID userId) {
-    public ChannelCreateRequest {
+public record UserDeleteRequest(UUID userId) {
+    public UserDeleteRequest {
         Objects.requireNonNull(userId, "no userId in request");
     }
 }

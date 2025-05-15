@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateResponse;
 import com.sprint.mission.discodeit.Dto.userStatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
 import java.util.List;
@@ -31,7 +32,7 @@ public interface UserStatusService {
 
     void update(UserStatusUpdateRequest request);
 
-    void updateByUserId(UUID userId, Instant newTime);  // throw
+    ResponseEntity<?> updateByUserId(UUID userId, Instant newTime);  // throw
 
     void delete(UUID userStatusId);
 }
