@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -63,12 +64,12 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel findById(UUID channelId) {
+    public Optional<Channel> findById(UUID channelId) {
         Path channelPath = getChannelPath(channelId);
         if (Files.exists(channelPath)) {
-            return loadChannel(channelPath);
+            return Optional.of(loadChannel(channelPath));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -81,6 +82,11 @@ public class FileChannelRepository implements ChannelRepository {
         } catch (IOException e) {
             throw new RuntimeException("채널 목록 로드 실패", e);
         }
+    }
+
+    @Override
+    public boolean existsById(UUID channelId) {
+        return Files.exists(getChannelPath(channelId));
     }
 
     @Override

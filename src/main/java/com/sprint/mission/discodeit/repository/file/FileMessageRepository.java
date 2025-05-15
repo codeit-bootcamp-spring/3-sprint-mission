@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.Comparator;
+import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
@@ -64,12 +66,12 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message findById(UUID messageId) {
+    public Optional<Message> findById(UUID messageId) {
         Path messagePath = getMessagePath(messageId);
         if (Files.exists(messagePath)) {
-            return loadMessage(messagePath);
+            return Optional.of(loadMessage(messagePath));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -95,6 +97,13 @@ public class FileMessageRepository implements MessageRepository {
     public List<Message> findByAuthorId(UUID authorId) {
         return findAll().stream()
                 .filter(m -> m.getAuthorId().equals(authorId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Message> findAllByChannelIdOrderByCreatedAtAsc(UUID channelId) {
+        return findByChannelId(channelId).stream()
+                .sorted(Comparator.comparing(Message::getCreatedAt))
                 .collect(Collectors.toList());
     }
 
