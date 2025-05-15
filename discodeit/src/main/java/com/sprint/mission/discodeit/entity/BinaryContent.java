@@ -11,11 +11,11 @@ public class BinaryContent implements java.io.Serializable{
     private Instant createdAt;
 
     private String fileName;
-    private BinaryContentType type;
+    private String type;
     private Long filesize;
     private byte[] bytes;
 
-    public BinaryContent(String fileName, BinaryContentType type, Long filesize, byte[] bytes) {
+    public BinaryContent(String fileName, String type, Long filesize, byte[] bytes) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.fileName = fileName;

@@ -42,6 +42,7 @@ public class BasicReadStatusService implements ReaduStatusService {
             throw new IllegalArgumentException("해당 user와 channel에는 이미 ReadStatus가 존재합니다.");
         }
 
+
         ReadStatus readStatus = new ReadStatus(userId,channelId,createReadStatusRequest.lastReadAt());
         return readStatusRepository.save(readStatus);
 
@@ -50,9 +51,13 @@ public class BasicReadStatusService implements ReaduStatusService {
 
     @Override
     public ReadStatus find(UUID readStatusId) {
-        ReadStatus findReadStatus = readStatusRepository.findById(readStatusId)
+        return readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
-        return findReadStatus;
+    }
+
+    @Override
+    public List<ReadStatus> findAll() {
+        return readStatusRepository.findAll().stream().toList();
     }
 
     @Override

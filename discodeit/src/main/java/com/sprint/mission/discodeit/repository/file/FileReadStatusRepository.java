@@ -51,6 +51,11 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
+    public List<ReadStatus> findAll() {
+        return readStatusData.values().stream().toList();
+    }
+
+    @Override
     public ReadStatus save(ReadStatus readStatus){
         readStatusData.put(readStatus.getId().toString(), readStatus);
         FileioUtil.save(this.path, readStatusData);

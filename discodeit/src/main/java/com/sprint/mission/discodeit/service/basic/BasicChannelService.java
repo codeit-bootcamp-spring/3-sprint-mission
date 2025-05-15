@@ -27,10 +27,7 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
 
-    // @RequiredArgsConstructor로 대체되었다.
-//    public BasicChannelService(ChannelRepository channelRepository) {
-//        this.channelRepository = channelRepository;
-//    }
+
 
     @Override
     public Channel create(CreatePublicChannelRequest request) {
@@ -57,14 +54,13 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelDTO find(UUID channelId) {
+    public Channel find(UUID channelId) {
         return channelRepository.findById(channelId)
-                        .map(this::toDTO)
                         .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     }
 
     @Override
-    public List<ChannelDTO> findAllByUserId(UUID userId){
+    public List<Channel> findAllByUserId(UUID userId){
         // private 채널 중에서 userID가 있는 채널만 추출
         List<Channel> channelListAll = new ArrayList<>(channelRepository.findAllByUserId(userId)
                 .stream()
@@ -78,10 +74,7 @@ public class BasicChannelService implements ChannelService {
                 .filter(channel -> channel.getType().equals(ChannelType.PUBLIC))
                 .forEach(channelListAll::add);
 
-        return channelListAll
-                .stream()
-                .map(this::toDTO)
-                .toList();
+        return channelListAll.stream().toList();
     }
 
 
@@ -105,6 +98,8 @@ public class BasicChannelService implements ChannelService {
             throw new NoSuchElementException("Channel with id " + channelId + " not found");
         }
         channelRepository.deleteById(channelId);
+        messageRepository.deleteByChannelId(channelId);   //   피드백 2 -> 요구사항에 따른 채널 관련 message도 삭제하는 부분
+        readStatusRepository.deleteByChannelId(channelId);  //   '' -> 요구사항에 따른 채널 관련 ReadStatus도 함께 삭제하는 부분
     }
 
     @Override
@@ -133,28 +128,6 @@ public class BasicChannelService implements ChannelService {
         System.out.println("delete participant : " + userId + " success.");
         channelRepository.save(channel);
 
-
-
     }
 
-
-    public ChannelDTO toDTO(Channel channel){
-        Instant lastMessageAt = messageRepository.findAllByChannelId(channel.getId())
-                .stream()
-                .map(Message::getCreatedAt)
-                .limit(1)
-                .findFirst()
-                .orElse(Instant.MIN);
-
-        return new ChannelDTO(
-                channel.getId(),
-                channel.getCreatedAt(),
-                channel.getChannelName(),
-                channel.getType(),
-                channel.getDescription(),
-                channel.getParicipantIds(),
-                lastMessageAt
-        );
-
-    }
 }
