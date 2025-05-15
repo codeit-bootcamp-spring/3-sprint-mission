@@ -1,46 +1,40 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
 
-public class Message extends BaseEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private String msgContent;
-    private final UUID senderId;
-    private final UUID channelId;
+@Getter
+public class Message implements Serializable {
 
-    public Message(String msgContent, UUID senderId, UUID channelId) {
-        this.msgContent = msgContent;
-        this.senderId = senderId;
+    @Serial
+    private static final long serialVersionUID = 5140283631663474458L;
+
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private String content;
+    private UUID channelId;
+    private UUID authorId;
+    private List<UUID> attachmentIds;
+
+    public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        this.updatedAt = createdAt;
+        this.content = content;
         this.channelId = channelId;
+        this.authorId = authorId;
+        this.attachmentIds = attachmentIds;
     }
 
-    public void updateMsgContent(String msgContent) {
-        this.msgContent = msgContent;
-        updateTime();
-    }
-
-    public UUID getSenderId() { return senderId; }
-
-    public UUID getChannelId() {
-        return channelId;
-    }
-
-    public boolean isUpdated() {
-        return getUpdatedAt() != getCreatedAt();
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        long displayTime = isUpdated() ? getUpdatedAt() : getCreatedAt();
-        sb.append("[").append(new Date(displayTime)).append("] ");
-        sb.append(msgContent);
-        if (isUpdated()) {
-            sb.append(" (수정됨)");
+    public void update(String newContent) {
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            this.updatedAt = Instant.now();
         }
-        sb.append(" [").append(senderId).append("] ");
-        return sb.toString();
     }
 }
