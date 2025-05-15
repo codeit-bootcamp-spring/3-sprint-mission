@@ -67,6 +67,6 @@ public class ReadStatusController {
   public ResponseEntity<String> deleteById(@PathVariable UUID readStatusId) {
     readStatusService.deleteById(readStatusId);
 
-    return ResponseEntity.status(HttpStatus.OK).body("[Success]: 메시지 수신 정보 삭제 성공!");
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }

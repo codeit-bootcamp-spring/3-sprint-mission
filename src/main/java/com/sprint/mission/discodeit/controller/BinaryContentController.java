@@ -63,7 +63,7 @@ public class BinaryContentController {
   public ResponseEntity<String> deleteById(@PathVariable UUID binaryContentId) {
     binaryContentService.deleteById(binaryContentId);
 
-    return ResponseEntity.status(HttpStatus.CREATED).body("[Success]: 파일 삭제 성공!");
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   private BinaryContentDTO resolveFileRequest(MultipartFile multipartFile) {

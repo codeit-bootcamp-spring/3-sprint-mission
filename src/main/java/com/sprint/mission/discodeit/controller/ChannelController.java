@@ -84,7 +84,7 @@ public class ChannelController {
   public ResponseEntity<String> deleteById(@PathVariable UUID channelId) {
     channelService.deleteById(channelId);
 
-    return ResponseEntity.status(HttpStatus.OK).body("[Success]: 채널 삭제 성공!");
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   @PostMapping(path = "/users")

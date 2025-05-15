@@ -102,7 +102,7 @@ public class MessageController {
   public ResponseEntity<String> deleteById(@PathVariable UUID messageId) {
     messageService.deleteById(messageId);
 
-    return ResponseEntity.status(HttpStatus.OK).body("[Success]: 메시지 삭제 성공!");
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   private List<BinaryContentDTO> resolveFileRequest(List<MultipartFile> attachedFiles) {

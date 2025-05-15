@@ -110,7 +110,7 @@ public class UserController {
   public ResponseEntity<String> deleteById(@PathVariable UUID userId) {
     userService.deleteById(userId);
 
-    return ResponseEntity.status(HttpStatus.OK).body("[Success]: 사용자 삭제 성공!");
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   @PatchMapping(path = "/{userId}/userStatus")
