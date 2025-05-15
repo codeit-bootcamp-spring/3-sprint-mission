@@ -5,7 +5,6 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
@@ -20,7 +19,6 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     private final BinaryContentRepository binaryContentRepository;
 
-    @Transactional
     @Override
     public BinaryContent create(BinaryContentCreateRequest request) {
         BinaryContent newBinaryContent = new BinaryContent(
@@ -44,7 +42,6 @@ public class BasicBinaryContentService implements BinaryContentService {
         return binaryContentRepository.findAllByIdIn(binaryContentIds);
     }
 
-    @Transactional
     @Override
     public void delete(UUID binaryContentId) {
         if (!binaryContentRepository.existsById(binaryContentId)) {

@@ -67,6 +67,15 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    public UserDto getUserByEmail(String email) {
+        return userRepository.findAll().stream()
+                .filter(user -> user.getEmail().equals(email))
+                .findFirst()
+                .map(this::toDto)
+                .orElseThrow(() -> new IllegalArgumentException("User with email " + email + " not found"));
+    }
+
+    @Override
     public List<UserDto> getAllUsers() {
         return userRepository.findAll().stream().map(this::toDto).toList();
     }

@@ -9,7 +9,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -24,7 +24,6 @@ public class BasicReadStatusService implements ReadStatusService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
 
-    @Transactional
     @Override
     public ReadStatus createReadStatus(ReadStatusCreateRequest request) {
         userRepository.findById(request.userId())
@@ -58,7 +57,6 @@ public class BasicReadStatusService implements ReadStatusService {
         return readStatusRepository.findAllByUserId(userId);
     }
 
-    @Transactional
     @Override
     public ReadStatus updateReadStatus(UUID readStatusId, ReadStatusUpdateRequest request) {
         ReadStatus readStatus = findReadStatusById(readStatusId);
@@ -66,7 +64,6 @@ public class BasicReadStatusService implements ReadStatusService {
         return readStatusRepository.save(readStatus);
     }
 
-    @Transactional
     @Override
     public void deleteReadStatus(UUID readStatusId) {
         if (!readStatusRepository.existsById(readStatusId)) {

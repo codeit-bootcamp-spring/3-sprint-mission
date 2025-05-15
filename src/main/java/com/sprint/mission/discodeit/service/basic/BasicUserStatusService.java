@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.dto.userStatus.UserStatusCreateRequest;
@@ -24,7 +23,6 @@ public class BasicUserStatusService implements UserStatusService {
     private final UserStatusRepository userStatusRepository;
     private final UserRepository userRepository;
 
-    @Transactional
     @Override
     public UserStatus create(UserStatusCreateRequest request) {
         userRepository.findById(request.userId())
@@ -51,7 +49,6 @@ public class BasicUserStatusService implements UserStatusService {
         return userStatusRepository.findAll();
     }
 
-    @Transactional
     @Override
     public UserStatus update(UUID userStatusId, UserStatusUpdateRequest request) {
         UserStatus userStatus = find(userStatusId);
@@ -61,7 +58,6 @@ public class BasicUserStatusService implements UserStatusService {
         return userStatusRepository.save(userStatus);
     }
 
-    @Transactional
     @Override
     public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
         userRepository.findById(userId)
@@ -75,7 +71,6 @@ public class BasicUserStatusService implements UserStatusService {
         return userStatusRepository.save(userStatus);
     }
 
-    @Transactional
     @Override
     public void delete(UUID userStatusId) {
         if (!userStatusRepository.existsById(userStatusId)) {
