@@ -5,3 +5,10 @@ discodeit:
   repository:
     type: File
     fileDirectory: src/main/java/com/sprint/mission/discodeit/repository/file/data
+
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
