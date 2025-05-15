@@ -28,7 +28,7 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
 
     @Override
-    public User create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profileCreateRequest) {
+    public User create(UserCreateRequest userCreateRequest, BinaryContentCreateRequest profileCreateRequest) {
         if (userRepository.existsByEmail(userCreateRequest.email())) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
@@ -36,17 +36,16 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("이미 사용 중인 사용자명입니다.");
         }
 
-        UUID profileId = profileCreateRequest
-                .map(request -> {
-                    BinaryContent profile = new BinaryContent(
-                            request.fileName(),
-                            (long) request.data().length,
-                            request.contentType(),
-                            request.data()
-                    );
-                    return binaryContentRepository.save(profile).getId();
-                })
-                .orElse(null);
+        UUID profileId = null;
+        if (profileCreateRequest != null) {
+            BinaryContent profile = new BinaryContent(
+                    profileCreateRequest.fileName(),
+                    (long) profileCreateRequest.data().length,
+                    profileCreateRequest.contentType(),
+                    profileCreateRequest.data()
+            );
+            profileId = binaryContentRepository.save(profile).getId();
+        }
 
         User user = new User(
                 userCreateRequest.username(),
@@ -102,24 +101,25 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User update(UUID userId, UserUpdateRequest request, Optional<BinaryContentCreateRequest> profileCreateRequest) {
+    public User update(UUID userId, UserUpdateRequest request, BinaryContentCreateRequest profileCreateRequest) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 ID의 사용자를 찾을 수 없습니다."));
 
-        UUID profileId = profileCreateRequest
-                .map(p -> {
-                    Optional.ofNullable(user.getProfileId())
-                            .ifPresent(binaryContentRepository::deleteById);
+        UUID profileId = user.getProfileId();
 
-                    BinaryContent newProfile = new BinaryContent(
-                            p.fileName(),
-                            (long) p.data().length,
-                            p.contentType(),
-                            p.data()
-                    );
-                    return binaryContentRepository.save(newProfile).getId();
-                })
-                .orElse(null);
+        if (profileCreateRequest != null) {
+            if (profileId != null) {
+                binaryContentRepository.deleteById(profileId);
+            }
+
+            BinaryContent newProfile = new BinaryContent(
+                    profileCreateRequest.fileName(),
+                    (long) profileCreateRequest.data().length,
+                    profileCreateRequest.contentType(),
+                    profileCreateRequest.data()
+            );
+            profileId = binaryContentRepository.save(newProfile).getId();
+        }
 
         user.update(request.username(), request.email(), request.password(), profileId);
         return userRepository.save(user);
