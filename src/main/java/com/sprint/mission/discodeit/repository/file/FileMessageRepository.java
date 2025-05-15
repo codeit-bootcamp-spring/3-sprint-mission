@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import java.util.Comparator;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import com.sprint.mission.discodeit.entity.Message;
@@ -25,8 +26,8 @@ public class FileMessageRepository implements MessageRepository {
 
     private final Path dataDirectory;
 
-    public FileMessageRepository() {
-        this.dataDirectory = Paths.get(System.getProperty("user.dir"), "data", "messages");
+    public FileMessageRepository(@Value("${discodeit.repository.file-directory}") String baseDir) {
+        this.dataDirectory = Paths.get(System.getProperty("user.dir"), baseDir, "messages");
         if (!Files.exists(dataDirectory)) {
             try {
                 Files.createDirectories(dataDirectory);

@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -24,8 +25,8 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
     private final Path dataDirectory;
 
-    public FileReadStatusRepository() {
-        this.dataDirectory = Paths.get(System.getProperty("user.dir"), "data", "readstatuses");
+    public FileReadStatusRepository(@Value("${discodeit.repository.file-directory}") String baseDir) {
+        this.dataDirectory = Paths.get(System.getProperty("user.dir"), baseDir, "readstatuses");
         if (!Files.exists(dataDirectory)) {
             try {
                 Files.createDirectories(dataDirectory);

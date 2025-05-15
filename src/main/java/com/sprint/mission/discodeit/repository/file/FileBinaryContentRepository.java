@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -23,8 +24,8 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     private final Path dataDirectory;
 
-    public FileBinaryContentRepository() {
-        this.dataDirectory = Paths.get(System.getProperty("user.dir"), "data", "binarycontents");
+    public FileBinaryContentRepository(@Value("${discodeit.repository.file-directory}") String baseDir) {
+        this.dataDirectory = Paths.get(System.getProperty("user.dir"), baseDir, "binarycontents");
         if (!Files.exists(dataDirectory)) {
             try {
                 Files.createDirectories(dataDirectory);

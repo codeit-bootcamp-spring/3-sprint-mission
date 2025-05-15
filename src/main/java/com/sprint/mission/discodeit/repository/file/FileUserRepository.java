@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import com.sprint.mission.discodeit.entity.User;
@@ -25,8 +26,8 @@ public class FileUserRepository implements UserRepository {
     private final Path dataDirectory;
     private final Object lock = new Object();
 
-    public FileUserRepository() {
-        this.dataDirectory = Paths.get(System.getProperty("user.dir"), "data", "users");
+    public FileUserRepository(@Value("${discodeit.repository.file-directory}") String baseDir) {
+        this.dataDirectory = Paths.get(System.getProperty("user.dir"), baseDir, "users");
         if (!Files.exists(dataDirectory)) {
             try {
                 Files.createDirectories(dataDirectory);

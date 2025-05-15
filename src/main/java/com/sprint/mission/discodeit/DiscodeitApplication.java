@@ -70,7 +70,7 @@ public class DiscodeitApplication {
 		System.out.println("(채널 생성) 채널ID: " + channel.getChannelId() + " 이름: " + channel.getChannelName() + " 비밀번호: " + channel.getPassword());
 		System.out.println("(메시지 생성) 메시지ID: " + message.getMessageId() + " 내용: " + message.getContent() + " 채널ID: " + message.getChannelId() + " 작성자ID: " + message.getAuthorId());
 
-		// 테스트 데이터 삭제
+		// 생성된 파일 데이터 삭제
 		try {
 			messageService.deleteMessage(message.getMessageId());
 			System.out.println("(메시지 삭제) 채널ID: " + message.getChannelId() + "삭제한 메시지ID: " + message.getMessageId());

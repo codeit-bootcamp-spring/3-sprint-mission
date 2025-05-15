@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -24,8 +25,8 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     private final Path dataDirectory;
 
-    public FileUserStatusRepository() {
-        this.dataDirectory = Paths.get(System.getProperty("user.dir"), "data", "userstatuses");
+    public FileUserStatusRepository(@Value("${discodeit.repository.file-directory}") String baseDir) {
+        this.dataDirectory = Paths.get(System.getProperty("user.dir"), baseDir, "userstatuses");
         if (!Files.exists(dataDirectory)) {
             try {
                 Files.createDirectories(dataDirectory);
