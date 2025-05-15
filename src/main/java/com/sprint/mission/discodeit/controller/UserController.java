@@ -38,135 +38,137 @@ import java.util.UUID;
 @RequestMapping("/api/user")
 public class UserController {
 
-    private final UserService userService;
-    private final UserStatusService userStatusService;
+  private final UserService userService;
+  private final UserStatusService userStatusService;
 
-    // 신규 유저 생성 요청
-    @RequestMapping(path = "/create",
-            method = RequestMethod.POST,
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @ResponseBody
-    public ResponseEntity<User> create(@RequestPart("userRequest") UserRequestDTO userRequestDTO,
-                                       @RequestPart(value = "profile", required = false) MultipartFile profile) {
+  // 신규 유저 생성 요청
+  @RequestMapping(path = "/create",
+      method = RequestMethod.POST,
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public ResponseEntity<User> create(@RequestPart("userRequest") UserRequestDTO userRequestDTO,
+      @RequestPart(value = "profile", required = false) MultipartFile profile) {
 
-        BinaryContentDTO profileRequest = resolveProfileRequest(profile);
+    BinaryContentDTO profileRequest = resolveProfileRequest(profile);
 
-        User createdUser = userService.create(userRequestDTO, profileRequest);
+    User createdUser = userService.create(userRequestDTO, profileRequest);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+  }
+
+  @RequestMapping(path = "/find", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<UserResponseDTO> findById(@RequestParam UUID userId) {
+    UserResponseDTO foundUser = userService.findById(userId);
+
+    return ResponseEntity.status(HttpStatus.OK).body(foundUser);
+  }
+
+  @RequestMapping(path = "/findByName", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<UserResponseDTO> findByName(@RequestParam String name) {
+    UserResponseDTO foundUser = userService.findByName(name);
+
+    return ResponseEntity.status(HttpStatus.OK).body(foundUser);
+  }
+
+  @RequestMapping(path = "/findByEmail", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<UserResponseDTO> findByEmail(@RequestParam String email) {
+    UserResponseDTO foundUser = userService.findByEmail(email);
+
+    return ResponseEntity.status(HttpStatus.OK).body(foundUser);
+  }
+
+  @RequestMapping(path = "/findByNameContaining", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<List<UserResponseDTO>> findByNameContaining(@RequestParam String name) {
+    List<UserResponseDTO> foundUsers = userService.findByNameContaining(name);
+
+    return ResponseEntity.status(HttpStatus.OK).body(foundUsers);
+  }
+
+  @RequestMapping(path = "/findAll", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<List<UserResponseDTO>> findAll() {
+    List<UserResponseDTO> allUsers = userService.findAll();
+
+    return ResponseEntity.status(HttpStatus.OK).body(allUsers);
+  }
+
+  @RequestMapping(path = "/updateProfile",
+      method = RequestMethod.PUT,
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseBody
+  public ResponseEntity<UserResponseDTO> updateProfileImage(@RequestParam UUID userId,
+      @RequestPart(value = "profile", required = false) MultipartFile profile) {
+    BinaryContentDTO profileRequest = resolveProfileRequest(profile);
+
+    UserResponseDTO updatedUser = userService.updateProfileImage(userId, profileRequest);
+
+    return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
+  }
+
+  @RequestMapping(path = "/updateUserInfo", method = RequestMethod.PUT)
+  @ResponseBody
+  public ResponseEntity<UserResponseDTO> updateUserInfo(@RequestParam UUID userId,
+      @RequestBody UserRequestDTO userRequestDTO) {
+    UserResponseDTO updatedUser = userService.updateUserInfo(userId, userRequestDTO);
+
+    return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
+  }
+
+  @RequestMapping(path = "/delete", method = RequestMethod.DELETE)
+  @ResponseBody
+  public ResponseEntity<String> deleteById(@RequestParam UUID userId) {
+    userService.deleteById(userId);
+
+    return ResponseEntity.status(HttpStatus.OK).body("[Success]: 사용자 삭제 성공!");
+  }
+
+  @RequestMapping(path = "/updateUserStatus", method = RequestMethod.PUT)
+  @ResponseBody
+  public ResponseEntity<UserStatusResponseDTO> updateUserStatus(@RequestParam UUID userId,
+      @RequestBody UserStatusUpdateDTO userStatusUpdateDTO) {
+    UserStatusResponseDTO userStatusResponseDTO = userStatusService.updateByUserId(userId,
+        userStatusUpdateDTO);
+
+    return ResponseEntity.status(HttpStatus.OK).body(userStatusResponseDTO);
+  }
+
+  @RequestMapping(path = "/addFriend", method = RequestMethod.POST)
+  @ResponseBody
+  public ResponseEntity<String> addFriend(@RequestBody FriendReqeustDTO friendReqeustDTO) {
+    userService.addFriend(friendReqeustDTO);
+
+    return ResponseEntity.status(HttpStatus.OK).body("[Success]: 친구 추가 성공!");
+  }
+
+  @RequestMapping(path = "/deleteFriend", method = RequestMethod.POST)
+  @ResponseBody
+  public ResponseEntity<String> deleteFriend(@RequestBody FriendReqeustDTO friendReqeustDTO) {
+    userService.deleteFriend(friendReqeustDTO);
+
+    return ResponseEntity.status(HttpStatus.OK).body("[Success]: 친구 삭제 성공!");
+  }
+
+  // MultipartFile 타입의 요청 값을 BinaryContentDTO 타입으로 변환하기 위한 메서드
+  private BinaryContentDTO resolveProfileRequest(MultipartFile profile) {
+    if (profile.isEmpty()) {
+      // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 비어있다면:
+      return null;
+    } else {
+      // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 존재한다면:
+      try {
+        BinaryContentDTO binaryContentDTO = new BinaryContentDTO(
+            profile.getOriginalFilename(),
+            profile.getContentType(),
+            profile.getBytes());
+
+        return binaryContentDTO;
+      } catch (IOException e) {
+        throw new RuntimeException("파일 '" + profile.getOriginalFilename() + "' 처리 중 오류 발생", e);
+      }
     }
-
-    @RequestMapping(path = "/find", method = RequestMethod.GET)
-    @ResponseBody
-    public ResponseEntity<UserResponseDTO> findById(@RequestParam UUID userId) {
-        UserResponseDTO foundUser = userService.findById(userId);
-
-        return ResponseEntity.status(HttpStatus.OK).body(foundUser);
-    }
-
-    @RequestMapping(path = "/findByName", method = RequestMethod.GET)
-    @ResponseBody
-    public ResponseEntity<UserResponseDTO> findByName(@RequestParam String name) {
-        UserResponseDTO foundUser = userService.findByName(name);
-
-        return ResponseEntity.status(HttpStatus.OK).body(foundUser);
-    }
-
-    @RequestMapping(path = "/findByEmail", method = RequestMethod.GET)
-    @ResponseBody
-    public ResponseEntity<UserResponseDTO> findByEmail(@RequestParam String email) {
-        UserResponseDTO foundUser = userService.findByEmail(email);
-
-        return ResponseEntity.status(HttpStatus.OK).body(foundUser);
-    }
-
-    @RequestMapping(path = "/findByNameContaining", method = RequestMethod.GET)
-    @ResponseBody
-    public ResponseEntity<List<UserResponseDTO>> findByNameContaining(@RequestParam String name) {
-        List<UserResponseDTO> foundUsers = userService.findByNameContaining(name);
-
-        return ResponseEntity.status(HttpStatus.OK).body(foundUsers);
-    }
-
-    @RequestMapping(path = "/findAll", method = RequestMethod.GET)
-    @ResponseBody
-    public ResponseEntity<List<UserResponseDTO>> findAll() {
-        List<UserResponseDTO> allUsers = userService.findAll();
-
-        return ResponseEntity.status(HttpStatus.OK).body(allUsers);
-    }
-
-    @RequestMapping(path = "/updateProfile",
-            method = RequestMethod.PUT,
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @ResponseBody
-    public ResponseEntity<UserResponseDTO> updateProfileImage(@RequestParam UUID userId,
-                                                              @RequestPart(value = "profile", required = false) MultipartFile profile) {
-        BinaryContentDTO profileRequest = resolveProfileRequest(profile);
-
-        UserResponseDTO updatedUser = userService.updateProfileImage(userId, profileRequest);
-
-        return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
-    }
-
-    @RequestMapping(path = "/updateUserInfo", method = RequestMethod.PUT)
-    @ResponseBody
-    public ResponseEntity<UserResponseDTO> updateUserInfo(@RequestParam UUID userId,
-                                                          @RequestBody UserRequestDTO userRequestDTO) {
-        UserResponseDTO updatedUser = userService.updateUserInfo(userId, userRequestDTO);
-
-        return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
-    }
-
-    @RequestMapping(path ="/delete", method = RequestMethod.DELETE)
-    @ResponseBody
-    public ResponseEntity<String> deleteById(@RequestParam UUID userId) {
-        userService.deleteById(userId);
-
-        return ResponseEntity.status(HttpStatus.OK).body("[Success]: 사용자 삭제 성공!");
-    }
-
-    @RequestMapping(path = "/updateUserStatus", method = RequestMethod.PUT)
-    @ResponseBody
-    public ResponseEntity<UserStatusResponseDTO> updateUserStatus(@RequestParam UUID userId, @RequestBody UserStatusUpdateDTO userStatusUpdateDTO) {
-        UserStatusResponseDTO userStatusResponseDTO = userStatusService.updateByUserId(userId, userStatusUpdateDTO);
-
-        return ResponseEntity.status(HttpStatus.OK).body(userStatusResponseDTO);
-    }
-
-    @RequestMapping(path = "/addFriend", method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity<String> addFriend(@RequestBody FriendReqeustDTO friendReqeustDTO) {
-        userService.addFriend(friendReqeustDTO);
-
-        return ResponseEntity.status(HttpStatus.OK).body("[Success]: 친구 추가 성공!");
-    }
-
-    @RequestMapping(path = "/deleteFriend", method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity<String> deleteFriend(@RequestBody FriendReqeustDTO friendReqeustDTO) {
-        userService.deleteFriend(friendReqeustDTO);
-
-        return ResponseEntity.status(HttpStatus.OK).body("[Success]: 친구 삭제 성공!");
-    }
-
-    // MultipartFile 타입의 요청 값을 BinaryContentDTO 타입으로 변환하기 위한 메서드
-    private BinaryContentDTO resolveProfileRequest(MultipartFile profile) {
-        if (profile.isEmpty()) {
-            // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 비어있다면:
-            return null;
-        } else {
-            // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 존재한다면:
-            try {
-                BinaryContentDTO binaryContentDTO = new BinaryContentDTO(
-                        profile.getOriginalFilename(),
-                        profile.getContentType(),
-                        profile.getBytes());
-
-                return binaryContentDTO;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
+  }
 }
