@@ -1,7 +1,14 @@
 package com.sprint.mission.discodeit.controller;
 
+<<<<<<< HEAD
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
+=======
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.Message;
+>>>>>>> 3189145 (5월 15일 강의 결과물)
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -63,10 +70,16 @@ public class ReadStatusController {
             method = RequestMethod.GET
     )
     @ResponseBody
+<<<<<<< HEAD
     public ResponseEntity<List<ReadStatus>> findAllByUserId(
             @RequestParam UUID userId
     ) {
         // ReadStatus가 없을 시 Error 메시지(or 페이지)
+=======
+    public ResponseEntity<List<ReadStatus>> getUserReadStatus(
+            @RequestParam UUID userId
+    ) {
+>>>>>>> 3189145 (5월 15일 강의 결과물)
         List<ReadStatus> userReadStatuses = readStatusService.findAllByUserId(userId);
         return ResponseEntity.status(HttpStatus.OK).body(userReadStatuses);
     }
