@@ -1,11 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.AddBinaryContentRequest;
 import com.sprint.mission.discodeit.dto.message.CreateMessageRequest;
-import com.sprint.mission.discodeit.dto.message.MessageDTO;
 import com.sprint.mission.discodeit.dto.message.UpdateMessageRequest;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.BinaryContentType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.*;
@@ -56,21 +52,16 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Message update(UpdateMessageRequest updateMessageRequest) {
-        Message message = messageRepository.findById(updateMessageRequest.id())
-                .orElseThrow(() -> new NoSuchElementException("Message with id " + updateMessageRequest.id() + " not found"));
+    public Message update(  UUID messageId,
+                            UpdateMessageRequest updateMessageRequest) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
 
         if(updateMessageRequest.newContent() == null || updateMessageRequest.newContent().isBlank()){
             throw new IllegalArgumentException("빈 메시지는 전송할 수 없습니다.");
         }
 
-        for(UUID id: updateMessageRequest.attachmentIds()){
-            if(message.getAttachmentIds().contains(id)){
-                message.getAttachmentIds().remove(id);
-            }else{
-                message.getAttachmentIds().add(id);
-            }
-        }
+
         message.update(updateMessageRequest.newContent());
         updateUserStatus(userStatusRepository, message.getAuthorId());
         return messageRepository.save(message);

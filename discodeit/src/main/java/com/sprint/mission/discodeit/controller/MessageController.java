@@ -40,14 +40,15 @@ public class MessageController {
         return ResponseEntity.ok(messageDTO);
     }
 
-    @RequestMapping(method = RequestMethod.PATCH)
-    public ResponseEntity<MessageDTO> updateMessage(@RequestBody UpdateMessageRequest updateMessageRequest) {
-        Message message = messageService.update(updateMessageRequest);
+    @RequestMapping(value = "{messageId}",method = RequestMethod.PATCH)
+    public ResponseEntity<MessageDTO> updateMessage(@PathVariable("messageId") UUID messageId,
+                                                    @RequestBody UpdateMessageRequest updateMessageRequest) {
+        Message message = messageService.update(messageId,updateMessageRequest);
         return ResponseEntity.ok(MessageDTO.fromDomain(message));
     }
 
-    @RequestMapping(method = RequestMethod.DELETE)
-    public ResponseEntity<String> deleteMessage(@RequestParam("id") UUID messageId) {
+    @RequestMapping(value = "/{messageId}",method = RequestMethod.DELETE)
+    public ResponseEntity<String> deleteMessage(@PathVariable("messageId") UUID messageId) {
         messageService.delete(messageId);
         return ResponseEntity.ok("메시지 ID : " + messageId + "삭제 완료");
     }

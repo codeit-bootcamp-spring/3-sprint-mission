@@ -68,15 +68,16 @@ public class ChannelController {
                 return ResponseEntity.ok(channelDTOs);
         }
 
-        @RequestMapping(value = "/public", method = RequestMethod.PATCH)
-        public ResponseEntity<PublicChannelDTO> updateChannel(@RequestBody UpdateChannelRequest updateChannelRequest) {
-                Channel channel = channelService.update(updateChannelRequest);
+        @RequestMapping(value = "/{channelId}", method = RequestMethod.PATCH)
+        public ResponseEntity<PublicChannelDTO> updateChannel(@PathVariable("channelId") UUID channelId,
+                @RequestBody UpdateChannelRequest updateChannelRequest) {
+                Channel channel = channelService.update(channelId,updateChannelRequest);
                 Instant lastMessageAt = getLastMessageAt(channel.getId());
                 return ResponseEntity.ok(PublicChannelDTO.fromDomain(channel, lastMessageAt));
         }
 
-        @RequestMapping(method = RequestMethod.DELETE)
-        public ResponseEntity<String> deleteChannel(@RequestParam("id") UUID channelId) {
+        @RequestMapping(value = "/{channelId}", method = RequestMethod.DELETE)
+        public ResponseEntity<String> deleteChannel(@PathVariable("channelId") UUID channelId) {
 
                 channelService.delete(channelId);
                 return ResponseEntity.ok("채널 ID : " + channelId + "삭제 완료");

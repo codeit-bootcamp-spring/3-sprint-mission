@@ -4,121 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>사용자 목록</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            width: 400px;
-        }
-
-        .user-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px 0;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .user-item:last-child {
-            border-bottom: none;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-        }
-
-        .avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            margin-right: 15px;
-        }
-
-        .details h2 {
-            margin: 0;
-            font-size: 1rem;
-            font-weight: bold;
-        }
-
-        .details p {
-            margin: 2px 0 0;
-            font-size: 0.875rem;
-            color: #555;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 0.875rem;
-            color: #fff;
-        }
-
-        .status-online {
-            background-color: #38a169;
-        }
-
-        .status-offline {
-            background-color: #e53e3e;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div class="container">
     <h1>사용자 목록</h1>
     <div class="user-list" id="userList">
-        <!-- 사용자 목록이 동적으로 삽입될 부분 -->
+        <!-- Users will be dynamically inserted here -->
     </div>
 </div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", async () => {
-        const userList = document.getElementById("userList");
-
-        try {
-            const response = await fetch("http://localhost:8080/api/users/findAll");
-            const users = await response.json();
-
-            users.forEach(user => {
-                const userItem = document.createElement("div");
-                userItem.classList.add("user-item");
-
-                userItem.innerHTML = `
-                    <div class="user-info">
-                        <img src="${user.profileUrl ? user.profileUrl : 'default-avatar.png'}" alt="프로필" class="avatar"/>
-                        <div class="details">
-                            <h2>${user.username ? user.username : 'Unknown User'}</h2>
-                            <p>${user.email}</p>
-                        </div>
-                    </div>
-                    <span class="status ${user.online ? 'status-online' : 'status-offline'}">
-                        ${user.online ? '온라인' : '오프라인'}
-                    </span>
-                `;
-
-                userList.appendChild(userItem);
-            });
-        } catch (error) {
-            console.error("사용자 목록 로드 오류:", error);
-            userList.innerHTML = "<p>사용자 목록을 불러오는 중 오류가 발생했습니다.</p>";
-        }
-    });
-</script>
+<script src="script.js"></script>
 </body>
 </html>
+
 
