@@ -18,6 +18,9 @@ public interface UserService {
     // Read: 사용자 ID로 단일 사용자 조회
     UserDto getUserById(UUID id);
 
+    // Read: 이메일로 단일 사용자 조회
+    UserDto getUserByEmail(String email);
+
     // 모든 사용자 조회
     List<UserDto> getAllUsers();
 
