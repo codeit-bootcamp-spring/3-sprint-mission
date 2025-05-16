@@ -12,11 +12,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
-
-
 
 
 /**
@@ -57,7 +55,10 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
             selectedAttachments.add(FileSerializer.readFile(path, BinaryContent.class));
         }
-        return selectedAttachments;
+        if (selectedAttachments.size() == attachmentIds.size()) {
+            return selectedAttachments;
+        }
+        return Collections.emptyList();
     }
 
 

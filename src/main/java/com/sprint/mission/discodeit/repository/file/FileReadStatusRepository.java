@@ -36,16 +36,17 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
 
     @Override
-    public void updateUpdatedTime(UUID readStatusId, Instant newTime) {
+    public void updateUpdatedTime(UUID readStatusId, Instant newLastReadAt) {
         Path path = filePathUtil.getReadStatusFilePath(readStatusId);
         if (!Files.exists(path)) {
             return;
         }
 
         ReadStatus readStatus = FileSerializer.readFile(path, ReadStatus.class);
-        readStatus.setUpdatedAt(newTime);
+        readStatus.setLastReadAt(newLastReadAt);
         FileSerializer.writeFile(path, readStatus);
     }
+
 
     @Override
     public ReadStatus findById(UUID readStatusId) {
@@ -56,7 +57,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         return FileSerializer.readFile(path, ReadStatus.class);
     }
 
-    // working..
+
     @Override
     public List<ReadStatus> findAllByUserId(UUID userId) {
         Path directory = filePathUtil.getReadStatusDirectory();
@@ -77,13 +78,15 @@ public class FileReadStatusRepository implements ReadStatusRepository {
                             Object data = ois.readObject();
                             return (ReadStatus) data;
                         } catch (IOException | ClassNotFoundException exception) {
-                            throw new RuntimeException("파일을 읽어오지 못했습니다: FileReadStatusRepository.findReadStatusByChannelId", exception);
+                            System.out.println("읽기 실패 " + path + exception);
+                            return null;
+//                            throw new RuntimeException("파일을 읽어오지 못했습니다: FileReadStatusRepository.findAllByUserId", exception);
                         }
                     })
                     .filter(readStatus -> readStatus.getUserId().equals(userId))
                     .toList();
         } catch (IOException e) {
-            throw new RuntimeException("리스트로 만드는 과정에 문제 발생: FileReadStatusRepository.findReadStatusByChannelId",e);
+            throw new RuntimeException("리스트로 만드는 과정에 문제 발생: FileReadStatusRepository.findAllByUserId", e);
         }
 
         return readStatusList;
@@ -93,17 +96,17 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     public void deleteReadStatusById(UUID readStatusId) {
         Path path = filePathUtil.getReadStatusFilePath(readStatusId);
 
-        try{
+        try {
             Files.delete(path);
         } catch (IOException e) {
-            throw new RuntimeException("ReadStats 삭제 실패: FileReadStatusRepository.deleteReadStatusById",e);
+            throw new RuntimeException("ReadStats 삭제 실패: FileReadStatusRepository.deleteReadStatusById", e);
         }
 
     }
 
     @Override
-    public ReadStatus createByUserId(UUID userId, UUID channelId) {
-        ReadStatus readStatus = new ReadStatus(userId, channelId);
+    public ReadStatus createByUserId(UUID userId, UUID channelId, Instant lastReadAt) {
+        ReadStatus readStatus = new ReadStatus(userId, channelId, lastReadAt);
         Path path = filePathUtil.getReadStatusFilePath(readStatus.getId());
         FileSerializer.writeFile(path, readStatus);
         return readStatus;
@@ -145,7 +148,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
                         }
                     }).toList();
         } catch (IOException e) {
-            throw new RuntimeException("리스트로 만드는 과정에 문제 발생: FileReadStatusRepository.findReadStatusByChannelId",e);
+            throw new RuntimeException("리스트로 만드는 과정에 문제 발생: FileReadStatusRepository.findReadStatusByChannelId", e);
         }
 
         List<ReadStatus> selectedReadStatuses = new ArrayList<>();

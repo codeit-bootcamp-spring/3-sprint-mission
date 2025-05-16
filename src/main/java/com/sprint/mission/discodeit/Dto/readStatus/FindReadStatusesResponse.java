@@ -5,22 +5,21 @@ import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.readStatus
- * fileName       : ReadStatusCreateResponse
+ * fileName       : FindReadStatusesResponse
  * author         : doungukkim
- * date           : 2025. 4. 29.
+ * date           : 2025. 5. 16.
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 29.        doungukkim       최초 생성
+ * 2025. 5. 16.        doungukkim       최초 생성
  */
-public record ReadStatusCreateResponse(
+public record FindReadStatusesResponse(
         UUID id,
         Instant createdAt,
         Instant updatedAt,
         UUID userId,
         UUID channelId,
         Instant lastReadAt
-
 ) {
 }

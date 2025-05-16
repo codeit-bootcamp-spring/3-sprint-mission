@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -23,20 +24,22 @@ import java.util.UUID;
  * 2025. 5. 11.        doungukkim       최초 생성
  */
 @Controller
-@RequestMapping("api/binaryContent/*")
+@RequestMapping("api/binaryContents")
 @RequiredArgsConstructor
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
 
 
-    @RequestMapping(path = "/findAttachment", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> findAttachment(@RequestBody BinaryContentFindRequest request) {
-        return binaryContentService.findAllByIdIn(request);
+    @GetMapping
+    public ResponseEntity<?> findAttachment(@RequestParam List<UUID> binaryContentIds) {
+        System.out.println("BinaryContentController.findAttachment");
+        return binaryContentService.findAllByIdIn(binaryContentIds);
     }
 
     @ResponseBody
-    @RequestMapping(path = "/find", method = RequestMethod.GET)
-    public ResponseEntity<BinaryContent> find(@RequestParam UUID binaryContentId) {
+    @GetMapping(path = "/{binaryContentId}")
+    public ResponseEntity<?> findBinaryContent(@PathVariable UUID binaryContentId) {
+        System.out.println("BinaryContentController.findBinaryContent");
         return binaryContentService.find(binaryContentId);
     }
 }

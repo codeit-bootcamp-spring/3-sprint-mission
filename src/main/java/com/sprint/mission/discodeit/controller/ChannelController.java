@@ -22,56 +22,44 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ChannelController {
 
-  private final ChannelService channelService;
+    private final ChannelService channelService;
 
-  // request, endpoint, (param, body, variable) :
-  // service, repository : OK
-  // response : OK
-  // fail response : OK
-  @RequestMapping(path = "/public", consumes = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
-  public ResponseEntity<?> create(@RequestBody PublicChannelCreateRequest request) {
-    return channelService.createChannel(request);
-  }
+    // request, endpoint, (param, body, variable) :
+    // service, repository : OK
+    // response : OK
+    // fail response : OK
+    @RequestMapping(path = "/public", consumes = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
+    public ResponseEntity<?> create(@RequestBody PublicChannelCreateRequest request) {
+        System.out.println("ChannelController.create-public");
+        return channelService.createChannel(request);
+    }
 
-  // request, endpoint, (param, body, variable) : OK
-  // service, repository : OK
-  // response : OK
-  // fail response : OK
-  @ResponseBody
-  @RequestMapping(path = "/private", consumes = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
-  public ResponseEntity<?> create(@RequestBody PrivateChannelCreateRequest request) {
-    return channelService.createChannel(request);
-  }
-  // request, endpoint, (param, body, variable) : OK
-  // service, repository : OK
-  // response : OK
-  // fail response :  OK
-  @ResponseBody
-  @RequestMapping(path = "/{channelId}", method = RequestMethod.DELETE)
-  public ResponseEntity<?> removeChannel(@PathVariable UUID channelId) {
-    return channelService.deleteChannel(channelId);
-  }
+    @ResponseBody
+    @RequestMapping(path = "/private", consumes = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
+    public ResponseEntity<?> create(@RequestBody PrivateChannelCreateRequest request) {
+        System.out.println("ChannelController.create-private");
+        return channelService.createChannel(request);
+    }
 
-  // request, endpoint, (param, body, variable) : OK
-  // service, repository : OK
-  // response : OK
-  // fail response : OK
-  @ResponseBody
-  @RequestMapping(path = "/{channelId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> changeName(
-          @PathVariable UUID channelId,
-          @RequestBody ChannelUpdateRequest request) {
-    return channelService.update(channelId, request);
-  }
+    @ResponseBody
+    @RequestMapping(path = "/{channelId}", method = RequestMethod.DELETE)
+    public ResponseEntity<?> removeChannel(@PathVariable UUID channelId) {
+        System.out.println("ChannelController.removeChannel");
+        return channelService.deleteChannel(channelId);
+    }
 
+    @ResponseBody
+    @RequestMapping(path = "/{channelId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> changeName(
+            @PathVariable UUID channelId,
+            @RequestBody ChannelUpdateRequest request) {
+        System.out.println("ChannelController.changeName");
+        return channelService.update(channelId, request);
+    }
 
-
-  // request, endpoint, (param, body, variable) : OK
-  // service, repository : OK
-  // response : OK
-  // fail response : OK
-  @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
-  public ResponseEntity<?> findChannels(@PathVariable UUID userId) {
-    return channelService.findAllByUserId(userId);
-  }
+    @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
+    public ResponseEntity<?> findChannels(@PathVariable UUID userId) {
+        System.out.println("ChannelController.findChannels");
+        return channelService.findAllByUserId(userId);
+    }
 }

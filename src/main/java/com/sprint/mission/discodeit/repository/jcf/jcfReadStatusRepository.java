@@ -22,7 +22,7 @@ import java.util.*;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
-public class jcfReadStatusRepository implements ReadStatusRepository{
+public class jcfReadStatusRepository implements ReadStatusRepository {
 
     Map<UUID, ReadStatus> data = new HashMap<>();
 
@@ -31,7 +31,7 @@ public class jcfReadStatusRepository implements ReadStatusRepository{
     public void updateUpdatedTime(UUID readStatusId, Instant newTime) {
         ReadStatus readStatus = data.get(readStatusId);
         if (readStatus != null) {
-            readStatus.setUpdatedAt(newTime);
+            readStatus.setLastReadAt(newTime);
         }
     }
 
@@ -57,8 +57,8 @@ public class jcfReadStatusRepository implements ReadStatusRepository{
     }
 
     @Override
-    public ReadStatus createByUserId(UUID userId, UUID channelId) {
-        ReadStatus readStatus = new ReadStatus(userId, channelId);
+    public ReadStatus createByUserId(UUID userId, UUID channelId, Instant lastUpdatedAt) {
+        ReadStatus readStatus = new ReadStatus(userId, channelId, lastUpdatedAt);
         data.put(readStatus.getId(), readStatus);
         return readStatus;
     }

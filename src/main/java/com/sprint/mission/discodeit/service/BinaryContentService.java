@@ -24,9 +24,9 @@ public interface BinaryContentService {
 
     BinaryContentCreateResponse create(String fileName, Long size, String contentType, byte[] bytes, String extension);
 
-    ResponseEntity<BinaryContent> find(UUID attachmentId);
+    ResponseEntity<?> find(UUID binaryContentId);
 
-    ResponseEntity<?> findAllByIdIn(BinaryContentFindRequest request);
+    ResponseEntity<?> findAllByIdIn(List<UUID> binaryContentIds);
 
     void delete(UUID attachmentId);
 }

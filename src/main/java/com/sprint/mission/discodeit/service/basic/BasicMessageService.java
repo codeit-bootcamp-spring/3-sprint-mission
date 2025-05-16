@@ -51,7 +51,7 @@ public class BasicMessageService implements MessageService {
     public ResponseEntity<?> findAllByChannelId(UUID channelId) {
         List<Message> messageList = messageRepository.findMessagesByChannelId(channelId);
         if (messageList.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("any message in channel");
+            return ResponseEntity.status(200).body(Collections.EMPTY_LIST);
         }
         List<FoundMessagesResponse> responses = new ArrayList<>();
         for (Message message : messageList) {

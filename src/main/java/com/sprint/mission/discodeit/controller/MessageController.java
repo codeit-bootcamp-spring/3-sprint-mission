@@ -38,8 +38,10 @@ public class MessageController {
     // service, repository : OK
     // response : OK
     // fail response : OK
+
     @GetMapping
     public ResponseEntity<?> findChannelMessages(@RequestParam UUID channelId) {
+        System.out.println("MessageController.findChannelMessages");
         return messageService.findAllByChannelId(channelId);
     }
 
@@ -54,8 +56,6 @@ public class MessageController {
             @RequestPart("messageCreateRequest") MessageCreateRequest request,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachmentFiles
     ) throws IOException {
-
-        System.out.println(attachmentFiles.get(0).getSize());
         if (attachmentFiles.get(0).getSize() == 0) {
             return messageService.createMessage(request);
         }
@@ -67,6 +67,7 @@ public class MessageController {
                     att.getContentType(),
                     att.getBytes()));
         }
+        System.out.println("MessageController.creatMessage");
         return messageService.createMessage(request, attachmentRequests);
     }
 
@@ -76,6 +77,7 @@ public class MessageController {
     // fail response : OK
     @DeleteMapping(path = "/{messageId}")
     public ResponseEntity<?> deleteMessage(@PathVariable UUID messageId) {
+        System.out.println("MessageController.deleteMessage");
         return messageService.deleteMessage(messageId);
     }
 
@@ -87,6 +89,7 @@ public class MessageController {
     public ResponseEntity<?> updateMessage(
             @PathVariable UUID messageId,
             @RequestBody MessageUpdateRequest request) {
+        System.out.println("MessageController.updateMessage");
         return messageService.updateMessage(messageId, request);
     }
 
@@ -98,6 +101,7 @@ public class MessageController {
     // fail response :
     @RequestMapping(path = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createMessage(@RequestBody MessageCreateRequest request) {
+        System.out.println("MessageController.createMessage");
         return messageService.createMessage(request);
     }
 

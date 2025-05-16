@@ -45,8 +45,7 @@ public class JcfBinaryContentRepostory implements BinaryContentRepository {
         if (selectedAttachments.size() == attachmentIds.size()) {
             return selectedAttachments;
         }
-
-        throw new RuntimeException("no attachment matches with id");
+        return Collections.emptyList();
     }
 
     @Override
