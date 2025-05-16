@@ -2,9 +2,9 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
-import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.user.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
@@ -47,7 +47,7 @@ public class UserController {
     // 신규 유저 생성 요청
     @RequestMapping(
             path = "/create"
-//            , method = RequestMethod.POST
+            , method = RequestMethod.POST
             , consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     @ResponseBody
@@ -138,7 +138,7 @@ public class UserController {
     // 유저 상태 정보 수정 요청
     @RequestMapping(
             path = "/updateUserStatus"
-//            , method = RequestMethod.DELETE
+//            , method = RequestMethod.PUT
     )
     @ResponseBody
     public ResponseEntity<UserStatus> updateUserStatus(
