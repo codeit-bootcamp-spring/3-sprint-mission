@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,8 +40,9 @@ public class UserController {
                 .flatMap(this::resolveProfileRequest);
 
         User created = userService.create(request, profileRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        return ResponseEntity.ok().body(created);
     }
+
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<UserResponse> find(@PathVariable("id") UUID id) {
@@ -78,11 +78,12 @@ public class UserController {
             return Optional.empty();
         }
         try {
-            return Optional.of(new BinaryContentCreateRequest(
-                    profile.getOriginalFilename(),
-                    profile.getContentType(),
-                    profile.getBytes()
-            ));
+            return Optional.of(BinaryContentCreateRequest.builder()
+                    .fileName(profile.getOriginalFilename())
+                    .contentType(profile.getContentType())
+                    .bytes(profile.getBytes())
+                    .build()
+            );
         } catch (IOException e) {
             throw new RuntimeException("파일 처리 중 오류 발생", e);
         }
