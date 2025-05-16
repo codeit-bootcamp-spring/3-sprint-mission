@@ -13,7 +13,9 @@ import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,36 +32,26 @@ public class BasicReadStatusService implements ReadStatusService {
     public ReadStatus createReadStatus(ReadStatusCreateRequest request) {
 
         // 유저 존재하지 않으면 예외 발생
-        User findUser = userRepository.findUserById(request.userId());
-        if (findUser == null){
+        Optional<User> findUser = userRepository.findUserById(request.userId());
+        if (findUser.isEmpty()){
             throw new IllegalArgumentException("존재하지 않는 유저입니다.");
         }
 
         // 채널 존재하지 않으면 예외 발생
-        Channel findChannel = channelRepository.findChannelUsingId(request.channelId());
-        if (findChannel == null){
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
+        Channel channel = channelRepository.findChannelUsingId(request.channelId())
+                .orElseThrow(() -> new NoSuchElementException("MessageService: 채널이 존재하지 않습니다."));
+
+        if (readStatusRepository.findUserReadStatus(request.userId()).stream()
+                .anyMatch(readStatus -> readStatus.getChannelId().equals(request.channelId()))) {
+            throw new IllegalArgumentException("이미 존재하는 ReadStatus 입니다. ");
         }
 
-        // User + Channel 조합이 이미 존재하는지 확인
-        List<ReadStatus> alreadyExistsUserId = readStatusRepository.findUserReadStatus(request.userId());
-        boolean alreadyExists = alreadyExistsUserId.stream()
-                .anyMatch(status -> status.getChannelId().equals(request.channelId()));
-
-        if (alreadyExists) {
-            throw new IllegalStateException("이미 존재하는 ReadStatus 입니다.");
-        }
-
+        Instant lastReadAt = request.lastReadAt();
         // 객체 생성
-        ReadStatus readStatus = new ReadStatus(request.userId(), request.channelId());
+        ReadStatus readStatus = new ReadStatus(request.userId(), request.channelId(), request.lastReadAt());
 
         // 저장
-        boolean save = readStatusRepository.saveReadStatus(readStatus);
-        if (!save){
-            throw new IllegalStateException("ReadStatus 저장에 실패했습니다.");
-        }
-
-        return readStatus;
+        return readStatusRepository.saveReadStatus(readStatus);
     }
 
     // id로 readStatus 조회
@@ -88,7 +80,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
     // ReadStatus 업데이트
     @Override
-    public boolean updateReadStatus(ReadStatusUpdateRequest request) {
+    public ReadStatus updateReadStatus(ReadStatusUpdateRequest request) {
         // id로 ReadStatus 조회
         Optional<ReadStatus> result = readStatusRepository.findReadStatusById(request.id());
 
@@ -98,25 +90,19 @@ public class BasicReadStatusService implements ReadStatusService {
 
         ReadStatus readStatus = result.get();
 
-        readStatus.updateUpdatedAt(request.updatedAt());
+        readStatus.updateLastReadAt(request.updatedAt());
 
-        boolean update =  readStatusRepository.updateReadStatus(readStatus);
-        if(!update){
-            throw new IllegalStateException("ReadStatus 업데이트에 실패했습니다.");
-        }
+        readStatusRepository.updateReadStatus(readStatus);
 
-        return update;
+        return readStatus;
     }
 
     // 삭제
     @Override
-    public boolean deleteReadStatus(UUID id) {
-
-        boolean delete = readStatusRepository.deleteReadStatusById(id);
-        if(!delete){
-            throw new IllegalStateException("ReadStatus 삭제에 실패했습니다.");
+    public void deleteReadStatus(UUID id) {
+        if(findReadStatusById(id).isEmpty()){
+            throw new NoSuchElementException("해당하는 ReadStatus가 없습니다. ");
         }
-
-        return delete;
+        readStatusRepository.deleteReadStatusById(id);
     }
 }

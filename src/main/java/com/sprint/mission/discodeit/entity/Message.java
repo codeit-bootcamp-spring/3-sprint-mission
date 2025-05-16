@@ -7,6 +7,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -23,6 +25,7 @@ public class Message implements java.io.Serializable{
     private UUID senderId;
     private String messageContent;
     private LocalDateTime timestamp;
+    private List<UUID> attachedFileIds;
 
 
     public Message() {
@@ -35,8 +38,8 @@ public class Message implements java.io.Serializable{
         this.channelId = channelId;
         this.senderId = senderId;
         this.messageContent = messageContent;
-        this.timestamp = LocalDateTime.now();;
-
+        this.timestamp = LocalDateTime.now();
+        this.attachedFileIds = new ArrayList<>();
     }
 
     public void updateId(UUID messageId) {

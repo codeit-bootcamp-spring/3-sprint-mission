@@ -1,7 +1,11 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
@@ -16,121 +20,151 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
 public class FileUserStatusRepository implements UserStatusRepository {
-    // 파일 저장할 디렉토리
-    private static final String STORAGE_DIR = "user-data-improve/user-status";
+
     private static final Logger logger = Logger.getLogger(FileUserStatusRepository.class.getName());
 
-    // 폴더 생성
-    public FileUserStatusRepository() {
-        try {
-            Files.createDirectories(Paths.get(STORAGE_DIR));
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
+
+    public FileUserStatusRepository(
+            @Value("${discodeit.repository.file-directory:data}") String fileDirectory
+    ) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), fileDirectory, UserStatus.class.getSimpleName());
+        if (Files.notExists(DIRECTORY)) {
+            try {
+                Files.createDirectories(DIRECTORY);
+            } catch (IOException e) {
+                throw new RuntimeException("경로 생성 중 오류 발생 ", e);
+            }
         }
-        catch (IOException e) {
-            throw new RuntimeException("폴더 생성 실패: " + STORAGE_DIR, e);
-        }
+    }
+
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
     }
 
 
     // 유저 상태 저장
     @Override
-    public boolean saveUserStatus(UserStatus userStatus) {
-        Path filePath = Paths.get(STORAGE_DIR, userStatus.getUserId().toString());
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
+    public UserStatus saveUserStatus(UserStatus userStatus) {
+        Path path = resolvePath(userStatus.getId());
+        
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
             oos.writeObject(userStatus);
-            return true;
         }
         catch (FileNotFoundException e) {
             // 파일 생성 실패 시 메시지
-            logger.log(Level.SEVERE, filePath + " 경로에 파일을 생성할 수 없습니다 ", e);
-            return false;
+            throw new RuntimeException(path + " 경로에 파일을 생성할 수 없습니다 ", e);
         }
         catch (IOException e) {
             // 그 외 IO 예외
-            logger.log(Level.SEVERE, " 접속 상태 파일 저장 중 오류 발생 ", e);
-            return false;
+            throw new RuntimeException(" 접속 상태 파일 저장 중 오류 발생 ", e);
         }
+        return userStatus;
     }
 
+    @Override
+    public Optional<UserStatus> findById(UUID id){
+        Path path = resolvePath(id);
+
+        if (!Files.exists(path)){
+            return Optional.empty();
+        }
+
+        try (
+                FileInputStream fis = new FileInputStream(path.toFile());
+                ObjectInputStream ois = new ObjectInputStream(fis)
+        ) {
+            return Optional.of((UserStatus) ois.readObject());
+
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("id로 userStatus 조회 중 오류 ", e);
+        }
+    }
 
     // 특정 유저의 상태 조회
     @Override
     public Optional<UserStatus> findStatus(UUID userId) {
-        Path filePath = Paths.get(STORAGE_DIR, userId.toString());
 
-        if (!Files.exists(filePath)) {
-            return Optional.empty();
+        Optional<UserStatus> result = findAllStatus().stream()
+                .filter(userStatus -> userStatus.getUserId().equals(userId))
+                .findFirst();
+
+        if (result.isEmpty()) {
+            System.out.println("해당 유저의 상태 정보가 존재하지 않습니다: " + userId);
         }
 
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath.toFile()))){
-            UserStatus userStatus = (UserStatus) ois.readObject();
-            return Optional.of(userStatus);
-        }
-        catch (IOException | ClassNotFoundException e) {
-            logger.log(Level.SEVERE, "UserStatus 읽기 실패", e);
-            return Optional.empty();
-        }
+        return result;
     }
 
     // 등록된 전체 상태 조회
     @Override
     public List<UserStatus> findAllStatus() {
-        List<UserStatus> userStatusList = new ArrayList<>();
-        try (Stream<Path> paths = Files.list(Paths.get(STORAGE_DIR))){
-            paths.filter(Files::isRegularFile)
-                    .forEach(path -> {
-                        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
-                            UserStatus userStatus = (UserStatus) ois.readObject();
-                            userStatusList.add(userStatus);
-                        } catch (IOException | ClassNotFoundException e) {
-                            logger.log(Level.SEVERE, "UserStatus 파일 읽기 실패: " + path.getFileName(), e);
+
+        try (Stream<Path> paths = Files.list(DIRECTORY)){
+            return paths
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try(
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis);
+                        ){
+                            return (UserStatus) ois.readObject();
                         }
-                    });
+                        catch (IOException | ClassNotFoundException e){
+                            throw new RuntimeException("userStatus 전체 조회 실패 ", e);
+                        }
+
+                    })
+                    .toList();
         }
         catch (IOException e){
-            logger.log(Level.SEVERE, "UserStatus 폴더 읽기 실패: " + STORAGE_DIR, e);
+            throw new RuntimeException(DIRECTORY + " UserStatus 폴더 읽기 실패: ", e);
         }
-
-        return userStatusList;
     }
 
     // 유저 상태 업데이트
     @Override
     public boolean updateUserStatus(UserStatus userStatus) {
-        Path filePath = Paths.get(STORAGE_DIR, userStatus.getUserId().toString());
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
+        Path path = resolvePath(userStatus.getId());
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
             oos.writeObject(userStatus);
         }
         catch (FileNotFoundException e) {
             // 파일 생성 실패 시 메시지
-            logger.log(Level.SEVERE, filePath + " 경로에 파일을 생성할 수 없습니다 ", e);
-            return false;
+            throw new RuntimeException(path + " 경로에 파일을 생성할 수 없습니다 ", e);
         }
         catch (IOException e) {
             // 그 외 IO 예외
-            logger.log(Level.SEVERE, " 채널 파일 저장 중 오류 발생 ", e);
-            return false;
+            throw new RuntimeException("userStatus 업데이트 중 오류 발생 ", e);
         }
         return true;
     }
 
-    // 유저 상태 삭제
+    // 아이디로 삭제
     @Override
-    public boolean deleteUserStatus(UUID userId) {
-        Path filePath = Paths.get(STORAGE_DIR, userId.toString());
-
-        if (!Files.exists(filePath)) {
-            return false;
-        }
-
+    public void deleteById(UUID id) {
+        Path path = resolvePath(id);
         try {
-            return Files.deleteIfExists(filePath);
+            Files.delete(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        catch (IOException e) {
-            logger.log(Level.SEVERE, "UserStatus 삭제 실패", e);
-            return false;
-        }
+    }
 
+    // 유저 아이디로 삭제
+    @Override
+    public void deleteUserStatus(UUID userId) {
+        this.findStatus(userId)
+                .ifPresent(userStatus -> this.deleteById(userStatus.getId()));
     }
 }

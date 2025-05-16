@@ -15,15 +15,16 @@ public class BinaryContent implements Serializable {
 
     private final UUID id;
     private final Instant createdAt;
-    private final UUID userId;
-    private final UUID messageId;
-    private final byte[] data;
 
-    public BinaryContent(UUID userId, UUID messageId, byte[] data) {
+    private String fileName;
+    private String contentType;
+    private byte[] data;
+
+    public BinaryContent(String fileName, String contentType, byte[] data) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.userId = userId;
-        this.messageId = messageId;
+        this.fileName = fileName;
+        this.contentType = contentType;
         this.data = data;
     }
 
@@ -34,9 +35,9 @@ public class BinaryContent implements Serializable {
 
         return "BinaryContent{" +
                 "id=" + id +
-                ", createdAt=" + formatter.format(createdAt) +
-                ", userId=" + userId +
-                ", messageId=" + messageId +
+                ", createdAt=" + createdAt +
+                ", fileName='" + fileName + '\'' +
+                ", contentType='" + contentType + '\'' +
                 ", data=" + Arrays.toString(data) +
                 '}';
     }

@@ -1,11 +1,17 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.*;
@@ -13,172 +19,109 @@ import java.util.stream.Collectors;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
+
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
 public class FileChannelRepository implements ChannelRepository {
 
-    private static final String FILE_PATH = "channelRepository.ser";
-
     private static final Logger logger = Logger.getLogger(FileChannelRepository.class.getName());
 
-    private final Map<UUID, Channel> channels = loadChannelFromFile();
+//    private final Map<UUID, Channel> channels = loadChannelFromFile();
+
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
 
 
-    // 채널 정보를 파일로 저장
-    private boolean saveChannelToFile(Map<UUID, Channel> channels) {
-
-        try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH);
-             ObjectOutputStream oos = new ObjectOutputStream(fileOut)) {
-
-            oos.writeObject(channels);
-            return true;
-
-        } catch (FileNotFoundException e) {
-            // 파일 생성 실패 시 메시지
-            logger.log(Level.SEVERE, FILE_PATH + "경로에 파일을 생성할 수 없습니다: ", e);
-            return false;
-        } catch (IOException e) {
-            // 그 외 IO 예외
-            logger.log(Level.SEVERE, "채널 파일 저장 중 오류 발생", e);
-            return false;
+    public FileChannelRepository(
+            @Value("${discodeit.repository.file-directory:data}") String fileDirectory
+    ) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), fileDirectory, Channel.class.getSimpleName());
+        if (Files.notExists(DIRECTORY)) {
+            try {
+                Files.createDirectories(DIRECTORY);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
-    // 채널 파일 읽어오기
-    private Map<UUID, Channel> loadChannelFromFile() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_PATH))) {
-            return (Map<UUID, Channel>) ois.readObject();
-        } catch (FileNotFoundException e) {
-            return new LinkedHashMap<>();
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("채널 파일 로드 중 오류 발생: " + e.getMessage());
-            e.printStackTrace();
-            return new LinkedHashMap<>();
-        }
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
     }
 
     // 채널 저장
     @Override
-    public boolean saveChannel(Channel channel) {
-        channels.put(channel.getId(), channel);
-        addUserToChannel(channel.getId(), channel.getAdminId());
-
-        // 채널 저장 상태 확인
-        boolean success = saveChannelToFile(channels);
-        if (!success) {
-            logger.warning("채널 정보 저장에 실패했습니다: " + channel.getId());
+    public Channel saveChannel(Channel channel) {
+        Path path = resolvePath(channel.getId());
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
+            oos.writeObject(channel);
+        } catch (IOException e) {
+            throw new RuntimeException("FileChannelRepository: 채널 파일 저장 중 오류 발생 ", e);
         }
-        return true;
-    }
-
-    // 채널에 참여자 추가
-    @Override
-    public boolean addUserToChannel(UUID channelId, UUID userId) {
-        Channel channel = findChannelUsingId(channelId);
-        channel.getJoiningUsers().add(userId);
-        channel.updateUpdatedAt(Instant.now());
-
-        // 채널 저장 상태 확인
-        boolean success = saveChannelToFile(channels);
-        if (!success) {
-            logger.warning("채널 정보 저장에 실패했습니다: " + channel.getId());
-        }
-        return true;
+        return channel;
     }
 
     // 전체 채널 조회
     @Override
     public List<Channel> findAllChannels() {
-        return new ArrayList<>(channels.values());
+        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+            return paths
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (Channel) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException("FileChannelRepository: 채널 파일 읽기 중 오류 발생 ", e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException("FileChannelRepository: 채널 폴더 읽기 중 오류 발생 ", e);
+        }
     }
 
     // 이름으로 채널 조회
     @Override
-    public List<Channel> findChannelUsingName(String channelName) {
-        return channels.values().stream()
+    public Optional<Channel> findChannelUsingName(String channelName) {
+        return findAllChannels().stream()
                 .filter(channel -> channel.getChannelName().equalsIgnoreCase(channelName))
-                .collect(Collectors.toList());
+                .findFirst();
     }
 
     // 아이디로 채널 조회
     @Override
-    public Channel findChannelUsingId(UUID channelId) {
-        return channels.get(channelId);
-    }
-
-    // 채널 이름 수정
-    @Override
-    public boolean updateChannelName(UUID channelId, String newChannelName) {
-        Channel channel = findChannelUsingId(channelId);
-        channel.updateUpdatedAt(Instant.now());
-
-        // 채널 저장 상태 확인
-        boolean success = saveChannelToFile(channels);
-        if (!success) {
-            logger.warning("채널 정보 저장에 실패했습니다: " + channel.getId());
+    public Optional<Channel> findChannelUsingId(UUID channelId) {
+        Path path = resolvePath(channelId);
+        if (Files.exists(path)) {
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                Channel channel = (Channel) ois.readObject();
+                return Optional.of(channel);
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException("FileChannelRepository: 아이디로 채널 조회 중 오류 발생 ", e);
+            }
         }
-        return true;
-    }
-
-    // 채널 공개상태로 수정
-    @Override
-    public boolean channelUnLocking(UUID channelId) {
-        Channel channel = findChannelUsingId(channelId);
-        channel.updateIsLock(false);
-        channel.updatePassword("");
-        channel.updateUpdatedAt(Instant.now());
-
-        // 채널 저장 상태 확인
-        boolean success = saveChannelToFile(channels);
-        if (!success) {
-            logger.warning("채널 정보 저장에 실패했습니다: " + channel.getId());
-        }
-        return true;
-    }
-
-    // 채널 비공개상태로 수정
-    @Override
-    public boolean channelLocking(UUID channelId, String password) {
-        Channel channel = findChannelUsingId(channelId);
-        channel.updateIsLock(true);
-        channel.updatePassword(password);
-        channel.updateUpdatedAt(Instant.now());
-
-        // 채널 저장 상태 확인
-        boolean success = saveChannelToFile(channels);
-        if (!success) {
-            logger.warning("채널 정보 저장에 실패했습니다: " + channel.getId());
-        }
-        return true;
+        return Optional.empty();
     }
 
     // 채널 삭제
     @Override
-    public boolean deleteChannel(UUID channelId) {
-        Channel channel = findChannelUsingId(channelId);
-        channels.remove(channelId);
-
-        // 채널 저장 상태 확인
-        boolean success = saveChannelToFile(channels);
-        if (!success) {
-            logger.warning("채널 정보 저장에 실패했습니다: " + channel.getId());
+    public void deleteChannel(UUID channelId) {
+        Path path = resolvePath(channelId);
+        try {
+            Files.delete(path);
+        } catch (IOException e) {
+            throw new RuntimeException("FileChannelRepository: 채널 삭제 중 예외 발생 ", e);
         }
-        return true;
     }
-
-    // 채널의 참여자 삭제
-    @Override
-    public boolean deleteUserInChannel(UUID channelId, UUID userId) {
-        Channel channel = findChannelUsingId(channelId);
-        channel.getJoiningUsers().remove(userId);
-        channel.updateUpdatedAt(Instant.now());
-
-        // 채널 저장 상태 확인
-        boolean success = saveChannelToFile(channels);
-        if (!success) {
-            logger.warning("채널 정보 저장에 실패했습니다: " + channel.getId());
-        }
-        return true;
-    }
-
 }

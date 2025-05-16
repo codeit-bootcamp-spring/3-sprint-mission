@@ -2,30 +2,25 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 public class JCFMessageRepository implements MessageRepository {
 
     private final Map<UUID, Message> messages = new LinkedHashMap<>();
 
     // 메시지 생성
     @Override
-    public boolean createMessage(Message message) {
+    public Message saveMessage(Message message) {
         messages.put(message.getMessageId(), message);
 
-        return true;
-    }
-
-    // 메시지 내용 수정
-    @Override
-    public boolean updateMessage(UUID messageId, String newMessageContent) {
-        Message message = findMessageById(messageId);
-        message.updateMessageContent(newMessageContent);
-        message.updateUpdatedAt(System.currentTimeMillis());
-
-        return true;
+        return message;
     }
 
     // 전체 메시지 조회
@@ -36,8 +31,8 @@ public class JCFMessageRepository implements MessageRepository {
 
     // 아이디로 메시지 조회
     @Override
-    public Message findMessageById(UUID messageId) {
-        return messages.get(messageId);
+    public Optional<Message> findMessageById(UUID messageId) {
+        return Optional.of(messages.get(messageId));
     }
 
     // 특정 채널의 메시지 조회
@@ -58,8 +53,7 @@ public class JCFMessageRepository implements MessageRepository {
 
     // 메시지 삭제
     @Override
-    public boolean deletedMessage(UUID messageId) {
+    public void deletedMessage(UUID messageId) {
         messages.remove(messageId);
-        return true;
     }
 }

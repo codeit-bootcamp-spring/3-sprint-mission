@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import lombok.Getter;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -15,13 +16,13 @@ public class UserStatus implements Serializable {
     private Instant createdAt;
     private Instant updatedAt;
     private UUID userId;
-    private String status;
+    private OnlineStatus status;
 
     public UserStatus() {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
-        this.status = "Online";
+        this.status = OnlineStatus.ONLINE;
     }
 
     public UserStatus(UUID userId) {
@@ -29,7 +30,7 @@ public class UserStatus implements Serializable {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.userId = userId;
-        this.status = "Online";
+        this.status = OnlineStatus.ONLINE;
     }
 
     public void updateId(UUID id) {
@@ -48,8 +49,14 @@ public class UserStatus implements Serializable {
         this.userId = userId;
     }
 
-    public void updateStatus(String status) {
+    public void updateStatus(OnlineStatus status) {
         this.status = status;
+    }
+
+    public Boolean isOnline() {
+        Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
+
+        return updatedAt.isAfter(instantFiveMinutesAgo);
     }
 
     @Override

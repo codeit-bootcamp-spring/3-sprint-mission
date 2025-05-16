@@ -16,6 +16,7 @@ public class ReadStatus implements Serializable {
     private Instant updatedAt;
     private UUID userId;
     private UUID channelId;
+    private Instant lastReadAt;
 
     public ReadStatus() {
         this.id = UUID.randomUUID();
@@ -23,12 +24,13 @@ public class ReadStatus implements Serializable {
         this.updatedAt = Instant.now();
     }
 
-    public ReadStatus(UUID userId, UUID channelId) {
+    public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
         this.id = UUID.randomUUID();;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.userId = userId;
         this.channelId = channelId;
+        this.lastReadAt = lastReadAt;
     }
 
     public void updateId(UUID id) {
@@ -51,6 +53,10 @@ public class ReadStatus implements Serializable {
         this.channelId = channelId;
     }
 
+    public void updateLastReadAt(Instant lastReadAt) {
+        this.lastReadAt = lastReadAt;
+    }
+
     @Override
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -62,6 +68,7 @@ public class ReadStatus implements Serializable {
                 ", updatedAt=" + formatter.format(updatedAt) +
                 ", userId=" + userId +
                 ", channelId=" + channelId +
+                ", lastReadAt=" + formatter.format(updatedAt) +
                 '}';
     }
 

@@ -2,125 +2,185 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.service.file.FileUserService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
+
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
 public class FileMessageRepository implements MessageRepository {
 
-    private static final String FILE_PATH = "messageRepository.ser";
-
     private static final Logger logger = Logger.getLogger(FileMessageRepository.class.getName());
 
-    private final Map<UUID, Message> messages = new LinkedHashMap<>();
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
 
 
-    // 메시지 정보를 파일로 저장
-    private boolean saveMessageToFile(Map<UUID, Message> messages) {
-
-        try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH);
-             ObjectOutputStream oos = new ObjectOutputStream(fileOut)) {
-
-            oos.writeObject(messages);
-            return true;
-
-        } catch (FileNotFoundException e) {
-            // 파일 생성 실패 시 메시지
-            logger.log(Level.SEVERE, FILE_PATH + "경로에 파일을 생성할 수 없습니다: ", e);
-            return false;
-        } catch (IOException e) {
-            // 그 외 IO 예외
-            logger.log(Level.SEVERE, "메시지 파일 저장 중 오류 발생", e);
-            return false;
+    public FileMessageRepository(
+            @Value("${discodeit.repository.file-directory:data}") String fileDirectory
+    ) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), fileDirectory, Message.class.getSimpleName());
+        if (Files.notExists(DIRECTORY)) {
+            try {
+                Files.createDirectories(DIRECTORY);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
-
     }
 
-    // 메시지 파일 읽어오기
-    private Map<UUID, Message> loadMessageFromFile() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_PATH))) {
-            return (Map<UUID, Message>) ois.readObject();
-        } catch (FileNotFoundException e) {
-            return new LinkedHashMap<>();
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("메시지 파일 로드 중 오류 발생: " + e.getMessage());
-            e.printStackTrace();
-            return new LinkedHashMap<>();
-        }
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
     }
 
     // 메시지 생성
     @Override
-    public boolean createMessage(Message message) {
-        messages.put(message.getMessageId(), message);
-
-        // 메시지 저장 상태 확인
-        boolean success = saveMessageToFile(messages);
-        if (!success) {
-            logger.warning("메시지 저장에 실패했습니다: " + message.getMessageId());
+    public Message saveMessage(Message message) {
+        Path path = resolvePath(message.getMessageId());
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
+            oos.writeObject(message);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return success;
+        return message;
     }
 
-    // 메시지 내용 수정
-    @Override
-    public boolean updateMessage(UUID messageId, String newMessageContent) {
-        Message message = findMessageById(messageId);
-        message.updateMessageContent(newMessageContent);
-        message.updateUpdatedAt(Instant.now());
+//    // 메시지에 첨부파일 id 연결
+//    public boolean addAttachedFileId(UUID messageId, UUID attachedFileId) {
+//        Optional<Message> message = findMessageById(messageId);
+//
+//        message.getAttachedFileIds().add(attachedFileId);
+//
+//        boolean success = saveMessageToFile(messages);
+//
+//        if (!success) {
+//            logger.warning("메시지 정보 저장에 실패했습니다: " + message.getMessageId());
+//        }
+//        return true;
+//    }
 
-        boolean success = saveMessageToFile(messages);
-        if (!success) {
-            logger.warning("메시지 저장에 실패했습니다: " + message.getMessageId());
-        }
-        return success;
-    }
+//    // 메시지 내용 수정
+//    @Override
+//    public boolean updateMessage(UUID messageId, String newMessageContent) {
+//        Message message = findMessageById(messageId);
+//        message.updateMessageContent(newMessageContent);
+//        message.updateUpdatedAt(Instant.now());
+//
+//        boolean success = saveMessageToFile(messages);
+//        if (!success) {
+//            logger.warning("메시지 저장에 실패했습니다: " + message.getMessageId());
+//        }
+//        return success;
+//    }
 
     // 전체 메시지 조회
     @Override
     public List<Message> findAllMessage() {
-        return new ArrayList<>(messages.values());
+        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+            return paths
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (Message) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException("FileMessageRepository: 메시지 파일 읽기 중 오류 발생 ", e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException("FileMessageRepository: 메시지 폴더 읽기 중 오류 발생 ", e);
+        }
     }
 
     // 아이디로 메시지 조회
     @Override
-    public Message findMessageById(UUID messageId) {
-        return messages.get(messageId);
+    public Optional<Message> findMessageById(UUID messageId) {
+        Path path = resolvePath(messageId);
+        if (Files.exists(path)) {
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                Message message = (Message) ois.readObject();
+                return Optional.of(message);
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException("FileMessageRepository: 메시지 파일 읽기 중 오류 발생 ", e);
+            }
+        }
+        return Optional.empty();
     }
 
     // 특정 채널의 메시지 조회
     @Override
     public List<Message> findMessageByChannel(UUID channelId) {
-        return messages.values().stream()
-                .filter(message -> message.getChannelId().equals(channelId))
-                .collect(Collectors.toList());
+        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+            return paths
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (Message) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException("FileMessageRepository: 메시지 파일 읽기 중 오류 발생 ", e);
+                        }
+                    })
+                    .filter(message -> message.getChannelId().equals(channelId))
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException("FileMessageRepository: 메시지 폴더 읽기 중 오류 발생 ", e);
+        }
     }
 
     // 특정 유저의 메시지 조회
     @Override
     public List<Message> userMessage(UUID senderId) {
-        return  messages.values().stream()
-                .filter(message -> message.getSenderId().equals(senderId))
-                .collect(Collectors.toList());
+        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+            return paths
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (Message) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException("FileMessageRepository: 메시지 파일 읽기 중 오류 발생 ", e);
+                        }
+                    })
+                    .filter(message -> message.getSenderId().equals(senderId))
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException("FileMessageRepository: 메시지 폴더 읽기 중 오류 발생 ", e);
+        }
     }
 
     // 메시지 삭제
     @Override
-    public boolean deletedMessage(UUID messageId) {
-        messages.remove(messageId);
-
-        boolean success = saveMessageToFile(messages);
-        if (!success) {
-            logger.warning("메시지 저장에 실패했습니다: " + messages.get(messageId).getMessageId());
+    public void deletedMessage(UUID messageId) {
+        Path path = resolvePath(messageId);
+        try {
+            Files.delete(path);
+        } catch (IOException e) {
+            throw new RuntimeException("FileMessageRepository: 메시지 삭제 중 오류 발생 ", e);
         }
-        return success;
     }
 }

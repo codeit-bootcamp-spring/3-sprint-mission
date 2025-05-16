@@ -7,5 +7,7 @@ import java.util.UUID;
  */
 
 public record ProfileImageCreateRequest(
-        byte[] data
+        String fileName,
+        String contentType,
+        byte[] bytes
 ) { }

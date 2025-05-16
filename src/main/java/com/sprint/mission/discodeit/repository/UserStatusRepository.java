@@ -9,18 +9,24 @@ import java.util.UUID;
 public interface UserStatusRepository {
 
     // 유저가 로그인 하면 접속 시간 저장
-    boolean saveUserStatus(UserStatus userStatus);
+    UserStatus saveUserStatus(UserStatus userStatus);
 
     // 유저 상태 조회
     Optional<UserStatus> findStatus(UUID userId);
 
+    // 아이디로 조회
+    Optional<UserStatus> findById(UUID id);
+
     // 상태 전체 조회
     List<UserStatus> findAllStatus();
 
-    // 유저 상태 업데이트 (30초마다?)
+    // 유저 상태 업데이트
     boolean updateUserStatus(UserStatus userStatus);
 
-    // 유저를 오프라인 상태로 (활동 중인 유저에서 삭제)
-    boolean deleteUserStatus(UUID userId);
+    // 아이디로 삭제
+    void deleteById(UUID userId);
+
+    // 유저 아이디로 삭제
+    void deleteUserStatus(UUID userId);
 
 }

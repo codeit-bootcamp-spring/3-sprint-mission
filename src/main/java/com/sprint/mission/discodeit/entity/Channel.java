@@ -22,14 +22,14 @@ public class Channel implements java.io.Serializable{
     private Instant updatedAt;
     private String channelName;
     private UUID adminId;
-    private boolean lock;
+    private ChannelType lock;
     private String password;
     private List<UUID> joiningUsers;
 
     public Channel() {
     }
 
-    public Channel(String channelName, UUID adminId, boolean lock, String password) {
+    public Channel(String channelName, UUID adminId, ChannelType lock, String password) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
@@ -60,7 +60,7 @@ public class Channel implements java.io.Serializable{
         this.channelName = name;
     }
 
-    public void updateIsLock(boolean lock) {
+    public void updateIsLock(ChannelType lock) {
         this.lock = lock;
     }
 

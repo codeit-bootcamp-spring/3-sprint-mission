@@ -11,10 +11,7 @@ import java.util.UUID;
 public interface ReadStatusRepository {
 
     // 읽음상태 저장
-    boolean saveReadStatus(ReadStatus readStatus);
-
-    // 유저 별 조회
-    Optional<ReadStatus> findReadStatusByUserId(UUID userId, UUID channelId);
+    ReadStatus saveReadStatus(ReadStatus readStatus);
 
     // id로 조회
     Optional<ReadStatus> findReadStatusById(UUID id);
@@ -26,8 +23,11 @@ public interface ReadStatusRepository {
     List<ReadStatus> findReadStatusByChannelId(UUID channelId);
 
     // 수정
-    boolean updateReadStatus(ReadStatus readStatus);
+    void updateReadStatus(ReadStatus readStatus);
 
     // 읽은 메시지 취소 -> 다 읽지 않음으로
-    boolean deleteReadStatusById(UUID id);
+    void deleteReadStatusById(UUID id);
+
+    // 채널 아이디로 삭제
+    void deleteByChannelId(UUID channelId);
 }
