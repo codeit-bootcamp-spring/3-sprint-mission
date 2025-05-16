@@ -28,9 +28,7 @@ dependencies {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
     }
     implementation 'org.mockito:mockito-core'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
     // Log4j2
     implementation 'org.apache.logging.log4j:log4j-api'
     implementation 'org.apache.logging.log4j:log4j-core'
@@ -38,6 +36,9 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-layout-template-json'
     // Tomcat log
     implementation 'org.apache.logging.log4j:log4j-jul'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     // 테스트
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
