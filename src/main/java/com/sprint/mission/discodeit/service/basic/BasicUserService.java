@@ -33,13 +33,11 @@ public class BasicUserService implements UserService {
 
   @Override
   public User create(UserRequestDTO userRequestDTO, BinaryContentDTO binaryContentDTO) {
-    if (isDuplicateName(userRequestDTO.name())) {
-      throw new DuplicateNameException(userRequestDTO.name());
-    }
+    userRepository.findByName(userRequestDTO.name())
+        .ifPresent(user -> new DuplicateNameException(userRequestDTO.name()));
 
-    if (isDuplicateEmail(userRequestDTO.email())) {
-      throw new DuplicateEmailException(userRequestDTO.email());
-    }
+    userRepository.findByEmail(userRequestDTO.email())
+        .ifPresent(user -> new DuplicateEmailException(userRequestDTO.email()));
 
     User user = UserRequestDTO.toEntity(userRequestDTO);
 
@@ -187,14 +185,6 @@ public class BasicUserService implements UserService {
     // 변경사항 적용
     userRepository.save(user1);
     userRepository.save(user2);
-  }
-
-  private boolean isDuplicateName(String name) {
-    return userRepository.findByName(name).isPresent();
-  }
-
-  private boolean isDuplicateEmail(String email) {
-    return userRepository.findByEmail(email).isPresent();
   }
 
   private User findUser(UUID id) {
