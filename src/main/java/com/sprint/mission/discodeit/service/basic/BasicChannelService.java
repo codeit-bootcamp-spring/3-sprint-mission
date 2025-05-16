@@ -123,8 +123,8 @@ public class BasicChannelService implements ChannelService {
 
 
     @Override
-    public Channel update(ChannelUpdateRequest request) {
-        Channel channel = channelRepository.findById(request.id())
+    public Channel update(UUID id, ChannelUpdateRequest request) {
+        Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 채널은 없습니다."));
 
         if (request.type().equals(ChannelType.PRIVATE)) {
