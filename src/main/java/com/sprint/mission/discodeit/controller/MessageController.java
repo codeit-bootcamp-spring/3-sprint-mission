@@ -29,17 +29,35 @@ import java.util.UUID;
  * 2025. 5. 11.        doungukkim       최초 생성
  */
 @Controller
-@RequestMapping("api/message/*")
+@RequestMapping("api/messages")
 @RequiredArgsConstructor
 public class MessageController {
     private final MessageService messageService;
 
+    // request, endpoint, (param, body, variable) : OK
+    // service, repository : OK
+    // response : OK
+    // fail response : OK
+    @ResponseBody
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity<?> findChannelMessages(@RequestParam UUID channelId) {
+        return messageService.findAllByChannelId(channelId);
+    }
+
+    // request, endpoint, (param, body, variable) :
+    // service, repository :
+    // response :
+    // fail response :
     @ResponseBody
     @RequestMapping(path = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createMessage(@RequestBody MessageCreateRequest request) {
         return messageService.createMessage(request);
     }
 
+    // request, endpoint, (param, body, variable) :
+    // service, repository :
+    // response :
+    // fail response :
     @ResponseBody
     @RequestMapping(path = "/create-attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createAttachment(
@@ -67,11 +85,4 @@ public class MessageController {
     public ResponseEntity<?> updateMessage(@RequestParam UUID messageId) {
         return messageService.deleteMessage(messageId);
     }
-
-    @ResponseBody
-    @RequestMapping(path = "/find-channel-messages")
-    public ResponseEntity<?> findChannelMessages(@RequestParam UUID channelId) {
-        return messageService.findAllByChannelId(channelId);
-    }
-
 }

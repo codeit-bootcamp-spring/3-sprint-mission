@@ -33,7 +33,7 @@ public interface MessageService {
     // not required
     List<Message> findAllMessages();
 
-    ResponseEntity<List<Message>> findAllByChannelId(UUID channelId);
+    ResponseEntity<?> findAllByChannelId(UUID channelId);
 
     ResponseEntity<?> updateMessage(MessageUpdateRequest request);
 

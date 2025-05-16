@@ -65,9 +65,9 @@ public class ChannelController {
   }
 
 
-  // message 생성 가능하면 다시 테스트
+
   // request, endpoint, (param, body, variable) : OK
-  // service, repository :
+  // service, repository : OK
   // response : OK
   // fail response : OK
   @RequestMapping(value = "/{userId}", method = RequestMethod.GET)

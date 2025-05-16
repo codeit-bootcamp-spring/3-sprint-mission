@@ -37,7 +37,7 @@ import java.util.*;
 @Primary
 @Service("basicMessageService")
 @RequiredArgsConstructor
-public class BasicMessageService implements MessageService{
+public class BasicMessageService implements MessageService {
     private static final String ATTACHMENT_PATH = "img/attachments";
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
@@ -47,20 +47,31 @@ public class BasicMessageService implements MessageService{
 
 
     @Override
-    public ResponseEntity<List<Message>> findAllByChannelId(UUID channelId) {
+    public ResponseEntity<?> findAllByChannelId(UUID channelId) {
         List<Message> messageList = Optional.ofNullable(messageRepository.findMessagesByChannelId(channelId)).orElse(Collections.emptyList());
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(messageList);
+        List<FoundMessagesResponse> responses = new ArrayList<>();
+        for (Message message : messageList) {
+            responses.add(new FoundMessagesResponse(
+                    message.getId(),
+                    message.getCreatedAt(),
+                    message.getUpdatedAt(),
+                    message.getContent(),
+                    message.getChannelId(),
+                    message.getSenderId(),
+                    message.getAttachmentIds()
+            ));
+        }
 
+        return ResponseEntity
+                .status(200)
+                .body(responses);
     }
 
     // binary content
     @Override
     public ResponseEntity<?> createMessage(
             MessageAttachmentsCreateRequest request,
-            List<BinaryContentCreateRequest> binaryContentRequests)
-    {
+            List<BinaryContentCreateRequest> binaryContentRequests) {
         Optional.ofNullable(channelRepository.findChannelById(request.channelId())).orElseThrow(() -> new IllegalStateException("채널 없음: BasicMessageService.createMessage"));
         Optional.ofNullable(userRepository.findUserById(request.senderId())).orElseThrow(() -> new IllegalStateException("유저 없음: BasicMessageService.createMessage"));
         // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
@@ -139,6 +150,7 @@ public class BasicMessageService implements MessageService{
         return Optional.ofNullable(messageRepository.findMessageById(messageId))
                 .orElseThrow(() -> new IllegalStateException("no message in DB: BasicMessageService.findMessageById"));
     }
+
     // not required
     @Override
     public List<Message> findAllMessages() {
@@ -148,7 +160,7 @@ public class BasicMessageService implements MessageService{
 
     @Override
     public ResponseEntity<?> updateMessage(MessageUpdateRequest request) {
-        messageRepository.updateMessageById(request.messageId(),request.content());
+        messageRepository.updateMessageById(request.messageId(), request.content());
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Map.of("message", "message updated"));

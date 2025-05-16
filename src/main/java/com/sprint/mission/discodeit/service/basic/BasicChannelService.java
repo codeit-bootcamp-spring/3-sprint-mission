@@ -94,7 +94,7 @@ public class BasicChannelService implements ChannelService {
 
         for (Channel channel : allChannels) {
             if (channel.getType().equals(ChannelType.PUBLIC)) {
-                List<UUID> participantIds = new ArrayList<>();
+                Set<UUID> participantIds = new HashSet<>();
                 Instant lastMessageAt = messageList.stream()
                         .filter(message -> message.getChannelId().equals(channel.getId()))
                         .peek(message -> participantIds.add(message.getSenderId()))
@@ -102,19 +102,12 @@ public class BasicChannelService implements ChannelService {
                         .max(Instant::compareTo)
                         .orElse(null);
 
-//                private final UUID id;
-//                private final ChannelType type;
-//                private final String name;
-//                private final String description;
-//                private List<UUID> participantIds;
-//                private final Instant lastMessageAt;
-
                 ChannelsFindResponse response = new ChannelsFindResponse(
                         channel.getId(),
                         channel.getType(),
                         channel.getName(),
                         channel.getDescription(),
-                        participantIds,
+                        participantIds.stream().toList(),
                         lastMessageAt
                 );
 
