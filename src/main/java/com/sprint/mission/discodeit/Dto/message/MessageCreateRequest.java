@@ -19,12 +19,13 @@ import java.util.UUID;
  */
 
 public record MessageCreateRequest(
-        UUID senderId,
+        String content,
         UUID channelId,
-        String content
+        UUID authorId
 ) {
     public MessageCreateRequest {
-        Objects.requireNonNull(senderId, "no sender in request");
+
+        Objects.requireNonNull(authorId, "no sender in request");
         Objects.requireNonNull(channelId, "no channelId in request");
         Objects.requireNonNull(content, "no content in request");
     }

@@ -6,21 +6,22 @@ import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.message
- * fileName       : MessageAttachmentsCreateResponse
+ * fileName       : UpdateMessageResponse
  * author         : doungukkim
- * date           : 2025. 4. 29.
+ * date           : 2025. 5. 16.
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 29.        doungukkim       최초 생성
+ * 2025. 5. 16.        doungukkim       최초 생성
  */
-public record MessageAttachmentsCreateResponse(
+public record UpdateMessageResponse(
         UUID id,
         Instant createdAt,
         Instant updatedAt,
         String content,
         UUID channelId,
         UUID authorId,
-        List<UUID> attachmentIds) {
+        List<UUID> attachmentIds
+) {
 }

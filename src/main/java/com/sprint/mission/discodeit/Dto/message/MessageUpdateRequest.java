@@ -18,11 +18,9 @@ import java.util.UUID;
  */
 
 public record MessageUpdateRequest(
-        UUID messageId,
-        String content) {
+        String newContent) {
 
     public MessageUpdateRequest {
-        Objects.requireNonNull(messageId, "no messageId in request");
-        Objects.requireNonNull(content, "no Content in request");
+        Objects.requireNonNull(newContent, "no Content in request");
     }
 }

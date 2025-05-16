@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.*;
 
 /**
@@ -48,7 +49,10 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public ResponseEntity<?> findAllByChannelId(UUID channelId) {
-        List<Message> messageList = Optional.ofNullable(messageRepository.findMessagesByChannelId(channelId)).orElse(Collections.emptyList());
+        List<Message> messageList = messageRepository.findMessagesByChannelId(channelId);
+        if (messageList.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("any message in channel");
+        }
         List<FoundMessagesResponse> responses = new ArrayList<>();
         for (Message message : messageList) {
             responses.add(new FoundMessagesResponse(
@@ -70,12 +74,17 @@ public class BasicMessageService implements MessageService {
     // binary content
     @Override
     public ResponseEntity<?> createMessage(
-            MessageAttachmentsCreateRequest request,
+            MessageCreateRequest request,
             List<BinaryContentCreateRequest> binaryContentRequests) {
-        Optional.ofNullable(channelRepository.findChannelById(request.channelId())).orElseThrow(() -> new IllegalStateException("채널 없음: BasicMessageService.createMessage"));
-        Optional.ofNullable(userRepository.findUserById(request.senderId())).orElseThrow(() -> new IllegalStateException("유저 없음: BasicMessageService.createMessage"));
-        // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
 
+        if (channelRepository.findChannelById(request.channelId()) == null) {
+            return ResponseEntity.status(404).body("channel with id " + request.channelId() + " not found");
+        }
+        if (userRepository.findUserById(request.authorId()) == null) {
+            return ResponseEntity.status(404).body("author with id " + request.authorId() + " not found");
+        }
+
+        // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
         List<UUID> attachmentIds = new ArrayList<>();
 
         for (BinaryContentCreateRequest singleRequest : binaryContentRequests) {
@@ -101,46 +110,58 @@ public class BasicMessageService implements MessageService {
             } catch (IOException e) {
                 throw new RuntimeException("attachment not saved", e);
             }
-
             attachmentIds.add(attachment.getId());
         }
 
-        // 이미지 메세지 생성
+        // 메세지 생성
         Message messageWithAttachments = messageRepository.createMessageWithAttachments(
-                request.senderId(),
+                request.authorId(),
                 request.channelId(),
-                attachmentIds);
+                attachmentIds,
+                request.content()
+        );
 
         // body
         MessageAttachmentsCreateResponse messageAttachmentsCreateResponse = new MessageAttachmentsCreateResponse(
                 messageWithAttachments.getId(),
+                messageWithAttachments.getCreatedAt(),
+                messageWithAttachments.getUpdatedAt(),
+                messageWithAttachments.getContent(),
                 messageWithAttachments.getSenderId(),
                 messageWithAttachments.getChannelId(),
-                messageWithAttachments.getAttachmentIds());
+                messageWithAttachments.getAttachmentIds().stream().toList());
 
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .status(201)
                 .body(messageAttachmentsCreateResponse);
         // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
     }
 
     @Override
-    public ResponseEntity<MessageCreateResponse> createMessage(MessageCreateRequest request) {
-        Channel channel = Optional.ofNullable(channelRepository.findChannelById(request.channelId())).orElseThrow(() -> new IllegalStateException("채널 없음: BasicMessageService.createMessage"));
-        User user = Optional.ofNullable(userRepository.findUserById(request.senderId())).orElseThrow(() -> new IllegalStateException("유저 없음: BasicMessageService.createMessage"));
-        String content = request.content();
+    public ResponseEntity<?> createMessage(MessageCreateRequest request) {
+        Channel channel = channelRepository.findChannelById(request.channelId());
+        User user = userRepository.findUserById(request.authorId());
+        if (channel == null) {
+            return ResponseEntity.status(404).body("channel with id " + request.channelId() + " not found");
+        }
+        if (user == null) {
+            return ResponseEntity.status(404).body("author with id " + request.authorId() + " not found");
+        }
 
-        Message message = messageRepository.createMessageWithContent(user.getId(), channel.getId(), content);
-
-        MessageCreateResponse messageCreateResponse = new MessageCreateResponse(
+        Message message = messageRepository.createMessageWithContent(user.getId(), channel.getId(), request.content());
+        MessageAttachmentsCreateResponse response = new MessageAttachmentsCreateResponse(
                 message.getId(),
-                message.getSenderId(),
+                message.getCreatedAt(),
+                message.getUpdatedAt(),
+                message.getContent(),
                 message.getChannelId(),
-                message.getContent());
+                message.getSenderId(),
+                message.getAttachmentIds().stream().toList()
+        );
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(messageCreateResponse);
+                .body(response);
     }
 
     // not required
@@ -159,11 +180,26 @@ public class BasicMessageService implements MessageService {
 
 
     @Override
-    public ResponseEntity<?> updateMessage(MessageUpdateRequest request) {
-        messageRepository.updateMessageById(request.messageId(), request.content());
+    public ResponseEntity<?> updateMessage(UUID messageId, MessageUpdateRequest request) {
+        if (messageRepository.findMessageById(messageId) == null) {
+            return ResponseEntity.status(404).body("message with id " + messageId + " not found");
+        }
 
+        messageRepository.updateMessageById(messageId, request.newContent());
+
+        Message message = messageRepository.findMessageById(messageId);
+
+        UpdateMessageResponse response = new UpdateMessageResponse(
+                message.getId(),
+                message.getCreatedAt(),
+                message.getUpdatedAt(),
+                message.getContent(),
+                message.getChannelId(),
+                message.getSenderId(),
+                message.getAttachmentIds()
+        );
         return ResponseEntity.status(HttpStatus.OK)
-                .body(Map.of("message", "message updated"));
+                .body(response);
     }
 
 
@@ -171,7 +207,10 @@ public class BasicMessageService implements MessageService {
     public ResponseEntity<?> deleteMessage(UUID messageId) {
         Optional.ofNullable(messageId).orElseThrow(() -> new IllegalArgumentException("require message Id : BasicMessageService.deleteMessage"));
         // attachments 삭제
-        List<UUID> attachmentIds = Optional.ofNullable(messageRepository.findMessageById(messageId).getAttachmentIds()).orElse(null);
+        if (messageRepository.findMessageById(messageId) == null) {
+            return ResponseEntity.status(404).body("Message with id " + messageId + " not found");
+        }
+        List<UUID> attachmentIds = messageRepository.findMessageById(messageId).getAttachmentIds();
         if (attachmentIds != null) {
             for (UUID attachmentId : attachmentIds) {
                 BinaryContent attachment = binaryContentRepository.findById(attachmentId);
@@ -191,9 +230,7 @@ public class BasicMessageService implements MessageService {
                 binaryContentRepository.deleteBinaryContentById(attachmentId); // throw exception if deletion fails
             }
         }
-        messageRepository.deleteMessageById(messageId);  // throw exception
-
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(Map.of("message", "message deleted"));
+        messageRepository.deleteMessageById(messageId);
+        return ResponseEntity.status(204).body("");
     }
 }

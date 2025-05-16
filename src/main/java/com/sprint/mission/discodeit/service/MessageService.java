@@ -24,21 +24,22 @@ import java.util.UUID;
  */
 public interface MessageService {
 
-    ResponseEntity<MessageCreateResponse> createMessage(MessageCreateRequest request);
+    ResponseEntity<?> createMessage(MessageCreateRequest request);
 
-    ResponseEntity<?> createMessage(MessageAttachmentsCreateRequest MessageAttachmentRequest,
+    ResponseEntity<?> createMessage(MessageCreateRequest MessageAttachmentRequest,
                                     List<BinaryContentCreateRequest> binaryContentRequest);
+
     // not required
     Message findMessageById(UUID messageId);
+
     // not required
     List<Message> findAllMessages();
 
     ResponseEntity<?> findAllByChannelId(UUID channelId);
 
-    ResponseEntity<?> updateMessage(MessageUpdateRequest request);
+    ResponseEntity<?> updateMessage(UUID messageId, MessageUpdateRequest request);
 
     ResponseEntity<?> deleteMessage(UUID messageId);
-
 
 
 }
