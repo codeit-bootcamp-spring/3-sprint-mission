@@ -23,7 +23,7 @@ public class ChannelController {
     private final ChannelService channelService;
 
     // 공개 채널 생성
-    @RequestMapping(path = "/create-public"
+    @RequestMapping(path = "/createPublic"
             , method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Channel> createPublic(
@@ -34,7 +34,7 @@ public class ChannelController {
     }
 
     // 비공개 채널 생성
-    @RequestMapping(path = "/create-private"
+    @RequestMapping(path = "/createPrivate"
             , method = RequestMethod.POST
             , consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -50,7 +50,7 @@ public class ChannelController {
             , method = RequestMethod.PUT)
     @ResponseBody
     public ResponseEntity<Channel> update(
-            @RequestParam("id") UUID channelId,
+            @RequestParam("channelId") UUID channelId,
             @RequestBody PublicChannelUpdateRequest publicChannelUpdateRequest
             ) {
         Channel channel = channelService.update(channelId, publicChannelUpdateRequest);
@@ -62,14 +62,14 @@ public class ChannelController {
             , method = RequestMethod.DELETE)
     @ResponseBody
     public ResponseEntity<Void> delete(
-            @RequestParam("id") UUID channelId
+            @RequestParam("channelId") UUID channelId
     ) {
         channelService.delete(channelId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     // 특정 사용자가 볼 수 있는 모든 채널 목록 조회
-    @RequestMapping(path = "/find-all-by-user"
+    @RequestMapping(path = "/findAll"
             , method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<List<ChannelDto>> findAllByUser(

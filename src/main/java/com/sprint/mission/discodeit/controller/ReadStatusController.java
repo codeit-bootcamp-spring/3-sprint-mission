@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/read-status")
+@RequestMapping("/api/readStatus")
 @Controller
 public class ReadStatusController {
     private final ReadStatusService readStatusService;
@@ -35,7 +35,7 @@ public class ReadStatusController {
             , method = RequestMethod.PUT)
     @ResponseBody
     public ResponseEntity<ReadStatus> update(
-            @RequestParam("id") UUID readStatusId,
+            @RequestParam("readStatusId") UUID readStatusId,
             @RequestBody ReadStatusUpdateRequest readStatusUpdateRequest
     ) {
         ReadStatus updated = readStatusService.update(readStatusId, readStatusUpdateRequest);
@@ -43,10 +43,10 @@ public class ReadStatusController {
     }
 
     // 특정 사용자 메시지 수신 정보 조회
-    @RequestMapping(path = "/find-all-by-user"
+    @RequestMapping(path = "/findAllByUserId"
             , method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<List<ReadStatus>> findAllByUser(
+    public ResponseEntity<List<ReadStatus>> findAllByUserId(
             @RequestParam("userId") UUID userId
     ) {
         List<ReadStatus> statuses = readStatusService.findAllByUserId(userId);

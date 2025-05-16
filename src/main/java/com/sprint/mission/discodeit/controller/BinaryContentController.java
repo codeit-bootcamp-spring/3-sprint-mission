@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,20 +25,20 @@ public class BinaryContentController {
             , method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<BinaryContent> findBinaryContent(
-            @RequestParam("binaryContentId")UUID id
+            @RequestParam("binaryContentId")UUID binaryContentId
     ) {
-        BinaryContent content = binaryContentService.find(id);
-        return ResponseEntity.ok(content);
+        BinaryContent content = binaryContentService.find(binaryContentId);
+        return ResponseEntity.status(HttpStatus.OK).body(content);
     }
 
     // 여러 개 파일
-    @RequestMapping(path = "/findAllBinaryContentIds"
+    @RequestMapping(path = "/findAllByIdIn"
             , method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<List<BinaryContent>> findAllBinaryContent(
-            @RequestParam("binaryContentIds") List<UUID> ids
+    public ResponseEntity<List<BinaryContent>> findAllByIdIn(
+            @RequestParam("binaryContentIds") List<UUID> binaryContentIds
     ) {
-        List<BinaryContent> contents = binaryContentService.findAllByIdIn(ids);
-        return ResponseEntity.ok(contents);
+        List<BinaryContent> contents = binaryContentService.findAllByIdIn(binaryContentIds);
+        return ResponseEntity.status(HttpStatus.OK).body(contents);
     }
 }

@@ -23,7 +23,6 @@ public class AuthController {
     @RequestMapping(
             path = "/login"
             , method = RequestMethod.POST
-            , consumes = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
     public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {

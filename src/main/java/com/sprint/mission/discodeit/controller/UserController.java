@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
@@ -67,7 +68,7 @@ public class UserController {
     )
     @ResponseBody
     public ResponseEntity<User> update(
-            @RequestParam("id") UUID userId,
+            @RequestParam("userId") UUID userId,
             @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
@@ -80,7 +81,7 @@ public class UserController {
     @RequestMapping(path = "/delete"
             , method = RequestMethod.DELETE)
     @ResponseBody
-    public ResponseEntity<Void> delete(@RequestParam("id") UUID userId) {
+    public ResponseEntity<Void> delete(@RequestParam("userId") UUID userId) {
         userService.delete(userId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -94,16 +95,16 @@ public class UserController {
     }
 
     // 사용자 온라인 상태 업데이트
-    @RequestMapping(path = "/update-status"
+    @RequestMapping(path = "/updateUserStatusByUserId"
             , method = RequestMethod.PATCH
             , consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<Void> updateStatus(
-            @RequestParam("id") UUID userId,
+    public ResponseEntity<UserStatus> updateUserStatusByUserId(
+            @RequestParam("userId") UUID userId,
             @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
     ) {
-        userStatusService.updateByUserId(userId, userStatusUpdateRequest);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedUserStatus);
     }
 
     // MultipartFile 타입의 요청값을 BinaryContentCreateRequest 타입으로 변경하기 위한 메서드
