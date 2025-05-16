@@ -11,28 +11,24 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.service.jcf
- * fileName       : UserStatusService
- * author         : doungukkim
- * date           : 2025. 4. 28.
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2025. 4. 28.        doungukkim       최초 생성
+ * packageName    : com.sprint.mission.discodeit.service.jcf fileName       : UserStatusService
+ * author         : doungukkim date           : 2025. 4. 28. description    :
+ * =========================================================== DATE              AUTHOR
+ * NOTE ----------------------------------------------------------- 2025. 4. 28.        doungukkim
+ * 최초 생성
  */
 
 public interface UserStatusService {
 
-    UserStatusCreateResponse create(UserStatusCreateRequest request);
+  UserStatusCreateResponse create(UserStatusCreateRequest request);
 
-    UserStatus find(UUID userStatusId);
+  UserStatus find(UUID userStatusId);
 
-    List<UserStatus> findAll();
+  List<UserStatus> findAll();
 
-    void update(UserStatusUpdateRequest request);
+  void update(UserStatusUpdateRequest request);
 
-    ResponseEntity<?> updateByUserId(UUID userId, Instant newTime);  // throw
+  ResponseEntity<?> updateByUserId(UUID userId, Instant newLastActiveAt);  // throw
 
-    void delete(UUID userStatusId);
+  void delete(UUID userStatusId);
 }

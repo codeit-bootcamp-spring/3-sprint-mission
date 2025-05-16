@@ -2,42 +2,34 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.Dto.user.UserCreateResponse;
-import com.sprint.mission.discodeit.Dto.user.UserFindResponse;
-import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadRequest;
-import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadResponse;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.Dto.user.UserEmailOrNameUpdateRequest;
+import com.sprint.mission.discodeit.Dto.userStatus.UserUpdateRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.refactor.service
- * fileName       : UserService2
- * author         : doungukkim
- * date           : 2025. 4. 17.
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2025. 4. 17.        doungukkim       최초 생성
+ * packageName    : com.sprint.mission.discodeit.refactor.service fileName       : UserService2
+ * author         : doungukkim date           : 2025. 4. 17. description    :
+ * =========================================================== DATE              AUTHOR NOTE
+ * ----------------------------------------------------------- 2025. 4. 17.        doungukkim 최초 생성
  */
 public interface UserService {
 
-    ResponseEntity<?> create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profile);
+  ResponseEntity<?> create(UserCreateRequest userCreateRequest,
+      Optional<BinaryContentCreateRequest> profile);
 
-    ResponseEntity<?> findUserById(UUID userId);
+  ResponseEntity<?> findUserById(UUID userId);
 
-    ResponseEntity<?> findAllUsers();
+  ResponseEntity<?> findAllUsers();
 
-    ResponseEntity<?> updateImage(ProfileUploadRequest request, MultipartFile file);
+  ResponseEntity<?> updateImage(UUID userId, UserEmailOrNameUpdateRequest request,
+      MultipartFile file);
 
-    // not required
-    ResponseEntity<?> updateUser(UUID userId, String name);
+  // not required
+  ResponseEntity<?> updateUser(UUID userId, String name);
 
-    ResponseEntity<?> deleteUser(UUID userId);
+  ResponseEntity<?> deleteUser(UUID userId);
 }

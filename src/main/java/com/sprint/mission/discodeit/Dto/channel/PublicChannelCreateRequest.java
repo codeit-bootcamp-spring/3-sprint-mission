@@ -4,27 +4,19 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * packageName    : com.sprint.mission.discodeit.Dto.user
- * fileName       : PublicChannelCreateRequest
- * author         : doungukkim
- * date           : 2025. 4. 25.
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2025. 4. 25.        doungukkim       최초 생성
+ * packageName    : com.sprint.mission.discodeit.Dto.user fileName       :
+ * PublicChannelCreateRequest author         : doungukkim date           : 2025. 4. 25. description
+ *   : =========================================================== DATE              AUTHOR
+ *    NOTE ----------------------------------------------------------- 2025. 4. 25.
+ * doungukkim       최초 생성
  */
 
 public record PublicChannelCreateRequest(
-        String channelName,
-        String description,
-        Set<String> userIds) {
+    String name,
+    String description) {
 
-    public PublicChannelCreateRequest {
-        Objects.requireNonNull(channelName, "no channelName in request");
-        Objects.requireNonNull(description, "no description in request");
-        if ((userIds == null) || (userIds.isEmpty())) {
-            throw new RuntimeException("request must need one or more ids");
-        }
-    }
+  public PublicChannelCreateRequest {
+    Objects.requireNonNull(name, "no channelName in request");
+    Objects.requireNonNull(description, "no description in request");
+  }
 }

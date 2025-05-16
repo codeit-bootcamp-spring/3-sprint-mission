@@ -37,42 +37,25 @@ public class BasicChannelService implements ChannelService {
     private final MessageRepository messageRepository;
     private final ReadStatusRepository readStatusRepository;
 
-    @Override
-    public ResponseEntity<ChannelCreateResponse> createChannel(PrivateChannelCreateRequest request) {
-        List<UUID> userIds = request.userIds().stream().map(UUID::fromString).toList();
 
-        // channel 생성
-        Channel channel = channelRepository.createPrivateChannelByName();
-
-        // readStatus 생성
-        readStatusRepository.createByUserId(userIds, channel.getId());
-
-        ChannelCreateResponse channelCreateResponse = new ChannelCreateResponse(
-                channel.getId(),
-                channel.getType(),
-                channel.getUpdatedAt());
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(channelCreateResponse);
-    }
 
     @Override
     public ResponseEntity<ChannelCreateResponse> createChannel(PublicChannelCreateRequest request) {
-        String channelName = request.channelName();
+        String channelName = request.name();
         String description = request.description();
-        List<UUID> userIds = request.userIds().stream().map(UUID::fromString).toList();
+//        List<UUID> userIds = request.userIds().stream().map(UUID::fromString).toList();
 
         // channel 생성
         Channel channel = channelRepository.createPublicChannelByName(channelName, description);
 
         // readStatus 생성
-        readStatusRepository.createByUserId(userIds, channel.getId());
+//        readStatusRepository.createByUserId(userIds, channel.getId());
 
         ChannelCreateResponse channelCreateResponse = new ChannelCreateResponse(
                 channel.getId(),
-                channel.getType(),
+                channel.getCreatedAt(),
                 channel.getUpdatedAt(),
+                channel.getType(),
                 channel.getName(),
                 channel.getDescription()
         );
@@ -80,24 +63,62 @@ public class BasicChannelService implements ChannelService {
         return ResponseEntity.status(HttpStatus.CREATED).body(channelCreateResponse);
     }
 
-    @Override
-    public ResponseEntity<List<ChannelFindResponse>> findAllByUserId(ChannelFindByUserIdRequest request) {
-        UUID userId = request.userId();
+  @Override
+  public ResponseEntity<ChannelCreateResponse> createChannel(PrivateChannelCreateRequest request) {
+    List<UUID> userIds = request.participantIds().stream().map(UUID::fromString).toList();
 
-        List<ChannelFindResponse> response = new ArrayList<>();
+    // channel 생성
+    Channel channel = channelRepository.createPrivateChannelByName();
+
+    // readStatus 생성
+    readStatusRepository.createByUserId(userIds, channel.getId());
+
+    ChannelCreateResponse channelCreateResponse = new ChannelCreateResponse(
+            channel.getId(),
+            channel.getCreatedAt(),
+            channel.getUpdatedAt(),
+            channel.getType());
+
+    return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(channelCreateResponse);
+  }
+
+    @Override
+    public ResponseEntity<?> findAllByUserId(UUID userId) {
+
+        List<ChannelsFindResponse> responses = new ArrayList<>();
         // 유저가 참가한 방이 없을 수 있음
         List<Channel> allChannels = channelRepository.findAllChannel();
         List<Message> messageList = messageRepository.findAllMessages();
 
         for (Channel channel : allChannels) {
             if (channel.getType().equals(ChannelType.PUBLIC)) {
-                Instant resentPublicMessageTime = messageList.stream()
+                List<UUID> participantIds = new ArrayList<>();
+                Instant lastMessageAt = messageList.stream()
                         .filter(message -> message.getChannelId().equals(channel.getId()))
+                        .peek(message -> participantIds.add(message.getSenderId()))
                         .map(BaseEntity::getUpdatedAt)
                         .max(Instant::compareTo)
                         .orElse(null);
 
-                response.add(new ChannelFindResponse(channel, resentPublicMessageTime));
+//                private final UUID id;
+//                private final ChannelType type;
+//                private final String name;
+//                private final String description;
+//                private List<UUID> participantIds;
+//                private final Instant lastMessageAt;
+
+                ChannelsFindResponse response = new ChannelsFindResponse(
+                        channel.getId(),
+                        channel.getType(),
+                        channel.getName(),
+                        channel.getDescription(),
+                        participantIds,
+                        lastMessageAt
+                );
+
+                responses.add(response);
             }
 
 /*
@@ -113,19 +134,28 @@ public class BasicChannelService implements ChannelService {
                         .collect(Collectors.toSet());
 
                 if (userIds.contains(userId)) {
-                    Instant recentPrivateMessageTime = messageList.stream()
+                    Instant lastMessageAt = messageList.stream()
                             .filter(message -> message.getChannelId().equals(channel.getId()))
                             .map(BaseEntity::getUpdatedAt)
                             .max(Instant::compareTo)
                             .orElse(null);
 
-                    response.add(new ChannelFindResponse(channel, recentPrivateMessageTime, userIds.stream().toList()));
+                    ChannelsFindResponse response = new ChannelsFindResponse(
+                            channel.getId(),
+                            channel.getType(),
+                            channel.getName(),
+                            channel.getDescription(),
+                            userIds.stream().toList(),
+                            lastMessageAt
+                    );
+
+                    responses.add(response);
                 }
             }
         }
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(response);
+                .body(responses);
     }
 
     @Override
@@ -176,27 +206,43 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ResponseEntity<?> update(ChannelUpdateRequest request) {
-        UUID channelId = UUID.fromString(request.channelId());
+    public ResponseEntity<?> update(UUID channelId, ChannelUpdateRequest request) {
 
-        Channel channel = Optional.ofNullable(channelRepository
-                .findChannelById(channelId)).orElseThrow(() -> new RuntimeException("no channel repository"));
+      Channel channel = channelRepository.findChannelById(channelId);
 
-        if (channel.getType().equals(ChannelType.PUBLIC)) {
-            channelRepository.updateChannel(channelId, request.name());
-        } else {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", "only public channel can change the name"));
-        }
+      channelRepository.findChannelById(channelId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "channel updated to " + request.name()));
+      if (channel == null) {
+        return ResponseEntity.status(404).body("channel with id " + channelId + "not found");
+      }
+
+      if (channel.getType().equals(ChannelType.PUBLIC)) {
+        channelRepository.updateChannelName(channelId, request.newName());
+        channelRepository.updateChannelDescription(channelId, request.newDescription());
+      } else {
+        return ResponseEntity
+                .status(400)
+                .body("private channel cannot be updated");
+      }
+      channel = channelRepository.findChannelById(channelId);
+      UpdateChannelResponse response = new UpdateChannelResponse(
+              channel.getId(),
+              channel.getCreatedAt(),
+              channel.getUpdatedAt(),
+              channel.getType(),
+              channel.getName(),
+              channel.getDescription()
+      );
+
+      return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
-    public ResponseEntity<?> deleteChannel(String stringChannelId) {
-        Objects.requireNonNull(stringChannelId, "no channelI");
-        UUID channelId = UUID.fromString(stringChannelId);
+    public ResponseEntity<?> deleteChannel(UUID channelId) {
+      if (channelId == null) {
+        return ResponseEntity.status(404).body("Channel with id " + channelId + " not found");
+      }
+
 
         // 하나의 객체도 삭제 실패가 없어야 하나? YES
         List<ReadStatus> targetReadStatuses = readStatusRepository.findReadStatusesByChannelId(channelId);
@@ -209,8 +255,10 @@ public class BasicChannelService implements ChannelService {
             messageRepository.deleteMessageById(targetMessage.getId()); // throw
         }
 
-        channelRepository.deleteChannel(channelId); // file | jcf : throw exception
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(Map.of("message", "channel deleted"));
+      boolean deleted = channelRepository.deleteChannel(channelId);
+      if (deleted) {
+        return ResponseEntity.status(204).body("");
+      }
+      return ResponseEntity.status(400).body("channel not deleted for some random reason");
     }
 }

@@ -18,11 +18,13 @@ import java.util.UUID;
  */
 
 public record ChannelUpdateRequest(
-        String channelId,
-        String name
+        String newName,
+        String newDescription
+
         ) {
         public ChannelUpdateRequest {
-                Objects.requireNonNull(channelId, "no channelId in request");
-                Objects.requireNonNull(name, "no name in request");
+
+                Objects.requireNonNull(newName, "no name in request");
+                Objects.requireNonNull(newDescription, "no description in request");
         }
 }

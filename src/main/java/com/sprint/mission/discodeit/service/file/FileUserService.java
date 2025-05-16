@@ -1,37 +1,15 @@
 package com.sprint.mission.discodeit.service.file;
 
-import com.sprint.mission.discodeit.Dto.user.UserCreateResponse;
-import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadRequest;
-import com.sprint.mission.discodeit.Dto.userStatus.ProfileUploadResponse;
-import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.Dto.user.UserFindResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.file.FileBinaryContentRepository;
-import com.sprint.mission.discodeit.repository.file.FileUserRepository;
-import com.sprint.mission.discodeit.repository.file.FileUserStatusRepository;
-import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.service.file
- * fileName       : FileUserService
- * author         : doungukkim
- * date           : 2025. 4. 17.
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2025. 4. 17.        doungukkim       최초 생성
+ * packageName    : com.sprint.mission.discodeit.service.file fileName       : FileUserService
+ * author         : doungukkim date           : 2025. 4. 17. description    :
+ * =========================================================== DATE              AUTHOR
+ * NOTE ----------------------------------------------------------- 2025. 4. 17.        doungukkim
+ * 최초 생성
  */
 @Service
 @Profile("file")

@@ -18,10 +18,10 @@ import java.util.*;
  * 2025. 4. 25.        doungukkim       최초 생성
  */
 
-public record PrivateChannelCreateRequest(Set<String> userIds) {
-    @JsonCreator
+public record PrivateChannelCreateRequest(Set<String> participantIds) {
+
     public PrivateChannelCreateRequest {
-        if ((userIds == null) || (userIds.isEmpty())) {
+        if ((participantIds == null) || (participantIds.isEmpty())) {
             throw new RuntimeException("request must need one or more ids");
         }
     }

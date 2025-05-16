@@ -25,10 +25,10 @@ public interface ChannelService {
 
     ChannelFindResponse find(ChannelFindRequest request);
 
-    ResponseEntity<List<ChannelFindResponse>> findAllByUserId(ChannelFindByUserIdRequest request);
+    ResponseEntity<?> findAllByUserId(UUID userId);
 
-    ResponseEntity<?> update(ChannelUpdateRequest request);
+    ResponseEntity<?> update(UUID channelId, ChannelUpdateRequest request);
 
-    ResponseEntity<?> deleteChannel(String channelId);
+    ResponseEntity<?> deleteChannel(UUID channelId);
 
 }

@@ -12,50 +12,66 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.controller
- * fileName       : ChannelController
- * author         : doungukkim
- * date           : 2025. 5. 10.
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2025. 5. 10.        doungukkim       최초 생성
+ * packageName    : com.sprint.mission.discodeit.controller fileName       : ChannelController
+ * author         : doungukkim date           : 2025. 5. 10. description    :
+ * =========================================================== DATE              AUTHOR NOTE
+ * ----------------------------------------------------------- 2025. 5. 10.        doungukkim최초 생성
  */
-@Controller
-@RequestMapping("api/channel/*")
+@RestController
+@RequestMapping("api/channels")
 @RequiredArgsConstructor
 public class ChannelController {
-    private final ChannelService channelService;
 
-    @ResponseBody
-    @RequestMapping(path = "/create-public", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> create(@RequestBody PublicChannelCreateRequest request) {
-        return channelService.createChannel(request);
-    }
+  private final ChannelService channelService;
 
-    @ResponseBody
-    @RequestMapping(path = "/create-private", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> create(@RequestBody PrivateChannelCreateRequest request) {
-        return channelService.createChannel(request);
-    }
+  // request, endpoint, (param, body, variable) :
+  // service, repository : OK
+  // response : OK
+  // fail response : OK
+  @RequestMapping(path = "/public", consumes = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
+  public ResponseEntity<?> create(@RequestBody PublicChannelCreateRequest request) {
+    return channelService.createChannel(request);
+  }
 
-    @ResponseBody
-    @RequestMapping(path = "/change-name", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> changeName(@RequestBody ChannelUpdateRequest request) {
-        return channelService.update(request);
-    }
+  // request, endpoint, (param, body, variable) : OK
+  // service, repository : OK
+  // response : OK
+  // fail response : OK
+  @ResponseBody
+  @RequestMapping(path = "/private", consumes = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
+  public ResponseEntity<?> create(@RequestBody PrivateChannelCreateRequest request) {
+    return channelService.createChannel(request);
+  }
+  // request, endpoint, (param, body, variable) : OK
+  // service, repository : OK
+  // response : OK
+  // fail response :  OK
+  @ResponseBody
+  @RequestMapping(path = "/{channelId}", method = RequestMethod.DELETE)
+  public ResponseEntity<?> removeChannel(@PathVariable UUID channelId) {
+    return channelService.deleteChannel(channelId);
+  }
 
-    @ResponseBody
-    @RequestMapping(path = "/remove")
-    public ResponseEntity<?> removeChannel(@RequestParam String channelId) {
-        return channelService.deleteChannel(channelId);
-    }
+  // request, endpoint, (param, body, variable) : OK
+  // service, repository : OK
+  // response : OK
+  // fail response : OK
+  @ResponseBody
+  @RequestMapping(path = "/{channelId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> changeName(
+          @PathVariable UUID channelId,
+          @RequestBody ChannelUpdateRequest request) {
+    return channelService.update(channelId, request);
+  }
 
-    @ResponseBody
-    @RequestMapping(path = "/find-channels", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> findChannels(@RequestBody ChannelFindByUserIdRequest request) {
-        return channelService.findAllByUserId(request);
-    }
 
+  // message 생성 가능하면 다시 테스트
+  // request, endpoint, (param, body, variable) : OK
+  // service, repository :
+  // response : OK
+  // fail response : OK
+  @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
+  public ResponseEntity<?> findChannels(@PathVariable UUID userId) {
+    return channelService.findAllByUserId(userId);
+  }
 }

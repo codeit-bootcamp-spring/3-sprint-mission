@@ -17,15 +17,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * packageName    : com.sprint.mission.discodeit.repository.jcf
- * fileName       : JcfAuthService
- * author         : doungukkim
- * date           : 2025. 4. 25.
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2025. 4. 25.        doungukkim       최초 생성
+ * packageName    : com.sprint.mission.discodeit.repository.jcf fileName       : JcfAuthService
+ * author         : doungukkim date           : 2025. 4. 25. description    :
+ * =========================================================== DATE              AUTHOR
+ * NOTE ----------------------------------------------------------- 2025. 4. 25.        doungukkim
+ * 최초 생성
  */
 @RequiredArgsConstructor
 @Service
@@ -33,34 +29,34 @@ import java.util.Optional;
 //@ConditionalOnProperty(name = "service.mode", havingValue = "jcf")
 public class JcfAuthService {
 
-    private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
+  private final UserRepository userRepository;
+  private final UserStatusRepository userStatusRepository;
 
 
-    public LoginResponse login(LoginRequest request) {
-        Objects.requireNonNull(request, "입력 값 없음");
+  public LoginResponse login(LoginRequest request) {
+    Objects.requireNonNull(request, "입력 값 없음");
 
-        String username = Optional.ofNullable(request.username())
-                .orElseThrow(() -> new IllegalArgumentException("no name"));
+    String username = Optional.ofNullable(request.username())
+        .orElseThrow(() -> new IllegalArgumentException("no name"));
 
-        String password = Optional.ofNullable(request.username())
-                .orElseThrow(() -> new IllegalArgumentException("no password"));
+    String password = Optional.ofNullable(request.username())
+        .orElseThrow(() -> new IllegalArgumentException("no password"));
 
-        List<User> allUsers = userRepository.findAllUsers();
-        for (User user : allUsers) {
-            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
-                UserStatus userStatus = userStatusRepository.findUserStatusByUserId(user.getId());
-                return new LoginResponse(
-                        user.getId(),
-                        user.getCreatedAt(),
-                        user.getUpdatedAt(),
-                        user.getUsername(),
-                        user.getEmail(),
-                        user.getProfileId(),
-                        userStatusRepository.isOnline(userStatus.getId())
-                );
-            }
-        }
-        throw new RuntimeException("로그인 시도. 일치하는 유저 없습니다.");
-    }
+//        List<User> allUsers = userRepository.findAllUsers();
+//        for (User user : allUsers) {
+//            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
+//                UserStatus userStatus = userStatusRepository.findUserStatusByUserId(user.getId());
+//                return new LoginResponse(
+//                        user.getId(),
+//                        user.getCreatedAt(),
+//                        user.getUpdatedAt(),
+//                        user.getUsername(),
+//                        user.getEmail(),
+//                        user.getProfileId(),
+//                        userStatusRepository.isOnline(userStatus.getId())
+//                );
+//            }
+//        }
+    throw new RuntimeException("로그인 시도. 일치하는 유저 없습니다.");
+  }
 }

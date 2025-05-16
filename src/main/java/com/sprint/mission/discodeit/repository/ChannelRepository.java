@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +21,7 @@ public interface ChannelRepository {
     Channel createPublicChannelByName(String name, String description);
     Channel findChannelById(UUID channelId); // null
     List<Channel> findAllChannel();
-    void updateChannel(UUID channelId, String name);
-    void deleteChannel(UUID channelId); // file | jcf : throw exception
+    void updateChannelName(UUID channelId, String name);
+    void updateChannelDescription(UUID channelId, String description);
+    boolean deleteChannel(UUID channelId); // file | jcf : throw exception
 }
