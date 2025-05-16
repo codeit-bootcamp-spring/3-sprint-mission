@@ -11,12 +11,18 @@
       <change beforePath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java" beforeDir="false" afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java" afterDir="false" />
 =======
     <list default="true" id="2129b70f-f7a7-429e-a313-315e92ddecf6" name="Changes" comment="">
+<<<<<<< HEAD
       <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/AuthController.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ChannelController.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/MessageController.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/UserController.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/exception/ExceptionController.java" afterDir="false" />
 >>>>>>> 3189145 (5월 15일 강의 결과물)
+=======
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java" afterDir="false" />
+>>>>>>> 6fae2e2 (Basic requirements for sprint4)
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,6 +77,7 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
 <<<<<<< HEAD
+<<<<<<< HEAD
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
 }</component>
@@ -79,6 +86,11 @@
   "associatedIndex": 5
 }]]></component>
 >>>>>>> 3189145 (5월 15일 강의 결과물)
+=======
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+>>>>>>> 6fae2e2 (Basic requirements for sprint4)
   <component name="ProjectId" id="2x7QPrUDrQZmLSy0x6yjR9ts0vE" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
@@ -105,15 +117,20 @@
     "git-widget-placeholder": "임정현-sprint4",
     "kotlin-language-version-configured": "true",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "last_opened_file_path": "C:/Users/red29/3-sprint-mission",
 =======
     "last_opened_file_path": "C:/Users/red29/IdeaProjects/sprint_mission_4_hint",
 >>>>>>> 3189145 (5월 15일 강의 결과물)
+=======
+    "last_opened_file_path": "C:/Users/red29/IdeaProjects/chap09-rest-api-lecture-source",
+>>>>>>> 6fae2e2 (Basic requirements for sprint4)
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+<<<<<<< HEAD
 <<<<<<< HEAD
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.0",
@@ -133,6 +150,17 @@
   }
 }]]></component>
 >>>>>>> 3189145 (5월 15일 강의 결과물)
+=======
+    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors.Language Defaults",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\red29\3-sprint-mission\sprint_mission_4_base\src\main\resources" />
+    </key>
+  </component>
+>>>>>>> 6fae2e2 (Basic requirements for sprint4)
   <component name="RunManager">
     <configuration name="DiscodeitApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <module name="discodeit.main" />
@@ -160,9 +188,14 @@
       <updated>1747286611266</updated>
       <workItem from="1747286612509" duration="6039000" />
 <<<<<<< HEAD
+<<<<<<< HEAD
       <workItem from="1747294295805" duration="6339000" />
       <workItem from="1747354011100" duration="18427000" />
       <workItem from="1747489455217" duration="5158000" />
+=======
+      <workItem from="1747294295805" duration="6339000" />
+      <workItem from="1747354011100" duration="2760000" />
+>>>>>>> 6fae2e2 (Basic requirements for sprint4)
     </task>
     <task id="LOCAL-00001" summary="Basic requirements for sprint4">
       <option name="closed" value="true" />

@@ -14,10 +14,14 @@ import java.util.*;
 
 @RequiredArgsConstructor
 <<<<<<< HEAD
+<<<<<<< HEAD
 @RequestMapping("/api/binaryContent")
 =======
 @RequestMapping("/api/binarycontent")
 >>>>>>> 3189145 (5월 15일 강의 결과물)
+=======
+@RequestMapping("/api/binaryContent")
+>>>>>>> 6fae2e2 (Basic requirements for sprint4)
 @Controller
 public class BinaryContentController {
 
