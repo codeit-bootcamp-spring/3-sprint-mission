@@ -15,26 +15,24 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
 
-    @RequestMapping(
-            method = RequestMethod.POST,
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    @ResponseBody
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<User> create(
             @RequestPart("userCreateRequest") UserCreateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profile
@@ -46,31 +44,18 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-
-    @RequestMapping(
-            path = "/{id}",
-            method = RequestMethod.GET
-    )
-    @ResponseBody
+    @GetMapping(path = "/{id}")
     public ResponseEntity<UserResponse> find(@PathVariable("id") UUID id) {
         UserFindRequest request = UserFindRequest.builder().userId(id).build();
         return ResponseEntity.ok(userService.find(request));
     }
 
-    @RequestMapping(
-            method = RequestMethod.GET
-    )
-    @ResponseBody
+    @GetMapping
     public ResponseEntity<List<UserResponse>> findAll() {
         return ResponseEntity.ok(userService.findAll());
     }
 
-    @RequestMapping(
-            path = "/{id}",
-            method = RequestMethod.PUT,
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    @ResponseBody
+    @PatchMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<User> update(
             @PathVariable("id") UUID id,
             @RequestPart("updateRequest") UserUpdateRequest updateRequest,
@@ -82,11 +67,7 @@ public class UserController {
         return ResponseEntity.ok(userService.update(updateRequest, profileRequest));
     }
 
-    @RequestMapping(
-            path = "/{id}",
-            method = RequestMethod.DELETE
-    )
-    @ResponseBody
+    @DeleteMapping(path = "/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") UUID id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();
@@ -105,16 +86,6 @@ public class UserController {
         } catch (IOException e) {
             throw new RuntimeException("파일 처리 중 오류 발생", e);
         }
-    }
-
-    @RequestMapping(
-            path = "/api/user/findAll",
-            method = RequestMethod.GET
-    )
-    @ResponseBody
-    public ResponseEntity<List<UserResponse>> findAllUserResponse() {
-        List<UserResponse> result = userService.findAll();
-        return ResponseEntity.ok(result);
     }
 
 }
