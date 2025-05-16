@@ -48,8 +48,8 @@ public class BaiscUserStatusService implements UserStatusService {
     }
 
     @Override
-    public UserStatus update(UserStatusUpdateRequest request) {
-        UserStatus updatedUserStatus = userStatusRepository.findByUserId(request.id())
+    public UserStatus update(UUID id, UserStatusUpdateRequest request) {
+        UserStatus updatedUserStatus = userStatusRepository.findByUserId(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 id는 존재하지 않아 업데이트가 불가능 합니다."));
         updatedUserStatus.update(request.StatusAt());
         return userStatusRepository.save(updatedUserStatus);

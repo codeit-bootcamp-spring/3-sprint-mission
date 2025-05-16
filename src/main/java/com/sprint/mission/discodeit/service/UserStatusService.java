@@ -13,7 +13,7 @@ public interface UserStatusService {
 
     public List<UserStatus> findAll();
 
-    public UserStatus update(UserStatusUpdateRequest request);
+    public UserStatus update(UUID id, UserStatusUpdateRequest request);
 
     public UserStatus updateByUserId(UserStatusUpdateRequest request);
 
