@@ -29,134 +29,145 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileUserRepository implements UserRepository {
 
-  private final FilePathProperties filePathProperties;
+    private final FilePathProperties filePathProperties;
 
-  @Override
-  public User createUserByName(String name, String email, String password) {
-    User user = new User(name, email, password);
-    Path path = filePathProperties.getUserFilePath(user.getId());
-    FileSerializer.writeFile(path, user);
-    return user;
-  }
-
-  @Override
-  public User createUserByName(String name, String email, String password, UUID profileId) {
-    User user = new User(name, email, password, profileId);
-    Path path = filePathProperties.getUserFilePath(user.getId());
-    FileSerializer.writeFile(path, user);
-    return user;
-  }
-
-
-  @Override
-  public User findUserById(UUID userId) {
-    Path path = filePathProperties.getUserFilePath(userId);
-
-    if (!Files.exists(path)) {
-      return null;
-    }
-    return FileSerializer.readFile(path, User.class);
-  }
-
-
-  @Override
-  public List<User> findAllUsers() {
-    Path directory = filePathProperties.getUserDirectory();
-
-    if (!Files.exists(directory)) {
-      return Collections.emptyList();
+    @Override
+    public User createUserByName(String name, String email, String password) {
+        User user = new User(name, email, password);
+        Path path = filePathProperties.getUserFilePath(user.getId());
+        FileSerializer.writeFile(path, user);
+        return user;
     }
 
-    try {
-      return Files.list(directory)
-          .filter(path -> path.toString().endsWith(".ser"))
-          .map(path -> {
-            try (
-                FileInputStream fis = new FileInputStream(path.toFile());
-                ObjectInputStream ois = new ObjectInputStream(fis)
-            ) {
-              Object data = ois.readObject();
-              return (User) data;
-            } catch (IOException | ClassNotFoundException exception) {
-              throw new RuntimeException("파일을 읽어오지 못했습니다: FileUserRepository.findAllUsers",
-                  exception);
+    @Override
+    public User createUserByName(String name, String email, String password, UUID profileId) {
+        User user = new User(name, email, password, profileId);
+        Path path = filePathProperties.getUserFilePath(user.getId());
+        FileSerializer.writeFile(path, user);
+        return user;
+    }
+
+
+    @Override
+    public User findUserById(UUID userId) {
+        Path path = filePathProperties.getUserFilePath(userId);
+
+        if (!Files.exists(path)) {
+            return null;
+        }
+        return FileSerializer.readFile(path, User.class);
+    }
+
+
+    @Override
+    public List<User> findAllUsers() {
+        Path directory = filePathProperties.getUserDirectory();
+
+        if (!Files.exists(directory)) {
+            return Collections.emptyList();
+        }
+
+        try {
+            return Files.list(directory)
+                    .filter(path -> path.toString().endsWith(".ser"))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            Object data = ois.readObject();
+                            return (User) data;
+                        } catch (IOException | ClassNotFoundException exception) {
+                            throw new RuntimeException("파일을 읽어오지 못했습니다: FileUserRepository.findAllUsers",
+                                    exception);
+                        }
+                    }).toList();
+        } catch (IOException e) {
+            throw new RuntimeException("유저들을 리스트로 만드는 과정에 문제 발생: FileChannelRepository.findAllUsers", e);
+        }
+    }
+
+    @Override
+    public void updateProfileIdById(UUID userId, UUID profileId) {
+        Path path = filePathProperties.getUserFilePath(userId);
+        if (!Files.exists(path)) {
+            throw new IllegalStateException("no user in repository");
+        }
+        User user = FileSerializer.readFile(path, User.class);
+        user.setProfileId(profileId);
+        FileSerializer.writeFile(path, user);
+    }
+
+    @Override
+    public void updateNameById(UUID userId, String name) {
+        Path path = filePathProperties.getUserFilePath(userId);
+        if (!Files.exists(path)) {
+            throw new RuntimeException("파일 없음: fileUserRepository.updateUserById");
+        }
+        User user = FileSerializer.readFile(path, User.class);
+        user.setUsername(name);
+        FileSerializer.writeFile(path, user);
+    }
+
+    @Override
+    public void updateEmailById(UUID userId, String email) {
+        Path path = filePathProperties.getUserFilePath(userId);
+        if (!Files.exists(path)) {
+            throw new RuntimeException("파일 없음: fileUserRepository.updateEmailById");
+        }
+        User user = FileSerializer.readFile(path, User.class);
+        user.setEmail(email);
+        FileSerializer.writeFile(path, user);
+    }
+
+    @Override
+    public void updatePasswordById(UUID userId, String password) {
+        Path path = filePathProperties.getUserFilePath(userId);
+        if (!Files.exists(path)) {
+            throw new RuntimeException("파일 없음: fileUserRepository.updateEmailById");
+        }
+        User user = FileSerializer.readFile(path, User.class);
+        user.setPassword(password);
+        FileSerializer.writeFile(path, user);
+    }
+
+    @Override
+    public void deleteUserById(UUID userId) {
+        Path path = filePathProperties.getUserFilePath(userId);
+
+        try {
+            Files.delete(path);
+        } catch (IOException e) {
+            throw new RuntimeException("삭제중 오류 발생: FileUserRepository.deleteUserById", e);
+        }
+    }
+
+    @Override
+    public boolean isUniqueUsername(String username) {
+        List<User> users = findAllUsers();
+        if (users.isEmpty()) {
+            return true;
+        }
+        for (User user : users) {
+            if (user.getUsername().equals(username)) {
+                return false;
             }
-          }).toList();
-    } catch (IOException e) {
-      throw new RuntimeException("유저들을 리스트로 만드는 과정에 문제 발생: FileChannelRepository.findAllUsers", e);
-    }
-  }
-
-  @Override
-  public void updateProfileIdById(UUID userId, UUID profileId) {
-    Path path = filePathProperties.getUserFilePath(userId);
-    if (!Files.exists(path)) {
-      throw new IllegalStateException("no user in repository");
-    }
-    User user = FileSerializer.readFile(path, User.class);
-    user.setProfileId(profileId);
-    FileSerializer.writeFile(path, user);
-  }
-
-  @Override
-  public void updateNameById(UUID userId, String name) {
-    Path path = filePathProperties.getUserFilePath(userId);
-    if (!Files.exists(path)) {
-      throw new RuntimeException("파일 없음: fileUserRepository.updateUserById");
-    }
-    User user = FileSerializer.readFile(path, User.class);
-    user.setUsername(name);
-    FileSerializer.writeFile(path, user);
-  }
-
-  @Override
-  public void updateEmailById(UUID userId, String email) {
-    Path path = filePathProperties.getUserFilePath(userId);
-    if (!Files.exists(path)) {
-      throw new RuntimeException("파일 없음: fileUserRepository.updateEmailById");
-    }
-    User user = FileSerializer.readFile(path, User.class);
-    user.setEmail(email);
-    FileSerializer.writeFile(path, user);
-  }
-
-  @Override
-  public void deleteUserById(UUID userId) {
-    Path path = filePathProperties.getUserFilePath(userId);
-
-    try {
-      Files.delete(path);
-    } catch (IOException e) {
-      throw new RuntimeException("삭제중 오류 발생: FileUserRepository.deleteUserById", e);
-    }
-  }
-
-  @Override
-  public boolean isUniqueUsername(String username) {
-    List<User> users = findAllUsers();
-    if (users.isEmpty()) {
-      return true;
-    }
-    for (User user : users) {
-      if (user.getUsername().equals(username)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  @Override
-  public boolean isUniqueEmail(String email) {
-    List<User> users = findAllUsers();
-    if (users.isEmpty()) {
-      return true;
+        }
+        return true;
     }
 
-    for (User user : users) {
-      if (user.getEmail().equals(email)) {
-        return false;
-      }
+    @Override
+    public boolean isUniqueEmail(String email) {
+        List<User> users = findAllUsers();
+        if (users.isEmpty()) {
+            return true;
+        }
+
+        for (User user : users) {
+            if (user.getEmail().equals(email)) {
+                return false;
+            }
+        }
+        return true;
     }
-    return true;
-  }
 }

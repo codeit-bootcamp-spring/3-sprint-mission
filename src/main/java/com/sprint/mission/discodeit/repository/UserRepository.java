@@ -13,23 +13,25 @@ import java.util.UUID;
  */
 public interface UserRepository {
 
-  User createUserByName(String username, String email, String password);
+    User createUserByName(String username, String email, String password);
 
-  User createUserByName(String username, String email, String password, UUID profileId);
+    User createUserByName(String username, String email, String password, UUID profileId);
 
-  User findUserById(UUID userId); // both : null
+    User findUserById(UUID userId); // both : null
 
-  List<User> findAllUsers(); // both: emptyList
+    List<User> findAllUsers(); // both: emptyList
 
-  void updateProfileIdById(UUID userId, UUID profileId); // both: throw
+    void updateProfileIdById(UUID userId, UUID profileId); // both: throw
 
-  void updateNameById(UUID userId, String name); // throw
+    void updateNameById(UUID userId, String name); // throw
 
-  void updateEmailById(UUID userId, String Email);
+    void updateEmailById(UUID userId, String Email);
 
-  void deleteUserById(UUID userId);
+    void updatePasswordById(UUID userId, String password);
 
-  boolean isUniqueUsername(String username);
+    void deleteUserById(UUID userId);
 
-  boolean isUniqueEmail(String email);
+    boolean isUniqueUsername(String username);
+
+    boolean isUniqueEmail(String email);
 }

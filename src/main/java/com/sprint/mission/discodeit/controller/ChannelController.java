@@ -57,8 +57,9 @@ public class ChannelController {
         return channelService.update(channelId, request);
     }
 
-    @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
-    public ResponseEntity<?> findChannels(@PathVariable UUID userId) {
+
+    @GetMapping
+    public ResponseEntity<?> findChannels(@RequestParam UUID userId) {
         System.out.println("ChannelController.findChannels");
         return channelService.findAllByUserId(userId);
     }
