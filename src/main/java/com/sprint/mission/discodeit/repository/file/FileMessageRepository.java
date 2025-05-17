@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.dto.entity.Message;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,19 +18,23 @@ import java.util.UUID;
 @Repository
 @Profile("file")
 public class FileMessageRepository implements MessageRepository {
-    private static final String DIR = "data/messages/";
+    private final Path path;
 
-    public FileMessageRepository() {
+    public FileMessageRepository(@Value("${storage.dirs.messages}") String dir) {
+        this.path = Paths.get(dir);
         clearFile();
     }
 
     @Override
-    public void save(Message msg) {
+    public void save(Message message) {
+        String filename = message.getId().toString() + ".ser";
+        Path file = path.resolve(filename);
+
         try (
-                FileOutputStream fos = new FileOutputStream(DIR + msg.getId() + ".ser");
-                ObjectOutputStream oos = new ObjectOutputStream(fos)
+                OutputStream out = Files.newOutputStream(file);
+                ObjectOutputStream oos = new ObjectOutputStream(out)
         ) {
-            oos.writeObject(msg);
+            oos.writeObject(message);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -36,42 +42,23 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public Message loadById(UUID id) {
-        File file = new File(DIR + id + ".ser");
-        if (!file.exists()) {
-            throw new IllegalArgumentException("[Message] 유효하지 않은 message 파일 (" + id + ".ser)");
-        }
-
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
-            return (Message) in.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("[Message] 메시지 로드 중 오류 발생", e);
-        }
+        Path file = path.resolve(id.toString() + ".ser");
+        return deserialize(file);
     }
 
     @Override
     public List<Message> loadAll() {
-        if (Files.exists(Path.of(DIR))) {
-            try {
-                List<Message> msgs = Files.list(Paths.get(DIR))
-                        .map( path -> {
-                            try (
-                                    FileInputStream fis = new FileInputStream(path.toFile());
-                                    ObjectInputStream ois = new ObjectInputStream(fis)
-                            ) {
-                                Object data = ois.readObject();
-                                return (Message) data;
-                            } catch (IOException | ClassNotFoundException e) {
-                                throw new RuntimeException(e);
-                            }
-                        })
-                        .toList();
-                return msgs;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        List<Message> messages = new ArrayList<>();
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path, "*.ser")) {
+            for (Path p : stream) {
+                messages.add(deserialize(p));
             }
-        } else {
-            return new ArrayList<>();
+        } catch (IOException e) {
+            throw new RuntimeException("[Message] messages 폴더 읽기 실패", e);
         }
+
+        return messages;
     }
 
     @Override
@@ -87,7 +74,7 @@ public class FileMessageRepository implements MessageRepository {
     public void update(UUID id, String content) {
         Message msg = loadById(id);
         if (msg == null) {
-            throw new IllegalArgumentException("[User] 유효하지 않은 메시지입니다. (" + id + ")");
+            throw new IllegalArgumentException("[Message] 유효하지 않은 메시지입니다. (" + id + ")");
         }
 
         msg.update(content);
@@ -96,19 +83,12 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public void deleteById(UUID id) {
-        File file = new File(DIR + id + ".ser");
-
         try {
-            if (file.exists()) {
-                if (!file.delete()) { //file.delete는 실패했을 때 예외 반환 x
-                    System.out.println("[Message] 파일 삭제 실패");
-                };
-            }
-            else {
-                System.out.println("[Message] 유효하지 않은 파일 (" + id + ")");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("[Message] 파일 삭제 중 오류 발생 (" + id + ")", e);
+            Path deletePath = path.resolve(id + ".ser");
+            Files.deleteIfExists(deletePath);
+
+        } catch (IOException e) {
+            throw new RuntimeException("[Message] 파일 삭제 실패 (" + id + ")", e);
         }
     }
 
@@ -119,19 +99,34 @@ public class FileMessageRepository implements MessageRepository {
                 .forEach(this::deleteById);
     }
 
-    private void clearFile() {
-        File dir = new File(DIR);
-        if (dir.exists() && dir.isDirectory()) {
-            File[] files = dir.listFiles();
-            if (files == null || files.length == 0) { return; }
+    private Message deserialize(Path file) {
+        if (Files.notExists(file)) {
+            throw new IllegalArgumentException("[Message] 유효하지 않은 파일");
+        }
 
-            for (File file : files) {
-                try {
-                    file.delete();
-                } catch (Exception e) {
-                    throw new RuntimeException("[Message] messages 폴더 초기화 실패", e);
+        try (
+                InputStream in = Files.newInputStream(file);
+                ObjectInputStream ois = new ObjectInputStream(in)
+        ) {
+            return (Message) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("[Message] Message 파일 로드 실패", e);
+        }
+    }
+
+    private void clearFile() {
+        try {
+            if (Files.exists(path)) {
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+                    for (Path filePath : stream) {
+                        Files.deleteIfExists(filePath);
+                    }
                 }
+            } else {
+                Files.createDirectories(path);
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.dto.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -19,20 +19,11 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
     public void save(BinaryContent userProfileImage) { binaryContents.put(userProfileImage.getId(), userProfileImage); }
 
     @Override
-    public BinaryContent loadByUserId(UUID userId) { return binaryContents.get(userId); }
-
-    @Override
     public BinaryContent loadById(UUID id) { return binaryContents.get(id); }
 
     @Override
     public List<BinaryContent> loadAll() { return binaryContents.values().stream().toList(); }
 
     @Override
-    public void delete(UUID id, UUID userId) {
-        if (userId == null) {
-            binaryContents.remove(id);
-        } else {
-            binaryContents.remove(userId);
-        }
-    }
+    public void delete(UUID id) { binaryContents.remove(id); }
 }

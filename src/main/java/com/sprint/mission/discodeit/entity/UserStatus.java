@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.entity;
+package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
@@ -14,6 +14,7 @@ public class UserStatus implements Serializable {
     private final UUID userId;
     private final Instant createdAt;
     private Instant updatedAt;
+    private static final int LOGIN_TIMEOUT_SECONDS = 300;
 
     @Serial
     private static final long serialVersionUID = -412161012207255446L;
@@ -38,7 +39,7 @@ public class UserStatus implements Serializable {
         if (updatedAt.equals(createdAt)) {
             return false;
         }
-        return Duration.between(updatedAt, Instant.now()).toSeconds() <= 300;
+        return Duration.between(updatedAt, Instant.now()).toSeconds() <= LOGIN_TIMEOUT_SECONDS;
     }
 
     @Override

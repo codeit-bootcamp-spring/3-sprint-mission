@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.dto.entity.Channel;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -42,7 +42,7 @@ public class JCFChannelRepository implements ChannelRepository {
             throw new IllegalArgumentException("[Channel] 유효하지 않은 채널입니다. (channelId: " + id + ")");
         }
 
-        channel.setName(name);
+        channel.updateName(name);
         return channel;
     }
 

@@ -4,8 +4,8 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.data.UserDTO;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.entity.BinaryContent;
-import com.sprint.mission.discodeit.dto.entity.User;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,7 +15,6 @@ public interface UserService {
     UserDTO getUser(UUID id);
     List<UserDTO> getAllUsers();
     User getUserByName(String name);
-    BinaryContent updateUserProfileImage(UserUpdateRequest userUpdateRequest);
     void deleteUser(UUID id);
     boolean existsById(UUID id); // JavaApplicationd에서 사용됨
 }

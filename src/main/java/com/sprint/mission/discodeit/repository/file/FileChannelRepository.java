@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.dto.entity.Channel;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,17 +18,21 @@ import java.util.UUID;
 @Repository
 @Profile("file")
 public class FileChannelRepository implements ChannelRepository {
-    private static final String DIR = "data/channels/";
+    private final Path path;
 
-    public FileChannelRepository() {
+    public FileChannelRepository(@Value("${storage.dirs.channels}") String dir) {
+        this.path = Paths.get(dir);
         clearFile();
     }
 
     @Override
     public void save(Channel channel) {
+        String filename = channel.getId().toString() + ".ser";
+        Path file = path.resolve(filename);
+
         try (
-                FileOutputStream fos = new FileOutputStream(DIR + channel.getId() + ".ser");
-                ObjectOutputStream oos = new ObjectOutputStream(fos)
+                OutputStream out = Files.newOutputStream(file);
+                ObjectOutputStream oos = new ObjectOutputStream(out)
         ) {
             oos.writeObject(channel);
         } catch (IOException e) {
@@ -48,41 +54,23 @@ public class FileChannelRepository implements ChannelRepository {
 
     @Override
     public Channel loadById(UUID id) {
-        if (!Files.exists(Path.of(DIR))) { return null; }
-
-        try (
-                ObjectInputStream in = new ObjectInputStream(new FileInputStream(DIR + id + ".ser"))
-        ) {
-            return (Channel) in.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            return null;
-        }
+        Path file = path.resolve(id.toString() + ".ser");
+        return deserialize(file);
     }
 
     @Override
     public List<Channel> loadAll() {
-        if (Files.exists(Path.of(DIR))) {
-            try {
-                List<Channel> channels = Files.list(Paths.get(DIR))
-                        .map( path -> {
-                            try (
-                                    FileInputStream fis = new FileInputStream(path.toFile());
-                                    ObjectInputStream ois = new ObjectInputStream(fis)
-                            ) {
-                                Object data = ois.readObject();
-                                return (Channel) data;
-                            } catch (IOException | ClassNotFoundException e) {
-                                throw new RuntimeException(e);
-                            }
-                        })
-                        .toList();
-                return channels;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        List<Channel> channels = new ArrayList<>();
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path, "*.ser")) {
+            for (Path p : stream) {
+                channels.add(deserialize(p));
             }
-        } else {
-            return new ArrayList<>();
+        } catch (IOException e) {
+            throw new RuntimeException("[Channel] channels 폴더 접근 실패", e);
         }
+
+        return channels;
     }
 
     @Override
@@ -92,7 +80,7 @@ public class FileChannelRepository implements ChannelRepository {
             throw new IllegalArgumentException("[Channel] 유효하지 않은 채널입니다. (" + id + ")");
         }
 
-        channel.setName(name);
+        channel.updateName(name);
         save(channel);
         return channel;
     }
@@ -125,36 +113,43 @@ public class FileChannelRepository implements ChannelRepository {
 
     @Override
     public void delete(UUID id) {
-        File file = new File(DIR + id + ".ser");
-
         try {
-            if (file.exists()) {
-                if (!file.delete()) {
-                    System.out.println("[Channel] 파일 삭제 실패");
-                }
-            }
-            else {
-                System.out.println("[Channel] 유효하지 않은 파일 (" + id + ")");
-            }
-            System.out.println("[Channel] 채널 삭제 완료 (" + id + ")");
-        } catch (Exception e) {
-            throw new RuntimeException("[Channel] 파일 삭제 중 오류 발생 (id=" + id + ")", e);
+            Path deletePath = path.resolve(id + ".ser");
+            Files.deleteIfExists(deletePath);
+
+        } catch (IOException e) {
+            throw new RuntimeException("[Channel] 파일 삭제 실패 (" + id + ")", e);
+        }
+    }
+
+    private Channel deserialize(Path file) {
+        if (Files.notExists(file)) {
+            throw new IllegalArgumentException("[Channel] 유효하지 않은 파일");
+        }
+
+        try (
+                InputStream in = Files.newInputStream(file);
+                ObjectInputStream ois = new ObjectInputStream(in)
+        ) {
+            return (Channel) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("[Channel] Channel 파일 로드 실패", e);
         }
     }
 
     private void clearFile() {
-        File dir = new File(DIR);
-        if (dir.exists() && dir.isDirectory()) {
-            File[] files = dir.listFiles();
-            if (files == null || files.length == 0) { return; }
-
-            for (File file : files) {
-                try {
-                    file.delete();
-                } catch (Exception e) {
-                    throw new RuntimeException("[Channel] channels 폴더 초기화 실패", e);
+        try {
+            if (Files.exists(path)) {
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+                    for (Path filePath : stream) {
+                        Files.deleteIfExists(filePath);
+                    }
                 }
+            } else {
+                Files.createDirectories(path);
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

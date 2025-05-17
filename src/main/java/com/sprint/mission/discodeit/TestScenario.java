@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.dto.request.*;
-import com.sprint.mission.discodeit.dto.entity.Channel;
-import com.sprint.mission.discodeit.dto.entity.Message;
-import com.sprint.mission.discodeit.dto.entity.User;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.*;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +53,6 @@ public class TestScenario {
         createUser();
         getAllUsers();
         getUser();
-        updateUser();
         deleteUser();
     }
 
@@ -86,9 +85,9 @@ public class TestScenario {
         );
 
         List<BinaryContentCreateRequest> imageDTOs = Arrays.asList( //List.of()로는 null 값을 담을 수 없음
-                new BinaryContentCreateRequest("Jane.png", "/data/binaryContents/profileImages"),
+                new BinaryContentCreateRequest("Jane.png"),
                 null,
-                new BinaryContentCreateRequest("Kate.jpg", "/data/binaryContents/profileImages")
+                new BinaryContentCreateRequest("Kate.jpg")
         );
 
         users = IntStream.range(0, createDTOs.size())
@@ -97,8 +96,7 @@ public class TestScenario {
                     BinaryContentCreateRequest imgDto = imageDTOs.get(i);
 
                     try {
-                        User created = userService.createUser(userDto, imgDto);
-                        return created;
+                        return userService.createUser(userDto, imgDto);
                     } catch (IllegalArgumentException e) {
                         System.out.println(e.getMessage());
                         return null;
@@ -117,24 +115,6 @@ public class TestScenario {
         System.out.println("\n[User] 단일 사용자 조회");
         System.out.println(userService.getUser(users.get(0).getId()));
         System.out.println(userService.getUser(users.get(1).getId()));
-    }
-
-    private void updateUser() {
-        System.out.println("\n[User] 사용자 프로필 이미지 추가/수정 후 조회");
-
-        List<BinaryContentCreateRequest> imageDTOs = List.of(
-                new BinaryContentCreateRequest("EditJane.png", "/data/binaryContents/profileImages"),
-                new BinaryContentCreateRequest("AddTomProfile.jpg", "/data/binaryContents/profileImages")
-        );
-
-        List<UserUpdateRequest> updateDTOs = List.of(
-                new UserUpdateRequest(users.get(0).getId(), imageDTOs.get(0)),
-                new UserUpdateRequest(users.get(1).getId(), imageDTOs.get(1))
-        );
-
-        updateDTOs.stream()
-                .map(userService::updateUserProfileImage)
-                .forEach(System.out::println);
     }
 
     private void deleteUser() {
@@ -241,10 +221,10 @@ public class TestScenario {
                 new MessageCreateRequest(
                         users.get(1).getId(),
                         publicChannels.get(0).getId(),
-                        "파일 첨부 테스트입니다.",
+                        "파일 첨부 테스트입니다",
                         List.of(
-                                new BinaryContentCreateRequest("abc.txt", "/data/binaryContents/"),
-                                new BinaryContentCreateRequest("doc.pdf", "/data/binaryContents/")
+                                new BinaryContentCreateRequest("abc.txt"),
+                                new BinaryContentCreateRequest("doc.pdf")
                         )
                 ),
                 new MessageCreateRequest(
@@ -304,7 +284,7 @@ public class TestScenario {
 
     private void deleteMessage() {
         System.out.println("\n[Message] 메시지 삭제 후 전체 메시지 조회");
-        messageService.deleteMessage(messages.get(1).getId());
+        messageService.deleteMessage(messages.get(2).getId());
         messageService.getAllMessages().forEach(System.out::println);
     }
 }

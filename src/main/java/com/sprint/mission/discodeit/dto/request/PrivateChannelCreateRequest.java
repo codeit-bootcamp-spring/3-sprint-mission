@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import com.sprint.mission.discodeit.dto.entity.ChannelType;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

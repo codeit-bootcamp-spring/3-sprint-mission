@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.dto.entity.UserStatus;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,17 +18,21 @@ import java.util.UUID;
 @Repository
 @Profile("file")
 public class FileUserStatusRepository implements UserStatusRepository {
-    private static final String DIR = "data/userStatuses/";
+    private final Path path;
 
-    public FileUserStatusRepository() {
+    public FileUserStatusRepository(@Value("${storage.dirs.userStatuses}") String dir) {
+        this.path = Paths.get(dir);
         clearFile();
     }
 
     @Override
     public void save(UserStatus userStatus) {
+        String filename = userStatus.getUserId().toString() + ".ser";
+        Path file = path.resolve(filename);
+
         try (
-                FileOutputStream fos = new FileOutputStream(DIR + userStatus.getUserId() + ".ser");
-                ObjectOutputStream oos = new ObjectOutputStream(fos)
+                OutputStream out = Files.newOutputStream(file);
+                ObjectOutputStream oos = new ObjectOutputStream(out)
         ) {
             oos.writeObject(userStatus);
         } catch (IOException e) {
@@ -36,69 +42,64 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     @Override
     public UserStatus loadById(UUID id) {
-        File file = new File(DIR + id + ".ser");
-        if (!file.exists()) {
-            throw new IllegalArgumentException("[UserStatus] 유효하지 않은 userStatus 파일 (" + id + ".ser)");
-        }
-
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
-            return (UserStatus) in.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("[UserStatus] 로그인 상태 로드 중 오류 발생", e);
-        }
+        Path file = path.resolve(id.toString() + ".ser");
+        return deserialize(file);
     }
 
     @Override
     public List<UserStatus> loadAll() {
-        if (Files.exists(Path.of(DIR))) {
-            try {
-                List<UserStatus> userStatuses = Files.list(Paths.get(DIR))
-                        .map( path -> {
-                            try (
-                                    FileInputStream fis = new FileInputStream(path.toFile());
-                                    ObjectInputStream ois = new ObjectInputStream(fis)
-                            ) {
-                                Object data = ois.readObject();
-                                return (UserStatus) data;
-                            } catch (IOException | ClassNotFoundException e) {
-                                throw new RuntimeException("[UserStatus] 파일 로드 중 오류 발생", e);
-                            }
-                        })
-                        .toList();
-                return userStatuses;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        List<UserStatus> userStatuses = new ArrayList<>();
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path, "*.ser")) {
+            for (Path p : stream) {
+                userStatuses.add(deserialize(p));
             }
-        } else {
-            return new ArrayList<>();
+        } catch (IOException e) {
+            throw new RuntimeException("[UserStatus] userStatus 폴더 접근 실패", e);
         }
+
+        return userStatuses;
     }
 
     @Override
-    public void deleteById(UUID userId) {
+    public void deleteByUserId(UUID userId) {
         try {
-            File file = new File(DIR + userId + ".ser");
-            if (!file.delete()) {
-                    System.out.println("[UserStatus] 파일 삭제 실패");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("[UserStatus] 파일 접근 오류 (" + userId + ")", e);
+            Path deletePath = path.resolve(userId + ".ser");
+            Files.deleteIfExists(deletePath);
+
+        } catch (IOException e) {
+            throw new RuntimeException("[UserStatus] 파일 삭제 실패 (" + userId + ")", e);
+        }
+    }
+
+    private UserStatus deserialize(Path file) {
+        if (Files.notExists(file)) {
+            throw new IllegalArgumentException("[UserStatus] 유효하지 않은 파일");
+        }
+
+        try (
+                InputStream in = Files.newInputStream(file);
+                ObjectInputStream ois = new ObjectInputStream(in)
+        ) {
+            return (UserStatus) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("[UserStatus] UserStatus 파일 로드 실패", e);
         }
     }
 
     private void clearFile() {
-        File dir = new File(DIR);
-        if (dir.exists() && dir.isDirectory()) {
-            File[] files = dir.listFiles();
-            if (files == null || files.length == 0) { return; }
-
-            for (File file : files) {
-                try {
-                    file.delete();
-                } catch (Exception e) {
-                    throw new RuntimeException("[UserStatus] userStatuses 폴더 초기화 실패", e);
+        try {
+            if (Files.exists(path)) {
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+                    for (Path filePath : stream) {
+                        Files.deleteIfExists(filePath);
+                    }
                 }
+            } else {
+                Files.createDirectories(path);
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

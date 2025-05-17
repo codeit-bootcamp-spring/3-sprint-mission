@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.dto.entity.UserStatus;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -25,7 +25,7 @@ public class JCFUserStatusRepository implements UserStatusRepository {
     public List<UserStatus> loadAll() { return userStatuses.values().stream().toList(); }
 
     @Override
-    public void deleteById(UUID id) {
-        userStatuses.remove(id);
+    public void deleteByUserId(UUID id) {
+
     }
 }

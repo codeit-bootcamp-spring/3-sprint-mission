@@ -7,5 +7,4 @@ import lombok.Getter;
 @AllArgsConstructor
 public class BinaryContentCreateRequest {
     private String fileName;
-    private String filePath;
 }

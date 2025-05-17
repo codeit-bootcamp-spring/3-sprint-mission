@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.entity.User;
-import com.sprint.mission.discodeit.dto.entity.UserStatus;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -27,10 +27,6 @@ public class BasicUserStatusService implements UserStatusService {
 
         if (user == null) {
             throw new IllegalArgumentException("[UserStatus] 존재하지 않은 사용자입니다. (userId=" + userId + ")");
-        }
-
-        if (user.getUserStatusId() != null) {
-            throw new IllegalArgumentException("[UserStatus] 이미 관련된 객체가 존재합니다. (userId=" + userId + ")");
         }
 
         UserStatus userStatus =  UserStatus.of(userId);
@@ -80,6 +76,6 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public void delete(UUID id) {
-        userStatusRepository.deleteById(id);
+        userStatusRepository.deleteByUserId(id);
     }
 }

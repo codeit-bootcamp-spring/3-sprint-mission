@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.entity;
+package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import lombok.Getter;
@@ -11,13 +11,12 @@ import java.util.UUID;
 @Getter
 public class User implements Serializable {
     private final UUID id;
-    private String name;
-    private String email;
-    private String password;
+    private final String name;
+    private final String email;
+    private final String password;
     private final Instant createdAt;
     private Instant updatedAt;
-    private UUID userStatusId;
-    private UUID profileImageId;
+    private UUID profileId;
 
     @Serial
     private static final long serialVersionUID = 1788974919885878812L;
@@ -35,13 +34,9 @@ public class User implements Serializable {
         return new User(userCreateRequest.getName(), userCreateRequest.getEmail(), userCreateRequest.getPassword());
     }
 
-    public User updateUserStatusId(UUID userStatusId) {
-        this.userStatusId = userStatusId;
-        return this;
-    }
-
-    public User updateProfileImageId(UUID profileImageId) {
-        this.profileImageId = profileImageId;
+    public User updateProfileId(UUID profileId) {
+        this.profileId = profileId;
+        this.updatedAt = Instant.now();
         return this;
     }
 

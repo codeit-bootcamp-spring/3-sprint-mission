@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.entity;
+package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
@@ -50,7 +50,7 @@ public class Channel implements Serializable {
         return memberIds.contains(userId);
     }
 
-    public void setName(String name) {
+    public void updateName(String name) {
         this.name = name;
         this.updatedAt = Instant.now();;
     }

@@ -1,29 +1,38 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.dto.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Repository
 @Profile("file")
 public class FileReadStatusRepository implements ReadStatusRepository {
-    private static final String DIR = "data/readStatuses/";
+    private final Path path;
 
-    public FileReadStatusRepository() {
+    public FileReadStatusRepository(@Value("${storage.dirs.readStatuses}") String dir) {
+        this.path = Paths.get(dir);
         clearFile();
     }
 
     @Override
     public void save(ReadStatus readStatus) {
+        String filename = readStatus.getUserId().toString() + "_" + readStatus.getId() + ".ser";
+        Path file = path.resolve(filename);
+
         try (
-                FileOutputStream fos = new FileOutputStream(DIR + readStatus.getUserId() + ".ser");
-                ObjectOutputStream oos = new ObjectOutputStream(fos)
+                OutputStream out = Files.newOutputStream(file);
+                ObjectOutputStream oos = new ObjectOutputStream(out)
         ) {
             oos.writeObject(readStatus);
         } catch (IOException e) {
@@ -33,65 +42,92 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
     @Override
     public ReadStatus loadById(UUID id) {
-        File file = new File(DIR + id + ".ser");
-        if (!file.exists()) {
-            throw new IllegalArgumentException("[ReadStatus] 유효하지 않은 readStatus 파일 (" + id + ".ser)");
-        }
+        String suffix = "_" + id.toString() + ".ser";
 
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
-            return (ReadStatus) in.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("[ReadStatus] 사용자 로드 중 오류 발생", e);
+        try (Stream<Path> files = Files.list(path)) {
+            Optional<Path> match = files
+                    .filter(p -> p.getFileName().toString().endsWith(suffix))
+                    .findFirst();
+
+            Path file = match.orElseThrow(() ->
+                    new IllegalArgumentException("[ReadStatus] 유효하지 않은 readStatus 파일 (" + id + ".ser)")
+            );
+
+            return deserialize(file);
+        } catch (IOException e) {
+            throw new RuntimeException("[ReadStatus] 파일 로드 중 오류 발생", e);
         }
     }
 
     public List<ReadStatus> loadAllByUserId(UUID id) {
-        File dir = new File(DIR);
-
-        File[] files = dir.listFiles((d, name) -> name.endsWith(".ser"));
-        if (files == null || files.length == 0) {
-            throw new IllegalArgumentException("[ReadStatus] readStatus 파일이 존재하지 않음");
+        if (Files.notExists(path)) {
+            return Collections.emptyList();
         }
 
-        List<ReadStatus> result = new ArrayList<>();
-        for (File file : files) {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-                ReadStatus rs = (ReadStatus) ois.readObject();
-                if (rs.getUserId().equals(id)) {
-                    result.add(rs);
-                }
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException("[ReadStatus] 파일 로드 중 오류 발생: " + file.getName(), e);
-            }
+        String prefix = id.toString() + "_";
+
+        try (Stream<Path> stream = Files.list(path)) {
+            return stream
+                    .filter(p -> {
+                        String name = p.getFileName().toString();
+                        return name.startsWith(prefix) && name.endsWith(".ser");
+                    })
+                    .map(this::deserialize)
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new RuntimeException("[ReadStatus] 사용자 상태 목록 조회 실패", e);
         }
-        return result;
     }
 
     @Override
     public void deleteByUserId(UUID userId) {
-        try {
-            File file = new File(DIR + userId + ".ser");
-            if (!file.delete()) {
-                System.out.println("[ReadStatus] 파일 삭제 실패");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("[ReadStatus] 파일 접근 오류 (" + userId + ")", e);
+        String idString = userId.toString();
+        try (Stream<Path> files = Files.list(path)) {
+            files
+                    .filter(p -> {
+                        String name = p.getFileName().toString();
+                        return name.contains(idString) && name.endsWith(".ser");
+                    })
+                    .forEach(p -> {
+                        try {
+                            Files.deleteIfExists(p);
+                        } catch (IOException e) {
+                            throw new RuntimeException("[ReadStatus] 파일 삭제 실패 (" + p.getFileName() + ")", e);
+                        }
+                    });
+        } catch (IOException e) {
+            throw new RuntimeException("[ReadStatus] ReadStatus 폴더 접근 실패", e);
+        }
+    }
+
+    private ReadStatus deserialize(Path file) {
+        if (Files.notExists(file)) {
+            throw new IllegalArgumentException("[ReadStatus] 유효하지 않은 파일");
+        }
+
+        try (
+                InputStream in = Files.newInputStream(file);
+                ObjectInputStream ois = new ObjectInputStream(in)
+        ) {
+            return (ReadStatus) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("[ReadStatus] ReadStatus 파일 로드 실패", e);
         }
     }
 
     private void clearFile() {
-        File dir = new File(DIR);
-        if (dir.exists() && dir.isDirectory()) {
-            File[] files = dir.listFiles();
-            if (files == null || files.length == 0) { return; }
-
-            for (File file : files) {
-                try {
-                    file.delete();
-                } catch (Exception e) {
-                    throw new RuntimeException("[User] readStatuses 폴더 초기화 실패", e);
+        try {
+            if (Files.exists(path)) {
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+                    for (Path filePath : stream) {
+                        Files.deleteIfExists(filePath);
+                    }
                 }
+            } else {
+                Files.createDirectories(path);
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

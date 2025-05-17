@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -15,23 +15,8 @@ import java.util.UUID;
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
 
-    public BinaryContent create(UUID userId, UUID channelId, BinaryContentCreateRequest binaryContentCreateRequest) {
-        BinaryContent binaryContent;
-
-        if (channelId == null) {
-            binaryContent = BinaryContent.forUserProfileImage(
-                    userId,
-                    binaryContentCreateRequest
-            );
-        } else {
-            binaryContent = BinaryContent.forMessageFile(
-                    userId,
-                    channelId,
-                    binaryContentCreateRequest.getFileName(),
-                    binaryContentCreateRequest.getFilePath()
-            );
-        }
-
+    public BinaryContent create(BinaryContentCreateRequest binaryContentCreateRequest) {
+        BinaryContent binaryContent =  BinaryContent.of(binaryContentCreateRequest.getFileName());
         binaryContentRepository.save(binaryContent);
         return binaryContent;
     }
@@ -47,6 +32,6 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     public void delete(UUID id) {
-        binaryContentRepository.delete(id, null);
+        binaryContentRepository.delete(id);
     }
 }
