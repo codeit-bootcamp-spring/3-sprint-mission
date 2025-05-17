@@ -40,6 +40,7 @@ public class BinaryContentController {
 
     @RequestMapping(
 <<<<<<< HEAD
+<<<<<<< HEAD
             value = "/findAllByIdIn"
             , method = RequestMethod.GET
     )
@@ -47,6 +48,11 @@ public class BinaryContentController {
             value = "/findAll"
             , method = RequestMethod.GET)
 >>>>>>> 3189145 (5월 15일 강의 결과물)
+=======
+            value = "/findAllByIdIn"
+            , method = RequestMethod.GET
+    )
+>>>>>>> 989f80a (Sprint mission 4 requirements completed)
     public ResponseEntity<List<BinaryContent>> findAllByIdIn(
             @RequestParam List<UUID> binaryContentIds
     ) {

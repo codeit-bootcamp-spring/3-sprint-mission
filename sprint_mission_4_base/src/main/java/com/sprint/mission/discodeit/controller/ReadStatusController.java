@@ -76,6 +76,7 @@ public class ReadStatusController {
     )
     @ResponseBody
 <<<<<<< HEAD
+<<<<<<< HEAD
     public ResponseEntity<List<ReadStatus>> findAllByUserId(
             @RequestParam UUID userId
     ) {
@@ -85,6 +86,12 @@ public class ReadStatusController {
             @RequestParam UUID userId
     ) {
 >>>>>>> 3189145 (5월 15일 강의 결과물)
+=======
+    public ResponseEntity<List<ReadStatus>> findAllByUserId(
+            @RequestParam UUID userId
+    ) {
+        // ReadStatus가 없을 시 Error 메시지(or 페이지)
+>>>>>>> 989f80a (Sprint mission 4 requirements completed)
         List<ReadStatus> userReadStatuses = readStatusService.findAllByUserId(userId);
         return ResponseEntity.status(HttpStatus.OK).body(userReadStatuses);
     }

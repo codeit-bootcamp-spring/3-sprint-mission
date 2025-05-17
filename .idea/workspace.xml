@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
 <<<<<<< HEAD
+<<<<<<< HEAD
     <list default="true" id="2129b70f-f7a7-429e-a313-315e92ddecf6" name="Changes" comment="May 16th lecture complete">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java" afterDir="false" />
@@ -23,6 +24,12 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java" afterDir="false" />
 >>>>>>> 6fae2e2 (Basic requirements for sprint4)
+=======
+    <list default="true" id="2129b70f-f7a7-429e-a313-315e92ddecf6" name="Changes" comment="May 16th lecture complete">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java" beforeDir="false" afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java" afterDir="false" />
+>>>>>>> 989f80a (Sprint mission 4 requirements completed)
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,9 +74,13 @@
       <list>
         <option value="Class" />
 <<<<<<< HEAD
+<<<<<<< HEAD
         <option value="HTML File" />
 =======
 >>>>>>> 3189145 (5월 15일 강의 결과물)
+=======
+        <option value="HTML File" />
+>>>>>>> 989f80a (Sprint mission 4 requirements completed)
       </list>
     </option>
   </component>
@@ -102,9 +113,13 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
 <<<<<<< HEAD
+<<<<<<< HEAD
     "DefaultHtmlFileTemplate": "HTML File",
 =======
 >>>>>>> 3189145 (5월 15일 강의 결과물)
+=======
+    "DefaultHtmlFileTemplate": "HTML File",
+>>>>>>> 989f80a (Sprint mission 4 requirements completed)
     "Gradle.Build sprint_mission_4_base.executor": "Run",
     "Gradle.Download Sources.executor": "Run",
     "RequestMappingsPanelOrder0": "0",
@@ -118,6 +133,7 @@
     "kotlin-language-version-configured": "true",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     "last_opened_file_path": "C:/Users/red29/3-sprint-mission",
 =======
     "last_opened_file_path": "C:/Users/red29/IdeaProjects/sprint_mission_4_hint",
@@ -125,6 +141,9 @@
 =======
     "last_opened_file_path": "C:/Users/red29/IdeaProjects/chap09-rest-api-lecture-source",
 >>>>>>> 6fae2e2 (Basic requirements for sprint4)
+=======
+    "last_opened_file_path": "C:/Users/red29/3-sprint-mission",
+>>>>>>> 989f80a (Sprint mission 4 requirements completed)
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -132,6 +151,9 @@
     "nodejs_package_manager_path": "npm",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 989f80a (Sprint mission 4 requirements completed)
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.0",
     "project.structure.side.proportion": "0.0",
@@ -194,8 +216,13 @@
       <workItem from="1747489455217" duration="5158000" />
 =======
       <workItem from="1747294295805" duration="6339000" />
+<<<<<<< HEAD
       <workItem from="1747354011100" duration="2760000" />
 >>>>>>> 6fae2e2 (Basic requirements for sprint4)
+=======
+      <workItem from="1747354011100" duration="18427000" />
+      <workItem from="1747489455217" duration="5158000" />
+>>>>>>> 989f80a (Sprint mission 4 requirements completed)
     </task>
     <task id="LOCAL-00001" summary="Basic requirements for sprint4">
       <option name="closed" value="true" />
@@ -214,22 +241,31 @@
       <updated>1747394159909</updated>
     </task>
     <option name="localTasksCounter" value="3" />
+<<<<<<< HEAD
 =======
     </task>
 >>>>>>> 3189145 (5월 15일 강의 결과물)
+=======
+>>>>>>> 989f80a (Sprint mission 4 requirements completed)
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 989f80a (Sprint mission 4 requirements completed)
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Basic requirements for sprint4" />
     <MESSAGE value="May 16th lecture complete" />
     <option name="LAST_COMMIT_MESSAGE" value="May 16th lecture complete" />
   </component>
+<<<<<<< HEAD
 =======
 >>>>>>> 3189145 (5월 15일 강의 결과물)
+=======
+>>>>>>> 989f80a (Sprint mission 4 requirements completed)
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
     <select />
