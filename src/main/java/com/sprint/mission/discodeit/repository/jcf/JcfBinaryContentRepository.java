@@ -5,16 +5,16 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 @Repository
 public class JcfBinaryContentRepository implements BinaryContentRepository {
 
-  private final Map<UUID, BinaryContent> store = new HashMap<>();
+  private final Map<UUID, BinaryContent> store = new ConcurrentHashMap<>();
 
   @Override
   public BinaryContent save(BinaryContent content) {

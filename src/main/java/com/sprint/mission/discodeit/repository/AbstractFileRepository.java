@@ -2,10 +2,12 @@ package com.sprint.mission.discodeit.repository;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractFileRepository<T extends Serializable, ID> {
   protected final Map<ID, T> dataMap = new HashMap<>();
   private final String filePath;
+  protected final ReentrantLock lock = new ReentrantLock();
 
   protected AbstractFileRepository(String filePath) {
     this.filePath = filePath;
@@ -25,51 +27,86 @@ public abstract class AbstractFileRepository<T extends Serializable, ID> {
   }
 
   private void loadData() {
-    File file = new File(filePath);
-    if (!file.exists()) return;
+    lock.lock();
+    try {
+      File file = new File(filePath);
+      if (!file.exists()) return;
 
-    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-      Map<ID, T> loadedData = (Map<ID, T>) ois.readObject();
-      dataMap.putAll(loadedData);
-    } catch (IOException | ClassNotFoundException e) {
-      throw new IllegalStateException("데이터 로딩에 실패: " + filePath, e);
+      try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+        Map<ID, T> loadedData = (Map<ID, T>) ois.readObject();
+        dataMap.putAll(loadedData);
+      } catch (IOException | ClassNotFoundException e) {
+        throw new IllegalStateException("데이터 로딩에 실패: " + filePath, e);
+      }
+    } finally {
+      lock.unlock();
     }
   }
 
   protected void saveData() {
-    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
-      oos.writeObject(dataMap);
-    } catch (IOException e) {
-      e.printStackTrace();
+    lock.lock();
+    try {
+      try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
+        oos.writeObject(dataMap);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    } finally {
+      lock.unlock();
     }
   }
 
   public T save(T entity, ID id) {
-    dataMap.put(id, entity);
-    saveData();
-    return entity;
+    lock.lock();
+    try {
+      dataMap.put(id, entity);
+      saveData();
+      return entity;
+    } finally {
+      lock.unlock();
+    }
   }
 
   public Optional<T> findById(ID id) {
-    return Optional.ofNullable(dataMap.get(id));
+    lock.lock();
+    try {
+      return Optional.ofNullable(dataMap.get(id));
+    } finally {
+      lock.unlock();
+    }
   }
 
   public List<T> findAll() {
-    return new ArrayList<>(dataMap.values());
+    lock.lock();
+    try {
+      return new ArrayList<>(dataMap.values());
+    } finally {
+      lock.unlock();
+    }
   }
 
   public T update(T entity, ID id) {
-    if (!dataMap.containsKey(id)) {
-      throw new IllegalArgumentException("해당 ID가 존재하지 않습니다: " + id);
+    lock.lock();
+    try {
+      if (!dataMap.containsKey(id)) {
+        throw new IllegalArgumentException("해당 ID가 존재하지 않습니다: " + id);
+      }
+      dataMap.put(id, entity);
+      saveData();
+      return entity;
+    } finally {
+      lock.unlock();
     }
-    dataMap.put(id, entity);
-    saveData();
-    return entity;
   }
 
   public void delete(ID id) {
-    dataMap.remove(id);
-    saveData();
+    lock.lock();
+    try {
+      dataMap.remove(id);
+      saveData();
+    } finally {
+      lock.unlock();
+    }
   }
 }
 

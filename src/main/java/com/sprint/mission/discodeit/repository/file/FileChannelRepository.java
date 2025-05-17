@@ -50,16 +50,26 @@ public class FileChannelRepository extends AbstractFileRepository<Channel, UUID>
 
   @Override
   public void deleteByOwnerId(UUID userId) {
-    dataMap.entrySet().removeIf(entry -> entry.getValue().getChannelOwner().getId().equals(userId));
-    saveData();
+    lock.lock();
+    try {
+      dataMap.entrySet().removeIf(entry -> entry.getValue().getChannelOwner().getId().equals(userId));
+      saveData();
+    } finally {
+      lock.unlock();
+    }
   }
 
   @Override
   public void removeUserFromAllChannels(UUID userId) {
-    for (Channel channel : dataMap.values()) {
-      channel.getChannelMembers().removeIf(user -> user.getId().equals(userId));
+    lock.lock();
+    try{
+      for (Channel channel : dataMap.values()) {
+        channel.getChannelMembers().removeIf(user -> user.getId().equals(userId));
+      }
+      saveData();
+    } finally {
+      lock.unlock();
     }
-    saveData();
   }
     /*
  Repository: 데이터를 영속화(storage)하는 계층

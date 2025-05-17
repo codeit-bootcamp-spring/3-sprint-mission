@@ -6,12 +6,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 @Repository
 public class JcfUserStatusRepository implements UserStatusRepository {
 
-  private final Map<UUID, UserStatus> store = new HashMap<>();
+  private final Map<UUID, UserStatus> store = new ConcurrentHashMap<>();
 
   @Override
   public UserStatus save(UserStatus status) {
@@ -22,6 +23,13 @@ public class JcfUserStatusRepository implements UserStatusRepository {
   @Override
   public Optional<UserStatus> find(UUID id) {
     return Optional.ofNullable(store.get(id));
+  }
+
+  @Override
+  public Optional<UserStatus> findByUserId(UUID userId) {
+    return store.values().stream()
+        .filter(status -> status.getUserId().equals(userId))
+        .findFirst();
   }
 
   @Override

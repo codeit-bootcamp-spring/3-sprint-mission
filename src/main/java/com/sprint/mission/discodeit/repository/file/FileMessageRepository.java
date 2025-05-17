@@ -48,7 +48,7 @@ public class FileMessageRepository implements MessageRepository {
   }
 
   @Override
-  public Message save(Message message) {
+  public synchronized Message save(Message message) {
     dataStore.getMessageMap().put(message.getId(), message);
 
     // 채널 인덱스
@@ -66,12 +66,12 @@ public class FileMessageRepository implements MessageRepository {
   }
 
   @Override
-  public Optional<Message> findById(UUID messageId) {
+  public synchronized Optional<Message> findById(UUID messageId) {
     return Optional.ofNullable(dataStore.getMessageMap().get(messageId));
   }
 
   @Override
-  public void delete(UUID messageId) {
+  public synchronized void delete(UUID messageId) {
     Message message = dataStore.getMessageMap().remove(messageId);
     if (message != null) {
       dataStore.getChannelMessagesMap()
@@ -85,20 +85,20 @@ public class FileMessageRepository implements MessageRepository {
   }
 
   @Override
-  public void deleteAll(List<Message> messages) {
+  public synchronized void deleteAll(List<Message> messages) {
     for (Message message : messages) {
       delete(message.getId());
     }
   }
 
   @Override
-  public List<Message> findByChannelId(UUID channelId) {
+  public synchronized List<Message> findByChannelId(UUID channelId) {
     return new ArrayList<>(dataStore.getChannelMessagesMap()
         .getOrDefault(channelId, Collections.emptyList()));
   }
 
   @Override
-  public List<Message> findBySenderId(UUID senderId) {
+  public synchronized List<Message> findBySenderId(UUID senderId) {
     return new ArrayList<>(dataStore.getUserMessagesMap()
         .getOrDefault(senderId, Collections.emptyList()));
   }
@@ -106,5 +106,9 @@ public class FileMessageRepository implements MessageRepository {
   /*
   세 개의 Map을 각각 직렬화하는 대신,    (dataStore 단일 객체만 .ser 파일로 직렬화)
   하나의 Wrapper 객체(MessageDataStore)로 묶어 통합 직렬화하면 구조 변경 시 대응이 가능하다.
+
+  모든 공유 자원 접근 메서드에 synchronized 사용 중
+  lock 분할 제어가 필요하지 않음 -> ReentrantLock을 사용하지 않음
+  ReentrantLock으로 전환? -> 성능 병목이 발생하거나, 데드락이나 기아 상태가 의심될 때
    */
 }

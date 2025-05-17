@@ -30,7 +30,7 @@ public class BasicUserStatusService implements UserStatusService {
       throw new IllegalArgumentException("userStatus가 존재하지 않음");
     }
 
-    if (userStatusRepository.find(userId).isPresent()) {
+    if (userStatusRepository.findByUserId(userId).isPresent()) {
       throw new IllegalStateException("userStatus가 존재하지 않음");
     }
 

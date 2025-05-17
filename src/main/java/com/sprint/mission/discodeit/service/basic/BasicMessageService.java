@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -27,7 +29,9 @@ public class BasicMessageService implements MessageService {
   private final ChannelRepository channelRepository;
   private final BinaryContentRepository binaryContentRepository;
 
-  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM월 dd일 a hh시 mm분 ss초");
+  private static final DateTimeFormatter DATE_FORMATTER =
+      DateTimeFormatter.ofPattern("MM월 dd일 a hh시 mm분 ss초", Locale.KOREAN)
+          .withZone(ZoneId.of("Asia/Seoul"));
 
   @Override
   public Message createMessage(MessageCreateRequest messageCreateRequest, List<BinaryContentCreateRequest> binaryContentCreateRequests) {
@@ -163,7 +167,7 @@ public class BasicMessageService implements MessageService {
     boolean isEdited = !message.getCreatedAt().equals(message.getUpdatedAt());
     Instant timestamp = isEdited ? message.getUpdatedAt() : message.getCreatedAt();
 
-    String formattedDate = DATE_FORMAT.format(Date.from(timestamp));
+    String formattedDate = DATE_FORMATTER.format(timestamp);
 
     Optional<UserDto> senderOpt = userService.find(message.getSenderId());
     String senderName = senderOpt.map(UserDto::getUsername).orElse("알 수 없음");

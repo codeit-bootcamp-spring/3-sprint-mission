@@ -6,11 +6,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 @Repository
 public class JcfChannelRepository implements ChannelRepository {
-  private final Map<UUID, Channel> channelMap = new HashMap<>();
+  private final Map<UUID, Channel> channelMap = new ConcurrentHashMap<>();
 
   @Override
   public Channel save(Channel channel) {
