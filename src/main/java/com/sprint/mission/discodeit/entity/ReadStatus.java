@@ -1,46 +1,40 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
+@Getter
 public class ReadStatus implements Serializable {
     private static final long serialVersionUID = 1L;
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    //
+    private UUID userId;
+    private UUID channelId;
+    private Instant lastReadAt;
 
-    private final UUID id;            // 고유 식별자
-    private final UUID userId;        // 메시지를 읽은 사용자 ID
-    private final UUID messageId;     // 읽은 메시지 ID
-    private final long readAt;        // 읽은 시각 (timestamp)
-
-    public ReadStatus(UUID userId, UUID messageId) {
+    public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
         this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        //
         this.userId = userId;
-        this.messageId = messageId;
-        this.readAt = System.currentTimeMillis(); // 읽은 시각을 현재 시간으로 저장
+        this.channelId = channelId;
+        this.lastReadAt = lastReadAt;
     }
 
-    public UUID getId() {
-        return id;
-    }
+    public void update(Instant newLastReadAt) {
+        boolean anyValueUpdated = false;
+        if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
+            this.lastReadAt = newLastReadAt;
+            anyValueUpdated = true;
+        }
 
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public UUID getMessageId() {
-        return messageId;
-    }
-
-    public long getReadAt() {
-        return readAt;
-    }
-
-    @Override
-    public String toString() {
-        return "ReadStatus{" +
-                "id=" + id +
-                ", userId=" + userId +
-                ", messageId=" + messageId +
-                ", readAt=" + readAt +
-                '}';
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 }

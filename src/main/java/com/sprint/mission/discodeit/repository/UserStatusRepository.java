@@ -3,19 +3,15 @@ package com.sprint.mission.discodeit.repository;
 import com.sprint.mission.discodeit.entity.UserStatus;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface UserStatusRepository {
-
-    // 상태 저장 또는 갱신
     UserStatus save(UserStatus userStatus);
-
-    // 특정 사용자 상태 조회
-    UserStatus findByUserId(UUID userId);
-
-    // 전체 사용자 상태 조회
+    Optional<UserStatus> findById(UUID id);
+    Optional<UserStatus> findByUserId(UUID userId);
     List<UserStatus> findAll();
-
-    // 특정 사용자 상태 삭제
+    boolean existsById(UUID id);
+    void deleteById(UUID id);
     void deleteByUserId(UUID userId);
 }

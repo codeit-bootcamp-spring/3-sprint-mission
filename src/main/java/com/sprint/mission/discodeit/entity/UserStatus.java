@@ -1,65 +1,45 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
+@Getter
 public class UserStatus implements Serializable {
     private static final long serialVersionUID = 1L;
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    //
+    private UUID userId;
+    private Instant lastActiveAt;
 
-    public enum Status {
-        ONLINE,
-        OFFLINE,
-        AWAY,
-        DO_NOT_DISTURB
-    }
-
-    private final UUID id;           // 고유 ID
-    private final UUID userId;       // 상태를 가진 유저 ID
-    private Status status;           // 현재 상태
-    private final long createdAt;    // 상태 설정 시각
-    private long updatedAt;          // 마지막 수정 시각
-
-    public UserStatus(UUID userId, Status status) {
+    public UserStatus(UUID userId, Instant lastActiveAt) {
         this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        //
         this.userId = userId;
-        this.status = status;
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = this.createdAt;
+        this.lastActiveAt = lastActiveAt;
     }
 
-    public UUID getId() {
-        return id;
+    public void update(Instant lastActiveAt) {
+        boolean anyValueUpdated = false;
+        if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
+            this.lastActiveAt = lastActiveAt;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
-    public UUID getUserId() {
-        return userId;
-    }
+    public Boolean isOnline() {
+        Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
 
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status newStatus) {
-        this.status = newStatus;
-        this.updatedAt = System.currentTimeMillis();
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    @Override
-    public String toString() {
-        return "UserStatus{" +
-                "id=" + id +
-                ", userId=" + userId +
-                ", status=" + status +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
+        return lastActiveAt.isAfter(instantFiveMinutesAgo);
     }
 }

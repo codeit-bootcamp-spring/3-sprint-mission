@@ -1,63 +1,55 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
-public class User implements Serializable { // 직렬화를 위해 Serializable 구현
+@Getter
+public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final UUID id;               // 고유 사용자 ID
-    private final Instant createdAt;     // 생성 시간
-    private Instant updatedAt;           // 마지막 수정 시간
-    private String name;                 // 사용자 이름
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    //
+    private String username;
+    private String email;
+    private String password;
+    private UUID profileId;     // BinaryContent
 
-    // 생성자
-    public User(String name) {
+    public User(String username, String email, String password, UUID profileId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
-        this.name = name;
+        //
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.profileId = profileId;
     }
 
-    // 이름 및 시간 업데이트
-    public void updateName(String name) {
-        this.name = name;
-        this.updatedAt = Instant.now();
-    }
+    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
+            this.profileId = newProfileId;
+            anyValueUpdated = true;
+        }
 
-    public void setName(String newName) {
-        this.name = newName;
-    }
-
-    public void updateUpdatedAt() {
-        this.updatedAt = Instant.now();
-    }
-
-    // Getter
-    public UUID getId() {
-        return id;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 }

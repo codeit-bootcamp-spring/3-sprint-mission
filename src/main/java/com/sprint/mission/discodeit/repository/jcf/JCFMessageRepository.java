@@ -2,39 +2,49 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
+@Repository
 public class JCFMessageRepository implements MessageRepository {
-    private final Map<UUID, Message> storage = new HashMap<>();
+    private final Map<UUID, Message> data;
 
-    // 메시지 저장 (신규 생성 또는 수정 시 호출)
-    @Override
-    public void save(Message message) {
-        storage.put(message.getId(), message); // ID 중복 시 덮어씀
+    public JCFMessageRepository() {
+        this.data = new HashMap<>();
     }
 
-    // 메시지 조회
     @Override
-    public Message findById(UUID id) {
-        return storage.get(id); // 해당 ID의 메시지 반환 (없으면 null)
+    public Message save(Message message) {
+        this.data.put(message.getId(), message);
+        return message;
     }
 
-    // 전체 메시지 조회
     @Override
-    public List<Message> findAll() {
-        return new ArrayList<>(storage.values()); // Map의 value들을 리스트로 변환
+    public Optional<Message> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
-    // 메시지 업데이트
     @Override
-    public void update(Message message) {
-        storage.put(message.getId(), message); // ID 기준으로 덮어쓰기
+    public List<Message> findAllByChannelId(UUID channelId) {
+        return this.data.values().stream().filter(message -> message.getChannelId().equals(channelId)).toList();
     }
 
-    // 메시지 삭제
     @Override
-    public void delete(UUID id) {
-        storage.remove(id); // 해당 ID에 해당하는 메시지 삭제
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        this.data.remove(id);
+    }
+
+    @Override
+    public void deleteAllByChannelId(UUID channelId) {
+        this.findAllByChannelId(channelId)
+                .forEach(message -> this.deleteById(message.getId()));
     }
 }
