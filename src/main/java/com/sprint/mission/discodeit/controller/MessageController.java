@@ -59,6 +59,15 @@ public class MessageController {
     return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
   }
 
+  @Operation(summary = "ID로 특정 Message 조회")
+  @ApiResponses(
+      value = {
+          @ApiResponse(responseCode = "200", description = "Message 조회 성공"),
+          @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음"
+              , content = @Content(examples = {
+              @ExampleObject(value = "Message with id {messageId} not found")}))
+      }
+  )
   @GetMapping(path = "/{messageId}")
   public ResponseEntity<MessageResponseDTO> findById(@PathVariable UUID messageId) {
     MessageResponseDTO foundMessage = messageService.findById(messageId);
@@ -68,31 +77,9 @@ public class MessageController {
 
   @Operation(summary = "Channel의 Message 목록 조회")
   @ApiResponse(responseCode = "200", description = "Message 읽음 상태 목록 조회 성공")
-  @GetMapping(path = "/channels")
+  @GetMapping
   public ResponseEntity<List<MessageResponseDTO>> findAllByChannelId(@RequestParam UUID channelId) {
     List<MessageResponseDTO> foundMessages = messageService.findAllByChannelId(channelId);
-
-    return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
-  }
-
-  @GetMapping
-  public ResponseEntity<List<MessageResponseDTO>> findAll() {
-    List<MessageResponseDTO> foundMessages = messageService.findAll();
-
-    return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
-  }
-
-  @GetMapping(path = "/users")
-  public ResponseEntity<List<MessageResponseDTO>> findAllByUserId(@RequestParam UUID userId) {
-    List<MessageResponseDTO> foundMessages = messageService.findAllByUserId(userId);
-
-    return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
-  }
-
-  @GetMapping(path = "/word")
-  public ResponseEntity<List<MessageResponseDTO>> findAllByContainingWord(
-      @RequestParam String word) {
-    List<MessageResponseDTO> foundMessages = messageService.findAllByContainingWord(word);
 
     return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
   }

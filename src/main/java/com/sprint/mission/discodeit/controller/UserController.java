@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,7 +60,7 @@ public class UserController {
   @ApiResponses(
       value = {
           @ApiResponse(responseCode = "201", description = "User가 성공적으로 생성됨"),
-          @ApiResponse(responseCode = "400", description = "같은 email 또는 name을 사용하는 User가 이미 존재함"
+          @ApiResponse(responseCode = "409", description = "같은 email 또는 name을 사용하는 User가 이미 존재함"
               , content = @Content(examples = {
               @ExampleObject(value = "User with email {email} already exists")}))
       }
@@ -78,23 +77,18 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
   }
 
+  @Operation(summary = "ID로 특정 User 조회")
+  @ApiResponses(
+      value = {
+          @ApiResponse(responseCode = "200", description = "User 조회 성공"),
+          @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음"
+              , content = @Content(examples = {
+              @ExampleObject(value = "User with id {userId} not found")}))
+      }
+  )
   @GetMapping(path = "/{userId}")
   public ResponseEntity<UserResponseDTO> findById(@PathVariable UUID userId) {
     UserResponseDTO foundUser = userService.findById(userId);
-
-    return ResponseEntity.status(HttpStatus.OK).body(foundUser);
-  }
-
-  @GetMapping(path = "/name")
-  public ResponseEntity<List<UserResponseDTO>> findByName(@RequestParam String name) {
-    List<UserResponseDTO> foundUser = userService.findByNameContaining(name);
-
-    return ResponseEntity.status(HttpStatus.OK).body(foundUser);
-  }
-
-  @GetMapping(path = "/email")
-  public ResponseEntity<UserResponseDTO> findByEmail(@RequestParam String email) {
-    UserResponseDTO foundUser = userService.findByEmail(email);
 
     return ResponseEntity.status(HttpStatus.OK).body(foundUser);
   }
@@ -184,6 +178,15 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.OK).body(userStatusResponseDTO);
   }
 
+  @Operation(summary = "친구 추가")
+  @ApiResponses(
+      value = {
+          @ApiResponse(responseCode = "200", description = "친구 추가가 성공적으로 됨"),
+          @ApiResponse(responseCode = "404", description = "해당 User를 찾을 수 없음"
+              , content = @Content(examples = {
+              @ExampleObject(value = "User with id {userId} not found")}))
+      }
+  )
   @PostMapping(path = "/friends")
   public ResponseEntity<String> addFriend(@RequestBody FriendReqeustDTO friendReqeustDTO) {
     userService.addFriend(friendReqeustDTO);
@@ -191,6 +194,15 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.OK).body("[Success]: 친구 추가 성공!");
   }
 
+  @Operation(summary = "친구 삭제")
+  @ApiResponses(
+      value = {
+          @ApiResponse(responseCode = "200", description = "친구 삭제가 성공적으로 됨"),
+          @ApiResponse(responseCode = "400", description = "친구 관계가 아님"
+              , content = @Content(examples = {
+              @ExampleObject(value = "User with id {id1} and User with id {id2}is not friend")}))
+      }
+  )
   @DeleteMapping(path = "/friends")
   public ResponseEntity<String> deleteFriend(@RequestBody FriendReqeustDTO friendReqeustDTO) {
     userService.deleteFriend(friendReqeustDTO);

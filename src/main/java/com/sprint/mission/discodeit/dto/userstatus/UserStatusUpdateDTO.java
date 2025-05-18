@@ -1,5 +1,9 @@
 package com.sprint.mission.discodeit.dto.userstatus;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 
-public record UserStatusUpdateDTO(Instant lastLoginTime) {}
+@Schema(description = "변경할 User 온라인 상태 정보")
+public record UserStatusUpdateDTO(Instant lastLoginTime) {
+
+}
