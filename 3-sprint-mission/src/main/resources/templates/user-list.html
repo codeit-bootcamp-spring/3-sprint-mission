@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>사용자 목록</title>
+  <style>
+  body {
+  font-family: sans-serif;
+  background-color: #f3f4f6;
+  margin: 0;
+  padding: 40px;
+  }
+
+  .container {
+  max-width: 400px;
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  }
+
+  .header {
+  padding: 20px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  }
+
+  .user {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  }
+
+  .user:last-child {
+  border-bottom: none;
+  }
+
+  .user-info {
+  display: flex;
+  align-items: center;
+  }
+
+  .user img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin-right: 12px;
+  }
+
+  .user-details {
+  display: flex;
+  flex-direction: column;
+  }
+
+  .user-name {
+  font-weight: bold;
+  }
+
+  .user-email {
+  font-size: 0.9rem;
+  color: #6b7280;
+  }
+
+  .status {
+  background-color: #10b981;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">사용자 목록</div>
+
+  <div th:each="user : ${users}" class="user">
+    <div class="user-info">
+      <img th:src="${user.imageUrl}" alt="프로필">
+      <div class="user-details">
+        <div class="user-name" th:text="${user.name}">이름</div>
+        <div class="user-email" th:text="${user.email}">이메일</div>
+      </div>
+    </div>
+    <div class="status">온라인</div>
+  </div>
+</div>
+</body>
+</html>

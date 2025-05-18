@@ -1,43 +1,38 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
-@Data
 @Getter
 @ToString
-public class UserStatus {
+public class UserStatus implements Serializable {
     private final UUID id;
     private final UUID userId;
-    private boolean isLogin;
-    private Instant lastLoginTime;
+    private Instant lastActiveTime;
     private final Instant createdAt;
     private Instant updatedAt;
 
-    public UserStatus(UUID userId) {
+    @Builder
+    public UserStatus(UUID userId, Instant lastActiveTime) {
         this.id = UUID.randomUUID();
         this.userId = userId;
-        this.isLogin = true;
-        this.lastLoginTime = null;
+        this.lastActiveTime = lastActiveTime;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
     }
 
-    public void update(Instant lastLoginTime) {
-        this.lastLoginTime = lastLoginTime;
+    public void update(Instant newActiveTime) {
+        this.lastActiveTime = newActiveTime;
     }
 
-    public boolean isLogin() {
-        boolean isLogin =
-                this.lastLoginTime.isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));
-        this.updatedAt = Instant.now();
-        return isLogin;
+    public Boolean online() {
+        Boolean online =
+                this.lastActiveTime.isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));
+        return online;
 
     }
 
