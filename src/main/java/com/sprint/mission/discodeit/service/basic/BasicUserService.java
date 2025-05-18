@@ -9,8 +9,8 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
 
-  private final com.sprint.mission.discodeit.repository.UserRepository userRepository;
+  private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
   private final ChannelRepository channelRepository;
@@ -57,6 +57,8 @@ public class BasicUserService implements UserService {
         .ifPresent(profile -> {
           BinaryContent binaryContent = new BinaryContent(profile.fileName(), user.getId());
           binaryContentRepository.save(binaryContent);
+          user.setProfileId(binaryContent.getId());
+          userRepository.save(user);
         });
 
     return user;

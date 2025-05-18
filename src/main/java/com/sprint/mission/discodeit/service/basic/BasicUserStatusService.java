@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -45,20 +46,23 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
-  public UserStatus update(UserStatusUpdateRequest request) {
-    UserStatus status = findById(request.id());
-    status.updateTimestamp();
+  public UserStatus update(UUID userStatusId, UserStatusUpdateRequest request) {
+    Instant newLastUpdatedAt = request.newLastUpdatedAt();
+
+    UserStatus status = userStatusRepository.find(userStatusId)
+        .orElseThrow(() -> new NoSuchElementException("userStatus가 존재하지 않음"));
+    status.update(newLastUpdatedAt);
     return userStatusRepository.save(status);
   }
 
   @Override
-  public UserStatus updateByUserId(UUID userId) {
-    UserStatus status = userStatusRepository.findAll().stream()
-        .filter(s -> s.getUserId().equals(userId))
-        .findFirst()
+  public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
+    Instant newLastUpdatedAt = request.newLastUpdatedAt();
+
+    UserStatus status = userStatusRepository.findByUserId(userId)
         .orElseThrow(() -> new NoSuchElementException("userStatus가 존재하지 않음"));
 
-    status.updateTimestamp();
+    status.update(newLastUpdatedAt);
     return userStatusRepository.save(status);
   }
 

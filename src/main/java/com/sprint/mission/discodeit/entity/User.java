@@ -48,10 +48,10 @@ public class User implements Serializable {
     updatedAt = Instant.now();
   }
 
-//  public void setProfileId(UUID profileId) {
-//    this.profileId = profileId;
-//    this.updatedAt = Instant.now();
-//  }
+  public void setProfileId(UUID profileId) {
+    this.profileId = profileId;
+    this.updatedAt = Instant.now();
+  }
 
   @Override
   public String toString() {

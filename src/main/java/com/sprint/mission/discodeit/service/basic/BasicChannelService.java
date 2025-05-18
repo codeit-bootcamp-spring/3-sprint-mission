@@ -166,6 +166,10 @@ public class BasicChannelService implements ChannelService {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
 
+    if (channel.getChannelType() == ChannelType.PRIVATE) {
+      throw new IllegalArgumentException("PRIVATE 채널은 수정이 불가능합니다.");
+    }
+
     String newChannelName = request.channelName();
 
     if (channel.getChannelName().equals(newChannelName)) {
