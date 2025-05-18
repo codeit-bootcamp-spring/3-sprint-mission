@@ -1,35 +1,65 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+
 import java.io.Serializable;
-import java.time.Instant;
+import java.text.SimpleDateFormat;
 import java.util.UUID;
 
-import lombok.Builder;
-import lombok.Getter;
-
-@Getter
 public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final UUID id;
-    private String username;
-    private String email;
+    private final String userid;
     private String password;
     private String name;
-    private UUID profileId;
-    private final Instant createdAt;
-    private Instant updatedAt;
-    private Instant loginTime;
+    private final Long createdAt;
+    private Long updatedAt;
+    private boolean isLogin;
 
-    @Builder
-    public User(String username, String email, String password, String name, UUID profileId) {
+    public User(String userid, String password, String name) {
         this.id = UUID.randomUUID();
-        this.username = username;
-        this.email = email;
+        this.userid = userid;
         this.password = password;
         this.name = name;
-        this.profileId = profileId;
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-        this.loginTime = Instant.now();
+        this.createdAt = System.currentTimeMillis();
+        this.updatedAt = System.currentTimeMillis();
+        this.isLogin = false;
+    }
+
+    public UUID getId() {
+
+        return id;
+    }
+
+    public String getUserId() {
+
+        return userid;
+    }
+
+    public String getPassword() {
+
+        return password;
+    }
+
+    public String getName() {
+
+        return name;
+    }
+
+    public boolean getIsLogin() {
+
+        return isLogin;
+    }
+
+    // Date 타입 포매팅
+    public String getCreatedAt() {
+        String formattedCreatedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(createdAt);
+        return formattedCreatedTime;
+    }
+
+    public String getUpdatedAt() {
+        String formattedUpdatedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(updatedAt);
+        return formattedUpdatedTime;
     }
 
     @Override
@@ -37,41 +67,31 @@ public class User implements Serializable {
 
         return "User{" +
 //                "id=" + id +
-                "username='" + username + '\'' +
-                ", email='" + email + '\'' +
+                "userid='" + userid + '\'' +
                 ", name='" + name + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", loginTime=" + loginTime +
+                ", createdAt=" + getCreatedAt() +
+                ", updatedAt=" + getUpdatedAt() +
+                ", isLogin=" + isLogin +
                 '}';
     }
 
-    public void update(String newUsername, String newEmail, String newPassword, String newName, UUID newProfileId) {
-        boolean anyValueUpdated = false;
-        if (newUsername != null && !newUsername.equals(this.username)) {
-            this.username = newUsername;
-            anyValueUpdated = true;
-        }
-        if (newEmail != null && !newEmail.equals(this.email)) {
-            this.email = newEmail;
-            anyValueUpdated = true;
-        }
-        if (newPassword != null && !newPassword.equals(this.password)) {
-            this.password = newPassword;
-            anyValueUpdated = true;
-        }
-        if (newName != null && !newName.equals(this.name)) {
-            this.name = newName;
-            anyValueUpdated = true;
-        }
-        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
-            this.profileId = newProfileId;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
-        }
+    public void setLogin() {
+        this.isLogin = true;
     }
+
+    public void setLogout() {
+        this.isLogin = false;
+    }
+
+    public void updateName(String name) {
+        this.name = name;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
 }
 
