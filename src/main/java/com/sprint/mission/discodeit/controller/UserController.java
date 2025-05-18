@@ -102,7 +102,6 @@ public class UserController {
       MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
   public ResponseEntity<User> update(
       @PathVariable String userId,
-//            @RequestParam String userId,
       @RequestPart("userUpdateRequest") UserUpdateRequest updateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
