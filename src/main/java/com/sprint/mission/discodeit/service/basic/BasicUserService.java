@@ -4,7 +4,7 @@ import static com.sprint.mission.discodeit.global.constant.ErrorMessages.DUPLICA
 import static com.sprint.mission.discodeit.global.constant.ErrorMessages.DUPLICATE_EMAIL;
 import static com.sprint.mission.discodeit.global.constant.ErrorMessages.DUPLICATE_USERNAME;
 
-import com.sprint.mission.discodeit.dto.data.UserDTO;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
@@ -60,7 +60,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public UserDTO find(UUID userId) {
+  public UserDto find(UUID userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
@@ -68,7 +68,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public List<UserDTO> findAll() {
+  public List<UserDto> findAll() {
     return userRepository.findAll().stream()
         .map(this::toDto)
         .collect(Collectors.toList());
@@ -146,12 +146,12 @@ public class BasicUserService implements UserService {
     );
   }
 
-  private UserDTO toDto(User user) {
+  private UserDto toDto(User user) {
     Boolean online = userStatusRepository.findByUserId(user.getId())
         .map(UserStatus::isOnline)
         .orElse(null);
 
-    return new UserDTO(
+    return new UserDto(
         user.getId(),
         user.getCreatedAt(),
         user.getUpdatedAt(),

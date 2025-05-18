@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.data.ChannelDTO;
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
@@ -52,7 +52,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public ChannelDTO find(UUID channelId) {
+  public ChannelDto find(UUID channelId) {
     return channelRepository.findById(channelId)
         .map(this::toDto)
         .orElseThrow(
@@ -60,7 +60,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public List<ChannelDTO> findAllByUserId(UUID userId) {
+  public List<ChannelDto> findAllByUserId(UUID userId) {
     List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
         .map(ReadStatus::getChannelId)
         .toList();
@@ -105,7 +105,7 @@ public class BasicChannelService implements ChannelService {
     return toResponse(channel);
   }
 
-  private ChannelDTO toDto(Channel channel) {
+  private ChannelDto toDto(Channel channel) {
     Instant lastMessageAt = messageRepository.findAllByChannelId(channel.getId())
         .stream()
         .sorted(Comparator.comparing(Message::getCreatedAt).reversed())
@@ -122,7 +122,7 @@ public class BasicChannelService implements ChannelService {
           .forEach(participantIds::add);
     }
 
-    return new ChannelDTO(
+    return new ChannelDto(
         channel.getId(),
         channel.getType(),
         channel.getName(),
