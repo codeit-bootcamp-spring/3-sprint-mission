@@ -1,21 +1,25 @@
 package com.sprint.mission.discodeit.service;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import com.sprint.mission.discodeit.dto.data.UserDTO;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 
+
 public interface UserService {
-    User create() throws IOException;
-    User find(UUID id);
-    User findByUserId(String userid);
-    List<User> findByName(String name);
-    List<User> findAll();
-    User update(UUID id) throws IOException;
+
+    User create(UserCreateRequest userCreateDTO, Optional<BinaryContentCreateRequest> profileCreateDTO);
+    UserDTO find(UUID id);
+    UserDTO findByUsername(String username);
+    List<UserDTO> findByName(String name);
+    UserDTO findByEmail(String email);
+    List<UserDTO> findAll();
+    User update(UUID id, UserUpdateRequest userUpdateDTO, Optional<BinaryContentCreateRequest> profileCreateDTO);
     void delete(UUID id);
-    // Login, Logout 메소드
-    User login() throws IOException;
-    void logout(User user);
 }
