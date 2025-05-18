@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,16 +36,9 @@ public class UserController {
       @RequestPart(value = "request") CreateUserRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    if (profile == null || profile.isEmpty()) {
-      User user = userService.create(request); // 프로필 없이 사용자 생성
-      boolean online = userStatusService.findByUserId(user.getId()).isOnline();
 
-      return ResponseEntity.status(HttpStatus.CREATED)
-          .body(UserDTO.fromDomain(user, online));
-    }
-
-    CreateBinaryContentRequest profileRequest = resolveProfileRequest(profile);
-
+    Optional<CreateBinaryContentRequest> profileRequest = Optional.ofNullable(profile)
+        .flatMap(this::resolveProfileRequest);
     User user = userService.create(request, profileRequest);
     System.out.println("유저 프로필 : " + user.getProfileId()); // 프로필이 있는 사용자 생성
     boolean online = userStatusService.findByUserId(user.getId()).isOnline();
@@ -82,17 +76,9 @@ public class UserController {
   public ResponseEntity<UserDTO> update(@PathVariable("userId") UUID userId,
       @RequestPart UpdateUserRequest updateUserRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
-    if (profile == null || profile.isEmpty()) {
-      User user = userService.update(userId, updateUserRequest);
-      userStatusService.findByUserId(userId).update(Instant.now());
-      boolean online = userStatusService.findByUserId(userId)
-          .isOnline();
-      return ResponseEntity
-          .status(HttpStatus.OK)
-          .body(UserDTO.fromDomain(user, online));
-    }
 
-    CreateBinaryContentRequest profileRequest = resolveProfileRequest(profile);
+    Optional<CreateBinaryContentRequest> profileRequest = Optional.ofNullable(profile)
+        .flatMap(this::resolveProfileRequest);
 
     User user = userService.update(userId, updateUserRequest, profileRequest);
     userStatusService.findByUserId(userId).update(Instant.now());
@@ -127,14 +113,17 @@ public class UserController {
         .body("사용자 ID : " + userId + " 삭제 성공");
   }
 
-  private CreateBinaryContentRequest resolveProfileRequest(MultipartFile profileFile) {
+  private Optional<CreateBinaryContentRequest> resolveProfileRequest(MultipartFile profileFile) {
+    if (profileFile.isEmpty()) {
+      return Optional.empty();
+    }
     try {
       CreateBinaryContentRequest binaryContentCreateRequest = new CreateBinaryContentRequest(
           profileFile.getOriginalFilename(),
           profileFile.getContentType(),
           profileFile.getBytes()
       );
-      return binaryContentCreateRequest;
+      return Optional.of(binaryContentCreateRequest);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
