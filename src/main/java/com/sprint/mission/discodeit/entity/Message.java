@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -26,10 +27,10 @@ public class Message implements Serializable {
         this.createdAt = Instant.now();
         this.updatedAt = this.createdAt;
         //
-        this.content = content;
-        this.channelId = channelId;
-        this.authorId = authorId;
-        this.attachmentIds = attachmentIds;
+        this.content = Objects.requireNonNull(content, "Message content must not be null");
+        this.channelId = Objects.requireNonNull(channelId, "Channel ID must not be null");
+        this.authorId = Objects.requireNonNull(authorId, "Author ID must not be null");
+        this.attachmentIds = (attachmentIds != null) ? attachmentIds : new ArrayList<>();
     }
 
     public void update(String newContent) {

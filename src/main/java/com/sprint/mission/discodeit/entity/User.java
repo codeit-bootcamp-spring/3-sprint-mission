@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -23,9 +24,9 @@ public class User implements Serializable {
         this.createdAt = Instant.now();
         this.updatedAt = this.createdAt;
         //
-        this.username = username;
-        this.email = email;
-        this.password = password;
+        this.username = Objects.requireNonNull(username, "Username must not be null");
+        this.email = Objects.requireNonNull(email, "Email must not be null");
+        this.password = Objects.requireNonNull(password, "Password must not be null");
         this.profileId = profileId;
     }
 

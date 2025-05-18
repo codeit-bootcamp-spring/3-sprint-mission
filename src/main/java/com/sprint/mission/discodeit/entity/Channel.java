@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -22,7 +23,7 @@ public class Channel implements Serializable {
         this.createdAt = Instant.now();
         this.updatedAt = this.createdAt;
         //
-        this.type = type;
+        this.type = Objects.requireNonNull(type, "Channel type must not be null");
         this.name = name;
         this.description = description;
     }

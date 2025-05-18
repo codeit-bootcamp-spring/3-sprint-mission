@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -22,8 +23,8 @@ public class UserStatus implements Serializable {
         this.createdAt = Instant.now();
         this.updatedAt = this.createdAt;
         //
-        this.userId = userId;
-        this.lastActiveAt = lastActiveAt;
+        this.userId = Objects.requireNonNull(userId, "User ID must not be null");
+        this.lastActiveAt = Objects.requireNonNull(lastActiveAt, "Last active time must not be null");
     }
 
     public void update(Instant lastActiveAt) {

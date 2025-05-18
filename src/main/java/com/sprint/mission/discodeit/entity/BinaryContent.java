@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -21,9 +22,9 @@ public class BinaryContent implements Serializable {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         //
-        this.fileName = fileName;
-        this.size = size;
-        this.contentType = contentType;
-        this.bytes = bytes;
+        this.fileName = Objects.requireNonNull(fileName, "File name must not be null");
+        this.size = Objects.requireNonNull(size, "File size must not be null");
+        this.contentType = Objects.requireNonNull(contentType, "Content type must not be null");
+        this.bytes = Objects.requireNonNull(bytes, "Binary data must not be null");
     }
 }
