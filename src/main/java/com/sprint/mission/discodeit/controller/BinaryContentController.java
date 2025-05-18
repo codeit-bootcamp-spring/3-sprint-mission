@@ -13,10 +13,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @RequestMapping("/files")
 public class BinaryContentController {
-
     private final BinaryContentService binaryContentService;
 
-    // 단일 파일 조회
     @GetMapping("/{id}")
     public ResponseEntity<byte[]> getFile(@PathVariable UUID id) {
         Optional<BinaryContent> fileOpt = binaryContentService.findById(id);
@@ -32,7 +30,6 @@ public class BinaryContentController {
         return new ResponseEntity<>(file.getData(), headers, HttpStatus.OK);
     }
 
-    // 다중 파일 조회 (JSON 형식 반환)
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> getAllFiles() {
         List<Map<String, Object>> files = binaryContentService.findAll().stream()
