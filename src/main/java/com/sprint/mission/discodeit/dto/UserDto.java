@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public record UserDto(UUID userId,
                       @Schema(description = "사용자 이름", example = "kate")
-                      String name, String email, UUID profileId,
+                      String username, String email, UUID profileId,
                       Boolean online) {
 
 }
