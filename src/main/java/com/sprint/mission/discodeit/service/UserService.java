@@ -13,11 +13,11 @@ public interface UserService {
   /**
    * 새로운 사용자를 생성한다
    *
-   * @param dto          UserCreateRequest
-   * @param profileImage BinaryContent
+   * @param dto     UserCreateRequest
+   * @param profile BinaryContent
    * @return 생성된 사용자 객체
    */
-  UserResponse create(UserCreateRequest dto, BinaryContentCreateRequest profileImage);
+  UserResponse create(UserCreateRequest dto, BinaryContentCreateRequest profile);
 
   /**
    * ID로 사용자를 조회한다
@@ -57,7 +57,8 @@ public interface UserService {
    * @param dto    UserUpdateRequest
    * @return 업데이트된 사용자 객체
    */
-  Optional<UserResponse> update(UUID userId, UserUpdateRequest dto);
+  Optional<UserResponse> update(UUID userId, UserUpdateRequest dto,
+      BinaryContentCreateRequest profile);
 
   /**
    * 사용자를 삭제한다

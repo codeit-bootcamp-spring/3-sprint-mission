@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -88,7 +87,10 @@ public class UserController {
       @ApiResponse(responseCode = "409", description = "이미 사용 중인 이메일 또는 이름",
           content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
   })
-  @PatchMapping("/{userId}")
+  @PatchMapping(
+      value = "/{userId}",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+  )
   public ResponseEntity<UserResponse> update(
       @Parameter(
           description = "수정할 User 정보",
@@ -99,9 +101,24 @@ public class UserController {
       @Parameter(
           description = "수정할 User 프로필 이미지"
       )
-      @RequestBody UserUpdateRequest request
+      @RequestPart UserUpdateRequest userUpdateRequest,
+
+      @Parameter(
+          description = "User 프로필 이미지",
+          content = @Content(
+              mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+              schema = @Schema(type = "array", format = "binary", implementation = MultipartFile.class)
+          )
+      )
+      @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    Optional<UserResponse> updated = userService.update(userId, request);
+    BinaryContentCreateRequest profileImageRequest = null;
+
+    if (profile != null) {
+      profileImageRequest = resolveProfileImageRequest(profile).orElse(null);
+    }
+    Optional<UserResponse> updated = userService.update(userId, userUpdateRequest,
+        profileImageRequest);
     return updated.map(ResponseEntity::ok)
         .orElseGet(() -> ResponseEntity.notFound().build());
   }

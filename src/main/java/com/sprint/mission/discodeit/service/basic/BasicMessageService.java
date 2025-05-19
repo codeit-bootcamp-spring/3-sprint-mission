@@ -33,8 +33,8 @@ public class BasicMessageService implements MessageService {
   @Override
   public Message create(MessageCreateRequest messageCreateRequest,
       List<BinaryContentCreateRequest> binaryContentCreateRequests) throws ChannelException {
-    userRepository.findById(messageCreateRequest.userId())
-        .orElseThrow(() -> UserException.notFound(messageCreateRequest.userId()));
+    userRepository.findById(messageCreateRequest.authorId())
+        .orElseThrow(() -> UserException.notFound(messageCreateRequest.authorId()));
 
     channelRepository.findById(messageCreateRequest.channelId())
         .orElseThrow(() -> ChannelException.notFound(messageCreateRequest.channelId()));
@@ -51,7 +51,8 @@ public class BasicMessageService implements MessageService {
           return createdBinaryContent.getId();
         }).collect(Collectors.toSet());
 
-    Message message = Message.create(messageCreateRequest.content(), messageCreateRequest.userId(),
+    Message message = Message.create(messageCreateRequest.content(),
+        messageCreateRequest.authorId(),
         messageCreateRequest.channelId(),
         attachmentIds);
 

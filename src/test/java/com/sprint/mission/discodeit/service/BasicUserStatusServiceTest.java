@@ -46,7 +46,7 @@ class BasicUserStatusServiceTest {
 
   @BeforeEach
   void init() {
-    user = User.create("test@example.com", "TestUser", "password");
+    user = User.create("test@example.com", "TestUser", "newPassword");
     userStatus = UserStatusFixture.createValidUserStatus(userId);
   }
 

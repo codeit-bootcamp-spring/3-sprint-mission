@@ -31,13 +31,13 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public UserResponse create(UserCreateRequest request, BinaryContentCreateRequest profileImage) {
+  public UserResponse create(UserCreateRequest request, BinaryContentCreateRequest profile) {
     validateUserEmail(request.email());
-    validateUserName(request.name());
+    validateUserName(request.username());
 
     User newUser = User.create(
         request.email(),
-        request.name(),
+        request.username(),
         request.password(),
         null
     );
@@ -48,10 +48,10 @@ public class BasicUserService implements UserService {
     try {
       UUID profileImageId = null;
 
-      if (profileImage != null) {
-        String fileName = profileImage.fileName();
-        String contentType = profileImage.contentType();
-        byte[] bytes = profileImage.bytes();
+      if (profile != null) {
+        String fileName = profile.fileName();
+        String contentType = profile.contentType();
+        byte[] bytes = profile.bytes();
 
         BinaryContent binaryContent = BinaryContent.create(fileName, (long) fileName.length(),
             contentType, bytes);
@@ -100,18 +100,34 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public Optional<UserResponse> update(UUID userId, UserUpdateRequest request) {
+  public Optional<UserResponse> update(UUID userId, UserUpdateRequest request,
+      BinaryContentCreateRequest profile) {
     return userRepository.findById(userId)
         .map(user -> {
-          if (request.name() != null && !request.name().equals(user.getName())) {
-            validateUserName(request.name());
-            user.updateName(request.name());
+          if (request.newName() != null && !request.newName().equals(user.getName())) {
+            validateUserName(request.newName());
+            user.updateName(request.newName());
           }
-          if (request.password() != null) {
-            user.updatePassword(request.password());
+          if (request.newPassword() != null) {
+            user.updatePassword(request.newPassword());
           }
-          if (request.profileImageId() != null) {
-            user.updateProfileId(request.profileImageId());
+          try {
+            UUID profileImageId = null;
+
+            if (profile != null) {
+              String fileName = profile.fileName();
+              String contentType = profile.contentType();
+              byte[] bytes = profile.bytes();
+
+              BinaryContent binaryContent = BinaryContent.create(fileName, (long) fileName.length(),
+                  contentType, bytes);
+              profileImageId = binaryContentRepository.save(binaryContent).getId();
+
+              user.updateProfileId(profileImageId);
+              userRepository.save(user);
+            }
+          } catch (Exception e) {
+            log.warn("프로필 이미지 등록 실패: 기본 이미지 사용", e);
           }
           User savedUser = userRepository.save(user);
           return toUserResponse(savedUser);

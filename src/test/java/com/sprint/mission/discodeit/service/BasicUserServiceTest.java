@@ -60,7 +60,7 @@ class BasicUserServiceTest {
       UserStatus savedUserStatus = UserStatusFixture.createValidUserStatus(savedUser.getId());
 
       when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
-      when(userRepository.findByName(request.name())).thenReturn(Optional.empty());
+      when(userRepository.findByName(request.username())).thenReturn(Optional.empty());
       when(userRepository.save(any(User.class))).thenReturn(savedUser);
       when(userStatusRepository.save(any(UserStatus.class))).thenReturn(savedUserStatus);
 
@@ -68,11 +68,11 @@ class BasicUserServiceTest {
 
       assertNotNull(createdUserResponse);
       assertEquals(request.email(), createdUserResponse.email());
-      assertEquals(request.name(), createdUserResponse.username());
+      assertEquals(request.username(), createdUserResponse.username());
       assertNotNull(createdUserResponse.id());
 
       verify(userRepository).findByEmail(request.email());
-      verify(userRepository).findByName(request.name());
+      verify(userRepository).findByName(request.username());
       verify(userRepository).save(any(User.class));
       verify(userStatusRepository).save(any(UserStatus.class));
     }
@@ -91,7 +91,7 @@ class BasicUserServiceTest {
       UserStatus savedUserStatus = UserStatusFixture.createValidUserStatus(savedUser.getId());
 
       when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
-      when(userRepository.findByName(request.name())).thenReturn(Optional.empty());
+      when(userRepository.findByName(request.username())).thenReturn(Optional.empty());
       when(userRepository.save(any(User.class))).thenReturn(savedUser);
       when(userStatusRepository.save(any(UserStatus.class))).thenReturn(savedUserStatus);
       when(binaryContentRepository.save(any(BinaryContent.class))).thenReturn(binaryContent);
@@ -102,12 +102,12 @@ class BasicUserServiceTest {
 
       assertNotNull(createdUserResponse);
       assertEquals(request.email(), createdUserResponse.email());
-      assertEquals(request.name(), createdUserResponse.username());
+      assertEquals(request.username(), createdUserResponse.username());
       assertEquals(binaryContent.getId(), createdUserResponse.profileId());
       assertNotNull(createdUserResponse.id());
 
       verify(userRepository).findByEmail(request.email());
-      verify(userRepository).findByName(request.name());
+      verify(userRepository).findByName(request.username());
       verify(userRepository, times(2)).save(userCaptor.capture());
       assertEquals(binaryContent.getId(), userCaptor.getValue().getProfileId());
       verify(userStatusRepository).save(any(UserStatus.class));
@@ -137,14 +137,14 @@ class BasicUserServiceTest {
       User existingUser = User.create("다른@test.com", "길동쓰", "pwd123");
 
       when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
-      when(userRepository.findByName(request.name())).thenReturn(Optional.of(existingUser));
+      when(userRepository.findByName(request.username())).thenReturn(Optional.of(existingUser));
 
       UserException exception = assertThrows(UserException.class,
           () -> basicUserService.create(request, null));
       assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
 
       verify(userRepository).findByEmail(request.email());
-      verify(userRepository).findByName(request.name());
+      verify(userRepository).findByName(request.username());
       verify(userRepository, never()).save(any());
       verify(userStatusRepository, never()).save(any());
       verify(binaryContentRepository, never()).save(any());

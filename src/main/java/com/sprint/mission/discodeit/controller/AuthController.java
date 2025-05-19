@@ -35,7 +35,7 @@ public class AuthController {
       @ApiResponse(
           responseCode = "400",
           description = "비밀번호가 일치하지 않음",
-          content = @Content(examples = @ExampleObject(value = "Wrong password"))
+          content = @Content(examples = @ExampleObject(value = "Wrong newPassword"))
       ),
       @ApiResponse(
           responseCode = "404",
