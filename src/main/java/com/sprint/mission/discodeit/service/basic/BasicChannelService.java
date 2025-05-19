@@ -69,17 +69,17 @@ public class BasicChannelService implements ChannelService {
 
 
   @Override
-  public Optional<ChannelResponse> update(PublicChannelUpdateRequest request) {
-    return channelRepository.findById(request.channelId())
+  public Optional<ChannelResponse> update(UUID channelId, PublicChannelUpdateRequest request) {
+    return channelRepository.findById(channelId)
         .map(channel -> {
           if (channel.getType() == ChannelType.PRIVATE) {
-            throw ChannelException.cannotUpdatePrivateChannel(request.channelId());
+            throw ChannelException.cannotUpdatePrivateChannel(channelId);
           }
-          if (request.name() != null) {
-            channel.updateName(request.name());
+          if (request.newName() != null) {
+            channel.updateName(request.newName());
           }
-          if (request.description() != null) {
-            channel.updateDescription(request.description());
+          if (request.newDescription() != null) {
+            channel.updateDescription(request.newDescription());
           }
           return channelRepository.save(channel);
         })

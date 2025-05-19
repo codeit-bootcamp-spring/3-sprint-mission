@@ -45,10 +45,11 @@ public interface ChannelService {
   /**
    * 채널 정보를 업데이트한다
    *
-   * @param request ChannelUpdateRequest
+   * @param channelId UUID
+   * @param request   ChannelUpdateRequest
    * @return 업데이트된 채널 객체
    */
-  Optional<ChannelResponse> update(PublicChannelUpdateRequest request);
+  Optional<ChannelResponse> update(UUID channelId, PublicChannelUpdateRequest request);
 
   /**
    * 채널을 삭제한다

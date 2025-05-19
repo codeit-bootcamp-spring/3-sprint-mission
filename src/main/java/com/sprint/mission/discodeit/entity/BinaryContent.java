@@ -25,7 +25,6 @@ public class BinaryContent implements Serializable {
 
   private final UUID id;
   private final Instant createdAt;
-  private Instant updatedAt;
 
   private final String fileName;
   private Long size;
@@ -35,7 +34,6 @@ public class BinaryContent implements Serializable {
   private BinaryContent(
       UUID id,
       Instant createdAt,
-      Instant updatedAt,
       String fileName,
       Long size,
       String contentType,
@@ -43,7 +41,6 @@ public class BinaryContent implements Serializable {
   ) {
     this.id = id != null ? id : UUID.randomUUID();
     this.createdAt = createdAt != null ? createdAt : Instant.now();
-    this.updatedAt = updatedAt;
     this.fileName = fileName;
     this.size = size;
     this.contentType = contentType;
@@ -59,7 +56,6 @@ public class BinaryContent implements Serializable {
     return BinaryContent.builder()
         .id(UUID.randomUUID())
         .createdAt(Instant.now())
-        .updatedAt(null)
         .fileName(Objects.requireNonNull(fileName))
         .size(size)
         .contentType(Objects.requireNonNull(contentType))

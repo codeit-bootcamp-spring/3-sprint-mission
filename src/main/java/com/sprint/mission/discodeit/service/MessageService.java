@@ -29,16 +29,6 @@ public interface MessageService {
   Optional<Message> findById(UUID id);
 
   /**
-   * 조건에 맞는 메시지를 검색한다
-   *
-   * @param channelId 채널 ID (null인 경우 모든 채널)
-   * @param userId    작성자 ID (null인 경우 모든 작성자)
-   * @param content   메시지 내용에 포함된 텍스트 (null인 경우 모든 내용)
-   * @return 검색된 메시지 목록
-   */
-  List<Message> searchMessages(UUID channelId, UUID userId, String content);
-
-  /**
    * 채널의 모든 메시지를 조회한다
    *
    * @param channelId 채널 ID

@@ -68,7 +68,7 @@ class BasicUserServiceTest {
 
       assertNotNull(createdUserResponse);
       assertEquals(request.email(), createdUserResponse.email());
-      assertEquals(request.name(), createdUserResponse.name());
+      assertEquals(request.name(), createdUserResponse.username());
       assertNotNull(createdUserResponse.id());
 
       verify(userRepository).findByEmail(request.email());
@@ -102,7 +102,7 @@ class BasicUserServiceTest {
 
       assertNotNull(createdUserResponse);
       assertEquals(request.email(), createdUserResponse.email());
-      assertEquals(request.name(), createdUserResponse.name());
+      assertEquals(request.name(), createdUserResponse.username());
       assertEquals(binaryContent.getId(), createdUserResponse.profileId());
       assertNotNull(createdUserResponse.id());
 

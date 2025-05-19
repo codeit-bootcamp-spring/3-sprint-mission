@@ -19,7 +19,7 @@ public class BasicAuthService implements AuthService {
   private final UserStatusRepository userStatusRepository;
 
   public UserResponse login(LoginRequest request) {
-    User user = userRepository.findByName(request.userName())
+    User user = userRepository.findByName(request.username())
         .orElseThrow(AuthException::usernameNotFound);
 
     if (!user.getPassword().equals(request.password())) {

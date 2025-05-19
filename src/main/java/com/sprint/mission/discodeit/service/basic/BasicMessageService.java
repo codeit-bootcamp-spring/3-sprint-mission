@@ -14,7 +14,6 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -62,19 +61,6 @@ public class BasicMessageService implements MessageService {
   @Override
   public Optional<Message> findById(UUID id) {
     return messageRepository.findById(id);
-  }
-
-  @Override
-  public List<Message> searchMessages(UUID channelId, UUID userId, String content) {
-    return messageRepository.findAll().stream()
-        .filter(m -> m.getDeletedAt() == null)
-        .filter(m ->
-            (channelId == null || m.getChannelId().equals(channelId)) &&
-                (userId == null || m.getUserId().equals(userId)) &&
-                (Objects.equals(content, "") || content == null || m.getContent()
-                    .contains(content)))
-        .sorted(Comparator.comparing(Message::getCreatedAt))
-        .collect(Collectors.toList());
   }
 
   @Override
