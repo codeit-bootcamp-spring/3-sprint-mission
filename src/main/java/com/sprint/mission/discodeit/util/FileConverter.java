@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileConverter {
 
   public static BinaryContentDTO resolveFileRequest(MultipartFile multipartFile) {
-    if (multipartFile.isEmpty()) {
+    if (multipartFile == null || multipartFile.isEmpty()) {
       // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 비어있다면:
       return null;
     } else {

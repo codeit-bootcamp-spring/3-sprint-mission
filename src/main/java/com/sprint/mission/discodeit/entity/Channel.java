@@ -18,7 +18,7 @@ public class Channel implements Serializable {
   private UUID channelMaster;
   private String description;
   private ChannelType type;
-  private final List<UUID> users;
+  private final List<UUID> participantIds;
   private final List<UUID> messages;
   private Instant lastMessageTime;
 
@@ -29,28 +29,23 @@ public class Channel implements Serializable {
     this.channelMaster = channelMaster;
     this.description = description;
     this.type = ChannelType.PUBLIC;
-    this.users = new ArrayList<>();
+    this.participantIds = new ArrayList<>();
     this.messages = new ArrayList<>();
   }
 
-  public Channel(UUID channelMaster, List<UUID> users) {
+  public Channel(UUID channelMaster, List<UUID> participantIds) {
     this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
     this.name = "";
     this.channelMaster = channelMaster;
     this.description = "";
     this.type = ChannelType.PRIVATE;
-    this.users = users;
+    this.participantIds = participantIds;
     this.messages = new ArrayList<>();
   }
 
   public void updateName(String name) {
     this.name = name;
-    this.updatedAt = Instant.now();
-  }
-
-  public void updateChannelMaster(UUID userId) {
-    this.channelMaster = userId;
     this.updatedAt = Instant.now();
   }
 
@@ -72,7 +67,7 @@ public class Channel implements Serializable {
         channel.getChannelMaster(),
         channel.getDescription(),
         channel.getType(),
-        channel.getUsers(),
+        channel.getParticipantIds(),
         channel.getMessages(),
         channel.getLastMessageTime()
     );
@@ -89,7 +84,7 @@ public class Channel implements Serializable {
         "  name='" + name + "',\n" +
         "  channelMaster='" + channelMaster + "', \n" +
         "  description='" + description + "',\n" +
-        "  users=" + users.stream().toList() + ",\n" +
+        "  users=" + participantIds.stream().toList() + ",\n" +
         "  messages=" + messages.stream().toList() + "\n" +
         '}';
   }

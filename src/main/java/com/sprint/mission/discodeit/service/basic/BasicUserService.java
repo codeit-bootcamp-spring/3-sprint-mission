@@ -17,6 +17,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -35,10 +36,14 @@ public class BasicUserService implements UserService {
   @Override
   public User create(UserRequestDTO userRequestDTO, BinaryContentDTO binaryContentDTO) {
     userRepository.findByName(userRequestDTO.username())
-        .ifPresent(user -> new DuplicateNameException(userRequestDTO.username()));
+        .ifPresent(user -> {
+          throw new DuplicateNameException(userRequestDTO.username());
+        });
 
     userRepository.findByEmail(userRequestDTO.email())
-        .ifPresent(user -> new DuplicateEmailException(userRequestDTO.email()));
+        .ifPresent(user -> {
+          throw new DuplicateEmailException(userRequestDTO.email());
+        });
 
     User user = UserRequestDTO.toEntity(userRequestDTO);
 
@@ -105,17 +110,37 @@ public class BasicUserService implements UserService {
     return users;
   }
 
+
   @Override
   public UserResponseDTO update(UUID id, UserUpdateDTO userUpdateDTO,
       BinaryContentDTO binaryContentDTO) {
     User user = findUser(id);
 
-    UUID profileId = user.getProfileId();
+    String newUsername = userUpdateDTO.newUsername();
+    String newEmail = userUpdateDTO.newEmail();
 
-    // 프로필 이미지 변경
+    if (newUsername != null) {
+      userRepository.findByName(newUsername)
+          .filter(u -> !u.getId().equals(user.getId()))
+          .ifPresent(u -> {
+            throw new DuplicateNameException(newUsername);
+          });
+      user.updateName(newUsername);
+    }
+
+    if (newEmail != null) {
+      userRepository.findByEmail(newEmail)
+          .filter(u -> !u.getId().equals(user.getId()))
+          .ifPresent(u -> {
+            throw new DuplicateEmailException(newEmail);
+          });
+      user.updateEmail(newEmail);
+    }
+
+    // 프로필 이미지 처리
+    UUID profileId = user.getProfileId();
     if (binaryContentDTO != null) {
       BinaryContent profileImage = BinaryContentDTO.toEntity(binaryContentDTO);
-      // 기존 프로필 삭제
       if (profileId != null) {
         binaryContentRepository.deleteById(profileId);
       }
@@ -126,13 +151,10 @@ public class BasicUserService implements UserService {
       user.updateProfileID(null);
     }
 
-    user.updateName(userUpdateDTO.newUserName());
-    user.updateEmail(userUpdateDTO.newEmail());
-    user.updatePassword(userUpdateDTO.newPassword());
-    user.updateIntroduction(userUpdateDTO.newIntroduction());
+    Optional.ofNullable(userUpdateDTO.newPassword()).ifPresent(user::updatePassword);
+    Optional.ofNullable(userUpdateDTO.newIntroduction()).ifPresent(user::updateIntroduction);
 
     userRepository.save(user);
-
     return User.toDTO(user);
   }
 
@@ -142,7 +164,9 @@ public class BasicUserService implements UserService {
 
     userRepository.deleteById(id);
     userStatusRepository.deleteByUserId(id);
-    binaryContentRepository.deleteById(user.getProfileId());
+    if (user.getProfileId() != null) {
+      binaryContentRepository.deleteById(user.getProfileId());
+    }
   }
 
   // 친구 추가 기능

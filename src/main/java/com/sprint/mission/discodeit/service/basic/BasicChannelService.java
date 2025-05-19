@@ -64,7 +64,6 @@ public class BasicChannelService implements ChannelService {
     Channel channel = PrivateChannelDTO.toEntity(privateChannelDTO);
 
 //    joinChannel(channel);
-    createReadStatus(channel);
 
     // 초대 받은 유저의 채널 리스트에 해당 채널 반영
     for (UUID userId : privateChannelDTO.participantIds()) {
@@ -186,12 +185,12 @@ public class BasicChannelService implements ChannelService {
     UUID channelId = channel.getId();
     UUID userId = user.getId();
 
-    if (channel.getUsers().contains(userId)) {
+    if (channel.getParticipantIds().contains(userId)) {
       throw new UserAlreadyInChannelException(user.getUsername() + "은 이미 채널에 있습니다.");
     }
 
     // Channel의 userList에 해당 user 추가
-    channel.getUsers().add(userId);
+    channel.getParticipantIds().add(userId);
     user.getChannels().add(channelId);
 
     ReadStatus readStatus = new ReadStatus(userId, channelId, Instant.now());
@@ -210,12 +209,12 @@ public class BasicChannelService implements ChannelService {
     UUID channelId = channel.getId();
     UUID userId = user.getId();
 
-    if (!channel.getUsers().contains(userId)) {
+    if (!channel.getParticipantIds().contains(userId)) {
       throw new UserNotInChannelException(user.getUsername() + "은 채널에 속해있지 않습니다.");
     }
 
     // Channel의 userList에 해당 user 추가
-    channel.getUsers().remove(userId);
+    channel.getParticipantIds().remove(userId);
     // User의 channelList에 해당 channel 추가
     user.getChannels().remove(channelId);
 
@@ -231,13 +230,13 @@ public class BasicChannelService implements ChannelService {
     // 채널 주인은 채널 생성 시 채널에 입장
     if (!user.getChannels().contains(channel.getId())) {
       user.getChannels().add(channel.getId());
-      channel.getUsers().add(user.getId());
+      channel.getParticipantIds().add(user.getId());
       userRepository.save(user);
     }
   }
 
   private void createReadStatus(Channel channel) {
-    channel.getUsers().forEach(userId -> {
+    channel.getParticipantIds().forEach(userId -> {
       ReadStatus readStatus = new ReadStatus(userId, channel.getId(), Instant.now());
       readStatusRepository.save(readStatus);
     });

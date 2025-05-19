@@ -67,7 +67,8 @@ public class UserController {
       }
   )
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<User> create(@RequestPart("userRequest") UserRequestDTO userRequestDTO,
+  public ResponseEntity<User> create(
+      @RequestPart("userCreateRequest") UserRequestDTO userRequestDTO,
       @Parameter(description = "User 프로필 이미지")
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
 
@@ -77,7 +78,7 @@ public class UserController {
 
     return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
   }
-  
+
   @Operation(summary = "전체 User 목록 조회")
   @ApiResponse(responseCode = "200", description = "User 목록 조회 성공")
   @GetMapping
@@ -99,9 +100,9 @@ public class UserController {
               @ExampleObject(value = "User with id {userId} not found")}))
       }
   )
-  @PatchMapping(path = "/{userId}")
+  @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserResponseDTO> update(@PathVariable UUID userId,
-      @RequestBody UserUpdateDTO userUpdateDTO,
+      @RequestPart("userUpdateRequest") UserUpdateDTO userUpdateDTO,
       @Parameter(description = "수정할 User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile) {
     BinaryContentDTO profileImg = FileConverter.resolveFileRequest(profile);
 
