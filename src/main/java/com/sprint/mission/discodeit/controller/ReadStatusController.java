@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -25,7 +26,7 @@ public class ReadStatusController {
 
     @PostMapping
     public ResponseEntity<ReadStatus> create(@RequestBody ReadStatusCreateRequest request) {
-        return ResponseEntity.ok(readStatusService.create(request));
+        return ResponseEntity.status(201).body(readStatusService.create(request));
     }
 
     @PatchMapping(path = "/{readStatusId}")
@@ -36,8 +37,8 @@ public class ReadStatusController {
         return ResponseEntity.ok(readStatusService.update(readStatusId, request));
     }
 
-    @GetMapping(path = "/user/{userId}")
-    public ResponseEntity<List<ReadStatus>> findAllByUserId(@PathVariable("userId") UUID userId) {
+    @GetMapping
+    public ResponseEntity<List<ReadStatus>> findAllByUserId(@RequestParam UUID userId) {
         return ResponseEntity.ok(readStatusService.findAllByUserId(userId));
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,12 +29,12 @@ public class ChannelController {
 
     @PostMapping(path = "/public")
     public ResponseEntity<Channel> createPublic(@RequestBody PublicChannelCreateRequest request) {
-        return ResponseEntity.ok(channelService.create(request));
+        return ResponseEntity.status(201).body(channelService.create(request));
     }
 
     @PostMapping(path = "/private")
     public ResponseEntity<Channel> createPrivate(@RequestBody PrivateChannelCreateRequest request) {
-        return ResponseEntity.ok(channelService.create(request));
+        return ResponseEntity.status(201).body(channelService.create(request));
     }
 
     @PatchMapping(path = "/{channelId}")
@@ -49,8 +50,8 @@ public class ChannelController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping(path = "/user/{userId}")
-    public ResponseEntity<List<ChannelResponse>> findAllByUserId(@PathVariable("userId") UUID userId) {
+    @GetMapping
+    public ResponseEntity<List<ChannelResponse>> findAllByUserId(@RequestParam UUID userId) {
         return ResponseEntity.ok(channelService.findAllByUserId(userId));
     }
 }
