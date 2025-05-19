@@ -26,7 +26,7 @@ public class ReadStatusController {
 
     @PostMapping
     public ResponseEntity<ReadStatus> create(@RequestBody ReadStatusCreateRequest request) {
-        return ResponseEntity.status(201).body(readStatusService.create(request));
+        return ResponseEntity.ok(readStatusService.create(request));
     }
 
     @PatchMapping(path = "/{readStatusId}")

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.Channel.ChannelResponse;
+import com.sprint.mission.discodeit.dto.Channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.Channel.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.Channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.Channel.PublicChannelCreateRequest;
@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,12 +30,15 @@ public class ChannelController {
 
     @PostMapping(path = "/public")
     public ResponseEntity<Channel> createPublic(@RequestBody PublicChannelCreateRequest request) {
-        return ResponseEntity.status(201).body(channelService.create(request));
+        Channel createdChannel = channelService.create(request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(createdChannel);
     }
 
     @PostMapping(path = "/private")
     public ResponseEntity<Channel> createPrivate(@RequestBody PrivateChannelCreateRequest request) {
-        return ResponseEntity.status(201).body(channelService.create(request));
+        return ResponseEntity.ok(channelService.create(request));
     }
 
     @PatchMapping(path = "/{channelId}")
@@ -51,7 +55,7 @@ public class ChannelController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ChannelResponse>> findAllByUserId(@RequestParam UUID userId) {
+    public ResponseEntity<List<ChannelDto>> findAll(@RequestParam("userId") UUID userId) {
         return ResponseEntity.ok(channelService.findAllByUserId(userId));
     }
 }

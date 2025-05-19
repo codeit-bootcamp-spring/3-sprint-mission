@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.User.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.User.UserDto;
 import com.sprint.mission.discodeit.dto.User.UserFindRequest;
-import com.sprint.mission.discodeit.dto.User.UserResponse;
 import com.sprint.mission.discodeit.dto.User.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
@@ -66,7 +66,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse find(UserFindRequest request) {
+    public UserDto find(UserFindRequest request) {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저는 없습니다."));
 
@@ -74,7 +74,7 @@ public class BasicUserService implements UserService {
                 .map(status -> status.getUpdatedAt().isAfter(Instant.now().minusSeconds(300)))
                 .orElse(false);
 
-        return UserResponse.builder()
+        return UserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
@@ -84,14 +84,14 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<UserResponse> findAll() {
+    public List<UserDto> findAll() {
         return userRepository.findAll().stream()
                 .map(user -> {
                     boolean isOnline = userStatusRepository.findByUserId(user.getId())
                             .map(status -> status.getUpdatedAt().isAfter(Instant.now().minusSeconds(300)))
                             .orElse(false);
 
-                    return UserResponse.builder()
+                    return UserDto.builder()
                             .id(user.getId())
                             .createdAt(user.getCreatedAt())
                             .updatedAt(user.getUpdatedAt())
@@ -106,8 +106,9 @@ public class BasicUserService implements UserService {
 
 
     @Override
-    public User update(UserUpdateRequest request, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-        User user = userRepository.findById(request.userId())
+    public User update(UUID userId, UserUpdateRequest request,
+                       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저는 없습니다."));
 
         UUID nullableProfileId = optionalProfileCreateRequest

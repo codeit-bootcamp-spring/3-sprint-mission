@@ -4,7 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record PublicChannelCreateRequest(
-        String channelName,
+        String name,
         String description
 
 ) {

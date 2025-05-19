@@ -75,7 +75,7 @@ public class BasicMessageService implements MessageService {
     public Message update(UUID messageId, MessageUpdateRequest request) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 메시지은 없습니다."));
-        message.update(request.content());
+        message.update(request.newContent());
         return messageRepository.save(message);
     }
 

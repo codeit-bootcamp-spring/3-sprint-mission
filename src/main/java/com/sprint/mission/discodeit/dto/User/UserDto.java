@@ -5,7 +5,7 @@ import java.util.UUID;
 import lombok.Builder;
 
 @Builder
-public record UserResponse(
+public record UserDto(
         UUID id,
         Instant createdAt,
         Instant updatedAt,

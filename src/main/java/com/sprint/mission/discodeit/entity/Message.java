@@ -38,7 +38,7 @@ public class Message implements Serializable {
                 "id=" + id +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", content='" + content + '\'' +
+                ", newContent='" + content + '\'' +
                 ", channelId=" + channelId +
                 ", authorId=" + authorId +
                 '}';

@@ -51,15 +51,15 @@ public class BaiscUserStatusService implements UserStatusService {
     public UserStatus update(UUID id, UserStatusUpdateRequest request) {
         UserStatus updatedUserStatus = userStatusRepository.findByUserId(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 id는 존재하지 않아 업데이트가 불가능 합니다."));
-        updatedUserStatus.update(request.StatusAt());
+        updatedUserStatus.update(request.newLastActiveAt());
         return userStatusRepository.save(updatedUserStatus);
     }
 
     @Override
-    public UserStatus updateByUserId(UserStatusUpdateRequest request) {
-        UserStatus updatedUserStatus = userStatusRepository.findByUserId(request.id())
+    public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
+        UserStatus updatedUserStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저의 id가 존재하지 않아 업데이트가 불가능 합니다."));
-        updatedUserStatus.update(request.StatusAt());
+        updatedUserStatus.update(request.newLastActiveAt());
         return userStatusRepository.save(updatedUserStatus);
     }
 

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,9 +32,9 @@ public class MessageController {
 
     private final MessageService messageService;
 
-    @PostMapping(consumes = "multipart/form-data")
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Message> create(
-            @RequestPart("request") MessageCreateRequest request,
+            @RequestPart("messageCreateRequest") MessageCreateRequest request,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> files,
             HttpMethod httpMethod) throws IOException {
         List<BinaryContentCreateRequest> attachments = new ArrayList<>();
@@ -58,14 +59,15 @@ public class MessageController {
         return ResponseEntity.ok(messageService.update(messageId, request));
     }
 
-    @DeleteMapping(path = "/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") UUID id) {
+    @DeleteMapping(path = "/{messageId}")
+    public ResponseEntity<Void> delete(@PathVariable("messageId") UUID id) {
         messageService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    public ResponseEntity<List<Message>> findAllByChannelId(@RequestParam UUID channelId) {
+    public ResponseEntity<List<Message>> findAllByChannelId(
+            @RequestParam("channelId") UUID channelId) {
         return ResponseEntity.ok(messageService.findAllByChannelId(channelId));
     }
 }

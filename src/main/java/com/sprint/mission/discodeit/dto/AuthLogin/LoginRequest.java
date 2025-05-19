@@ -2,11 +2,11 @@ package com.sprint.mission.discodeit.dto.AuthLogin;
 
 import lombok.Builder;
 
-public record AuthLoginRequest(
-        String userName,
+public record LoginRequest(
+        String username,
         String password
 ) {
     @Builder
-    public AuthLoginRequest {
+    public LoginRequest {
     }
 }
