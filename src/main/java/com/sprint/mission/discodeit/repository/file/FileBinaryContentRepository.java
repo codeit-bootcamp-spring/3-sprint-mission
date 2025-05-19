@@ -45,6 +45,10 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
         Path file = path.resolve(id.toString() + ".ser");
         return deserialize(file);
     }
+//
+//    public BinaryContent loadByUserId(UUID userId) {
+//
+//    }
 
     @Override
     public List<BinaryContent> loadAll() {

@@ -14,7 +14,7 @@ public class DiscodeitApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        testScenario.run();
+//        testScenario.run();
     }
 
     public static void main(String[] args) {

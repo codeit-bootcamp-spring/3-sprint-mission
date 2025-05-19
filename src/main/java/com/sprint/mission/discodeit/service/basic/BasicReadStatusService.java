@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
@@ -10,8 +11,10 @@ import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +57,21 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     public List<ReadStatus> findAllByUserId(UUID id) {
         return readStatusRepository.loadAllByUserId(id);
+    }
+
+    @Override
+    public List<ReadStatus> findAllByChannelId(UUID channelId) {
+        Channel channel  = channelRepository.loadById(channelId);
+        if (channel == null) {
+            throw new IllegalArgumentException("[ReadStatus] 존재하지 않는 채널입니다. (channelId: " + channelId + ")");
+        }
+
+        return channel.getMemberIds().stream()
+                .flatMap(userId ->
+                        readStatusRepository.loadAllByUserId(userId).stream()
+                )
+                .filter(readStatus -> readStatus.getChannelId().equals(channelId))
+                .collect(Collectors.toList());
     }
 
     @Override

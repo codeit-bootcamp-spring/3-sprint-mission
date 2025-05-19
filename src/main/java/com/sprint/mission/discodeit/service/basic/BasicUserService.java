@@ -42,7 +42,7 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(userStatus);
 
         if (binaryContentCreateRequest != null) {
-            BinaryContent binaryContent = BinaryContent.of(binaryContentCreateRequest.getFileName());
+            BinaryContent binaryContent = BinaryContent.of(binaryContentCreateRequest.getFileName(), binaryContentCreateRequest.getFilePath());
             binaryContentRepository.save(binaryContent);
             user.updateProfileId(binaryContent.getId());
         }
@@ -56,7 +56,7 @@ public class BasicUserService implements UserService {
         User user = userRepository.loadById(id);
         UserStatus status = userStatusRepository.loadById(id);
 
-        return new UserDTO(user.getId(), user.getName(), user.getEmail(), status.isLoggedIn());
+        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getProfileId(), status.isLoggedIn());
     }
 
     @Override
@@ -73,6 +73,7 @@ public class BasicUserService implements UserService {
                             user.getId(),
                             user.getName(),
                             user.getEmail(),
+                            user.getProfileId(),
                             status.isLoggedIn()
                     );
                 })

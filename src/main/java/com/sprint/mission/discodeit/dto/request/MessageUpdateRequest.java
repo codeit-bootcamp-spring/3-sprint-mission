@@ -12,5 +12,6 @@ public class MessageUpdateRequest {
     @NotBlank
     UUID messageId;
 
+    @NotBlank
     String content;
 }

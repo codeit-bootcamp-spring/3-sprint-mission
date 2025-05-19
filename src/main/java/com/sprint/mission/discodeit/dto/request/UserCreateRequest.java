@@ -7,7 +7,13 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class UserCreateRequest {
+
+    @NotBlank
     private String name;
+
+    @NotBlank
     private String email;
+
+    @NotBlank
     private String password;
 }

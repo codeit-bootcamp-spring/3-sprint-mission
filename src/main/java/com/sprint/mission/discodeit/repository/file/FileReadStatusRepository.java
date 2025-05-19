@@ -59,6 +59,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         }
     }
 
+    @Override
     public List<ReadStatus> loadAllByUserId(UUID id) {
         if (Files.notExists(path)) {
             return Collections.emptyList();

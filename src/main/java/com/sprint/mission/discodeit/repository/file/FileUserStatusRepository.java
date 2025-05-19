@@ -26,7 +26,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     @Override
-    public void save(UserStatus userStatus) {
+    public UserStatus save(UserStatus userStatus) {
         String filename = userStatus.getUserId().toString() + ".ser";
         Path file = path.resolve(filename);
 
@@ -38,6 +38,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return userStatus;
     }
 
     @Override

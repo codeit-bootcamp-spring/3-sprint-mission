@@ -16,7 +16,10 @@ public class JCFUserStatusRepository implements UserStatusRepository {
     private final Map<UUID, UserStatus> userStatuses = new HashMap<>();
 
     @Override
-    public void save(UserStatus userStatus) { userStatuses.put(userStatus.getUserId(), userStatus); }
+    public UserStatus save(UserStatus userStatus) {
+        userStatuses.put(userStatus.getUserId(), userStatus);
+        return userStatus;
+    }
 
     @Override
     public UserStatus loadById(UUID id) { return userStatuses.get(id); }

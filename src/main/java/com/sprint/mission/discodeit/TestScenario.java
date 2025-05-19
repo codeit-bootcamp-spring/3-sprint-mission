@@ -85,9 +85,9 @@ public class TestScenario {
         );
 
         List<BinaryContentCreateRequest> imageDTOs = Arrays.asList( //List.of()로는 null 값을 담을 수 없음
-                new BinaryContentCreateRequest("Jane.png"),
+                new BinaryContentCreateRequest("first", "first.jpg"),
                 null,
-                new BinaryContentCreateRequest("Kate.jpg")
+                new BinaryContentCreateRequest("third", "third.jpg")
         );
 
         users = IntStream.range(0, createDTOs.size())
@@ -218,13 +218,14 @@ public class TestScenario {
                         "안녕하세요!",
                         null
                 ),
+                // 파일 등록 로직 수정 필요
                 new MessageCreateRequest(
                         users.get(1).getId(),
                         publicChannels.get(0).getId(),
                         "파일 첨부 테스트입니다",
                         List.of(
-                                new BinaryContentCreateRequest("abc.txt"),
-                                new BinaryContentCreateRequest("doc.pdf")
+                                new BinaryContentCreateRequest("abc.txt", "first.jpg"),
+                                new BinaryContentCreateRequest("doc.pdf", "second.jpg")
                         )
                 ),
                 new MessageCreateRequest(
