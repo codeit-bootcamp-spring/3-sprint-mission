@@ -55,7 +55,9 @@ public class BasicMessageService implements MessageService {
 //      user.getMessages().add(message.getId());
 //      userRepository.save(user);
 //    }
-
+    user.getMessages().add(message.getId());
+    userRepository.save(user);
+    
     // 메시지를 보낸 channel의 mesagesList에 해당 메시지 추가
     channel.getMessages().add(message.getId());
     channelRepository.save(channel);
