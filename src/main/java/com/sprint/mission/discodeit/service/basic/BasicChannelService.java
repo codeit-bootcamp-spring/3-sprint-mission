@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.channel.ChannelMemberRequestDTO;
 import com.sprint.mission.discodeit.dto.channel.ChannelResponseDTO;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelDTO;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelDTO;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -37,14 +38,15 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public Channel createPublicChannel(PublicChannelDTO publicChannelDTO) {
-    // 존재하지 않는 사용자를 채널 주인으로 설정하는 경우 예외 처리
-    if (userRepository.findById(publicChannelDTO.channelMaster()).isEmpty()) {
-      throw new NotFoundUserException();
-    }
+    /* 스프린트 미션 5 프론트엔드 테스트를 위해 주석*/
+//    // 존재하지 않는 사용자를 채널 주인으로 설정하는 경우 예외 처리
+//    if (userRepository.findById(publicChannelDTO.channelMaster()).isEmpty()) {
+//      throw new NotFoundUserException();
+//    }
 
     Channel channel = PublicChannelDTO.toEntity(publicChannelDTO);
 
-    joinChannel(channel);
+//    joinChannel(channel);
     createReadStatus(channel);
 
     channelRepository.save(channel);
@@ -54,14 +56,14 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public Channel createPrivateChannel(PrivateChannelDTO privateChannelDTO) {
-    // 존재하지 않는 사용자를 채널 주인으로 설정하는 경우 예외 처리
-    if (userRepository.findById(privateChannelDTO.channelMaster()).isEmpty()) {
-      throw new NotFoundUserException();
-    }
+//    // 존재하지 않는 사용자를 채널 주인으로 설정하는 경우 예외 처리
+//    if (userRepository.findById(privateChannelDTO.channelMaster()).isEmpty()) {
+//      throw new NotFoundUserException();
+//    }
 
     Channel channel = PrivateChannelDTO.toEntity(privateChannelDTO);
 
-    joinChannel(channel);
+//    joinChannel(channel);
     createReadStatus(channel);
 
     // 초대 받은 유저의 채널 리스트에 해당 채널 반영
@@ -105,7 +107,7 @@ public class BasicChannelService implements ChannelService {
   @Override
   public List<ChannelResponseDTO> findAllByUserId(UUID userId) {
     List<Channel> publicChannels = channelRepository.findAll().stream()
-        .filter(channel -> channel.getType().equals(ChannelType.PRIVATE))
+        .filter(channel -> channel.getType().equals(ChannelType.PUBLIC))
         .toList();
 
     // PRIVATE 채널은 조회한 유저가 참여한 채널만 조회
@@ -140,7 +142,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public ChannelResponseDTO update(UUID channelId, PublicChannelDTO publicChannelDTO) {
+  public ChannelResponseDTO update(UUID channelId, PublicChannelUpdateDTO publicChannelUpdateDTO) {
     Channel channel = findChannel(channelId);
 
     // PRIVATE 채널은 수정 불가
@@ -148,16 +150,9 @@ public class BasicChannelService implements ChannelService {
       throw new PrivateChannelModificationException();
     }
 
-    // 존재하지 않는 사용자를 채널 주인으로 설정하는 경우 예외 처리
-    if (userRepository.findById(publicChannelDTO.channelMaster()).isEmpty()) {
-      throw new NotFoundUserException();
-    }
-
     // 변경 사항 적용
-    channel.updateName(publicChannelDTO.channelName());
-    channel.updateChannelMaster(publicChannelDTO.channelMaster());
-    channel.updateDescription(publicChannelDTO.description());
-    joinChannel(channel);
+    channel.updateName(publicChannelUpdateDTO.newName());
+    channel.updateDescription(publicChannelUpdateDTO.newDescription());
 
     channelRepository.save(channel);
 

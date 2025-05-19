@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDTO;
 import com.sprint.mission.discodeit.dto.user.FriendReqeustDTO;
 import com.sprint.mission.discodeit.dto.user.UserRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.user.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -63,7 +64,7 @@ public class BasicUserService implements UserService {
     UserStatus userStatus = findUserStatus(id);
 
     // 마지막 접속 시간 확인
-    user.updateisLogin(userStatus.isLogin());
+    user.updateOnline(userStatus.isLogin());
 
     return User.toDTO(user);
   }
@@ -75,7 +76,7 @@ public class BasicUserService implements UserService {
 
     UserStatus userStatus = findUserStatus(user.getId());
 
-    user.updateisLogin(userStatus.isLogin());
+    user.updateOnline(userStatus.isLogin());
 
     return User.toDTO(user);
   }
@@ -85,7 +86,7 @@ public class BasicUserService implements UserService {
     return userRepository.findByNameContaining(name).stream()
         .map(user -> {
           UserStatus userStatus = findUserStatus(user.getId());
-          user.updateisLogin(userStatus.isLogin());
+          user.updateOnline(userStatus.isLogin());
           return User.toDTO(user);
         })
         .toList();
@@ -96,7 +97,7 @@ public class BasicUserService implements UserService {
     List<UserResponseDTO> users = userRepository.findAll().stream()
         .map(user -> {
           UserStatus userStatus = findUserStatus(user.getId());
-          user.updateisLogin(userStatus.isLogin());
+          user.updateOnline(userStatus.isLogin());
           return User.toDTO(user);
         })
         .toList();
@@ -105,30 +106,30 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public UserResponseDTO update(UUID id, UserRequestDTO userRequestDTO,
+  public UserResponseDTO update(UUID id, UserUpdateDTO userUpdateDTO,
       BinaryContentDTO binaryContentDTO) {
     User user = findUser(id);
 
-    // 기존 프로필 이미지의 아이디
-    UUID profileImageId = user.getProfileId();
-
-    if (profileImageId != null) {
-      binaryContentRepository.deleteById(profileImageId);
-    }
+    UUID profileId = user.getProfileId();
 
     // 프로필 이미지 변경
     if (binaryContentDTO != null) {
       BinaryContent profileImage = BinaryContentDTO.toEntity(binaryContentDTO);
+      // 기존 프로필 삭제
+      if (profileId != null) {
+        binaryContentRepository.deleteById(profileId);
+      }
       user.updateProfileID(profileImage.getId());
       binaryContentRepository.save(profileImage);
-    } else { // 프로필 이미지 삭제
+    } else if (profileId != null) {
+      binaryContentRepository.deleteById(profileId);
       user.updateProfileID(null);
     }
 
-    user.updateName(userRequestDTO.username());
-    user.updateEmail(userRequestDTO.email());
-    user.updatePassword(userRequestDTO.password());
-    user.updateIntroduction(userRequestDTO.introduction());
+    user.updateName(userUpdateDTO.newUserName());
+    user.updateEmail(userUpdateDTO.newEmail());
+    user.updatePassword(userUpdateDTO.newPassword());
+    user.updateIntroduction(userUpdateDTO.newIntroduction());
 
     userRepository.save(user);
 

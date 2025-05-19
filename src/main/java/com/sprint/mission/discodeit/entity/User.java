@@ -22,7 +22,7 @@ public class User implements Serializable {
   private String password;
   private UUID profileId;
   private String introduction;
-  private boolean isLogin;
+  private boolean online;
   private List<UUID> friends;
   private List<UUID> channels;
   private List<UUID> messages;
@@ -34,7 +34,7 @@ public class User implements Serializable {
     this.email = email;
     this.password = password;
     this.introduction = introduction;
-    this.isLogin = true;
+    this.online = true;
     this.friends = new ArrayList<>();
     this.channels = new ArrayList<>();
     this.messages = new ArrayList<>();
@@ -65,8 +65,8 @@ public class User implements Serializable {
     this.updatedAt = Instant.now();
   }
 
-  public void updateisLogin(boolean isLogin) {
-    this.isLogin = isLogin;
+  public void updateOnline(boolean online) {
+    this.online = online;
   }
 
   public static UserResponseDTO toDTO(User user) {
@@ -77,7 +77,7 @@ public class User implements Serializable {
         user.getEmail(),
         user.getProfileId(),
         user.getIntroduction(),
-        user.isLogin(),
+        user.isOnline(),
         user.getFriends(),
         user.getChannels(),
         user.getMessages());
@@ -95,7 +95,7 @@ public class User implements Serializable {
         "  email='" + email + "',\n" +
         "  password='" + password + "',\n" +
         "  introduction='" + introduction + "',\n" +
-        "  isLogin=" + isLogin + ",\n" +
+        "  online=" + online + ",\n" +
         "  friends=" + friends + ",\n" +
         "  channels=" + channels.stream().toList() + "\n" +
         "  messages=" + messages.stream().toList() + "\n" +

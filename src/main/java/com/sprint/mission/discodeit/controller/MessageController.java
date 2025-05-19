@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDTO;
 import com.sprint.mission.discodeit.dto.message.MessageRequestDTO;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
+import com.sprint.mission.discodeit.dto.message.MessageUpdateDTO;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.util.FileConverter;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -44,14 +46,14 @@ public class MessageController {
           @ApiResponse(responseCode = "201", description = "Message가 성공적으로 생성됨"),
           @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음"
               , content = @Content(examples = {
-              @ExampleObject(value = "Channel | Sender with id {channelId | senderId} not found")}))
+              @ExampleObject(value = "Channel | Sender with id {channelId | authorId} not found")}))
       }
   )
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Message> create(
-      @RequestPart("messageRequest") MessageRequestDTO messageRequestDTO,
+      @RequestPart("messageCreateRequest") MessageRequestDTO messageRequestDTO,
       @Parameter(description = "Message 첨부 파일들")
-      @RequestPart(value = "attachedFiles", required = false) List<MultipartFile> attachedFiles) {
+      @RequestPart(value = "attachments", required = false) List<MultipartFile> attachedFiles) {
     List<BinaryContentDTO> binaryContentDTOS = FileConverter.resolveFileRequest(attachedFiles);
 
     Message createdMessage = messageService.create(messageRequestDTO, binaryContentDTOS);
@@ -59,21 +61,6 @@ public class MessageController {
     return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
   }
 
-  @Operation(summary = "ID로 특정 Message 조회")
-  @ApiResponses(
-      value = {
-          @ApiResponse(responseCode = "200", description = "Message 조회 성공"),
-          @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음"
-              , content = @Content(examples = {
-              @ExampleObject(value = "Message with id {messageId} not found")}))
-      }
-  )
-  @GetMapping(path = "/{messageId}")
-  public ResponseEntity<MessageResponseDTO> findById(@PathVariable UUID messageId) {
-    MessageResponseDTO foundMessage = messageService.findById(messageId);
-
-    return ResponseEntity.status(HttpStatus.OK).body(foundMessage);
-  }
 
   @Operation(summary = "Channel의 Message 목록 조회")
   @ApiResponse(responseCode = "200", description = "Message 읽음 상태 목록 조회 성공")
@@ -82,27 +69,6 @@ public class MessageController {
     List<MessageResponseDTO> foundMessages = messageService.findAllByChannelId(channelId);
 
     return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
-  }
-
-  @Operation(summary = "Message 첨부 파일 변경")
-  @ApiResponses(
-      value = {
-          @ApiResponse(responseCode = "200", description = "Message 첨부 파일이 성공적으로 수정됨"),
-          @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음"
-              , content = @Content(examples = {
-              @ExampleObject(value = "Message with id {messageId} not found")}))
-      }
-  )
-  @PatchMapping(path = "/{messageId}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<MessageResponseDTO> updateBinaryContent(
-      @Parameter(description = "수정할 Message ID") @PathVariable UUID messageId,
-      @RequestPart(value = "attachedFiles", required = false) List<MultipartFile> attachedFiles) {
-    List<BinaryContentDTO> binaryContentDTOS = FileConverter.resolveFileRequest(attachedFiles);
-
-    MessageResponseDTO updatedMessage = messageService.updateBinaryContent(messageId,
-        binaryContentDTOS);
-
-    return ResponseEntity.status(HttpStatus.OK).body(updatedMessage);
   }
 
   @Operation(summary = "Message 내용 수정")
@@ -117,8 +83,9 @@ public class MessageController {
   @PatchMapping(path = "/{messageId}")
   public ResponseEntity<MessageResponseDTO> updateContent(
       @Parameter(description = "수정할 Message ID") @PathVariable UUID messageId,
-      String content) {
-    MessageResponseDTO updatedMessage = messageService.updateContent(messageId, content);
+      @RequestBody MessageUpdateDTO messageUpdateDTO) {
+    MessageResponseDTO updatedMessage = messageService.updateContent(messageId,
+        messageUpdateDTO.newContent());
 
     return ResponseEntity.status(HttpStatus.OK).body(updatedMessage);
   }

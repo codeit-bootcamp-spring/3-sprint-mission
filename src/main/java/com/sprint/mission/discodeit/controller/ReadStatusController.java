@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusRequestDTO;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateDTO;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,12 +54,6 @@ public class ReadStatusController {
     return ResponseEntity.status(HttpStatus.CREATED).body(createdReadStatus);
   }
 
-  @GetMapping(path = "/{readStatusId}")
-  public ResponseEntity<ReadStatusResponseDTO> findById(@PathVariable UUID readStatusId) {
-    ReadStatusResponseDTO foundReadStatus = readStatusService.findById(readStatusId);
-
-    return ResponseEntity.status(HttpStatus.OK).body(foundReadStatus);
-  }
 
   @Operation(summary = "User의 Message 읽음 상태 목록 조회")
   @ApiResponse(responseCode = "200", description = "Message 읽음 상태 목록 조회 성공")
@@ -89,9 +84,9 @@ public class ReadStatusController {
   @PatchMapping(path = "/{readStatusId}")
   public ResponseEntity<ReadStatusResponseDTO> update(
       @Parameter(description = "수정할 읽음 상태 ID") @PathVariable UUID readStatusId,
-      @RequestBody ReadStatusRequestDTO readStatusRequestDTO) {
+      @RequestBody ReadStatusUpdateDTO readStatusUpdateDTO) {
     ReadStatusResponseDTO updatedReadStatus = readStatusService.update(readStatusId,
-        readStatusRequestDTO);
+        readStatusUpdateDTO);
 
     return ResponseEntity.status(HttpStatus.OK).body(updatedReadStatus);
   }

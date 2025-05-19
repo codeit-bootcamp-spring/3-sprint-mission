@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDTO;
 import com.sprint.mission.discodeit.dto.user.FriendReqeustDTO;
 import com.sprint.mission.discodeit.dto.user.UserRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.user.UserUpdateDTO;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDTO;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDTO;
 import com.sprint.mission.discodeit.entity.User;
@@ -76,23 +77,7 @@ public class UserController {
 
     return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
   }
-
-  @Operation(summary = "ID로 특정 User 조회")
-  @ApiResponses(
-      value = {
-          @ApiResponse(responseCode = "200", description = "User 조회 성공"),
-          @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음"
-              , content = @Content(examples = {
-              @ExampleObject(value = "User with id {userId} not found")}))
-      }
-  )
-  @GetMapping(path = "/{userId}")
-  public ResponseEntity<UserResponseDTO> findById(@PathVariable UUID userId) {
-    UserResponseDTO foundUser = userService.findById(userId);
-
-    return ResponseEntity.status(HttpStatus.OK).body(foundUser);
-  }
-
+  
   @Operation(summary = "전체 User 목록 조회")
   @ApiResponse(responseCode = "200", description = "User 목록 조회 성공")
   @GetMapping
@@ -116,11 +101,11 @@ public class UserController {
   )
   @PatchMapping(path = "/{userId}")
   public ResponseEntity<UserResponseDTO> update(@PathVariable UUID userId,
-      @RequestBody UserRequestDTO userRequestDTO,
+      @RequestBody UserUpdateDTO userUpdateDTO,
       @Parameter(description = "수정할 User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile) {
     BinaryContentDTO profileImg = FileConverter.resolveFileRequest(profile);
 
-    UserResponseDTO updatedUser = userService.update(userId, userRequestDTO, profileImg);
+    UserResponseDTO updatedUser = userService.update(userId, userUpdateDTO, profileImg);
 
     return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
   }
@@ -159,37 +144,5 @@ public class UserController {
         userStatusUpdateDTO);
 
     return ResponseEntity.status(HttpStatus.OK).body(userStatusResponseDTO);
-  }
-
-  @Operation(summary = "친구 추가")
-  @ApiResponses(
-      value = {
-          @ApiResponse(responseCode = "200", description = "친구 추가가 성공적으로 됨"),
-          @ApiResponse(responseCode = "404", description = "해당 User를 찾을 수 없음"
-              , content = @Content(examples = {
-              @ExampleObject(value = "User with id {userId} not found")}))
-      }
-  )
-  @PostMapping(path = "/friends")
-  public ResponseEntity<String> addFriend(@RequestBody FriendReqeustDTO friendReqeustDTO) {
-    userService.addFriend(friendReqeustDTO);
-
-    return ResponseEntity.status(HttpStatus.OK).body("[Success]: 친구 추가 성공!");
-  }
-
-  @Operation(summary = "친구 삭제")
-  @ApiResponses(
-      value = {
-          @ApiResponse(responseCode = "200", description = "친구 삭제가 성공적으로 됨"),
-          @ApiResponse(responseCode = "400", description = "친구 관계가 아님"
-              , content = @Content(examples = {
-              @ExampleObject(value = "User with id {id1} and User with id {id2}is not friend")}))
-      }
-  )
-  @DeleteMapping(path = "/friends")
-  public ResponseEntity<String> deleteFriend(@RequestBody FriendReqeustDTO friendReqeustDTO) {
-    userService.deleteFriend(friendReqeustDTO);
-
-    return ResponseEntity.status(HttpStatus.OK).body("[Success]: 친구 삭제 성공!");
   }
 }

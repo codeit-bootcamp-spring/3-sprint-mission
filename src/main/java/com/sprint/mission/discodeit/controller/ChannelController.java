@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.channel.ChannelMemberRequestDTO;
 import com.sprint.mission.discodeit.dto.channel.ChannelResponseDTO;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelDTO;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelDTO;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,35 +56,13 @@ public class ChannelController {
 
     return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
   }
-
-  @Operation(summary = "ID로 특정 Channel 조회")
-  @ApiResponses(
-      value = {
-          @ApiResponse(responseCode = "200", description = "Channel 조회 성공"),
-          @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음"
-              , content = @Content(examples = {
-              @ExampleObject(value = "Channel with id {channelId} not found")}))
-      }
-  )
-  @GetMapping(path = "/{channelId}")
-  public ResponseEntity<ChannelResponseDTO> findById(@PathVariable UUID channelId) {
-    ChannelResponseDTO foundChannel = channelService.findById(channelId);
-
-    return ResponseEntity.status(HttpStatus.OK).body(foundChannel);
-  }
-
+  
   @Operation(summary = "User가 참여 중인 Channel 목록 조회")
   @ApiResponse(responseCode = "200", description = "Channel 목록 조회 성공")
   @GetMapping
-  public ResponseEntity<List<ChannelResponseDTO>> findAll(
-      @Parameter(description = "조회할 User ID") @RequestParam(required = false) UUID userId) {
-    List<ChannelResponseDTO> channels;
-
-    if (userId != null) {
-      channels = channelService.findAllByUserId(userId);
-    } else {
-      channels = channelService.findAll();
-    }
+  public ResponseEntity<List<ChannelResponseDTO>> findAllByUserId(
+      @Parameter(description = "조회할 User ID") @RequestParam(required = true) UUID userId) {
+    List<ChannelResponseDTO> channels = channelService.findAllByUserId(userId);
 
     return ResponseEntity.status(HttpStatus.OK).body(channels);
   }
@@ -103,8 +82,8 @@ public class ChannelController {
   @PatchMapping(path = "/{channelId}")
   public ResponseEntity<ChannelResponseDTO> update(
       @Parameter(description = "수정할 Channel ID") @PathVariable UUID channelId,
-      @RequestBody PublicChannelDTO publicChannelDTO) {
-    ChannelResponseDTO updatedChannel = channelService.update(channelId, publicChannelDTO);
+      @RequestBody PublicChannelUpdateDTO publicChannelUpdateDTO) {
+    ChannelResponseDTO updatedChannel = channelService.update(channelId, publicChannelUpdateDTO);
 
     return ResponseEntity.status(HttpStatus.OK).body(updatedChannel);
   }
@@ -124,43 +103,5 @@ public class ChannelController {
     channelService.deleteById(channelId);
 
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-  }
-
-
-  @Operation(summary = "Channel에 User 추가")
-  @ApiResponses(
-      value = {
-          @ApiResponse(responseCode = "200", description = "User 추가가 성공적으로 됨"),
-          @ApiResponse(responseCode = "404", description = "해당 User를 찾을 수 없음"
-              , content = @Content(examples = {
-              @ExampleObject(value = "User with id {userId} not found")}))
-      }
-  )
-  @PostMapping(path = "/users")
-  public ResponseEntity<String> inviteUser(
-      @RequestBody ChannelMemberRequestDTO channelMemberRequestDTO) {
-    channelService.inviteUser(channelMemberRequestDTO);
-
-    return ResponseEntity.status(HttpStatus.OK).body("[Success]: 유저 초대 성공!");
-  }
-
-  @Operation(summary = "Channel에서 User 추방")
-  @ApiResponses(
-      value = {
-          @ApiResponse(responseCode = "200", description = "User 추방이 성공적으로 됨"),
-          @ApiResponse(responseCode = "400", description = "User가 해당 Channel에 속해있지 않음"
-              , content = @Content(examples = {
-              @ExampleObject(value = "User with id {userId} not in channel with id {channelId}")})),
-          @ApiResponse(responseCode = "404", description = "해당 User를 찾을 수 없음"
-              , content = @Content(examples = {
-              @ExampleObject(value = "User with id {userId} not found")}))
-      }
-  )
-  @DeleteMapping(path = "/users")
-  public ResponseEntity<String> kickUser(
-      @RequestBody ChannelMemberRequestDTO channelMemberRequestDTO) {
-    channelService.kickUser(channelMemberRequestDTO);
-
-    return ResponseEntity.status(HttpStatus.OK).body("[Success]: 유저 추방 성공!");
   }
 }

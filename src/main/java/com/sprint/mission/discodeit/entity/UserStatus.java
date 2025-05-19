@@ -20,19 +20,19 @@ public class UserStatus implements Serializable {
   private final Instant createdAt;
   private Instant updatedAt;
   private final UUID userId;
-  private Instant lastLoginTime;
+  private Instant lastActiveAt;
   private static final long LOGIN_TIMEOUT_MINUTES = 5L;
 
-  public UserStatus(UUID userId, Instant lastLoginTime) {
+  public UserStatus(UUID userId, Instant lastActiveAt) {
     this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
     this.userId = userId;
-    this.lastLoginTime = lastLoginTime;
+    this.lastActiveAt = lastActiveAt;
   }
 
-  public void updateLastLoginTime(Instant lastLoginTime) {
+  public void updatelastActiveAt(Instant lastActiveAt) {
     this.updatedAt = Instant.now();
-    this.lastLoginTime = lastLoginTime;
+    this.lastActiveAt = lastActiveAt;
   }
 
   /**
@@ -41,18 +41,18 @@ public class UserStatus implements Serializable {
    * @return 마지막 접속 시간이 현재 시간으로부터 5분 이내인지
    */
   public boolean isLogin() {
-    if (lastLoginTime == null) {
+    if (lastActiveAt == null) {
       return false;
     }
 
     Instant now = Instant.now();
 
-    // lastLoginTime이 현재 시간보다 미래일 수는 없기 때문에 false 반환
-    if (lastLoginTime.isAfter(now)) {
+    // lastActiveAt이 현재 시간보다 미래일 수는 없기 때문에 false 반환
+    if (lastActiveAt.isAfter(now)) {
       return false;
     }
 
-    Duration timeDiff = Duration.between(this.lastLoginTime, now);
+    Duration timeDiff = Duration.between(this.lastActiveAt, now);
 
     return timeDiff.toMinutes() <= LOGIN_TIMEOUT_MINUTES;
   }
@@ -62,16 +62,16 @@ public class UserStatus implements Serializable {
         userStatus.getCreatedAt(),
         userStatus.getUpdatedAt(),
         userStatus.getUserId(),
-        userStatus.getLastLoginTime());
+        userStatus.getLastActiveAt());
 
     return userStatusResponseDTO;
   }
 
   @Override
   public boolean equals(Object o) {
-      if (o == null || getClass() != o.getClass()) {
-          return false;
-      }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     UserStatus that = (UserStatus) o;
     return Objects.equals(userId, that.userId);
   }

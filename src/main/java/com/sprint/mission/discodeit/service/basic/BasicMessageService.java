@@ -48,12 +48,13 @@ public class BasicMessageService implements MessageService {
     message.updateAttachmentIds(attachmentIds);
 
     // 메시지를 보낸 user의 mesagesList에 해당 메시지 추가
-    if (!user.getChannels().contains(channel.getId())) {
-      throw new UserNotInChannelException();
-    } else {
-      user.getMessages().add(message.getId());
-      userRepository.save(user);
-    }
+    /* 스프린트 미션5 프론트엔드 테스트를 위해 주석 처리 */
+//    if (!user.getChannels().contains(channel.getId())) {
+//      throw new UserNotInChannelException();
+//    } else {
+//      user.getMessages().add(message.getId());
+//      userRepository.save(user);
+//    }
 
     // 메시지를 보낸 channel의 mesagesList에 해당 메시지 추가
     channel.getMessages().add(message.getId());

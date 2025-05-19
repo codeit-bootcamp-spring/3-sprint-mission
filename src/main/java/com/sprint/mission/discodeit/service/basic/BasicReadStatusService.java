@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusRequestDTO;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateDTO;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundChannelException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundReadStatusException;
@@ -71,10 +72,10 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
-  public ReadStatusResponseDTO update(UUID id, ReadStatusRequestDTO readStatusRequestDTO) {
+  public ReadStatusResponseDTO update(UUID id, ReadStatusUpdateDTO readStatusUpdateDTO) {
     ReadStatus readStatus = findReadStatus(id);
 
-    readStatus.updateLastReadAt(readStatusRequestDTO.lastReadAt());
+    readStatus.updateLastReadAt(readStatusUpdateDTO.newLastAt());
     readStatusRepository.save(readStatus);
 
     return ReadStatus.toDTO(readStatus);

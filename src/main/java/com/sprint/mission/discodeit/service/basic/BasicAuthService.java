@@ -36,9 +36,9 @@ public class BasicAuthService implements AuthService {
     }
 
     // User 로그인 시 User 온라인 상태 정보 변경
-    user.updateisLogin(true);
+    user.updateOnline(true);
     UserStatus userStatus = findUserStatus(user.getId());
-    userStatus.updateLastLoginTime(Instant.now());
+    userStatus.updatelastActiveAt(Instant.now());
     userRepository.save(user);
     userStatusRepository.save(userStatus);
 
