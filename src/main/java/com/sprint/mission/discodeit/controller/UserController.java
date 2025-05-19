@@ -7,17 +7,21 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.validator.PasswordValidator;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /* API 구현 절차
@@ -35,182 +39,234 @@ import java.util.*;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/user")
-@Controller
+@RestController
+@Tag(name = "User", description = "User API")
 public class UserController {
 
-    private final UserService userService;
-    private final UserStatusService userStatusService;
+  private final UserService userService;
+  private final UserStatusService userStatusService;
 
-    // 요구사항 : @RequestMapping만 사용하여 구현하기 -> method로 타입 지정( GET, POST, PUT 등 )
-    // 사용자 등록( 생성 ) : POST
-    // 사용자 정보 수정 : 전체( PUT ) / 일부( PATCH )
-    // 사용자 삭제 : DEL
-    // 전체 조회 : GET
-    // 온라인 상태 변경 : PATCH  << 전체 중 일부만 바꾸는게 확실하니
+  // 사용자 등록( 생성 ) : POST
+  // 사용자 정보 수정 : 전체( PUT ) / 일부( PATCH )
+  // 사용자 삭제 : DEL
+  // 전체 조회 : GET
+  // 온라인 상태 변경 : PATCH  << 전체 중 일부만 바꾸는게 확실하니
 
-    // 신규 유저 생성 요청( POST )
-    @RequestMapping(
-            // path || value : 요청 URL 경로 정의
-            // method : 요청을 처리할 HTTP 메서드 지정( GET, POST, PUT, DELETE, PATCH 등 )
-            // consumes : 데이터의 요청 MIME 타입 정의( 데이터 형식 지정 및 해당 타입만 처리하도록 제한 )
-            // produces : 컨트롤러가 반환하는 데이터의 MIME 타입 정의( JSON, XML 등 )
-            // headers : 헤더 값을 기반으로 요청 처리 지정( 특정 값 요구 혹은 제한 )
-            // params : 요청 파라미터 값 기반으로 처리 지정( 요청 | 쿼리 파라미터를 특정 값으로 제한 )
-            path = "/create"
-            , method = RequestMethod.POST
-            , consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    @ResponseBody
-    // ? : WildCard( 어느 타입이든 처리 ) << User로 지정 시 에러 메세지 출력 불가의 이유로 변경
-    public ResponseEntity<?> create(
-            // @RequestPart : 하나 일 때는 value 생략 가능, 다수일 경우 이후부터 value 필요 / 복합 데이터 혹은 파일 처리
-            // + value의 값이 선택적이라면 required를 false로 지정( 필수 : true( 기본 ) / 선택적 : false )
-            @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
-            @RequestPart(value = "profile", required = false) MultipartFile profile
-    ) {
-        // 보안성 향상을 위한 비밀번호 검증 로직
-        List<String> errors = PasswordValidator.getPasswordValidationErrors(userCreateRequest.getPwd());
-        // 비밀번호 규칙 검증시 false 시
-        if (!errors.isEmpty()) {
-            // 규칙 검증 시 발생한 에러문 응답
-            String errorMessage = String.join("\n", errors);
-            // 응답 상태( 상태 코드 : 400 ) 및 내부 정보( 비밀번호 검증 시 발생한 에러 메세지 ) 반환
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
-        }
-        // 선택적 유저 프로필 이미지 처리
-        Optional<BinaryContentCreateRequest> profileRequest =
-                Optional.ofNullable(profile)
-                        // 선택적 프로필 이미지의 값 여부 판별 메서드 동작 후 해당 값을 저장
-                        .flatMap(this::resolveProfileRequest);
-
-        User createdUser = userService.create(userCreateRequest, profileRequest);
-        // HTTP 응답 커스터마이징
-        // 상태코드 : 생성됨( 201 )
-        // 응답 상태( 상태 코드 : 201 ), 내부 정보( 유저 생성 DTO, 선택적 프로필 이미지 ) 반환
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+  @Operation(
+      summary = "신규 사용자 생성",
+      description = "새로운 사용자를 등록하며, 선택적으로 프로필 이미지를 포함할 수 있습니다",
+      responses = {
+          @ApiResponse(
+              responseCode = "201",
+              description = "신규 사용자 생성 성공",
+              content = @Content(schema = @Schema(implementation = User.class))),
+          @ApiResponse(
+              responseCode = "400",
+              description = "잘못된 비밀번호 형식",
+              content = @Content(
+                  mediaType = "application/json",
+                  examples = @ExampleObject(value = "비밀번호는 대소문자, 숫자, 특수문자를 포함하여 최소 8자 이상이어야 합니다")
+              )
+          )
+      }
+  )
+  // 신규 유저 생성 요청( POST )
+  @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<?> create(
+      @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
+      @RequestPart(value = "profile", required = false) MultipartFile profile
+  ) {
+    // 보안성 향상을 위한 비밀번호 검증 로직
+    List<String> errors = PasswordValidator.getPasswordValidationErrors(userCreateRequest.getPwd());
+    // 비밀번호 규칙 검증시 false 시
+    if (!errors.isEmpty()) {
+      // 규칙 검증 시 발생한 에러문 응답
+      String errorMessage = String.join("\n", errors);
+      // 응답 상태( 상태 코드 : 400 ) 및 내부 정보( 비밀번호 검증 시 발생한 에러 메세지 ) 반환
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
     }
+    // 선택적 유저 프로필 이미지 처리
+    Optional<BinaryContentCreateRequest> profileRequest =
+        Optional.ofNullable(profile)
+            // 선택적 프로필 이미지의 값 여부 판별 메서드 동작 후 해당 값을 저장
+            .flatMap(this::resolveProfileRequest);
 
-    // MultipartFile 타입의 요청값을 BinaryContentCreateRequest 타입으로 변환하기 위한 메서드
-    // MultipartFile : 파일 업로드를 처리할 때 사용하는 인터페이스
-    private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profile) {
+    User createdUser = userService.create(userCreateRequest, profileRequest);
+    // HTTP 응답 커스터마이징
+    // 상태코드 : 생성됨( 201 )
+    // 응답 상태( 상태 코드 : 201 ), 내부 정보( 유저 생성 DTO, 선택적 프로필 이미지 ) 반환
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+  }
 
-        if(profile.isEmpty()) {
-            // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 비어있다면:
-            return Optional.empty();
-        } else {
-            // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 존재한다면:
-            try {
-                BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
-                        profile.getOriginalFilename(),
-                        profile.getBytes(),
-                        profile.getContentType()
-                );
-                return Optional.of(binaryContentCreateRequest);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
+  // MultipartFile 타입의 요청값을 BinaryContentCreateRequest 타입으로 변환하기 위한 메서드
+  // MultipartFile : 파일 업로드를 처리할 때 사용하는 인터페이스
+  private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profile) {
 
-
-    @RequestMapping(
-            path = "/{userId}"
-            // 전체적인 정보 수정이라 예상, PUT 선택
-            , method = RequestMethod.PUT
-            , consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    @ResponseBody
-    // 사용자 정보 수정( PUT )
-    public ResponseEntity<User> update(
-            // 어느 사용자인지 식별
-            @PathVariable UUID userId
-            , @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest
-            , @RequestPart(value = "profile", required = false) MultipartFile profile
-    ) {
-        User updatedUser = userService.update(
-                userId,
-                userUpdateRequest,
-                Optional.ofNullable(profile)
-                        .flatMap(this::resolveProfileRequest)
+    if (profile.isEmpty()) {
+      // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 비어있다면:
+      return Optional.empty();
+    } else {
+      // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 존재한다면:
+      try {
+        BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
+            profile.getOriginalFilename(),
+            profile.getBytes(),
+            profile.getContentType()
         );
-        return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
+        return Optional.of(binaryContentCreateRequest);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
+  }
 
 
-    // 비밀번호 변경 전용
-    @RequestMapping(
-            path = "/{userId}/password"
-            , method = RequestMethod.PATCH
-    )
-    @ResponseBody
-    // 에러 메세지( String )를 출력하고자 제네릭을 와일드카드 타입으로 사용
-    public ResponseEntity<?> updateByPass(
-            @PathVariable UUID userId
-            , @RequestBody UserPasswordUpdateRequest userPasswordUpdateRequest
-    ) {
+  @Operation(
+      summary = "사용자 정보 수정",
+      description = "사용자 ID를 기반으로 사용자 정보를 패스워드 제외 전체 수정합니다",
+      responses = {
+          @ApiResponse(
+              responseCode = "200",
+              description = "사용자 정보 수정 성공",
+              content = @Content(schema = @Schema(implementation = User.class))
+          )
+      }
+  )
+  @PutMapping("/{userId}")
+  // 사용자 정보 수정( PUT )
+  public ResponseEntity<User> update(
+      // 어느 사용자인지 식별
+      @PathVariable UUID userId
+      , @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest
+      , @RequestPart(value = "profile", required = false) MultipartFile profile
+  ) {
+    User updatedUser = userService.update(
+        userId,
+        userUpdateRequest,
+        Optional.ofNullable(profile)
+            .flatMap(this::resolveProfileRequest)
+    );
+    return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
+  }
 
-        // 새 비밀번호 규칙 검증( 대소문자, 숫자, 특수문자 포함 + 8자 이상 )
-        List<String> errors = PasswordValidator.getPasswordValidationErrors(userPasswordUpdateRequest.getNewPassword());
 
-        // 비밀번호 규칙 검증시 false 시
-        if (!errors.isEmpty()) {
-            // 규칙 검증 시 발생한 에러문 응답
-            String errorMessage = String.join("\n", errors);
-            // 응답 상태( 상태 코드 : 400 ) 및 내부 정보( 비밀번호 검증 시 발생한 에러 메세지 ) 반환
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
-        }
-        // 비밀번호 규칙 검증이 ture 시, 비밀번호 변경
-        User updatedUser = userService.updateByPass(userId, userPasswordUpdateRequest);
+  // 비밀번호 변경 전용
+  @Operation(
+      summary = "사용자 비밀번호 수정",
+      description = "사용자 ID를 기반으로 비밀번호만 변경합니다",
+      responses = {
+          @ApiResponse(
+              responseCode = "200",
+              description = "비밀번호 변경 성공",
+              content = @Content(schema = @Schema(implementation = User.class))
+          )
+      }
+  )
+  @PatchMapping("/{userId}/password")
+  // 에러 메세지( String )를 출력하고자 제네릭을 와일드카드 타입으로 사용
+  public ResponseEntity<?> updateByPass(
+      @PathVariable UUID userId
+      , @RequestBody UserPasswordUpdateRequest userPasswordUpdateRequest
+  ) {
 
-        return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
+    // 새 비밀번호 규칙 검증( 대소문자, 숫자, 특수문자 포함 + 8자 이상 )
+    List<String> errors = PasswordValidator.getPasswordValidationErrors(
+        userPasswordUpdateRequest.getNewPassword());
+
+    // 비밀번호 규칙 검증시 false 시
+    if (!errors.isEmpty()) {
+      // 규칙 검증 시 발생한 에러문 응답
+      String errorMessage = String.join("\n", errors);
+      // 응답 상태( 상태 코드 : 400 ) 및 내부 정보( 비밀번호 검증 시 발생한 에러 메세지 ) 반환
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
     }
+    // 비밀번호 규칙 검증이 ture 시, 비밀번호 변경
+    User updatedUser = userService.updateByPass(userId, userPasswordUpdateRequest);
+
+    return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
+  }
 
 
-    // 사용자 삭제( DEL )
-    @RequestMapping(
-            path = "/{userId}"
-            , method = RequestMethod.DELETE
-    )
-    @ResponseBody
-    public ResponseEntity<String> delete(@PathVariable UUID userId) {
-        try {
-            userService.delete(userId);
-            // HTTP 상태 코드 200( ok ) 반환
-            return ResponseEntity.ok("사용자 삭제에 성공했습니다");
-            // 사용자를 찾을 수 없다면 예외 발생 처리
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("해당 사용자를 찾을 수 없습니다");
-        }
+  // 사용자 삭제( DEL )
+  @Operation(
+      summary = "사용자 삭제",
+      description = "ID에 해당하는 사용자를 삭제합니다",
+      responses = {
+          @ApiResponse(
+              responseCode = "200",
+              description = "사용자 삭제 성공",
+              content = @Content(
+                  mediaType = "application/json",
+                  examples = @ExampleObject(value = "사용자 삭제에 성공했습니다")
+              )
+          ),
+          @ApiResponse(
+              responseCode = "404",
+              description = "사용자 찾을 수 없음",
+              content = @Content(
+                  mediaType = "application/json",
+                  examples = @ExampleObject(value = "해당 사용자를 찾을 수 없습니다")
+              )
+          )
+      }
+  )
+  @DeleteMapping("/{userId}")
+  public ResponseEntity<String> delete(@PathVariable UUID userId) {
+    try {
+      userService.delete(userId);
+      // HTTP 상태 코드 200( ok ) 반환
+      return ResponseEntity.ok("사용자 삭제에 성공했습니다");
+      // 사용자를 찾을 수 없다면 예외 발생 처리
+    } catch (NoSuchElementException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body("해당 사용자를 찾을 수 없습니다");
     }
+  }
 
 
-    // 모든 사용자 조회( GET )
-    @RequestMapping(
-            path = "/findAll"
-            , method = RequestMethod.GET
-            , produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @ResponseBody
-    public ResponseEntity<List<UserDTO>> findAll() {
-        // 모든 사용자 조회
-        List<UserDTO> users = userService.findAll();
+  // 모든 사용자 조회( GET )
+  @GetMapping("/users")
+  @Operation(
+      summary = "전체 User 목록 조회",
+      description = "시스템에 등록된 전체 사용자 목록을 조회합니다",
+      responses = {
+          @ApiResponse(
+              responseCode = "200",
+              description = "사용자 목록 조회 성공",
+              content = @Content(
+                  array = @ArraySchema(schema = @Schema(implementation = UserDTO.class))
+              )
+          )
+      }
+  )
+  public ResponseEntity<List<UserDTO>> findAll() {
+    // 모든 사용자 조회
+    List<UserDTO> users = userService.findAll();
 
-        return ResponseEntity.status(HttpStatus.OK).body(users);
-    }
+    return ResponseEntity.status(HttpStatus.OK).body(users);
+  }
 
-    @RequestMapping(
-            value = "/{userId}/status",
-            method = RequestMethod.PATCH
-    )
-    @ResponseBody
-    public ResponseEntity<UserStatus> updateUserStatus(
-            @PathVariable UUID userId,
-            @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
-    ) {
-        UserStatus updatedStatus = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
 
-        return ResponseEntity.status(HttpStatus.OK).body(updatedStatus);
-    }
+  // 사용자 활동 상태 변경
+  @Operation(
+      summary = "사용자 상태 변경",
+      description = "해당 사용자의 활동 상태( 온라인 / 오프라인 )를 수정합니다",
+      responses = {
+          @ApiResponse(
+              responseCode = "200",
+              description = "사용자 상태 변경 성공",
+              content = @Content(schema = @Schema(implementation = UserStatus.class))
+          )
+      }
+  )
+  @PatchMapping("/{userId}/status")
+  public ResponseEntity<UserStatus> updateUserStatus(
+      @PathVariable UUID userId,
+      @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
+  ) {
+    UserStatus updatedStatus = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
+
+    return ResponseEntity.status(HttpStatus.OK).body(updatedStatus);
+  }
 
 }

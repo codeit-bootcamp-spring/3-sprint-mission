@@ -9,3 +9,14 @@ discodeit:
   repository:
     type: file   # jcf | file
     file-directory: .discodeit
+
+springdoc:
+  api-docs:
+    # OpenAPI 명세서 경로( JSON )
+    path: /v3/api-docs
+  swagger-ui:
+    # OpenAPI 명세서 경로( HTML )
+    path: /swagger-ui.html
+    # API 정렬 기준
+    operations-sorter: method  # HTTP 메서드의 알파벳 기준
+#    operations-sorter: alpha  # Java 메서드의 알파벳 기준
