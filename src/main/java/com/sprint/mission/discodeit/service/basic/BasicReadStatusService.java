@@ -53,10 +53,10 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
 
-    public ReadStatus update(ReadStatusUpdateRequest request) {
+    public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
         Instant newReadAt = request.newReadAt();
 
-        ReadStatus readStatus = readStatusRepository.findById(request.id())
+        ReadStatus readStatus = readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 ReadStatus는 없습니다."));
 
         readStatus.update(newReadAt);
