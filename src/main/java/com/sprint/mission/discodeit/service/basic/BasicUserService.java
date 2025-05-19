@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.User.UserCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.User.UserDTO;
-import com.sprint.mission.discodeit.dto.User.UserUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.User.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.User.UserDto;
+import com.sprint.mission.discodeit.dto.User.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,43 +29,57 @@ public class BasicUserService implements UserService {
     /**
      * 주어진 생성 요청 DTO(유저, 프로필사진)를 기반으로 유저 생성
      *
-     * @param userCreateRequestDTO 유저 생성 요청 DTO
+     * @param userCreateRequest       유저 생성 요청 DTO
      * @param profileCreateRequestDTO 프로필사진 생성 요청 DTO
      * @return 생성된 유저
      * @throws IllegalStateException 유저명/이메일 중복시 예외처리
      */
     @Override
-    public User create(UserCreateRequestDTO userCreateRequestDTO, Optional<BinaryContentCreateRequestDTO> profileCreateRequestDTO) {
+    public User create(UserCreateRequest userCreateRequest,
+            BinaryContentCreateRequest profileCreateRequestDTO) {
+        String username = userCreateRequest.username();
+        String email = userCreateRequest.email();
+
         // username, email 중복체크
-        if (userRepository.existsByUserName(userCreateRequestDTO.userName())) {
+        if (userRepository.existsByUserName(username)) {
             throw new IllegalStateException("이미 존재하는 유저명입니다. 다른 유저명을 입력해주세요.");
-        } else if (userRepository.existsByEmail(userCreateRequestDTO.email())) {
+        }
+        if (userRepository.existsByEmail(email)) {
             throw new IllegalStateException("이미 존재하는 이메일입니다. 다른 이메일을 입력해주세요.");
         }
 
-        // BinaryContent 생성
-        boolean isProfileCreated = profileCreateRequestDTO.isPresent();
+        boolean isProfileCreated = profileCreateRequestDTO != null;
         BinaryContent binaryContent = null;
-        // 프로필 파라미터가 있는 경우
+
         if (isProfileCreated) {
-            binaryContent = new BinaryContent(
-                    profileCreateRequestDTO.get().content()
-            );
+            String fileName = profileCreateRequestDTO.fileName();
+            String contentType = profileCreateRequestDTO.contentType();
+            byte[] bytes = profileCreateRequestDTO.bytes();
+
+            binaryContent = BinaryContent.builder()
+                    .contentType(contentType)
+                    .fileName(fileName)
+                    .bytes(bytes)
+                    .size((long) bytes.length)
+                    .build();
+
             binaryContentRepository.save(binaryContent);
         }
 
-        // 유저 생성
-        User user = new User(
-                userCreateRequestDTO.userName(),
-                userCreateRequestDTO.email(),
-                userCreateRequestDTO.password(),
-                isProfileCreated ? binaryContent.getId(): null
-        );
+        String password = userCreateRequest.password();
 
-        // UserStatus 생성
-        UserStatus userStatus = new UserStatus(user.getId());
+        User user = User.builder()
+                .username(username)
+                .email(email)
+                .password(password)
+                .profileId(isProfileCreated ? binaryContent.getId() : null)
+                .build();
 
-        // 데이터 저장
+        UserStatus userStatus = UserStatus.builder()
+                .userId(user.getId())
+                .lastActiveAt(Instant.now())
+                .build();
+
         userRepository.save(user);
         userStatusRepository.save(userStatus);
         return user;
@@ -76,16 +91,15 @@ public class BasicUserService implements UserService {
      * @return 조회된 유저 데이터
      */
     @Override
-    public List<UserDTO> findAll() {
+    public List<UserDto> findAll() {
         List<User> userList = userRepository.findAll();
 
         // userStatus를 UserID와 매핑
         Map<UUID, UserStatus> userStatusMap = userStatusRepository.findAll().stream()
-                .collect(Collectors.toMap(UserStatus::getUserId, us->us));
+                .collect(Collectors.toMap(UserStatus::getUserId, us -> us));
 
-        // UserResponseDTO 리스트 형태로 리턴
         return userList.stream()
-                .map(u-> UserDTO.from(u,userStatusMap.get(u.getId())))
+                .map(u -> UserDto.from(u, userStatusMap.get(u.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -97,51 +111,69 @@ public class BasicUserService implements UserService {
      * @throws NoSuchElementException 해당 ID의 유저가 존재하지 않는 경우
      */
     @Override
-    public UserDTO find(UUID userId) {
+    public UserDto find(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()->new NoSuchElementException("해당 ID의 유저가 존재하지 않습니다."));
+                .orElseThrow(() -> new NoSuchElementException("해당 ID의 유저가 존재하지 않습니다."));
 
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저ID의 UserStatus가 존재하지 않습니다."));
 
-        // UserResponseDTO 형태로 리턴
-        return UserDTO.from(user,userStatus);
+        return UserDto.from(user, userStatus);
     }
 
     /**
      * 주어진 ID에 해당하는 유저를 수정 요청 DTO(유저, 프로필사진) 값으로 수정
      *
-     * @param userId 수정 대상 유저 ID
-     * @param updateRequestDTO 유저 수정 요청 DTO
+     * @param userId                  수정 대상 유저 ID
+     * @param updateRequestDTO        유저 수정 요청 DTO
      * @param profileCreateRequestDTO 프로필사진 수정 요청 DTO
      * @return 수정된 유저
      * @throws NoSuchElementException 해당 ID의 유저가 존재하지 않는 경우
      */
     @Override
-    public User update(UUID userId, UserUpdateRequestDTO updateRequestDTO, Optional<BinaryContentCreateRequestDTO> profileCreateRequestDTO) {
+    public User update(UUID userId, UserUpdateRequest updateRequestDTO,
+            BinaryContentCreateRequest profileCreateRequestDTO) {
+        // 유저 유효성 검사
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 ID의 유저가 존재하지 않습니다."));
 
-        // BinaryContent 생성
-        boolean isProfileCreated = profileCreateRequestDTO.isPresent();
+        String newUsername = updateRequestDTO.newUsername();
+        String newEmail = updateRequestDTO.newEmail();
+
+        if (userRepository.existsByUserName(newUsername)) {
+            throw new IllegalStateException("이미 존재하는 유저명입니다. 다른 유저명을 입력해주세요.");
+        }
+        if (userRepository.existsByEmail(newEmail)) {
+            throw new IllegalStateException("이미 존재하는 이메일입니다. 다른 이메일을 입력해주세요.");
+        }
+
+        boolean isProfileCreated = profileCreateRequestDTO != null;
         BinaryContent binaryContent = null;
-        // 프로필 파라미터가 있는 경우
+
         if (isProfileCreated) {
-            binaryContent = new BinaryContent(
-                    profileCreateRequestDTO.get().content()
-            );
+            String fileName = profileCreateRequestDTO.fileName();
+            String contentType = profileCreateRequestDTO.contentType();
+            byte[] bytes = profileCreateRequestDTO.bytes();
+
+            binaryContent = BinaryContent.builder()
+                    .fileName(fileName)
+                    .size((long) bytes.length)
+                    .contentType(contentType)
+                    .bytes(bytes)
+                    .build();
+
             binaryContentRepository.save(binaryContent);
         }
 
-        // 유저 수정
+        String newPassword = updateRequestDTO.newPassword();
+
         user.update(
-                updateRequestDTO.newUsername(),
-                updateRequestDTO.newEmail(),
-                updateRequestDTO.newPassword(),
-                isProfileCreated ? binaryContent.getId(): null
+                newUsername,
+                newEmail,
+                newPassword,
+                isProfileCreated ? binaryContent.getId() : null
         );
 
-        // 데이터 저장
         userRepository.save(user);
         return user;
     }
@@ -158,16 +190,14 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("해당 ID의 유저가 존재하지 않습니다."));
 
         UUID userStatusId = userStatusRepository.findByUserId(userId)
-                .map(userStatus -> userStatus.getId())
-                .orElseThrow(()-> new NoSuchElementException("해당 유저ID의 UserStatus가 존재하지 않습니다."));
+                .map(UserStatus::getId)
+                .orElseThrow(() -> new NoSuchElementException("해당 유저ID의 UserStatus가 존재하지 않습니다."));
 
-        // 유저 삭제
-        userRepository.deleteById(userId);
-
-        // 관련 도메인 삭제 (BinaryContent, UserStatus)
         userStatusRepository.deleteById(userStatusId);
         if (user.getProfileId() != null) {
             binaryContentRepository.deleteById(user.getProfileId());
         }
+
+        userRepository.deleteById(userId);
     }
 }

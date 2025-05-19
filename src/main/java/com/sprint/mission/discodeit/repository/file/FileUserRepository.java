@@ -26,7 +26,8 @@ public class FileUserRepository implements UserRepository {
      * @throws RuntimeException 디렉토리 생성 중 예외가 발생한 경우
      */
     public FileUserRepository(@Value("${discodeit.repository.file-directory}") String directory) {
-        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), directory, User.class.getSimpleName());
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), directory,
+                User.class.getSimpleName());
         if (Files.notExists(DIRECTORY)) {
             try {
                 Files.createDirectories(DIRECTORY);
@@ -56,7 +57,8 @@ public class FileUserRepository implements UserRepository {
     @Override
     public User save(User user) {
         Path path = resolvePath(user.getId());
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()));) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(
+                new FileOutputStream(path.toFile()));) {
             oos.writeObject(user);
         } catch (IOException e) {
             throw new RuntimeException("User 데이터 파일을 저장하는 중 오류가 발생하였습니다.");
@@ -76,7 +78,8 @@ public class FileUserRepository implements UserRepository {
             return Files.list(DIRECTORY)
                     .filter(path -> path.toString().endsWith(EXTENSION))
                     .map(path -> {
-                        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()));) {
+                        try (ObjectInputStream ois = new ObjectInputStream(
+                                new FileInputStream(path.toFile()));) {
                             return (User) ois.readObject();
                         } catch (IOException | ClassNotFoundException e) {
                             throw new RuntimeException("유저 데이터 파일을 읽는 중 오류가 발생하였습니다.");
@@ -99,7 +102,8 @@ public class FileUserRepository implements UserRepository {
     public Optional<User> findById(UUID id) {
         Path path = resolvePath(id);
         if (Files.exists(path)) {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()));) {
+            try (ObjectInputStream ois = new ObjectInputStream(
+                    new FileInputStream(path.toFile()));) {
                 return Optional.of((User) ois.readObject());
             } catch (IOException | ClassNotFoundException e) {
                 throw new RuntimeException("User 데이터 파일을 읽는 중 오류가 발생하였습니다.");
@@ -121,13 +125,14 @@ public class FileUserRepository implements UserRepository {
             return Files.list(DIRECTORY)
                     .filter(path -> path.toString().endsWith(EXTENSION))
                     .map(path -> {
-                        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+                        try (ObjectInputStream ois = new ObjectInputStream(
+                                new FileInputStream(path.toFile()))) {
                             return (User) ois.readObject();
                         } catch (IOException | ClassNotFoundException e) {
                             throw new RuntimeException("유저 데이터 파일을 읽는 중 오류가 발생하였습니다.");
                         }
                     })
-                    .filter(u -> u.getUserName().equals(userName))
+                    .filter(u -> u.getUsername().equals(userName))
                     .findFirst();
         } catch (IOException e) {
             throw new RuntimeException("유저 데이터 파일을 읽는 중 오류가 발생하였습니다.");
@@ -158,9 +163,10 @@ public class FileUserRepository implements UserRepository {
             return Files.list(DIRECTORY)
                     .filter(path -> path.toString().endsWith(EXTENSION))
                     .anyMatch(path -> {
-                        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+                        try (ObjectInputStream ois = new ObjectInputStream(
+                                new FileInputStream(path.toFile()))) {
                             User user = (User) ois.readObject();
-                            return user.getUserName().equals(userName);
+                            return user.getUsername().equals(userName);
                         } catch (IOException | ClassNotFoundException e) {
                             throw new RuntimeException("유저 데이터 파일을 읽는 중 오류가 발생하였습니다.");
                         }
@@ -183,7 +189,8 @@ public class FileUserRepository implements UserRepository {
             return Files.list(DIRECTORY)
                     .filter(path -> path.toString().endsWith(EXTENSION))
                     .anyMatch(path -> {
-                        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
+                        try (ObjectInputStream ois = new ObjectInputStream(
+                                new FileInputStream(path.toFile()))) {
                             User user = (User) ois.readObject();
                             return user.getEmail().equals(email);
                         } catch (IOException | ClassNotFoundException e) {

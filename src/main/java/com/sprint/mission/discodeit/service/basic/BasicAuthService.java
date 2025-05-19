@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.User.UserLoginRequestDTO;
+import com.sprint.mission.discodeit.dto.User.LoginRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -23,12 +23,14 @@ public class BasicAuthService implements AuthService {
      * @throws NoSuchElementException 유저명/패스워드 불일치하는 경우
      */
     @Override
-    public User login(UserLoginRequestDTO loginRequestDTO) {
-        User user = userRepository.findByUserName(loginRequestDTO.userName())
-                .orElseThrow(()-> new NoSuchElementException("일치하는 유저가 없습니다."));
+    public User login(LoginRequest loginRequestDTO) {
+        String username = loginRequestDTO.username();
+        String password = loginRequestDTO.password();
 
-        // 패스워드 일치 확인
-        if (!user.getPassword().equals(loginRequestDTO.password())) {
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new NoSuchElementException("일치하는 유저가 없습니다."));
+
+        if (!user.getPassword().equals(password)) {
             throw new NoSuchElementException("패스워드가 일치하지 않습니다.");
         }
         return user;

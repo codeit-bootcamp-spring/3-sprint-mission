@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -10,6 +11,7 @@ import java.util.UUID;
 @Getter
 @ToString
 public class User implements Serializable {
+
     private static final long serialVersionUID = -3212462601778766776L;
 
     /* 공통 필드 */
@@ -17,17 +19,18 @@ public class User implements Serializable {
     private Instant createdAt;
     private Instant updatedAt;
 
-    private String userName;        // 유저 이름
+    private String username;        // 유저 이름
     private String email;           // 이메일
     private String password;        // 비밀번호
     private UUID profileId;         // 프로필 사진
 
-    public User(String userName, String email, String password, UUID profileId) {
+    @Builder
+    public User(String username, String email, String password, UUID profileId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
 
-        this.userName = userName;
+        this.username = username;
         this.email = email;
         this.password = password;
         this.profileId = profileId;
@@ -35,8 +38,8 @@ public class User implements Serializable {
 
     public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
         boolean isUpdated = false;
-        if (newUsername != null && !newUsername.equals(this.userName)) {
-            this.userName = newUsername;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
             isUpdated = true;
         }
         if (newEmail != null && !newEmail.equals(this.email)) {
