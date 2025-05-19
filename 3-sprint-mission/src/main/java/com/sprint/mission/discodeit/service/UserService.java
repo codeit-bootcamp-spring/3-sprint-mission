@@ -1,24 +1,25 @@
 package com.sprint.mission.discodeit.service;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import com.sprint.mission.discodeit.dto.data.UserDTO;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
-import org.springframework.stereotype.Service;
+
 
 public interface UserService {
 
-    User create(String username, String email, String password, String name) throws IOException;
-    User find(UUID id);
-    User findByUsername(String username);
-    List<User> findByName(String name);
-    User findByEmail(String email);
-    List<User> findAll();
-    void updateName(UUID id, String name) throws IOException, IllegalAccessException;
-    void updatePassword(UUID id, String password) throws IOException, IllegalAccessException;
-    void updateEmail(UUID id, String email) throws IOException, IllegalAccessException;
-    void updateProfile(UUID id, UUID profileId) throws IOException, IllegalAccessException;
-    void delete(UUID id) throws IOException, IllegalAccessException;
+    User create(UserCreateRequest userCreateDTO, Optional<BinaryContentCreateRequest> profileCreateDTO);
+    UserDTO find(UUID id);
+    UserDTO findByUsername(String username);
+    List<UserDTO> findByName(String name);
+    UserDTO findByEmail(String email);
+    List<UserDTO> findAll();
+    User update(UUID id, UserUpdateRequest userUpdateDTO, Optional<BinaryContentCreateRequest> profileCreateDTO);
+    void delete(UUID id);
 }

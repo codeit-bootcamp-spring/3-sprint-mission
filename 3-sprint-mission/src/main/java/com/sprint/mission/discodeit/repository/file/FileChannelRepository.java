@@ -12,20 +12,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Repository
 public class FileChannelRepository implements ChannelRepository {
-    private static final Path DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", "channel");
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
 
     public FileChannelRepository() {
-        init();
-    }
-
-    // 저장할 경로의 파일 초기화
-    public static Path init() {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", Channel.class.getSimpleName());
         if (!Files.exists(DIRECTORY)) {
             try {
                 Files.createDirectories(DIRECTORY);
@@ -33,23 +30,10 @@ public class FileChannelRepository implements ChannelRepository {
                 throw new RuntimeException(e);
             }
         }
-
-        return DIRECTORY;
     }
 
-    public static Channel load(Path filePath){
-        if (!Files.exists(filePath)) {
-            return null;
-        }
-        try (
-                FileInputStream fis = new FileInputStream(filePath.toFile());
-                ObjectInputStream ois = new ObjectInputStream(fis)
-        ) {
-            Object data = ois.readObject();
-            return (Channel) data;
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("파일 로딩 실패", e);
-        }
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
     }
 
     @Override
@@ -68,23 +52,40 @@ public class FileChannelRepository implements ChannelRepository {
 
     @Override
     public List<Channel> findAll() {
-        if (!Files.exists(DIRECTORY)) {
-            return new ArrayList<>();
-        } else {
-            List<Channel> data = new ArrayList<>();
-            File[] files = DIRECTORY.toFile().listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    data.add(load(file.toPath()));
-                }
-            }
-            return data;
+        try {
+            return Files.list(DIRECTORY)
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis);
+                        ) {
+                            return (Channel) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Channel find(UUID id) {
-        return load(Paths.get(String.valueOf(DIRECTORY), id+".ser"));
+    public Optional<Channel> findById(UUID id) {
+        Channel channelNullable = null;
+        Path path = resolvePath(id);
+        if (Files.exists(path)) {
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                channelNullable = (Channel) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return Optional.ofNullable(channelNullable);
     }
 
     @Override
@@ -92,17 +93,25 @@ public class FileChannelRepository implements ChannelRepository {
 
         return findAll().stream()
                 .filter(c -> c.getName().contains(name))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
-    public void addEntry(UUID id, UUID userId) {
-        find(id).addEntry(userId);
-        save(find(id));
+    public boolean existsById(UUID id) {
+        return Files.exists(Paths.get(String.valueOf(DIRECTORY), id+".ser"));
     }
 
     @Override
-    public void delete(UUID id) throws IOException {
-        Files.delete(Paths.get(String.valueOf(DIRECTORY), id+".ser"));
+    public boolean existsByName(String name) {
+        return findAll().stream().anyMatch(c -> c.getName().contains(name));
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        try {
+            Files.delete(Paths.get(String.valueOf(DIRECTORY), id+".ser"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

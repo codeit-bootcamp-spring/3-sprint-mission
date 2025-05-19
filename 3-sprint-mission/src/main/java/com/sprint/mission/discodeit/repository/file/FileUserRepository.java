@@ -8,22 +8,16 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
 public class FileUserRepository implements UserRepository {
-    private static final Path DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", "user");
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
 
     public FileUserRepository() {
-        init();
-    }
-
-    // 저장할 경로의 파일 초기화
-    public static Path init() {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", User.class.getSimpleName());
         if (!Files.exists(DIRECTORY)) {
             try {
                 Files.createDirectories(DIRECTORY);
@@ -31,23 +25,10 @@ public class FileUserRepository implements UserRepository {
                 throw new RuntimeException(e);
             }
         }
-
-        return DIRECTORY;
     }
 
-    public static User load(Path filePath) {
-        if (!Files.exists(filePath)) {
-            return null;
-        }
-        try (
-                FileInputStream fis = new FileInputStream(filePath.toFile());
-                ObjectInputStream ois = new ObjectInputStream(fis)
-        ) {
-            Object data = ois.readObject();
-            return (User) data;
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("파일 로딩 실패", e);
-        }
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
     }
 
     @Override
@@ -66,30 +47,47 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public List<User> findAll() {
-        if (!Files.exists(DIRECTORY)) {
-            return new ArrayList<>();
-        } else {
-            List<User> data = new ArrayList<>();
-            File[] files = DIRECTORY.toFile().listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    data.add(load(file.toPath()));
-                }
-            }
-            return data;
+        try {
+            return Files.list(DIRECTORY)
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis);
+                        ) {
+                            return (User) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public User find(UUID id) {
-        return load(Paths.get(String.valueOf(DIRECTORY), id+".ser"));
+    public Optional<User> findById(UUID id) {
+        User userNullable = null;
+        Path path = resolvePath(id);
+        if (Files.exists(path)) {
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                userNullable = (User) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return Optional.ofNullable(userNullable);
     }
 
     @Override
-    public User findByUsername(String username) {
+    public Optional<User> findByUsername(String username) {
         return findAll().stream()
                 .filter(u -> u.getUsername().equals(username))
-                .findFirst().orElseThrow(NoSuchElementException::new);
+                .findFirst();
     }
 
     @Override
@@ -100,35 +98,40 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public User findByEmail(String email) {
+    public Optional<User> findByEmail(String email) {
         return findAll().stream()
                 .filter(u -> u.getEmail().equals(email))
-                .findFirst()
-                .orElseThrow(NoSuchElementException::new);
+                .findFirst();
     }
 
     @Override
-    public boolean existsId(UUID id) {
-        return Files.exists(Paths.get(String.valueOf(DIRECTORY), id+".ser"));
+    public boolean existsById(UUID id) {
+        Path path = resolvePath(id);
+        return Files.exists(path);
     }
 
     @Override
-    public boolean existsUsername(String username) {
+    public boolean existsByUsername(String username) {
         return findAll().stream().anyMatch(u -> u.getUsername().equals(username));
     }
 
     @Override
-    public boolean existsEmail(String email) {
+    public boolean existsByEmail(String email) {
         return findAll().stream().anyMatch(u -> u.getEmail().equals(email));
     }
 
     @Override
-    public boolean existsName(String name) {
+    public boolean existsByName(String name) {
         return findAll().stream().anyMatch(u -> u.getName().equals(name));
     }
 
     @Override
-    public void delete(UUID id) throws IOException {
-        Files.delete(Paths.get(String.valueOf(DIRECTORY), id+".ser"));
+    public void deleteById(UUID id) {
+        Path path = resolvePath(id);
+        try {
+            Files.delete(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

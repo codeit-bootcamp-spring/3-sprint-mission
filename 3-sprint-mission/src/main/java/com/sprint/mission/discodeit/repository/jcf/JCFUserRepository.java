@@ -2,13 +2,12 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
+//@Repository
 public class JCFUserRepository implements UserRepository {
     private final List<User> data;
 
@@ -28,17 +27,17 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public User find(UUID id) {
+    public Optional<User> findById(UUID id) {
         return this.data.stream()
                 .filter(u -> u.getId().equals(id))
-                .findFirst().orElseThrow(NoSuchElementException::new);
+                .findFirst();
     }
 
     @Override
-    public User findByUsername(String username) {
+    public Optional<User> findByUsername(String username) {
         return this.data.stream()
                 .filter(u -> u.getUsername().equals(username))
-                .findFirst().orElseThrow(NoSuchElementException::new);
+                .findFirst();
     }
 
     @Override
@@ -49,35 +48,34 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public User findByEmail(String email) {
+    public Optional<User> findByEmail(String email) {
         return this.data.stream()
                 .filter(u -> u.getEmail().equals(email))
-                .findFirst()
-                .orElseThrow(NoSuchElementException::new);
+                .findFirst();
     }
 
     @Override
-    public boolean existsId(UUID id) {
+    public boolean existsById(UUID id) {
         return this.data.stream().anyMatch(u -> u.getId().equals(id));
     }
 
     @Override
-    public boolean existsUsername(String username) {
+    public boolean existsByUsername(String username) {
         return this.data.stream().anyMatch(u -> u.getUsername().equals(username));
     }
 
     @Override
-    public boolean existsEmail(String email) {
+    public boolean existsByEmail(String email) {
         return this.data.stream().anyMatch(u -> u.getEmail().equals(email));
     }
 
     @Override
-    public boolean existsName(String name) {
+    public boolean existsByName(String name) {
         return this.data.stream().anyMatch(u -> u.getName().equals(name));
     }
 
     @Override
-    public void delete(UUID id) {
+    public void deleteById(UUID id) {
         this.data.removeIf(u -> u.getId().equals(id));
     }
 }

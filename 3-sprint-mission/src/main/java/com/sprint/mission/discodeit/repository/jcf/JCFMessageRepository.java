@@ -2,15 +2,14 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
+//@Repository
 public class JCFMessageRepository implements MessageRepository {
     private final static BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     private final List<Message> data;
@@ -31,20 +30,19 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public List<Message> findAllFromChannel(UUID currentChannel) {
+    public List<Message> findAllByChannelId(UUID channelId) {
 
         return findAll().stream()
-                .filter(m -> m.getChannel().equals(currentChannel))
+                .filter(m -> m.getChannelId().equals(channelId))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Message find(UUID id) {
+    public Optional<Message> findById(UUID id) {
 
         return findAll().stream()
                 .filter(m -> m.getId().equals(id))
-                .findFirst()
-                .orElseThrow(NoSuchElementException::new);
+                .findFirst();
     }
 
     @Override
@@ -56,8 +54,18 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void delete(UUID id) {
+    public boolean existsById(UUID id) {
+        return findById(id).isPresent();
+    }
+
+    @Override
+    public void deleteById(UUID id) {
         this.data.removeIf(m -> m.getId().equals(id));
 
+    }
+
+    @Override
+    public void deleteAllByChannelId(UUID channelId) {
+        this.data.removeIf(m -> m.getChannelId().equals(channelId));
     }
 }

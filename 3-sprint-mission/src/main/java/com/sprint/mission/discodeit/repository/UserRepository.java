@@ -5,19 +5,20 @@ import com.sprint.mission.discodeit.entity.User;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface UserRepository {
 
-    User save(User user) throws IOException;
+    User save(User user);
     List<User> findAll();
-    User find(UUID id);
-    User findByUsername(String username);
+    Optional<User> findById(UUID id);
+    Optional<User> findByUsername(String username);
     List<User> findByName(String name);
-    User findByEmail(String email);
-    boolean existsId(UUID id);
-    boolean existsUsername(String username);
-    boolean existsEmail(String email);
-    boolean existsName(String name);
-    void delete(UUID id) throws IOException;
+    Optional<User> findByEmail(String email);
+    boolean existsById(UUID id);
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
+    boolean existsByName(String name);
+    void deleteById(UUID id);
 }
