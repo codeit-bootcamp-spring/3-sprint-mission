@@ -12,66 +12,69 @@ import java.util.UUID;
 
 @Getter
 public class Message implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private final UUID id;
-    private final Instant createdAt;
-    private Instant updatedAt;
-    private String content;
-    private final UUID senderId;
-    private final UUID channelId;
-    private List<UUID> attachmentIds;
 
-    public Message(UUID senderId, UUID channelId, String content, List<UUID> attachmentIds) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.content = content;
-        this.senderId = senderId;
-        this.channelId = channelId;
-        this.attachmentIds = attachmentIds;
-    }
+  private static final long serialVersionUID = 1L;
+  private final UUID id;
+  private final Instant createdAt;
+  private Instant updatedAt;
+  private String content;
+  private final UUID authorId;
+  private final UUID channelId;
+  private List<UUID> attachmentIds;
 
-    public void updateContent(String content) {
-        this.content = content;
-        this.updatedAt = Instant.now();
-    }
+  public Message(UUID authorId, UUID channelId, String content, List<UUID> attachmentIds) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    this.content = content;
+    this.authorId = authorId;
+    this.channelId = channelId;
+    this.attachmentIds = attachmentIds;
+  }
 
-    public void updateAttachmentIds(List<UUID> attachmentIds) {
-        this.attachmentIds = attachmentIds;
-    }
+  public void updateContent(String content) {
+    this.content = content;
+    this.updatedAt = Instant.now();
+  }
 
-    public static MessageResponseDTO toDTO(Message message) {
-        MessageResponseDTO messageResponseDTO = new MessageResponseDTO(message.getId(),
-                message.getCreatedAt(),
-                message.getUpdatedAt(),
-                message.getContent(),
-                message.getSenderId(),
-                message.getChannelId(),
-                message.getAttachmentIds());
+  public void updateAttachmentIds(List<UUID> attachmentIds) {
+    this.attachmentIds = attachmentIds;
+  }
 
-        return messageResponseDTO;
-    }
+  public static MessageResponseDTO toDTO(Message message) {
+    MessageResponseDTO messageResponseDTO = new MessageResponseDTO(message.getId(),
+        message.getCreatedAt(),
+        message.getUpdatedAt(),
+        message.getContent(),
+        message.getAuthorId(),
+        message.getChannelId(),
+        message.getAttachmentIds());
 
-    @Override
-    public String toString() {
-        return "Message {\n" +
-                "  id=" + id + ",\n" +
-                "  createdAt=" + createdAt + ",\n" +
-                "  updatedAt=" + updatedAt + ",\n" +
-                "  content='" + content + "',\n" +
-                "  senderId=" + senderId + ",\n" +
-                "  channelId=" + channelId + "\n" +
-                '}';
-    }
+    return messageResponseDTO;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Message message = (Message) o;
-        return Objects.equals(id, message.id);
-    }
+  @Override
+  public String toString() {
+    return "Message {\n" +
+        "  id=" + id + ",\n" +
+        "  createdAt=" + createdAt + ",\n" +
+        "  updatedAt=" + updatedAt + ",\n" +
+        "  content='" + content + "',\n" +
+        "  authorId=" + authorId + ",\n" +
+        "  channelId=" + channelId + "\n" +
+        '}';
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
+  @Override
+  public boolean equals(Object o) {
+      if (o == null || getClass() != o.getClass()) {
+          return false;
+      }
+    Message message = (Message) o;
+    return Objects.equals(id, message.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(id);
+  }
 }

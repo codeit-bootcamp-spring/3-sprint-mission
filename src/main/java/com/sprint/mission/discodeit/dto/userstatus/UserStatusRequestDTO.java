@@ -7,11 +7,11 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Schema(description = "User 온라인 상태 생성 정보")
-public record UserStatusRequestDTO(UUID userId, Instant lastLoginTime) {
+public record UserStatusRequestDTO(UUID userId, Instant lastActiveAt) {
 
   public static UserStatus toEntity(UserStatusRequestDTO userStatusRequestDTO) {
     UserStatus userStatus = new UserStatus(userStatusRequestDTO.userId(),
-        userStatusRequestDTO.lastLoginTime());
+        userStatusRequestDTO.lastActiveAt());
 
     return userStatus;
   }

@@ -102,26 +102,6 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.OK).body(allUsers);
   }
 
-  @Operation(summary = "User 프로필 이미지 변경")
-  @ApiResponses(
-      value = {
-          @ApiResponse(responseCode = "200", description = "User 프로필이 성공적으로 변경됨"),
-          @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음"
-              , content = @Content(examples = {
-              @ExampleObject(value = "User with id {userId} not found")}))
-      }
-  )
-  @PatchMapping(path = "/{userId}/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<UserResponseDTO> updateProfileImage(
-      @Parameter(description = "수정할 User ID") @PathVariable UUID userId,
-      @Parameter(description = "수정할 User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile) {
-    BinaryContentDTO profileRequest = FileConverter.resolveFileRequest(profile);
-
-    UserResponseDTO updatedUser = userService.updateProfileImage(userId, profileRequest);
-
-    return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
-  }
-
   @Operation(summary = "User 정보 수정")
   @ApiResponses(
       value = {
@@ -134,10 +114,13 @@ public class UserController {
               @ExampleObject(value = "User with id {userId} not found")}))
       }
   )
-  @PatchMapping(path = "/{userId}/info")
-  public ResponseEntity<UserResponseDTO> updateUserInfo(@PathVariable UUID userId,
-      @RequestBody UserRequestDTO userRequestDTO) {
-    UserResponseDTO updatedUser = userService.updateUserInfo(userId, userRequestDTO);
+  @PatchMapping(path = "/{userId}")
+  public ResponseEntity<UserResponseDTO> update(@PathVariable UUID userId,
+      @RequestBody UserRequestDTO userRequestDTO,
+      @Parameter(description = "수정할 User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile) {
+    BinaryContentDTO profileImg = FileConverter.resolveFileRequest(profile);
+
+    UserResponseDTO updatedUser = userService.update(userId, userRequestDTO, profileImg);
 
     return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
   }

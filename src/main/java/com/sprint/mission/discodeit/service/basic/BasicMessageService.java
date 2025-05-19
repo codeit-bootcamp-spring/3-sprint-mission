@@ -34,7 +34,7 @@ public class BasicMessageService implements MessageService {
   @Override
   public Message create(MessageRequestDTO messageRequestDTO,
       List<BinaryContentDTO> binaryContentDTOS) {
-    User user = findUser(messageRequestDTO.senderId());
+    User user = findUser(messageRequestDTO.authorId());
     Channel channel = findChannel(messageRequestDTO.channelId());
 
     // Repository 저장용 데이터

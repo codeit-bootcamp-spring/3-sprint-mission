@@ -21,72 +21,72 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicReadStatusService implements ReadStatusService {
 
-    private final ReadStatusRepository readStatusRepository;
-    private final UserRepository userRepository;
-    private final ChannelRepository channelRepository;
+  private final ReadStatusRepository readStatusRepository;
+  private final UserRepository userRepository;
+  private final ChannelRepository channelRepository;
 
-    @Override
-    public ReadStatus create(ReadStatusRequestDTO readStatusRequestDTO) {
-        if (userRepository.findById(readStatusRequestDTO.userId()).isEmpty()) {
-            throw new NotFoundUserException();
-        }
-
-        if (channelRepository.findById(readStatusRequestDTO.channelId()).isEmpty()) {
-            throw new NotFoundChannelException();
-        }
-
-        UUID channelId = readStatusRequestDTO.channelId();
-        UUID userId = readStatusRequestDTO.userId();
-
-        if (readStatusRepository.findByChannelIdAndUserId(channelId, userId).isPresent()) {
-            throw new ReadStatusAlreadyExistsException();
-        }
-
-        ReadStatus readStatus = ReadStatusRequestDTO.toEntity(readStatusRequestDTO);
-
-        readStatusRepository.save(readStatus);
-
-        return readStatus;
+  @Override
+  public ReadStatus create(ReadStatusRequestDTO readStatusRequestDTO) {
+    if (userRepository.findById(readStatusRequestDTO.userId()).isEmpty()) {
+      throw new NotFoundUserException();
     }
 
-    @Override
-    public ReadStatusResponseDTO findById(UUID id) {
-        ReadStatus readStatus = findReadStatus(id);
-
-        return ReadStatus.toDTO(readStatus);
+    if (channelRepository.findById(readStatusRequestDTO.channelId()).isEmpty()) {
+      throw new NotFoundChannelException();
     }
 
-    @Override
-    public List<ReadStatusResponseDTO> findAll() {
-        return readStatusRepository.findAll().stream()
-                .map(ReadStatus::toDTO)
-                .toList();
+    UUID channelId = readStatusRequestDTO.channelId();
+    UUID userId = readStatusRequestDTO.userId();
+
+    if (readStatusRepository.findByChannelIdAndUserId(channelId, userId).isPresent()) {
+      throw new ReadStatusAlreadyExistsException();
     }
 
-    @Override
-    public List<ReadStatusResponseDTO> findAllByUserId(UUID userId) {
-        return readStatusRepository.findAllByUserId(userId).stream()
-                .map(ReadStatus::toDTO)
-                .toList();
-    }
+    ReadStatus readStatus = ReadStatusRequestDTO.toEntity(readStatusRequestDTO);
 
-    @Override
-    public ReadStatusResponseDTO update(UUID id, ReadStatusRequestDTO readStatusRequestDTO) {
-        ReadStatus readStatus = findReadStatus(id);
+    readStatusRepository.save(readStatus);
 
-        readStatus.updateLastReadTime(readStatusRequestDTO.lastReadTime());
-        readStatusRepository.save(readStatus);
+    return readStatus;
+  }
 
-        return ReadStatus.toDTO(readStatus);
-    }
+  @Override
+  public ReadStatusResponseDTO findById(UUID id) {
+    ReadStatus readStatus = findReadStatus(id);
 
-    @Override
-    public void deleteById(UUID id) {
-        readStatusRepository.deleteById(id);
-    }
+    return ReadStatus.toDTO(readStatus);
+  }
 
-    private ReadStatus findReadStatus(UUID id) {
-        return readStatusRepository.findById(id)
-                .orElseThrow(NotFoundReadStatusException::new);
-    }
+  @Override
+  public List<ReadStatusResponseDTO> findAll() {
+    return readStatusRepository.findAll().stream()
+        .map(ReadStatus::toDTO)
+        .toList();
+  }
+
+  @Override
+  public List<ReadStatusResponseDTO> findAllByUserId(UUID userId) {
+    return readStatusRepository.findAllByUserId(userId).stream()
+        .map(ReadStatus::toDTO)
+        .toList();
+  }
+
+  @Override
+  public ReadStatusResponseDTO update(UUID id, ReadStatusRequestDTO readStatusRequestDTO) {
+    ReadStatus readStatus = findReadStatus(id);
+
+    readStatus.updateLastReadAt(readStatusRequestDTO.lastReadAt());
+    readStatusRepository.save(readStatus);
+
+    return ReadStatus.toDTO(readStatus);
+  }
+
+  @Override
+  public void deleteById(UUID id) {
+    readStatusRepository.deleteById(id);
+  }
+
+  private ReadStatus findReadStatus(UUID id) {
+    return readStatusRepository.findById(id)
+        .orElseThrow(NotFoundReadStatusException::new);
+  }
 }

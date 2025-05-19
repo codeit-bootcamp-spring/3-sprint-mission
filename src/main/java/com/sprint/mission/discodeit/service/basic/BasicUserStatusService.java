@@ -58,7 +58,7 @@ public class BasicUserStatusService implements UserStatusService {
   public UserStatusResponseDTO update(UUID id, UserStatusUpdateDTO userStatusUpdateDTO) {
     UserStatus userStatus = findUserStatus(id);
 
-    userStatus.updateLastLoginTime(userStatusUpdateDTO.lastLoginTime());
+    userStatus.updateLastLoginTime(userStatusUpdateDTO.newLastActiveAt());
     userStatusRepository.save(userStatus);
 
     return UserStatus.toDTO(userStatus);
@@ -70,7 +70,7 @@ public class BasicUserStatusService implements UserStatusService {
     UserStatus userStatus = userStatusRepository.findByUserId(userId)
         .orElseThrow(NotFoundUserStatusException::new);
 
-    userStatus.updateLastLoginTime(userStatusUpdateDTO.lastLoginTime());
+    userStatus.updateLastLoginTime(userStatusUpdateDTO.newLastActiveAt());
     userStatusRepository.save(userStatus);
 
     return UserStatus.toDTO(userStatus);

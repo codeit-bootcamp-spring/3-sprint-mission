@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Schema(description = "Message 생성 및 수정 정보")
-public record MessageRequestDTO(String content, UUID senderId, UUID channelId,
+public record MessageRequestDTO(String content, UUID authorId, UUID channelId,
                                 List<UUID> attachmentIds) {
 
   public static Message toEntity(MessageRequestDTO messageRequestDTO) {
-    Message message = new Message(messageRequestDTO.senderId(), messageRequestDTO.channelId(),
+    Message message = new Message(messageRequestDTO.authorId(), messageRequestDTO.channelId(),
         messageRequestDTO.content(),
         messageRequestDTO.attachmentIds);
 

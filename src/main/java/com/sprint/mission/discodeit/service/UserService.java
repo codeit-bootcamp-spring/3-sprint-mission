@@ -20,9 +20,7 @@ public interface UserService {
 
   List<UserResponseDTO> findAll();
 
-  UserResponseDTO updateProfileImage(UUID id, BinaryContentDTO binaryContentDTO);
-
-  UserResponseDTO updateUserInfo(UUID id, UserRequestDTO userRequestDTO);
+  UserResponseDTO update(UUID id, UserRequestDTO userRequestDTO, BinaryContentDTO binaryContentDTO);
 
   void deleteById(UUID id);
 

@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.channel.ChannelResponseDTO;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelDTO;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelDTO;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.*;
@@ -64,7 +65,7 @@ public class BasicChannelService implements ChannelService {
     createReadStatus(channel);
 
     // 초대 받은 유저의 채널 리스트에 해당 채널 반영
-    for (UUID userId : privateChannelDTO.users()) {
+    for (UUID userId : privateChannelDTO.participantIds()) {
       User user = findUser(userId);
       user.getChannels().add(channel.getId());
       userRepository.save(user);
@@ -104,7 +105,7 @@ public class BasicChannelService implements ChannelService {
   @Override
   public List<ChannelResponseDTO> findAllByUserId(UUID userId) {
     List<Channel> publicChannels = channelRepository.findAll().stream()
-        .filter(channel -> !channel.isPrivate())
+        .filter(channel -> channel.getType().equals(ChannelType.PRIVATE))
         .toList();
 
     // PRIVATE 채널은 조회한 유저가 참여한 채널만 조회
@@ -143,7 +144,7 @@ public class BasicChannelService implements ChannelService {
     Channel channel = findChannel(channelId);
 
     // PRIVATE 채널은 수정 불가
-    if (channel.isPrivate()) {
+    if (channel.getType().equals(ChannelType.PRIVATE)) {
       throw new PrivateChannelModificationException();
     }
 
@@ -153,7 +154,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     // 변경 사항 적용
-    channel.updateChannelName(publicChannelDTO.channelName());
+    channel.updateName(publicChannelDTO.channelName());
     channel.updateChannelMaster(publicChannelDTO.channelMaster());
     channel.updateDescription(publicChannelDTO.description());
     joinChannel(channel);
@@ -191,7 +192,7 @@ public class BasicChannelService implements ChannelService {
     UUID userId = user.getId();
 
     if (channel.getUsers().contains(userId)) {
-      throw new UserAlreadyInChannelException(user.getName() + "은 이미 채널에 있습니다.");
+      throw new UserAlreadyInChannelException(user.getUsername() + "은 이미 채널에 있습니다.");
     }
 
     // Channel의 userList에 해당 user 추가
@@ -215,7 +216,7 @@ public class BasicChannelService implements ChannelService {
     UUID userId = user.getId();
 
     if (!channel.getUsers().contains(userId)) {
-      throw new UserNotInChannelException(user.getName() + "은 채널에 속해있지 않습니다.");
+      throw new UserNotInChannelException(user.getUsername() + "은 채널에 속해있지 않습니다.");
     }
 
     // Channel의 userList에 해당 user 추가

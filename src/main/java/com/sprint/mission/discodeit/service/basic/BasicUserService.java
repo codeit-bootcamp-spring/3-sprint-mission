@@ -33,8 +33,8 @@ public class BasicUserService implements UserService {
 
   @Override
   public User create(UserRequestDTO userRequestDTO, BinaryContentDTO binaryContentDTO) {
-    userRepository.findByName(userRequestDTO.name())
-        .ifPresent(user -> new DuplicateNameException(userRequestDTO.name()));
+    userRepository.findByName(userRequestDTO.username())
+        .ifPresent(user -> new DuplicateNameException(userRequestDTO.username()));
 
     userRepository.findByEmail(userRequestDTO.email())
         .ifPresent(user -> new DuplicateEmailException(userRequestDTO.email()));
@@ -105,8 +105,10 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public UserResponseDTO updateProfileImage(UUID id, BinaryContentDTO binaryContentDTO) {
+  public UserResponseDTO update(UUID id, UserRequestDTO userRequestDTO,
+      BinaryContentDTO binaryContentDTO) {
     User user = findUser(id);
+
     // 기존 프로필 이미지의 아이디
     UUID profileImageId = user.getProfileId();
 
@@ -118,21 +120,12 @@ public class BasicUserService implements UserService {
     if (binaryContentDTO != null) {
       BinaryContent profileImage = BinaryContentDTO.toEntity(binaryContentDTO);
       user.updateProfileID(profileImage.getId());
-      userRepository.save(user);
       binaryContentRepository.save(profileImage);
     } else { // 프로필 이미지 삭제
       user.updateProfileID(null);
-      userRepository.save(user);
     }
 
-    return User.toDTO(user);
-  }
-
-  @Override
-  public UserResponseDTO updateUserInfo(UUID id, UserRequestDTO userRequestDTO) {
-    User user = findUser(id);
-
-    user.updateName(userRequestDTO.name());
+    user.updateName(userRequestDTO.username());
     user.updateEmail(userRequestDTO.email());
     user.updatePassword(userRequestDTO.password());
     user.updateIntroduction(userRequestDTO.introduction());
@@ -175,7 +168,8 @@ public class BasicUserService implements UserService {
     User user2 = findUser(friendReqeustDTO.user2());
 
     if (!user1.getFriends().contains(user2.getId())) {
-      throw new NotFriendsException(user1.getName() + "와(과) " + user2.getName() + "은 친구가 아닙니다.");
+      throw new NotFriendsException(
+          user1.getUsername() + "와(과) " + user2.getUsername() + "은 친구가 아닙니다.");
     }
 
     // 두 User 각각의 friendList에서 제거

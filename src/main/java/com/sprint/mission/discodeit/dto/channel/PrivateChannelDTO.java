@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Schema(description = "Private Channel 생성 정보")
-public record PrivateChannelDTO(UUID channelMaster, List<UUID> users) {
+public record PrivateChannelDTO(UUID channelMaster, List<UUID> participantIds) {
 
   public static Channel toEntity(PrivateChannelDTO privateChannelDTO) {
     Channel channel = new Channel(privateChannelDTO.channelMaster(),
-        privateChannelDTO.users());
+        privateChannelDTO.participantIds());
 
     return channel;
   }

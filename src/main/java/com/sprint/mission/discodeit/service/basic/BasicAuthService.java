@@ -25,7 +25,7 @@ public class BasicAuthService implements AuthService {
 
   @Override
   public UserResponseDTO login(LoginDTO loginDTO) {
-    String name = loginDTO.name();
+    String name = loginDTO.username();
     String password = loginDTO.password();
 
     User user = userRepository.findByName(name)
