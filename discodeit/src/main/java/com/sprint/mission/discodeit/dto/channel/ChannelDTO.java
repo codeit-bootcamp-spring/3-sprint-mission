@@ -11,7 +11,7 @@ import lombok.Builder;
 @Builder
 public record ChannelDTO(UUID id,
                          Instant createdAt,
-                         String channelName,
+                         String name,
                          ChannelType type,
                          String description,
                          List<UUID> participantIds,
@@ -22,7 +22,7 @@ public record ChannelDTO(UUID id,
     return ChannelDTO.builder()
         .id(channel.getId())
         .type(channel.getType())
-        .channelName(channel.getChannelName())
+        .name(channel.getName())
         .description(channel.getDescription())
         .participantIds(channel.getParicipantIds())
         .lastMessageAt(lastMessageAt)

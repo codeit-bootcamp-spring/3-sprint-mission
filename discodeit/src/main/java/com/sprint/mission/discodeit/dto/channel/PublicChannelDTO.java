@@ -11,20 +11,21 @@ import java.util.UUID;
 @Builder
 public record PublicChannelDTO(UUID id,
                                Instant createdAt,
-                               String channelName,
+                               String name,
                                ChannelType type,
                                String description,
                                List<UUID> participantIds,
                                Instant lastMessageAt) {
-    public static PublicChannelDTO fromDomain(Channel channel, Instant lastMessageAt) {
-        return PublicChannelDTO.builder()
-                .id(channel.getId())
-                .createdAt(channel.getCreatedAt())
-                .channelName(channel.getChannelName())
-                .type(channel.getType())
-                .description(channel.getDescription())
-                .participantIds(channel.getParicipantIds())
-                .lastMessageAt(lastMessageAt)
-                .build();
-    }
+
+  public static PublicChannelDTO fromDomain(Channel channel, Instant lastMessageAt) {
+    return PublicChannelDTO.builder()
+        .id(channel.getId())
+        .createdAt(channel.getCreatedAt())
+        .name(channel.getName())
+        .type(channel.getType())
+        .description(channel.getDescription())
+        .participantIds(channel.getParicipantIds())
+        .lastMessageAt(lastMessageAt)
+        .build();
+  }
 }

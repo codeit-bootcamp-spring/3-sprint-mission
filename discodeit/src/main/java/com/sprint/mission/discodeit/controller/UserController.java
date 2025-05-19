@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Tag(name = "사용자", description = "사용자 API")
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ public class UserController {
 
   @PostMapping
   public ResponseEntity<UserDTO> createUser(
-      @RequestPart(value = "request") CreateUserRequest request,
+      @RequestPart(value = "userCreateRequest") CreateUserRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
 
