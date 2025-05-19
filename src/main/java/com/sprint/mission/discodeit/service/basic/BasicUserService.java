@@ -49,11 +49,13 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
     private final FileUploadUtils fileUploadUtils;
 
+//    private final String imagePath = fileUploadUtils.getUploadPath(PROFILE_PATH);
+
 
     @Override
     public ResponseEntity<?> create(
             UserCreateRequest userCreateRequest,
-            Optional<BinaryContentCreateRequest> optionalProfileCreateRequest
+            Optional<BinaryContentCreateRequest> profile
     ) {
 
         boolean usernameNotUnique = !userRepository.isUniqueUsername(userCreateRequest.username());
@@ -64,7 +66,7 @@ public class BasicUserService implements UserService {
                     .body("User with email " + userCreateRequest.email() + " already exitsts");
         }
 
-        BinaryContent nullableProfile = optionalProfileCreateRequest
+        BinaryContent nullableProfile = profile
                 .map(
                         profileRequest -> {
                             String filename = profileRequest.fileName();
@@ -171,10 +173,100 @@ public class BasicUserService implements UserService {
         return ResponseEntity.status(HttpStatus.OK).body(userFindResponses);
     }
 
-
+    // name, email, password 수정 image는 optional
     @Override
-    public ResponseEntity<?> updateImage(UUID userId, UserUpdateRequest request,
-                                         MultipartFile file) {
+    public ResponseEntity<?> updateImage(UUID userId, UserUpdateRequest request, MultipartFile file) {
+
+        User user = userRepository.findUserById(userId);
+        if (user == null) {
+            return ResponseEntity.status(404).body("user with id " + userId + " not found");
+        }
+        // name : 있으면 400
+        if (userRepository.hasSameName(request.newName())) {
+            return ResponseEntity.status(400).body("user with name" + request.newName() + " already exists");
+        }
+        // email: 있으면 400
+        if (userRepository.hasSameEmail(request.newEmail())) {
+            return ResponseEntity.status(400).body("user with email " + request.newPassword() + " already exists");
+        }
+        // password: 없으면 내버려두고 있으면 수정
+        if (request.newPassword() != null) {
+            userRepository.updatePasswordById(userId, request.newPassword());
+        }
+
+        // 메모리 유저정보 업데이트
+        user = userRepository.findUserById(userId);
+
+        // 프로필 여부 확인 (있으면 삭제 후 추가)
+        if (user.getProfileId() != null) {
+            // delete file
+            BinaryContent profile = binaryContentRepository.findById(user.getProfileId());
+
+            String directory = fileUploadUtils.getUploadPath(PROFILE_PATH);
+            String extension = profile.getExtension();
+            String fileName = user.getProfileId() + extension;
+            File oldFile = new File(directory, fileName);
+
+            if (oldFile.exists()) {
+                boolean delete = oldFile.delete();
+                if (!delete) {
+                    throw new RuntimeException("could not delete file");
+                }
+            }
+            // BinaryContent 삭제
+            binaryContentRepository.deleteBinaryContentById(user.getProfileId());
+        }
+        // 수정중...-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        // binary content
+        BinaryContent binaryContent;
+        try {
+            String filename = file.getOriginalFilename();
+            String contentType = file.getContentType();
+            String extension = file.getOriginalFilename().substring(filename.lastIndexOf("."));
+            byte[] bytes = file.getBytes();
+            binaryContent = binaryContentRepository.createBinaryContent(filename, (long) bytes.length,
+                    contentType, bytes, extension);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // add file
+        String uploadPath = fileUploadUtils.getUploadPath(PROFILE_PATH);
+
+        String originalFileName = binaryContent.getFileName();
+        String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+        String newFileName = binaryContent.getId() + extension;
+
+        File profileImage = new File(uploadPath, newFileName);
+
+        try (FileOutputStream fos = new FileOutputStream(profileImage)) {
+            fos.write(binaryContent.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException("image not saved", e);
+        }
+        // update user
+        userRepository.updateProfileIdById(userId, binaryContent.getId());
+
+        User userForBody = userRepository.findUserById(userId);
+
+        UpdateUserResponse response = new UpdateUserResponse(
+                userForBody.getCreatedAt(),
+                userForBody.getUpdatedAt(),
+                userForBody.getUsername(),
+                userForBody.getEmail(),
+                userForBody.getPassword(),
+                userForBody.getProfileId()
+        );
+
+        return ResponseEntity.status(200)
+                .body(response);
+        // 파일 확인(있음) -> 파일 삭제 -> binary content 삭제 -> binary content 추가 -> 파일 생성 -> user 업데이트
+        // 파일 확인(없음) ->                                  -> binary content 추가 -> 파일 생성 -> user 업데이트
+    }
+
+
+    //    @Override
+    public ResponseEntity<?> updateImage2(UUID userId, UserUpdateRequest request, MultipartFile file) {
 
         Optional.ofNullable(file).orElseThrow(() -> new IllegalArgumentException("no file attached"));
 
@@ -302,12 +394,10 @@ public class BasicUserService implements UserService {
 
         User user = userRepository.findUserById(userId);
 
-        if (user == null) {
-            return ResponseEntity.status(404).body("User with id " + userId + "not found");
-        }
+        if (user == null) return ResponseEntity.status(404).body("User with id " + userId + "not found");
 
         UserStatus userStatus = Optional.ofNullable(userStatusRepository.findUserStatusByUserId(userId))
-                .orElseThrow(() -> new IllegalArgumentException("no userStatus exist"));
+                .orElseThrow(() -> new IllegalArgumentException("no userStatus exist: you have to think about why the user does not have userStatus might be deleted or not created"));
 
         // UserStatus 삭제
         userStatusRepository.deleteById(userStatus.getId()); // throw
@@ -332,5 +422,14 @@ public class BasicUserService implements UserService {
         // User 삭제
         userRepository.deleteUserById(userId); // throw
         return ResponseEntity.status(204).body("삭제 완료");
+    }
+
+    private boolean uploadFIle(BinaryContent profile) {
+        return false;
+    }
+
+
+    private boolean deleteFile(BinaryContent profile) {
+        return false;
     }
 }

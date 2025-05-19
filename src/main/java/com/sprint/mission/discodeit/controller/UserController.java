@@ -8,6 +8,9 @@ import com.sprint.mission.discodeit.Dto.user.UserUpdateNameRequest;
 import com.sprint.mission.discodeit.Dto.userStatus.UserStatusUpdateByUserIdRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +27,7 @@ import java.util.UUID;
  * =========================================================== DATE              AUTHOR NOTE
  * ----------------------------------------------------------- 2025. 5. 8.        doungukkim 최초 생성
  */
+@Tag(name = "User 컨트롤러", description = "스프린트 미션5 유저 컨트롤러 엔트포인트들 입니다.")
 @RestController
 @RequestMapping("api/users")
 @RequiredArgsConstructor
@@ -32,25 +36,15 @@ public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
 
-
-    // request, endpoint, (param, body, variable) : OK
-    // service, repository : OK
-    // response : OK
-    // fail response : OK
-    @RequestMapping(
-            method = RequestMethod.GET)
+    @Operation(summary = "모든 사용자 조회", description = "모든 사용자 정보를 조회합니다.")
+    @GetMapping
     public ResponseEntity<?> findAll() {
         return userService.findAllUsers();
     }
 
-    // request, endpoint, (param, body, variable) : OK
-    // service, repository : OK
-    // response : OK
-    // fail response : OK
-    @ResponseBody
-    @RequestMapping(
-            method = RequestMethod.POST,
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+
+    @Operation(summary = "사용자 생성", description = "사용자를 생성합니다. 이미지는 옵션입니다.")
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> create(
             @RequestPart("userCreateRequest") UserCreateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profileFile
@@ -61,20 +55,14 @@ public class UserController {
         return userService.create(request, profileRequest);
     }
 
-    // request, endpoint, (param, body, variable) : OK
-    // service, repository : OK
-    // response : OK
-    // fail response : OK
-    @RequestMapping(path = "/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.DELETE)
+    @Operation(summary = "사용자 삭제", description = "사용자를 삭제합니다. 프로필 사진, 프로필 사진 정보, 유저 상태가 같이 삭제됩니다.")
+    @DeleteMapping("/{userId}")
     public ResponseEntity<?> delete(@PathVariable UUID userId) {
         return userService.deleteUser(userId);
     }
 
-    // request, endpoint, (param, body, variable) : OK
-    // service, repository : OK
-    // response + status : OK
-    // fail response + status : OK
-    @RequestMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, method = RequestMethod.PATCH)
+    @Operation(summary = "사용자 정보 수정", description = "사용자 이름, 비밀번호, 이메일, 이미지를 수정합니다.")
+    @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     private ResponseEntity<?> updateProfile(
             @PathVariable UUID userId,
             @RequestPart("userUpdateRequest") UserUpdateRequest request,
@@ -85,31 +73,13 @@ public class UserController {
 
     // 🗣 USER STATUS에서 가져온 메서드
     // 관심사 분리를 위해선 userStatus에서 하는게 맞지 않나? 메서드가 하나라 그냥 하는건가?
-    // request, endpoint, (param, body, variable) : OK
-    // service, repository : OK
-    // response + status : OK
-    // fail response + status : OK
-    @RequestMapping(path = "/{userId}/userStatus", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "사용자 활동상태 수정", description = "사용자의 최근 접속시간을 수정합니다.")
+    @PatchMapping("/{userId}/userStatus")
     public ResponseEntity<?> updateTime(
             @PathVariable UUID userId,
             @RequestBody UserStatusUpdateByUserIdRequest request) {
         return userStatusService.updateByUserId(userId, request.newLastActiveAt());
     }
-
-    //-------------------------- swagger에 없는 엔드포인트
-    @RequestMapping(
-            path = "/change-name",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
-    private ResponseEntity<?> changeName(@RequestBody UserUpdateNameRequest request) {
-        return userService.updateUser(request.userId(), request.name());
-    }
-
-    @RequestMapping(path = "/find-by-id", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> findUserById(@RequestBody UserFindRequest userFindRequest) {
-        return userService.findUserById(userFindRequest.userId());
-    }
-
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
         if (profileFile.isEmpty()) {

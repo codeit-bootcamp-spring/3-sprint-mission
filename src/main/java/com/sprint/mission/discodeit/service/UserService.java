@@ -17,15 +17,13 @@ import java.util.UUID;
  */
 public interface UserService {
 
-    ResponseEntity<?> create(UserCreateRequest userCreateRequest,
-                             Optional<BinaryContentCreateRequest> profile);
+    ResponseEntity<?> create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profile);
 
     ResponseEntity<?> findUserById(UUID userId);
 
     ResponseEntity<?> findAllUsers();
 
-    ResponseEntity<?> updateImage(UUID userId, UserUpdateRequest request,
-                                  MultipartFile file);
+    ResponseEntity<?> updateImage(UUID userId, UserUpdateRequest request, MultipartFile file); //이름 수정 필요 이미지 수정이 아니고 name, email, password 수정 image는 option임
 
     // not required
     ResponseEntity<?> updateUser(UUID userId, String name);
