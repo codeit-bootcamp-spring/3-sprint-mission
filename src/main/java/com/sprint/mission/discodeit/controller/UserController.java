@@ -144,6 +144,9 @@ public class UserController {
     UserStatusResponseDTO userStatusResponseDTO = userStatusService.updateByUserId(userId,
         userStatusUpdateDTO);
 
+    System.out.println("userId = " + userId);
+    System.out.println("userStatusResponseDTO = " + userStatusResponseDTO);
+    
     return ResponseEntity.status(HttpStatus.OK).body(userStatusResponseDTO);
   }
 }

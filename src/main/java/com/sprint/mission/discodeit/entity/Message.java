@@ -22,13 +22,13 @@ public class Message implements Serializable {
   private final UUID channelId;
   private List<UUID> attachmentIds;
 
-  public Message(UUID authorId, UUID channelId, String content, List<UUID> attachmentIds) {
+  public Message(UUID authorId, UUID channelId, String content) {
     this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
     this.content = content;
     this.authorId = authorId;
     this.channelId = channelId;
-    this.attachmentIds = attachmentIds;
+    this.attachmentIds = new ArrayList<>();
   }
 
   public void updateContent(String content) {
@@ -66,9 +66,9 @@ public class Message implements Serializable {
 
   @Override
   public boolean equals(Object o) {
-      if (o == null || getClass() != o.getClass()) {
-          return false;
-      }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     Message message = (Message) o;
     return Objects.equals(id, message.id);
   }
