@@ -15,6 +15,6 @@ public interface ChannelService {
     ChannelDto find(UUID channelId);
     List<ChannelDto> findAllByUserId(UUID userId);
     boolean isExistName(String name);
-    void update(UUID channelId, PublicChannelUpdateRequest publicChannelUpdateRequest);
+    Channel update(UUID channelId, PublicChannelUpdateRequest publicChannelUpdateRequest);
     void delete(UUID channelId);
 }

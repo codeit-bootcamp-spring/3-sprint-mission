@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -89,7 +90,8 @@ public class BasicMessageService implements MessageService {
 
 
     @Override
-    public Message update(UUID messageId, String text) {
+    public Message update(UUID messageId, MessageUpdateRequest request) {
+        String text = request.newContent();
         Message message = findById(messageId);
         if(message == null){
             throw new NoSuchElementException("수정 실패 : 존재하지 않는 메세지 Id입니다.");

@@ -70,7 +70,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public void update(UUID channelId, PublicChannelUpdateRequest publicChannelUpdateRequest) {
+    public Channel update(UUID channelId, PublicChannelUpdateRequest publicChannelUpdateRequest) {
         Channel channel = channelRepository.findById(channelId);
         String name = publicChannelUpdateRequest.newName();
         String description = publicChannelUpdateRequest.newDescription();
@@ -85,7 +85,7 @@ public class BasicChannelService implements ChannelService {
             channel.update(name, description);
             channelRepository.save(channel);
         }
-
+        return channel;
     }
     @Override
     public void delete(UUID channelId) {

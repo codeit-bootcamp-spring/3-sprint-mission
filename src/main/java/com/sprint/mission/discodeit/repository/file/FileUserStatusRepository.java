@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
@@ -51,8 +52,9 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     @Override
     public List<UserStatus> findAll() {
-        try {
-            return Files.list(DIRECTORY)
+        System.out.println("findAll 호출됨.");
+        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+            return paths
                     .filter(path -> path.toString().endsWith(EXTENSION))
                     .map(path -> {
                         try (
@@ -89,10 +91,12 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     @Override
     public Optional<UserStatus> findByUserId(UUID userId) {
+        System.out.println("findByUserId 호출됨.");
         return findAll().stream()
                 .filter(userStatus -> userStatus.getUserId().equals(userId))
                 .findFirst();
     }
+
 
     @Override
     public boolean existsById(UUID id) {

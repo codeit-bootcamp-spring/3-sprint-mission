@@ -28,14 +28,16 @@ public class BasicUserService implements UserService {
 
     @Override
     public User create(UserCreateRequest userCreateRequest) {
-        String username = userCreateRequest.userName();
+        String username = userCreateRequest.username();
         String email = userCreateRequest.email();
         String password = userCreateRequest.password();
 
         if(userRepository.isExistUsername(username)){
             System.out.println("생성 실패 : 이미 존재하는 이름입니다.");
+            return null;
         }else if(userRepository.isExistEmail(email)){
             System.out.println("생성 실패 : 이미 존재하는 E-mail입니다.");
+            return null;
         }else {
             User user = new User(username, email, password);
             userRepository.save(user);
@@ -44,19 +46,21 @@ public class BasicUserService implements UserService {
             userStatusRepository.save(userStatus);
             return user;
         }
-        return null;
     }
     @Override
     public User create(UserCreateRequest userCreateRequest, BinaryContentCreateRequest binaryContentCreateRequest) {
         User user = this.create(userCreateRequest);
-        BinaryContent binaryForPortrait = new BinaryContent(
-                binaryContentCreateRequest.fileName(),
-                (long)binaryContentCreateRequest.content().length,
-                binaryContentCreateRequest.contentType(),
-                binaryContentCreateRequest.content()
-        );
-        user.setPortraitId(binaryForPortrait.getId());
-        userRepository.save(user);
+        if(user != null) {
+            BinaryContent binaryForPortrait = new BinaryContent(
+                    binaryContentCreateRequest.fileName(),
+                    (long) binaryContentCreateRequest.content().length,
+                    binaryContentCreateRequest.contentType(),
+                    binaryContentCreateRequest.content()
+            );
+            user.setPortraitId(binaryContentRepository.save(binaryForPortrait).getId());
+            userRepository.save(user);
+            System.out.println("생성 성공 : " + user + "\n" + userStatusRepository.findByUserId(user.getId()) + "\n" + user.getPortraitId());
+        }
         return user;
     }
 
@@ -83,24 +87,44 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public void update(UUID userId, UserUpdateRequest userUpdateRequest) {
+    public User update(UUID userId, UserUpdateRequest userUpdateRequest) {
         User user = userRepository.findById(userId);
-        String username = userUpdateRequest.userName();
-        String email = userUpdateRequest.email();
-        String password = userUpdateRequest.password();
+        String username = userUpdateRequest.newUsername();
+        String email = userUpdateRequest.newEmail();
+        String password = userUpdateRequest.newPassword();
 
         if (user == null) {
             System.out.println("수정 실패 : 존재하지 않는 사용자입니다.");
         } else if (userRepository.isExistUsername(username)){
             System.out.println("수정 실패 : 이미 존재하는 사용자 이름입니다.");
+            return null;
         } else if (userRepository.isExistEmail(email)) {
             System.out.println("수정 실패 : 이미 존재하는 사용자 메일입니다.");
+            return null;
         } else{
             user.update(username,email,password);
             userRepository.save(user);
+            System.out.println("수정 성공 : " + user);
         }
+        return user;
     }
+    public User update(UUID userId, UserUpdateRequest userUpdateRequest, BinaryContentCreateRequest binaryContentCreateRequest){
+        User user = this.update(userId, userUpdateRequest);
+        if(user != null) {
+            BinaryContent binaryForPortrait = new BinaryContent(
+                    binaryContentCreateRequest.fileName(),
+                    (long) binaryContentCreateRequest.content().length,
+                    binaryContentCreateRequest.contentType(),
+                    binaryContentCreateRequest.content()
+            );
+            binaryContentRepository.deleteById(user.getPortraitId());
+            user.setPortraitId(binaryContentRepository.save(binaryForPortrait).getId());
+            userRepository.save(user);
+            System.out.println("\n" + userStatusRepository.findByUserId(user.getId()) + "\n" + user.getPortraitId());
+        }
+        return user;
 
+    }
     @Override
     public void delete(UUID userId) {
         if (findById(userId) == null) {
@@ -115,7 +139,7 @@ public class BasicUserService implements UserService {
     private UserDto toDto(User user){
         boolean isOnline = userStatusRepository.findById(user.getId())
                 .map(UserStatus::isOnline)
-                .orElse(null);
+                .orElse(Boolean.FALSE);
 
         return new UserDto(
                 user.getId(),
