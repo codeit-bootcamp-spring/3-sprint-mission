@@ -76,8 +76,8 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public ChannelResponse update(UUID channelId, PublicChannelUpdateRequest request) {
-    String newName = request.NewName();
-    String newDescription = request.NewDescription();
+    String newName = request.newName();
+    String newDescription = request.newDescription();
 
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(
@@ -127,9 +127,8 @@ public class BasicChannelService implements ChannelService {
         channel.getType(),
         channel.getName(),
         channel.getDescription(),
-        lastMessageAt,
-        participantIds
-
+        participantIds,
+        lastMessageAt
     );
   }
 

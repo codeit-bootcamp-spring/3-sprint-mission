@@ -5,9 +5,11 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
+import lombok.ToString;
 
 
 @Getter
+@ToString
 public class ReadStatus implements Serializable {
 
   @Serial

@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
@@ -11,11 +10,13 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @Service
@@ -30,10 +31,10 @@ public class BasicMessageService implements MessageService {
   @Override
   public MessageResponse create(
       MessageCreateRequest request,
-      List<BinaryContentCreateRequest> binaryContentCreateRequests
+      List<MultipartFile> attachments
   ) {
     UUID channelId = request.channelId();
-    UUID authorId = request.userId();
+    UUID authorId = request.authorId();
 
     if (!channelRepository.existsById(channelId)) {
       throw new NoSuchElementException("Channel with id " + channelId + " does not exist");
@@ -43,15 +44,19 @@ public class BasicMessageService implements MessageService {
       throw new NoSuchElementException("User with id " + authorId + " does not exist");
     }
 
-    List<UUID> attachmentIds = binaryContentCreateRequests.stream()
+    List<UUID> attachmentIds = attachments.stream()
         .map(file -> {
-          BinaryContent binaryContent = new BinaryContent(
-              file.filename(),
-              (long) file.data().length,
-              file.contentType(),
-              file.data()
-          );
-          return binaryContentRepository.save(binaryContent).getId();
+          try {
+            BinaryContent binaryContent = new BinaryContent(
+                file.getOriginalFilename(),
+                file.getSize(),
+                file.getContentType(),
+                file.getBytes()
+            );
+            return binaryContentRepository.save(binaryContent).getId();
+          } catch (IOException e) {
+            throw new RuntimeException("file process failed: " + file.getOriginalFilename(), e);
+          }
         })
         .toList();
 
@@ -64,6 +69,7 @@ public class BasicMessageService implements MessageService {
 
     Message saved = messageRepository.save(message);
     return toResponse(saved);
+
   }
 
 
@@ -85,7 +91,7 @@ public class BasicMessageService implements MessageService {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(
             () -> new NoSuchElementException("Message with id " + messageId + " not found"));
-    message.update(request.NewContent());
+    message.update(request.newContent());
     return toResponse(messageRepository.save(message));
   }
 

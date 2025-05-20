@@ -39,7 +39,7 @@ public class BasicReadStatusService implements ReadStatusService {
           "ReadStatus with userId " + userId + " and channelId " + channelId + " already exists");
     }
 
-    Instant lastReadAt = request.lastReadTime();
+    Instant lastReadAt = request.lastReadAt();
     ReadStatus readStatus = new ReadStatus(userId, channelId, lastReadAt);
     return readStatusRepository.save(readStatus);
   }
@@ -61,13 +61,29 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
-    Instant newLastReadAt = request.NewlastReadTime();
+    Instant newLastReadAt = request.newLastReadAt();
+    System.out.println("🛠️ Service.update() called");
+    System.out.println(">> readStatusId: " + readStatusId);
+    System.out.println(">> newLastReadAt: " + newLastReadAt);
+
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-        .orElseThrow(
-            () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
+        .orElseThrow(() -> {
+          System.out.println("❌ ReadStatus not found with id: " + readStatusId);
+          return new NoSuchElementException("ReadStatus with id " + readStatusId + " not found");
+        });
+
+    System.out.println("📦 Before update: " + readStatus);
+
     readStatus.update(newLastReadAt);
-    return readStatusRepository.save(readStatus);
+
+    System.out.println("✅ After update: " + readStatus);
+
+    ReadStatus saved = readStatusRepository.save(readStatus);
+    System.out.println("💾 Saved: " + saved);
+
+    return saved;
   }
+
 
   @Override
   public void delete(UUID readStatusId) {

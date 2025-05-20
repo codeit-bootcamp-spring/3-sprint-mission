@@ -42,10 +42,10 @@ public class BasicUserService implements UserService {
     UUID profileId = optionalProfileCreateRequest
         .map(profile -> {
           BinaryContent binaryContent = new BinaryContent(
-              profile.filename(),
-              (long) profile.data().length,
+              profile.fileName(),
+              (long) profile.bytes().length,
               profile.contentType(),
-              profile.data()
+              profile.bytes()
           );
           return binaryContentRepository.save(binaryContent).getId();
         })
@@ -80,23 +80,23 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
-    validateDuplicate(request.NewUsername(), request.NewEmail());
+    validateDuplicate(request.newUsername(), request.newEmail());
 
     UUID newProfileId = optionalProfileCreateRequest
         .map(profile -> {
           Optional.ofNullable(user.getProfileId())
               .ifPresent(binaryContentRepository::deleteById);
           BinaryContent binaryContent = new BinaryContent(
-              profile.filename(),
-              (long) profile.data().length,
+              profile.fileName(),
+              (long) profile.bytes().length,
               profile.contentType(),
-              profile.data()
+              profile.bytes()
           );
           return binaryContentRepository.save(binaryContent).getId();
         })
         .orElse(user.getProfileId());
 
-    user.update(request.NewUsername(), request.NewEmail(), request.NewPassword(), newProfileId);
+    user.update(request.newUsername(), request.newEmail(), request.newPassword(), newProfileId);
     userRepository.save(user);
 
     return toResponse(user, isOnline(user.getId()));
