@@ -35,29 +35,31 @@ public class BasicUserService implements UserService {
   @Override
   public User create(UserCreateRequest userCreateRequest,
       Optional<BinaryContentCreateRequest> profileCreateRequest) {
-    // 0. validation (name, email이 유니크 해야함)
+    // 1. validation (name, email이 유니크 해야함)
     if (this.hasSameEmailOrName(userCreateRequest.username(), userCreateRequest.email())) {
       throw new DuplicateUserException();
     }
-    User user;
-    // 1. 프로필 이미지 있으면 생성하고 유저 생성
-    if (!Optional.ofNullable(profileCreateRequest).isEmpty()) {
-      user = profileCreateRequest.map(binaryContentCreateRequest -> {
-        BinaryContent profileBinaryContent = this.binaryContentService.create(
-            binaryContentCreateRequest);
-        return new User(userCreateRequest.username(), userCreateRequest.email(),
-            userCreateRequest.password(), profileBinaryContent.getId());
-      }).orElseThrow(() -> new IllegalStateException(
-          "Profile create request or user create request is missing"));
-    } else {    // 2. 프로필 이미지 없을때 유저 생성
-      user = new User(userCreateRequest.username(), userCreateRequest.email(),
-          userCreateRequest.password(), null);
-    }
+    System.out.println("userCreateRequest = " + userCreateRequest);
+    System.out.println(
+        "profileCreateRequest = --" + profileCreateRequest + "-- " + Optional.ofNullable(
+            profileCreateRequest).isPresent());
+
+    // 2. 프로필 이미지 id 생성( 없으면 null 반환)
+    UUID nullableProfileId = profileCreateRequest.map(binaryContentCreateRequest -> {
+      return this.binaryContentService.create(binaryContentCreateRequest).getId();
+    }).orElse(null);
+
+    User user = new User(userCreateRequest.username(), userCreateRequest.email(),
+        userCreateRequest.password(), nullableProfileId);
+
     // 3. DB저장
     this.userRepository.save(user);
-    // 4. UserStatus 인스턴스 생성
-//        UserStatusResponse userStatusResponse = this.userStatusService.create(new UserStatusCreateRequest(user.getId()));
+    System.out.println("user --" + user);
+
+    // 4. UserStatus 인스턴스 생성 및 DB 저장
     UserStatus userStatus = new UserStatus(user.getId());
+    System.out.println("userStatus --" + userStatus);
+    
     this.userStatusRepository.save(userStatus);
 
     return user;
@@ -159,6 +161,6 @@ public class BasicUserService implements UserService {
         .map(UserStatus::isOnline)
         .orElse(null);
     return new UserDto(user.getId(), user.getUsername(), user.getEmail(), user.getProfileId(),
-        online);
+        online, user.getCreatedAt(), user.getUpdatedAt());
   }
 }
