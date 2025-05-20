@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +32,9 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public Channel create(CreatePublicChannelRequest request) {
-    Channel channel = new Channel(ChannelType.PUBLIC, request.name(), request.description());
+    String name = request.name();
+    String description = request.description();
+    Channel channel = new Channel(ChannelType.PUBLIC, name, description);
 
     return channelRepository.save(channel);
   }
@@ -57,21 +60,18 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public List<Channel> findAllByUserId(UUID userId) {
-    // private 채널 중에서 userID가 있는 채널만 추출
-    List<Channel> channelListAll = new ArrayList<>(channelRepository.findAllByUserId(userId)
-        .stream()
-        .filter(channel -> channel.getType().equals(ChannelType.PRIVATE))
-        .filter(channel -> channel.getParicipantIds().contains(userId))
-        .toList());
+  public List<ChannelDTO> findAllByUserId(UUID userId) {
+    List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
+        .map(ReadStatus::getChannelId)
+        .toList();
 
-    // 그 외 모든 채널 추가
-    channelRepository.findAll()
-        .stream()
-        .filter(channel -> channel.getType().equals(ChannelType.PUBLIC))
-        .forEach(channelListAll::add);
-
-    return channelListAll.stream().toList();
+    return channelRepository.findAll().stream()
+        .filter(channel ->
+            channel.getType().equals(ChannelType.PUBLIC)
+                || mySubscribedChannelIds.contains(channel.getId())
+        )
+        .map(this::toDTO)
+        .toList();
   }
 
 
@@ -100,34 +100,31 @@ public class BasicChannelService implements ChannelService {
         channelId);  //   '' -> 요구사항에 따른 채널 관련 ReadStatus도 함께 삭제하는 부분
   }
 
-  @Override
-  public void addParticipant(UUID channelId, UUID userId) {
-    Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(
-            () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+  private ChannelDTO toDTO(Channel channel) {
+    Instant lastMessageAt = messageRepository.findAllByChannelId(channel.getId())
+        .stream()
+        .sorted(Comparator.comparing(Message::getCreatedAt).reversed())
+        .map(Message::getCreatedAt)
+        .limit(1)
+        .findFirst()
+        .orElse(Instant.MIN);
 
-    channel.addParicipant(userId);
-    System.out.println("add participant : " + userId + " success.");
-    channelRepository.save(channel);
-  }
+    List<UUID> participantIds = new ArrayList<>();
+    if (channel.getType().equals(ChannelType.PRIVATE)) {
+      readStatusRepository.findAllByChannelId(channel.getId())
+          .stream()
+          .map(ReadStatus::getUserId)
+          .forEach(participantIds::add);
+    }
 
-  @Override
-  public void deleteParticipant(UUID channelId, UUID userId) {
-    Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(
-            () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-
-    //관련 도메인 싹 다 삭제
-    channel.deleteParicipant(userId);
-    messageRepository.findAllByChannelId(channelId);
-    readStatusRepository.deleteByChannelId(channelId);
-    System.out.println("delete participant : " + userId + " success.");
-    channelRepository.save(channel);
+    return new ChannelDTO(
+        channel.getId(),
+        channel.getName(),
+        channel.getType(),
+        channel.getDescription(),
+        participantIds,
+        lastMessageAt
+    );
 
   }
-
 }

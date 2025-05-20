@@ -32,12 +32,12 @@ public class BasicMessageService implements MessageService {
     UUID channelId = request.channelId();
     UUID authorId = request.authorId();
 
-    if (request.channelId() == null || request.channelId().equals(new UUID(0L, 0L))
-        || !channelRepository.existsById(request.channelId())) {  // 피드백 1 - 이상한 파트 수정
+    if (request.channelId() == null || !channelRepository.existsById(
+        request.channelId())) {  // 피드백 1 - 이상한 파트 수정
       throw new IllegalArgumentException("존재하지 않는 채널입니다!");
     }
-    if (request.authorId() == null || request.authorId().equals(new UUID(0L, 0L))
-        || !userRepository.existsById(request.authorId())) {  // 피드백 1 - 이상한 파트 수정
+    if (request.authorId() == null || !userRepository.existsById(
+        request.authorId())) {  // 피드백 1 - 이상한 파트 수정
       throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
     }
 

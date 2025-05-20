@@ -24,7 +24,6 @@ public record PublicChannelDTO(UUID id,
         .name(channel.getName())
         .type(channel.getType())
         .description(channel.getDescription())
-        .participantIds(channel.getParicipantIds())
         .lastMessageAt(lastMessageAt)
         .build();
   }

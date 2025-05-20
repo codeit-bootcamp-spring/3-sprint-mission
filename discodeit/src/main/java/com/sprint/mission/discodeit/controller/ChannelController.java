@@ -106,32 +106,7 @@ public class ChannelController {
     Instant lastMessageAt = getLastMessageAt(privateChannel.getId());
     return ResponseEntity.ok(PrivateChannelDTO.fromDomain(privateChannel, lastMessageAt));
   }
-
-
-  @Operation(
-      summary = "사용자가 참여 중인 채널 목록 조회"
-  )
-  @ApiResponses(
-      value = {
-          @ApiResponse(responseCode = "200", description = "채널 목록 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ChannelDTO.class))))
-      }
-  )
-  @GetMapping
-  public ResponseEntity<List<ChannelDTO>> findAllChannelByUserId(
-      @Parameter(description = "조회할 사용자 ID", required = true)
-      @RequestParam("userId") UUID userId
-  ) {
-    List<Channel> channelList = channelService.findAllByUserId(userId);
-
-    List<ChannelDTO> channelDTOs = channelList.stream()
-        .map(channel -> {
-          Instant lastMessageAt = getLastMessageAt(channel.getId());
-          return ChannelDTO.fromDomain(channel, lastMessageAt);
-        })
-        .toList();
-
-    return ResponseEntity.status(HttpStatus.OK).body(channelDTOs);
-  }
+  
 
   @Operation(
       summary = "채널 정보 수정"
