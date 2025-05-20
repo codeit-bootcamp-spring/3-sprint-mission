@@ -19,10 +19,9 @@ import java.util.UUID;
  */
 
 public record ReadStatusUpdateRequest
-        (UUID readStatusId, Instant newTime) {
+        (Instant newLastReadAt) {
 
     public ReadStatusUpdateRequest {
-        Objects.requireNonNull(readStatusId, "no messageId in request");
-        Objects.requireNonNull(newTime, "no newTime in request");
+        Objects.requireNonNull(newLastReadAt, "no lastReadAt in request");
     }
 }

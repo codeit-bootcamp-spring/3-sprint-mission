@@ -1,25 +1,21 @@
-package com.sprint.mission.discodeit.Dto.userStatus;
-
-import lombok.Getter;
-import lombok.Setter;
+package com.sprint.mission.discodeit.Dto.user;
 
 import java.util.Objects;
 import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.user
- * fileName       : ProfileUploadRequest
+ * fileName       : UesrFindRequest
  * author         : doungukkim
- * date           : 2025. 4. 24.
+ * date           : 2025. 5. 9.
  * description    :
  * ===========================================================
  * DATE              AUTHOR             NOTE
  * -----------------------------------------------------------
- * 2025. 4. 24.        doungukkim       최초 생성
+ * 2025. 5. 9.        doungukkim       최초 생성
  */
-public record ProfileUploadRequest(UUID userId, byte[] image){
-    public ProfileUploadRequest {
+public record UserFindRequest(UUID userId) {
+    public UserFindRequest {
         Objects.requireNonNull(userId, "no userId in request");
     }
 }
-

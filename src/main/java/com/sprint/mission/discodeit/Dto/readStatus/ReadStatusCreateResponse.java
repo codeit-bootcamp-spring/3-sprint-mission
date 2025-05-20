@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.Dto.readStatus;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -15,7 +16,11 @@ import java.util.UUID;
  */
 public record ReadStatusCreateResponse(
         UUID id,
+        Instant createdAt,
+        Instant updatedAt,
         UUID userId,
-        UUID channelId
+        UUID channelId,
+        Instant lastReadAt
+
 ) {
 }

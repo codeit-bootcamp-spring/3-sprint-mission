@@ -26,37 +26,37 @@ import java.util.UUID;
  */
 @Service("jcfBinaryContentService")
 @RequiredArgsConstructor
-public class jcfBinaryContentService implements BinaryContentService {
-    private final BinaryContentRepository binaryContentRepository;
+public class jcfBinaryContentService {
+//    private final BinaryContentRepository binaryContentRepository;
+//
+//    @Override
+//    public BinaryContentCreateResponse create() {
+//
+//        BinaryContent binaryContent = binaryContentRepository.createBinaryContent();
+//        return new BinaryContentCreateResponse(binaryContent.getId());
+//    }
+//
+//    public BinaryContent find(UUID attachmentId) {
+//        Objects.requireNonNull(attachmentId, "no param");
+//
+//        return Optional.ofNullable(binaryContentRepository
+//                        .findById(attachmentId))
+//                .orElseThrow(() -> new IllegalArgumentException("no Binary Content matches"));
+//    }
+//
+//
+//    public List<BinaryContent> findAllByIdIn(List<UUID> attachmentIds) {
+//        Objects.requireNonNull(attachmentIds, "no attachmentIds");
+//        if (attachmentIds.isEmpty()) {
+//            throw new RuntimeException("no ids in param");
+//        }
+//        return binaryContentRepository.findAllByIds(attachmentIds);
+//    }
 
-    @Override
-    public BinaryContentCreateResponse create(BinaryContentCreateRequest request) {
-        byte[] attachment = Optional.ofNullable(request.attachment()).orElseThrow(() -> new IllegalArgumentException("no request.getAttachment"));
-        BinaryContent binaryContent = binaryContentRepository.createBinaryContent(attachment);
-        return new BinaryContentCreateResponse(binaryContent.getId(), binaryContent.getUpdatedAt(), binaryContent.getAttachment());
-    }
-
-    public BinaryContent find(UUID attachmentId) {
-        Objects.requireNonNull(attachmentId, "no param");
-
-        return Optional.ofNullable(binaryContentRepository
-                        .findById(attachmentId))
-                .orElseThrow(() -> new IllegalArgumentException("no Binary Content matches"));
-    }
 
 
-    public List<BinaryContent> findAllByIdIn(List<UUID> attachmentIds) {
-        Objects.requireNonNull(attachmentIds, "no attachmentIds");
-        if (attachmentIds.isEmpty()) {
-            throw new RuntimeException("no ids in param");
-        }
-        return binaryContentRepository.findAllByIds(attachmentIds);
-    }
-
-
-
-    @Override
-    public void delete(UUID attachmentId) {
-        binaryContentRepository.deleteBinaryContentById(attachmentId);
-    }
+//    @Override
+//    public void delete(UUID attachmentId) {
+//        binaryContentRepository.deleteBinaryContentById(attachmentId);
+//    }
 }

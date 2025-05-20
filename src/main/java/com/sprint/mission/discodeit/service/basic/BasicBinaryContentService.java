@@ -2,10 +2,14 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateResponse;
+import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentFindRequest;
+import com.sprint.mission.discodeit.Dto.binaryContent.FindBinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -26,29 +30,55 @@ import java.util.*;
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
 
-    @Override
-    public BinaryContentCreateResponse create(BinaryContentCreateRequest request) {
-        byte[] attachment = request.attachment();
-        BinaryContent binaryContent = binaryContentRepository.createBinaryContent(attachment);
-        return new BinaryContentCreateResponse(binaryContent.getId(), binaryContent.getUpdatedAt(), binaryContent.getAttachment());
-    }
 
     @Override
-    public BinaryContent find(UUID attachmentId) {
-        return Optional.ofNullable(binaryContentRepository.findById(attachmentId))
-                .orElseThrow(() -> new IllegalArgumentException("no Binary Content matches")); // file | jcf : no exception
-    }
+    public ResponseEntity<?> findAllByIdIn(List<UUID> binaryContentIds) {
+        List<FindBinaryContentResponse> responses = new ArrayList<>();
 
-    @Override
-    public List<BinaryContent> findAllByIdIn(List<UUID> attachmentIds) {
-        if (attachmentIds.isEmpty()) {
+        if (binaryContentIds.isEmpty()) {
             throw new IllegalStateException("no ids in param");
         }
-//        한번에 리스트를 주고 완성된 값을 받는다.
-//        무조건 받은 값이랑 일치하게 받을 때만 return or throw new exception
+        List<BinaryContent> attachments = binaryContentRepository.findAllByIds(binaryContentIds);
+        if (attachments.isEmpty()) {
+            return ResponseEntity.status(400).body("Not found all binaryContent by ids");
+        }
 
-        // null 확인이 필요한가?: no 정확히 매핑 안되면 에러가 나오기 때문. attach는 무조건 값을 가지고 있다.
-        return binaryContentRepository.findAllByIds(attachmentIds);
+        for (BinaryContent attachment : attachments) {
+            responses.add(new FindBinaryContentResponse(
+                    attachment.getId(),
+                    attachment.getCreatedAt(),
+                    attachment.getFileName(),
+                    attachment.getSize(),
+                    attachment.getContentType(),
+                    Base64.getEncoder().encodeToString(attachment.getBytes())
+            ));
+        }
+        return ResponseEntity.status(200)
+                .body(responses);
+    }
+
+    @Override
+    public ResponseEntity<?> find(UUID binaryContentId) {
+        BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId);
+        if (binaryContent == null)
+            return ResponseEntity.status(404).body("BinaryContent with id " + binaryContentId + " not found");
+
+        FindBinaryContentResponse response = new FindBinaryContentResponse(
+                binaryContent.getId(),
+                binaryContent.getCreatedAt(),
+                binaryContent.getFileName(),
+                binaryContent.getSize(),
+                binaryContent.getContentType(),
+                Base64.getEncoder().encodeToString(binaryContent.getBytes()));
+
+        return ResponseEntity.status(200)
+                .body(response);
+    }
+
+    @Override
+    public BinaryContentCreateResponse create(String fileName, Long size, String contentType, byte[] bytes, String extension) {
+        BinaryContent binaryContent = binaryContentRepository.createBinaryContent(fileName, size, contentType, bytes, extension);
+        return new BinaryContentCreateResponse(binaryContent.getId());
     }
 
     @Override

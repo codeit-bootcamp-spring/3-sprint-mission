@@ -18,13 +18,14 @@ import java.util.UUID;
  * 2025. 4. 28.        doungukkim       최초 생성
  */
 
-public record MessageCreateRequest
-    (UUID senderId,
-    UUID channelId,
-    String content
+public record MessageCreateRequest(
+        String content,
+        UUID channelId,
+        UUID authorId
 ) {
     public MessageCreateRequest {
-        Objects.requireNonNull(senderId, "no sender in request");
+
+        Objects.requireNonNull(authorId, "no sender in request");
         Objects.requireNonNull(channelId, "no channelId in request");
         Objects.requireNonNull(content, "no content in request");
     }

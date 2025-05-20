@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.util.FilePathProperties;
-import com.sprint.mission.discodeit.util.FileSerializer;
+import com.sprint.mission.discodeit.helper.FilePathProperties;
+import com.sprint.mission.discodeit.helper.FileSerializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -30,7 +30,7 @@ import java.util.UUID;
  */
 
 
-@ConditionalOnProperty(name = "repository.type", havingValue = "file")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
 @RequiredArgsConstructor
 public class FileChannelRepository implements ChannelRepository {
@@ -92,7 +92,7 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public void updateChannel(UUID channelId, String name) {
+    public void updateChannelName(UUID channelId, String name) {
         Path path = filePathUtil.getChannelFilePath(channelId);
         if (!Files.exists(path)) {
             throw new RuntimeException("파일 없음: FileChannelRepository.updateChannel");
@@ -101,17 +101,28 @@ public class FileChannelRepository implements ChannelRepository {
         channel.setName(name);
         FileSerializer.writeFile(path, channel);
     }
+    @Override
+    public void updateChannelDescription(UUID channelId, String description) {
+        Path path = filePathUtil.getChannelFilePath(channelId);
+        if (!Files.exists(path)) {
+            throw new RuntimeException("파일 없음: FileChannelRepository.updateChannel");
+        }
+        Channel channel = FileSerializer.readFile(path, Channel.class);
+        channel.setDescription(description);
+        FileSerializer.writeFile(path, channel);
+    }
 
     @Override
-    public void deleteChannel(UUID channelId) {
+    public boolean deleteChannel(UUID channelId) {
         Path path = filePathUtil.getChannelFilePath(channelId);
 
         if (!Files.exists(path)) {
-            throw new IllegalStateException("삭제할 파일 없음");
+            return false;
         }
 
         try{
             Files.delete(path);
+            return true;
         } catch (IOException e) {
             throw new RuntimeException("삭제중 오류 발생: FileChannelRepository.deleteChannel", e);
         }

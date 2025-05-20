@@ -28,7 +28,7 @@ import java.util.UUID;
  */
 
 @Repository
-@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JcfChannelRepository implements ChannelRepository {
 
     Map<UUID, Channel> data = new HashMap<>();
@@ -58,19 +58,27 @@ public class JcfChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public void updateChannel(UUID channelId, String name) {
+    public void updateChannelName(UUID channelId, String name) {
         if (data.get(channelId) == null) {
             throw new RuntimeException("파일 없음: JcfChannelRepository.updateChannel");
         }
         data.get(channelId).setName(name);
     }
+    @Override
+    public void updateChannelDescription(UUID channelId, String description) {
+        if (data.get(channelId) == null) {
+            throw new RuntimeException("파일 없음: JcfChannelRepository.updateChannel");
+        }
+        data.get(channelId).setDescription(description);
+    }
 
     @Override
-    public void deleteChannel(UUID channelId) {
+    public boolean deleteChannel(UUID channelId) {
         if (!data.containsKey(channelId)) {
-            throw new IllegalStateException("no data to delete");
+            return false;
         }
         data.remove(channelId);
+        return true;
     }
 
 }

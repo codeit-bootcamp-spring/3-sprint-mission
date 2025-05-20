@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
+import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -20,7 +21,7 @@ import java.util.*;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
-@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 @Repository
 public class JcfBinaryContentRepostory implements BinaryContentRepository {
     private final Map<UUID, BinaryContent> data = new HashMap<>();
@@ -44,26 +45,32 @@ public class JcfBinaryContentRepostory implements BinaryContentRepository {
         if (selectedAttachments.size() == attachmentIds.size()) {
             return selectedAttachments;
         }
-
-        throw new RuntimeException("no attachment matches with id");
+        return Collections.emptyList();
     }
 
     @Override
-    public BinaryContent createBinaryContent(byte[] image) {
-        BinaryContent binaryContent = new BinaryContent(image);
+    public BinaryContent createBinaryContent(String fileName, Long size, String contentType, byte[] bytes, String extension) {
+        BinaryContent binaryContent = new BinaryContent(fileName, size, contentType, bytes, extension);
         data.put(binaryContent.getId(), binaryContent);
         return binaryContent;
     }
 
-    @Override
-    public BinaryContent updateImage(UUID profileId, byte[] image) {
-        if (data.get(profileId) == null) {
-            throw new IllegalStateException("no image to update");
-        }
-        BinaryContent binaryContent = data.get(profileId);
-        binaryContent.setAttachment(image);
-        return binaryContent;
-    }
+//    @Override
+//    public BinaryContent createBinaryContent(UUID id) {
+//        BinaryContent binaryContent = new BinaryContent(id);
+//        data.put(id, binaryContent);
+//        return binaryContent;
+//    }
+
+    //    @Override
+//    public BinaryContent updateImage(UUID profileId, byte[] image) {
+//        if (data.get(profileId) == null) {
+//            throw new IllegalStateException("no image to update");
+//        }
+//        BinaryContent binaryContent = data.get(profileId);
+//        binaryContent.setAttachment(image);
+//        return binaryContent;
+//    }
 
 
     @Override

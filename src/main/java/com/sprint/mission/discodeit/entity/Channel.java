@@ -19,10 +19,11 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Getter
+@Setter
 public class Channel extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
+    private final ChannelType type;
     private String name;
-    private ChannelType type;
     private String description;
 
     public Channel() {
@@ -40,8 +41,6 @@ public class Channel extends BaseEntity implements Serializable {
     }
 
 
-    public void setName(String name) {
-        this.name = name;
-        this.updatedAt = Instant.now();
-    }
+
+
 }

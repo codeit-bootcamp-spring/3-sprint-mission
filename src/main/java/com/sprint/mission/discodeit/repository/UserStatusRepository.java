@@ -7,34 +7,27 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * packageName    : com.sprint.mission.discodeit.repository
- * fileName       : UserStatusRepository
- * author         : doungukkim
- * date           : 2025. 4. 23.
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2025. 4. 23.        doungukkim       최초 생성
+ * packageName    : com.sprint.mission.discodeit.repository fileName       : UserStatusRepository
+ * author         : doungukkim date           : 2025. 4. 23. description    :
+ * =========================================================== DATE              AUTHOR NOTE
+ * ----------------------------------------------------------- 2025. 4. 23.        doungukkim 최초 생성
  */
 public interface UserStatusRepository {
 
-    Instant onlineTime(UUID userStatusId);
+  boolean isOnline(UUID userStatusId); // throw
 
-    boolean isOnline(UUID userStatusId); // throw
+  UserStatus createUserStatus(UUID userId);
 
-    UserStatus createUserStatus(UUID userId);
+  UserStatus findUserStatusByUserId(UUID userId); // both : null
 
-    UserStatus findUserStatusByUserId(UUID userId); // both : null
+  List<UserStatus> findAllUserStatus(); // emptyList
 
-    List<UserStatus> findAllUserStatus(); // emptyList
+  void deleteById(UUID userStatusId); // throw
 
-    void deleteById(UUID userStatusId); // throw
+  UserStatus findById(UUID userStatusId);
 
-    UserStatus findById(UUID userStatusId);
+  void update(UUID userStatusId, Instant newTime); // throw
 
-    void update(UUID userStatusId, Instant newTime); // throw
-
-    void updateByUserId(UUID userId, Instant newTime);
+  void updateByUserId(UUID userId, Instant newLastActiveAt);
 
 }

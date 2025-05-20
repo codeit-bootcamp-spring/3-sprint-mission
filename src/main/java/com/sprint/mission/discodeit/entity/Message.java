@@ -5,10 +5,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * packageName    : com.sprint.mission.discodeit.refactor.entity
@@ -35,6 +32,7 @@ public class Message extends BaseEntity implements Serializable {
         this.senderId = senderId;
         this.channelId = channelId;
         this.content = content;
+        this.attachmentIds = new ArrayList<>();
     }
 
     public Message(UUID senderId, UUID channelId, List<UUID> attachmentIds) {
@@ -42,6 +40,13 @@ public class Message extends BaseEntity implements Serializable {
         this.senderId = senderId;
         this.channelId = channelId;
         this.attachmentIds = attachmentIds;
+    }
+
+    public Message(UUID senderId, UUID channelId, List<UUID> attachmentIds, String content) {
+        this.senderId = senderId;
+        this.channelId = channelId;
+        this.attachmentIds = attachmentIds;
+        this.content = content;
     }
 
     public void setAttachmentIds(List<UUID> attachmentIds) {

@@ -22,28 +22,27 @@ import java.util.UUID;
 // [ ] 수정 불가능한 도메인 모델로 간주합니다. 따라서 updatedAt 필드는 정의하지 않습니다.
 // [ ] User, Message 도메인 모델과의 의존 관계 방향성을 잘 고려하여 id 참조 필드를 추가하세요.
 @Getter
-public class BinaryContent extends BaseEntity implements Serializable {
+public class BinaryContent implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private byte[] attachment;
+    private final Instant createdAt;
+    private final UUID id;
+
+    private final String fileName;
+    private final Long size;
+    private final String contentType;
+    private final byte[] bytes;
+    private final String extension;
 
 
-    public BinaryContent(byte[] image) {
-        this.attachment = image;
-    }
+    public BinaryContent(String fileName, Long size, String contentType, byte[] bytes, String extension) {
+        this.createdAt = Instant.now();
+        this.id = UUID.randomUUID();
 
-    public void setAttachment(byte[] attachment) {
-        this.attachment = attachment;
-        this.updatedAt = Instant.now();
-    }
-
-    @Override
-    public String toString() {
-        return "BinaryContent{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", image=" + Arrays.toString(attachment) +
-                '}';
+        this.fileName = fileName;
+        this.size = size;
+        this.contentType = contentType;
+        this.bytes = bytes;
+        this.extension = extension;
     }
 }

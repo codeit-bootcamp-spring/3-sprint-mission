@@ -30,35 +30,35 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 @Profile("file")
-public class FileAuthService implements AuthService {
+public class FileAuthService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
 
 
-    public LoginResponse login(LoginRequest request) {
-        Objects.requireNonNull(request, "입력 값 없음");
-
-        String username = Optional.ofNullable(request.username())
-                .orElseThrow(() -> new IllegalArgumentException("no name"));
-
-        String password = Optional.ofNullable(request.password())
-                .orElseThrow(() -> new IllegalArgumentException("no password"));
-
-        List<User> allUsers = userRepository.findAllUsers();
-        for (User user : allUsers) {
-            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
-                UserStatus userStatus = userStatusRepository.findUserStatusByUserId(user.getId());
-                return new LoginResponse(
-                        user.getId(),
-                        user.getCreatedAt(),
-                        user.getUpdatedAt(),
-                        user.getUsername(),
-                        user.getEmail(),
-                        user.getProfileId(),
-                        userStatusRepository.isOnline(userStatus.getId())
-                );
-            }
-        }
-        throw new RuntimeException("로그인 시도. 일치하는 유저 없습니다.");
-    }
+//    public LoginResponse login(LoginRequest request) {
+//        Objects.requireNonNull(request, "입력 값 없음");
+//
+//        String username = Optional.ofNullable(request.username())
+//                .orElseThrow(() -> new IllegalArgumentException("no name"));
+//
+//        String password = Optional.ofNullable(request.password())
+//                .orElseThrow(() -> new IllegalArgumentException("no password"));
+//
+//        List<User> allUsers = userRepository.findAllUsers();
+//        for (User user : allUsers) {
+//            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
+//                UserStatus userStatus = userStatusRepository.findUserStatusByUserId(user.getId());
+//                return new LoginResponse(
+//                        user.getId(),
+//                        user.getCreatedAt(),
+//                        user.getUpdatedAt(),
+//                        user.getUsername(),
+//                        user.getEmail(),
+//                        user.getProfileId(),
+//                        userStatusRepository.isOnline(userStatus.getId())
+//                );
+//            }
+//        }
+//        throw new RuntimeException("로그인 시도. 일치하는 유저 없습니다.");
+//    }
 }

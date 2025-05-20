@@ -8,10 +8,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * packageName    : com.sprint.mission.discodeit.repository.jcf
@@ -26,14 +23,14 @@ import java.util.UUID;
  */
 
 @Repository
-@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JcfMessageRepository implements MessageRepository {
     public final Map<UUID, Message> data = new HashMap<>();
 
     // working on it
     @Override
-    public Message createMessageWithAttachments(UUID userId, UUID channelId, List<UUID> attachments) {
-        Message message = new Message(userId, channelId, attachments);
+    public Message createMessageWithAttachments(UUID userId, UUID channelId, List<UUID> attachments, String content) {
+        Message message = new Message(userId, channelId, attachments, content);
         data.put(message.getId(), message);
         return message;
     }

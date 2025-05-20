@@ -27,37 +27,37 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Profile("jcf")
-public class JcfChannelService implements ChannelService {
-    private final JcfChannelRepository jcfChannelRepository;
-
-
-    // empty
-    @Override
-    public List<ChannelFindResponse> findAllByUserId(ChannelFindByUserIdRequest request) {
-        return List.of();
-    }
-    // empty
-    @Override
-    public ChannelFindResponse find(ChannelFindRequest request) {
-        return null;
-    }
-    // empty
-    @Override
-    public ChannelCreateResponse createChannel(PrivateChannelCreateRequest request) {
-        return null;
-    }
-    // empty
-    @Override
-    public ChannelCreateResponse createChannel(PublicChannelCreateRequest request) {
-        return null;
-    }
-    // empty
-    @Override
-    public void update(ChannelUpdateRequest request) {}
-
-    @Override
-    public void deleteChannel(UUID channelId) {
-        Objects.requireNonNull(channelId, "no channelId: JcfChannelService.deleteChannel");
-        jcfChannelRepository.deleteChannel(channelId);
-    }
+public class JcfChannelService  {
+//    private final JcfChannelRepository jcfChannelRepository;
+//
+//
+//    // empty
+//    @Override
+//    public List<ChannelFindResponse> findAllByUserId(ChannelFindByUserIdRequest request) {
+//        return List.of();
+//    }
+//    // empty
+//    @Override
+//    public ChannelFindResponse find(ChannelFindRequest request) {
+//        return null;
+//    }
+//    // empty
+//    @Override
+//    public ChannelCreateResponse createChannel(PrivateChannelCreateRequest request) {
+//        return null;
+//    }
+//    // empty
+//    @Override
+//    public ChannelCreateResponse createChannel(PublicChannelCreateRequest request) {
+//        return null;
+//    }
+//    // empty
+//    @Override
+//    public void update(ChannelUpdateRequest request) {}
+//
+//    @Override
+//    public void deleteChannel(UUID channelId) {
+//        Objects.requireNonNull(channelId, "no channelId: JcfChannelService.deleteChannel");
+//        jcfChannelRepository.deleteChannel(channelId);
+//    }
 }
