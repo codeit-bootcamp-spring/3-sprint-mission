@@ -37,6 +37,12 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGeneralException(Exception e) {
 
+    // 크롬 버전 때문에 출력되는 에러
+    if (e.getMessage()
+        .equals("No static resource .well-known/appspecific/com.chrome.devtools.json.")) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
     log.error("[시스템 오류] {}", e.getMessage(), e);
 
     ErrorResponse response = new ErrorResponse(
