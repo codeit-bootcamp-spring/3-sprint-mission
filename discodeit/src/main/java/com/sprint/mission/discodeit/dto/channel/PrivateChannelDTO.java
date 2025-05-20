@@ -9,11 +9,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Builder
-public record PrivateChannelDTO(UUID id,
-                                Instant createAt,
-                                ChannelType type,
-                                List<UUID> participantIds,
-                                Instant lastMessageAt) {
+public record PrivateChannelDTO(
+    UUID id,
+    Instant createAt,
+    ChannelType type,
+    List<UUID> participantIds,
+    Instant lastMessageAt) {
 
   public static PrivateChannelDTO fromDomain(Channel channel, Instant lastMessageAt) {
     return PrivateChannelDTO.builder()

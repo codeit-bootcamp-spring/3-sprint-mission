@@ -106,7 +106,16 @@ public class ChannelController {
     Instant lastMessageAt = getLastMessageAt(privateChannel.getId());
     return ResponseEntity.ok(PrivateChannelDTO.fromDomain(privateChannel, lastMessageAt));
   }
-  
+
+  @GetMapping
+  public ResponseEntity<List<ChannelDTO>> findAllByUserId(
+      @RequestParam("userId") UUID userId) {
+    List<ChannelDTO> channels = channelService.findAllByUserId(userId);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(channels);
+  }
+
 
   @Operation(
       summary = "채널 정보 수정"
