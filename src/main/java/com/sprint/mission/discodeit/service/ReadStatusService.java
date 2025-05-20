@@ -24,14 +24,15 @@ import java.util.UUID;
 
 public interface ReadStatusService {
 
-    ResponseEntity<?> create(ReadStatusCreateRequest request);
-
-
-    ReadStatus findById(UUID readStatusId);
-
     ResponseEntity<?> findAllByUserId(UUID userId);
 
+    ResponseEntity<?> create(ReadStatusCreateRequest request);
+
     ResponseEntity<?> update(UUID readStatusId, ReadStatusUpdateRequest request);
+
+    // --------------------------------------------------------------------------------------------------------------
+
+    ReadStatus findById(UUID readStatusId);
 
     void delete(UUID readStatusId);
 }

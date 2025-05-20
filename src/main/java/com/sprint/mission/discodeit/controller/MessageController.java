@@ -37,80 +37,33 @@ import java.util.UUID;
 public class MessageController {
     private final MessageService messageService;
 
-    // request, endpoint, (param, body, variable) : OK
-    // service, repository : OK
-    // response : OK
-    // fail response : OK
+
     @Operation(summary = "채널 메세지 목록 조회", description = "채널의 메세지 목록을 전체 조회 합니다.")
     @GetMapping
     public ResponseEntity<?> findChannelMessages(@RequestParam UUID channelId) {
-        System.out.println("MessageController.findChannelMessages");
         return messageService.findAllByChannelId(channelId);
     }
 
-
-    // request, endpoint, (param, body, variable) : OK
-    // service, repository : OK
-    // response : OK
-    // fail response :  OK
     @Operation(summary = "메세지 생성", description = "메세지를 생성 합니다.")
-    @ResponseBody
-    @RequestMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, method = RequestMethod.POST)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> creatMessage(
             @RequestPart("messageCreateRequest") MessageCreateRequest request,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachmentFiles
-    ) throws IOException {
-
-        if ((attachmentFiles == null) || (attachmentFiles.isEmpty()) || (attachmentFiles.get(0).getSize() == 0)) {
-            return messageService.createMessage(request);
-        }
-        List<BinaryContentCreateRequest> attachmentRequests = new ArrayList<>();
-
-        for (MultipartFile att : attachmentFiles) {
-            attachmentRequests.add(new BinaryContentCreateRequest(
-                    att.getOriginalFilename(),
-                    att.getContentType(),
-                    att.getBytes()));
-        }
-        System.out.println("MessageController.creatMessage");
-        return messageService.createMessage(request, attachmentRequests);
+    ) {
+        return messageService.createMessage(request, attachmentFiles);
     }
 
-    // request, endpoint, (param, body, variable) : OK
-    // service, repository : OK
-    // response : OK
-    // fail response : OK
     @Operation(summary = "메세지 삭제", description = "메세지를 삭제 합니다.")
     @DeleteMapping(path = "/{messageId}")
     public ResponseEntity<?> deleteMessage(@PathVariable UUID messageId) {
-        System.out.println("MessageController.deleteMessage");
         return messageService.deleteMessage(messageId);
     }
 
-    // request, endpoint, (param, body, variable) : OK
-    // service, repository : OK
-    // response : OK
-    // fail response : OK
     @Operation(summary = "메세지 수정", description = "메세지를 수정 합니다.")
     @PatchMapping(path = "/{messageId}")
     public ResponseEntity<?> updateMessage(
             @PathVariable UUID messageId,
             @RequestBody MessageUpdateRequest request) {
-        System.out.println("MessageController.updateMessage");
         return messageService.updateMessage(messageId, request);
     }
-
-    //-=---------------------
-    // 필요 없을 예정
-    // request, endpoint, (param, body, variable) :
-    // service, repository :
-    // response :
-    // fail response :
-//
-//    @RequestMapping(path = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<?> createMessage(@RequestBody MessageCreateRequest request) {
-//        System.out.println("MessageController.createMessage");
-//        return messageService.createMessage(request);
-//    }
-
 }

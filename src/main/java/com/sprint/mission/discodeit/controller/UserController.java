@@ -2,14 +2,11 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.Dto.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.Dto.user.UserFindRequest;
 import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.Dto.user.UserUpdateNameRequest;
 import com.sprint.mission.discodeit.Dto.userStatus.UserStatusUpdateByUserIdRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -47,8 +44,7 @@ public class UserController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> create(
             @RequestPart("userCreateRequest") UserCreateRequest request,
-            @RequestPart(value = "profile", required = false) MultipartFile profileFile
-    ) {
+            @RequestPart(value = "profile", required = false) MultipartFile profileFile) {
         Optional<BinaryContentCreateRequest> profileRequest =
                 Optional.ofNullable(profileFile)
                         .flatMap(this::resolveProfileRequest);
@@ -63,11 +59,12 @@ public class UserController {
 
     @Operation(summary = "사용자 정보 수정", description = "사용자 이름, 비밀번호, 이메일, 이미지를 수정합니다.")
     @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    private ResponseEntity<?> updateProfile(
+    private ResponseEntity<?> update(
             @PathVariable UUID userId,
             @RequestPart("userUpdateRequest") UserUpdateRequest request,
-            @RequestPart(value = "profile") MultipartFile profileFile) {
-        return userService.updateImage(userId, request, profileFile);
+            @RequestPart(value = "profile", required = false) MultipartFile profileFile) {
+        System.out.println(request.toString());
+        return userService.update(userId, request, profileFile);
     }
 
 

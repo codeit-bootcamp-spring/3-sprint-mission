@@ -1,22 +1,20 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.fasterxml.jackson.core.TreeCodec;
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.Dto.message.*;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,6 +43,7 @@ public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final FileUploadUtils fileUploadUtils;
+    private final ReadStatusRepository readStatusRepository;
 
 
     @Override
@@ -71,46 +70,76 @@ public class BasicMessageService implements MessageService {
                 .body(responses);
     }
 
+
+    // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
+    // public 방일경우 작성을 해도 readstatus가 없음 최소 1회는 등록을 해야 하고 유저가 방에 있는지 확인 가능한 로직이 필요함
     // binary content
     @Override
     public ResponseEntity<?> createMessage(
             MessageCreateRequest request,
-            List<BinaryContentCreateRequest> binaryContentRequests) {
+            List<MultipartFile> fileList) {
+
 
         if (channelRepository.findChannelById(request.channelId()) == null) {
             return ResponseEntity.status(404).body("channel with id " + request.channelId() + " not found");
         }
+
         if (userRepository.findUserById(request.authorId()) == null) {
             return ResponseEntity.status(404).body("author with id " + request.authorId() + " not found");
         }
 
-        // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
-        List<UUID> attachmentIds = new ArrayList<>();
+// -------- 추가된 public 의 read status 확인-생성 로직
 
-        for (BinaryContentCreateRequest singleRequest : binaryContentRequests) {
-            // BinaryContent 생성
-            BinaryContent attachment = binaryContentRepository.createBinaryContent(
-                    singleRequest.fileName(),
-                    (long) singleRequest.bytes().length,
-                    singleRequest.contentType(),
-                    singleRequest.bytes(),
-                    singleRequest.fileName().substring(singleRequest.fileName().lastIndexOf("."))
-            );
-            // 이미지 저장
-            String uploadFile = fileUploadUtils.getUploadPath(ATTACHMENT_PATH);
-
-            String originalFileName = attachment.getFileName();
-            String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-            String newFileName = attachment.getId() + extension;
-
-            File attachmentFile = new File(uploadFile, newFileName);
-            // 사진 저장
-            try (FileOutputStream fos = new FileOutputStream(attachmentFile)) {
-                fos.write(attachment.getBytes());
-            } catch (IOException e) {
-                throw new RuntimeException("attachment not saved", e);
+        List<ReadStatus> readStatusesByChannelId = readStatusRepository.findReadStatusesByChannelId(request.channelId()); // 채널이 가진 유저 수
+        boolean isReadStatusExist = false;
+        for (ReadStatus readStatus : readStatusesByChannelId) {
+            if (readStatus.getUserId().equals(request.authorId())) { // 일치하는 유저스테이터스 있음
+                isReadStatusExist = true;
+                break;
             }
-            attachmentIds.add(attachment.getId());
+        }
+
+        if (!isReadStatusExist) {
+            readStatusRepository.createByUserId(request.authorId(), request.channelId(), Instant.now());
+        }
+
+// ----------------
+
+
+        // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)
+        List<UUID> attachmentIds = new ArrayList<>();
+        if (hasValue(fileList)) {
+            for (MultipartFile file : fileList) {
+                // BinaryContent 생성
+                BinaryContent attachment;
+                try {
+                    attachment = binaryContentRepository.createBinaryContent(
+                            file.getOriginalFilename(),
+                            (long) file.getBytes().length,
+                            file.getContentType(),
+                            file.getBytes(),
+                            file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."))
+                    );
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                // 사진 저장
+                String uploadFilePath = fileUploadUtils.getUploadPath(ATTACHMENT_PATH);
+
+                String originalFileName = attachment.getFileName();
+                String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+                String newFileName = attachment.getId() + extension;
+
+                File attachmentFile = new File(uploadFilePath, newFileName);
+
+                try (FileOutputStream fos = new FileOutputStream(attachmentFile)) {
+                    fos.write(attachment.getBytes());
+                } catch (IOException e) {
+                    throw new RuntimeException("attachment not saved", e);
+                }
+                attachmentIds.add(attachment.getId());
+            }
         }
 
         // 메세지 생성
@@ -137,47 +166,6 @@ public class BasicMessageService implements MessageService {
         // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
     }
 
-    @Override
-    public ResponseEntity<?> createMessage(MessageCreateRequest request) {
-        Channel channel = channelRepository.findChannelById(request.channelId());
-        User user = userRepository.findUserById(request.authorId());
-        if (channel == null) {
-            return ResponseEntity.status(404).body("channel with id " + request.channelId() + " not found");
-        }
-        if (user == null) {
-            return ResponseEntity.status(404).body("author with id " + request.authorId() + " not found");
-        }
-
-        Message message = messageRepository.createMessageWithContent(user.getId(), channel.getId(), request.content());
-        MessageAttachmentsCreateResponse response = new MessageAttachmentsCreateResponse(
-                message.getId(),
-                message.getCreatedAt(),
-                message.getUpdatedAt(),
-                message.getContent(),
-                message.getChannelId(),
-                message.getSenderId(),
-                message.getAttachmentIds().stream().toList()
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
-    }
-
-    // not required
-    @Override
-    public Message findMessageById(UUID messageId) {
-        Objects.requireNonNull(messageId, "no messageId: BasicMessageService.findMessageById");
-        return Optional.ofNullable(messageRepository.findMessageById(messageId))
-                .orElseThrow(() -> new IllegalStateException("no message in DB: BasicMessageService.findMessageById"));
-    }
-
-    // not required
-    @Override
-    public List<Message> findAllMessages() {
-        return messageRepository.findAllMessages();
-    }
-
 
     @Override
     public ResponseEntity<?> updateMessage(UUID messageId, MessageUpdateRequest request) {
@@ -202,18 +190,18 @@ public class BasicMessageService implements MessageService {
                 .body(response);
     }
 
-
     @Override
     public ResponseEntity<?> deleteMessage(UUID messageId) {
         Optional.ofNullable(messageId).orElseThrow(() -> new IllegalArgumentException("require message Id : BasicMessageService.deleteMessage"));
-        // attachments 삭제
         if (messageRepository.findMessageById(messageId) == null) {
             return ResponseEntity.status(404).body("Message with id " + messageId + " not found");
         }
+        // attachments 삭제
         List<UUID> attachmentIds = messageRepository.findMessageById(messageId).getAttachmentIds();
         if (attachmentIds != null) {
             for (UUID attachmentId : attachmentIds) {
                 BinaryContent attachment = binaryContentRepository.findById(attachmentId);
+                // 사진 있으면 삭제
                 if (attachment != null) {
                     String directory = fileUploadUtils.getUploadPath(ATTACHMENT_PATH);
                     String extension = attachment.getExtension();
@@ -232,5 +220,24 @@ public class BasicMessageService implements MessageService {
         }
         messageRepository.deleteMessageById(messageId);
         return ResponseEntity.status(204).body("");
+    }
+
+    private boolean hasValue(List<MultipartFile> attachmentFiles) {
+        return (attachmentFiles != null) && (!attachmentFiles.isEmpty()) && (attachmentFiles.get(0).getSize() != 0);
+    }
+
+
+    // not required
+    @Override
+    public Message findMessageById(UUID messageId) {
+        Objects.requireNonNull(messageId, "no messageId: BasicMessageService.findMessageById");
+        return Optional.ofNullable(messageRepository.findMessageById(messageId))
+                .orElseThrow(() -> new IllegalStateException("no message in DB: BasicMessageService.findMessageById"));
+    }
+
+    // not required
+    @Override
+    public List<Message> findAllMessages() {
+        return messageRepository.findAllMessages();
     }
 }

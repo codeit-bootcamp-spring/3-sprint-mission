@@ -21,7 +21,7 @@ import java.util.*;
 @Getter
 public class Message extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
-    private UUID senderId;
+    private final UUID senderId;
     private UUID channelId;
     private List<UUID> attachmentIds;
     private String content;

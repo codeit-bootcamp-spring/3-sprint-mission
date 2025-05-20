@@ -35,7 +35,6 @@ public class BasicBinaryContentService implements BinaryContentService {
     public ResponseEntity<?> findAllByIdIn(List<UUID> binaryContentIds) {
         List<FindBinaryContentResponse> responses = new ArrayList<>();
 
-
         if (binaryContentIds.isEmpty()) {
             throw new IllegalStateException("no ids in param");
         }
@@ -64,7 +63,6 @@ public class BasicBinaryContentService implements BinaryContentService {
         if (binaryContent == null)
             return ResponseEntity.status(404).body("BinaryContent with id " + binaryContentId + " not found");
 
-
         FindBinaryContentResponse response = new FindBinaryContentResponse(
                 binaryContent.getId(),
                 binaryContent.getCreatedAt(),
@@ -72,7 +70,6 @@ public class BasicBinaryContentService implements BinaryContentService {
                 binaryContent.getSize(),
                 binaryContent.getContentType(),
                 Base64.getEncoder().encodeToString(binaryContent.getBytes()));
-
 
         return ResponseEntity.status(200)
                 .body(response);
@@ -88,21 +85,4 @@ public class BasicBinaryContentService implements BinaryContentService {
     public void delete(UUID attachmentId) {
         binaryContentRepository.deleteBinaryContentById(attachmentId); // file, jcf : throw exception
     }
-
-    //    @Override
-//    public ResponseEntity<?> findAllByIdIn2(List<UUID> binaryContentIds) {
-//        if (binaryContentIds.isEmpty()) {
-//            throw new IllegalStateException("no ids in param");
-//        }
-//        List<BinaryContent> attachments = binaryContentRepository.findAllByIds(binaryContentIds);
-//
-//        List<String> attachmentPaths = new ArrayList<>();
-//
-//        for (BinaryContent att : attachments) {
-//            attachmentPaths.add("/uploads/img/attachments/" + att.getId() + att.getExtension());
-//        }
-//
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(attachmentPaths);
-//    }
 }

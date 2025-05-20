@@ -34,20 +34,19 @@ public class ReadStatusController {
 
     @Operation(summary = "사용자의 읽음 상태 목록 조회", description = "사용자의 읽음 상태 목록을 전체 조회 합니다.")
     @GetMapping
-    public ResponseEntity<?> findReadStatuses(@RequestParam UUID userId) {
+    public ResponseEntity<?> find(@RequestParam UUID userId) {
         return readStatusService.findAllByUserId(userId);
     }
 
     @Operation(summary = "사용자의 읽음 상태 생성", description = "사용자의 읽음 상태 생성 합니다.")
     @PostMapping
-    public ResponseEntity<?> createReadStatus(@RequestBody ReadStatusCreateRequest request) {
+    public ResponseEntity<?> create(@RequestBody ReadStatusCreateRequest request) {
         return readStatusService.create(request);
     }
 
     @Operation(summary = "사용자의 읽음 상태 수정", description = "사용자의 읽음 상태 시간을 수정 합니다.")
-    @ResponseBody
     @PatchMapping("/{readStatusId}")
-    public ResponseEntity<?> updateTime(
+    public ResponseEntity<?> update(
             @PathVariable UUID readStatusId,
             @RequestBody ReadStatusUpdateRequest request) {
         return readStatusService.update(readStatusId, request);
