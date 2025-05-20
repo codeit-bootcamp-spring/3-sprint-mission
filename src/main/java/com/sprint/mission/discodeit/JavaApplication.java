@@ -92,22 +92,22 @@ public class JavaApplication {
 //        );
 //
 //        // 참가자 리스트
-//        channelService.findattendeeIdsByChannel(channel2.getId()).stream().forEach(user ->
-//                System.out.println("Get all attendeeIds on channel 2 : " + user.toString())
+//        channelService.findparticipantIdsByChannel(channel2.getId()).stream().forEach(user ->
+//                System.out.println("Get all participantIds on channel 2 : " + user.toString())
 //        );
 //
 //        // Channel 입장
 //        channelService.addAttendeeToChannel(channel1.getId(), bob.getId());
 //        // Channel 입장 후 참가자 리스트
-//        channelService.findattendeeIdsByChannel(channel1.getId()).stream().forEach(user ->
-//                System.out.println("Get all attendeeIds on channel 1 after joining : " + user.toString())
+//        channelService.findparticipantIdsByChannel(channel1.getId()).stream().forEach(user ->
+//                System.out.println("Get all participantIds on channel 1 after joining : " + user.toString())
 //        );
 //
 //        // Channel 퇴장
 //        channelService.removeAttendeeToChannel(channel2.getId(), alice.getId());
 //        // Channel 퇴장 후 참가자 리스트
-//        channelService.findattendeeIdsByChannel(channel2.getId()).stream().forEach(user ->
-//                System.out.println("Get all attendeeIds on channel 2 after leaving : " + user.toString())
+//        channelService.findparticipantIdsByChannel(channel2.getId()).stream().forEach(user ->
+//                System.out.println("Get all participantIds on channel 2 after leaving : " + user.toString())
 //        );
 //    }
 //

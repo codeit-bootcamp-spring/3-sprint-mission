@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit;
 
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
 import java.io.File;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class DiscodeitApplication {
@@ -94,15 +93,16 @@ public class DiscodeitApplication {
 //        System.out.println(channelService.find(댕댕공개채널.getId()).toString());
 //        System.out.println("---------- 채널 findAllByUserId (댕댕이들) ----------");
 //        for (ChannelDto chanRes : channelService.findAllByUserId(댕댕.getId())) {
-//            System.out.println("channel id : " + chanRes.channel().getId() + " channel type : " + chanRes.channel().getType() + " 참석자 리스트(비공개채널일때만) : " + chanRes.attendeeIds());
+//            System.out.println("channel id : " + chanRes.channel().getId() + " channel type : " + chanRes.channel().getType() + " 참석자 리스트(비공개채널일때만) : " + chanRes.participantIds());
 //        }
 //        System.out.println("---------- 채널 update ----------");
 //        Channel updatedChannel = channelService.update(댕댕공개채널.getId(), new PublicChannelUpdateRequest("댕댕이의 공개 채널 진화함", null));
 //        System.out.println(updatedChannel.getName() + " 로 업데이트 됨");
 //
 
-    /// /        System.out.println("---------- 채널 update -> 결과 : private 채널이므로 에러 떠야함 ----------");
-    /// /        channelService.update(new ChannelUpdateRequest(냥냥비공개채널_CreateResponse.channel().getId(), "냥냥이의 비공개 채널 진화함", null));
+  /// /        System.out.println("---------- 채널 update -> 결과 : private 채널이므로 에러 떠야함 ----------"); /
+  ///        channelService.update(new
+  /// ChannelUpdateRequest(냥냥비공개채널_CreateResponse.channel().getId(), "냥냥이의 비공개 채널 진화함", null));
 //
 //        System.out.println("---------- ReadStatus findAll ----------");
 //        for (ReadStatus readStatus : readStatusService.findAllByUserId(댕댕.getId())) {
@@ -151,7 +151,7 @@ public class DiscodeitApplication {
 //            System.out.println(message.toString());
 //        }
 //    }
-    public static void main(String[] args) {
+  public static void main(String[] args) {
 
 //        System.out.println("🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️Service Start🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️");
 //        deleteDirectoryContents(Paths.get(System.getProperty("user.dir"), "data").toFile());
@@ -179,25 +179,25 @@ public class DiscodeitApplication {
 //
 //
 //        System.out.println("🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️Service End🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️️‍");
+  }
+
+  public static void deleteDirectoryContents(File directory) {
+    if (!directory.exists() || !directory.isDirectory()) {
+      System.out.println("지정된 경로가 디렉토리가 아닙니다: " + directory.getAbsolutePath());
+      return;
     }
 
-    public static void deleteDirectoryContents(File directory) {
-        if (!directory.exists() || !directory.isDirectory()) {
-            System.out.println("지정된 경로가 디렉토리가 아닙니다: " + directory.getAbsolutePath());
-            return;
+    File[] files = directory.listFiles();
+    if (files != null) { // 디렉토리 안에 파일이 있다면
+      for (File file : files) {
+        if (file.isDirectory()) {
+          // 하위 디렉토리 내용도 재귀적으로 삭제
+          deleteDirectoryContents(file);
         }
-
-        File[] files = directory.listFiles();
-        if (files != null) { // 디렉토리 안에 파일이 있다면
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    // 하위 디렉토리 내용도 재귀적으로 삭제
-                    deleteDirectoryContents(file);
-                }
-                if (!file.delete()) {
-                    System.out.println("삭제 실패: " + file.getAbsolutePath());
-                }
-            }
+        if (!file.delete()) {
+          System.out.println("삭제 실패: " + file.getAbsolutePath());
         }
+      }
     }
+  }
 }
