@@ -15,36 +15,36 @@ import java.util.UUID;
 @NoArgsConstructor
 public class User implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    private UUID id;
-    private UUID profileId;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private String username;
-    private String password;
-    private String email;
-    private List<UUID> friends;
+  private UUID id;
+  private UUID profileId;
+  private Instant createdAt;
+  private Instant updatedAt;
+  private String username;
+  private String password;
+  private String email;
+  private List<UUID> friends;
 
-    public User(UUID profileId, String username, String password, String email) {
-        this.profileId = profileId;
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-    }
+  public User(UUID profileId, String username, String password, String email) {
+    this.profileId = profileId;
+    this.username = username;
+    this.password = password;
+    this.email = email;
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+  }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", profileId=" + profileId +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", email='" + email + '\'' +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "User{" +
+        "id=" + id +
+        ", profileId=" + profileId +
+        ", createdAt=" + createdAt +
+        ", updatedAt=" + updatedAt +
+        ", newUsername='" + username + '\'' +
+        ", newPassword='" + password + '\'' +
+        ", newEmail='" + email + '\'' +
+        '}';
+  }
 }

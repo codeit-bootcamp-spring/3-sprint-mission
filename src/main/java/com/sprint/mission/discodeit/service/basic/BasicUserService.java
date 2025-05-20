@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.CreateBinaryContentRequest;
-import com.sprint.mission.discodeit.dto.CreateUserRequest;
+import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.UserDto;
-import com.sprint.mission.discodeit.dto.UpdateUserRequest;
+import com.sprint.mission.discodeit.dto.UserUpdateRequest;
 import com.sprint.mission.discodeit.entitiy.BinaryContent;
 import com.sprint.mission.discodeit.entitiy.User;
 import com.sprint.mission.discodeit.entitiy.UserStatus;
@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sun.jdi.request.DuplicateRequestException;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,8 +29,8 @@ public class BasicUserService implements UserService {
 
 
   @Override
-  public User create(CreateUserRequest userRequest,
-      Optional<CreateBinaryContentRequest> binaryContentRequest) {
+  public User create(UserCreateRequest userRequest,
+      Optional<BinaryContentCreateRequest> binaryContentRequest) {
     User user = new User(null, userRequest.username(), userRequest.password(), userRequest.email());
     //중복검사후 아닐경우 save
     try {
@@ -38,19 +39,20 @@ public class BasicUserService implements UserService {
           BinaryContent binaryContent = new BinaryContent(
               request.filename(),
               request.contentType(),
-              request.bytes()
+              request.bytes(),
+              (long) request.bytes().length
           );
           binaryContentRepository.save(binaryContent);
           user.setProfileId(binaryContent.getId());
         });
         userRepository.save(user);
-        userStatusRepository.save(new UserStatus(user.getId()));
+        userStatusRepository.save(new UserStatus(user.getId(), Instant.now()));
         return user;
       } else {
         throw new DuplicateRequestException();
       }
     } catch (DuplicateRequestException e) {
-      System.out.println("중복된 name 또는 email 입니다.");
+      System.out.println("중복된 name 또는 newEmail 입니다.");
     }
     return null;
   }
@@ -84,23 +86,31 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public void update(UpdateUserRequest request,
-      Optional<CreateBinaryContentRequest> binaryContentRequest) {
-    User user = new User(null, request.username(), request.password(), request.email());
-    user.setFriends(request.friends());
-    UUID profileId = userRepository.readById(request.id()).get().getProfileId();
-
-    binaryContentRequest.ifPresent(
-        b -> {
-          BinaryContent binaryContent = new BinaryContent(b.filename(), b.contentType(), b.bytes());
-          if (profileId != null) {
-            binaryContentRepository.update(profileId, binaryContent);
-          } else {
-            binaryContentRepository.save(binaryContent);
-            user.setProfileId(binaryContent.getId());
-          }
-        });
-    userRepository.update(request.id(), user);
+  public void update(UUID userId, UserUpdateRequest request,
+      Optional<BinaryContentCreateRequest> binaryContentRequest) {
+    User user = userRepository.readById(userId)
+        .orElseThrow(() -> new NoSuchElementException("User Id " + userId + " not found"));
+    User duplicateCheck = new User(null, request.newUsername(), request.newPassword(), null);
+    if (!userRepository.duplicateCheck(duplicateCheck)) {
+      UUID nullableProfileId = binaryContentRequest
+          .map(profileRequest -> {
+            Optional.ofNullable(user.getProfileId())
+                .ifPresent(binaryContentRepository::delete);
+            BinaryContent binaryContent = new BinaryContent(profileRequest.filename(),
+                profileRequest.contentType(), profileRequest.bytes(),
+                (long) profileRequest.bytes().length);
+            return binaryContentRepository.save(binaryContent).getId();
+          })
+          .orElse(null);
+      user.setPassword(request.newPassword());
+      user.setProfileId(nullableProfileId);
+      user.setUsername(request.newUsername());
+      user.setEmail(request.newEmail());
+      user.setUpdatedAt(Instant.now());
+      userRepository.update(userId, user);
+    } else {
+      throw new DuplicateRequestException();
+    }
 
   }
 

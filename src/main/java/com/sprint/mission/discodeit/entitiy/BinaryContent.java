@@ -15,29 +15,32 @@ import java.util.UUID;
 @NoArgsConstructor
 public class BinaryContent implements Serializable {
 
-    private UUID id;
-    private Instant createdAt;
-    private String name;
-    private String contentType;
-    private byte[] bytes;
+  private UUID id;
+  private Instant createdAt;
+  private String fileName;
+  private Long size;
+  private String contentType;
+  private byte[] bytes;
 
-    public BinaryContent(String name, String contentType, byte[] bytes) {
-        this.contentType = contentType;
-        this.bytes = bytes;
-        this.name = name;
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-    }
+  public BinaryContent(String fileName, String contentType, byte[] bytes, Long size) {
+    this.contentType = contentType;
+    this.bytes = bytes;
+    this.fileName = fileName;
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    this.size = size;
+  }
 
 
-    @Override
-    public String toString() {
-        return "BinaryContent{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", name='" + name + '\'' +
-                ", contentType='" + contentType + '\'' +
-                ", bytes=" + Arrays.toString(bytes) +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "BinaryContent{" +
+        "id=" + id +
+        ", createdAt=" + createdAt +
+        ", name='" + fileName + '\'' +
+        ", size=" + size +
+        ", contentType='" + contentType + '\'' +
+        ", bytes=" + Arrays.toString(bytes) +
+        '}';
+  }
 }
