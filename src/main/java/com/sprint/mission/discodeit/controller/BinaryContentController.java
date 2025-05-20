@@ -19,8 +19,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -42,7 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @ResponseBody
-@RequestMapping("/api/binaryContent")
+@RequestMapping("/api/binaryContents")
 @Tag(name = "BinaryContent", description = "첨부 파일 API")
 public class BinaryContentController {
 
@@ -65,9 +64,9 @@ public class BinaryContentController {
           @ExampleObject(value = "BinaryContent with id {binaryContentId} not found")
       }))
   })
-  @GetMapping(path = "find")
+  @GetMapping(path = "{binaryContentId}")
   public ResponseEntity<BinaryContent> find(
-      @RequestParam String binaryContentId
+      @PathVariable String binaryContentId
   ) {
     BinaryContent binaryContent = binaryContentService.find(parseStringToUuid(binaryContentId));
     return ResponseEntity.ok().body(binaryContent);
@@ -87,9 +86,9 @@ public class BinaryContentController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "첨부 파일 목록 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = BinaryContent.class))))
   })
-  @PostMapping(path = "/findAllByIdIn")
+  @GetMapping(path = "")
   public ResponseEntity<List<BinaryContent>> findAllByIdIn(
-      @RequestBody List<UUID> binaryContentIds
+      @RequestParam List<UUID> binaryContentIds
   ) {
     List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
     return ResponseEntity.ok().body(binaryContents);

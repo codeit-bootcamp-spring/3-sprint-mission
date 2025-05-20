@@ -50,7 +50,7 @@ public class MessageController {
   private final MessageService messageService;
 
   /* 메세지 생성 */
-  //FIXME : api-docs랑 다름
+  //FIXME : RequestBody 어떻게 작성해야하는지 모르겠음(multipart/form-data)
   @Operation(summary = "Message 생성")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음", content = @Content(examples = {
@@ -61,7 +61,8 @@ public class MessageController {
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       required = true,
       content = {
-          @Content(mediaType = "multipart/form-data", schema = @Schema(implementation = MessageCreateRequest.class)),
+          @Content(mediaType = "multipart/form-data", schema = @Schema(type = "object", requiredProperties = {
+              "messageCreateRequest"}, implementation = MessageCreateRequest.class)),
           @Content(mediaType = "multipart/form-data", array = @ArraySchema(schema = @Schema(type = "string", format = "binary", description = "Message 첨부 파일들"))),
       }
   )

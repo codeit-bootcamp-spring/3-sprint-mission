@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -66,7 +65,7 @@ public class UserController {
 
 
   /* 유저 생성 */
-  //FIXME : api-docs랑 다름
+  //FIXME : RequestBody 어떻게 작성해야하는지 모르겠음(multipart/form-data)
   @Operation(summary = "User 등록")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "201", description = "User가 성공적으로 생성됨", content = @Content(schema = @Schema(implementation = User.class))),
@@ -76,7 +75,7 @@ public class UserController {
   })
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       content = {
-          @Content(mediaType = "application/json", schema = @Schema(
+          @Content(mediaType = "multipart/form-data", schema = @Schema(
               type = "object",
               requiredProperties = {"UserCreateRequest"},
               implementation = UserCreateRequest.class)
@@ -98,7 +97,33 @@ public class UserController {
   }
 
   /* 유저 수정 */
-  @PutMapping(path = "users/update/{userId}", consumes = {
+  //FIXME : RequestBody 어떻게 작성해야하는지 모르겠음(multipart/form-data)
+  @Operation(summary = "User 정보 수정")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "User 정보가 성공적으로 수정됨", content = @Content(schema = @Schema(implementation = User.class))),
+      @ApiResponse(responseCode = "400", description = "같은 email 또는 username를 사용하는 User가 이미 존재함", content = @Content(examples = {
+          @ExampleObject(value = "user with email {newEmail} already exists")})),
+      @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음", content = @Content(examples = {
+          @ExampleObject(value = "User with id {id} not found")}))
+  })
+  @Parameter(
+      name = "userId",
+      description = "수정할 User ID",
+      required = true,
+      schema = @Schema(type = "string", format = "uuid"
+      )
+  )
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content = {
+          @Content(mediaType = "multipart/form-data", schema = @Schema(
+              type = "object",
+              requiredProperties = {"userUpdateRequest"},
+              implementation = UserUpdateRequest.class)
+          ),
+          @Content(mediaType = "multipart/form-data", schema = @Schema(type = "string", format = "binary", description = "수정할 User 프로필 이미지")),
+      }
+  )
+  @PatchMapping(path = "users/{userId}", consumes = {
       MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
   public ResponseEntity<User> update(
       @PathVariable String userId,
@@ -123,8 +148,7 @@ public class UserController {
       name = "userId",
       description = "삭제할 User ID",
       required = true,
-      content = @Content(schema = @Schema(type = "string", format = "UUID")
-      )
+      schema = @Schema(type = "string", format = "uuid")
   )
   @DeleteMapping(path = "users/{userId}")
   public ResponseEntity<Void> delete(
@@ -143,9 +167,11 @@ public class UserController {
   @GetMapping(path = "users")
   public ResponseEntity<List<UserDto>> findAll() {
     List<UserDto> users = userService.findAll();
-    System.out.println(users.toString());
-    return ResponseEntity.ok().body(users);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(users);
   }
+
 
   /* 유저 상태 업데이트 */
   @Operation(summary = "User 온라인 상태 업데이트")
@@ -158,8 +184,7 @@ public class UserController {
       name = "userId",
       description = "상태를 변경할 User ID",
       required = true,
-      content = @Content(schema = @Schema(type = "string", format = "uuid")
-      )
+      schema = @Schema(type = "string", format = "uuid")
   )
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       required = true,

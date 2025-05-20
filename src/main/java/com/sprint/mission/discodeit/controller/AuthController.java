@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.LoginRequest;
-import com.sprint.mission.discodeit.dto.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,14 +39,11 @@ public class AuthController {
   })
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       required = true,
-      content = @Content(schema = @Schema(implementation = UserStatusUpdateRequest.class))
+      content = @Content(schema = @Schema(implementation = LoginRequest.class))
   )
-  @PostMapping(value = "login")
-  public ResponseEntity<User> login(
-      @RequestBody LoginRequest loginRequest
-  ) {
-    User user = this.authService.login(loginRequest);
-
+  @PostMapping(path = "login")
+  public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
+    User user = authService.login(loginRequest);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(user);
