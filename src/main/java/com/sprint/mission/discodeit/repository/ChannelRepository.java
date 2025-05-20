@@ -10,8 +10,8 @@ import java.util.UUID;
 @Repository
 public interface ChannelRepository {
     Channel save(Channel channel);
-    Optional<Channel> findById(UUID id);
+    Channel findById(UUID channelId);
     List<Channel> findAll();
-    boolean existsById(UUID id);
-    void deleteById(UUID id);
+    boolean isExistName(String name);
+    void delete(UUID channelid);
 }

@@ -1,0 +1,14 @@
+server:
+  port: 8080
+
+spring:
+
+  application:
+    name: discodeit
+    admin:
+      enabled: false
+
+discodeit:
+  repository:
+    type: file    #jcf | file
+    file-directory : .discodeit

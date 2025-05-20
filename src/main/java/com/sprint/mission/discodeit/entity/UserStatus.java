@@ -14,23 +14,22 @@ public class UserStatus implements Serializable {
     private Instant updatedAt;
     //
     private UUID userId;
+    private Instant lastActiveAt;
     //
-    public UserStatus(UUID userId) {
+    public UserStatus(UUID userId, Instant lastActiveAt) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         //
         this.userId = userId;
+        this.lastActiveAt = lastActiveAt;
     }
-    public void refresh() {
-        this.updatedAt = Instant.now();
+    public void update(Instant newLastActiveAt) {
+        this.lastActiveAt = newLastActiveAt;
     }
+
     public boolean isOnline(){
         int timeAllowed = 300;
-        boolean isOnline = false;
-        if(Instant.now().minusSeconds(timeAllowed).isBefore(this.updatedAt)) {
-            isOnline = true;
-        }
-        return isOnline;
+        return Instant.now().minusSeconds(timeAllowed).isBefore(this.lastActiveAt);
     }
 
 

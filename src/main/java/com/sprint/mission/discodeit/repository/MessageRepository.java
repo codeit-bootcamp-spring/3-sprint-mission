@@ -10,8 +10,10 @@ import java.util.UUID;
 @Repository
 public interface MessageRepository {
     Message save(Message message);
-    Optional<Message> findById(UUID id);
+    Message findById(UUID id);
+    List<Message> findByChannel(UUID channelId);
     List<Message> findAll();
     boolean existsById(UUID id);
-    void deleteById(UUID id);
+    void delete(UUID id);
+    void deleteByChannelId(UUID channelId);
 }

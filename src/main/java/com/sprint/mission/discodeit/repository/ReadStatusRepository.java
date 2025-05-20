@@ -4,13 +4,16 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface ReadStatusReposotory {
+public interface ReadStatusRepository {
     ReadStatus save(ReadStatus readStatus);
     ReadStatus findById(UUID id);
-    void deleteById(UUID id);
+    List<ReadStatus> findAllByUserId(UUID userId);
+    List<ReadStatus> findAllByChannelId(UUID channelId);
     boolean existsById(UUID id);
-    void refresh(UUID id, Instant newRecentReadAt);
+    void deleteById(UUID id);
+    void deleteAllByChannelId(UUID channelId);
 }

@@ -12,33 +12,34 @@ public class Message implements Serializable {
     private static final long serialVersionUID = -6322726657551422728L;
 
     private UUID id;
-    private Long createdAt;
-    private Long updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt = null;
     //
-    private String content;
-    //
+    private String text;
     private UUID channelId;
-    private UUID authorId;
-    private List<UUID> contentIds;
+    private UUID userId;
+    private List<UUID> contentIds = null;
 
 
-    public Message(String content, UUID channelId, UUID authorId) {
+    public Message(String text, UUID channelId, UUID userId) {
         this.id = UUID.randomUUID();
-        this.createdAt = Instant.now().getEpochSecond();
+        this.createdAt = Instant.now();
         //
-        this.content = content;
+        this.text = text;
         this.channelId = channelId;
-        this.authorId = authorId;
+        this.userId = userId;
     }
-    public void update(String newContent) {
-        boolean anyValueUpdated = false;
-        if (newContent != null && !newContent.equals(this.content)) {
-            this.content = newContent;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now().getEpochSecond();
+    public Message(String text, UUID channelId, UUID userId, List<UUID> contentIds) {
+        this(text,channelId,userId);
+        this.contentIds = contentIds;
+    }
+    public void update(String newText){
+        if (newText != null && !newText.equals(this.text)) {
+            this.text = newText;
+            if(updatedAt== null) {
+                this.text += "*** 수정됨 ***";
+            }
+            this.updatedAt = Instant.now();
         }
     }
 
@@ -46,11 +47,11 @@ public class Message implements Serializable {
     public String toString() {
         return "Message{" +
                 "id=" + id +
+                ", content='" + text + '\'' +
+                ", channelId=" + channelId +
+                ", authorId=" + userId +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", content='" + content + '\'' +
-                ", channelId=" + channelId +
-                ", authorId=" + authorId +
                 '}';
     }
 }
