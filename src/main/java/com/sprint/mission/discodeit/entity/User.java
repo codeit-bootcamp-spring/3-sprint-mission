@@ -2,43 +2,35 @@ package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 
+@Getter
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Getter
     private UUID id;
-
-    @Getter
     private Instant createdAt;
-
-    @Getter
     private Instant updatedAt;
-
-    @Getter
+    //
     private String username;
-
-    @Getter
     private String email;
-
-    @Getter
     private String password;
+    private UUID profileId;     // Binary Content
 
-    @Getter
-    private UUID profileId;
-
-    public User(String username, String email, String password) {
+    public User(String username, String email, String password, UUID profileId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
+        this.updatedAt = this.createdAt;
         //
-        this.username = username;
-        this.email = email;
-        this.password = password;
+        this.username = Objects.requireNonNull(username, "Username must not be null");
+        this.email = Objects.requireNonNull(email, "Email must not be null");
+        this.password = Objects.requireNonNull(password, "Password must not be null");
+        this.profileId = profileId;
     }
 
-    public void update(String newUsername, String newEmail, String newPassword) {
+    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
         boolean anyValueUpdated = false;
         if (newUsername != null && !newUsername.equals(this.username)) {
             this.username = newUsername;
@@ -50,6 +42,10 @@ public class User implements Serializable {
         }
         if (newPassword != null && !newPassword.equals(this.password)) {
             this.password = newPassword;
+            anyValueUpdated = true;
+        }
+        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
+            this.profileId = newProfileId;
             anyValueUpdated = true;
         }
 
@@ -66,9 +62,5 @@ public class User implements Serializable {
                 ", createdAt='" + getCreatedAt() + '\'' +
                 ", updatedAt='" + getUpdatedAt() + '\'' +
                 '}';
-    }
-
-    public void setProfileId(UUID id) {
-        this.profileId = id;
     }
 }

@@ -4,41 +4,33 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 
+@Getter
 public class Message implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Getter
     private UUID id;
-
-    @Getter
     private Instant createdAt;
-
-    @Getter
     private Instant updatedAt;
-
-    @Getter
+    //
     private String content;
-
-    @Getter
+    //
     private UUID channelId;
-
-    @Getter
     private UUID authorId;
-
-    @Getter
     private List<UUID> attachmentIds;
 
-    public Message(String content, UUID channelId, UUID authorId) {
+    public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
+        this.updatedAt = this.createdAt;
         //
-        this.content = content;
-        this.channelId = channelId;
-        this.authorId = authorId;
-        this.attachmentIds = new ArrayList<>();
+        this.content = Objects.requireNonNull(content, "Message content must not be null");
+        this.channelId = Objects.requireNonNull(channelId, "Channel ID must not be null");
+        this.authorId = Objects.requireNonNull(authorId, "Author ID must not be null");
+        this.attachmentIds = (attachmentIds != null) ? attachmentIds : new ArrayList<>();
     }
 
     public void update(String newContent) {
@@ -51,10 +43,6 @@ public class Message implements Serializable {
         if (anyValueUpdated) {
             this.updatedAt = Instant.now();
         }
-    }
-
-    public void addBinaryContent(UUID fileId) {
-        this.attachmentIds.add(fileId);
     }
 
     @Override

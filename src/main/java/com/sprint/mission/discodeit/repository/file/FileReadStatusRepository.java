@@ -52,49 +52,85 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
-    public List<ReadStatus> findByChannelId(UUID channelId) {
-        return findAll().stream()
-                .filter(s -> s.getChannelId().equals(channelId))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<UUID> findUserIdsByChannelId(UUID channelId) {
-        return findByChannelId(channelId).stream()
-                .map(ReadStatus::getUserId)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void deleteByChannelId(UUID channelId) {
-        findByChannelId(channelId).forEach(status -> deleteById(status.getId()));
-    }
-
-    public void deleteById(UUID id) {
-        try {
-            Files.deleteIfExists(resolvePath(id));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public Optional<ReadStatus> findById(UUID id) {
+        ReadStatus readStatusNullable = null;
+        Path path = resolvePath(id);
+        if (Files.exists(path)) {
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                readStatusNullable = (ReadStatus) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         }
+        return Optional.ofNullable(readStatusNullable);
     }
 
-    private List<ReadStatus> findAll() {
+    @Override
+    public List<ReadStatus> findAllByUserId(UUID userId) {
         try {
             return Files.list(DIRECTORY)
-                    .filter(p -> p.toString().endsWith(EXTENSION))
-                    .map(this::readStatus)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (ReadStatus) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .filter(readStatus -> readStatus.getUserId().equals(userId))
+                    .toList();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private ReadStatus readStatus(Path path) {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
-            return (ReadStatus) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            return null;
+    @Override
+    public List<ReadStatus> findAllByChannelId(UUID channelId) {
+        try {
+            return Files.list(DIRECTORY)
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (ReadStatus) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .filter(readStatus -> readStatus.getChannelId().equals(channelId))
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        Path path = resolvePath(id);
+        return Files.exists(path);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        Path path = resolvePath(id);
+        try {
+            Files.delete(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void deleteAllByChannelId(UUID channelId) {
+        this.findAllByChannelId(channelId)
+                .forEach(readStatus -> this.deleteById(readStatus.getId()));
     }
 }

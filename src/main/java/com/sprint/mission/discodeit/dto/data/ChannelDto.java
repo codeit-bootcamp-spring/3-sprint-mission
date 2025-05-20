@@ -11,17 +11,7 @@ public record ChannelDto(
         ChannelType type,
         String name,
         String description,
-        Instant latestMessageTime,
-        List<UUID> participantIds
+        List<UUID> participantIds,
+        Instant lastMessageAt
 ) {
-    public ChannelDto(Channel channel, Instant latestMessageTime, List<UUID> participantIds) {
-        this(
-                channel.getId(),
-                channel.getType(),
-                channel.getName(),
-                channel.getDescription(),
-                latestMessageTime,
-                participantIds
-        );
-    }
 }
