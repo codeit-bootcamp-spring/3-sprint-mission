@@ -37,8 +37,10 @@ public class BasicChannelService implements ChannelService {
   public Channel create(PrivateChannelCreateRequest privateCreateRequest) {
     Channel channel = new Channel(ChannelType.PRIVATE, privateCreateRequest.ownerId(), null, null);
 
-    this.readStatusRepository.save(new ReadStatus(privateCreateRequest.ownerId(), channel.getId()));
-
+    if (privateCreateRequest.ownerId() != null) {
+      this.readStatusRepository.save(
+          new ReadStatus(privateCreateRequest.ownerId(), channel.getId()));
+    }
     /* participantIds 에 있는 유저들 ReadStatus 생성 */
     for (UUID attendeeId : privateCreateRequest.participantIds()) {
       this.readStatusRepository.save(new ReadStatus(attendeeId, channel.getId()));
