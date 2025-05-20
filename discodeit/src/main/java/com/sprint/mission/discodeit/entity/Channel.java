@@ -30,45 +30,17 @@ public class Channel implements Serializable {
         paricipantIds = new ArrayList<>();
     }
 
-    // @Getter로 대체하였음
-//    public UUID getId() {
-//        return id;
-//    }
-//
-//    public Long getCreatedAt() {
-//        return createdAt;
-//    }
-//
-//    public Long getUpdatedAt() {
-//        return updatedAt;
-//    }
-//
-//    public ChannelType getType() {
-//        return type;
-//    }
-//
-//    public String getName() {
-//        return name;
-//    }
-//
-//    public String getDescription() {
-//        return description;
-//    }
 
     public void update(String newName, String newDescription) {
-        boolean anyValueUpdated = false;
         if (newName != null && !newName.equals(this.channelName)) {
             this.channelName = newName;
-            anyValueUpdated = true;
+            this.updatedAt = Instant.now();
         }
         if (newDescription != null && !newDescription.equals(this.description)) {
             this.description = newDescription;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
             this.updatedAt = Instant.now();
         }
+
     }
 
     public void addParicipant(UUID paricipantId){

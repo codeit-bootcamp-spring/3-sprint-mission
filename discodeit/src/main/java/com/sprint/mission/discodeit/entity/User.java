@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.Objects;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -8,70 +9,64 @@ import java.util.UUID;
 
 @Getter
 public class User implements Serializable {
-    private static final long serialVersionUID = 1L;
 
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private String username;
-    private String email;
-    private String password;
-    private UUID profiledId;
+  private static final long serialVersionUID = 1L;
 
-    public User(String username, String email, String password,UUID profiledId) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.username = username;
-        this.email = email;
-        this.password = password;
+  private UUID id;
+  private Instant createdAt;
+  private Instant updatedAt;
+  private String username;
+  private String email;
+  private String password;
+  private UUID profileId;
+
+  public User(String username, String email, String password, UUID profileId) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    this.username = username;
+    this.email = email;
+    this.password = password;
+    this.profileId = profileId;
+  }
+
+
+  public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
+    if (newUsername == null) {
+      throw new IllegalArgumentException("[error] 사용자 이름이 입력되지 않았습니다.");
+    }
+    if (newUsername.equals(this.username)) {
+      throw new IllegalArgumentException("[error] 현재 사용자 이름과 동일합니다.");
+    }
+    this.username = newUsername;
+
+    if (newEmail == null) {
+      throw new IllegalArgumentException("[error] 이메일이 입력되지 않았습니다.");
+    }
+    if (newEmail.equals(this.email)) {
+      throw new IllegalArgumentException("[error] 현재 이메일과 동일합니다.");
+    }
+    this.email = newEmail;
+
+    if (newPassword == null) {
+      throw new IllegalArgumentException("[error] 비밀번호가 입력되지 않았습니다.");
+    }
+    if (newPassword.equals(this.password)) {
+      throw new IllegalArgumentException("[error] 현재 비밀번호와 동일합니다.");
+    }
+    this.password = newPassword;
+
+    if (profileId != null && newProfileId == null) {
+      System.out.println("사용자 프로필 사진이 삭제되었습니다.");
+    }
+    if (Objects.equals(profileId, newProfileId)) {
+      throw new IllegalArgumentException("[error] 현재 프로필 ID와 동일합니다.");
+    } else {
+      this.profileId = newProfileId;
     }
 
-    // @Getter를 대신 사용하였음
-//    public UUID getId() {
-//        return id;
-//    }
-//
-//    public Long getCreatedAt() {
-//        return createdAt;
-//    }
-//
-//    public Long getUpdatedAt() {
-//        return updatedAt;
-//    }
-//
-//    public String getUsername() {
-//        return username;
-//    }
-//
-//    public String getEmail() {
-//        return email;
-//    }
-//
-//    public String getPassword() {
-//        return password;
-//    }
+    this.updatedAt = Instant.now();
+  }
 
-    public void update(String newUsername, String newEmail, String newPassword, UUID profiledId) {
-        boolean anyValueUpdated = false;
-        if (newUsername != null && !newUsername.equals(this.username)) {
-            this.username = newUsername;
-            anyValueUpdated = true;
-        }
-        if (newEmail != null && !newEmail.equals(this.email)) {
-            this.email = newEmail;
-            anyValueUpdated = true;
-        }
-        if (newPassword != null && !newPassword.equals(this.password)) {
-            this.password = newPassword;
-            anyValueUpdated = true;
-        }
-        if(profiledId != null && !profiledId.equals(this.profiledId)){
-            this.profiledId = profiledId;
-            anyValueUpdated = true;
-        }
 
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
-        }
-    }
 }
+

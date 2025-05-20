@@ -1,8 +1,18 @@
+server:
+  port: 8080
 spring:
   application:
     name: discodeit
+  logging:
+    level:
+      root: info
 
-discodeit:
+
   repository:
     type: file   # jcf | file
-    file-directory: .discodeit
+    user-file-path: .files/User.json
+    channel-file-path: .files/Channel.json
+    message-file-path: .files/Message.json
+    user-status-file-path: .files/UserStatus.json
+    read-status-file-path: .files/ReadStatus.json
+    binary-content-file-path: .files/BinaryContent.json
