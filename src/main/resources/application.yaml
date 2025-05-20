@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: discodeit
+  profiles:
+    active: file
+
+storage:
+  dirs:
+    binaryContents: data/binaryContents
+    channels: data/channels
+    messages: data/messages
+    readStatuses: data/readStatuses
+    users: data/users
+    userStatuses: data/userStatuses
