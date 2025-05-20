@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -23,19 +24,17 @@ public class UserStatusServiceImpl implements UserStatusService {
 
 
     @Override
-    public UserStatus createUserStatus(UserStatusCreateRequestDto userStatusCreateRequestDto) {
-        Optional<User> user = userRepository.getUser(userStatusCreateRequestDto.getUserId());
+    public UserStatus createUserStatus(UserStatusCreateRequestDto dto) {
+        validateCreateRequest(dto);
 
-        if (user.isEmpty()) {
-            throw new NoSuchElementException("존재하지 않는 유저입니다.");
-        }
-
-        return userStatusRepository.createUserStatus(userStatusCreateRequestDto);
+        UserStatus userStatus = new UserStatus(dto.getUserId(), dto.getNowTime());
+        return userStatusRepository.createUserStatus(userStatus);
     }
 
     @Override
     public UserStatus findStatusById(UUID statusId) {
-        return userStatusRepository.findStatusById(statusId);
+        return userStatusRepository.findStatusById(statusId)
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 상태입니다."));
     }
 
     @Override
@@ -44,9 +43,18 @@ public class UserStatusServiceImpl implements UserStatusService {
     }
 
     @Override
-    public boolean updateUserStatus(UserStatusUpdateRequestDto userStatusUpdateRequestDto) {
-        return userStatusRepository.updateUserStatus(userStatusUpdateRequestDto);
+    public boolean updateUserStatus(UserStatusUpdateRequestDto dto) {
+        Optional<UserStatus> userStatusOptional = userStatusRepository.findStatusById(dto.getUserStatusId());
+        if (userStatusOptional.isEmpty()) {
+            throw new NoSuchElementException("존재하지 않는 상태입니다.");
+        }
+
+        UserStatus userStatus = userStatusOptional.get();
+        userStatus.setLastActivityAt(dto.getNowTime());
+
+        return userStatusRepository.updateUserStatus(userStatus);
     }
+
 
     @Override
     public boolean updateByUserId(UUID userId) {
@@ -54,10 +62,28 @@ public class UserStatusServiceImpl implements UserStatusService {
         if (user.isEmpty()) {
             throw new NoSuchElementException("존재하지 않는 유저입니다.");
         }
+        UserStatus userStatus = userStatusRepository.findByUserId(userId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 데이터 입니다."));
+        userStatus.update(Instant.now());
+        return userStatusRepository.updateUserStatus(userStatus);
+    }
 
-        UserStatus userStatus = userStatusRepository.updateByUserId(userId);
-        user.get().setOnline(userStatus.isOnline(userStatus.getLastActivityAt()));
+    @Override
+    public boolean deleteUserStatus(UUID statusId) {
+        if (!userStatusRepository.findStatusById(statusId).isPresent()) {
+            throw new NoSuchElementException("존재하지 않는 데이터 입니다.");
+        }
+        return userStatusRepository.deleteUserStatus(statusId);
+    }
 
-        return true;
+    private void validateCreateRequest(UserStatusCreateRequestDto dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("요청 데이터가 없습니다.");
+        }
+        if (!userRepository.getUser(dto.getUserId()).isPresent()) {
+            throw new NoSuchElementException("존재하지 않는 사용자입니다.");
+        }
+        if (userStatusRepository.findByUserId(dto.getUserId()).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 데이터 입니다.");
+        }
     }
 }

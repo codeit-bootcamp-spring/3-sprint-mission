@@ -2,24 +2,18 @@ package com.sprint.mission.discodeit.entity.dto.user;
 
 import com.sprint.mission.discodeit.entity.common.Period;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @ToString(exclude = "password")
 @Getter
+@Setter
+@NoArgsConstructor
 public class UserCreateDto extends Period {
 
     private String username;
     private String password;
-    private byte[] profileImage;
+    private String email;
 
-    public UserCreateDto(String password, String username, byte[] profileImage) {
-        this.password = password;
-        this.profileImage = profileImage;
-        this.username = username;
-    }
-
-    public UserCreateDto(String password, String username) {
-        this.password = password;
-        this.username = username;
-    }
 }

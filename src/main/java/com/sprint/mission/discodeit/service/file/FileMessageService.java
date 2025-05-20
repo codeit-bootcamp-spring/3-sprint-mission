@@ -3,8 +3,6 @@ package com.sprint.mission.discodeit.service.file;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.dto.binaryContent.BinaryContentCreateRequestDto;
-import com.sprint.mission.discodeit.entity.dto.binaryContent.BinaryContentType;
-import com.sprint.mission.discodeit.entity.dto.binaryContent.BinaryOwnerType;
 import com.sprint.mission.discodeit.entity.dto.message.MessageCreateRequestDto;
 import com.sprint.mission.discodeit.entity.dto.message.MessageDeleteRequestDto;
 import com.sprint.mission.discodeit.entity.dto.message.MessageResponseDto;
@@ -27,20 +25,23 @@ public class FileMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public MessageResponseDto createMessage(MessageCreateRequestDto messageCreateRequestDto) {
-        Message message = messageRepository.createMessage(messageCreateRequestDto);
-        MessageResponseDto messageResponseDto;
-        if (!messageCreateRequestDto.getMessageFile().isEmpty()) {
-//            바이너리 생성 로직
-            messageCreateRequestDto.getMessageFile().forEach(file -> {
-                BinaryContentCreateRequestDto binaryContentCreateRequestDto = new BinaryContentCreateRequestDto(message.getId(), BinaryContentType.MESSAGE_ATTACHMENT, BinaryOwnerType.MESSAGE, file);
-                binaryContentRepository.createBinaryContent(binaryContentCreateRequestDto);
-            });
-            messageResponseDto = new MessageResponseDto(message);
-        } else {
-            messageResponseDto = new MessageResponseDto(message);
+    public MessageResponseDto createMessage(MessageCreateRequestDto messageCreateRequestDto, BinaryContentCreateRequestDto binaryContentCreateRequestDto) {
+        Message message = new Message(messageCreateRequestDto.getUserId(), messageCreateRequestDto.getMessageContent());
+        messageRepository.createMessage(message, messageCreateRequestDto.getChannelId());
+
+        if (binaryContentCreateRequestDto != null && binaryContentCreateRequestDto.getData() != null) {
+            for (byte[] fileData : binaryContentCreateRequestDto.getData()) {
+                BinaryContent binaryContent = new BinaryContent(
+                        message.getId(),
+                        binaryContentCreateRequestDto.getContentType(),
+                        binaryContentCreateRequestDto.getFileContentType(),
+                        fileData
+                );
+                binaryContentRepository.createBinaryContent(binaryContent);
+            }
         }
-        return messageResponseDto;
+
+        return new MessageResponseDto(message);
     }
 
     @Override
@@ -49,7 +50,7 @@ public class FileMessageService implements MessageService {
         List<MessageResponseDto> messageResponseDtos = new ArrayList<>();
 
         for (Message message : messages) {
-            List<BinaryContent> messageBinaryContents = binaryContentRepository.findAllBinaryContentById(message.getId());
+            List<BinaryContent> messageBinaryContents = binaryContentRepository.findAllAttachmentsByOwnerId(message.getId());
 
             List<byte[]> messageFiles = new ArrayList<>();
             for (BinaryContent binaryContent : messageBinaryContents) {
@@ -65,16 +66,35 @@ public class FileMessageService implements MessageService {
 
     @Override
     public boolean updateMessage(MessageUpdateRequestDto messageUpdateRequestDto) {
-        return messageRepository.updateMessage(messageUpdateRequestDto);
+        List<Message> messages = messageRepository.getChannelMessages(messageUpdateRequestDto.getChannelId());
+
+        for (Message message : messages) {
+            if (message.getId().equals(messageUpdateRequestDto.getMessageId())) {
+                message.setContent(messageUpdateRequestDto.getMessageContent());
+                return messageRepository.updateMessage(message, messageUpdateRequestDto.getChannelId());
+            }
+        }
+
+        return false;
     }
 
     @Override
-    public void deleteMessage(MessageDeleteRequestDto messageDeleteRequestDto) {
-        messageRepository.deleteMessage(messageDeleteRequestDto);
-//        바이너리 삭제 로직
-        binaryContentRepository.findAllBinaryContentById(messageDeleteRequestDto.getMessageId()).forEach(file -> {
-            binaryContentRepository.deleteBinaryContentById(messageDeleteRequestDto.getMessageId());
-        });
-    }
+    public boolean deleteMessage(MessageDeleteRequestDto messageDeleteRequestDto) {
+        Message message = null;
+        List<Message> channelMessages = messageRepository.getChannelMessages(messageDeleteRequestDto.getChannelId());
+        for (Message msg : channelMessages) {
+            if (msg.getId().equals(messageDeleteRequestDto.getMessageId())) {
+                message = msg;
+                break;
+            }
+        }
+        boolean messageResult = messageRepository.deleteMessage(message, messageDeleteRequestDto.getChannelId());
 
+//        바이너리 삭제 로직
+        boolean binaryContentResult = binaryContentRepository.findAllAttachmentsByOwnerId(messageDeleteRequestDto.getMessageId())
+                .stream()
+                .allMatch(file -> binaryContentRepository.deleteBinaryContentById(file.getId()));
+
+        return messageResult && binaryContentResult;
+    }
 }

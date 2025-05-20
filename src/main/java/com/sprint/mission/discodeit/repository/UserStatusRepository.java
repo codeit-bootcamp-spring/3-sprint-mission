@@ -1,23 +1,24 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.entity.dto.userStatus.UserStatusCreateRequestDto;
-import com.sprint.mission.discodeit.entity.dto.userStatus.UserStatusUpdateRequestDto;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface UserStatusRepository {
 
-    public UserStatus createUserStatus(UserStatusCreateRequestDto userStatusCreateRequestDto);
+    public UserStatus createUserStatus(UserStatus status);
 
-    public UserStatus findStatusById(UUID statusId);
+    public Optional<UserStatus> findStatusById(UUID statusId);
+
+    public Optional<UserStatus> findByUserId(UUID userId);
 
     public List<UserStatus> findAllStatus();
 
-    public boolean updateUserStatus(UserStatusUpdateRequestDto userStatusUpdateRequestDto);
+    public boolean updateUserStatus(UserStatus userStatus);
 
-    public UserStatus updateByUserId(UUID userId);
+    public boolean updateByUserId(UserStatus userStatus);
 
     public boolean deleteUserStatus(UUID statusId);
 }

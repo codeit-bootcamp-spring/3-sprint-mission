@@ -1,12 +1,14 @@
 package com.sprint.mission.discodeit.entity.dto.user;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.util.UUID;
 
 @ToString
 @Getter
+@Setter
 public class UserUpdateRequestDto {
 
     private UUID userId;

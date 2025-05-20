@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.dto.user.UserCreateDto;
-import com.sprint.mission.discodeit.entity.dto.user.UserUpdateRequestDto;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -20,8 +18,7 @@ public class FileUserRepository extends AbstractFileRepository<UUID, User> imple
     }
 
     @Override
-    public User createUser(UserCreateDto userCreateDto) {
-        User user = new User(userCreateDto);
+    public User createUser(User user) {
         return save(user.getId(), user);
     }
 
@@ -38,33 +35,17 @@ public class FileUserRepository extends AbstractFileRepository<UUID, User> imple
     }
 
     @Override
-    public boolean modifyUser(UserUpdateRequestDto userUpdateRequestDto) {
-        Map<UUID, User> users = loadFromFile();
-
-        if (!users.containsKey(userUpdateRequestDto.getUserId())) {
-            return false;
-        }
-        User user = users.get(userUpdateRequestDto.getUserId());
-
-        if (user.getPassword().equals(userUpdateRequestDto.getOldPassword())) {
-            user.setPassword(userUpdateRequestDto.getNewPassword());
-            saveToFile(users);
-            return true;
-        }else {
-            System.out.println("비밀번호가 일치하지 않습니다.");
-            return false;
-        }
+    public boolean modifyUser(User user) {
+        save(user.getId(), user);
+        return true;
     }
 
     @Override
     public boolean deleteUser(UUID id) {
         Map<UUID, User> users = loadFromFile();
-        if (!users.containsKey(id)) {
-            throw new NoSuchElementException("존재하지 않는 유저 입니다.");
-        } else {
-            users.remove(users.get(id).getId());
-            saveToFile(users);
-            return true;
-        }
+
+        users.remove(id);
+        saveToFile(users);
+        return true;
     }
 }

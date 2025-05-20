@@ -32,9 +32,9 @@ public class Channel extends Period implements Serializable {
         user.getChannels().add(this);
     }
 
-    public Channel(ChannelCreatePrivateDto channelCreatePrivateDto) {
+    public Channel(ChannelCreatePrivateDto channelCreatePrivateDto, User user) {
         super();
-        this.channelAdmin = channelCreatePrivateDto.getAdmin();
+        this.channelAdmin = user;
         this.members = new HashSet<>();
         this.messages = new ArrayList<>();
         this.type = ChannelType.PRIVATE;
@@ -69,15 +69,4 @@ public class Channel extends Period implements Serializable {
         update();
     }
 
-    @Override
-    public String toString() {
-        return "Channel{" +
-                "channelAdmin=" + channelAdmin +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", members=" + members +
-                ", messages=" + messages +
-                ", type=" + type +
-                "} " + super.toString();
-    }
 }

@@ -1,18 +1,12 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.entity.dto.userStatus.UserStatusCreateRequestDto;
-import com.sprint.mission.discodeit.entity.dto.userStatus.UserStatusUpdateRequestDto;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
@@ -23,60 +17,56 @@ public class FileUserStatusRepository extends AbstractFileRepository<UUID, UserS
     }
 
     @Override
-    public UserStatus createUserStatus(UserStatusCreateRequestDto userStatusCreateRequestDto) {
-        UserStatus status = new UserStatus(userStatusCreateRequestDto.getUserId(), userStatusCreateRequestDto.getNowTime());
-        return save(status.getId(), status);
+    public UserStatus createUserStatus(UserStatus userStatus) {
+        return save(userStatus.getId(), userStatus);
     }
 
     @Override
-    public UserStatus findStatusById(UUID statusId) {
-        Map<UUID, UserStatus> userStatuses = loadFromFile();
-        if (!userStatuses.containsKey(statusId)) {
-            throw new NoSuchElementException("존재하지 않는 데이터입니다.");
-        }
-        return userStatuses.get(statusId);
+    public Optional<UserStatus> findStatusById(UUID statusId) {
+        return Optional.ofNullable(loadFromFile().get(statusId));
     }
+
+    @Override
+    public Optional<UserStatus> findByUserId(UUID userId) {
+        return loadFromFile().values().stream()
+                .filter(status -> status.getUserId().equals(userId))
+                .findFirst();
+    }
+
 
     @Override
     public List<UserStatus> findAllStatus() {
-        return loadFromFile().values().stream().toList();
+        return new ArrayList<>(loadFromFile().values());
     }
 
     @Override
-    public boolean updateUserStatus(UserStatusUpdateRequestDto userStatusUpdateRequestDto) {
+    public boolean updateUserStatus(UserStatus userStatus) {
         Map<UUID, UserStatus> userStatuses = loadFromFile();
-        UserStatus userStatus = userStatuses.get(userStatusUpdateRequestDto.getUserStatusId());
 
-        if (userStatus == null) {
-            throw new NoSuchElementException("존재하지 않는 데이터입니다.");
-        }
-
-        userStatus.setLastActivityAt(userStatusUpdateRequestDto.getNowTime());
+        userStatuses.put(userStatus.getId(), userStatus);
         saveToFile(userStatuses);
         return true;
     }
 
     @Override
-    public UserStatus updateByUserId(UUID userId) {
+    public boolean updateByUserId(UserStatus userStatus) {
         Map<UUID, UserStatus> userStatuses = loadFromFile();
-        for (UserStatus userStatus : userStatuses.values()) {
-            if (userStatus.getUserId().equals(userId)) {
-                userStatus.setLastActivityAt(Instant.now());
-                saveToFile(userStatuses);
-                return userStatus;
-            }
+        if (!userStatuses.containsKey(userStatus.getId())) {
+            return false;
         }
-        throw new NoSuchElementException("존재하지 않는 데이터입니다.");
+        userStatuses.put(userStatus.getId(), userStatus);
+        saveToFile(userStatuses);
+        return true;
     }
 
     @Override
     public boolean deleteUserStatus(UUID statusId) {
         Map<UUID, UserStatus> userStatuses = loadFromFile();
-        if (userStatuses.containsKey(statusId)) {
-            userStatuses.remove(statusId);
-            saveToFile(userStatuses);
-            return true;
+        if (!userStatuses.containsKey(statusId)) {
+            return false;
         }
-        return false;
+        userStatuses.remove(statusId);
+        saveToFile(userStatuses);
+        return true;
     }
 }
