@@ -18,11 +18,14 @@
 
 fe_1.0.0.zip
 
-- [ ] Railway.app을 활용하여 애플리케이션을 배포해보세요.
+- [x] Railway.app을 활용하여 애플리케이션을 배포해보세요.
   Railway.app은 애플리케이션을 쉽게 배포할 수 있도록 도와주는 PaaS입니다.
-- [ ] Railway.app에 가입하고, 배포할 GitHub 레포지토리를 연결하세요.
-- [ ] Settings > Network 섹션에서 Generate Domain 버튼을 통해 도메인을 생성하세요.
-- [ ] 생성된 도메인에 접속해 배포된 애플리케이션을 테스트해보세요.
-  무료 사용 제한이 있으므로, 코드 리뷰 이후에는 배포 인스턴스를 삭제해주세요.
+- [x] Railway.app에 가입하고, 배포할 GitHub 레포지토리를 연결하세요.
+- [x] Settings > Network 섹션에서 Generate Domain 버튼을 통해 도메인을 생성하세요.
+- [x] 생성된 도메인에 접속해 배포된 애플리케이션을 테스트해보세요.
+
+- **생성된 도메인 : 3-sprint-mission-production-f335.up.railway.app**
+
+무료 사용 제한이 있으므로, 코드 리뷰 이후에는 배포 인스턴스를 삭제해주세요.
 
 #### 멘토에게
