@@ -9,22 +9,22 @@ import java.util.UUID;
 
 @Builder
 public record MessageDTO(UUID id,
-                         Instant creatdAt,
+                         Instant createdAt,
                          Instant updatedAt,
                          String content,
                          UUID authorId,
                          UUID channelId,
                          List<UUID> attachmentIds) {
 
-    public static MessageDTO fromDomain(Message message) {
-        return MessageDTO.builder()
-                .id(message.getId())
-                .creatdAt(message.getCreatedAt())
-                .updatedAt(message.getUpdatedAt())
-                .content(message.getContent())
-                .authorId(message.getAuthorId())
-                .channelId(message.getChannelId())
-                .attachmentIds(message.getAttachmentIds())
-                .build();
-    }
+  public static MessageDTO fromDomain(Message message) {
+    return MessageDTO.builder()
+        .id(message.getId())
+        .createdAt(message.getCreatedAt())
+        .updatedAt(message.getUpdatedAt())
+        .content(message.getContent())
+        .authorId(message.getAuthorId())
+        .channelId(message.getChannelId())
+        .attachmentIds(message.getAttachmentIds())
+        .build();
+  }
 }

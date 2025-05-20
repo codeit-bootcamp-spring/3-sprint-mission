@@ -82,7 +82,7 @@ public class ChannelController {
   @GetMapping("find/public/{channelId}")
   public ResponseEntity<PublicChannelDTO> findPublicChannel(
       @Parameter(description = "조회할 Public 채널 ID", required = true)
-      @PathVariable("channelId") UUID channelId
+      @PathVariable UUID channelId
   ) {
     Channel publicChannel = channelService.find(channelId);
     Instant lastMessageAt = getLastMessageAt(publicChannel.getId());
@@ -101,7 +101,7 @@ public class ChannelController {
   @GetMapping("find/private/{channelId}")
   public ResponseEntity<PrivateChannelDTO> findPrivateChannel(
       @Parameter(description = "조회할 Private 채널 ID", required = true)
-      @PathVariable("channelId") UUID channelId) {
+      @PathVariable UUID channelId) {
     Channel privateChannel = channelService.find(channelId);
     Instant lastMessageAt = getLastMessageAt(privateChannel.getId());
     return ResponseEntity.ok(PrivateChannelDTO.fromDomain(privateChannel, lastMessageAt));
@@ -146,7 +146,7 @@ public class ChannelController {
   @PatchMapping("/{channelId}")
   public ResponseEntity<Channel> updateChannel(
       @Parameter(description = "수정할 채널 ID", required = true)
-      @PathVariable("channelId") UUID channelId,
+      @PathVariable UUID channelId,
       @RequestBody UpdateChannelRequest updateChannelRequest
   ) {
     Channel channel = channelService.update(channelId, updateChannelRequest);
@@ -168,7 +168,7 @@ public class ChannelController {
   @DeleteMapping("/{channelId}")
   public ResponseEntity<Void> deleteChannel(
       @Parameter(description = "삭제할 채널 ID", required = true)
-      @PathVariable("channelId") UUID channelId
+      @PathVariable UUID channelId
   ) {
 
     channelService.delete(channelId);

@@ -16,17 +16,19 @@ public record UserDTO(UUID id,
                       Instant updatedAt,
                       String username,
                       String email,
+                      UUID profileId,
                       boolean online) {
 
-    public static UserDTO fromDomain(User user, boolean isOnline) {
-        return UserDTO.builder()
-                .id(user.getId())
-                .cratedAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .online(isOnline)
-                .build();
+  public static UserDTO fromDomain(User user, boolean isOnline) {
+    return UserDTO.builder()
+        .id(user.getId())
+        .cratedAt(user.getCreatedAt())
+        .updatedAt(user.getUpdatedAt())
+        .username(user.getUsername())
+        .email(user.getEmail())
+        .profileId(user.getProfileId())
+        .online(isOnline)
+        .build();
 
-    }
+  }
 }
