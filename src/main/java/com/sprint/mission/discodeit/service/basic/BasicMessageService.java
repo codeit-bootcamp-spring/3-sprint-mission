@@ -15,7 +15,6 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -54,20 +53,23 @@ public class BasicMessageService implements MessageService {
     }
 
     Message message = new Message(messageCreateRequest.content(), channelId, senderId);
+    Message savedMessage = messageRepository.save(message);
 
     if (binaryContentCreateRequests != null) {
       for (BinaryContentCreateRequest fileRequest : binaryContentCreateRequests) {
         if (fileRequest.isValid()) {
-          BinaryContent binaryContent = new BinaryContent(fileRequest.fileName(), senderId);
+          BinaryContent binaryContent = new BinaryContent(fileRequest.fileName(), senderId, savedMessage.getId(),
+              fileRequest.bytes(), fileRequest.contentType());
           message.addAttachment(binaryContent.getId());
           binaryContentRepository.save(binaryContent);
         } else {
           throw new IllegalArgumentException("메세지에 첨부파일을 추가할 수 없습니다. 파일을 확인해주세요.");
         }
       }
+      messageRepository.save(savedMessage);
     }
 
-    return messageRepository.save(message);
+    return savedMessage;
   }
 
   @Override
