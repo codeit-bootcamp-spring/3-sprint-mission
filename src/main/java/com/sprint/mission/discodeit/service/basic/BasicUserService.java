@@ -1,152 +1,144 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.entity.dto.binaryContent.BinaryContentCreateRequestDto;
-import com.sprint.mission.discodeit.entity.dto.user.UserCreateDto;
-import com.sprint.mission.discodeit.entity.dto.user.UserResponseDto;
-import com.sprint.mission.discodeit.entity.dto.user.UserUpdateRequestDto;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
 
-@Service
 @RequiredArgsConstructor
-@Primary
+@Service
 public class BasicUserService implements UserService {
-    private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
-    private final BinaryContentRepository binaryContentRepository;
-    private final ChannelRepository channelRepository;
 
-    @Override
-    public UserResponseDto createUser(UserCreateDto userCreateDto, BinaryContentCreateRequestDto binaryContentCreateRequestDto) {
-        User user = new User(userCreateDto);
-        userRepository.createUser(user);
+  private final UserRepository userRepository;
+  //
+  private final BinaryContentRepository binaryContentRepository;
+  private final UserStatusRepository userStatusRepository;
 
-        UserStatus userStatus = new UserStatus(user.getId(), Instant.now());
-        userStatusRepository.createUserStatus(userStatus);
+  @Override
+  public User create(UserCreateRequest userCreateRequest,
+      Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+    String username = userCreateRequest.username();
+    String email = userCreateRequest.email();
 
-        if (binaryContentCreateRequestDto.getData() != null) {
-            BinaryContent binaryContent = new BinaryContent(user.getId(), binaryContentCreateRequestDto.getContentType(), binaryContentCreateRequestDto.getFileContentType(), binaryContentCreateRequestDto.getData().get(0));
-            binaryContentRepository.createBinaryContent(binaryContent);
-            user.setProfileImage(binaryContent.getData());
-        }
-        return createUserResponseDto(user);
+    if (userRepository.existsByEmail(email)) {
+      throw new IllegalArgumentException("User with email " + email + " already exists");
+    }
+    if (userRepository.existsByUsername(username)) {
+      throw new IllegalArgumentException("User with username " + username + " already exists");
     }
 
-    @Override
-    public Optional<UserResponseDto> getUser(UUID id) {
-        User user = userRepository.getUser(id).orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 입니다."));
+    UUID nullableProfileId = optionalProfileCreateRequest
+        .map(profileRequest -> {
+          String fileName = profileRequest.fileName();
+          String contentType = profileRequest.contentType();
+          byte[] bytes = profileRequest.bytes();
+          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+              contentType, bytes);
+          return binaryContentRepository.save(binaryContent).getId();
+        })
+        .orElse(null);
+    String password = userCreateRequest.password();
 
-        BinaryContent profileImg = binaryContentRepository.findProfileImageByOwnerId(user.getId());
-        user.setProfileImage(profileImg.getData());
+    User user = new User(username, email, password, nullableProfileId);
+    User createdUser = userRepository.save(user);
 
-        return Optional.of(createUserResponseDto(user));
+    Instant now = Instant.now();
+    UserStatus userStatus = new UserStatus(createdUser.getId(), now);
+    userStatusRepository.save(userStatus);
+
+    return createdUser;
+  }
+
+  @Override
+  public UserDto find(UUID userId) {
+    return userRepository.findById(userId)
+        .map(this::toDto)
+        .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+  }
+
+  @Override
+  public List<UserDto> findAll() {
+    return userRepository.findAll()
+        .stream()
+        .map(this::toDto)
+        .toList();
+  }
+
+  @Override
+  public User update(UUID userId, UserUpdateRequest userUpdateRequest,
+      Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+
+    String newUsername = userUpdateRequest.newUsername();
+    String newEmail = userUpdateRequest.newEmail();
+    if (userRepository.existsByEmail(newEmail)) {
+      throw new IllegalArgumentException("User with email " + newEmail + " already exists");
+    }
+    if (userRepository.existsByUsername(newUsername)) {
+      throw new IllegalArgumentException("User with username " + newUsername + " already exists");
     }
 
-    @Override
-    public List<UserResponseDto> getAllUsers() {
-        List<UserResponseDto> userResponseDtos = new ArrayList<>();
+    UUID nullableProfileId = optionalProfileCreateRequest
+        .map(profileRequest -> {
+          Optional.ofNullable(user.getProfileId())
+              .ifPresent(binaryContentRepository::deleteById);
 
-        userRepository.getAllUsers().forEach(user -> {
-            BinaryContent profileImage = binaryContentRepository.findProfileImageByOwnerId(user.getId());
-            user.setProfileImage(profileImage.getData());
-            userResponseDtos.add(createUserResponseDto(user));
-        });
-        return userResponseDtos;
-    }
+          String fileName = profileRequest.fileName();
+          String contentType = profileRequest.contentType();
+          byte[] bytes = profileRequest.bytes();
+          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+              contentType, bytes);
+          return binaryContentRepository.save(binaryContent).getId();
+        })
+        .orElse(null);
 
-    @Override
-    public boolean modifyUser(UserUpdateRequestDto userUpdateRequestDto, BinaryContentCreateRequestDto binaryContentCreateRequestDto) {
-        boolean isPasswordChange = userUpdateRequestDto.getOldPassword() != null
-                && userUpdateRequestDto.getNewPassword() != null;
-        boolean isProfileChange = userUpdateRequestDto.getUserProfile() != null
-                && userUpdateRequestDto.getUserProfile().length > 0;
+    String newPassword = userUpdateRequest.newPassword();
+    user.update(newUsername, newEmail, newPassword, nullableProfileId);
 
-        boolean success = true;
+    return userRepository.save(user);
+  }
 
-        User user = userRepository.getUser(userUpdateRequestDto.getUserId()).orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 입니다."));
+  @Override
+  public void delete(UUID userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
-        // 비밀번호 변경
-        if (isPasswordChange) {
-            if (!user.getPassword().equals(userUpdateRequestDto.getOldPassword())) {
-                user.setPassword(userUpdateRequestDto.getNewPassword());
-                success = userRepository.modifyUser(user);
-            } else {
-                success = false;
-            }
-        }
+    Optional.ofNullable(user.getProfileId())
+        .ifPresent(binaryContentRepository::deleteById);
+    userStatusRepository.deleteByUserId(userId);
 
-        // 프로필 변경
-        if (isProfileChange) {
-//            바이너리 파일 수정 로직
-            BinaryContent binaryContent = new BinaryContent(userUpdateRequestDto.getUserId(), binaryContentCreateRequestDto.getContentType(), binaryContentCreateRequestDto.getFileContentType(), binaryContentCreateRequestDto.getData().get(0));
-            binaryContentRepository.createBinaryContent(binaryContent);
-        }
+    userRepository.deleteById(userId);
+  }
 
-        if (!isPasswordChange && !isProfileChange) {
-            System.out.println("변경할 내용이 없습니다.");
-            return false;
-        }
+  private UserDto toDto(User user) {
+    Boolean online = userStatusRepository.findByUserId(user.getId())
+        .map(UserStatus::isOnline)
+        .orElse(null);
 
-        UserStatus userStatus = userStatusRepository.findByUserId(user.getId()).orElseThrow(() -> new NoSuchElementException(("존재하지 않는 데이터 입니다.")));
-        userStatus.update(Instant.now());
-        userStatusRepository.updateUserStatus(userStatus);
-
-        return success;
-    }
-
-    @Override
-    public boolean deleteUser(UUID id) {
-        User user = userRepository.getUser(id).orElseThrow(() -> new NoSuchElementException("존재 하지 않는 유저입니다."));
-
-        user.getChannels().forEach(channel -> {
-            channel.removeMember(user);
-        });
-        if (!user.getChannels().isEmpty()) {
-            new HashSet<>(user.getChannels()).forEach(channel ->
-                    channelRepository.deleteChannel(channel.getId(), user.getId())
-            );
-        }
-
-        if (userRepository.deleteUser(id)) {
-            // UserStatus 삭제
-            userStatusRepository.findAllStatus().stream()
-                    .filter(status -> status.getUserId().equals(id))
-                    .forEach(status -> userStatusRepository.deleteUserStatus(status.getId()));
-
-            // 바이너리 콘텐츠 삭제
-            if (user.getProfileImage() != null) {
-                binaryContentRepository.deleteBinaryContentById(user.getId());
-            }
-
-        }
-        return true;
-    }
-
-    private UserResponseDto createUserResponseDto(User user) {
-        boolean isOnline = userStatusRepository.findByUserId(user.getId())
-                .map(UserStatus::isOnline)
-                .orElse(false);
-
-        return new UserResponseDto(
-                user.getId(),
-                user.getUserName(),
-                isOnline,
-                user.getProfileImage(),
-                user.getEmail(),
-                user.getCreatedAt(),
-                user.getUpdatedAt()
-        );
-    }
+    return new UserDto(
+        user.getId(),
+        user.getCreatedAt(),
+        user.getUpdatedAt(),
+        user.getUsername(),
+        user.getEmail(),
+        user.getProfileId(),
+        online
+    );
+  }
 }

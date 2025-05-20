@@ -1,94 +1,111 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.dto.binaryContent.BinaryContentType;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Stream;
 
-@Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
-public class FileBinaryContentRepository extends AbstractFileRepository<UUID, List<BinaryContent>> implements BinaryContentRepository {
+@Repository
+public class FileBinaryContentRepository implements BinaryContentRepository {
 
-    public FileBinaryContentRepository(@Value("${discodeit.repository.file-directory}") String filePath) {
-        super(filePath, "/binaryContent.ser");
+  private final Path DIRECTORY;
+  private final String EXTENSION = ".ser";
+
+  public FileBinaryContentRepository(
+      @Value("${discodeit.repository.file-directory:data}") String fileDirectory
+  ) {
+    this.DIRECTORY = Paths.get(System.getProperty("user.dir"), fileDirectory,
+        BinaryContent.class.getSimpleName());
+    if (Files.notExists(DIRECTORY)) {
+      try {
+        Files.createDirectories(DIRECTORY);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
+  }
 
-    @Override
-    public BinaryContent createBinaryContent(BinaryContent binaryContent) {
-        Map<UUID, List<BinaryContent>> contents = loadFromFile();
+  private Path resolvePath(UUID id) {
+    return DIRECTORY.resolve(id + EXTENSION);
+  }
 
-        List<BinaryContent> ownerContents = contents.computeIfAbsent(
-                binaryContent.getOwnerId(),
-                k -> new ArrayList<>()
-        );
-
-        // 프로필 이미지인 경우 기존 프로필 이미지 제거
-        if (binaryContent.getContentType() == BinaryContentType.PROFILE_IMAGE) {
-            ownerContents.removeIf(content ->
-                    content.getContentType() == BinaryContentType.PROFILE_IMAGE);
-        }
-
-        ownerContents.add(binaryContent);
-        saveToFile(contents);
-        return binaryContent;
+  @Override
+  public BinaryContent save(BinaryContent binaryContent) {
+    Path path = resolvePath(binaryContent.getId());
+    try (
+        FileOutputStream fos = new FileOutputStream(path.toFile());
+        ObjectOutputStream oos = new ObjectOutputStream(fos)
+    ) {
+      oos.writeObject(binaryContent);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+    return binaryContent;
+  }
 
-
-    @Override
-    public BinaryContent findProfileImageByOwnerId(UUID ownerId) {
-        Map<UUID, List<BinaryContent>> contents = loadFromFile();
-        List<BinaryContent> ownerContents = contents.get(ownerId);
-
-        if (ownerContents == null) {
-            return null;
-        }
-
-        return ownerContents.stream()
-                .filter(content -> content.getContentType() == BinaryContentType.PROFILE_IMAGE)
-                .findFirst()
-                .orElse(null);
+  @Override
+  public Optional<BinaryContent> findById(UUID id) {
+    BinaryContent binaryContentNullable = null;
+    Path path = resolvePath(id);
+    if (Files.exists(path)) {
+      try (
+          FileInputStream fis = new FileInputStream(path.toFile());
+          ObjectInputStream ois = new ObjectInputStream(fis)
+      ) {
+        binaryContentNullable = (BinaryContent) ois.readObject();
+      } catch (IOException | ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
     }
+    return Optional.ofNullable(binaryContentNullable);
+  }
 
-
-    @Override
-    public List<BinaryContent> findAllAttachmentsByOwnerId(UUID ownerId) {
-        Map<UUID, List<BinaryContent>> contents = loadFromFile();
-        List<BinaryContent> ownerContents = contents.get(ownerId);
-
-        if (ownerContents == null) {
-            return new ArrayList<>();
-        }
-
-        return ownerContents.stream()
-                .filter(content -> content.getContentType() == BinaryContentType.MESSAGE_ATTACHMENT)
-                .collect(Collectors.toList());
-    }
-
-
-    @Override
-    public boolean deleteBinaryContentById(UUID id) {
-        Map<UUID, List<BinaryContent>> contents = loadFromFile();
-        boolean deleted = false;
-
-        for (List<BinaryContent> ownerContents : contents.values()) {
-            if (ownerContents.removeIf(content -> content.getId().equals(id))) {
-                deleted = true;
-                break;
+  @Override
+  public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
+    try (Stream<Path> paths = Files.list(DIRECTORY)) {
+      return paths
+          .filter(path -> path.toString().endsWith(EXTENSION))
+          .map(path -> {
+            try (
+                FileInputStream fis = new FileInputStream(path.toFile());
+                ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+              return (BinaryContent) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+              throw new RuntimeException(e);
             }
-        }
-
-        if (deleted) {
-            // 빈 리스트 제거
-            contents.entrySet().removeIf(entry -> entry.getValue().isEmpty());
-            saveToFile(contents);
-        }
-
-        return deleted;
+          })
+          .filter(content -> ids.contains(content.getId()))
+          .toList();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+  }
 
+  @Override
+  public boolean existsById(UUID id) {
+    Path path = resolvePath(id);
+    return Files.exists(path);
+  }
+
+  @Override
+  public void deleteById(UUID id) {
+    Path path = resolvePath(id);
+    try {
+      Files.delete(path);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

@@ -1,72 +1,93 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.common.Period;
-import com.sprint.mission.discodeit.entity.dto.channel.ChannelCreatePrivateDto;
-import com.sprint.mission.discodeit.entity.dto.channel.ChannelType;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 import java.io.Serializable;
-import java.util.*;
+import java.time.Instant;
+import java.util.UUID;
 
+@Schema(
+        name = "Channel",
+        description = "채널 정보를 담고 있는 엔티티"
+)
 @Getter
-public class Channel extends Period implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class Channel implements Serializable {
 
-    private User channelAdmin;
-    private String name;
-    private String description;
-    private Set<User> members;
-    private List<Message> messages;
-    private ChannelType type;
+  private static final long serialVersionUID = 1L;
 
-    public Channel() {}
+  @Schema(
+          description = "채널의 고유 식별자",
+          type = "string",
+          format = "uuid",
+          example = "123e4567-e89b-12d3-a456-426614174000"
+  )
+  private UUID id;
 
-    public Channel(User user, String name, String description) {
-        super();
-        this.channelAdmin = user;
-        this.name = name;
-        this.description = description;
-        this.type = ChannelType.PUBLIC;
-        this.members = new HashSet<>();
-        this.messages = new ArrayList<>();
-        user.getChannels().add(this);
+  @Schema(
+          description = "채널 생성 시간",
+          type = "string",
+          format = "date-time",
+          example = "2024-03-20T09:12:28Z"
+  )
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private Instant createdAt;
+
+  @Schema(
+          description = "채널 최종 수정 시간",
+          type = "string",
+          format = "date-time",
+          example = "2024-03-20T09:12:28Z"
+  )
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private Instant updatedAt;
+
+  @Schema(
+          description = "채널 타입(PUBLIC/PRIVATE)",
+          type = "string",
+          example = "PUBLIC"
+  )
+  private ChannelType type;
+
+  @Schema(
+          description = "채널 이름",
+          type = "string",
+          example = "일반",
+          minLength = 1,
+          maxLength = 100
+  )
+  private String name;
+
+  @Schema(
+          description = "채널 설명",
+          type = "string",
+          example = "일반적인 대화를 나누는 채널입니다"
+  )
+  private String description;
+
+  public Channel(ChannelType type, String name, String description) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    //
+    this.type = type;
+    this.name = name;
+    this.description = description;
+  }
+
+  public void update(String newName, String newDescription) {
+    boolean anyValueUpdated = false;
+    if (newName != null && !newName.equals(this.name)) {
+      this.name = newName;
+      anyValueUpdated = true;
+    }
+    if (newDescription != null && !newDescription.equals(this.description)) {
+      this.description = newDescription;
+      anyValueUpdated = true;
     }
 
-    public Channel(ChannelCreatePrivateDto channelCreatePrivateDto, User user) {
-        super();
-        this.channelAdmin = user;
-        this.members = new HashSet<>();
-        this.messages = new ArrayList<>();
-        this.type = ChannelType.PRIVATE;
+    if (anyValueUpdated) {
+      this.updatedAt = Instant.now();
     }
-
-    public void addMember(User user) {
-        if (this.members.add(user)) {
-            user.getChannels().add(this);
-        }
-    }
-
-    public void removeMember(User user) {
-        this.members.remove(user);
-    }
-
-    public UUID getId() {
-        return super.getId();
-    }
-
-    public void setChannelAdmin(User channelAdmin) {
-        this.channelAdmin = channelAdmin;
-        update();
-    }
-
-    public void setName(String name) {
-        this.name = name;
-        update();
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-        update();
-    }
-
+  }
 }

@@ -1,124 +1,110 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.dto.channel.ChannelType;
-import com.sprint.mission.discodeit.entity.dto.channel.GetPrivateChannelRequestDto;
-import com.sprint.mission.discodeit.entity.dto.channel.GetPublicChannelRequestDto;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-@Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
-public class FileChannelRepository extends AbstractFileRepository<UUID, Channel> implements ChannelRepository {
+@Repository
+public class FileChannelRepository implements ChannelRepository {
 
-    public FileChannelRepository(@Value("${discodeit.repository.file-directory}") String filePath) {
-        super(filePath, "/channel.ser");
+  private final Path DIRECTORY;
+  private final String EXTENSION = ".ser";
+
+  public FileChannelRepository(
+      @Value("${discodeit.repository.file-directory:data}") String fileDirectory
+  ) {
+    this.DIRECTORY = Paths.get(System.getProperty("user.dir"), fileDirectory,
+        Channel.class.getSimpleName());
+    if (Files.notExists(DIRECTORY)) {
+      try {
+        Files.createDirectories(DIRECTORY);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
+  }
 
-    @Override
-    public Channel createChannel(Channel channel) {
-        return save(channel.getId(), channel);
+  private Path resolvePath(UUID id) {
+    return DIRECTORY.resolve(id + EXTENSION);
+  }
+
+  @Override
+  public Channel save(Channel channel) {
+    Path path = resolvePath(channel.getId());
+    try (
+        FileOutputStream fos = new FileOutputStream(path.toFile());
+        ObjectOutputStream oos = new ObjectOutputStream(fos)
+    ) {
+      oos.writeObject(channel);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+    return channel;
+  }
 
-    @Override
-    public Optional<Channel> getChannel(GetPublicChannelRequestDto dto) {
-        Map<UUID, Channel> channels = loadFromFile();
-        return Optional.ofNullable(channels.get(dto.getChannelId()));
+  @Override
+  public Optional<Channel> findById(UUID id) {
+    Channel channelNullable = null;
+    Path path = resolvePath(id);
+    if (Files.exists(path)) {
+      try (
+          FileInputStream fis = new FileInputStream(path.toFile());
+          ObjectInputStream ois = new ObjectInputStream(fis)
+      ) {
+        channelNullable = (Channel) ois.readObject();
+      } catch (IOException | ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
     }
+    return Optional.ofNullable(channelNullable);
+  }
 
-    @Override
-    public Optional<Channel> getChannel(GetPrivateChannelRequestDto dto) {
-        Map<UUID, Channel> channels = loadFromFile();
-        return Optional.ofNullable(channels.get(dto.getChannelId()));
+  @Override
+  public List<Channel> findAll() {
+    try (Stream<Path> paths = Files.list(DIRECTORY)) {
+      return paths
+          .filter(path -> path.toString().endsWith(EXTENSION))
+          .map(path -> {
+            try (
+                FileInputStream fis = new FileInputStream(path.toFile());
+                ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+              return (Channel) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+              throw new RuntimeException(e);
+            }
+          })
+          .toList();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    @Override
-    public List<Channel> findAllByUserId(UUID userId) {
-        return loadFromFile().values().stream()
-                .filter(channel -> isUserInChannel(channel, userId))
-                .collect(Collectors.toList());
+  @Override
+  public boolean existsById(UUID id) {
+    Path path = resolvePath(id);
+    return Files.exists(path);
+  }
+
+  @Override
+  public void deleteById(UUID id) {
+    Path path = resolvePath(id);
+    try {
+      Files.delete(path);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-
-    @Override
-    public boolean modifyChannel(Channel channel) {
-        Map<UUID, Channel> channels = loadFromFile();
-        if (!channels.containsKey(channel.getId())) {
-            return false;
-        }
-        channels.put(channel.getId(), channel);
-        saveToFile(channels);
-        return true;
-    }
-
-    @Override
-    public boolean deleteChannel(UUID id, UUID userId) {
-        Map<UUID, Channel> channels = loadFromFile();
-        Channel channel = channels.get(id);
-
-        if (channel != null && isAdmin(channel, userId)) {
-            cleanupChannelData(channel);
-            channels.remove(id);
-            saveToFile(channels);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean kickOutChannel(UUID channelId, User kickUser, User admin) {
-        Map<UUID, Channel> channels = loadFromFile();
-        Channel channel = channels.get(channelId);
-
-        if (channel != null && isAdmin(channel, admin.getId())) {
-            channel.removeMember(kickUser);
-            saveToFile(channels);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean joinChannel(UUID channelId, User user) {
-        Map<UUID, Channel> channels = loadFromFile();
-        Channel channel = channels.get(channelId);
-
-        if (channel == null) {
-            return false;
-        }
-
-        if (channel.getMembers().contains(user)) {
-            return false;
-        }
-
-        channel.addMember(user);
-        saveToFile(channels);
-        return true;
-    }
-
-    // 내부 헬퍼 메서드
-    private boolean isAdmin(Channel channel, UUID userId) {
-        return channel.getChannelAdmin().getId().equals(userId);
-    }
-
-    private boolean isUserInChannel(Channel channel, UUID userId) {
-        return channel.getType() == ChannelType.PUBLIC ||
-                channel.getMembers().stream()
-                        .anyMatch(member -> member.getId().equals(userId));
-    }
-
-    private void cleanupChannelData(Channel channel) {
-        channel.getMembers().forEach(member -> member.getChannels().remove(channel));
-        channel.getMembers().clear();
-        channel.getMessages().clear();
-    }
-
+  }
 }
