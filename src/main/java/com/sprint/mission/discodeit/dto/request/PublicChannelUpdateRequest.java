@@ -1,7 +1,11 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import java.util.UUID;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-public record PublicChannelUpdateRequest(UUID channelId, String name, String description) {
+@Schema(description = "채널 수정 요청 DTO")
+public record PublicChannelUpdateRequest(
+    String newName,
+    String newDescription
+) {
 
 }

@@ -62,7 +62,7 @@ class BasicAuthServiceTest {
         .usingRecursiveComparison()
         .isEqualTo(toUserResponse(user));
 
-    verify(userRepository).findByName(loginRequest.userName());
+    verify(userRepository).findByName(loginRequest.username());
     verify(userStatus).updateLastActiveAt();
   }
 

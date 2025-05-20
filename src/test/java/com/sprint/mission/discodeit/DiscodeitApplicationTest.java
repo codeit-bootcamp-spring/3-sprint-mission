@@ -72,7 +72,7 @@ public class DiscodeitApplicationTest {
     Message message = messageService.create(messageRequest, List.of());
     assertNotNull(message.getId(), "메시지 ID 생성 확인");
     assertEquals("안녕하세요.", message.getContent(), "메시지 내용 확인");
-    assertEquals(user.id(), message.getUserId(), "메시지 작성자 확인");
+    assertEquals(user.id(), message.getAuthorId(), "메시지 작성자 확인");
     assertEquals(channel.id(), message.getChannelId(), "메시지 채널 확인");
 
     // 5. 사용자 목록에 존재 확인
@@ -84,7 +84,7 @@ public class DiscodeitApplicationTest {
     assertTrue(channels.stream().anyMatch(c -> c.id().equals(channel.id())), "채널 목록 포함 여부 확인");
 
     // 7. 메시지 목록에 생성된 메시지 존재 확인
-    List<Message> messages = messageService.searchMessages(null, null, null);
+    List<Message> messages = messageService.findAllByChannelId(channel.id());
     assertTrue(messages.stream().anyMatch(m -> m.getId().equals(message.getId())),
         "메시지 목록 포함 여부 확인");
   }

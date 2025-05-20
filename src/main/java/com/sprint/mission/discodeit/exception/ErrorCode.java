@@ -6,10 +6,7 @@ public enum ErrorCode {
   UNAUTHORIZED("error.unauthorized", "E401"),
   FORBIDDEN("error.forbidden", "E403"),
   ALREADY_EXISTS("error.already_exists", "E409"),
-  PROCESSING_ERROR("error.processing_error", "E500"),
-
-  INVALID_NAME("error.auth.invalid_name", "A001"),
-  INVALID_PASSWORD("error.auth.invalid_password", "A002");
+  PROCESSING_ERROR("error.processing_error", "E500");
 
   private final String messageKey;
   private final String code;

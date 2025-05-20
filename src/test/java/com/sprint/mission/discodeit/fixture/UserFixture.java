@@ -86,6 +86,6 @@ public class UserFixture {
       profileImageId = savedProfileImage.getId();
     }
 
-    return User.create(dto.email(), dto.name(), dto.password(), profileImageId);
+    return User.create(dto.email(), dto.username(), dto.password(), profileImageId);
   }
 }
