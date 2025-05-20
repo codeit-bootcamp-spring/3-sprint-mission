@@ -21,15 +21,27 @@ import java.util.UUID;
 public class ReadStatus extends BaseEntity {
     private final UUID userId;
     private final UUID channelId;
+    private Instant lastReadAt;
 
     public ReadStatus(UUID userId, UUID channelId) {
         super();
         this.userId = userId;
         this.channelId = channelId;
+        this.lastReadAt = Instant.now();
+    }
+
+    public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
+        this.userId = userId;
+        this.channelId = channelId;
+        this.lastReadAt = lastReadAt;
     }
 
     @Override
     public void setUpdatedAt(Instant updatedAt) {
         super.setUpdatedAt(updatedAt);
+    }
+
+    public void setLastReadAt(Instant lastReadAt) {
+        this.lastReadAt = lastReadAt;
     }
 }

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.Dto.channel.*;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,16 +19,16 @@ import java.util.UUID;
  */
 public interface ChannelService {
 
-    ChannelCreateResponse createChannel(PrivateChannelCreateRequest request);
+    ResponseEntity<ChannelCreateResponse> createChannel(PrivateChannelCreateRequest request);
 
-    ChannelCreateResponse createChannel(PublicChannelCreateRequest request);
+    ResponseEntity<ChannelCreateResponse> createChannel(PublicChannelCreateRequest request);
 
     ChannelFindResponse find(ChannelFindRequest request);
 
-    List<ChannelFindResponse> findAllByUserId(ChannelFindByUserIdRequest request);
+    ResponseEntity<?> findAllByUserId(UUID userId);
 
-    void update(ChannelUpdateRequest request);
+    ResponseEntity<?> update(UUID channelId, ChannelUpdateRequest request);
 
-    void deleteChannel(UUID channelId);
+    ResponseEntity<?> deleteChannel(UUID channelId);
 
 }

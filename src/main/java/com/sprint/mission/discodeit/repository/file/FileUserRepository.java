@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.util.FilePathProperties;
-import com.sprint.mission.discodeit.util.FileSerializer;
+import com.sprint.mission.discodeit.helper.FilePathProperties;
+import com.sprint.mission.discodeit.helper.FileSerializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -19,27 +19,21 @@ import java.util.UUID;
 
 
 /**
- * packageName    : com.sprint.mission.discodeit.refactor.repository.file
- * fileName       : FileUserRepository2
- * author         : doungukkim
- * date           : 2025. 4. 17.
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2025. 4. 17.        doungukkim       최초 생성
+ * packageName    : com.sprint.mission.discodeit.refactor.repository.file fileName       :
+ * FileUserRepository2 author         : doungukkim date           : 2025. 4. 17. description    :
+ * =========================================================== DATE              AUTHOR NOTE
+ * ----------------------------------------------------------- 2025. 4. 17.        doungukkim 최초 생성
  */
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
 @RequiredArgsConstructor
 public class FileUserRepository implements UserRepository {
+
     private final FilePathProperties filePathProperties;
-
-
 
     @Override
     public User createUserByName(String name, String email, String password) {
-        User user = new User(name, email, password );
+        User user = new User(name, email, password);
         Path path = filePathProperties.getUserFilePath(user.getId());
         FileSerializer.writeFile(path, user);
         return user;
@@ -59,7 +53,7 @@ public class FileUserRepository implements UserRepository {
         Path path = filePathProperties.getUserFilePath(userId);
 
         if (!Files.exists(path)) {
-            throw new RuntimeException("nothing exists");
+            return null;
         }
         return FileSerializer.readFile(path, User.class);
     }
@@ -84,11 +78,12 @@ public class FileUserRepository implements UserRepository {
                             Object data = ois.readObject();
                             return (User) data;
                         } catch (IOException | ClassNotFoundException exception) {
-                            throw new RuntimeException("파일을 읽어오지 못했습니다: FileUserRepository.findAllUsers",exception);
+                            throw new RuntimeException("파일을 읽어오지 못했습니다: FileUserRepository.findAllUsers",
+                                    exception);
                         }
                     }).toList();
         } catch (IOException e) {
-            throw new RuntimeException("유저들을 리스트로 만드는 과정에 문제 발생: FileChannelRepository.findAllUsers",e);
+            throw new RuntimeException("유저들을 리스트로 만드는 과정에 문제 발생: FileChannelRepository.findAllUsers", e);
         }
     }
 
@@ -104,7 +99,7 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public void updateUserById(UUID userId, String name) {
+    public void updateNameById(UUID userId, String name) {
         Path path = filePathProperties.getUserFilePath(userId);
         if (!Files.exists(path)) {
             throw new RuntimeException("파일 없음: fileUserRepository.updateUserById");
@@ -115,10 +110,32 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
+    public void updateEmailById(UUID userId, String email) {
+        Path path = filePathProperties.getUserFilePath(userId);
+        if (!Files.exists(path)) {
+            throw new RuntimeException("파일 없음: fileUserRepository.updateEmailById");
+        }
+        User user = FileSerializer.readFile(path, User.class);
+        user.setEmail(email);
+        FileSerializer.writeFile(path, user);
+    }
+
+    @Override
+    public void updatePasswordById(UUID userId, String password) {
+        Path path = filePathProperties.getUserFilePath(userId);
+        if (!Files.exists(path)) {
+            throw new RuntimeException("파일 없음: fileUserRepository.updateEmailById");
+        }
+        User user = FileSerializer.readFile(path, User.class);
+        user.setPassword(password);
+        FileSerializer.writeFile(path, user);
+    }
+
+    @Override
     public void deleteUserById(UUID userId) {
         Path path = filePathProperties.getUserFilePath(userId);
 
-        try{
+        try {
             Files.delete(path);
         } catch (IOException e) {
             throw new RuntimeException("삭제중 오류 발생: FileUserRepository.deleteUserById", e);

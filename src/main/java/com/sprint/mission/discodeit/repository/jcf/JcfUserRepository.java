@@ -10,15 +10,10 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 
 /**
- * packageName    : com.sprint.mission.discodeit.repository.jcf
- * fileName       : JcfUserRepository2
- * author         : doungukkim
- * date           : 2025. 4. 17.
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2025. 4. 17.        doungukkim       최초 생성
+ * packageName    : com.sprint.mission.discodeit.repository.jcf fileName       : JcfUserRepository2
+ * author         : doungukkim date           : 2025. 4. 17. description    :
+ * =========================================================== DATE              AUTHOR NOTE
+ * ----------------------------------------------------------- 2025. 4. 17.        doungukkim 최초 생성
  */
 
 @Repository
@@ -50,7 +45,7 @@ public class JcfUserRepository implements UserRepository {
 
     public User findUserById(UUID userId) {
         if (data.get(userId) == null) {
-            throw new RuntimeException("no user exits");
+            return null;
         }
         return data.get(userId);
     }
@@ -59,11 +54,25 @@ public class JcfUserRepository implements UserRepository {
         return data.values().stream().toList();
     }
 
-    public void updateUserById(UUID userId, String name) {
+    public void updateNameById(UUID userId, String name) {
         if (data.get(userId) == null) {
             throw new RuntimeException("파일 없음: JcfUserRepository.updateUserById");
         }
         data.get(userId).setUsername(name);
+    }
+
+    public void updateEmailById(UUID userId, String email) {
+        if (data.get(userId) == null) {
+            throw new RuntimeException("파일 없음: JcfUserRepository.updateEmailById");
+        }
+        data.get(userId).setEmail(email);
+    }
+
+    public void updatePasswordById(UUID userId, String password) {
+        if (data.get(userId) == null) {
+            throw new RuntimeException("파일 없음: JcfUserRepository.updateEmailById");
+        }
+        data.get(userId).setPassword(password);
     }
 
     public void deleteUserById(UUID userId) {

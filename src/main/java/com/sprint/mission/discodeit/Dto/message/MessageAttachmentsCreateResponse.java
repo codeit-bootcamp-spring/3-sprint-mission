@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.Dto.message;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,5 +15,12 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 29.        doungukkim       최초 생성
  */
-public record MessageAttachmentsCreateResponse(UUID id, UUID senderId, UUID channelId, List<UUID> attachmentIds) {
+public record MessageAttachmentsCreateResponse(
+        UUID id,
+        Instant createdAt,
+        Instant updatedAt,
+        String content,
+        UUID channelId,
+        UUID authorId,
+        List<UUID> attachmentIds) {
 }

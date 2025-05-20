@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.Dto.binaryContent;
 
 import lombok.Getter;
+import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Objects;
 
@@ -16,10 +18,7 @@ import java.util.Objects;
  * 2025. 4. 28.        doungukkim       최초 생성
  */
 
-public record BinaryContentCreateRequest(byte[] attachment) {
-    public BinaryContentCreateRequest {
-        Objects.requireNonNull(attachment, "no attachment in request");
-    }
+public record BinaryContentCreateRequest(String fileName, String contentType, byte[] bytes) {
 }
 
 

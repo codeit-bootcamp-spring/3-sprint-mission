@@ -17,12 +17,10 @@ import java.util.UUID;
  * 2025. 4. 28.        doungukkim       최초 생성
  */
 
-public record MessageUpdateRequest
-(    UUID messageId,
-    String content) {
+public record MessageUpdateRequest(
+        String newContent) {
 
     public MessageUpdateRequest {
-        Objects.requireNonNull(messageId, "no messageId in request");
-        Objects.requireNonNull(content, "no Content in request");
+        Objects.requireNonNull(newContent, "no Content in request");
     }
 }

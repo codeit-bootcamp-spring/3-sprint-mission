@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.Dto.readStatus;
 
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -15,10 +16,12 @@ import java.util.UUID;
  * 2025. 4. 28.        doungukkim       최초 생성
  */
 
-public record ReadStatusCreateRequest(UUID userId, UUID channelId) {
+public record ReadStatusCreateRequest(UUID userId, UUID channelId, Instant lastReadAt) {
+
     public ReadStatusCreateRequest {
         Objects.requireNonNull(userId, "no userId in request");
         Objects.requireNonNull(channelId, "no channelId in request");
+        Objects.requireNonNull(lastReadAt, "no lasReadAt in request");
     }
 }
 

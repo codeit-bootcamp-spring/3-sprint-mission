@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.util.FilePathProperties;
-import com.sprint.mission.discodeit.util.FileSerializer;
+import com.sprint.mission.discodeit.helper.FilePathProperties;
+import com.sprint.mission.discodeit.helper.FileSerializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -35,10 +35,9 @@ public class FileMessageRepository implements MessageRepository {
     private final FilePathProperties pathUtil;
 
 
-
     @Override
-    public Message createMessageWithAttachments(UUID userId, UUID channelId, List<UUID> attachments) {
-        Message message = new Message(userId, channelId, attachments);
+    public Message createMessageWithAttachments(UUID userId, UUID channelId, List<UUID> attachments, String content) {
+        Message message = new Message(userId, channelId, attachments, content);
         Path path = pathUtil.getMessageFilePath(message.getId());
         FileSerializer.writeFile(path, message);
         return message;
@@ -76,7 +75,7 @@ public class FileMessageRepository implements MessageRepository {
                         }
                     }).toList();
         } catch (IOException e) {
-            throw new RuntimeException("리스트로 만드는 과정에 문제 발생: FileReadStatusRepository.findReadStatusByChannelId",e);
+            throw new RuntimeException("리스트로 만드는 과정에 문제 발생: FileReadStatusRepository.findReadStatusByChannelId", e);
         }
 
         List<Message> selectedMessage = new ArrayList<>();
@@ -87,7 +86,6 @@ public class FileMessageRepository implements MessageRepository {
         }
         return selectedMessage;
     }
-
 
 
     @Override
@@ -118,11 +116,11 @@ public class FileMessageRepository implements MessageRepository {
                             Object data = ois.readObject();
                             return (Message) data;
                         } catch (IOException | ClassNotFoundException exception) {
-                            throw new RuntimeException("problem with reading: FileMessageRepository.findAllMessages",exception);
+                            throw new RuntimeException("problem with reading: FileMessageRepository.findAllMessages", exception);
                         }
                     }).toList();
         } catch (IOException e) {
-            throw new RuntimeException("problem with creating List: FileMessageRepository.findAllMessages",e);
+            throw new RuntimeException("problem with creating List: FileMessageRepository.findAllMessages", e);
         }
     }
 
@@ -144,10 +142,10 @@ public class FileMessageRepository implements MessageRepository {
     public void deleteMessageById(UUID messageId) {
         Objects.requireNonNull(messageId, "no messageId in param");
         Path path = pathUtil.getMessageFilePath(messageId);
-        try{
+        try {
             Files.delete(path);
         } catch (IOException e) {
-            throw new RuntimeException("problem while deleting",e);
+            throw new RuntimeException("problem while deleting", e);
         }
     }
 }

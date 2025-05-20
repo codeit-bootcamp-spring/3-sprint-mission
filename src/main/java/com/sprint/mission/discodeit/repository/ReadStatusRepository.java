@@ -20,16 +20,19 @@ import java.util.UUID;
 // 채널별로 객체 생성
 public interface ReadStatusRepository {
 
-    ReadStatus createByUserId(UUID userId, UUID channelId);
+    ReadStatus createByUserId(UUID userId, UUID channelId, Instant lastReadAt);
+
     List<ReadStatus> createByUserId(List<UUID> userIds, UUID channelId);
-    List<ReadStatus> findReadStatusesByChannelId(UUID channelId);
+
+    List<ReadStatus> findReadStatusesByChannelId(UUID channelId); // emptyList
+
     void deleteReadStatusById(UUID readStatusId); // file, jcf : throw exception
 
-    ReadStatus findById(UUID readStatusId);
+    ReadStatus findById(UUID readStatusId); //null
 
     List<ReadStatus> findAllByUserId(UUID userId);
 
-    void updateUpdatedTime(UUID readStatusId, Instant newTime);
+    void updateUpdatedTime(UUID userId, Instant newLastReadAt);
 
 
 }

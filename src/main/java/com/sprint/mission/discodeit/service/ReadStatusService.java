@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.Dto.readStatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.Dto.readStatus.ReadStatusCreateResponse;
 import com.sprint.mission.discodeit.Dto.readStatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,13 +24,14 @@ import java.util.UUID;
 
 public interface ReadStatusService {
 
-    ReadStatusCreateResponse create(ReadStatusCreateRequest request);
+    ResponseEntity<?> create(ReadStatusCreateRequest request);
+
 
     ReadStatus findById(UUID readStatusId);
 
-    List<ReadStatus> findAllByUserId(UUID userId);
+    ResponseEntity<?> findAllByUserId(UUID userId);
 
-    void update(ReadStatusUpdateRequest request);
+    ResponseEntity<?> update(UUID readStatusId, ReadStatusUpdateRequest request);
 
     void delete(UUID readStatusId);
 }
