@@ -1,8 +1,14 @@
 package com.sprint.mission.discodeit.service.file;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
@@ -16,64 +22,60 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public User createUser(String userName, String email, String password) {
-        if (userName == null || userName.isEmpty()) {
+    public User createUser(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> binaryContentCreateRequest) {
+        if (userCreateRequest.username() == null || userCreateRequest.username().isEmpty()) {
             throw new IllegalArgumentException("사용자 이름은 비어있을 수 없습니다.");
         }
-        if (email == null || email.isEmpty()) {
+        if (userCreateRequest.email() == null || userCreateRequest.email().isEmpty()) {
             throw new IllegalArgumentException("이메일은 비어있을 수 없습니다.");
         }
-        if (password == null || password.isEmpty()) {
+        if (userCreateRequest.password() == null || userCreateRequest.password().isEmpty()) {
             throw new IllegalArgumentException("비밀번호는 비어있을 수 없습니다.");
         }
-        User user = new User(userName, email, password);
+        User user = new User(userCreateRequest.username(), userCreateRequest.email(), userCreateRequest.password(), null);
         return userRepository.save(user);
     }
 
     @Override
-    public User getUserById(UUID userId) {
-        return userRepository.findById(userId);
+    public UserDto getUserById(UUID userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        User user = userOptional.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자 ID입니다."));
+        return new UserDto(user.getUserId(), user.getCreatedAt(), user.getUpdatedAt(), user.getUsername(), user.getEmail(), user.getProfileId(), false);
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public UserDto getUserByEmail(String email) {
+        Optional<User> userOptional = userRepository.findAll().stream()
+                .filter(user -> user.getEmail().equals(email))
+                .findFirst();
+        User user = userOptional.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자 이메일입니다."));
+        return new UserDto(user.getUserId(), user.getCreatedAt(), user.getUpdatedAt(), user.getUsername(), user.getEmail(), user.getProfileId(), false);
     }
 
     @Override
-    public void updateUserName(UUID userId, String newUsername) {
-        User user = userRepository.findById(userId);
-        if (user == null) {
-            throw new IllegalArgumentException("존재하지 않는 사용자 ID입니다.");
-        }
-        user.updateUserName(newUsername);
-        userRepository.save(user);
+    public List<UserDto> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                    .map(user -> new UserDto(user.getUserId(), user.getCreatedAt(), user.getUpdatedAt(), user.getUsername(), user.getEmail(), user.getProfileId(), false))
+                    .collect(Collectors.toList());
     }
 
     @Override
-    public void updateUserEmail(UUID userId, String newEmail) {
-        User user = userRepository.findById(userId);
-        if (user == null) {
-            throw new IllegalArgumentException("존재하지 않는 사용자 ID입니다.");
-        }
-        user.updateEmail(newEmail);
-        userRepository.save(user);
-    }
+    public User updateUser(UUID userId, UserUpdateRequest userUpdateRequest, Optional<BinaryContentCreateRequest> profileCreateRequest) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        User user = userOptional.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자 ID입니다."));
 
-    @Override
-    public void updateUserPassword(UUID userId, String newPassword) {
-        if (newPassword == null) {
-            throw new IllegalArgumentException("비밀번호는 null일 수 없습니다.");
+        if (userUpdateRequest.newUsername() != null && !userUpdateRequest.newUsername().isEmpty()) {
+            user.updateUsername(userUpdateRequest.newUsername());
         }
-        if (newPassword.isEmpty()) {
-            throw new IllegalArgumentException("비밀번호는 빈 값일 수 없습니다.");
+        if (userUpdateRequest.newEmail() != null && !userUpdateRequest.newEmail().isEmpty()) {
+            user.updateEmail(userUpdateRequest.newEmail());
         }
-        User user = userRepository.findById(userId);
-        if (user == null) {
-            throw new IllegalArgumentException("존재하지 않는 사용자 ID입니다.");
+        if (userUpdateRequest.newPassword() != null && !userUpdateRequest.newPassword().isEmpty()) {
+            user.updatePassword(userUpdateRequest.newPassword());
         }
-        user.updatePassword(newPassword);
-        userRepository.save(user);
+
+        return userRepository.save(user);
     }
 
     @Override

@@ -1,43 +1,61 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ReadStatus;
+
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
-    private final UserRepository userRepository;
-    private final Map<UUID, Set<UUID>> channelParticipants = new HashMap<>();
-
-    public BasicChannelService(UserRepository userRepository, ChannelRepository channelRepository) {
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-    }
+    private final ReadStatusRepository readStatusRepository;
+    private final MessageRepository messageRepository;
 
     @Override
-    public Channel createChannel(String channelName, boolean isPrivate, String password, UUID ownerUserId) {
-        User owner = userRepository.findById(ownerUserId);
-        if (owner == null) throw new IllegalArgumentException("존재하지 않는 소유자입니다.");
-        Channel channel = new Channel(channelName, isPrivate, password, ownerUserId);
-        Channel saved = channelRepository.save(channel);
-        channelParticipants.put(saved.getChannelId(), new HashSet<>(Collections.singleton(ownerUserId)));
-        return saved;
+    public Channel createChannel(PublicChannelCreateRequest request) {
+        String channelName = request.channelName();
+        String password = request.password();
+        UUID ownerChannelId = request.ownerChannelId();
+        
+        Channel channel = new Channel(ChannelType.PUBLIC,channelName, password,ownerChannelId);
+        
+        return channelRepository.save(channel);
+    }
+    @Override
+    public Channel createChannel(PrivateChannelCreateRequest request) {
+        Channel channel = new Channel(ChannelType.PRIVATE, null, null, null);
+        Channel createdChannel = channelRepository.save(channel);
+
+        request.participantIds().stream()
+                .map(userId -> new ReadStatus(userId, createdChannel.getChannelId(), Instant.MIN))
+                .forEach(readStatusRepository::save);
+
+        return createdChannel;
     }
 
     @Override
     public Channel getChannelById(UUID channelId) {
-        return channelRepository.findById(channelId);
+        return channelRepository.findById(channelId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
     }
 
     @Override
@@ -46,53 +64,27 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public void updateChannel(UUID channelId, String newName, boolean isPrivate, String password) {
-        Channel channel = channelRepository.findById(channelId);
-        if (channel != null) {
-            channel.updateChannelName(newName);
-            channel.updatePrivate(isPrivate);
-            channel.updatePassword(password);
-            channelRepository.save(channel);
-        }
+    public Channel updateChannel(PublicChannelUpdateRequest request) {
+        String channelName = request.channelName();
+        String password = request.password();
+        UUID channelId = request.channelId();
+
+        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
+        channel.updateChannelName(channelName);
+        channel.updatePassword(password);
+
+        
+        return channelRepository.save(channel);
+
     }
 
     @Override
     public void deleteChannel(UUID channelId) {
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+        messageRepository.deleteById(channel.getChannelId());
+        readStatusRepository.deleteAllByChannelId(channel.getChannelId());
         channelRepository.deleteById(channelId);
-        channelParticipants.remove(channelId);
     }
 
-    @Override
-    public boolean joinChannel(UUID channelId, UUID userId, String password) {
-        Channel channel = channelRepository.findById(channelId);
-        User user = userRepository.findById(userId);
-        if (channel == null) throw new IllegalArgumentException("존재하지 않는 채널입니다.");
-        if (user == null) throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
-        if (channel.isPrivate() && !Objects.equals(channel.getPassword(), password)) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
-        Set<UUID> participants = channelParticipants.computeIfAbsent(channelId, k -> new HashSet<>());
-        if (!participants.add(userId)) return false;
-        return true;
-    }
-
-    @Override
-    public boolean leaveChannel(UUID channelId, UUID userId) {
-        Channel channel = channelRepository.findById(channelId);
-        if (channel == null) throw new IllegalArgumentException("존재하지 않는 채널입니다.");
-        if (channel.getOwnerChannelId().equals(userId)) {
-            throw new IllegalArgumentException("채널 소유자는 나갈 수 없습니다.");
-        }
-        Set<UUID> participants = channelParticipants.get(channelId);
-        if (participants == null || !participants.remove(userId)) return false;
-        return true;
-    }
-
-    @Override
-    public Set<UUID> getChannelParticipants(UUID channelId) {
-        if (!channelParticipants.containsKey(channelId)) {
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
-        }
-        return Collections.unmodifiableSet(channelParticipants.get(channelId));
-    }
 }

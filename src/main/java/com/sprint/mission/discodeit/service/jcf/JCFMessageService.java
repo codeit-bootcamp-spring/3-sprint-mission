@@ -1,8 +1,11 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -36,56 +39,43 @@ public class JCFMessageService implements MessageService {
         return result;
     }
 
-    // ... 나머지 메서드들은 동일
-
     @Override
-    public Message createMessage(String content, UUID authorId, UUID channelId) {
-        if (userService.getUserById(authorId) == null) {
+    public Message createMessage(MessageCreateRequest request) {
+        if (userService.getUserById(request.authorId()) == null) {
             throw new IllegalArgumentException("존재하지 않는 작성자 ID입니다.");
         }
-        Channel channel = channelService.getChannelById(channelId);
-        if (channel == null) {
-            throw new IllegalArgumentException("존재하지 않는 채널 ID입니다.");
-        }
-        if (!channel.isParticipant(authorId)) {
-            throw new IllegalStateException("채널 참가자만 메시지를 작성할 수 있습니다.");
-        }
-        Message message = new Message(content, authorId, channelId);
+        Channel channel = channelService.getChannelById(request.channelId());
+        Message message = new Message(request.content(), request.authorId(), request.channelId());
         return messageRepository.save(message);
     }
 
     @Override
-    public Message getMessageById(UUID messageId) {
-        return messageRepository.findById(messageId);
+    public Message findMessageById(UUID messageId) {
+        Optional<Message> messageOptional = messageRepository.findById(messageId);
+        return messageOptional.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지 ID입니다."));
     }
 
     @Override
-    public List<Message> getMessagesByChannel(UUID channelId) {
+    public List<Message> findAllByChannelId(UUID channelId) {
         return messageRepository.findByChannelId(channelId);
     }
 
     @Override
-    public List<Message> getMessagesByAuthor(UUID authorId) {
-        return messageRepository.findByAuthorId(authorId);
-    }
+    public Message updateMessage(UUID messageId, MessageUpdateRequest request) {
+        Optional<Message> messageOptional = messageRepository.findById(messageId);
+        Message message = messageOptional.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다"));
 
-    @Override
-    public void updateMessage(UUID messageId, String updatedContent) {
-        Message message = messageRepository.findById(messageId);
-        if (message != null) {
-            message.updateContent(updatedContent);
-            messageRepository.save(message);
-        } else {
-            throw new IllegalArgumentException("존재하지 않는 메시지 ID입니다.");
+        if (request.newContent() != null && !request.newContent().isEmpty()) {
+            message.updateContent(request.newContent());
         }
+
+        return messageRepository.save(message);
     }
 
     @Override
     public void deleteMessage(UUID messageId) {
-        Message message = messageRepository.findById(messageId);
-        if (message == null) {
-            throw new IllegalArgumentException("존재하지 않는 메시지 ID입니다.");
-        }
+        Optional<Message> messageOptional = messageRepository.findById(messageId);
+        Message message = messageOptional.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지 ID입니다."));
         messageRepository.deleteById(messageId);
     }
 }
