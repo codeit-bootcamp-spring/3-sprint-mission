@@ -16,7 +16,8 @@ public interface UserService {
    UserDto findById(UUID userId);
    UserDto findByUsername(String username);
    List<UserDto> findAll();
-   void update(UUID userId, UserUpdateRequest userUpdateRequest);
+   User update(UUID userId, UserUpdateRequest userUpdateRequest);
+   User update(UUID userId, UserUpdateRequest userUpdateRequest, BinaryContentCreateRequest binaryContentCreateRequest);
    void delete(UUID userId);
 
 }
