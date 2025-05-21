@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class UserUpdateRequest {
+public final class UserUpdateRequest {
     private String userName;
     // pwd 필드는 별도의 dto로 표현
     private String email;

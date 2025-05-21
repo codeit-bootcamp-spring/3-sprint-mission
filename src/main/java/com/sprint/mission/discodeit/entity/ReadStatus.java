@@ -23,17 +23,25 @@ public class ReadStatus implements Serializable {
     private Instant lastReadAt;
 
     // 생성자
-    public ReadStatus(UUID userId, UUID channelId) {
+    public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
         this.readId = UUID.randomUUID();
         this.createdAt = Instant.now();
-
+        //
         this.userId = userId;
         this.channelId = channelId;
+        this.lastReadAt = lastReadAt;
     }
 
     // Update 메서드
-    public void update() {
-        this.updatedAt = Instant.now();
-        this.lastReadAt = Instant.now();
+    public void update(Instant newLastReadAt) {
+        boolean anyValueUpdated = false;
+        if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
+            this.lastReadAt = newLastReadAt;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 }

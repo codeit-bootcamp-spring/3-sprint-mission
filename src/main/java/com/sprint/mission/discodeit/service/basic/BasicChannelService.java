@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
-@Service("BasicChannelService")
+@Service
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
@@ -33,14 +33,9 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel create(PrivateChannelCreateRequest privateChannelCreateRequest) {
-        // 유효성 검사
-        if (privateChannelCreateRequest.getChannelType() != ChannelType.PRIVATE) {
-            throw new IllegalArgumentException("채널 타입이 PRIVATE이 아닙니다");
-        }
-
         // PRIVATE CHANNEL 생성
         Channel privateChannel = new Channel(
-                privateChannelCreateRequest.getChannelType(),
+                ChannelType.PRIVATE,
                 // name 및 description 속성 생략
                 null,
                 null
@@ -54,7 +49,10 @@ public class BasicChannelService implements ChannelService {
 
             ReadStatus readStatus = new ReadStatus(
                     user.getUserId(),
-                    privateChannel.getChannelId()
+                    privateChannel.getChannelId(),
+                    // 가장 작은 시간 값 : LastReadAt
+                    Instant.MIN
+
             );
             readStatusRepository.save(readStatus);
         }
@@ -64,14 +62,11 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel create(PublicChannelCreateRequest publicChannelCreateRequest) {
-        // 유효성 검사
-        if (publicChannelCreateRequest.getChannelType() != ChannelType.PUBLIC) {
-            throw new IllegalArgumentException("채널 타입이 PUBLIC이 아닙니다");
-        }
+
 
         // PUBLIC CHANNEL 생성
         Channel publicChannel = new Channel(
-                publicChannelCreateRequest.getChannelType(),
+                ChannelType.PUBLIC,
                 publicChannelCreateRequest.getChannelName(),
                 publicChannelCreateRequest.getDescription()
         );
@@ -109,7 +104,7 @@ public class BasicChannelService implements ChannelService {
                 channel.getDescription(),
                 // 최근 시간
                 lastestMessageAt,
-                // PUBLIC : 사용자 ID 포함  |  PRIVATE : 공란
+                // PRIVATE : 사용자 ID 포함  |  PUBLIC : 공란
                 participantIds
         );
     }
@@ -168,10 +163,10 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public void update(ChannelUpdateRequest channelUpdateRequest) {
+    public Channel update(UUID channelId, ChannelUpdateRequest channelUpdateRequest) {
         // 유효성
-        Channel channel = channelRepository.findById(channelUpdateRequest.getChannelId())
-                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelUpdateRequest.getChannelId() + " not found"));
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
 
         // PRIVATE CHANNEL : 수정 금지
         if (channel.getChannelType() == ChannelType.PRIVATE) {
@@ -184,7 +179,7 @@ public class BasicChannelService implements ChannelService {
                 channelUpdateRequest.getDescription()
         );
 
-        channelRepository.save(channel);
+        return channelRepository.save(channel);
     }
 
     @Override
