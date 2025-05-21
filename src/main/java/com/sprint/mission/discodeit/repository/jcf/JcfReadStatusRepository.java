@@ -7,13 +7,14 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 @Repository
 public class JcfReadStatusRepository implements ReadStatusRepository {
 
-  private final Map<UUID, ReadStatus> storage = new HashMap<>();
+  private final Map<UUID, ReadStatus> storage = new ConcurrentHashMap<>();
 
   @Override
   public ReadStatus save(ReadStatus readStatus) {
@@ -53,6 +54,16 @@ public class JcfReadStatusRepository implements ReadStatusRepository {
     if (rs != null) {
       rs.updateLastReadAt(newReadAt);
     }
+  }
+
+  @Override
+  public synchronized void deleteByUserIdAndChannelId(UUID userId, UUID channelId) {
+    /*
+    find와 remove 사이에 다른 스레드가 상태를 변경할 수 있다.
+    동기화(synchronized) - find와 remove가 한 번에 실행되도록 보장 || ConcurrentHashMap의 removeIf
+     */
+    Optional<ReadStatus> readStatus = findByUserIdAndChannelId(userId, channelId);
+    readStatus.ifPresent(rs -> storage.remove(rs.getId()));
   }
 
   @Override

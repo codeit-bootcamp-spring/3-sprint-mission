@@ -9,12 +9,13 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
 
-  private final com.sprint.mission.discodeit.repository.UserRepository userRepository;
+  private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
   private final ChannelRepository channelRepository;
@@ -49,14 +50,18 @@ public class BasicUserService implements UserService {
 
     // UserStatus 생성
     UserStatus status = new UserStatus(user.getId());
+    status.update(Instant.now());
     userStatusRepository.save(status);
 
     // Optional 프로필 이미지 처리
     profileRequest
         .filter(BinaryContentCreateRequest::isValid)
         .ifPresent(profile -> {
-          BinaryContent binaryContent = new BinaryContent(profile.fileName(), user.getId());
+          BinaryContent binaryContent = new BinaryContent(profile.fileName(), user.getId(),
+              profile.bytes(), profile.contentType());
           binaryContentRepository.save(binaryContent);
+          user.setProfileId(binaryContent.getId());
+          userRepository.save(user);
         });
 
     return user;
@@ -81,7 +86,7 @@ public class BasicUserService implements UserService {
     return userRepository.findAll().stream()
         .map(user -> {
           boolean hasProfileImage = binaryContentRepository.findByUserId(user.getId()).isPresent();
-          boolean isOnline = userStatusRepository.find(user.getId())
+          boolean isOnline = userStatusRepository.findByUserId(user.getId())
               .map(UserStatus::checkUserConnect)
               .orElse(false);
           return new UserDto(user, hasProfileImage, isOnline);
@@ -112,7 +117,8 @@ public class BasicUserService implements UserService {
     profileCreateRequest
         .filter(BinaryContentCreateRequest::isValid)
         .ifPresent(profile -> {
-          BinaryContent binaryContent = new BinaryContent(profile.fileName(), user.getId());
+          BinaryContent binaryContent = new BinaryContent(profile.fileName(), user.getId(),
+              profile.bytes(), profile.contentType());
           binaryContentRepository.save(binaryContent);
         });
 

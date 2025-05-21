@@ -15,8 +15,9 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -27,7 +28,9 @@ public class BasicMessageService implements MessageService {
   private final ChannelRepository channelRepository;
   private final BinaryContentRepository binaryContentRepository;
 
-  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM월 dd일 a hh시 mm분 ss초");
+  private static final DateTimeFormatter DATE_FORMATTER =
+      DateTimeFormatter.ofPattern("MM월 dd일 a hh시 mm분 ss초", Locale.KOREAN)
+          .withZone(ZoneId.of("Asia/Seoul"));
 
   @Override
   public Message createMessage(MessageCreateRequest messageCreateRequest, List<BinaryContentCreateRequest> binaryContentCreateRequests) {
@@ -50,20 +53,23 @@ public class BasicMessageService implements MessageService {
     }
 
     Message message = new Message(messageCreateRequest.content(), channelId, senderId);
+    Message savedMessage = messageRepository.save(message);
 
     if (binaryContentCreateRequests != null) {
       for (BinaryContentCreateRequest fileRequest : binaryContentCreateRequests) {
         if (fileRequest.isValid()) {
-          BinaryContent binaryContent = new BinaryContent(fileRequest.fileName(), senderId);
+          BinaryContent binaryContent = new BinaryContent(fileRequest.fileName(), senderId, savedMessage.getId(),
+              fileRequest.bytes(), fileRequest.contentType());
           message.addAttachment(binaryContent.getId());
           binaryContentRepository.save(binaryContent);
         } else {
           throw new IllegalArgumentException("메세지에 첨부파일을 추가할 수 없습니다. 파일을 확인해주세요.");
         }
       }
+      messageRepository.save(savedMessage);
     }
 
-    return messageRepository.save(message);
+    return savedMessage;
   }
 
   @Override
@@ -163,7 +169,7 @@ public class BasicMessageService implements MessageService {
     boolean isEdited = !message.getCreatedAt().equals(message.getUpdatedAt());
     Instant timestamp = isEdited ? message.getUpdatedAt() : message.getCreatedAt();
 
-    String formattedDate = DATE_FORMAT.format(Date.from(timestamp));
+    String formattedDate = DATE_FORMATTER.format(timestamp);
 
     Optional<UserDto> senderOpt = userService.find(message.getSenderId());
     String senderName = senderOpt.map(UserDto::getUsername).orElse("알 수 없음");

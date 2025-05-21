@@ -23,8 +23,8 @@ public class UserStatus implements Serializable {
   }
 
   // 사용자가 로그인 -> 서비스에서 호출
-  public void updateTimestamp() {
-    this.updatedAt = Instant.now();
+  public void update(Instant newLastUpdatedAt) {
+    this.updatedAt = newLastUpdatedAt;
   }
 
   /*

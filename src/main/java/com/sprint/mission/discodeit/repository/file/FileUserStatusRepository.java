@@ -33,6 +33,13 @@ public class FileUserStatusRepository extends AbstractFileRepository<UserStatus,
   }
 
   @Override
+  public Optional<UserStatus> findByUserId(UUID userId) {
+    return findAll().stream()
+        .filter(status -> status.getUserId().equals(userId))
+        .findFirst();
+  }
+
+  @Override
   public List<UserStatus> findAll() {
     return super.findAll();
   }

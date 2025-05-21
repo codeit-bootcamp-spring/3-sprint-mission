@@ -25,11 +25,15 @@ public class BasicBinaryContentService implements BinaryContentService {
       throw new IllegalArgumentException("유효하지 않은 파일 정보입니다.");
     }
 
-    BinaryContent content = (messageId != null)
-        ? new BinaryContent(request.fileName(), userId, messageId) // 메시지 첨부파일
-        : new BinaryContent(request.fileName(), userId); // 사용자 프로필 이미지
+    String fileName = request.fileName();
+    byte[] bytes = request.bytes();
+    String contentType = request.contentType();
 
-    return binaryContentRepository.save(content);
+    BinaryContent file = (messageId != null)
+        ? new BinaryContent(fileName, userId, messageId, bytes, contentType) // 메시지 첨부파일
+        : new BinaryContent(request.fileName(), userId, bytes, contentType); // 사용자 프로필 이미지
+
+    return binaryContentRepository.save(file);
   }
 
   @Override

@@ -166,6 +166,10 @@ public class BasicChannelService implements ChannelService {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
 
+    if (channel.getChannelType() == ChannelType.PRIVATE) {
+      throw new IllegalArgumentException("PRIVATE 채널은 수정이 불가능합니다.");
+    }
+
     String newChannelName = request.channelName();
 
     if (channel.getChannelName().equals(newChannelName)) {
@@ -212,8 +216,19 @@ public class BasicChannelService implements ChannelService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 ID입니다."));
 
+    boolean alreadyMember = channel.getChannelMembers().stream()
+        .anyMatch(member -> member.getId().equals(userId));
+    if (alreadyMember) {
+      throw new IllegalArgumentException("이미 채널의 멤버입니다.");
+    }
+
     channel.addChannelUser(user);
     channelRepository.update(channel);
+
+    if (channel.getChannelType() == ChannelType.PRIVATE) {
+      ReadStatus readStatus = new ReadStatus(userId, channelId);
+      readStatusRepository.save(readStatus);
+    }
   }
 
   @Override
@@ -223,8 +238,15 @@ public class BasicChannelService implements ChannelService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 ID입니다."));
 
+    if (channel.getChannelMembers().stream().noneMatch(u -> u.getId().equals(userId))) {
+      throw new IllegalArgumentException("채널에 존재하지 않는 사용자입니다.");
+    }
     channel.removeChannelUser(user);
     channelRepository.update(channel);
+
+    if (channel.getChannelType() == ChannelType.PRIVATE) {
+      readStatusRepository.deleteByUserIdAndChannelId(userId, channelId);
+    }
   }
 
   @Override

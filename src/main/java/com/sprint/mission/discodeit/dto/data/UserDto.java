@@ -12,6 +12,7 @@ public class UserDto {
   private final String email;
   private final boolean hasProfileImage;
   private final boolean isOnline;
+  private final UUID profileId;
 
   public UserDto(User user, boolean hasProfileImage, boolean isOnline) {
     this.id = user.getId();
@@ -19,6 +20,7 @@ public class UserDto {
     this.email = user.getEmail();
     this.hasProfileImage = hasProfileImage;
     this.isOnline = isOnline;
+    this.profileId = user.getProfileId();
   }
 
   @Override

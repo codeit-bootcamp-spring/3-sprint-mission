@@ -65,6 +65,25 @@ public class FileReadStatusRepository extends AbstractFileRepository<ReadStatus,
   }
 
   @Override
+  public void deleteByUserIdAndChannelId(UUID userId, UUID channelId) {
+    lock.lock();
+    try {
+      List<ReadStatus> readStatusList = super.findAll().stream()
+          .filter(rs -> rs.getUserId().equals(userId) && rs.getChannelId().equals(channelId))
+          .collect(Collectors.toList());
+
+      for (ReadStatus rs : readStatusList) {
+        super.delete(rs.getId());
+      }
+    } finally {
+      lock.unlock();
+    }
+    /*  복합작업 - 넓은 락, 원자성, 일관성을 확실히 보장
+    findAll() + delete() 여러 호출을 묶어서 다른 스레드가 중간에 개입하지 못하게 막음
+    */
+  }
+
+  @Override
   public void deleteById(UUID id) {
     super.delete(id);
   }
