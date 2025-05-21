@@ -21,5 +21,5 @@ public interface ChannelRepository {
 
     public void deleteById(UUID channelId);
 
-    // XXX : joinChannel, leavelChannel, readAttendees 도 repo에서 작성해야하나???
+    // XXX : joinChannel, leavelChannel, readattendeeIds 도 repo에서 작성해야하나???
 }
