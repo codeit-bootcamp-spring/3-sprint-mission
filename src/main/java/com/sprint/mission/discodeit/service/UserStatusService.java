@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface UserStatusService {
@@ -20,10 +19,10 @@ public interface UserStatusService {
   /**
    * ID로 사용자 상태 조회
    *
-   * @param id 사용자 상태 ID
+   * @param userStatusId 사용자 상태 ID
    * @return 조회된 사용자 상태
    */
-  UserStatus find(UUID id);
+  UserStatus find(UUID userStatusId);
 
   /**
    * userId로 사용자 상태 조회
@@ -31,7 +30,7 @@ public interface UserStatusService {
    * @param userId 사용자 ID
    * @return 조회된 사용자 상태
    */
-  Optional<UserStatus> findByUserId(UUID userId);
+  UserStatus findByUserId(UUID userId);
 
   /**
    * 전체 사용자 상태 조회
@@ -59,8 +58,8 @@ public interface UserStatusService {
   /**
    * 사용자 상태 삭제
    *
-   * @param id 사용자 상태 ID
+   * @param userStatusId 사용자 상태 ID
    */
-  void delete(UUID id);
+  void delete(UUID userStatusId);
 }
 

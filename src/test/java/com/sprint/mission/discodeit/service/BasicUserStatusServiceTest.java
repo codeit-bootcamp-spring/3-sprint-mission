@@ -119,10 +119,9 @@ class BasicUserStatusServiceTest {
     void userId로_유저_상태를_조회한다() {
       given(userStatusRepository.findByUserId(userId)).willReturn(Optional.of(userStatus));
 
-      Optional<UserStatus> result = userStatusService.findByUserId(userId);
+      UserStatus result = userStatusService.findByUserId(userId);
 
-      assertThat(result).isPresent();
-      assertThat(result.get().getUserId()).isEqualTo(userId);
+      assertThat(result.getUserId()).isEqualTo(userId);
       verify(userStatusRepository).findByUserId(userId);
     }
 

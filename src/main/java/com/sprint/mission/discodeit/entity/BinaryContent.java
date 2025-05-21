@@ -5,29 +5,21 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
 @Getter
 @ToString
-@Builder(toBuilder = true, access = AccessLevel.PRIVATE)
 public class BinaryContent implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 8121899659000317030L;
 
-  public enum ContentType {
-    PROFILE_IMAGE,
-    MESSAGE_ATTACHMENT
-  }
-
   private final UUID id;
   private final Instant createdAt;
 
   private final String fileName;
-  private Long size;
+  private final Long size;
   private final String contentType;
   private final byte[] bytes;
 
@@ -39,12 +31,36 @@ public class BinaryContent implements Serializable {
       String contentType,
       byte[] bytes
   ) {
-    this.id = id != null ? id : UUID.randomUUID();
-    this.createdAt = createdAt != null ? createdAt : Instant.now();
+    this.id = Objects.requireNonNullElseGet(id, UUID::randomUUID);
+    this.createdAt = Objects.requireNonNullElseGet(createdAt, Instant::now);
     this.fileName = fileName;
     this.size = size;
     this.contentType = contentType;
     this.bytes = bytes;
+  }
+
+  public static BinaryContent createWithNow(String fileName, Long size, String contentType,
+      byte[] bytes) {
+    return new BinaryContent(
+        UUID.randomUUID(),
+        Instant.now(),
+        fileName,
+        size,
+        contentType,
+        bytes
+    );
+  }
+
+  public static BinaryContent createWithTimestamp(Instant createdAt, String fileName, Long size,
+      String contentType, byte[] bytes) {
+    return new BinaryContent(
+        UUID.randomUUID(),
+        Objects.requireNonNull(createdAt),
+        fileName,
+        size,
+        contentType,
+        bytes
+    );
   }
 
   public static BinaryContent create(
@@ -61,6 +77,55 @@ public class BinaryContent implements Serializable {
         .contentType(Objects.requireNonNull(contentType))
         .bytes(Objects.requireNonNull(bytes))
         .build();
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static class Builder {
+
+    private UUID id;
+    private Instant createdAt;
+
+    private String fileName;
+    private Long size;
+    private String contentType;
+    private byte[] bytes;
+
+    public Builder id(UUID id) {
+      this.id = id;
+      return this;
+    }
+
+    public Builder createdAt(Instant createdAt) {
+      this.createdAt = createdAt;
+      return this;
+    }
+
+    public Builder fileName(String fileName) {
+      this.fileName = fileName;
+      return this;
+    }
+
+    public Builder size(Long size) {
+      this.size = size;
+      return this;
+    }
+
+    public Builder contentType(String contentType) {
+      this.contentType = contentType;
+      return this;
+    }
+
+    public Builder bytes(byte[] bytes) {
+      this.bytes = bytes;
+      return this;
+    }
+
+    public BinaryContent build() {
+      return new BinaryContent(id, createdAt, fileName, size, contentType, bytes);
+    }
   }
 
   @Override

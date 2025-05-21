@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface MessageService {
@@ -23,10 +22,10 @@ public interface MessageService {
   /**
    * ID로 메시지를 조회한다
    *
-   * @param id 메시지 ID
+   * @param messageId 메시지 ID
    * @return 조회된 메시지 객체
    */
-  Optional<Message> findById(UUID id);
+  Message findById(UUID messageId);
 
   /**
    * 채널의 모든 메시지를 조회한다
@@ -42,13 +41,13 @@ public interface MessageService {
    * @param request MessageUpdateRequest
    * @return 업데이트된 메시지 객체
    */
-  Optional<Message> updateContent(UUID messageId, MessageUpdateRequest request);
+  Message updateContent(UUID messageId, MessageUpdateRequest request);
 
   /**
    * 메시지를 삭제한다
    *
-   * @param id 삭제할 메시지 ID
+   * @param messageId 삭제할 메시지 ID
    * @return 메시지 삭제 성공 여부
    */
-  Optional<Message> delete(UUID id);
+  Message delete(UUID messageId);
 }

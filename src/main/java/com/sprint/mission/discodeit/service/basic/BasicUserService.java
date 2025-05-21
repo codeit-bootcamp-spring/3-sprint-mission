@@ -80,18 +80,21 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public Optional<UserResponse> findById(UUID id) {
-    return userRepository.findById(id).map(this::toUserResponse);
+  public UserResponse findById(UUID userId) {
+    return userRepository.findById(userId).map(this::toUserResponse)
+        .orElseThrow(() -> UserException.notFound(userId));
   }
 
   @Override
-  public Optional<UserResponse> findByName(String name) {
-    return userRepository.findByName(name).map(this::toUserResponse);
+  public UserResponse findByName(String name) {
+    return userRepository.findByName(name).map(this::toUserResponse)
+        .orElseThrow(UserException::notFound);
   }
 
   @Override
-  public Optional<UserResponse> findByEmail(String email) {
-    return userRepository.findByEmail(email).map(this::toUserResponse);
+  public UserResponse findByEmail(String email) {
+    return userRepository.findByEmail(email).map(this::toUserResponse)
+        .orElseThrow(UserException::notFound);
   }
 
   @Override
@@ -100,7 +103,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public Optional<UserResponse> update(UUID userId, UserUpdateRequest request,
+  public UserResponse update(UUID userId, UserUpdateRequest request,
       BinaryContentCreateRequest profile) {
     return userRepository.findById(userId)
         .map(user -> {
@@ -131,23 +134,23 @@ public class BasicUserService implements UserService {
           }
           User savedUser = userRepository.save(user);
           return toUserResponse(savedUser);
-        });
+        }).orElseThrow(() -> UserException.notFound(userId));
   }
 
   @Override
-  public Optional<UserResponse> delete(UUID id) {
-    return userRepository.findById(id).map(user -> {
-      userRepository.delete(id);
+  public UserResponse delete(UUID userId) {
+    return userRepository.findById(userId).map(user -> {
+      userRepository.delete(userId);
 
       Optional.ofNullable(user.getProfileId())
           .ifPresent(binaryContentRepository::delete);
 
-      userStatusRepository.findByUserId(id).ifPresent(status -> {
+      userStatusRepository.findByUserId(userId).ifPresent(status -> {
         userStatusRepository.delete(status.getId());
       });
 
       return toUserResponse(user);
-    });
+    }).orElseThrow(() -> UserException.notFound(userId));
   }
 
   private UserResponse toUserResponse(User user) {

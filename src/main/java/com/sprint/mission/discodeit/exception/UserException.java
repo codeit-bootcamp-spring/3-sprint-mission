@@ -9,6 +9,13 @@ public class UserException extends BusinessException {
     super(errorCode, message);
   }
 
+  public static UserException notFound() {
+    return new UserException(
+        ErrorCode.NOT_FOUND,
+        "유저를 찾을 수 없습니다."
+    );
+  }
+
   public static UserException notFound(UUID userId) {
     return new UserException(
         ErrorCode.NOT_FOUND,

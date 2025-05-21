@@ -27,6 +27,17 @@ public class User implements Serializable {
   private UUID profileId;
 
   private User(String email, String name, String password, UUID profileId) {
+    validate(email, name, password);
+
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    this.email = email;
+    this.name = name;
+    this.password = password;
+    this.profileId = profileId;
+  }
+
+  private static void validate(String email, String name, String password) {
     if (email == null || email.isBlank()) {
       throw new UserException(ErrorCode.INVALID_INPUT, "이메일은 비어 있을 수 없습니다.");
     }
@@ -36,13 +47,6 @@ public class User implements Serializable {
     if (password == null || password.isBlank()) {
       throw new UserException(ErrorCode.INVALID_INPUT, "비밀번호는 비어 있을 수 없습니다.");
     }
-
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.email = email;
-    this.name = name;
-    this.password = password;
-    this.profileId = profileId;
   }
 
   public static User create(String email, String name, String password) {

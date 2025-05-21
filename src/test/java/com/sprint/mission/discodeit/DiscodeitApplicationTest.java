@@ -62,8 +62,8 @@ public class DiscodeitApplicationTest {
     assertNotNull(channel.id(), "채널 ID 생성 확인");
 
     // 3. Public 채널 조회
-    ChannelResponse channelResponse = channelService.findById(channel.id())
-        .orElseThrow(() -> new IllegalStateException("채널 조회 실패"));
+    ChannelResponse channelResponse = channelService.findById(channel.id());
+
     assertEquals(ChannelType.PUBLIC, channelResponse.type(), "Public 채널 타입 확인");
 
     // 4. 메시지 생성 (첨부파일 없이)

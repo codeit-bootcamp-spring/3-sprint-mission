@@ -190,11 +190,11 @@ class BasicUserServiceTest {
     }
 
     @Test
-    void 존재하지_않는_사용자를_삭제하려고_하면_아무_작업도_수행하지_않는다() {
+    void 존재하지_않는_사용자를_삭제하려고_하면_예외() {
       UUID userId = UUID.randomUUID();
       when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-      basicUserService.delete(userId);
+      assertThrows(UserException.class, () -> basicUserService.delete(userId));
 
       verify(userRepository, never()).delete(any());
       verify(binaryContentRepository, never()).delete(any());

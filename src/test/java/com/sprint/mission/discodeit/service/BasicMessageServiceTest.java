@@ -132,6 +132,7 @@ public class BasicMessageServiceTest {
 
       Message message = MessageFixture.createValid();
       when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
+      when(messageRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
       MessageUpdateRequest updateRequest = new MessageUpdateRequest(updatedContent);
 
@@ -147,14 +148,15 @@ public class BasicMessageServiceTest {
 
     @Test
     void 메시지를_삭제하면_첨부파일도_삭제된다() {
-      UUID messageId = UUID.randomUUID();
       MessageCreateRequest messageRequest = new MessageCreateRequest("테스트 메시지", UUID.randomUUID(),
           UUID.randomUUID());
       BinaryContent attachment = BinaryContentFixture.createValid();
       Message message = MessageFixture.createCustomWithAttachments(messageRequest,
           List.of(attachment.getId()));
+      UUID messageId = message.getId();
 
       when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
+      when(messageRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
       messageService.delete(messageId);
 

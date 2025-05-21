@@ -17,7 +17,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -49,8 +48,10 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public Optional<ChannelResponse> findById(UUID id) {
-    return channelRepository.findById(id).map(this::toResponse);
+  public ChannelResponse findById(UUID channelId) {
+    Channel channel = channelRepository.findById(channelId)
+        .orElseThrow(() -> ChannelException.notFound(channelId));
+    return toResponse(channel);
   }
 
   @Override
@@ -67,40 +68,46 @@ public class BasicChannelService implements ChannelService {
         .collect(Collectors.toList());
   }
 
-
   @Override
-  public Optional<ChannelResponse> update(UUID channelId, PublicChannelUpdateRequest request) {
-    return channelRepository.findById(channelId)
-        .map(channel -> {
-          if (channel.getType() == ChannelType.PRIVATE) {
-            throw ChannelException.cannotUpdatePrivateChannel(channelId);
-          }
-          if (request.newName() != null) {
-            channel.updateName(request.newName());
-          }
-          if (request.newDescription() != null) {
-            channel.updateDescription(request.newDescription());
-          }
-          return channelRepository.save(channel);
-        })
-        .map(this::toResponse);
+  public ChannelResponse update(UUID channelId, PublicChannelUpdateRequest request) {
+    Channel channel = channelRepository.findById(channelId)
+        .orElseThrow(() -> ChannelException.notFound(channelId));
+
+    if (channel.getType() == ChannelType.PRIVATE) {
+      throw ChannelException.cannotUpdatePrivateChannel(channelId);
+    }
+
+    if (request.newName() != null) {
+      channel.updateName(request.newName());
+    }
+
+    if (request.newDescription() != null) {
+      channel.updateDescription(request.newDescription());
+    }
+
+    Channel updated = channelRepository.save(channel);
+    return toResponse(updated);
   }
 
+
   @Override
-  public Optional<ChannelResponse> delete(UUID channelId) {
-    Optional<Channel> deleted = channelRepository.findById(channelId);
-    deleted.ifPresent(channel -> {
-      // 연관된 메시지 삭제
-      messageRepository.findAll().stream()
-          .filter(m -> m.getChannelId().equals(channelId))
-          .forEach(m -> messageRepository.delete(m.getId()));
-      // 연관된 읽음 상태 삭제
-      readStatusRepository.findAllByChannelId(channelId)
-          .forEach(rs -> readStatusRepository.delete(rs.getId()));
-      // 채널 삭제
-      channelRepository.delete(channelId);
-    });
-    return deleted.map(this::toResponse);
+  public ChannelResponse delete(UUID channelId) {
+    Channel channel = channelRepository.findById(channelId)
+        .orElseThrow(() -> ChannelException.notFound(channelId));
+
+    // 연관된 메시지 삭제
+    messageRepository.findAll().stream()
+        .filter(m -> m.getChannelId().equals(channelId))
+        .forEach(m -> messageRepository.delete(m.getId()));
+
+    // 연관된 읽음 상태 삭제
+    readStatusRepository.findAllByChannelId(channelId)
+        .forEach(rs -> readStatusRepository.delete(rs.getId()));
+
+    // 채널 삭제
+    channelRepository.delete(channelId);
+
+    return toResponse(channel);
   }
 
   private ChannelResponse toResponse(Channel channel) {

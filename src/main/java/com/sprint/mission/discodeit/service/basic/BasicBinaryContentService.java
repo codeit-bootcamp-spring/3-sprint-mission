@@ -33,15 +33,15 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
-  public BinaryContent find(UUID id) {
-    return binaryContentRepository.findById(id)
+  public BinaryContent find(UUID binaryContentId) {
+    return binaryContentRepository.findById(binaryContentId)
         .orElseThrow(
-            () -> BinaryContentException.notFound(id));
+            () -> BinaryContentException.notFound(binaryContentId));
   }
 
   @Override
-  public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
-    return ids.stream()
+  public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
+    return binaryContentIds.stream()
         .map(this::find)
         .toList();
   }

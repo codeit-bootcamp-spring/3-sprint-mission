@@ -173,11 +173,10 @@ class BasicChannelServiceTest {
       PublicChannelUpdateRequest request = new PublicChannelUpdateRequest(newName,
           newDescription);
 
-      Optional<ChannelResponse> result = channelService.update(channelId, request);
+      ChannelResponse result = channelService.update(channelId, request);
 
-      assertTrue(result.isPresent());
-      assertEquals(newName, result.get().name());
-      assertEquals(newDescription, result.get().description());
+      assertEquals(newName, result.name());
+      assertEquals(newDescription, result.description());
       verify(channelRepository).save(any());
     }
   }
@@ -197,9 +196,8 @@ class BasicChannelServiceTest {
       when(messageRepository.findAll()).thenReturn(List.of(message));
       when(readStatusRepository.findAllByChannelId(channelId)).thenReturn(List.of(status));
 
-      Optional<ChannelResponse> result = channelService.delete(channelId);
+      ChannelResponse result = channelService.delete(channelId);
 
-      assertTrue(result.isPresent());
       verify(messageRepository).delete(message.getId());
       verify(readStatusRepository).delete(status.getId());
       verify(channelRepository).delete(channelId);

@@ -8,7 +8,6 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,9 +42,9 @@ public class BasicReadStatusService implements ReadStatusService {
 
 
   @Override
-  public Optional<ReadStatus> find(UUID id) {
-    return Optional.ofNullable(readStatusRepository.findById(id)
-        .orElseThrow(() -> ReadStatusException.notFound(id)));
+  public ReadStatus find(UUID readStatusId) {
+    return readStatusRepository.findById(readStatusId)
+        .orElseThrow(() -> ReadStatusException.notFound(readStatusId));
   }
 
   @Override
@@ -54,19 +53,19 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
-  public ReadStatus update(UUID id) {
-    ReadStatus readStatus = readStatusRepository.findById(id)
-        .orElseThrow(() -> ReadStatusException.notFound(id));
+  public ReadStatus update(UUID readStatusId) {
+    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+        .orElseThrow(() -> ReadStatusException.notFound(readStatusId));
 
     readStatus.updateLastReadAt();
     return readStatusRepository.save(readStatus);
   }
 
   @Override
-  public void delete(UUID id) {
-    if (readStatusRepository.findById(id).isEmpty()) {
-      throw ReadStatusException.notFound(id);
+  public void delete(UUID reaStatusId) {
+    if (readStatusRepository.findById(reaStatusId).isEmpty()) {
+      throw ReadStatusException.notFound(reaStatusId);
     }
-    readStatusRepository.delete(id);
+    readStatusRepository.delete(reaStatusId);
   }
 }
