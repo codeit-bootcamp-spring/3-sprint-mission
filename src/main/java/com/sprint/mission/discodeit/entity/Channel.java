@@ -1,66 +1,46 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.common.ErrorMessages;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.*;
-
-@Getter @Setter
+@Getter
+@Setter
 public class Channel implements Serializable {
-    private static final long serialVersionUID = 1L;
 
-    private UUID id;
-    private String channelName;
-    private List<String> categories;
+  private static final long serialVersionUID = 1L;
+  private UUID id;
+  private Instant createdAt;
+  private Instant updatedAt;
 
-    private ChannelType type;
+  private ChannelType type;
+  private String name;
+  private String description;
 
-    private Instant createdAt;
-    private Instant updatedAt;
+  public Channel(ChannelType type, String name, String description) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
 
-    public Channel(ChannelType type, String channelName, List<String> categories) {
-        this.id = UUID.randomUUID();
-        this.type = type;
+    this.type = type;
+    this.name = name;
+    this.description = description;
+  }
 
-        this.channelName = channelName;
-        this.categories = categories;
-
-        this.createdAt = Instant.now();
+  public void update(String newName, String newDescription) {
+    boolean anyValueUpdated = false;
+    if (newName != null && !newName.equals(this.name)) {
+      this.name = newName;
+      anyValueUpdated = true;
+    }
+    if (newDescription != null && !newDescription.equals(this.description)) {
+      this.description = newDescription;
+      anyValueUpdated = true;
     }
 
-    public void update(String newChannelName, List<String> newCategories) {
-        boolean anyValueUpdated = false;
-        if (newChannelName != null && !newChannelName.equals(this.channelName)) {
-            this.channelName = newChannelName;
-            anyValueUpdated = true;
-        }
-        if (newCategories != null && !newCategories.equals(this.categories)) {
-            this.categories = newCategories;
-            anyValueUpdated = true;
-        }
+    if (anyValueUpdated) {
+      this.updatedAt = Instant.now();
     }
-
-    //카테고리 중복 확인
-    public void validateUniqueCategory() {
-        Set<String> unique = new HashSet<>();
-        for (String category : this.categories) {
-            if (!unique.add(category)) {
-                throw new IllegalArgumentException(
-                        ErrorMessages.format("Category", ErrorMessages.ERROR_EXISTS)
-                );
-            }
-        }
-    }
-
-    //채널에 없는 카테고리에 메시지 생성시
-    public void validateCategory(String category){
-        if (!categories.contains(category)) {
-            throw new IllegalArgumentException(
-                    ErrorMessages.format("Category", ErrorMessages.ERROR_NOT_FOUND)
-            );
-        }
-    }
+  }
 }
