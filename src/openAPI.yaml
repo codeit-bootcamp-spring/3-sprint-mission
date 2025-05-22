@@ -126,7 +126,7 @@ paths:
               type: object
               example:
                 ownerId: '309142bf-b16c-4e94-9597-8e87925aa0bb'
-                attendeeIds:
+                participantIds:
       responses:
         '200':
           description: Successful response

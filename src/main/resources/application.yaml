@@ -7,3 +7,13 @@ discodeit:
   repository:
     type: file   # jcf | file
     file-directory: .discodeit
+
+
+# /api-docs endpoint custom path
+springdoc:
+  api-docs:
+    # OpenAPI 명세서 경로(JSON)
+    path: /api-docs
+    version: openapi_3_0
+  swagger-ui:
+    operations-sorter: alpha
