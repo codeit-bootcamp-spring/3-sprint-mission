@@ -98,4 +98,16 @@ public class FileChannelRepository implements ChannelRepository {
             throw new RuntimeException("채널 삭제 실패: " + channelId, e);
         }
     }
+
+    @Override
+    public List<Channel> findAllById(Iterable<UUID> ids) {
+        List<Channel> result = new java.util.ArrayList<>();
+        for (UUID id : ids) {
+            Path channelPath = getChannelPath(id);
+            if (Files.exists(channelPath)) {
+                result.add(loadChannel(channelPath));
+            }
+        }
+        return result;
+    }
 }

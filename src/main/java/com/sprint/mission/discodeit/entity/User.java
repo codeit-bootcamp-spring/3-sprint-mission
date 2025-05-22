@@ -20,44 +20,35 @@ public class User implements Serializable {
     // 생성자
     public User(String username, String email, String password, UUID profileId) {
         this.userId = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         this.username = username;
         this.email = email;
         this.password = password;
-        this.createdAt = Instant.now(); // 현재 시간으로 생성 시간 초기화
-        this.updatedAt = this.createdAt;
         this.profileId = profileId;
     }
 
-    // 이메일 업데이트
-    public void updateEmail(String email) {
-        if (email != null && !email.isEmpty()) {
-            this.email = email;
-            this.updatedAt = Instant.now();
-        }
-    }
-
-    // 사용자명 업데이트
-    public void updateUsername(String username) {
+    public void update(String username, String email, String password, UUID profileId) {
+        boolean updated = false;
         if (username != null && !username.isEmpty()) {
             this.username = username;
+            updated = true;
         }
-        this.updatedAt = Instant.now();
-    }
-
-    //비밀번호 업데이트
-    public void updatePassword(String password) {
+        if (email != null && !email.isEmpty()) {
+            this.email = email;
+            updated = true;
+        }
         if (password != null && !password.isEmpty()) {
             this.password = password;
+            updated = true;
         }
-        this.updatedAt = Instant.now();
-    }
-
-    //프로필 아이디 업데이트
-    public void updateProfileId(UUID profileId) {
         if (profileId != null) {
             this.profileId = profileId;
+            updated = true;
         }
-        this.updatedAt = Instant.now();
+        if (updated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
     @Override

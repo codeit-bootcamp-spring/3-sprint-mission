@@ -51,4 +51,18 @@ public class JCFChannelRepository implements ChannelRepository {
     public void deleteById(UUID channelId) {
         channels.remove(channelId);
     }
+
+    @Override
+    public List<Channel> findAllById(Iterable<UUID> ids) {
+        List<Channel> result = new ArrayList<>();
+        if (ids != null) {
+            for (UUID id : ids) {
+                Channel channel = channels.get(id);
+                if (channel != null) {
+                    result.add(channel);
+                }
+            }
+        }
+        return result;
+    }
 }

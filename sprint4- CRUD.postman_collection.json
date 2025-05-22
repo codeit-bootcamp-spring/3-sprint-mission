@@ -1,0 +1,750 @@
+{
+	"info": {
+		"_postman_id": "50364a23-93a8-41c2-bfdc-8b96f8d8b8ce",
+		"name": "sprint4: CRUD",
+		"description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" alt=\"\" height=\"1530\" width=\"2162\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40505024"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "findAll",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{Base_URL}}/user/findAll",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"user",
+								"findAll"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "userCreateRequest",
+									"value": "{\n\"username\":\"user1\",\n\"email\": \"user@gmail.com\",\n\"password\": \"1q2w3e4r\"\n}",
+									"contentType": "application/json",
+									"type": "text"
+								},
+								{
+									"key": "profile",
+									"contentType": "multipart/form-data",
+									"type": "file",
+									"src": "/C:/Users/bhh02/Desktop/Codeit/CodeSample/05_RESTful_APIs_구현하기/dog.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{Base_URL}}/user/create",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"user",
+								"create"
+							]
+						},
+						"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Update data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful PUT request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "userUpdateRequest",
+									"value": "{\n\"newUsername\":\"백은호\",\n\"newEmail\": \"beh@gmail.com\",\n\"newPassword\": \"1q2w3e4r\"\n}",
+									"contentType": "application/json",
+									"type": "text"
+								},
+								{
+									"key": "profile",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{Base_URL}}/user/update/34601b9b-fb10-4498-a70d-8d040026683b",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"user",
+								"update",
+								"34601b9b-fb10-4498-a70d-8d040026683b"
+							]
+						},
+						"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful DELETE request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 202, 204]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{Base_URL}}/user/delete/af164075-b281-476e-b793-d900400a7dd1",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"user",
+								"delete",
+								"af164075-b281-476e-b793-d900400a7dd1"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						},
+						"description": "This is a DELETE request, and it is used to delete data that was previously created via a POST request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful DELETE request typically returns a `200 OK`, `202 Accepted`, or `204 No Content` response code."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Channel",
+			"item": [
+				{
+					"name": "getChannelsByUserId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{Base_URL}}/channel/user/af164075-b281-476e-b793-d900400a7dd1",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"channel",
+								"user",
+								"af164075-b281-476e-b793-d900400a7dd1"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Public",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"channelName\": \"PublicChannel_012345\",\r\n        \"ownerId\": \"af164075-b281-476e-b793-d900400a7dd1\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_URL}}/channel/public",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"channel",
+								"public"
+							]
+						},
+						"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Craete Private",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"channelName\": \"PrivateChannel_01\",\r\n        \"password\": \"1q2w3e4r\",\r\n        \"ownerId\": \"af164075-b281-476e-b793-d900400a7dd1\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_URL}}/channel/private",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"channel",
+								"private"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Channel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful PUT request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"channelId\": \"461fa09a-f323-4875-86ab-322c3ba41715\", \r\n    \"channelName\": \"변경된 채널명1\",\r\n    \"password\": \"changedPS1\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_URL}}/channel/public/461fa09a-f323-4875-86ab-322c3ba41715",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"channel",
+								"public",
+								"461fa09a-f323-4875-86ab-322c3ba41715"
+							]
+						},
+						"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete data Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Successful DELETE request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 202, 204]);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{Base_URL}}/channel/delete/386487cd-5df4-4417-9f4a-c852c74341e8",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"channel",
+								"delete",
+								"386487cd-5df4-4417-9f4a-c852c74341e8"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						},
+						"description": "This is a DELETE request, and it is used to delete data that was previously created via a POST request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful DELETE request typically returns a `200 OK`, `202 Accepted`, or `204 No Content` response code."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Message",
+			"item": [
+				{
+					"name": "getChannelMessages",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Base_URL}}/channel/461fa09a-f323-4875-86ab-322c3ba41715/messages",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"channel",
+								"461fa09a-f323-4875-86ab-322c3ba41715",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "sendMessage",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"content\": \"문제가 없는지 확인 중입니다.\",\r\n    \"channelId\": \"461fa09a-f323-4875-86ab-322c3ba41715\",\r\n    \"authorId\": \"34601b9b-fb10-4498-a70d-8d040026683b\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_URL}}/channel/461fa09a-f323-4875-86ab-322c3ba41715/message",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"channel",
+								"461fa09a-f323-4875-86ab-322c3ba41715",
+								"message"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateMessage",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"newContent\": \"수정된 메시지입니다1.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_URL}}/update/message/f063201f-a795-43c6-9b57-e9c77043449d",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"update",
+								"message",
+								"f063201f-a795-43c6-9b57-e9c77043449d"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteMessage",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{Base_URL}}/delete/message/f063201f-a795-43c6-9b57-e9c77043449d",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"delete",
+								"message",
+								"f063201f-a795-43c6-9b57-e9c77043449d"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ReadStatus",
+			"item": [
+				{
+					"name": "getUserReadStatuses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Base_URL}}/user/34601b9b-fb10-4498-a70d-8d040026683b/readstatus",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"user",
+								"34601b9b-fb10-4498-a70d-8d040026683b",
+								"readstatus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createReadStatusForChannel",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": \"34601b9b-fb10-4498-a70d-8d040026683b\",\r\n    \"channelId\": \"461fa09a-f323-4875-86ab-322c3ba41715\",\r\n    \"LastReadAt\": \"2024-05-20T14:30:00Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_URL}}/user/34601b9b-fb10-4498-a70d-8d040026683b/channel/461fa09a-f323-4875-86ab-322c3ba41715/readstatus",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"user",
+								"34601b9b-fb10-4498-a70d-8d040026683b",
+								"channel",
+								"461fa09a-f323-4875-86ab-322c3ba41715",
+								"readstatus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateReadStatusForChannel",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": \"34601b9b-fb10-4498-a70d-8d040026683b\",\r\n    \"channelId\": \"461fa09a-f323-4875-86ab-322c3ba41715\",\r\n    \"newLastReadAt\": \"2024-05-20T15:12:00Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_URL}}/readstatus/0f17ac7d-4954-4877-87d1-e2127ac5cba8",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"readstatus",
+								"0f17ac7d-4954-4877-87d1-e2127ac5cba8"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "UserStatus",
+			"item": [
+				{
+					"name": "updateUserOnlineStatus",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"newLastActiveAt\": \"2025-05-20T02:48:11.893542Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_URL}}/userstatus/34601b9b-fb10-4498-a70d-8d040026683b/status",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"userstatus",
+								"34601b9b-fb10-4498-a70d-8d040026683b",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "BinaryContent",
+			"item": [
+				{
+					"name": "findBinaryContent",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Base_URL}}/binaryContent/find?binaryContentId=91691f50-fa95-40e0-ba7a-bc11e4e06883",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"binaryContent",
+								"find"
+							],
+							"query": [
+								{
+									"key": "binaryContentId",
+									"value": "91691f50-fa95-40e0-ba7a-bc11e4e06883"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findAllBinaryContentMetadataByIds",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{Base_URL}}/binaryContent/findAllMetadata?ids=4833e6d4-a3ab-4493-a047-e10099358e54&ids=91691f50-fa95-40e0-ba7a-bc11e4e06883",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"binaryContent",
+								"findAllMetadata"
+							],
+							"query": [
+								{
+									"key": "ids",
+									"value": "4833e6d4-a3ab-4493-a047-e10099358e54"
+								},
+								{
+									"key": "ids",
+									"value": "91691f50-fa95-40e0-ba7a-bc11e4e06883"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Login",
+			"item": [
+				{
+					"name": "New Request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"백은호\",\r\n    \"password\": \"1q2w3e4r\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_URL}}/login",
+							"host": [
+								"{{Base_URL}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "id",
+			"value": "1"
+		},
+		{
+			"key": "base_url",
+			"value": "https://postman-rest-api-learner.glitch.me/"
+		}
+	]
+}

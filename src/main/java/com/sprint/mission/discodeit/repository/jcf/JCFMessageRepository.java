@@ -81,4 +81,11 @@ public class JCFMessageRepository implements MessageRepository {
     public void deleteById(UUID messageId) {
         messages.remove(messageId);
     }
+
+    @Override
+    public Optional<Message> findTopByChannelIdOrderByCreatedAtDesc(UUID channelId) {
+        return messages.values().stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .max(Comparator.comparing(Message::getCreatedAt));
+    }
 }

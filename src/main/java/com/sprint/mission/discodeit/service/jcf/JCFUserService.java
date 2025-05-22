@@ -49,23 +49,19 @@ public class JCFUserService implements UserService {
         if (userCreateRequest.password() == null || userCreateRequest.password().isEmpty()) {
             throw new IllegalArgumentException("비밀번호는 비어있을 수 없습니다.");
         }
-        // User 생성자에 profileId 인자 전달 (null로 초기화, 실제 로직은 추후 추가)
         User user = new User(userCreateRequest.username(), userCreateRequest.email(), userCreateRequest.password(), null);
         return userRepository.save(user);
     }
 
     @Override
     public UserDto getUserById(UUID userId) {
-        // Optional 처리 및 UserDto 반환
         Optional<User> userOptional = userRepository.findById(userId);
         User user = userOptional.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자 ID입니다."));
-        // UserDto 레코드 생성자를 사용하여 변환
         return new UserDto(user.getUserId(), user.getCreatedAt(), user.getUpdatedAt(), user.getUsername(), user.getEmail(), user.getProfileId(), false); // 'online' 필드는 임의로 false 설정
     }
 
     @Override
     public UserDto getUserByEmail(String email) {
-        // 이메일로 사용자를 찾는 로직 (findAll 사용)
         Optional<User> userOptional = userRepository.findAll().stream()
                 .filter(user -> user.getEmail().equals(email))
                 .findFirst();
@@ -75,7 +71,6 @@ public class JCFUserService implements UserService {
 
     @Override
     public List<UserDto> getAllUsers() {
-        // List<User>를 List<UserDto>로 변환
         List<User> users = userRepository.findAll();
         return users.stream()
                     .map(user -> new UserDto(user.getUserId(), user.getCreatedAt(), user.getUpdatedAt(), user.getUsername(), user.getEmail(), user.getProfileId(), false)) // 'online' 필드는 임의로 false 설정
@@ -87,21 +82,7 @@ public class JCFUserService implements UserService {
         // Optional 처리
         Optional<User> userOptional = userRepository.findById(userId);
         User user = userOptional.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자 ID입니다."));
-
-        // UserUpdateRequest의 필드를 사용하여 User 업데이트
-        if (userUpdateRequest.newUsername() != null && !userUpdateRequest.newUsername().isEmpty()) {
-            user.updateUsername(userUpdateRequest.newUsername());
-        }
-        if (userUpdateRequest.newEmail() != null && !userUpdateRequest.newEmail().isEmpty()) {
-            user.updateEmail(userUpdateRequest.newEmail());
-        }
-        if (userUpdateRequest.newPassword() != null && !userUpdateRequest.newPassword().isEmpty()) {
-            user.updatePassword(userUpdateRequest.newPassword());
-        }
-
-        // 프로필 이미지 업데이트 처리는 BinaryContentCreateRequest 구조 확인 후 추가
-        // profileCreateRequest.ifPresent(profileReq -> user.updateProfileId(profileReq.getContentId()));
-
+        user.update(userUpdateRequest.newUsername(), userUpdateRequest.newEmail(), userUpdateRequest.newPassword(), null);
         return userRepository.save(user);
     }
 
