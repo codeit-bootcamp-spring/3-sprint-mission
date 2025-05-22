@@ -65,15 +65,7 @@ public class FileUserService implements UserService {
         Optional<User> userOptional = userRepository.findById(userId);
         User user = userOptional.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자 ID입니다."));
 
-        if (userUpdateRequest.newUsername() != null && !userUpdateRequest.newUsername().isEmpty()) {
-            user.updateUsername(userUpdateRequest.newUsername());
-        }
-        if (userUpdateRequest.newEmail() != null && !userUpdateRequest.newEmail().isEmpty()) {
-            user.updateEmail(userUpdateRequest.newEmail());
-        }
-        if (userUpdateRequest.newPassword() != null && !userUpdateRequest.newPassword().isEmpty()) {
-            user.updatePassword(userUpdateRequest.newPassword());
-        }
+        user.update(userUpdateRequest.newUsername(), userUpdateRequest.newEmail(), userUpdateRequest.newPassword(), null);
 
         return userRepository.save(user);
     }

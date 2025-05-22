@@ -28,6 +28,8 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
 
+
+
     @Override
     public User createUser(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         String username = userCreateRequest.username();
@@ -42,15 +44,7 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("All fields are required");
         }
         
-        UUID nullableProfileId = optionalProfileCreateRequest
-        .map(profileRequest -> {
-            String fileName = profileRequest.fileName();
-            String contentType = profileRequest.contentType();
-            byte[] bytes = profileRequest.bytes();
-            BinaryContent binaryContent = new BinaryContent(fileName, (long)bytes.length, contentType, bytes);
-            return binaryContentRepository.save(binaryContent).getId();
-        })
-        .orElse(null);
+        UUID nullableProfileId = processProfileImage(optionalProfileCreateRequest, null);
 
         User user = new User(username, email, password, nullableProfileId);
         User createdUser = userRepository.save(user);
@@ -87,23 +81,9 @@ public class BasicUserService implements UserService {
         String newEmail = userUpdateRequest.newEmail();
         String newPassword = userUpdateRequest.newPassword();
         
-        UUID nullableProfileId = optionalProfileCreateRequest
-                .map(profileRequest -> {
-                    Optional.ofNullable(user.getProfileId())
-                                    .ifPresent(binaryContentRepository::deleteById);
+        UUID nullableProfileId = processProfileImage(optionalProfileCreateRequest, user);
 
-                    String fileName = profileRequest.fileName();
-                    String contentType = profileRequest.contentType();
-                    byte[] bytes = profileRequest.bytes();
-                    BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType, bytes);
-                    return binaryContentRepository.save(binaryContent).getId();
-                })
-                .orElse(null);
-
-        user.updateUsername(newUsername);
-        user.updateEmail(newEmail);
-        user.updatePassword(newPassword);
-        user.updateProfileId(nullableProfileId);
+        user.update(newUsername, newEmail, newPassword, nullableProfileId);
 
         return userRepository.save(user);
     }
@@ -117,6 +97,22 @@ public class BasicUserService implements UserService {
         userStatusRepository.deleteByUserId(userId);
 
         userRepository.deleteById(userId);    
+    }
+
+    private UUID processProfileImage(Optional<BinaryContentCreateRequest> optionalProfileCreateRequest, User user) {
+        return optionalProfileCreateRequest
+            .map(profileRequest -> {
+                if (user != null) {
+                    Optional.ofNullable(user.getProfileId())
+                                    .ifPresent(binaryContentRepository::deleteById);
+                }
+                String fileName = profileRequest.fileName();
+                String contentType = profileRequest.contentType();
+                byte[] bytes = profileRequest.bytes();
+                BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType, bytes);
+                return binaryContentRepository.save(binaryContent).getId();
+            })
+            .orElseGet(() -> user != null ? user.getProfileId() : null);
     }
 
     private UserDto toDto(User user) {
