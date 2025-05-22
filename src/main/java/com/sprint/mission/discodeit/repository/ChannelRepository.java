@@ -17,4 +17,6 @@ public interface ChannelRepository {
     boolean existsById(UUID channelId); // 채널 존재 여부
 
     void deleteById(UUID channelId); // 채널 삭제
+
+    List<Channel> findAllById(Iterable<UUID> ids); // ID 목록으로 채널 조회 추가
 }
