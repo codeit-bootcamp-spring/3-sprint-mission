@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.Dto.channel.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class ChannelController {
 
     @Operation(summary = "공개 채널 생성", description = "공개 채널을 생성합니다.")
     @PostMapping("/public")
-    public ResponseEntity<?> create(@RequestBody PublicChannelCreateRequest request) {
+    public ResponseEntity<?> create(@Valid @RequestBody PublicChannelCreateRequest request) {
         System.out.println("ChannelController.create-public");
         return channelService.createChannel(request);
     }
@@ -52,7 +53,7 @@ public class ChannelController {
     @PatchMapping("/{channelId}")
     public ResponseEntity<?> changeName(
             @PathVariable UUID channelId,
-            @RequestBody ChannelUpdateRequest request) {
+            @Valid @RequestBody ChannelUpdateRequest request) {
         System.out.println("ChannelController.changeName");
         return channelService.update(channelId, request);
     }

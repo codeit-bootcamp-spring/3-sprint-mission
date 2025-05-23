@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.Dto.message;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 import java.util.Objects;
@@ -18,9 +19,4 @@ import java.util.UUID;
  */
 
 public record MessageUpdateRequest(
-        String newContent) {
-
-    public MessageUpdateRequest {
-        Objects.requireNonNull(newContent, "no Content in request");
-    }
-}
+        @NotNull String newContent) { }

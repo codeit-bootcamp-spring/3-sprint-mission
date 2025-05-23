@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateResponse;
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentFindRequest;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;

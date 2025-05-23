@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.Dto.readStatus;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 import java.time.Instant;
@@ -19,9 +20,4 @@ import java.util.UUID;
  */
 
 public record ReadStatusUpdateRequest
-        (Instant newLastReadAt) {
-
-    public ReadStatusUpdateRequest {
-        Objects.requireNonNull(newLastReadAt, "no lastReadAt in request");
-    }
-}
+        (@NotNull Instant newLastReadAt) { }

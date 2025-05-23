@@ -1,21 +1,17 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.Dto.message.MessageAttachmentsCreateRequest;
 import com.sprint.mission.discodeit.Dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.Dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -63,7 +59,7 @@ public class MessageController {
     @PatchMapping(path = "/{messageId}")
     public ResponseEntity<?> updateMessage(
             @PathVariable UUID messageId,
-            @RequestBody MessageUpdateRequest request) {
+            @Valid @RequestBody MessageUpdateRequest request) {
         return messageService.updateMessage(messageId, request);
     }
 }

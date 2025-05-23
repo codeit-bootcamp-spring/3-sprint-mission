@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.Dto.channel;
 
+import jakarta.validation.constraints.NotNull;
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -12,11 +14,5 @@ import java.util.Set;
  */
 
 public record PublicChannelCreateRequest(
-    String name,
-    String description) {
-
-  public PublicChannelCreateRequest {
-    Objects.requireNonNull(name, "no channelName in request");
-    Objects.requireNonNull(description, "no description in request");
-  }
-}
+    @NotNull String name,
+    @NotNull String description) {}

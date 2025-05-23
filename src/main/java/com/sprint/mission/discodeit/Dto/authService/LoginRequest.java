@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.Dto.authService;
 
-import lombok.Getter;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Objects;
 
@@ -17,11 +17,8 @@ import java.util.Objects;
  */
 
 public record LoginRequest
-    (String username,
-    String password)
-{
-    public LoginRequest {
-        Objects.requireNonNull(username, "no username in request");
-        Objects.requireNonNull(password, "no password in request");
-    }
-}
+    (
+            @NotNull(message = "아이디가 반드시 필요합니다.") String username,
+            @NotNull(message = "비밀번호가 반드시 필요합니다.") String password
+    )
+{ }

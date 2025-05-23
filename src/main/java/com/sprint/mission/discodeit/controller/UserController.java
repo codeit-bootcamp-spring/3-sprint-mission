@@ -1,13 +1,14 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.Dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.Dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.Dto.userStatus.UserStatusUpdateByUserIdRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -43,11 +44,10 @@ public class UserController {
     @Operation(summary = "사용자 생성", description = "사용자를 생성합니다. 이미지는 옵션입니다.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> create(
-            @RequestPart("userCreateRequest") UserCreateRequest request,
+            @Valid @RequestPart("userCreateRequest") UserCreateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profileFile) {
-        Optional<BinaryContentCreateRequest> profileRequest =
-                Optional.ofNullable(profileFile)
-                        .flatMap(this::resolveProfileRequest);
+        Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profileFile)
+                .flatMap(this::resolveProfileRequest);
         return userService.create(request, profileRequest);
     }
 

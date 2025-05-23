@@ -18,7 +18,9 @@ import java.util.UUID;
  * 2025. 4. 28.        doungukkim       최초 생성
  */
 
-public record UserStatusUpdateRequest(UUID userStatusId, Instant newTime) {
+public record UserStatusUpdateRequest(
+        UUID userStatusId,
+        Instant newTime) {
     public UserStatusUpdateRequest {
         Objects.requireNonNull(userStatusId, "no userId in request");
         Objects.requireNonNull(newTime, "no newTime in request");

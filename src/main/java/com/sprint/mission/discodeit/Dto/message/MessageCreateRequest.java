@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.Dto.message;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 import java.util.List;
@@ -19,14 +20,7 @@ import java.util.UUID;
  */
 
 public record MessageCreateRequest(
-        String content,
-        UUID channelId,
-        UUID authorId
-) {
-    public MessageCreateRequest {
-
-        Objects.requireNonNull(authorId, "no sender in request");
-        Objects.requireNonNull(channelId, "no channelId in request");
-        Objects.requireNonNull(content, "no content in request");
-    }
-}
+        @NotNull String content,
+        @NotNull UUID channelId,
+        @NotNull UUID authorId
+) { }

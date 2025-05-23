@@ -5,10 +5,9 @@ import com.sprint.mission.discodeit.Dto.readStatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -48,7 +47,7 @@ public class ReadStatusController {
     @PatchMapping("/{readStatusId}")
     public ResponseEntity<?> update(
             @PathVariable UUID readStatusId,
-            @RequestBody ReadStatusUpdateRequest request) {
+            @Valid @RequestBody ReadStatusUpdateRequest request) {
         return readStatusService.update(readStatusId, request);
     }
 }
