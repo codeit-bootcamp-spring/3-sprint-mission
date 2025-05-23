@@ -42,6 +42,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RequestMapping("/api/user")
 @Controller
+@ResponseBody
 public class UserController {
 
     private final UserService userService;
