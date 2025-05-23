@@ -154,8 +154,8 @@ public class BasicMessageService implements MessageService {
                 messageWithAttachments.getCreatedAt(),
                 messageWithAttachments.getUpdatedAt(),
                 messageWithAttachments.getContent(),
-                messageWithAttachments.getSenderId(),
                 messageWithAttachments.getChannelId(),
+                messageWithAttachments.getSenderId(),
                 messageWithAttachments.getAttachmentIds().stream().toList());
 
         return ResponseEntity
