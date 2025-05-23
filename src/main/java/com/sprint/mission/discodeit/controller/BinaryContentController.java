@@ -46,7 +46,7 @@ public class BinaryContentController {
             path = "/api/binaryContent/find"
     )
     @ResponseBody
-    public ResponseEntity<BinaryContent> findByApi(@RequestParam("binaryContentId") UUID binaryContentId) {
+    public ResponseEntity<BinaryContent> findByApi(@RequestParam UUID binaryContentId) {
         BinaryContent content = binaryContentService.find(binaryContentId)
                 .orElseThrow(() -> new RuntimeException("해당 BinaryContent가 존재하지 않습니다."));
         return ResponseEntity.ok(content);

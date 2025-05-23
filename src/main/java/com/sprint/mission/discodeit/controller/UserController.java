@@ -36,13 +36,13 @@ public class UserController {
     )
     @ResponseBody
     public ResponseEntity<User> create(
-            @RequestPart("userCreateRequest") UserCreateRequest request,
-            @RequestPart(value = "profile", required = false) MultipartFile profile
+            @RequestPart UserCreateRequest userCreateRequest,
+            @RequestPart(required = false) MultipartFile profile
     ) {
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest);
 
-        User created = userService.create(request, profileRequest);
+        User created = userService.create(userCreateRequest, profileRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -72,11 +72,11 @@ public class UserController {
     )
     @ResponseBody
     public ResponseEntity<User> update(
-            @PathVariable("id") UUID id,
-            @RequestPart("updateRequest") UserUpdateRequest updateRequest,
-            @RequestPart(value = "newProfile", required = false) MultipartFile profile
+            @PathVariable UUID id,
+            @RequestPart UserUpdateRequest updateRequest,
+            @RequestPart(required = false) MultipartFile newProfile
     ) {
-        Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
+        Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(newProfile)
                 .flatMap(this::resolveProfileRequest);
 
         return ResponseEntity.ok(userService.update(updateRequest, profileRequest));

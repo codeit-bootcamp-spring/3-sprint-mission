@@ -30,7 +30,7 @@ public class MessageController {
     @RequestMapping(method = RequestMethod.POST, consumes = "multipart/form-data")
     @ResponseBody
     public ResponseEntity<Message> create(
-            @RequestPart("request") MessageCreateRequest request,
+            @RequestPart MessageCreateRequest request,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> files
     ) throws IOException {
         List<BinaryContentCreateRequest> attachments = new ArrayList<>();
