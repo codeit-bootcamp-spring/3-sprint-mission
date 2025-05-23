@@ -17,15 +17,13 @@ import java.util.UUID;
  */
 public interface UserService {
 
-    ResponseEntity<?> create(UserCreateRequest userCreateRequest,
-                             Optional<BinaryContentCreateRequest> profile);
+    ResponseEntity<?> create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profile);
 
     ResponseEntity<?> findUserById(UUID userId);
 
     ResponseEntity<?> findAllUsers();
 
-    ResponseEntity<?> updateImage(UUID userId, UserUpdateRequest request,
-                                  MultipartFile file);
+    ResponseEntity<?> update(UUID userId, UserUpdateRequest request, MultipartFile file);
 
     // not required
     ResponseEntity<?> updateUser(UUID userId, String name);

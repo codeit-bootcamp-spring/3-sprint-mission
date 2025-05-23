@@ -23,12 +23,12 @@ public interface ChannelService {
 
     ResponseEntity<ChannelCreateResponse> createChannel(PublicChannelCreateRequest request);
 
-    ChannelFindResponse find(ChannelFindRequest request);
-
-    ResponseEntity<?> findAllByUserId(UUID userId);
 
     ResponseEntity<?> update(UUID channelId, ChannelUpdateRequest request);
 
     ResponseEntity<?> deleteChannel(UUID channelId);
 
+    ResponseEntity<?> findAllByUserId(UUID userId);
+
+    //    ChannelFindResponse find(ChannelFindRequest request);
 }

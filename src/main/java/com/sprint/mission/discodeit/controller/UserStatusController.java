@@ -19,12 +19,5 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("api/users")
 @RequiredArgsConstructor
 public class UserStatusController {
-
-  private final UserStatusService userStatusService;
-
-  //  @RequestMapping(path = "/update-time", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> updateTime(@RequestBody UserStatusUpdateByUserIdRequest request) {
-//    return userStatusService.updateByUserId( request.newTime());
-    return null;
-  }
+    private final UserStatusService userStatusService;
 }

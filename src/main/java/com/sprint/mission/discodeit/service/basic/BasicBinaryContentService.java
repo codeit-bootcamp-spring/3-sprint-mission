@@ -1,18 +1,18 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateResponse;
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentFindRequest;
 import com.sprint.mission.discodeit.Dto.binaryContent.FindBinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic
@@ -34,7 +34,6 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public ResponseEntity<?> findAllByIdIn(List<UUID> binaryContentIds) {
         List<FindBinaryContentResponse> responses = new ArrayList<>();
-
 
         if (binaryContentIds.isEmpty()) {
             throw new IllegalStateException("no ids in param");
@@ -64,7 +63,6 @@ public class BasicBinaryContentService implements BinaryContentService {
         if (binaryContent == null)
             return ResponseEntity.status(404).body("BinaryContent with id " + binaryContentId + " not found");
 
-
         FindBinaryContentResponse response = new FindBinaryContentResponse(
                 binaryContent.getId(),
                 binaryContent.getCreatedAt(),
@@ -72,7 +70,6 @@ public class BasicBinaryContentService implements BinaryContentService {
                 binaryContent.getSize(),
                 binaryContent.getContentType(),
                 Base64.getEncoder().encodeToString(binaryContent.getBytes()));
-
 
         return ResponseEntity.status(200)
                 .body(response);
@@ -88,21 +85,4 @@ public class BasicBinaryContentService implements BinaryContentService {
     public void delete(UUID attachmentId) {
         binaryContentRepository.deleteBinaryContentById(attachmentId); // file, jcf : throw exception
     }
-
-    //    @Override
-//    public ResponseEntity<?> findAllByIdIn2(List<UUID> binaryContentIds) {
-//        if (binaryContentIds.isEmpty()) {
-//            throw new IllegalStateException("no ids in param");
-//        }
-//        List<BinaryContent> attachments = binaryContentRepository.findAllByIds(binaryContentIds);
-//
-//        List<String> attachmentPaths = new ArrayList<>();
-//
-//        for (BinaryContent att : attachments) {
-//            attachmentPaths.add("/uploads/img/attachments/" + att.getId() + att.getExtension());
-//        }
-//
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(attachmentPaths);
-//    }
 }

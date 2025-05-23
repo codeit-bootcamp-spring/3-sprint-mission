@@ -35,6 +35,25 @@ public class BasicReadStatusService implements ReadStatusService {
 
 
     @Override
+    public ResponseEntity<?> findAllByUserId(UUID userId) {
+        List<ReadStatus> readStatusList = Optional.ofNullable(readStatusRepository.findAllByUserId(userId))
+                .orElseThrow(() -> new IllegalStateException("userId로 찾을 수 없음: BasicReadStatusService.findAllByUserId"));
+
+        List<FindReadStatusesResponse> responses = new ArrayList<>();
+        for (ReadStatus readStatus : readStatusList) {
+            responses.add(new FindReadStatusesResponse(
+                    readStatus.getId(),
+                    readStatus.getCreatedAt(),
+                    readStatus.getUpdatedAt(),
+                    readStatus.getUserId(),
+                    readStatus.getChannelId(),
+                    readStatus.getLastReadAt()
+            ));
+        }
+        return ResponseEntity.status(200).body(responses);
+    }
+
+    @Override
     public ResponseEntity<?> create(ReadStatusCreateRequest request) {
         UUID userId = request.userId();
         UUID channelId = request.channelId();
@@ -65,36 +84,10 @@ public class BasicReadStatusService implements ReadStatusService {
         return ResponseEntity.status(HttpStatus.CREATED).body(readStatusCreateResponse);
     }
 
-    @Override
-    public ReadStatus findById(UUID readStatusId) {
-        return Optional.ofNullable(readStatusRepository.findById(readStatusId)).orElseThrow(() -> new IllegalStateException("no read status to find"));
-    }
-
-    @Override
-    public ResponseEntity<?> findAllByUserId(UUID userId) {
-        List<ReadStatus> readStatusList = Optional.ofNullable(readStatusRepository.findAllByUserId(userId))
-                .orElseThrow(() -> new IllegalStateException("userId로 찾을 수 없음: BasicReadStatusService.findAllByUserId"));
-
-        List<FindReadStatusesResponse> responses = new ArrayList<>();
-        for (ReadStatus readStatus : readStatusList) {
-            responses.add(new FindReadStatusesResponse(
-                    readStatus.getId(),
-                    readStatus.getCreatedAt(),
-                    readStatus.getUpdatedAt(),
-                    readStatus.getUserId(),
-                    readStatus.getChannelId(),
-                    readStatus.getLastReadAt()
-            ));
-        }
-        return ResponseEntity.status(200).body(responses);
-    }
 
     @Override
     public ResponseEntity<?> update(UUID readStatusId, ReadStatusUpdateRequest request) {
-        readStatusRepository.updateUpdatedTime(
-                readStatusId,
-                request.newLastReadAt()
-        );
+        readStatusRepository.updateUpdatedTime(readStatusId, request.newLastReadAt());
         ReadStatus readStatus = readStatusRepository.findById(readStatusId);
         if (readStatus == null) {
             return ResponseEntity.status(404).body("readStatus with id " + readStatusId + " not found");
@@ -111,6 +104,13 @@ public class BasicReadStatusService implements ReadStatusService {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(response);
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+
+    @Override
+    public ReadStatus findById(UUID readStatusId) {
+        return Optional.ofNullable(readStatusRepository.findById(readStatusId)).orElseThrow(() -> new IllegalStateException("no read status to find"));
     }
 
     @Override

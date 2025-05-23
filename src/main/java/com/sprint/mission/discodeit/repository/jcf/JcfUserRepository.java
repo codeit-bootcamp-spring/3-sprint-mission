@@ -109,4 +109,30 @@ public class JcfUserRepository implements UserRepository {
         }
         return true;
     }
+
+//        userRepository.hasSameName -> 모든 유저에서 이름이 같은 계정이 있는지 확인
+//        userRepository.hasSameEmail -> 모든 유저에서 이메일이 같은 계정이 있는지 확인
+//        or stream 으로 둘 다 같이 확인하고 하나라도 있으면 return false
+
+    @Override
+    public boolean hasSameName(String name) {
+        if (data.isEmpty()) return false;
+        for (User user : data.values()) {
+            if (user.getUsername().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean hasSameEmail(String email) {
+        if (data.isEmpty()) return false;
+        for (User user : data.values()) {
+            if (user.getEmail().equals(email)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

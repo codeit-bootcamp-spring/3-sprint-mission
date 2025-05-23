@@ -7,6 +7,6 @@ package com.sprint.mission.discodeit.Dto.user;
  * NOTE ----------------------------------------------------------- 2025. 5. 15. doungukkim
  * 최초 생성
  */
-public record UserUpdateRequest(String newName, String newEmail, String newPassword) {
+public record UserUpdateRequest(String newUsername, String newEmail, String newPassword) {
 
 }

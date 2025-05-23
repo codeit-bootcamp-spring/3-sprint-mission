@@ -170,4 +170,65 @@ public class FileUserRepository implements UserRepository {
         }
         return true;
     }
+
+    //        userRepository.hasSameName -> 모든 유저에서 이름이 같은 계정이 있는지 확인
+//        userRepository.hasSameEmail -> 모든 유저에서 이메일이 같은 계정이 있는지 확인
+//        or stream 으로 둘 다 같이 확인하고 하나라도 있으면 return false
+
+
+    @Override
+    public boolean hasSameName(String name) {
+        Path directory = filePathProperties.getUserDirectory();
+
+        if (!Files.exists(directory)) {
+            return false;
+        }
+        try {
+            return Files.list(directory)
+                    .filter(path -> path.toString().endsWith(".ser"))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            Object data = ois.readObject();
+                            return (User) data;
+                        } catch (IOException | ClassNotFoundException exception) {
+                            throw new RuntimeException("파일을 읽어오지 못했습니다: FileUserRepository.findAllUsers",
+                                    exception);
+                        }
+                    })
+                    .anyMatch(user -> user.getUsername().equals(name));
+        } catch (IOException e) {
+            throw new RuntimeException("유저들을 리스트로 만드는 과정에 문제 발생: FileChannelRepository.findAllUsers", e);
+        }
+    }
+
+    @Override
+    public boolean hasSameEmail(String email) {
+        Path directory = filePathProperties.getUserDirectory();
+
+        if (!Files.exists(directory)) {
+            return false;
+        }
+        try {
+            return Files.list(directory)
+                    .filter(path -> path.toString().endsWith(".ser"))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            Object data = ois.readObject();
+                            return (User) data;
+                        } catch (IOException | ClassNotFoundException exception) {
+                            throw new RuntimeException("파일을 읽어오지 못했습니다: FileUserRepository.findAllUsers",
+                                    exception);
+                        }
+                    })
+                    .anyMatch(user -> user.getEmail().equals(email));
+        } catch (IOException e) {
+            throw new RuntimeException("유저들을 리스트로 만드는 과정에 문제 발생: FileChannelRepository.findAllUsers", e);
+        }
+    }
 }
