@@ -38,7 +38,7 @@ public class BasicChannelService implements ChannelService {
     public Channel create(PrivateChannelCreateRequest request) {
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         Channel createChannel = channelRepository.save(channel);
-        request.participantsIds().stream().map(userId -> new ReadStatus(userId, createChannel.getId(), Instant.MIN))
+        request.userIds().stream().map(userId -> new ReadStatus(userId, createChannel.getId(), Instant.MIN))
                 .forEach(readStatusRepository::save);
 
         return channelRepository.save(channel);
@@ -58,7 +58,7 @@ public class BasicChannelService implements ChannelService {
                 .map(ReadStatus::getUserId)
                 .toList();
 
-        if (channel.getType().equals(ChannelType.PUBLIC)) {
+        if (ChannelType.PUBLIC.equals(channel.getType())) {
             return ChannelResponse.builder()
                     .id(channel.getId())
                     .type(channel.getType())
