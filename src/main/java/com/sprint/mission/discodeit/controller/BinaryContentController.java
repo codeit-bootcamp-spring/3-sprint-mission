@@ -31,14 +31,12 @@ public class BinaryContentController {
     @Operation(summary = "여러 첨부 파일 조회", description = "여러 첨부파일들을 조회 합니다.")
     @GetMapping
     public ResponseEntity<?> findAttachment(@RequestParam List<UUID> binaryContentIds) {
-        System.out.println("BinaryContentController.findAttachment");
         return binaryContentService.findAllByIdIn(binaryContentIds);
     }
 
     @Operation(summary = "단일 첨부 파일 조회", description = "단일 첨부파일을 조회 합니다.")
     @GetMapping(path = "/{binaryContentId}")
     public ResponseEntity<?> findBinaryContent(@PathVariable UUID binaryContentId) {
-        System.out.println("BinaryContentController.findBinaryContent");
         return binaryContentService.find(binaryContentId);
     }
 }

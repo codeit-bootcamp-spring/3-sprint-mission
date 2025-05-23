@@ -23,7 +23,7 @@ public interface UserService {
 
     ResponseEntity<?> findAllUsers();
 
-    ResponseEntity<?> update(UUID userId, UserUpdateRequest request, MultipartFile file); //이름 수정 필요 이미지 수정이 아니고 name, email, password 수정 image는 option임
+    ResponseEntity<?> update(UUID userId, UserUpdateRequest request, MultipartFile file);
 
     // not required
     ResponseEntity<?> updateUser(UUID userId, String name);
