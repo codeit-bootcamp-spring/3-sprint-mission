@@ -21,4 +21,6 @@ public interface MessageRepository {
     List<Message> findAllByChannelIdOrderByCreatedAtAsc(UUID channelId); // 채널별 정렬된 메시지 목록
 
     void deleteById(UUID messageId); // 메시지 삭제
+
+    Optional<Message> findTopByChannelIdOrderByCreatedAtDesc(UUID channelId); // 마지막 메시지 조회 추가
 }

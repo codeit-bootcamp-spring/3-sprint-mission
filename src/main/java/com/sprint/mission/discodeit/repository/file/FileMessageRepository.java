@@ -116,4 +116,11 @@ public class FileMessageRepository implements MessageRepository {
             throw new RuntimeException("메시지 삭제 실패: " + messageId, e);
         }
     }
+
+    @Override
+    public Optional<Message> findTopByChannelIdOrderByCreatedAtDesc(UUID channelId) {
+        return findAll().stream()
+                .filter(m -> m.getChannelId().equals(channelId))
+                .max(Comparator.comparing(Message::getCreatedAt));
+    }
 }

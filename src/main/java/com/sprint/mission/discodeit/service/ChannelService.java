@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.entity.Channel;
 
 import java.util.List;
@@ -21,14 +22,13 @@ public interface ChannelService {
     // Read: 모든 채널 조회
     List<Channel> getAllChannels();
 
-    //Update: 채널 참가
-    // boolean joinChannel(UUID channelId, UUID userId, String password);
+    // Read: 특정 사용자가 볼 수 있는 모든 채널 목록 조회
+    List<ChannelDto> getChannelsByUserId(UUID userId);
 
     // Update: 특정 채널 정보 업데이트
     Channel updateChannel(PublicChannelUpdateRequest request);
 
-    // Delete: 채널 나가기
-    // boolean leaveChannel(UUID channelId, UUID userId);
     // Delete: 특정 채널 삭제
     void deleteChannel(UUID channelId);
+
 }

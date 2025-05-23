@@ -4,7 +4,6 @@ import java.util.UUID;
 
 public record PublicChannelCreateRequest(
         String channelName,
-        String password,
-        UUID ownerChannelId
+        UUID ownerId
 ) {
 }

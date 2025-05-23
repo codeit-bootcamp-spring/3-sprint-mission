@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용자 목록</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Optional: Add a modern font like Noto Sans KR from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-left">
+            <span class="info-icon">i</span> <!-- Simple 'i' for icon, can be replaced with an SVG or font icon -->
+            <span>http://localhost:8080</span>
+        </div>
+
+    </header>
+    <div class="list-title">
+        <h1>사용자 목록</h1>
+    </div>
+    <div class="container">
+        <!-- The h1 title is now part of the header, so it can be removed from here or kept if a different page title is needed -->
+        <!-- <h1>사용자 목록</h1> -->
+        <div class="user-list" id="userList">
+            <!-- Users will be dynamically inserted here -->
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
