@@ -33,7 +33,6 @@ import java.util.UUID;
 public class MessageController {
     private final MessageService messageService;
 
-
     @Operation(summary = "채널 메세지 목록 조회", description = "채널의 메세지 목록을 전체 조회 합니다.")
     @GetMapping
     public ResponseEntity<?> findChannelMessages(@RequestParam UUID channelId) {
