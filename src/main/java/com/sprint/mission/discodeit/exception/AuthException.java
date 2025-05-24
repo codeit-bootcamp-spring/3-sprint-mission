@@ -2,6 +2,10 @@ package com.sprint.mission.discodeit.exception;
 
 public class AuthException extends BusinessException {
 
+  public AuthException(ErrorCode errorCode) {
+    super(errorCode, errorCode.getMessage());
+  }
+
   public AuthException(ErrorCode errorCode, String message) {
     super(errorCode, message);
   }

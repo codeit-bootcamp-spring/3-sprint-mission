@@ -13,12 +13,12 @@ public enum ErrorCode {
   PROCESSING_ERROR("PROCESSING_ERROR", "처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
   private final String messageKey;
-  private final String code;
+  private final String message;
   private final int status;
 
-  ErrorCode(String messageKey, String code, HttpStatus status) {
+  ErrorCode(String messageKey, String message, HttpStatus status) {
     this.messageKey = messageKey;
-    this.code = code;
+    this.message = message;
     this.status = status.value();
   }
 }

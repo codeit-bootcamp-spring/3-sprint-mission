@@ -6,7 +6,7 @@ import java.util.UUID;
 public class BinaryContentException extends BusinessException {
 
   public BinaryContentException(ErrorCode errorCode) {
-    super(errorCode, errorCode.getCode());
+    super(errorCode, errorCode.getMessage());
   }
 
   public BinaryContentException(ErrorCode errorCode, String message) {

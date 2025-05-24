@@ -17,13 +17,13 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(BusinessException.class)
   public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
 
-    log.error("[서비스 오류] code: {}, messageKey: {}", e.getErrorCode().getCode(),
+    log.error("[서비스 오류] code: {}, messageKey: {}", e.getErrorCode().getMessage(),
         e.getErrorCode().getMessageKey(), e);
 
     ErrorCode errorCode = e.getErrorCode();
 
     ErrorResponse response = new ErrorResponse(
-        errorCode.getCode(),
+        errorCode.getMessage(),
         errorCode.getMessageKey(),
         errorCode.getStatus(),
         Instant.now()
