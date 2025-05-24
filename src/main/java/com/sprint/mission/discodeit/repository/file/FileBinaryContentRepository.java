@@ -2,14 +2,18 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.util.FileSaveManager;
 import jakarta.annotation.PostConstruct;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
-
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
@@ -22,7 +26,10 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     @PostConstruct
     public void init() {
-        data.putAll(loadFile());
+       Map<UUID, BinaryContent> loaded = FileSaveManager.loadFromFile(getFile());
+       if (loaded != null) {
+           data.putAll(loaded);
+       }
     }
 
     private File getFile() {
@@ -32,7 +39,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     @Override
     public void save(BinaryContent binaryContent) {
         data.put(binaryContent.getId(), binaryContent);
-        saveFile();
+        FileSaveManager.saveToFile(getFile(), data);
     }
 
     @Override
@@ -61,30 +68,6 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     @Override
     public void deleteById(UUID id) {
         data.remove(id);
-        saveFile();
-    }
-
-    private Map<UUID, BinaryContent> loadFile() {
-        Map<UUID, BinaryContent> data = new HashMap<>();
-
-        if (getFile().exists()) {
-            try (FileInputStream fis = new FileInputStream(getFile());
-                 ObjectInputStream in = new ObjectInputStream(fis)) {
-                data = (Map<UUID, BinaryContent>)in.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return data;
-    }
-
-    private synchronized void saveFile() {
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FileSaveManager.saveToFile(getFile(), data);
     }
 }
