@@ -1,7 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.CreateMessageRequest;
-import com.sprint.mission.discodeit.dto.UpdateMessageRequest;
+import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entitiy.BinaryContent;
 import com.sprint.mission.discodeit.entitiy.Message;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -18,78 +19,121 @@ import java.util.*;
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
 
-    private final MessageRepository messageRepository;
-    private final ChannelRepository channelRepository;
-    private final UserRepository userRepository;
-    private final BinaryContentRepository binaryContentRepository;
+  private final MessageRepository messageRepository;
+  private final ChannelRepository channelRepository;
+  private final UserRepository userRepository;
+  private final BinaryContentRepository binaryContentRepository;
 
-    @Override
-    public Message create(CreateMessageRequest request) {
-        if(request.attachments().isPresent()){
-            List<UUID> attachmentsId = new ArrayList<>();
-            request.attachments().get()
-                    .forEach(attachment->{
-                        BinaryContent binaryContent = binaryContentRepository.save(new BinaryContent(attachment.contentType(), attachment.content()));
-                        attachmentsId.add(binaryContent.getId());
-                    });
-            return messageRepository.save(new Message(request.channelId(), request.authorId(), attachmentsId, request.text()));
-        }else{
-            return messageRepository.save(new Message(request.channelId(), request.authorId(), null, request.text()));
+  @Override
+  public Message create(MessageCreateRequest request,
+      Optional<List<BinaryContentCreateRequest>> attachments) {
+    if (attachments.isPresent()) {
+      List<UUID> attachmentsId = new ArrayList<>();
+      attachments.get()
+          .forEach(attachment -> {
+            BinaryContent binaryContent = binaryContentRepository.save(
+                new BinaryContent(attachment.filename(), attachment.contentType(),
+                    attachment.bytes(), (long) attachment.bytes().length));
+            attachmentsId.add(binaryContent.getId());
+          });
+      return messageRepository.save(
+          new Message(request.channelId(), request.authorId(), attachmentsId, request.content()));
+    } else {
+      return messageRepository.save(
+          new Message(request.channelId(), request.authorId(), null, request.content()));
+    }
+
+  }
+
+  @Override
+  public List<Message> findAllByChannelId(UUID channelId) {
+    List<Message> read = messageRepository.read();
+    List<Message> messageList = read.stream()
+        .filter(message -> message.getChannelId().equals(channelId))
+        .toList();
+    return messageList;
+  }
+
+  @Override
+  public void update(UUID messageId, MessageUpdateRequest request,
+      Optional<List<BinaryContentCreateRequest>> createBinaryContentRequest) {
+    Optional<Message> optionalMessage = messageRepository.readById(messageId);
+
+    try {
+      // 메시지 존재 여부 확인
+      optionalMessage.ifPresentOrElse(existingMessage -> {
+        List<UUID> attachmentIds = new ArrayList<>();
+
+        // 기존 메시지에 첨부파일이 있을 경우 삭제
+        if (existingMessage.getAttachmentIds() != null) {
+          attachmentIds.addAll(existingMessage.getAttachmentIds());
+          attachmentIds.forEach(binaryContentRepository::delete);
+          existingMessage.setAttachmentIds(null);
         }
 
-    }
+        // 업데이트할 이미지가 있을 경우
+        if (createBinaryContentRequest.isPresent()) {
+          // 새 이미지를 저장하고 첨부파일 ID 리스트 업데이트
+          createBinaryContentRequest.get().forEach(attachment -> {
+            BinaryContent binaryContent = binaryContentRepository.save(
+                new BinaryContent(attachment.filename(), attachment.contentType(),
+                    attachment.bytes(), (long) attachment.bytes().length)
+            );
+            attachmentIds.add(binaryContent.getId());
+          });
 
-    @Override
-    public List<Message> findAllByChannelId(UUID channelId) {
-        List<Message> read = messageRepository.read();
-        List<Message> messageList = read.stream()
-                .filter(message -> message.getChannelId().equals(channelId))
-                .toList();
-        return messageList;
-    }
+          // 첨부파일 갱신된 메시지 저장
+          Message updatedMessage = new Message(
+              existingMessage.getChannelId(),
+              existingMessage.getAuthorId(),
+              attachmentIds,
+              request.newContent()
+          );
+          messageRepository.update(messageId, updatedMessage);
 
-    @Override
-    public void update(UpdateMessageRequest request) {
-        Optional<Message> message = messageRepository.readById(request.id());
-        try {
-            if (message.isPresent()) {
-                Message updateMessage = new Message(message.get().getChannelId(),message.get().getAuthorId(),message.get().getAttachmentIds(), request.text());
-                messageRepository.update(request.id(),updateMessage);
-            }
-            else{
-                    throw new NoSuchElementException("해당 id의 메세지는 존재하지 않습니다.");
-            }
-
-        }catch (NoSuchElementException e) {
-            System.out.println(e);
+        } else {
+          // 새 이미지가 없을 경우 텍스트만 업데이트
+          Message updatedMessage = new Message(
+              existingMessage.getChannelId(),
+              existingMessage.getAuthorId(),
+              existingMessage.getAttachmentIds(),
+              request.newContent()
+          );
+          messageRepository.update(messageId, updatedMessage);
         }
+      }, () -> {
+        throw new NoSuchElementException("해당 ID의 메시지는 존재하지 않습니다.");
+      });
+
+    } catch (NoSuchElementException e) {
+      System.out.println(e.getMessage());
     }
 
-    @Override
-    public void delete(UUID messageId) {
-        Optional<Message> message = messageRepository.readById(messageId);
-        try {
-            if (message.isPresent()) {
-                if(message.get().getAttachmentIds()==null){
-                    messageRepository.delete(messageId);
-                }
-                else {
-                    List<UUID> attachmentIds = message.get().getAttachmentIds();
-                    attachmentIds.forEach(attachmentId -> {
-                        Optional<BinaryContent> binaryContent = binaryContentRepository.readById(attachmentId);
-                        if (binaryContent.isPresent()) {
-                            binaryContentRepository.delete(binaryContent.get().getId());
-                        }
-                    });
-                    messageRepository.delete(messageId);
-                }
+  }
+
+  @Override
+  public void delete(UUID messageId) {
+    Optional<Message> message = messageRepository.readById(messageId);
+    try {
+      if (message.isPresent()) {
+        if (message.get().getAttachmentIds() == null) {
+          messageRepository.delete(messageId);
+        } else {
+          List<UUID> attachmentIds = message.get().getAttachmentIds();
+          attachmentIds.forEach(attachmentId -> {
+            Optional<BinaryContent> binaryContent = binaryContentRepository.readById(attachmentId);
+            if (binaryContent.isPresent()) {
+              binaryContentRepository.delete(binaryContent.get().getId());
             }
-            else {
-                throw new NoSuchElementException("해당 id의 메세지는 존재하지 않습니다.");
-            }
-        }catch (NoSuchElementException e){
-            System.out.println(e);
+          });
+          messageRepository.delete(messageId);
         }
-
+      } else {
+        throw new NoSuchElementException("해당 id의 메세지는 존재하지 않습니다.");
+      }
+    } catch (NoSuchElementException e) {
+      System.out.println(e);
     }
+
+  }
 }

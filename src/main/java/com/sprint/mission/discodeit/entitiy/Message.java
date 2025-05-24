@@ -14,35 +14,35 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Message implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private UUID channelId;
-    private UUID authorId;
-    private List<UUID> attachmentIds;
-    private String text;
+  private UUID id;
+  private Instant createdAt;
+  private Instant updatedAt;
+  private UUID channelId;
+  private UUID authorId;
+  private List<UUID> attachmentIds;
+  private String content;
 
-    public Message(UUID channelId, UUID authorId, List<UUID> attachmentIds, String text) {
-        this.channelId = channelId;
-        this.authorId = authorId;
-        this.attachmentIds = attachmentIds;
-        this.text = text;
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-    }
+  public Message(UUID channelId, UUID authorId, List<UUID> attachmentIds, String content) {
+    this.channelId = channelId;
+    this.authorId = authorId;
+    this.attachmentIds = attachmentIds;
+    this.content = content;
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+  }
 
-    @Override
-    public String toString() {
-        return "Message{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", channelId=" + channelId +
-                ", authorId=" + authorId +
-                ", attachmentIds=" + attachmentIds +
-                ", text='" + text + '\'' +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "Message{" +
+        "id=" + id +
+        ", createdAt=" + createdAt +
+        ", updatedAt=" + updatedAt +
+        ", channelId=" + channelId +
+        ", authorId=" + authorId +
+        ", attachmentIds=" + attachmentIds +
+        ", newContent='" + content + '\'' +
+        '}';
+  }
 }
