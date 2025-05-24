@@ -11,70 +11,62 @@ import java.util.concurrent.ConcurrentHashMap;
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JCFUserRepository implements UserRepository {
-    private final Map<UUID, User> data;
 
-    public JCFUserRepository() {
-        data = new ConcurrentHashMap<>();
-    }
+  private final Map<UUID, User> data;
 
-    @Override
-    public User save(User user) {
-        data.put(user.getId(), user);
+  public JCFUserRepository() {
+    data = new ConcurrentHashMap<>();
+  }
 
-        return user;
-    }
+  @Override
+  public User save(User user) {
+    data.put(user.getId(), user);
 
-    @Override
-    public Optional<User> findById(UUID userId) {
-        Optional<User> foundUser = data.entrySet().stream()
-                .filter(entry -> entry.getKey().equals(userId))
-                .map(Map.Entry::getValue)
-                .findFirst();
+    return user;
+  }
 
-        return foundUser;
-    }
+  @Override
+  public Optional<User> findById(UUID userId) {
+    Optional<User> foundUser = data.entrySet().stream()
+        .filter(entry -> entry.getKey().equals(userId))
+        .map(Map.Entry::getValue)
+        .findFirst();
 
-    @Override
-    public List<User> findByNameContaining(String name) {
-        return data.values().stream()
-                .filter(user -> user.getName().contains(name))
-                .toList();
-    }
+    return foundUser;
+  }
 
-    @Override
-    public Optional<User> findByName(String name) {
-        Optional<User> foundUser = data.values().stream()
-                .filter(user -> user.getName().equals(name))
-                .findFirst();
+  @Override
+  public List<User> findByNameContaining(String name) {
+    return data.values().stream()
+        .filter(user -> user.getUsername().contains(name))
+        .toList();
+  }
 
-        return foundUser;
-    }
+  @Override
+  public Optional<User> findByName(String name) {
+    Optional<User> foundUser = data.values().stream()
+        .filter(user -> user.getUsername().equals(name))
+        .findFirst();
 
-    @Override
-    public Optional<User> findByEmail(String email) {
-        Optional<User> foundUser = data.values().stream()
-                .filter(user -> user.getEmail().equals(email))
-                .findFirst();
+    return foundUser;
+  }
 
-        return foundUser;
-    }
+  @Override
+  public Optional<User> findByEmail(String email) {
+    Optional<User> foundUser = data.values().stream()
+        .filter(user -> user.getEmail().equals(email))
+        .findFirst();
 
-    @Override
-    public Optional<User> findByNameAndPassword(String name, String password) {
-        Optional<User> foundUser = data.values().stream()
-                .filter(user -> user.getName().equals(name) && user.getPassword().equals(password))
-                .findFirst();
+    return foundUser;
+  }
 
-        return foundUser;
-    }
+  @Override
+  public List<User> findAll() {
+    return new ArrayList<>(data.values());
+  }
 
-    @Override
-    public List<User> findAll() {
-        return new ArrayList<>(data.values());
-    }
-
-    @Override
-    public void deleteById(UUID userId) {
-        data.remove(userId);
-    }
+  @Override
+  public void deleteById(UUID userId) {
+    data.remove(userId);
+  }
 }

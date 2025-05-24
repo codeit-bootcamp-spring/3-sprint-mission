@@ -2,3 +2,15 @@ discodeit:
   repository:
     type: file # jcf | file
     file-directory: src/main/java/com/sprint/mission/discodeit/.discodeit
+
+springdoc:
+  api-docs:
+    # OpenAPI 명세서 경로(JSON)
+    path: /v3/api-docs
+  swagger-ui:
+    # OpenAPI 명세서 경로(HTML)
+    path: /swagger-ui.html
+    # 요청 응답 시간 표시
+    display-request-duration: true
+    # HTTP 메서드 기준으로 정렬
+    operations-sorter: method

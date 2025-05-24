@@ -2,14 +2,18 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.util.FileSaveManager;
 import jakarta.annotation.PostConstruct;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
-
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
@@ -22,7 +26,10 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     @PostConstruct
     public void init() {
-        data.putAll(loadFile());
+        Map<UUID, UserStatus> loaded = FileSaveManager.loadFromFile(getFile());
+        if (loaded != null) {
+            data.putAll(loaded);
+        }
     }
 
     private File getFile() {
@@ -33,7 +40,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     public void save(UserStatus userStatus) {
         data.put(userStatus.getId(), userStatus);
 
-        saveFile();
+        FileSaveManager.saveToFile(getFile(), data);
     }
 
     @Override
@@ -64,37 +71,13 @@ public class FileUserStatusRepository implements UserStatusRepository {
     public void deleteById(UUID id) {
         data.remove(id);
 
-        saveFile();
+        FileSaveManager.saveToFile(getFile(), data);
     }
 
     @Override
     public void deleteByUserId(UUID userId) {
         data.entrySet().removeIf(entry -> entry.getValue().getUserId().equals(userId));
 
-        saveFile();
-    }
-
-    private Map<UUID, UserStatus> loadFile() {
-        Map<UUID, UserStatus> data = new HashMap<>();
-
-        if (getFile().exists()) {
-            try (FileInputStream fis = new FileInputStream(getFile());
-                 ObjectInputStream in = new ObjectInputStream(fis)) {
-                data = (Map<UUID, UserStatus>)in.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return data;
-    }
-
-    private synchronized void saveFile() {
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FileSaveManager.saveToFile(getFile(), data);
     }
 }
