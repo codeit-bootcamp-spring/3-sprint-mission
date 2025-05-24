@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -31,7 +32,7 @@ import java.util.UUID;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JcfChannelRepository implements ChannelRepository {
 
-    Map<UUID, Channel> data = new HashMap<>();
+    Map<UUID, Channel> data = new ConcurrentHashMap<>();
 
     @Override
     public Channel createPrivateChannelByName() {

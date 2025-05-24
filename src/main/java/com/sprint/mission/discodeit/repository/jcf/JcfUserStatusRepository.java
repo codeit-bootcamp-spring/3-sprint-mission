@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * packageName    : com.sprint.mission.discodeit.repository.jcf fileName       :
@@ -23,7 +24,7 @@ import java.util.*;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JcfUserStatusRepository implements UserStatusRepository {
 
-  Map<UUID, UserStatus> data = new HashMap<>();
+  Map<UUID, UserStatus> data = new ConcurrentHashMap<>();
 
   @Override
   public void updateByUserId(UUID userId, Instant newLastActiveAt) {

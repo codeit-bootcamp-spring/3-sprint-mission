@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * packageName    : com.sprint.mission.discodeit.repository.jcf fileName       : JcfUserRepository2
@@ -20,7 +21,7 @@ import java.util.*;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JcfUserRepository implements UserRepository {
 
-    Map<UUID, User> data = new HashMap<>();
+    Map<UUID, User> data = new ConcurrentHashMap<>();
 
     public User createUserByName(String username, String email, String password) {
         User user = new User(username, email, password);

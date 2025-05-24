@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * packageName    : com.sprint.mission.discodeit.repository.jcf
@@ -24,7 +25,7 @@ import java.util.*;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class jcfReadStatusRepository implements ReadStatusRepository {
 
-    Map<UUID, ReadStatus> data = new HashMap<>();
+    Map<UUID, ReadStatus> data = new ConcurrentHashMap<>();
 
 
     @Override

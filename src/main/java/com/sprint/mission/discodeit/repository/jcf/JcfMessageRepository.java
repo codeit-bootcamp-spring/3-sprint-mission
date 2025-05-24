@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * packageName    : com.sprint.mission.discodeit.repository.jcf
@@ -25,7 +26,7 @@ import java.util.*;
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JcfMessageRepository implements MessageRepository {
-    public final Map<UUID, Message> data = new HashMap<>();
+    public final Map<UUID, Message> data = new ConcurrentHashMap<>();
 
     // working on it
     @Override
