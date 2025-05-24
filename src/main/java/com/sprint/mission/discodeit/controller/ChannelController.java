@@ -12,13 +12,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/channel")
+@RequestMapping("/api/channels")
 @Controller
 @ResponseBody
 public class ChannelController {
@@ -28,7 +33,7 @@ public class ChannelController {
     /**
      * 공개 채널 생성
      */
-    @RequestMapping(path = "/createPublic")
+    @PostMapping(path = "public")
     public ResponseEntity<Channel> create(@RequestBody PublicChannelCreateRequest request) {
         Channel createdChannel = channelService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
@@ -37,7 +42,7 @@ public class ChannelController {
     /**
      * 비공개 채널 생성
      */
-    @RequestMapping(path = "/createPrivate")
+    @PostMapping(path = "private")
     public ResponseEntity<Channel> create(@RequestBody PrivateChannelCreateRequest request) {
         Channel createdChannel = channelService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
@@ -46,7 +51,7 @@ public class ChannelController {
     /**
      * 공개 채널 정보 수정
      */
-    @RequestMapping(path = "/update/{channelId}")
+    @PatchMapping(path = "{channelId}")
     public ResponseEntity<Channel> update(
             @PathVariable("channelId") UUID channelId,
             @RequestBody PublicChannelUpdateRequest request
@@ -58,7 +63,7 @@ public class ChannelController {
     /**
      * 채널 삭제
      */
-    @RequestMapping(path = "/delete/{channelId}")
+    @DeleteMapping(path = "{channelId}")
     public ResponseEntity<Void> delete(@PathVariable("channelId") UUID channelId) {
         channelService.delete(channelId);
         return ResponseEntity.noContent().build();
@@ -67,8 +72,8 @@ public class ChannelController {
     /**
      * 특정 사용자가 볼 수 있는 모든 채널 목록 조회
      */
-    @RequestMapping(path = "/findAll/{userId}")
-    public ResponseEntity<List<ChannelDto>> findAll(@PathVariable("userId") UUID userId) {
+    @GetMapping
+    public ResponseEntity<List<ChannelDto>> findAll(@RequestParam("userId") UUID userId) {
         List<ChannelDto> channels = channelService.findAllByUserId(userId);
         return ResponseEntity.ok(channels);
     }
