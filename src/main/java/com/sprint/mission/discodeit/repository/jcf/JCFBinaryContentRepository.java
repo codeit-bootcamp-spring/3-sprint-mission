@@ -2,50 +2,45 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
+@Repository
 public class JCFBinaryContentRepository implements BinaryContentRepository {
-
-    Map<UUID, BinaryContent> binaryContentMap;
+    private final Map<UUID, BinaryContent> data;
 
     public JCFBinaryContentRepository() {
-        this.binaryContentMap = new HashMap<>();
+        this.data = new HashMap<>();
     }
 
     @Override
     public BinaryContent save(BinaryContent binaryContent) {
-        // 1. BinaryContent를 Map에 저장
-        binaryContentMap.put(binaryContent.getId(), binaryContent);
+        this.data.put(binaryContent.getId(), binaryContent);
         return binaryContent;
     }
 
     @Override
-    public BinaryContent findById(UUID id) {
-        return binaryContentMap.get(id);
+    public Optional<BinaryContent> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
     public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
-        return ids.stream() // ids 리스트에 대해 Stream 생성
-                .map(binaryContentMap::get) // 각 UUID에 대해 binaryContentMap에서 해당하는 BinaryContent 가져옴
-                .filter(Objects::nonNull) // null 아닌 값만 filter
-                .collect(Collectors.toList()); // 리스트로 collect
-    }
-
-    @Override
-    public List<BinaryContent> findAll() {
-        return new ArrayList<>(binaryContentMap.values());
+        return this.data.values().stream()
+                .filter(content -> ids.contains(content.getId()))
+                .toList();
     }
 
     @Override
     public boolean existsById(UUID id) {
-        return binaryContentMap.containsKey(id);
+        return this.data.containsKey(id);
     }
 
     @Override
-    public void delete(UUID id) {
-        binaryContentMap.remove(id);
+    public void deleteById(UUID id) {
+        this.data.remove(id);
     }
 }

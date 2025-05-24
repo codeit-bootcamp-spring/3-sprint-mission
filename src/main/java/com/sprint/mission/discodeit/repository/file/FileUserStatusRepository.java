@@ -2,6 +2,9 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -10,14 +13,18 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
+@Repository
 public class FileUserStatusRepository implements UserStatusRepository {
-
     private final Path DIRECTORY;
     private final String EXTENSION = ".ser";
 
-    public FileUserStatusRepository() { // 생성자에서 File의 이름과 Path를 생성하고 Directory 없으면 생성
-        this.DIRECTORY = Paths.get(System.getProperty("userStatus.dir"), "file-data-map", UserStatus.class.getSimpleName());
+    public FileUserStatusRepository(
+            @Value("${discodeit.repository.file-directory:data}") String fileDirectory
+    ) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), fileDirectory, UserStatus.class.getSimpleName());
         if (Files.notExists(DIRECTORY)) {
             try {
                 Files.createDirectories(DIRECTORY);
@@ -27,71 +34,59 @@ public class FileUserStatusRepository implements UserStatusRepository {
         }
     }
 
-    private Path resolvePath(UUID id) {return DIRECTORY.resolve(id + EXTENSION);} // id만 있으면 EXTENSION을 합쳐 Path를 반환
-    
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
+    }
+
     @Override
     public UserStatus save(UserStatus userStatus) {
         Path path = resolvePath(userStatus.getId());
         try (
-                ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()));
-                ) {
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
             oos.writeObject(userStatus);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        
         return userStatus;
     }
 
     @Override
-    public Optional<UserStatus> findByUserId(UUID userId) {
-        UserStatus userStatusNullable = null; // 초기화
-        Path path = resolvePath(userId); // 경로 계산
-
-        if (Files.exists(path)) { // 파일 존재유무
-            try (
-                    ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()));
-                    )
-            {
-                userStatusNullable = (UserStatus) ois.readObject(); // 파일에서 UserStatus 객체 read
-                return Optional.ofNullable(userStatusNullable); // Optional 처리
-            } catch (ClassNotFoundException | IOException e) {
-                e.printStackTrace();
-                return Optional.empty();
-            }
-        }
-
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<UserStatus> find(UUID id) {
+    public Optional<UserStatus> findById(UUID id) {
         UserStatus userStatusNullable = null;
         Path path = resolvePath(id);
         if (Files.exists(path)) {
             try (
-                    ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()));
-            )
-            {
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
                 userStatusNullable = (UserStatus) ois.readObject();
-            } catch (ClassNotFoundException | IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
         }
-
         return Optional.ofNullable(userStatusNullable);
     }
 
     @Override
+    public Optional<UserStatus> findByUserId(UUID userId) {
+        return findAll().stream()
+                .filter(userStatus -> userStatus.getUserId().equals(userId))
+                .findFirst();
+    }
+
+    @Override
     public List<UserStatus> findAll() {
-        try {
-            return Files.list(DIRECTORY)
+        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+            return paths
                     .filter(path -> path.toString().endsWith(EXTENSION))
                     .map(path -> {
                         try (
-                                ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()));
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
                         ) {
-                                    return (UserStatus) ois.readObject();
+                            return (UserStatus) ois.readObject();
                         } catch (IOException | ClassNotFoundException e) {
                             throw new RuntimeException(e);
                         }
@@ -103,18 +98,24 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     @Override
-    public boolean existsByUserId(UUID userId) {
-        Path path = resolvePath(userId);
+    public boolean existsById(UUID id) {
+        Path path = resolvePath(id);
         return Files.exists(path);
     }
 
     @Override
-    public void delete(UUID userId) {
-        Path path = resolvePath(userId);
+    public void deleteById(UUID id) {
+        Path path = resolvePath(id);
         try {
             Files.delete(path);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void deleteByUserId(UUID userId) {
+        this.findByUserId(userId)
+                .ifPresent(userStatus -> this.deleteById(userStatus.getId()));
     }
 }
