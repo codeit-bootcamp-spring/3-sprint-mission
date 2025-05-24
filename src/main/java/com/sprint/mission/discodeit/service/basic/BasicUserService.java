@@ -187,7 +187,6 @@ public class BasicUserService implements UserService {
             return ResponseEntity.status(400).body("user with name" + request.newUsername() + " already exists");
         }
         userRepository.updateNameById(user.getId(), newName);
-        System.out.println("After name update: " + userRepository.findUserById(userId));
 
         // email: 있으면 400
         if (userRepository.hasSameEmail(newEmail) && (!oldEmail.equals(newEmail))) { // 있고 내 이메일이 아닌경우
@@ -202,11 +201,9 @@ public class BasicUserService implements UserService {
         }
         // 메모리 유저정보 업데이트
         user = userRepository.findUserById(userId);
-        System.out.println(user.toString());
         // 프로필 여부 확인 (있으면 삭제 후 추가)
         if (hasValue(file)) {
             if (user.getProfileId() != null) {
-                System.out.println("프로필 있음 삭제를 시작합니다.");
                 // delete file
                 BinaryContent profile = binaryContentRepository.findById(user.getProfileId());
 
@@ -223,7 +220,6 @@ public class BasicUserService implements UserService {
                 }
                 // BinaryContent 삭제
                 binaryContentRepository.deleteBinaryContentById(user.getProfileId());
-                System.out.println("삭제완료");
             }
 
 

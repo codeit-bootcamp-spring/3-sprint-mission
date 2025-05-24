@@ -63,7 +63,6 @@ public class UserController {
             @PathVariable UUID userId,
             @RequestPart("userUpdateRequest") UserUpdateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profileFile) {
-        System.out.println(request.toString());
         return userService.update(userId, request, profileFile);
     }
 

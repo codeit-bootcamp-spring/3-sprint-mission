@@ -31,21 +31,18 @@ public class ChannelController {
     @Operation(summary = "공개 채널 생성", description = "공개 채널을 생성합니다.")
     @PostMapping("/public")
     public ResponseEntity<?> create(@Valid @RequestBody PublicChannelCreateRequest request) {
-        System.out.println("ChannelController.create-public");
         return channelService.createChannel(request);
     }
 
     @Operation(summary = "비공개 채널 생성", description = "비공개 채널을 생성합니다.")
     @PostMapping("/private")
     public ResponseEntity<?> create(@RequestBody PrivateChannelCreateRequest request) {
-        System.out.println("ChannelController.create-private");
         return channelService.createChannel(request);
     }
 
     @Operation(summary = "채널 삭제", description = "채널을 삭제합니다.")
     @DeleteMapping("/{channelId}")
     public ResponseEntity<?> removeChannel(@PathVariable UUID channelId) {
-        System.out.println("ChannelController.removeChannel");
         return channelService.deleteChannel(channelId);
     }
 
@@ -54,7 +51,6 @@ public class ChannelController {
     public ResponseEntity<?> changeName(
             @PathVariable UUID channelId,
             @Valid @RequestBody ChannelUpdateRequest request) {
-        System.out.println("ChannelController.changeName");
         return channelService.update(channelId, request);
     }
 
