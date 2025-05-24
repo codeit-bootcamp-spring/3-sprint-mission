@@ -27,7 +27,7 @@ public class ReadStatusController implements ReadStatusApi {
 
   @PostMapping
   public ResponseEntity<ReadStatus> create(@RequestBody ReadStatusCreateRequest request) {
-    ReadStatus response = readStatusService.create(request);
+    ReadStatus response = readStatusService.create(request.userId(), request.channelId());
     return ResponseEntity.created(URI.create("/api/readStatuses" + response.getId()))
         .body(response);
   }

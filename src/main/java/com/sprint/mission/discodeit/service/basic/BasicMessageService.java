@@ -1,8 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.exception.ChannelException;
@@ -13,6 +10,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -31,15 +29,14 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public Message create(MessageCreateRequest messageCreateRequest,
-      List<BinaryContentCreateRequest> binaryContentCreateRequests) throws ChannelException {
-    userRepository.findById(messageCreateRequest.authorId())
-        .orElseThrow(() -> UserException.notFound(messageCreateRequest.authorId()));
+  public Message create(CreateMessageCommand command) throws ChannelException {
+    userRepository.findById(command.authorId())
+        .orElseThrow(() -> UserException.notFound(command.authorId()));
 
-    channelRepository.findById(messageCreateRequest.channelId())
-        .orElseThrow(() -> ChannelException.notFound(messageCreateRequest.channelId()));
+    channelRepository.findById(command.channelId())
+        .orElseThrow(() -> ChannelException.notFound(command.channelId()));
 
-    Set<UUID> attachmentIds = binaryContentCreateRequests.stream()
+    Set<UUID> attachmentIds = command.attachments().stream()
         .map(attachmentRequest -> {
           String fileName = attachmentRequest.fileName();
           String contentType = attachmentRequest.contentType();
@@ -51,9 +48,9 @@ public class BasicMessageService implements MessageService {
           return createdBinaryContent.getId();
         }).collect(Collectors.toSet());
 
-    Message message = Message.create(messageCreateRequest.content(),
-        messageCreateRequest.authorId(),
-        messageCreateRequest.channelId(),
+    Message message = Message.create(command.content(),
+        command.authorId(),
+        command.channelId(),
         attachmentIds);
 
     return messageRepository.save(message);
@@ -74,10 +71,10 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public Message updateContent(UUID messageId, MessageUpdateRequest request) {
+  public Message updateContent(UUID messageId, String newContent) {
     return messageRepository.findById(messageId)
         .map(message -> {
-          message.updateContent(request.newContent());
+          message.updateContent(newContent);
           return messageRepository.save(message);
         }).orElseThrow(() -> MessageException.notFound(messageId));
   }

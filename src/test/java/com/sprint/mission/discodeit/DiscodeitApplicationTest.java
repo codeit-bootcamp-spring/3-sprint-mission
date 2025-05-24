@@ -4,9 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.ChannelType;
@@ -14,6 +11,8 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
+import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import java.nio.file.Path;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -54,11 +53,11 @@ public class DiscodeitApplicationTest {
 
     // 1. 사용자 생성
     UserResponse user = userService.create(
-        new UserCreateRequest("test@test.com", "길동쓰", "pwd123"), null);
+        new CreateUserCommand("test@test.com", "길동쓰", "pwd123", null));
     assertNotNull(user.id(), "사용자 ID 생성 확인");
 
     // 2. Public 채널 생성
-    ChannelResponse channel = channelService.create(new PublicChannelCreateRequest("공지", "공지사항"));
+    ChannelResponse channel = channelService.create("공지", "공지사항");
     assertNotNull(channel.id(), "채널 ID 생성 확인");
 
     // 3. Public 채널 조회
@@ -67,9 +66,9 @@ public class DiscodeitApplicationTest {
     assertEquals(ChannelType.PUBLIC, channelResponse.type(), "Public 채널 타입 확인");
 
     // 4. 메시지 생성 (첨부파일 없이)
-    MessageCreateRequest messageRequest = new MessageCreateRequest("안녕하세요.", user.id(),
-        channel.id());
-    Message message = messageService.create(messageRequest, List.of());
+    CreateMessageCommand createMessageCommand = new CreateMessageCommand("안녕하세요.", user.id(),
+        channel.id(), List.of());
+    Message message = messageService.create(createMessageCommand);
     assertNotNull(message.getId(), "메시지 ID 생성 확인");
     assertEquals("안녕하세요.", message.getContent(), "메시지 내용 확인");
     assertEquals(user.id(), message.getAuthorId(), "메시지 작성자 확인");

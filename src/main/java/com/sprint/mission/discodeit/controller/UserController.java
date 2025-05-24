@@ -1,17 +1,19 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.UserApi;
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.BinaryContentException;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import com.sprint.mission.discodeit.service.command.CreateUserCommand;
+import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
+import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -39,13 +41,9 @@ public class UserController implements UserApi {
       @RequestPart UserCreateRequest userCreateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    BinaryContentCreateRequest profileImageRequest = null;
+    CreateUserCommand command = toCreateCommand(userCreateRequest, profile);
 
-    if (profile != null) {
-      profileImageRequest = resolveProfileImageRequest(profile).orElse(null);
-    }
-
-    UserResponse response = userService.create(userCreateRequest, profileImageRequest);
+    UserResponse response = userService.create(command);
     return ResponseEntity.created(URI.create("/api/users/" + response.id())).body(response);
   }
 
@@ -58,13 +56,9 @@ public class UserController implements UserApi {
       @RequestPart UserUpdateRequest userUpdateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    BinaryContentCreateRequest profileImageRequest = null;
+    UpdateUserCommand command = toUpdateCommand(userId, userUpdateRequest, profile);
 
-    if (profile != null) {
-      profileImageRequest = resolveProfileImageRequest(profile).orElse(null);
-    }
-    UserResponse updated = userService.update(userId, userUpdateRequest,
-        profileImageRequest);
+    UserResponse updated = userService.update(command);
     return ResponseEntity.ok(updated);
   }
 
@@ -86,20 +80,41 @@ public class UserController implements UserApi {
     return ResponseEntity.noContent().build();
   }
 
-  private Optional<BinaryContentCreateRequest> resolveProfileImageRequest(MultipartFile profile) {
-    if (profile.isEmpty()) {
-      return Optional.empty();
-    } else {
-      try {
-        BinaryContentCreateRequest request = new BinaryContentCreateRequest(
-            profile.getOriginalFilename(),
-            profile.getContentType(),
-            profile.getBytes()
-        );
-        return Optional.of(request);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+  private BinaryContentData resolveProfileImageRequest(MultipartFile profile) {
+    if (profile == null || profile.isEmpty()) {
+      return null;
     }
+
+    try {
+      return new BinaryContentData(
+          profile.getOriginalFilename(),
+          profile.getContentType(),
+          profile.getBytes()
+      );
+    } catch (IOException e) {
+      throw BinaryContentException.processingError();
+    }
+  }
+
+  private CreateUserCommand toCreateCommand(UserCreateRequest request, MultipartFile profile) {
+    BinaryContentData profileData = resolveProfileImageRequest(profile);
+    return new CreateUserCommand(
+        request.username(),
+        request.email(),
+        request.password(),
+        profileData
+    );
+  }
+
+  private UpdateUserCommand toUpdateCommand(UUID userId, UserUpdateRequest request,
+      MultipartFile profile) {
+    BinaryContentData profileData = resolveProfileImageRequest(profile);
+    return new UpdateUserCommand(
+        userId,
+        request.newUsername(),
+        request.newEmail(),
+        request.newPassword(),
+        profileData
+    );
   }
 }

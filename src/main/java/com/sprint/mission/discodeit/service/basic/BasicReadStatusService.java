@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.exception.ReadStatusException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -21,21 +20,21 @@ public class BasicReadStatusService implements ReadStatusService {
   private final ChannelRepository channelRepository;
 
   @Override
-  public ReadStatus create(ReadStatusCreateRequest request) {
-    userRepository.findById(request.userId())
+  public ReadStatus create(UUID userId, UUID channelId) {
+    userRepository.findById(userId)
         .orElseThrow(
-            () -> ReadStatusException.invalidUserOrChannel(request.userId(), request.channelId()));
+            () -> ReadStatusException.invalidUserOrChannel(userId, channelId));
 
-    channelRepository.findById(request.channelId())
+    channelRepository.findById(channelId)
         .orElseThrow(
-            () -> ReadStatusException.invalidUserOrChannel(request.userId(), request.channelId()));
+            () -> ReadStatusException.invalidUserOrChannel(userId, channelId));
 
-    readStatusRepository.findByUserIdAndChannelId(request.userId(), request.channelId())
+    readStatusRepository.findByUserIdAndChannelId(userId, channelId)
         .ifPresent(existingStatus -> {
-          throw ReadStatusException.duplicate(request.userId(), request.channelId());
+          throw ReadStatusException.duplicate(userId, channelId);
         });
 
-    ReadStatus readStatus = ReadStatus.create(request);
+    ReadStatus readStatus = ReadStatus.create(userId, channelId);
 
     return readStatusRepository.save(readStatus);
   }

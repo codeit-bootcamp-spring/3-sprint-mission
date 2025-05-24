@@ -25,6 +25,8 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.service.command.CreateUserCommand;
+import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Nested;
@@ -56,6 +58,9 @@ class BasicUserServiceTest {
     @Test
     void DTO를_이용하여_새로운_사용자를_생성하고_UserStatus를_함께_생성한다() {
       UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123");
+      CreateUserCommand command = new CreateUserCommand(request.email(), request.username(),
+          request.password(), null);
+
       User savedUser = UserFixture.createCustomUser(request, null);
       UserStatus savedUserStatus = UserStatusFixture.createValidUserStatus(savedUser.getId());
 
@@ -64,7 +69,7 @@ class BasicUserServiceTest {
       when(userRepository.save(any(User.class))).thenReturn(savedUser);
       when(userStatusRepository.save(any(UserStatus.class))).thenReturn(savedUserStatus);
 
-      UserResponse createdUserResponse = basicUserService.create(request, null);
+      UserResponse createdUserResponse = basicUserService.create(command);
 
       assertNotNull(createdUserResponse);
       assertEquals(request.email(), createdUserResponse.email());
@@ -80,12 +85,21 @@ class BasicUserServiceTest {
     @Test
     void DTO로_새로운_사용자를_생성하며_프로필_이미지를_같이_등록할_수_있다() {
       BinaryContent binaryContent = BinaryContentFixture.createValid();
+
       BinaryContentCreateRequest profileImage = new BinaryContentCreateRequest(
           binaryContent.getFileName(),
           binaryContent.getContentType(),
           binaryContent.getBytes()
       );
+      BinaryContentData binaryContentData = new BinaryContentData(
+          profileImage.fileName(),
+          profileImage.contentType(),
+          profileImage.bytes());
+
       UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123");
+      CreateUserCommand command = new CreateUserCommand(request.email(), request.username(),
+          request.password(), binaryContentData);
+
       User savedUser = UserFixture.createCustomUser(request, binaryContent);
       savedUser.updateProfileId(binaryContent.getId());
       UserStatus savedUserStatus = UserStatusFixture.createValidUserStatus(savedUser.getId());
@@ -98,7 +112,7 @@ class BasicUserServiceTest {
 
       ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
-      UserResponse createdUserResponse = basicUserService.create(request, profileImage);
+      UserResponse createdUserResponse = basicUserService.create(command);
 
       assertNotNull(createdUserResponse);
       assertEquals(request.email(), createdUserResponse.email());
@@ -116,12 +130,15 @@ class BasicUserServiceTest {
     @Test
     void 이미_사용_중인_이메일로_사용자를_생성하려_하면_예외가_발생한다() {
       UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123");
+      CreateUserCommand command = new CreateUserCommand(request.email(), request.username(),
+          request.password(), null);
+
       User existingUser = User.create("test@test.com", "다른사람", "pwd123");
 
       when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(existingUser));
 
       UserException exception = assertThrows(UserException.class,
-          () -> basicUserService.create(request, null));
+          () -> basicUserService.create(command));
       assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
 
       verify(userRepository).findByEmail(request.email());
@@ -134,13 +151,16 @@ class BasicUserServiceTest {
     @Test
     void 이미_사용_중인_username으로_사용자를_생성하려_하면_예외가_발생한다() {
       UserCreateRequest request = new UserCreateRequest("test@test.com", "길동쓰", "pwd123");
+      CreateUserCommand command = new CreateUserCommand(request.email(), request.username(),
+          request.password(), null);
+
       User existingUser = User.create("다른@test.com", "길동쓰", "pwd123");
 
       when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
       when(userRepository.findByName(request.username())).thenReturn(Optional.of(existingUser));
 
       UserException exception = assertThrows(UserException.class,
-          () -> basicUserService.create(request, null));
+          () -> basicUserService.create(command));
       assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
 
       verify(userRepository).findByEmail(request.email());

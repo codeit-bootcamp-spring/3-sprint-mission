@@ -32,7 +32,10 @@ public class ChannelController implements ChannelApi {
   @PostMapping("/public")
   public ResponseEntity<ChannelResponse> create(
       @RequestBody PublicChannelCreateRequest request) {
-    ChannelResponse response = channelService.create(request);
+    ChannelResponse response = channelService.create(
+        request.name(),
+        request.description()
+    );
     return ResponseEntity.created(URI.create("/api/channels/" + response.id()))
         .body(response);
   }
@@ -40,7 +43,9 @@ public class ChannelController implements ChannelApi {
   @PostMapping("/private")
   public ResponseEntity<ChannelResponse> create(
       @RequestBody PrivateChannelCreateRequest request) {
-    ChannelResponse response = channelService.create(request);
+    ChannelResponse response = channelService.create(
+        request.participantIds()
+    );
     return ResponseEntity.created(URI.create("/api/channels/" + response.id()))
         .body(response);
   }
@@ -54,7 +59,11 @@ public class ChannelController implements ChannelApi {
   public ResponseEntity<ChannelResponse> update(
       @PathVariable UUID channelId,
       @RequestBody PublicChannelUpdateRequest request) {
-    return ResponseEntity.ok(channelService.update(channelId, request));
+    return ResponseEntity.ok(channelService.update(
+        channelId,
+        request.newName(),
+        request.newDescription()
+    ));
   }
 
   @DeleteMapping("/{channelId}")

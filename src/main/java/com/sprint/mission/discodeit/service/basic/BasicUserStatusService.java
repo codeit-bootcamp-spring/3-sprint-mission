@@ -1,8 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.UserException;
 import com.sprint.mission.discodeit.exception.UserStatusException;
@@ -25,10 +22,8 @@ public class BasicUserStatusService implements UserStatusService {
   private final UserRepository userRepository;
 
   @Override
-  public UserStatus create(UserStatusCreateRequest request) {
-    UUID userId = request.userId();
-
-    User user = userRepository.findById(userId)
+  public UserStatus create(UUID userId) {
+    userRepository.findById(userId)
         .orElseThrow(() -> UserException.notFound(userId));
 
     if (userStatusRepository.findByUserId(userId).isPresent()) {
@@ -57,10 +52,9 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
-  public UserStatus update(UserStatusUpdateRequest request) {
-    UUID id = request.userId();
-    UserStatus userStatus = userStatusRepository.findById(id)
-        .orElseThrow(() -> UserStatusException.notFound(id));
+  public UserStatus update(UUID userId) {
+    UserStatus userStatus = userStatusRepository.findById(userId)
+        .orElseThrow(() -> UserStatusException.notFound(userId));
 
     userStatus.updateLastActiveAt();
     return userStatus;

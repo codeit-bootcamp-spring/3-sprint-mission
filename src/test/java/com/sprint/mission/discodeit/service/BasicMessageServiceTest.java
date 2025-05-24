@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -23,6 +22,8 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
+import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,14 +58,15 @@ public class BasicMessageServiceTest {
       UUID channelId = UUID.randomUUID();
       String content = "메시지 내용";
 
-      MessageCreateRequest request = new MessageCreateRequest(content, userId, channelId);
+      CreateMessageCommand command = new CreateMessageCommand(content, userId, channelId,
+          List.of());
       Channel channel = ChannelFixture.createPublic();
 
       when(userRepository.findById(userId)).thenReturn(Optional.of(UserFixture.createValidUser()));
       when(channelRepository.findById(channelId)).thenReturn(Optional.of(channel));
       when(messageRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-      Message result = messageService.create(request, List.of());
+      Message result = messageService.create(command);
 
       assertNotNull(result.getId());
       verify(messageRepository).save(any());
@@ -76,9 +78,9 @@ public class BasicMessageServiceTest {
       UUID userId = UUID.randomUUID();
       UUID channelId = UUID.randomUUID();
 
-      BinaryContentCreateRequest binaryRequest1 = new BinaryContentCreateRequest(
+      BinaryContentData binaryRequest1 = new BinaryContentData(
           "file1.jpg", "image/jpeg", new byte[]{1, 2, 3, 4});
-      BinaryContentCreateRequest binaryRequest2 = new BinaryContentCreateRequest(
+      BinaryContentData binaryRequest2 = new BinaryContentData(
           "file2.jpg", "image/png", new byte[]{5, 6, 7, 8});
 
       Channel channel = ChannelFixture.createPublic();
@@ -90,10 +92,11 @@ public class BasicMessageServiceTest {
       when(messageRepository.save(any(Message.class))).thenAnswer(
           invocation -> invocation.getArgument(0));
 
-      MessageCreateRequest request = new MessageCreateRequest("첨부파일 메시지", userId, channelId);
+      CreateMessageCommand command = new CreateMessageCommand("첨부파일 메시지", userId, channelId,
+          List.of(binaryRequest1, binaryRequest2));
 
       // when
-      Message result = messageService.create(request, List.of(binaryRequest1, binaryRequest2));
+      Message result = messageService.create(command);
 
       assertNotNull(result.getId());
       verify(messageRepository).save(any());
@@ -136,7 +139,7 @@ public class BasicMessageServiceTest {
 
       MessageUpdateRequest updateRequest = new MessageUpdateRequest(updatedContent);
 
-      messageService.updateContent(messageId, updateRequest);
+      messageService.updateContent(messageId, updateRequest.newContent());
 
       assertEquals(updatedContent, message.getContent());
       verify(messageRepository).save(any());

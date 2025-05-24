@@ -1,8 +1,5 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import java.util.List;
 import java.util.UUID;
@@ -12,18 +9,19 @@ public interface ChannelService {
   /**
    * 새로운 공개 채널 생성한다
    *
-   * @param request ChannelCreateRequest
+   * @param name        채널 이름
+   * @param description 채널 설명
    * @return 생성된 채널 객체
    */
-  ChannelResponse create(PublicChannelCreateRequest request);
+  ChannelResponse create(String name, String description);
 
   /**
    * 새로운 비공개 채널을 생성한다
    *
-   * @param request ChannelCreateRequest
+   * @param participantIds 채널 참여자 IDs
    * @return 생성된 채널 객체
    */
-  ChannelResponse create(PrivateChannelCreateRequest request);
+  ChannelResponse create(List<UUID> participantIds);
 
   /**
    * ID로 채널을 조회한다
@@ -44,11 +42,15 @@ public interface ChannelService {
   /**
    * 채널 정보를 업데이트한다
    *
-   * @param channelId UUID
-   * @param request   ChannelUpdateRequest
+   * @param channelId      UUID
+   * @param newName        새로운 채널명
+   * @param newDescription 새로운 채널 설명
    * @return 업데이트된 채널 객체
    */
-  ChannelResponse update(UUID channelId, PublicChannelUpdateRequest request);
+  ChannelResponse update(
+      UUID channelId,
+      String newName,
+      String newDescription);
 
   /**
    * 채널을 삭제한다

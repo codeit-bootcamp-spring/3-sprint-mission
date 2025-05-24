@@ -1,8 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
@@ -31,16 +28,16 @@ public class BasicChannelService implements ChannelService {
   private final MessageRepository messageRepository;
 
   @Override
-  public ChannelResponse create(PublicChannelCreateRequest dto) {
-    Channel channel = Channel.createPublic(dto.name(), dto.description());
+  public ChannelResponse create(String name, String description) {
+    Channel channel = Channel.createPublic(name, description);
     Channel savedChannel = channelRepository.save(channel);
     return toResponse(savedChannel);
   }
 
   @Override
-  public ChannelResponse create(PrivateChannelCreateRequest dto) {
+  public ChannelResponse create(List<UUID> participantIds) {
     Channel channel = Channel.createPrivate();
-    for (UUID participantId : dto.participantIds()) {
+    for (UUID participantId : participantIds) {
       readStatusRepository.save(ReadStatus.create(participantId, channel.getId()));
     }
     Channel savedChannel = channelRepository.save(channel);
@@ -69,7 +66,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public ChannelResponse update(UUID channelId, PublicChannelUpdateRequest request) {
+  public ChannelResponse update(UUID channelId, String newName, String newDescription) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> ChannelException.notFound(channelId));
 
@@ -77,12 +74,12 @@ public class BasicChannelService implements ChannelService {
       throw ChannelException.cannotUpdatePrivateChannel(channelId);
     }
 
-    if (request.newName() != null) {
-      channel.updateName(request.newName());
+    if (newName != null) {
+      channel.updateName(newName);
     }
 
-    if (request.newDescription() != null) {
-      channel.updateDescription(request.newDescription());
+    if (newDescription != null) {
+      channel.updateDescription(newDescription);
     }
 
     Channel updated = channelRepository.save(channel);

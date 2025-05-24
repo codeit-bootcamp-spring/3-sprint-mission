@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import java.util.List;
 import java.util.UUID;
@@ -11,10 +9,10 @@ public interface UserStatusService {
   /**
    * 사용자 상태 생성
    *
-   * @param request 생성 요청 DTO
+   * @param userId 사용자 ID
    * @return 생성된 사용자 상태
    */
-  UserStatus create(UserStatusCreateRequest request);
+  UserStatus create(UUID userId);
 
   /**
    * ID로 사용자 상태 조회
@@ -42,10 +40,10 @@ public interface UserStatusService {
   /**
    * 사용자 상태 업데이트
    *
-   * @param request 업데이트 요청 DTO
+   * @param userId 사용자 ID
    * @return 업데이트된 사용자 상태
    */
-  UserStatus update(UserStatusUpdateRequest request);
+  UserStatus update(UUID userId);
 
   /**
    * userId로 사용자 상태 업데이트

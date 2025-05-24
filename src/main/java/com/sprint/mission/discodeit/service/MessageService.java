@@ -1,9 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,12 +10,10 @@ public interface MessageService {
   /**
    * 새 메시지를 생성한다
    *
-   * @param messageCreateRequest        MessageCreateRequest
-   * @param binaryContentCreateRequests List<BinaryContentCreateRequest>
+   * @param command CreateMessageCommand
    * @return 생성된 메시지 객체
    */
-  Message create(MessageCreateRequest messageCreateRequest,
-      List<BinaryContentCreateRequest> binaryContentCreateRequests);
+  Message create(CreateMessageCommand command);
 
   /**
    * ID로 메시지를 조회한다
@@ -38,10 +34,11 @@ public interface MessageService {
   /**
    * 메시지 내용을 업데이트한다
    *
-   * @param request MessageUpdateRequest
+   * @param messageId  메시지 ID
+   * @param newContent 새로운 메시지 내용
    * @return 업데이트된 메시지 객체
    */
-  Message updateContent(UUID messageId, MessageUpdateRequest request);
+  Message updateContent(UUID messageId, String newContent);
 
   /**
    * 메시지를 삭제한다

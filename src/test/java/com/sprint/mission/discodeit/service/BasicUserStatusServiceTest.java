@@ -7,8 +7,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.UserException;
@@ -53,13 +51,6 @@ class BasicUserStatusServiceTest {
   @Nested
   class Create {
 
-    private UserStatusCreateRequest request;
-
-    @BeforeEach
-    void setUp() {
-      request = new UserStatusCreateRequest(userId);
-    }
-
     @Test
     void 유효한_요청이면_유저_상태를_생성한다() {
       given(userRepository.findById(userId)).willReturn(Optional.of(user));
@@ -67,7 +58,7 @@ class BasicUserStatusServiceTest {
       given(userStatusRepository.save(any(UserStatus.class)))
           .willAnswer(invocation -> invocation.getArgument(0));
 
-      UserStatus result = userStatusService.create(request);
+      UserStatus result = userStatusService.create(userId);
 
       assertThat(result.getUserId()).isEqualTo(userId);
       verify(userRepository).findById(userId);
@@ -79,7 +70,7 @@ class BasicUserStatusServiceTest {
     void 존재하지_않는_유저이면_UserException_예외를_던진다() {
       given(userRepository.findById(userId)).willReturn(Optional.empty());
 
-      assertThatThrownBy(() -> userStatusService.create(request))
+      assertThatThrownBy(() -> userStatusService.create(userId))
           .isInstanceOf(UserException.class);
 
       verify(userRepository).findById(userId);
@@ -92,7 +83,7 @@ class BasicUserStatusServiceTest {
       given(userStatusRepository.findByUserId(userId))
           .willReturn(Optional.of(UserStatusFixture.createValidUserStatus(userId)));
 
-      assertThatThrownBy(() -> userStatusService.create(request))
+      assertThatThrownBy(() -> userStatusService.create(userId))
           .isInstanceOf(UserStatusException.class);
 
       verify(userRepository).findById(userId);
@@ -143,10 +134,9 @@ class BasicUserStatusServiceTest {
     @Test
     void ID로_유저_상태를_업데이트한다() {
       UUID statusId = userStatus.getId();
-      UserStatusUpdateRequest request = new UserStatusUpdateRequest(statusId);
       given(userStatusRepository.findById(statusId)).willReturn(Optional.of(userStatus));
 
-      UserStatus updated = userStatusService.update(request);
+      UserStatus updated = userStatusService.update(statusId);
 
       assertThat(updated).isNotNull();
       assertThat(updated.isOnline()).isTrue();

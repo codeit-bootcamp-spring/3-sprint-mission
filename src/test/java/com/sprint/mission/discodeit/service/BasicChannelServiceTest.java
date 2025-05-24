@@ -84,7 +84,8 @@ class BasicChannelServiceTest {
     void 공개_채널_생성_시_PUBLIC_타입의_채널이_생성된다() {
       when(channelRepository.save(any(Channel.class))).thenReturn(publicChannel);
 
-      ChannelResponse result = channelService.create(publicRequest);
+      ChannelResponse result = channelService.create(publicRequest.name(),
+          publicRequest.description());
 
       assertEquals(publicRequest.name(), result.name());
       assertEquals(ChannelType.PUBLIC, result.type());
@@ -96,7 +97,7 @@ class BasicChannelServiceTest {
       when(readStatusRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
       when(channelRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-      ChannelResponse result = channelService.create(privateRequest);
+      ChannelResponse result = channelService.create(privateRequest.participantIds());
 
       verify(readStatusRepository).save(any());
       verify(channelRepository).save(any(Channel.class));
@@ -157,7 +158,11 @@ class BasicChannelServiceTest {
           null);
 
       assertThrows(ChannelException.class,
-          () -> channelService.update(channelId, request));
+          () -> channelService.update(
+              channelId,
+              request.newName(),
+              request.newDescription()
+          ));
     }
 
     @Test
@@ -173,7 +178,11 @@ class BasicChannelServiceTest {
       PublicChannelUpdateRequest request = new PublicChannelUpdateRequest(newName,
           newDescription);
 
-      ChannelResponse result = channelService.update(channelId, request);
+      ChannelResponse result = channelService.update(
+          channelId,
+          request.newName(),
+          request.newDescription()
+      );
 
       assertEquals(newName, result.name());
       assertEquals(newDescription, result.description());

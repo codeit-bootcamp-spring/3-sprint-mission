@@ -1,15 +1,16 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.MessageApi;
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.exception.BinaryContentException;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
+import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -40,16 +41,12 @@ public class MessageController implements MessageApi {
       @RequestPart("message") MessageCreateRequest request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) {
 
-    List<BinaryContentCreateRequest> binaryContentCreateRequests =
-        Optional.ofNullable(attachments)
-            .orElse(List.of()).stream()
-            .map(this::resolveAttachmentRequest)
-            .flatMap(Optional::stream)
-            .toList();
+    List<BinaryContentData> binaryContentDataList = resolveAttachmentRequest(attachments);
+    CreateMessageCommand command = toCreateCommand(request, binaryContentDataList);
+    Message message = messageService.create(command);
 
-    Message message = messageService.create(request,
-        binaryContentCreateRequests);
-    return ResponseEntity.created(URI.create("/api/messages/" + message.getId())).body(message);
+    return ResponseEntity.created(URI.create("/api/messages/" + message.getId()))
+        .body(message);
   }
 
   @GetMapping
@@ -60,7 +57,7 @@ public class MessageController implements MessageApi {
   @PatchMapping("/{messageId}")
   public ResponseEntity<Message> update(@PathVariable UUID messageId,
       @RequestBody MessageUpdateRequest request) {
-    return ResponseEntity.ok(messageService.updateContent(messageId, request));
+    return ResponseEntity.ok(messageService.updateContent(messageId, request.newContent()));
   }
 
   @DeleteMapping("/{messageId}")
@@ -69,20 +66,36 @@ public class MessageController implements MessageApi {
     return ResponseEntity.noContent().build();
   }
 
-  private Optional<BinaryContentCreateRequest> resolveAttachmentRequest(MultipartFile attachments) {
-    if (attachments.isEmpty()) {
-      return Optional.empty();
+  private List<BinaryContentData> resolveAttachmentRequest(List<MultipartFile> attachments) {
+    if (attachments == null || attachments.isEmpty()) {
+      return List.of();
     }
 
+    return attachments.stream()
+        .filter(mf -> !mf.isEmpty())
+        .map(this::toBinaryContentData)
+        .toList();
+  }
+
+  private BinaryContentData toBinaryContentData(MultipartFile file) {
     try {
-      BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
-          attachments.getOriginalFilename(),
-          attachments.getContentType(),
-          attachments.getBytes()
+      return new BinaryContentData(
+          file.getOriginalFilename(),
+          file.getContentType(),
+          file.getBytes()
       );
-      return Optional.of(binaryContentCreateRequest);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw BinaryContentException.processingError();
     }
+  }
+
+  private CreateMessageCommand toCreateCommand(MessageCreateRequest request,
+      List<BinaryContentData> attachments) {
+    return new CreateMessageCommand(
+        request.content(),
+        request.authorId(),
+        request.channelId(),
+        attachments
+    );
   }
 }
