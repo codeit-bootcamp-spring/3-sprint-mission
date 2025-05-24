@@ -11,6 +11,5 @@ import lombok.Getter;
 public final class MessageUpdateRequest {
 
   @Schema(description = "변경할 메세지 내용", example = "changeText")
-  @NotBlank(message = "변경할 메세지 내용을 작성해주세요")
-  private final String messageContent;
+  private final String newContent;
 }

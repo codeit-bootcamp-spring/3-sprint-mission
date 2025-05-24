@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import com.sprint.mission.discodeit.validator.PasswordValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,7 +38,7 @@ import java.util.*;
  * */
 
 @RequiredArgsConstructor
-@RequestMapping("/api/user")
+@RequestMapping("/api/users")
 @RestController
 @Tag(name = "User", description = "User API")
 public class UserController {
@@ -71,20 +71,13 @@ public class UserController {
       }
   )
   // 신규 유저 생성 요청( POST )
-  @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<?> create(
+      @Valid
       @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    // 보안성 향상을 위한 비밀번호 검증 로직
-    List<String> errors = PasswordValidator.getPasswordValidationErrors(userCreateRequest.getPwd());
-    // 비밀번호 규칙 검증시 false 시
-    if (!errors.isEmpty()) {
-      // 규칙 검증 시 발생한 에러문 응답
-      String errorMessage = String.join("\n", errors);
-      // 응답 상태( 상태 코드 : 400 ) 및 내부 정보( 비밀번호 검증 시 발생한 에러 메세지 ) 반환
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
-    }
+
     // 선택적 유저 프로필 이미지 처리
     Optional<BinaryContentCreateRequest> profileRequest =
         Optional.ofNullable(profile)
@@ -110,8 +103,8 @@ public class UserController {
       try {
         BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
             profile.getOriginalFilename(),
-            profile.getBytes(),
-            profile.getContentType()
+            profile.getContentType(),
+            profile.getBytes()
         );
         return Optional.of(binaryContentCreateRequest);
       } catch (IOException e) {
@@ -123,7 +116,7 @@ public class UserController {
 
   @Operation(
       summary = "사용자 정보 수정",
-      description = "사용자 ID를 기반으로 사용자 정보를 패스워드 제외 전체 수정합니다",
+      description = "사용자 ID를 기반으로 사용자 정보를 수정합니다",
       responses = {
           @ApiResponse(
               responseCode = "200",
@@ -132,8 +125,8 @@ public class UserController {
           )
       }
   )
-  @PutMapping("/{userId}")
-  // 사용자 정보 수정( PUT )
+  @PatchMapping("/{userId}")
+  // 사용자 정보 수정( PATCH )
   public ResponseEntity<User> update(
       // 어느 사용자인지 식별
       @PathVariable UUID userId
@@ -146,43 +139,6 @@ public class UserController {
         Optional.ofNullable(profile)
             .flatMap(this::resolveProfileRequest)
     );
-    return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
-  }
-
-
-  // 비밀번호 변경 전용
-  @Operation(
-      summary = "사용자 비밀번호 수정",
-      description = "사용자 ID를 기반으로 비밀번호만 변경합니다",
-      responses = {
-          @ApiResponse(
-              responseCode = "200",
-              description = "비밀번호 변경 성공",
-              content = @Content(schema = @Schema(implementation = User.class))
-          )
-      }
-  )
-  @PatchMapping("/{userId}/password")
-  // 에러 메세지( String )를 출력하고자 제네릭을 와일드카드 타입으로 사용
-  public ResponseEntity<?> updateByPass(
-      @PathVariable UUID userId
-      , @RequestBody UserPasswordUpdateRequest userPasswordUpdateRequest
-  ) {
-
-    // 새 비밀번호 규칙 검증( 대소문자, 숫자, 특수문자 포함 + 8자 이상 )
-    List<String> errors = PasswordValidator.getPasswordValidationErrors(
-        userPasswordUpdateRequest.getNewPassword());
-
-    // 비밀번호 규칙 검증시 false 시
-    if (!errors.isEmpty()) {
-      // 규칙 검증 시 발생한 에러문 응답
-      String errorMessage = String.join("\n", errors);
-      // 응답 상태( 상태 코드 : 400 ) 및 내부 정보( 비밀번호 검증 시 발생한 에러 메세지 ) 반환
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
-    }
-    // 비밀번호 규칙 검증이 ture 시, 비밀번호 변경
-    User updatedUser = userService.updateByPass(userId, userPasswordUpdateRequest);
-
     return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
   }
 
@@ -225,7 +181,7 @@ public class UserController {
 
 
   // 모든 사용자 조회( GET )
-  @GetMapping("/users")
+  @GetMapping
   @Operation(
       summary = "전체 User 목록 조회",
       description = "시스템에 등록된 전체 사용자 목록을 조회합니다",
@@ -259,14 +215,18 @@ public class UserController {
           )
       }
   )
-  @PatchMapping("/{userId}/status")
+  @PatchMapping("/{userId}/userStatus")
   public ResponseEntity<UserStatus> updateUserStatus(
       @PathVariable UUID userId,
       @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
   ) {
+    System.out.println("userId : " + userId);
+    System.out.println("userStatusUpdateRequest : " + userStatusUpdateRequest);
     UserStatus updatedStatus = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
 
-    return ResponseEntity.status(HttpStatus.OK).body(updatedStatus);
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(updatedStatus);
   }
 
 }
+

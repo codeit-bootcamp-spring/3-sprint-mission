@@ -43,23 +43,15 @@ public class BinaryContentController {
           description = "요청된 ID 리스트가 없거나 해당 ID들에 대한 콘텐츠가 존재하지 않음"
       )
   })
-  @GetMapping("/ids")
+  @GetMapping
   public ResponseEntity<List<BinaryContent>> findBinaryContents(
       @Parameter(description = "조회할 바이너리 콘텐츠의 UUID 목록", required = true, example = "f47ac10b-58cc-4372-a567-0e02b2c3d479")
-      @RequestParam("ids") List<UUID> ids
+      @RequestParam("binaryContentIds") List<UUID> binaryContentIds
   ) {
-    // 조회한 바이너리 파일이 없는 상황
-    if (ids.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    List<BinaryContent> binaries = binaryContentService.findAllByIdIn(ids);
-
-    // 바이너리 파일을 리스트로 생성한 것을 조회했는데 없는 상황
-    if (binaries.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-    return ResponseEntity.status(HttpStatus.OK).body(binaries);
+    List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(binaryContents);
   }
 
 
@@ -79,12 +71,12 @@ public class BinaryContentController {
           description = "해당 ID의 콘텐츠가 존재하지 않음"
       )
   })
-  @GetMapping("/{id}")
+  @GetMapping("/{binaryContentId}")
   public ResponseEntity<BinaryContent> findBinaryContent(
       @Parameter(description = "조회할 바이너리 콘텐츠의 UUID", required = true, example = "f47ac10b-58cc-4372-a567-0e02b2c3d479")
-      @PathVariable UUID id
+      @PathVariable UUID binaryContentId
   ) {
-    BinaryContent binary = binaryContentService.find(id);
+    BinaryContent binary = binaryContentService.find(binaryContentId);
 
     // 조회한 바이너리 파일이 없을 경우
     if (binary == null) {

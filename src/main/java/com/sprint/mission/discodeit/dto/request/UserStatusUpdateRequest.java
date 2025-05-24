@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
@@ -13,5 +12,5 @@ import java.util.UUID;
 public final class UserStatusUpdateRequest {
 
   @Schema(description = "변경할 마지막 접속 시간", example = "2022-01-01T00:00:00Z", type = "string", format = "data-time")
-  private Instant lastOnlineAt;
+  private Instant newLastActiveAt;
 }

@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/channel")
+@RequestMapping("/api/channels")
 @RestController
 public class ChannelController {
 
@@ -36,7 +36,8 @@ public class ChannelController {
       @RequestBody PublicChannelCreateRequest request
   ) {
     Channel createdChannel = channelService.create(request);
-    return ResponseEntity.status(HttpStatus.OK).body(createdChannel);
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(createdChannel);
 
   }
 
@@ -49,17 +50,18 @@ public class ChannelController {
       @RequestBody PrivateChannelCreateRequest request
   ) {
     Channel createdChannel = channelService.create(request);
-    return ResponseEntity.status(HttpStatus.OK).body(createdChannel);
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(createdChannel);
   }
 
 
-  // 공개 채널 수정( PUT )
+  // 공개 채널 수정( PATCH )
   @Operation(summary = "공개 채널 정보 수정", description = "지정된 공개 채널의 정보를 수정합니다")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "공개 채널 수정 성공"),
       @ApiResponse(responseCode = "404", description = "해당 채널을 찾을 수 없습니다")
   })
-  @PutMapping("/public/{channelId}")
+  @PatchMapping("/{channelId}")
   public ResponseEntity<Channel> updatePublicChannel(
       @Parameter(description = "채널 ID", required = true, example = "f47ac10b-58cc-4372-a567-0e02b2c3d479")
       @PathVariable UUID channelId
@@ -102,19 +104,14 @@ public class ChannelController {
       @ApiResponse(responseCode = "200", description = "채널 목록 조회 성공"),
       @ApiResponse(responseCode = "204", description = "조회 가능한 채널이 없습니다", content = @Content)
   })
-  @GetMapping("/{userId}/channels")
+  @GetMapping
   public ResponseEntity<List<ChannelDTO>> findAllByUserId(
       @Parameter(description = "사용자 ID", required = true)
-      @PathVariable UUID userId
+      @RequestParam("userId") UUID userId
   ) {
-    List<ChannelDTO> userChannels = channelService.findAllByUserId(userId);
-
-    // 리스트가 비었을 경우 응답 정보가 없다고 판단하여 204 발생
-    if (userChannels.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    // 리스트 내부의 정보를 가져온 경우 정상 처리 응답
-    return ResponseEntity.status(HttpStatus.OK).body(userChannels);
+    List<ChannelDTO> channels = channelService.findAllByUserId(userId);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(channels);
   }
 }

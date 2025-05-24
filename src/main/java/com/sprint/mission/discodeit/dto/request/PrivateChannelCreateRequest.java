@@ -14,5 +14,5 @@ public final class PrivateChannelCreateRequest {
 
   // 2개의 속성 제거( name, description )
   @Schema(description = "비공개 채널에 참여할 사용자 ID 목록")
-  private List<UUID> userIds;
+  private List<UUID> participantIds;
 }

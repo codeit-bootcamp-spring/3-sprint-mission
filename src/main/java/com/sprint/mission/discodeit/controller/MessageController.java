@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.*;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/message")
+@RequestMapping("/api/messages")
 @RestController
 public class MessageController {
 
@@ -36,54 +36,42 @@ public class MessageController {
       @RequestPart("message") MessageCreateRequest request,
 
       @Parameter(description = "첨부파일", required = false)
-      @RequestPart(value = "attachment", required = false) MultipartFile attachment
+      @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
-    // 선택적 첨부파일 처리
-    List<BinaryContentCreateRequest> attachments = resolveAttachmentRequest(attachment)
-        // Optional 값을 List로 반환
-        .map(Collections::singletonList)
-        // 첨부파일이 없으면 빈 리스트로
-        .orElse(Collections.emptyList());
-
-    Message sendMessage = messageService.create(request, attachments);
-    // HTTP 응답 커스터마이징
-    // 상태코드 : 생성됨( 201 )
-    // 응답 상태( 상태 코드 : 201 ), 내부 정보( 유저 생성 DTO, 선택적 프로필 이미지 ) 반환
-    return ResponseEntity.status(HttpStatus.CREATED).body(sendMessage);
-  }
-
-  private Optional<BinaryContentCreateRequest> resolveAttachmentRequest(MultipartFile attachment) {
-
-    if (attachment.isEmpty()) {
-      // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 비어있다면:
-      return Optional.empty();
-    } else {
-      // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 존재한다면:
-      try {
-        BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
-            attachment.getOriginalFilename(),
-            attachment.getBytes(),
-            attachment.getContentType()
-        );
-        return Optional.of(binaryContentCreateRequest);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
+    List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
+        .map(files -> files.stream()
+            .map(file -> {
+              try {
+                return new BinaryContentCreateRequest(
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getBytes()
+                );
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+            })
+            .toList())
+        .orElse(new ArrayList<>());
+    Message createdMessage = messageService.create(request, attachmentRequests);
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(createdMessage);
   }
 
 
-  // 메세지 수정( PUT )
+  // 메세지 수정( PATCH )
   @Operation(summary = "메세지 수정", description = "지정한 ID에 해당하는 메세지를 수정합니다")
   @ApiResponse(responseCode = "200", description = "메세지 수정 성공")
-  @PutMapping("/{messageId}")
+  @PatchMapping("/{messageId}")
   public ResponseEntity<Message> update(
       @Parameter(description = "메세지 ID", required = true)
       @PathVariable UUID messageId,
       @RequestBody MessageUpdateRequest request
   ) {
     Message updateMessage = messageService.update(messageId, request);
-    return ResponseEntity.status(HttpStatus.OK).body(updateMessage);
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(updateMessage);
   }
 
 
@@ -114,18 +102,14 @@ public class MessageController {
       @ApiResponse(responseCode = "200", description = "메세지 목록 조회 성공"),
       @ApiResponse(responseCode = "204", description = "조회 가능한 메세지가 없습니다", content = @Content)
   })
-  @GetMapping("/channel/{channelId}/messages")
+  @GetMapping("")
   public ResponseEntity<List<Message>> findAllByChannelId(
       @Parameter(description = "채널 ID", required = true)
-      @PathVariable UUID channelId
+      @RequestParam("channelId") UUID channelId
   ) {
     List<Message> messages = messageService.findAllByChannelId(channelId);
-
-    // 리스트가 비었을 경우 응답 정보가 없다고 판단하여 204 발생
-    if (messages.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    return ResponseEntity.status(HttpStatus.OK).body(messages);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(messages);
   }
 }

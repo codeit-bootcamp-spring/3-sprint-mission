@@ -53,22 +53,22 @@ public class UserStatus implements Serializable {
       type = "string",
       format = "date-time"
   )
-  private Instant lastOnlineAt;
+  private Instant lastActiveAt;
 
   // 생성자
-  public UserStatus(UUID userId, Instant lastOnlineAt) {
+  public UserStatus(UUID userId, Instant lastActiveAt) {
     this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
     //
     this.userId = userId;
-    this.lastOnlineAt = lastOnlineAt;
+    this.lastActiveAt = lastActiveAt;
   }
 
   // Update 메서드
   public void update(Instant lastOnlineAt) {
     boolean updated = false;
-    if (lastOnlineAt != null && lastOnlineAt.equals(this.lastOnlineAt)) {
-      this.lastOnlineAt = lastOnlineAt;
+    if (lastOnlineAt != null && lastOnlineAt.equals(this.lastActiveAt)) {
+      this.lastActiveAt = lastOnlineAt;
       updated = true;
     }
 
@@ -81,6 +81,6 @@ public class UserStatus implements Serializable {
   public boolean isOnline() {
     Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
 
-    return lastOnlineAt.isAfter(instantFiveMinutesAgo);
+    return lastActiveAt.isAfter(instantFiveMinutesAgo);
   }
 }

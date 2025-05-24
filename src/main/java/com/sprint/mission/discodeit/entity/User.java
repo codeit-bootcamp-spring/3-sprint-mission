@@ -4,7 +4,6 @@ package com.sprint.mission.discodeit.entity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -53,14 +52,6 @@ public class User implements Serializable {
   @NotBlank(message = "사용자 이름은 필수입니다")
   private String userName;
 
-  // 유틸리티 클래스로 검증하기에 어노테이션 기반 검증은 잠시 보류
-  @Schema(
-      description = "비밀번호는 알파벳 대소문자, 숫자, 특수문자를 포함한 8자 이상이어야합니다",
-      example = "Qwerty12!@",
-      type = "string",
-      format = "password"
-  )
-  private String pwd;
 
   @Schema(
       description = "이메일 주소",
@@ -73,21 +64,13 @@ public class User implements Serializable {
   private String email;
 
   @Schema(
-      description = "전화번호",
-      example = "010-1234-5678",
+      description = "비밀번호는 알파벳 대소문자, 숫자, 특수문자를 포함한 8자 이상이어야합니다",
+      example = "Qwerty12!@",
       type = "string",
-      format = "phone"
+      format = "password"
   )
-  @NotBlank(message = "전화번호는 필수입니다")
-  @Pattern(regexp = "^010-\\d{4}-\\d{4}$", message = "전화번호 형식은 010-1234-5678 입니다.")
-  private String phoneNumber;
-
-  @Schema(
-      description = "상태 메세지",
-      example = "상태 메세지 예시입니다"
-  )
-  @NotBlank(message = "상태 메세지는 필수입니다")
-  private String statusMessage;
+  @NotBlank(message = "비밀번호를 입력해주세요")
+  private String password;
 
   // BinaryContent 참조 ID
   @Schema(
@@ -100,41 +83,31 @@ public class User implements Serializable {
   private UUID profileId;
 
   // 생성자
-  public User(String userName, String pwd, String email, String phoneNumber, String statusMessage,
-      UUID profileId) {
+  public User(String userName, String email, String password, UUID profileId) {
     this.userId = UUID.randomUUID();
     this.createdAt = Instant.now();
     this.userName = userName;
-    this.pwd = pwd;
     this.email = email;
-    this.phoneNumber = phoneNumber;
-    this.statusMessage = statusMessage;
+    this.password = password;
     //
     this.profileId = profileId;
   }
 
 
   // Update
-  public void update(String newUserName, String newPwd, String newEmail, String newPhoneNumber,
-      String newStatusMessage) {
+  public void update(String newUserName, String newPassword, String newEmail) {
     boolean updated = false;
     if (newUserName != null && !newUserName.equals(this.userName)) {
       this.userName = newUserName;
       updated = true;
     }
-    if (newPwd != null && !newPwd.equals(this.pwd)) {
-      this.pwd = newPwd;
+    if (newPassword != null && !newPassword.equals(this.password)) {
+      this.password = newPassword;
       updated = true;
     }
     if (newEmail != null && !newEmail.equals(this.email)) {
       this.email = newEmail;
       updated = true;
-    }
-    if (newPhoneNumber != null && !newPhoneNumber.equals(this.phoneNumber)) {
-      this.phoneNumber = newPhoneNumber;
-    }
-    if (newStatusMessage != null && !newStatusMessage.equals(this.statusMessage)) {
-      this.statusMessage = newStatusMessage;
     }
     if (updated) {
       this.updatedAt = Instant.now();

@@ -40,13 +40,6 @@ public class Channel implements Serializable {
   private Instant updatedAt;
 
   @Schema(
-      description = "채널 이름",
-      example = "개발 커뮤니티"
-  )
-  @NotBlank(message = "채널 이름은 필수입니다")
-  private String channelName;
-
-  @Schema(
       description = "채널 유형으로 공개 채널인지 비공개 채널인지 구분합니다",
       example = "PUBLIC",
       type = "string",
@@ -54,6 +47,13 @@ public class Channel implements Serializable {
   )
   @NotBlank(message = "채널 유형( 공개 / 비공개 )은 필수입니다")
   private ChannelType channelType;
+
+  @Schema(
+      description = "채널 이름",
+      example = "개발 커뮤니티"
+  )
+  @NotBlank(message = "채널 이름은 필수입니다")
+  private String channelName;
 
   @Schema(
       description = "채널 설명",
