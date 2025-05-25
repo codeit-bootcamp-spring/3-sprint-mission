@@ -11,7 +11,6 @@ import java.util.UUID;
 public interface BinaryContentRepository {
 
     BinaryContent save(BinaryContent binaryContent);
-    List<BinaryContent> findAll();
     List<BinaryContent> findAllByIdIn(List<UUID> ids);
     Optional<BinaryContent> findById(UUID id);
     boolean existsById(UUID id);

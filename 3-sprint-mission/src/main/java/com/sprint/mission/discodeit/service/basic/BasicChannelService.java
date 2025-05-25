@@ -28,27 +28,24 @@ public class BasicChannelService implements ChannelService {
     // Private 채널 생성
     @Override
     public Channel create(PrivateChannelCreateRequest channelCreateDTO) {
-        UUID makerId = channelCreateDTO.makerId();
-        List<UUID> entryIds = channelCreateDTO.entryIds();
-        entryIds.add(makerId); // 참여자 목록에 채팅방 개설자 추가
+        List<UUID> participantIds = channelCreateDTO.participantIds();
 
-        System.out.println("entryIds = " + entryIds);
+        System.out.println("participantIds = " + participantIds);
 
         Channel channel =
                 Channel.builder()
                 .name(null)
                 .description(null)
                 .type(ChannelType.PRIVATE)
-                .makerId(makerId)
                 .build();
 
         channelRepository.save(channel);
 
         // 참여자들의 메시지 수신 정보 생성
-        entryIds.stream()
-                .map(user ->
+        participantIds.stream()
+                .map(userId ->
                         ReadStatus.builder()
-                        .userId(user)
+                        .userId(userId)
                         .channelId(channel.getId())
                         .lastReadAt(Instant.now())
                         .build())
@@ -60,28 +57,17 @@ public class BasicChannelService implements ChannelService {
     // Public 채널 생성
     @Override
     public Channel create(PublicChannelCreateRequest channelCreateDTO) {
-        UUID makerId = channelCreateDTO.makerId();
-        String channelName = channelCreateDTO.channelName();
+        String name = channelCreateDTO.name();
         String description = channelCreateDTO.description();
 
         Channel channel =
                 Channel.builder()
-                .name(channelName)
+                .name(name)
                 .description(description)
                 .type(ChannelType.PUBLIC)
-                .makerId(makerId)
                 .build();
 
         channelRepository.save(channel);
-
-        // 채팅방 개설자의 메시지 수신 정보 생성
-        ReadStatus readStatus = ReadStatus.builder()
-                                .userId(makerId)
-                                .channelId(channel.getId())
-                                .lastReadAt(Instant.now())
-                                .build();
-
-        readStatusRepository.save(readStatus);
 
         return channel;
     }
@@ -127,9 +113,9 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(UUID id, PublicChannelUpdateRequest channelUpdateDTO) {
-        String newName = channelUpdateDTO.newName();
-        String newDescription = channelUpdateDTO.newDescription();
+    public Channel update(UUID id, PublicChannelUpdateRequest request) {
+        String newName = request.newName();
+        String newDescription = request.newDescription();
 
         Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다."));
@@ -175,9 +161,10 @@ public class BasicChannelService implements ChannelService {
 
         return ChannelDTO.builder()
                 .id(channel.getId())
-                .makerId(channel.getMakerId())
-                .channelName(channel.getName())
-                .channelType(channel.getType())
+                .name(channel.getName())
+                .description(channel.getDescription())
+                .type(channel.getType())
+                .participantIds(entryIds)
                 .lastMessageAt(lastMessageAt)
                 .build();
     }

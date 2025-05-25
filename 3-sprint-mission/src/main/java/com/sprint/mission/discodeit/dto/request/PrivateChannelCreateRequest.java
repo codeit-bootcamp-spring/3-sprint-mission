@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.UUID;
 
 public record PrivateChannelCreateRequest(
-        UUID makerId,
-        List<UUID> entryIds
+        List<UUID> participantIds
 ) {
 }

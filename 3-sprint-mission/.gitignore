@@ -16,6 +16,7 @@ build/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+file-data-map/
 
 ### Eclipse ###
 .apt_generated
