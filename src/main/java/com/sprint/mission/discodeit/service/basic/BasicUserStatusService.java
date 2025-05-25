@@ -17,8 +17,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Service
 public class BasicUserStatusService implements UserStatusService {
-    UserRepository userRepository;
-    UserStatusRepository userStatusRepository;
+    private final UserRepository userRepository;
+    private final UserStatusRepository userStatusRepository;
 
 
     @Override

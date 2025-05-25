@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
@@ -8,9 +9,10 @@ import lombok.Setter;
 
 @Getter
 public class User implements Serializable {
+    @Serial
     private static final long serialVersionUID = 5020789657574048869L;
-    private UUID id;
-    private Instant createdAt;
+    private final UUID id;
+    private final Instant createdAt;
     private Instant updatedAt;
     //
     private String username;

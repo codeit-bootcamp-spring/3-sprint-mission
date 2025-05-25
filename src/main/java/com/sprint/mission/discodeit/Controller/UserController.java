@@ -38,12 +38,12 @@ public class UserController {
             @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
-        if(profile == null){
-            User createdUser = userService.create(userCreateRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
-        } else {
+        if(profile != null && profile.getSize()>0){
             BinaryContentCreateRequest portraitRequest = resolveProfileRequest(profile);
             User createdUser = userService.create(userCreateRequest, portraitRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        } else {
+            User createdUser = userService.create(userCreateRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
         }
     }
@@ -53,17 +53,18 @@ public class UserController {
     )
     public ResponseEntity<User> update(
             @RequestParam("userId") UUID userId,
-            @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
+            @RequestPart(value = "userUpdateRequest", required = false) UserUpdateRequest userUpdateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
-        if(profile == null) {
-            User updatedUser = userService.update(userId, userUpdateRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body(updatedUser);
-        } else {
-            BinaryContentCreateRequest portraitRequest = resolveProfileRequest(profile);
-            User updatedUser = userService.update(userId, userUpdateRequest, portraitRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body(updatedUser);
+        User updatedUser = null;
+        if(userUpdateRequest != null) {
+            updatedUser = userService.update(userId, userUpdateRequest);
         }
+        if(profile != null && profile.getSize()>0) {
+            BinaryContentCreateRequest portraitRequest = resolveProfileRequest(profile);
+            updatedUser = userService.update(userId, portraitRequest);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(updatedUser);
     }
     @RequestMapping(path = "delete")
     public ResponseEntity<Void> delete(@RequestParam("userId") UUID userId) {
@@ -87,12 +88,11 @@ public class UserController {
             return null;
         } else {
             try {
-                BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
+                return new BinaryContentCreateRequest(
                         profileFile.getOriginalFilename(),
                         profileFile.getContentType(),
                         profileFile.getBytes()
                 );
-                return binaryContentCreateRequest;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

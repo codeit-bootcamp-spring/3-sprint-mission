@@ -2,19 +2,21 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
 @Getter
 public class ReadStatus implements Serializable {
+    @Serial
     private static final long serialVersionUID = -8598800178736921628L;
-    private UUID id;
-    private Instant createdAt;
+    private final UUID id;
+    private final Instant createdAt;
     private Instant updatedAt;
     //
-    private UUID userId;
-    private UUID channelId;
+    private final UUID userId;
+    private final UUID channelId;
     private Instant recentReadAt;
 
     public ReadStatus (UUID userId, UUID channelId, Instant lastReadAt) {

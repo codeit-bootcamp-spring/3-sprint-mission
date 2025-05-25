@@ -28,7 +28,13 @@ public class BasicChannelService implements ChannelService {
     @Override
     public Channel create(PrivateChannelCreateRequest privateChannelCreateRequest) {
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
-        return channelRepository.save(channel);
+        Channel createdChannel = channelRepository.save(channel);
+
+        privateChannelCreateRequest.participantIds().stream()
+                .map(userId -> new ReadStatus(userId, createdChannel.getId(), Instant.MIN))
+                .forEach(readStatusRepository::save);
+
+        return createdChannel;
     }
     @Override
     public Channel create(PublicChannelCreateRequest publicChannelCreateRequest) {
@@ -52,6 +58,7 @@ public class BasicChannelService implements ChannelService {
         }
         return toDto(channel);
     }
+
 
     @Override
     public List<ChannelDto> findAllByUserId(UUID userId) {
@@ -109,12 +116,12 @@ public class BasicChannelService implements ChannelService {
                 .findFirst()
                 .orElse(Instant.MIN);
 
-        List<UUID> inChannelUsers = new ArrayList<>();
+        List<UUID> participantIds = new ArrayList<>();
         if (channel.getType().equals(ChannelType.PRIVATE)) {
             readStatusRepository.findAllByChannelId(channel.getId())
                     .stream()
                     .map(ReadStatus::getUserId)
-                    .forEach(inChannelUsers::add);
+                    .forEach(participantIds::add);
         }
 
         return new ChannelDto(
@@ -122,7 +129,7 @@ public class BasicChannelService implements ChannelService {
                 channel.getType(),
                 channel.getName(),
                 channel.getDescription(),
-                inChannelUsers,
+                participantIds,
                 lastMessageAt
         );
     }

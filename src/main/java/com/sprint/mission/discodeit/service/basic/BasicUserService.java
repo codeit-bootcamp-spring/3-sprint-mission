@@ -89,27 +89,46 @@ public class BasicUserService implements UserService {
     @Override
     public User update(UUID userId, UserUpdateRequest userUpdateRequest) {
         User user = userRepository.findById(userId);
-        String username = userUpdateRequest.newUsername();
-        String email = userUpdateRequest.newEmail();
-        String password = userUpdateRequest.newPassword();
 
         if (user == null) {
             System.out.println("수정 실패 : 존재하지 않는 사용자입니다.");
-        } else if (userRepository.isExistUsername(username)){
-            System.out.println("수정 실패 : 이미 존재하는 사용자 이름입니다.");
-            return null;
-        } else if (userRepository.isExistEmail(email)) {
-            System.out.println("수정 실패 : 이미 존재하는 사용자 메일입니다.");
-            return null;
-        } else{
-            user.update(username,email,password);
-            userRepository.save(user);
-            System.out.println("수정 성공 : " + user);
+        } else {
+            boolean isUpdated = false;
+            String newUsername = userUpdateRequest.newUsername();
+            String newEmail = userUpdateRequest.newEmail();
+            String newPassword = userUpdateRequest.newPassword();
+
+            if (newUsername != null) {
+                if (userRepository.isExistUsername(newUsername)) {
+                    System.out.println("수정 실패 : 이미 존재하는 사용자 이름입니다.");
+                } else {
+                    isUpdated = true;
+                }
+            }
+
+            if (newEmail != null) {
+                if (userRepository.isExistEmail(newEmail)) {
+                    System.out.println("수정 실패 : 이미 존재하는 사용자 메일입니다.");
+                } else {
+                    isUpdated = true;
+                }
+            }
+
+            if (newPassword != null && !user.getPassword().equals(newPassword)) {
+                isUpdated = true;
+            }
+
+            if (isUpdated) {
+                user.update(newUsername, newEmail, newPassword);
+                userRepository.save(user);
+                System.out.println("수정 성공 : " + user);
+            }
         }
         return user;
     }
-    public User update(UUID userId, UserUpdateRequest userUpdateRequest, BinaryContentCreateRequest binaryContentCreateRequest){
-        User user = this.update(userId, userUpdateRequest);
+    @Override
+    public User update(UUID userId, BinaryContentCreateRequest binaryContentCreateRequest){
+        User user = userRepository.findById(userId);
         if(user != null) {
             BinaryContent binaryForPortrait = new BinaryContent(
                     binaryContentCreateRequest.fileName(),
@@ -117,7 +136,9 @@ public class BasicUserService implements UserService {
                     binaryContentCreateRequest.contentType(),
                     binaryContentCreateRequest.content()
             );
-            binaryContentRepository.deleteById(user.getPortraitId());
+            if(user.getPortraitId() != null) {
+                binaryContentRepository.deleteById(user.getPortraitId());
+            }
             user.setPortraitId(binaryContentRepository.save(binaryForPortrait).getId());
             userRepository.save(user);
             System.out.println("\n" + userStatusRepository.findByUserId(user.getId()) + "\n" + user.getPortraitId());
@@ -128,12 +149,13 @@ public class BasicUserService implements UserService {
     @Override
     public void delete(UUID userId) {
         if (findById(userId) == null) {
-            throw new NoSuchElementException("수정 실패 : 존재하지 않는 사용자입니다.");
+            throw new NoSuchElementException("삭제 실패 : 존재하지 않는 사용자입니다.");
         }
-        binaryContentRepository.deleteById(this.findById(userId).profileId());
+        if (findById(userId).profileId() != null) {
+            binaryContentRepository.deleteById(this.findById(userId).profileId());
+        }
+        userStatusRepository.deleteByUserId(userId);
         userRepository.delete(userId);
-        userStatusRepository.deleteById(userId);
-
     }
 
     private UserDto toDto(User user){
