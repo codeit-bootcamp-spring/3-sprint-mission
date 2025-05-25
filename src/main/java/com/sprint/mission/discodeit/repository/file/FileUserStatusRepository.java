@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -42,9 +43,12 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     @Override
-    public UserStatus loadById(UUID id) {
-        Path file = path.resolve(id.toString() + ".ser");
-        return deserialize(file);
+    public Optional<UserStatus> loadById(UUID userId) {
+//        Path file = path.resolve(id.toString() + ".ser");
+//        return deserialize(file);
+        return loadAll().stream()
+                .filter(userStatus -> userStatus.getUserId().equals(userId))
+                .findFirst();
     }
 
     @Override

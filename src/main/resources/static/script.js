@@ -1,8 +1,8 @@
 // API endpoints
 const API_BASE_URL = '/api';
 const ENDPOINTS = {
-    USERS: `${API_BASE_URL}/user/all`,
-    BINARY_CONTENT: `${API_BASE_URL}/binaryContent`
+    USERS: `${API_BASE_URL}/users/findAll`,
+    BINARY_CONTENT: `${API_BASE_URL}/binaryContent/find`
 };
 
 // Initialize the application
@@ -25,7 +25,7 @@ async function fetchAndRenderUsers() {
 // Fetch user profile image
 async function fetchUserProfile(profileId) {
     try {
-        const response = await fetch(`${ENDPOINTS.BINARY_CONTENT}/${profileId}`);
+        const response = await fetch(`${ENDPOINTS.BINARY_CONTENT}?binaryContentId=${profileId}`);
         if (!response.ok) throw new Error('Failed to fetch profile');
         const profile = await response.json();
 
@@ -52,13 +52,13 @@ async function renderUserList(users) {
             '/default-avatar.png';
 
         userElement.innerHTML = `
-            <img src="${profileUrl}" alt="${user.name}" class="user-avatar">
+            <img src="${profileUrl}" alt="${user.username}" class="user-avatar">
             <div class="user-info">
-                <div class="user-name">${user.name}</div>
+                <div class="user-name">${user.username}</div>
                 <div class="user-email">${user.email}</div>
             </div>
-            <div class="status-badge ${user.isLoggedIn ? 'online' : 'offline'}">
-                ${user.isLoggedIn ? '온라인' : '오프라인'}
+            <div class="status-badge ${user.online ? 'online' : 'offline'}">
+                ${user.online ? '온라인' : '오프라인'}
             </div>
         `;
 

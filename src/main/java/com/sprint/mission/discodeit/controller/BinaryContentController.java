@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,24 +17,24 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/binaryContent")
+@RequestMapping("/api/binaryContents")
 @RequiredArgsConstructor
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<BinaryContentDTO> get(@PathVariable UUID id) throws IOException {
-        BinaryContent binaryContent = binaryContentService.find(id);
-
-        Path file = Paths.get("src/main/resources/static" + binaryContent.getPath());
-        String contentType = Files.probeContentType(file);
-        String base64     = Base64.getEncoder().encodeToString(Files.readAllBytes(file));
-        return ResponseEntity.ok(new BinaryContentDTO(contentType, base64));
+    public ResponseEntity<BinaryContent> find(@RequestParam("binaryContentId") UUID binaryContentId) {
+        BinaryContent binaryContent = binaryContentService.find(binaryContentId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(binaryContent);
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<BinaryContent>> getAll() {
         List<BinaryContent> binaryContents = binaryContentService.findAll();
-        return ResponseEntity.ok(binaryContents);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(binaryContents);
     }
 }

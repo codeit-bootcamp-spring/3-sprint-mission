@@ -30,8 +30,17 @@ public class UserStatus implements Serializable {
         return new UserStatus(userId);
     }
 
-    public UserStatus update() {
-        this.updatedAt = Instant.now();
+    public UserStatus update(Instant updatedAt) {
+        boolean anyValueUpdated = false;
+        if (updatedAt != null && !updatedAt.equals(this.updatedAt)) {
+            this.updatedAt = updatedAt;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
+
         return this;
     }
 

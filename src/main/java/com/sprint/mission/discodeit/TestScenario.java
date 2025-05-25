@@ -7,6 +7,10 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.*;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -84,10 +88,23 @@ public class TestScenario {
                 new UserCreateRequest("Kate", "kate@daum.com", "3456")
         );
 
+        byte[] firstBytes;
+        byte[] thirdBytes;
+        try {
+            firstBytes = Files.readAllBytes(
+                    Paths.get("src", "test", "resources", "images", "first.jpg")
+            );
+            thirdBytes = Files.readAllBytes(
+                    Paths.get("src", "test", "resources", "images", "third.jpg")
+            );
+        } catch (IOException e) {
+            throw new UncheckedIOException("[User] 테스트용 이미지 읽기 실패", e);
+        }
+
         List<BinaryContentCreateRequest> imageDTOs = Arrays.asList( //List.of()로는 null 값을 담을 수 없음
-                new BinaryContentCreateRequest("first", "first.jpg"),
+                new BinaryContentCreateRequest("first.jpg", "image/png", firstBytes),
                 null,
-                new BinaryContentCreateRequest("third", "third.jpg")
+                new BinaryContentCreateRequest("third.jpg", "image/png", thirdBytes)
         );
 
         users = IntStream.range(0, createDTOs.size())
@@ -95,8 +112,9 @@ public class TestScenario {
                     UserCreateRequest userDto = createDTOs.get(i);
                     BinaryContentCreateRequest imgDto = imageDTOs.get(i);
 
+                    Optional<BinaryContentCreateRequest> profileOpt = Optional.ofNullable(imgDto);
                     try {
-                        return userService.createUser(userDto, imgDto);
+                        return userService.create(userDto, profileOpt);
                     } catch (IllegalArgumentException e) {
                         System.out.println(e.getMessage());
                         return null;
@@ -108,19 +126,19 @@ public class TestScenario {
 
     private void getAllUsers() {
         System.out.println("\n[User] 모든 사용자 조회");
-        userService.getAllUsers().forEach(System.out::println);
+        userService.getAll().forEach(System.out::println);
     }
 
     private void getUser() {
         System.out.println("\n[User] 단일 사용자 조회");
-        System.out.println(userService.getUser(users.get(0).getId()));
-        System.out.println(userService.getUser(users.get(1).getId()));
+        System.out.println(userService.get(users.get(0).getId()));
+        System.out.println(userService.get(users.get(1).getId()));
     }
 
     private void deleteUser() {
         System.out.println("\n[User] 삭제 후 전체 사용자 조회 (Kate)");
-        userService.deleteUser(users.get(2).getId());
-        userService.getAllUsers().forEach(System.out::println);
+        userService.delete(users.get(2).getId());
+        userService.getAll().forEach(System.out::println);
     }
 
     private void createPublicChannel() {
@@ -211,6 +229,19 @@ public class TestScenario {
     private void createMessage() {
         System.out.println("\n[Message] 유효성 검사 후 메시지 생성");
 
+        byte[] txtBytes;
+        byte[] pdfBytes;
+        try {
+            txtBytes = Files.readAllBytes(
+                    Paths.get("src", "test", "resources", "testFiles", "test.txt")
+            );
+            pdfBytes = Files.readAllBytes(
+                    Paths.get("src", "test", "resources", "testFiles", "test.pdf")
+            );
+        } catch (IOException e) {
+            throw new UncheckedIOException("[Message] 테스트 파일 읽기 실패", e);
+        }
+
         List<MessageCreateRequest> requestDTOs = List.of(
                 new MessageCreateRequest(
                         users.get(0).getId(),
@@ -224,8 +255,16 @@ public class TestScenario {
                         publicChannels.get(0).getId(),
                         "파일 첨부 테스트입니다",
                         List.of(
-                                new BinaryContentCreateRequest("abc.txt", "first.jpg"),
-                                new BinaryContentCreateRequest("doc.pdf", "second.jpg")
+                                new BinaryContentCreateRequest(
+                                        "test.txt",
+                                        "text/plain",
+                                        txtBytes
+                                ),
+                                new BinaryContentCreateRequest(
+                                        "test.pdf",
+                                        "application/pdf",
+                                        pdfBytes
+                                )
                         )
                 ),
                 new MessageCreateRequest(

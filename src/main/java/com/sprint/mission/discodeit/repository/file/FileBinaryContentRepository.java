@@ -26,7 +26,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
-    public void save(BinaryContent binaryContent) {
+    public BinaryContent save(BinaryContent binaryContent) {
         String filename = binaryContent.getId().toString() + ".ser";
         Path file = path.resolve(filename);
 
@@ -38,6 +38,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return binaryContent;
     }
 
     @Override

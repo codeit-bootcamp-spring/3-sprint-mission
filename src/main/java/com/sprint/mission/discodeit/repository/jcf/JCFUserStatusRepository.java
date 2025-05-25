@@ -5,10 +5,7 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 @Profile("jcf")
@@ -22,7 +19,7 @@ public class JCFUserStatusRepository implements UserStatusRepository {
     }
 
     @Override
-    public UserStatus loadById(UUID id) { return userStatuses.get(id); }
+    public Optional<UserStatus> loadById(UUID id) { return Optional.ofNullable(userStatuses.get(id)); }
 
     @Override
     public List<UserStatus> loadAll() { return userStatuses.values().stream().toList(); }
