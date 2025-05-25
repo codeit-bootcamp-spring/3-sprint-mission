@@ -68,7 +68,7 @@ public class BasicUserService implements UserService {
                         new NoSuchElementException("[User] 유효하지 않은 UserStatus. (userId=" + userId + ")")
                 );
 
-        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getProfileId(), userStatus.isLoggedIn());
+        return new UserDTO(user.getId(), user.getCreatedAt(), user.getUpdatedAt(), user.getName(), user.getEmail(), user.getProfileId(), userStatus.isLoggedIn());
     }
 
     @Override
@@ -88,6 +88,8 @@ public class BasicUserService implements UserService {
 
                     return new UserDTO(
                             user.getId(),
+                            user.getCreatedAt(),
+                            user.getUpdatedAt(),
                             user.getName(),
                             user.getEmail(),
                             user.getProfileId(),
@@ -115,7 +117,7 @@ public class BasicUserService implements UserService {
     @Override
     public void delete(UUID id) {
         try {
-            BinaryContent binaryContent = binaryContentRepository.loadById(id);
+            BinaryContent binaryContent = binaryContentRepository.loadById(get(id).getProfileId());
             if (binaryContent != null) {
                 binaryContentRepository.delete(binaryContent.getId());
             }

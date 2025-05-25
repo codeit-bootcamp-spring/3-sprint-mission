@@ -8,6 +8,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Tag(name = "Users")
 @RestController
 @RequestMapping("/api/users")
 @ResponseBody
@@ -28,6 +32,8 @@ public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
 
+    @Operation(summary = "사용자 생성")
+    @ApiResponse(responseCode = "201", description = "생성 성공")
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<User> create(
             @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
@@ -42,6 +48,8 @@ public class UserController {
                 .body(newUser);
     }
 
+    @Operation(summary = "전체 사용자 조회")
+    @ApiResponse(responseCode = "200", description = "조회 성공")
     @GetMapping("/findAll")
     public ResponseEntity<List<UserDTO>> findAll() {
         List<UserDTO> users = userService.getAll();
@@ -50,6 +58,8 @@ public class UserController {
                 .body(users);
     }
 
+    @Operation(summary = "사용자 삭제")
+    @ApiResponse(responseCode = "204", description = "삭제 성공")
     @DeleteMapping("/delete")
     public ResponseEntity<Void> delete(@RequestParam("userId") UUID userId) {
         userService.delete(userId);
@@ -58,9 +68,12 @@ public class UserController {
                 .build();
     }
 
+    @Operation(summary = "사용자의 userState 상태 수정")
+    @ApiResponse(responseCode = "200", description = "수정 성공")
     @RequestMapping(path = "updateUserStatusByUserId")
     public ResponseEntity<UserStatus> updateUserStatusByUserId(@RequestParam("userId") UUID userId,
                                                                @RequestBody UserStatusUpdateRequest request) {
+        System.out.println("[DEBUG] updateUserStatusByUserId == null? " + (userId == null));
         UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, request);
         return ResponseEntity
                 .status(HttpStatus.OK)
