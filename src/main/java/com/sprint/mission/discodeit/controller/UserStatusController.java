@@ -17,19 +17,14 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/userstatus")
+@RequestMapping("/api/userStatus")
 @Controller
 public class UserStatusController {
 
     private final UserStatusService userStatusService;
     private final UserService userService;
 
-    @RequestMapping(
-            path = "/{userId}/status",
-            method = RequestMethod.PUT,
-            consumes = "application/json",
-            produces = "application/json"
-    )
+    @RequestMapping(path = "/{userId}", method = RequestMethod.PATCH, consumes = "application/json", produces = "application/json")
     @ResponseBody
     public ResponseEntity<?> updateUserOnlineStatus(
             @PathVariable("userId") UUID userId,

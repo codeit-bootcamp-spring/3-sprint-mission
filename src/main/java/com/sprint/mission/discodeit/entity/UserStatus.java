@@ -4,28 +4,29 @@ import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Duration;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
 public class UserStatus implements Serializable {
     private static final long serialVersionUID = 1L;
     private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     //
     private UUID userId;
-    private Instant lastActiveAt;
+    private LocalDateTime lastActiveAt;
 
-    public UserStatus(UUID userId, Instant lastActiveAt) {
+    public UserStatus(UUID userId, LocalDateTime lastActiveAt) {
         this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = this.createdAt;
         //
         this.userId = userId;
         this.lastActiveAt = lastActiveAt;
     }
 
-    public void update(Instant lastActiveAt) {
+    public void update(LocalDateTime lastActiveAt) {
         boolean anyValueUpdated = false;
         if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
             this.lastActiveAt = lastActiveAt;
@@ -33,13 +34,13 @@ public class UserStatus implements Serializable {
         }
 
         if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
+            this.updatedAt = LocalDateTime.now();
         }
     }
 
     public Boolean isOnline() {
-        Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
+        LocalDateTime fiveMinutesAgo = LocalDateTime.now().minus(Duration.ofMinutes(5));
 
-        return lastActiveAt.isAfter(instantFiveMinutesAgo);
+        return lastActiveAt.isAfter(fiveMinutesAgo);
     }
 }
