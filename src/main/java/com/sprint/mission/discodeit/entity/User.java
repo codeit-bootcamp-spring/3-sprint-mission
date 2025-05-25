@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
 import java.util.UUID;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import lombok.Getter;
 
 @Getter
@@ -12,16 +12,16 @@ public class User implements Serializable {
     private String username;
     private String email;
     private String password;
-    private final Instant createdAt;
-    private Instant updatedAt;
+    private final LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private static final long serialVersionUID = 1L;
     private UUID profileId;
 
     // 생성자
     public User(String username, String email, String password, UUID profileId) {
         this.userId = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
         this.username = username;
         this.email = email;
         this.password = password;
@@ -47,7 +47,7 @@ public class User implements Serializable {
             updated = true;
         }
         if (updated) {
-            this.updatedAt = Instant.now();
+            this.updatedAt = LocalDateTime.now();
         }
     }
 
