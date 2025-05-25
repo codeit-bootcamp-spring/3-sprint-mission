@@ -12,28 +12,33 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RestController
-@RequestMapping("/api")
+/**
+ *  GET    /api/readStatuses?userId={userId}
+ *  POST   /api/readStatuses
+ *  PATCH  /api/readStatuses/{readStatusId}
+ */
 @RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/readStatuses")
 public class ReadStatusController {
 
-    private final ReadStatusService readStatusService;
+  private final ReadStatusService readStatusService;
 
-    @PostMapping("/channels/{channelId}/read-status")
-    public ResponseEntity<ReadStatus> create(@PathVariable UUID channelId,
-                                             @RequestBody ReadStatusCreateRequest request) {
-        // channelId는 request 안에 포함되어야 함
-        return ResponseEntity.status(HttpStatus.CREATED).body(readStatusService.create(request));
-    }
+  @GetMapping
+  public ResponseEntity<List<ReadStatus>> findAllByUserId(@RequestParam UUID userId) {
+    return ResponseEntity.ok(readStatusService.findAllByUserId(userId));
+  }
 
-    @PutMapping("/read-status/{id}")
-    public ResponseEntity<ReadStatus> update(@PathVariable UUID id,
-                                             @RequestBody ReadStatusUpdateRequest request) {
-        return ResponseEntity.ok(readStatusService.update(id, request));
-    }
+  @ResponseStatus(HttpStatus.CREATED)
+  @PostMapping
+  public ResponseEntity<ReadStatus> create(@RequestBody ReadStatusCreateRequest request) {
+    ReadStatus created = readStatusService.create(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(created);   // 201
+  }
 
-    @GetMapping("/users/{userId}/read-status")
-    public ResponseEntity<List<ReadStatus>> findByUser(@PathVariable UUID userId) {
-        return ResponseEntity.ok(readStatusService.findAllByUserId(userId));
-    }
+  @PatchMapping("/{readStatusId}")
+  public ResponseEntity<ReadStatus> update(@PathVariable UUID readStatusId,
+                                           @RequestBody ReadStatusUpdateRequest request) {
+    return ResponseEntity.ok(readStatusService.update(readStatusId, request));
+  }
 }
