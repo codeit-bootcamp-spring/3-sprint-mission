@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -12,8 +12,7 @@ import java.util.UUID;
 public class BinaryContent implements Serializable {
     private static final long serialVersionUID = 1L;
     private UUID id;
-    private Instant createdAt;
-    //
+    private LocalDateTime createdAt;
     private String fileName;
     private Long size;
     private String contentType;
@@ -21,8 +20,7 @@ public class BinaryContent implements Serializable {
 
     public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
         this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        //
+        this.createdAt = LocalDateTime.now();
         this.fileName = fileName;
         this.size = size;
         this.contentType = contentType;

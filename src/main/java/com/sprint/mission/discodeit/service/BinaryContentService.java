@@ -7,8 +7,22 @@ import java.util.List;
 import java.util.UUID;
 
 public interface BinaryContentService {
-    BinaryContent create(BinaryContentCreateRequest request);
-    BinaryContent find(UUID binaryContentId);
-    List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds);
-    void delete(UUID binaryContentId);
+
+    // Create: 새 바이너리 콘텐츠 저장
+    BinaryContent save(BinaryContentCreateRequest request);
+
+    // Create: 여러 바이너리 콘텐츠 저장
+    List<BinaryContent> saveAll(List<BinaryContentCreateRequest> requests);
+
+    // Read: 바이너리 콘텐츠 ID를 통해 조회
+    BinaryContent findById(UUID id);
+
+    // Read: 여러 바이너리 콘텐츠 ID를 통해 조회
+    List<BinaryContent> findAllByIds(List<UUID> ids);
+
+    // Delete: 바이너리 콘텐츠 ID를 통해 삭제
+    void deleteById(UUID id);
+
+    // Delete: 여러 바이너리 콘텐츠 ID를 통해 삭제
+    void deleteAllByIds(List<UUID> ids);
 }

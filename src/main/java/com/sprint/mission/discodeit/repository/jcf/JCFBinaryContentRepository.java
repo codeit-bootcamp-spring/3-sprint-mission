@@ -12,7 +12,8 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
     private static volatile JCFBinaryContentRepository instance;
     private final Map<UUID, BinaryContent> binaryContents = new ConcurrentHashMap<>();
 
-    private JCFBinaryContentRepository() {}
+    private JCFBinaryContentRepository() {
+    }
 
     public static JCFBinaryContentRepository getInstance() {
         JCFBinaryContentRepository result = instance;
@@ -31,6 +32,19 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
     public BinaryContent save(BinaryContent binaryContent) {
         binaryContents.put(binaryContent.getId(), binaryContent);
         return binaryContent;
+    }
+
+    @Override
+    public List<BinaryContent> saveAll(List<BinaryContent> binaryContents) {
+        if (binaryContents == null || binaryContents.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<BinaryContent> savedContents = new ArrayList<>();
+        for (BinaryContent binaryContent : binaryContents) {
+            this.binaryContents.put(binaryContent.getId(), binaryContent);
+            savedContents.add(binaryContent);
+        }
+        return savedContents;
     }
 
     @Override
@@ -54,5 +68,13 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
     @Override
     public void deleteById(UUID id) {
         binaryContents.remove(id);
+    }
+
+    @Override
+    public void deleteAllByIdIn(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+        ids.forEach(binaryContents::remove);
     }
 }

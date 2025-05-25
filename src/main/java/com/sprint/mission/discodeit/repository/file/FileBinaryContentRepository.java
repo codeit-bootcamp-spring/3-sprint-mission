@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -42,7 +43,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     private void saveBinaryContent(BinaryContent binaryContent) {
         Path binaryContentPath = getBinaryContentPath(binaryContent.getId());
         try (FileOutputStream fos = new FileOutputStream(binaryContentPath.toFile());
-            ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+                ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.writeObject(binaryContent);
         } catch (IOException e) {
             throw new RuntimeException("바이너리 콘텐츠 저장 실패: " + binaryContent.getId(), e);
@@ -51,7 +52,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     private BinaryContent loadBinaryContent(Path path) {
         try (FileInputStream fis = new FileInputStream(path.toFile());
-            ObjectInputStream ois = new ObjectInputStream(fis)) {
+                ObjectInputStream ois = new ObjectInputStream(fis)) {
             return (BinaryContent) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException("바이너리 콘텐츠 로드 실패: " + path, e);
@@ -62,6 +63,19 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     public BinaryContent save(BinaryContent binaryContent) {
         saveBinaryContent(binaryContent);
         return binaryContent;
+    }
+
+    @Override
+    public List<BinaryContent> saveAll(List<BinaryContent> binaryContents) {
+        if (binaryContents == null || binaryContents.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<BinaryContent> savedContents = new ArrayList<>();
+        for (BinaryContent binaryContent : binaryContents) {
+            saveBinaryContent(binaryContent);
+            savedContents.add(binaryContent);
+        }
+        return savedContents;
     }
 
     @Override
@@ -95,4 +109,18 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
             throw new RuntimeException("바이너리 콘텐츠 삭제 실패: " + id, e);
         }
     }
-} 
+
+    @Override
+    public void deleteAllByIdIn(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+        for (UUID id : ids) {
+            try {
+                Files.deleteIfExists(getBinaryContentPath(id));
+            } catch (IOException e) {
+                throw new RuntimeException("바이너리 콘텐츠 삭제 실패: " + id, e);
+            }
+        }
+    }
+}
