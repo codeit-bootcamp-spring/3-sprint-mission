@@ -1,11 +1,18 @@
 spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
   application:
     name: discodeit
+  servlet:
+    multipart:
+      maxFileSize: 10MB
+      maxRequestSize: 30MB
 
-discodeit:
-  repository:
-    type: file   # jcf | file
-    file-directory: .discodeit
-
-server:
-  port: 8080
+# Springdoc-OpenAPI 설정
+springdoc:
+  api-docs:
+    path: /v3/api-docs         # OpenAPI 스펙 JSON 경로
+  swagger-ui:
+    path: /swagger-ui.html     # Swagger UI 엔드포인트
