@@ -1,4 +1,7 @@
 spring:
+  config:
+    activate:
+      on-profile: test
   application:
     name: discodeit
   servlet:
@@ -8,9 +11,9 @@ spring:
 
 discodeit:
   repository:
-    type: file   # jcf | file
+    type: file
     file-directory:
-      folder: .discodeit
+      folder: .discodeit-test
       user: "/user"
       user-status: "/user-status"
       channel: "/channel"

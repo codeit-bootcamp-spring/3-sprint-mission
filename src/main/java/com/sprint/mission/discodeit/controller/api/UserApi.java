@@ -87,6 +87,10 @@ public interface UserApi {
   })
   ResponseEntity<UserStatus> userStatusUpdate(UUID userId);
 
+  @Operation(summary = "Email로 사용자 조회")
+  @ApiResponse(responseCode = "200", description = "User 조회 성공")
+  ResponseEntity<UserResponse> findByEmail(String email);
+
   @Operation(summary = "전체 User 목록 조회")
   @ApiResponse(
       responseCode = "200",

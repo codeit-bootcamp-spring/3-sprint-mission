@@ -33,7 +33,7 @@ public class ReadStatusController implements ReadStatusApi {
   }
 
   @GetMapping
-  public ResponseEntity<List<ReadStatus>> findAllByUser(@RequestParam UUID userId) {
+  public ResponseEntity<List<ReadStatus>> findAllByUserId(@RequestParam UUID userId) {
     return ResponseEntity.ok(readStatusService.findAllByUserId(userId));
   }
 

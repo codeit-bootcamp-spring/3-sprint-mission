@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -68,6 +69,12 @@ public class UserController implements UserApi {
     return ResponseEntity.ok(userstatus);
   }
 
+  @GetMapping("/email")
+  public ResponseEntity<UserResponse> findByEmail(@RequestParam String email) {
+    UserResponse response = userService.findByEmail(email);
+    return ResponseEntity.ok(response);
+  }
+
   @GetMapping
   public ResponseEntity<List<UserResponse>> findAll() {
     List<UserResponse> users = userService.findAll();
@@ -99,8 +106,8 @@ public class UserController implements UserApi {
   private CreateUserCommand toCreateCommand(UserCreateRequest request, MultipartFile profile) {
     BinaryContentData profileData = resolveProfileImageRequest(profile);
     return new CreateUserCommand(
-        request.username(),
         request.email(),
+        request.username(),
         request.password(),
         profileData
     );

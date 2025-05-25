@@ -52,7 +52,7 @@ public interface ReadStatusApi {
       description = "Message 읽음 상태 목록 조회 성공",
       content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReadStatus.class)))
   )
-  ResponseEntity<List<ReadStatus>> findAllByUser(UUID userId);
+  ResponseEntity<List<ReadStatus>> findAllByUserId(UUID userId);
 
   @Operation(summary = "Message 읽음 상태 수정")
   @ApiResponses(value = {
