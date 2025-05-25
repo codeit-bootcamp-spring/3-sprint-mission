@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.BinaryContent; // BinaryContent 사용시
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository; // 사용자 존재 확인용
 import com.sprint.mission.discodeit.repository.ChannelRepository; // 채널 존재 확인용
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -25,40 +25,33 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository; // 의존성 주입
     private final BinaryContentRepository binaryContentRepository; // 의존성 주입
 
-
     @Override
     public Message createMessage(MessageCreateRequest request) {
-        // 채널 및 사용자 존재 여부 확인 (필요시)
+        // 채널 및 사용자 존재 여부 확인
         channelRepository.findById(request.channelId())
                 .orElseThrow(() -> new NoSuchElementException("Channel not found with id: " + request.channelId()));
         userRepository.findById(request.authorId())
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + request.authorId()));
 
-        // 첨부파일 ID 유효성 검사 (필요시 BinaryContentRepository 사용)
-        if (request.attachmentIds() != null) {
-            request.attachmentIds().forEach(attachmentId -> {
+        // 첨부파일 ID 유효성 검사 및 Message 엔티티에 설정
+        List<UUID> attachmentIds = request.attachmentIds();
+        if (attachmentIds != null && !attachmentIds.isEmpty()) {
+            attachmentIds.forEach(attachmentId -> {
                 binaryContentRepository.findById(attachmentId)
                         .orElseThrow(() -> new NoSuchElementException("Attachment not found with id: " + attachmentId));
             });
         }
 
+        // Message 엔티티 생성
         Message message = new Message(request.content(), request.authorId(), request.channelId());
-        Message createdMessage = messageRepository.save(message);
-        
-        if (request.attachmentIds() != null) {
-            request.attachmentIds().forEach(attachmentId -> {
-                BinaryContent binaryContent = binaryContentRepository.findById(attachmentId)
-                        .orElseThrow(() -> new NoSuchElementException("Attachment not found with id: " + attachmentId));
-                binaryContent.setId(createdMessage.getMessageId());
-            });
+
+        // attachmentIds 설정
+        if (attachmentIds != null) {
+            message.setAttachmentIds(new ArrayList<>(attachmentIds)); // 불변 리스트를 가변 리스트로 복사하여 설정
+        } else {
+            message.setAttachmentIds(new ArrayList<>()); // null이면 빈 리스트 설정
         }
-
-        // message.setMessageId(UUID.randomUUID());
-        // message.setChannelId(request.channelId());
-        // message.setAuthorId(request.authorId());
-        // message.setContent(request.content());
-        // message.setAttachmentIds(request.attachmentIds() == null ? new ArrayList<>() : new ArrayList<>(request.attachmentIds())); // null 방지 및 변경 가능한 리스트로 복사
-
+        Message createdMessage = messageRepository.save(message);
         return createdMessage;
     }
 
@@ -74,7 +67,6 @@ public class BasicMessageService implements MessageService {
         return messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message not found with id: " + messageId));
     }
-
 
     @Override
     public Message updateMessage(UUID messageId, MessageUpdateRequest request) {
