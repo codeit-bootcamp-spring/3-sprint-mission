@@ -144,7 +144,7 @@ public class UserController {
     ) {
         userService.delete(userId); // 이 안에 UserStatus, BinaryContent 삭제 로직 있음
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 

@@ -94,7 +94,7 @@ public class ChannelController {
     ) {
         channelService.delete(channelId);
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @Operation(summary = "User가 참여 중인 Channel 목록 조회")

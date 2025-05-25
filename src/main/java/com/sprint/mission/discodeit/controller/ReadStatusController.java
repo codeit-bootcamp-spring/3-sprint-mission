@@ -57,7 +57,7 @@ public class ReadStatusController {
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ReadStatus> create(
-        @Parameter(description = "Message 읽음 상태 생성 정보") @RequestBody ReadStatusCreateRequest readStatusCreateRequest
+        /*@Parameter(description = "Message 읽음 상태 생성 정보")*/ @RequestBody ReadStatusCreateRequest readStatusCreateRequest
     ) {
         ReadStatus readStatus = readStatusService.create(readStatusCreateRequest);
 
@@ -90,9 +90,8 @@ public class ReadStatusController {
             content = @Content(mediaType = "*/*"))
     })
     @GetMapping
-    @Parameter(name = "userId", description = "유저 ID", required = true)
     public ResponseEntity<List<ReadStatus>> findAllByUserId(
-        @Parameter(description = "조회할 User ID") @RequestParam UUID userId
+        @Parameter(name = "userId", description = "조회할 User ID") @RequestParam UUID userId
     ) {
         // ReadStatus가 없을 시 Error 메시지(or 페이지)
         List<ReadStatus> userReadStatuses = readStatusService.findAllByUserId(userId);
