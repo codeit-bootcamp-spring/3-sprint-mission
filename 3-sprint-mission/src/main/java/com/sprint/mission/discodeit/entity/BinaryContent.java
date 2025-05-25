@@ -1,29 +1,32 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Data;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
 @Getter
 @ToString
-public class BinaryContent {
+public class BinaryContent implements Serializable {
     private final UUID id;
-    private final UUID userId;
+//    private final UUID userId;
     private String fileName;
-    private byte[] content;
+    private Long size;
     private String contentType;
+    private byte[] content;
     private final Instant createdAt;
 
-    public BinaryContent(UUID userId, String fileName, byte[] content, String contentType) {
+    @Builder
+    public BinaryContent(String fileName, String contentType, byte[] content) {
         this.id = UUID.randomUUID();
-        this.userId = userId;
+//        this.userId = userId;
         this.fileName = fileName;
-        this.content = content;
+        this.size = (long) content.length;
         this.contentType = contentType;
+        this.content = content;
         this.createdAt = Instant.now();
     }
 

@@ -1,18 +1,20 @@
-package com.sprint.mission.discodeit.dto;
+package com.sprint.mission.discodeit.dto.data;
+
+import lombok.Builder;
 
 import java.time.Instant;
 import java.util.UUID;
 
+@Builder
 public record UserDTO(
         UUID id,
         String username,
         String email,
         String name,
         UUID profileId,
-        boolean isLogin,
+        Boolean online,
         Instant createdAt,
-        Instant updatedAt,
-        Instant loginTime
+        Instant updatedAt
 
 ) {
 }
