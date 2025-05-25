@@ -31,7 +31,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public Message create(MessageCreateRequest request){
         UUID channelId =request.channelId();
-        UUID userId = request.userId();
+        UUID userId = request.authorId();
         String text = request.content();
         if(channelRepository.findById(channelId) == null){
             throw new NoSuchElementException("생성 실패 : 잘못된 채널 ID입니다.");
@@ -47,32 +47,21 @@ public class BasicMessageService implements MessageService {
     }
     @Override
     public Message create(MessageCreateRequest request, List<BinaryContentCreateRequest> contentRequest) {
-        UUID channelId =request.channelId();
-        UUID userId = request.userId();
-        String text = request.content();
-        if(channelRepository.findById(channelId) == null){
-            throw new NoSuchElementException("생성 실패 : 잘못된 채널 ID입니다.");
-        } else if (userRepository.findById(userId) == null){
-            throw new NoSuchElementException("생성 실패 : 잘못된 유저 ID입니다.");
+        Message message = this.create(request);
+        if(contentRequest!=null && contentRequest.get(0).content().length>1) {
+            List<UUID> attachmentsIds = contentRequest.stream()
+                    .map(attachmentsRequest ->{
+                        String filename = attachmentsRequest.fileName();
+                        String contentType = attachmentsRequest.contentType();
+                        byte[]contents = attachmentsRequest.content();
+
+                        BinaryContent binaryContent = new BinaryContent(filename, (long)contents.length, contentType, contents);
+                        BinaryContent createdBinaryContent = binaryContentRepository.save(binaryContent);
+                        return createdBinaryContent.getId();
+                    }).toList();
+            message.setContentIds(attachmentsIds);
         }
 
-        List<UUID> attachmentsIds = contentRequest.stream()
-                .map(attachmentsRequest ->{
-                    String filename = attachmentsRequest.fileName();
-                    String contentType = attachmentsRequest.contentType();
-                    byte[]contents = attachmentsRequest.content();
-
-                    BinaryContent binaryContent = new BinaryContent(filename, (long)contents.length, contentType, contents);
-                    BinaryContent createdBinaryContent = binaryContentRepository.save(binaryContent);
-                    return createdBinaryContent.getId();
-                }).toList();
-
-        Message message = new Message(
-                text,
-                channelId,
-                userId,
-                attachmentsIds
-        );
         return messageRepository.save(message);
     }
 
