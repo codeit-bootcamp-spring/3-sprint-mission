@@ -4,23 +4,26 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.util.FileioUtil;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Repository;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
-@ConditionalOnProperty(name = "discodeit.repository", havingValue = "file")
+@ConditionalOnProperty(value = "repository.type", havingValue = "file")
 @Repository
 public class FileReadStatusRepository implements ReadStatusRepository {
 
   private Map<String, ReadStatus> readStatusData;
   private Path path;
 
-  public FileReadStatusRepository(@Qualifier("readStatusFilePath") Path path) {
+  public FileReadStatusRepository(@Value("repository.read-status-file-path") Path path) {
     this.path = path;
     if (!Files.exists(this.path)) {
       try {
@@ -58,10 +61,6 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         .filter(readStatus -> readStatus.getChannelId().equals(channelId)).toList();
   }
 
-  @Override
-  public List<ReadStatus> findAll() {
-    return readStatusData.values().stream().toList();
-  }
 
   @Override
   public ReadStatus save(ReadStatus readStatus) {

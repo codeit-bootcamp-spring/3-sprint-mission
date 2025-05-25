@@ -26,7 +26,8 @@ public class BasicMessageService implements MessageService {
 
 
   @Override
-  public Message create(CreateMessageRequest request,
+  public Message create(
+      CreateMessageRequest request,
       List<CreateBinaryContentRequest> binaryContentRequests
   ) {
     UUID channelId = request.channelId();
