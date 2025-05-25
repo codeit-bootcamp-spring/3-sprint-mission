@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
@@ -13,13 +14,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /* API 구현 절차
@@ -36,75 +35,57 @@ import java.util.UUID;
 * */
 
 @RequiredArgsConstructor
-@RequestMapping("/api/user")
-@Controller
-public class UserController {
+@RequestMapping("/api/users")
+@RestController
+public class UserController implements UserApi {
 
     private final UserService userService;
     private final UserStatusService userStatusService;
     
     // 신규 유저 생성 요청
-    @RequestMapping(
-            path = "/create"
-            , method = RequestMethod.POST
-            , consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    @ResponseBody
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<User> create(
             @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
-            @RequestPart(value = "profile", required = false)MultipartFile profile //BinaryContentCreateRequest profileRequestNullable
+            @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
-
         BinaryContentCreateRequest profileRequest = resolveProfileRequest(profile);
         User createdUser = userService.create(userCreateRequest, profileRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
     // 사용자 정보 수정
-    @RequestMapping(
-            path = "/update"
-            , method = RequestMethod.PUT
-            , consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    @ResponseBody
+    @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<User> update(
-            @RequestParam("userId") UUID userId,
+            @PathVariable UUID userId,
             @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         BinaryContentCreateRequest profileRequest = resolveProfileRequest(profile);
         User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
+        return ResponseEntity.ok(updatedUser);
     }
 
     // 사용자 삭제
-    @RequestMapping(path = "/delete"
-            , method = RequestMethod.DELETE)
-    @ResponseBody
-    public ResponseEntity<Void> delete(@RequestParam("userId") UUID userId) {
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> delete(@PathVariable UUID userId) {
         userService.delete(userId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.noContent().build();
     }
 
     // 모든 사용자 조회
-    @RequestMapping(path = "/findAll"
-            , method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping
     public ResponseEntity<List<UserDto>> findAll() {
         return ResponseEntity.ok(userService.findAll());
     }
 
     // 사용자 온라인 상태 업데이트
-    @RequestMapping(path = "/updateUserStatusByUserId"
-            , method = RequestMethod.PATCH
-            , consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
+    @PatchMapping("/{userId}/userStatus")
     public ResponseEntity<UserStatus> updateUserStatusByUserId(
-            @RequestParam("userId") UUID userId,
+            @PathVariable UUID userId,
             @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
     ) {
         UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(updatedUserStatus);
+        return ResponseEntity.ok(updatedUserStatus);
     }
 
     // MultipartFile 타입의 요청값을 BinaryContentCreateRequest 타입으로 변경하기 위한 메서드
