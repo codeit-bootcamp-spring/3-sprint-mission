@@ -34,7 +34,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel create(PrivateChannelCreateRequest request) {
-        Channel channel = new Channel(ChannelType.PRIVATE, null, null);
+        Channel channel = new Channel(ChannelType.PRIVATE, request.name(), request.description());
         Channel savedChannel = channelRepository.save(channel);
 
         request.memberIds().forEach(userId -> {
@@ -57,10 +57,10 @@ public class BasicChannelService implements ChannelService {
         List<UUID> joinedChannelIds = readStatusRepository.findAllByUserId(userId)
                 .stream().map(ReadStatus::getChannelId).toList();
 
-        return channelRepository.findAll().stream()
-                .filter(ch -> ch.getType() == ChannelType.PUBLIC || joinedChannelIds.contains(ch.getId()))
-                .map(this::toDto)
-                .collect(Collectors.toList());
+        List<Channel> channels = channelRepository.findByTypeOrIdIn(ChannelType.PUBLIC, joinedChannelIds);
+
+        return channels.stream()
+                .distinct().map(this::toDto).collect(Collectors.toList());
     }
 
     @Override
