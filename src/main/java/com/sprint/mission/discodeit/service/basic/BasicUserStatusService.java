@@ -49,7 +49,7 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatus update(UUID userStatusId, UserStatusUpdateRequest request) {
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자 상태를 찾을 수 없습니다."));
-        userStatus.update(request.lastOnlineAt());
+        userStatus.update(request.newLastActiveAt());
         return userStatusRepository.save(userStatus);
     }
 
@@ -57,7 +57,7 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자 상태를 찾을 수 없습니다."));
-        userStatus.update(request.lastOnlineAt());
+        userStatus.update(request.newLastActiveAt());
         return userStatusRepository.save(userStatus);
     }
 
