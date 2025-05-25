@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.data.UserDTO;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.*;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -190,14 +190,14 @@ public class UserController {
               responseCode = "200",
               description = "사용자 목록 조회 성공",
               content = @Content(
-                  array = @ArraySchema(schema = @Schema(implementation = UserDTO.class))
+                  array = @ArraySchema(schema = @Schema(implementation = UserDto.class))
               )
           )
       }
   )
-  public ResponseEntity<List<UserDTO>> findAll() {
+  public ResponseEntity<List<UserDto>> findAll() {
     // 모든 사용자 조회
-    List<UserDTO> users = userService.findAll();
+    List<UserDto> users = userService.findAll();
 
     return ResponseEntity.status(HttpStatus.OK).body(users);
   }

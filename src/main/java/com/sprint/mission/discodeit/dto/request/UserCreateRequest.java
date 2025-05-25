@@ -9,28 +9,18 @@ package com.sprint.mission.discodeit.dto.request;
 // CRUD 메서드의 유동성으로 class가 적합하다 판단됨
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@Getter
-@AllArgsConstructor
-@Data
-@NoArgsConstructor
+
 @Schema(description = "생성할 유저 정보")
-public final class UserCreateRequest {
+public record UserCreateRequest(
+    @Schema(description = "생성할 사용자 이름", example = "홍길동")
+    String username,
 
-  @Schema(description = "생성할 사용자 이름", example = "홍길동")
-  @NotBlank(message = "이름을 작성해주세요")
-  private String userName;
+    @Schema(description = "생성할 사용자 계정의 이메일", example = "test@example.com", type = "string", format = "email")
+    String email,
 
-  @Schema(description = "생성할 사용자 계정의 이메일", example = "test@example.com", type = "string", format = "email")
-  @NotBlank(message = "이메일을 입력해주세요")
-  private String email;
+    @Schema(description = "생성할 사용자 계정의 비밀번호", example = "1234", type = "string", format = "password")
+    String password
+) {
 
-  @Schema(description = "생성할 사용자 계정의 비밀번호", example = "1234", type = "string", format = "password")
-  @NotBlank(message = "비밀번호를 입력해주세요")
-  private String password;
 }

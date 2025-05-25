@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.data.UserDTO;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -35,7 +35,7 @@ public class AuthController {
       @ApiResponse(
           responseCode = "200",
           description = "로그인 성공",
-          content = @Content(schema = @Schema(implementation = UserDTO.class))
+          content = @Content(schema = @Schema(implementation = UserDto.class))
       ),
       @ApiResponse(
           responseCode = "400",

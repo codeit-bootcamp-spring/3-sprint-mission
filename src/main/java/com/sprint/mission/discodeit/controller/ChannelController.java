@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
 
-import com.sprint.mission.discodeit.dto.data.ChannelDTO;
-import com.sprint.mission.discodeit.dto.request.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
+import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -65,7 +65,7 @@ public class ChannelController {
   public ResponseEntity<Channel> updatePublicChannel(
       @Parameter(description = "채널 ID", required = true, example = "f47ac10b-58cc-4372-a567-0e02b2c3d479")
       @PathVariable UUID channelId
-      , @RequestBody ChannelUpdateRequest request
+      , @RequestBody PublicChannelUpdateRequest request
   ) {
     Channel updatedChannel = channelService.update(channelId, request);
 
@@ -105,11 +105,11 @@ public class ChannelController {
       @ApiResponse(responseCode = "204", description = "조회 가능한 채널이 없습니다", content = @Content)
   })
   @GetMapping
-  public ResponseEntity<List<ChannelDTO>> findAllByUserId(
+  public ResponseEntity<List<ChannelDto>> findAllByUserId(
       @Parameter(description = "사용자 ID", required = true)
       @RequestParam("userId") UUID userId
   ) {
-    List<ChannelDTO> channels = channelService.findAllByUserId(userId);
+    List<ChannelDto> channels = channelService.findAllByUserId(userId);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(channels);

@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -41,7 +42,7 @@ public class FileUserRepository implements UserRepository {
 
   @Override
   public User save(User user) {
-    Path path = resolvePath(user.getUserId());
+    Path path = resolvePath(user.getId());
     try (
         FileOutputStream fos = new FileOutputStream(path.toFile());
         ObjectOutputStream oos = new ObjectOutputStream(fos)
@@ -73,14 +74,14 @@ public class FileUserRepository implements UserRepository {
   @Override
   public Optional<User> findByUsername(String username) {
     return this.findAll().stream()
-        .filter(user -> Objects.equals(user.getUserName(), username))
+        .filter(user -> Objects.equals(user.getUsername(), username))
         .findFirst();
   }
 
   @Override
   public List<User> findAll() {
-    try {
-      return Files.list(DIRECTORY)
+    try (Stream<Path> paths = Files.list(DIRECTORY)) {
+      return paths
           .filter(path -> path.toString().endsWith(EXTENSION))
           .map(path -> {
             try (
@@ -123,6 +124,6 @@ public class FileUserRepository implements UserRepository {
   @Override
   public boolean existsByUsername(String username) {
     return this.findAll().stream()
-        .anyMatch(user -> Objects.equals(user.getUserName(), username));
+        .anyMatch(user -> Objects.equals(user.getUsername(), username));
   }
 }

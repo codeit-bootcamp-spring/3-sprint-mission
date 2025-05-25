@@ -22,7 +22,7 @@ public class Message implements Serializable {
       type = "string",
       format = "uuid"
   )
-  private final UUID messageId;
+  private final UUID id;
 
   @Schema(
       description = "메세지 생성 시각",
@@ -45,7 +45,7 @@ public class Message implements Serializable {
       example = "자니...?"
   )
   @NotNull(message = "메세지 내용은 필수로 입력해주셔야합니다")
-  private String messageContent;
+  private String content;
 
   @Schema(
       description = "메세지가 전송될 채널의 고유 식별 번호",
@@ -74,10 +74,10 @@ public class Message implements Serializable {
   private List<UUID> attachmentIds;
 
   // 생성자
-  public Message(String messageContent, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
-    this.messageId = UUID.randomUUID();
+  public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
+    this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
-    this.messageContent = messageContent;
+    this.content = content;
     this.channelId = channelId;
     this.authorId = authorId;
     //
@@ -85,10 +85,10 @@ public class Message implements Serializable {
   }
 
   // Update
-  public void update(String newMessageContent) {
+  public void update(String newContent) {
     boolean updated = false;
-    if (newMessageContent != null && !newMessageContent.equals(this.messageContent)) {
-      this.messageContent = newMessageContent;
+    if (newContent != null && !newContent.equals(this.content)) {
+      this.content = newContent;
       updated = true;
     }
     if (updated) {

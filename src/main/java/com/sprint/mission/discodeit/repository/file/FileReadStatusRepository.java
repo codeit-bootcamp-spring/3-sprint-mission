@@ -45,7 +45,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
   @Override
   public ReadStatus save(ReadStatus readStatus) {
-    Path path = resolvePath(readStatus.getReadId());
+    Path path = resolvePath(readStatus.getId());
     try (
         FileOutputStream fos = new FileOutputStream(path.toFile());
         ObjectOutputStream oos = new ObjectOutputStream(fos)
@@ -137,6 +137,6 @@ public class FileReadStatusRepository implements ReadStatusRepository {
   @Override
   public void deleteAllByChannelId(UUID channelId) {
     this.findAllByChannelId(channelId)
-        .forEach(readStatus -> this.deleteById(readStatus.getReadId()));
+        .forEach(readStatus -> this.deleteById(readStatus.getId()));
   }
 }

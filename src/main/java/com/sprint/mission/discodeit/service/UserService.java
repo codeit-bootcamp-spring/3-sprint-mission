@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service;
 // 도메인 모델 별 CRUD(생성, 읽기, 모두 읽기, 수정, 삭제) 기능을 인터페이스로 선언
 // 일관성 유지, 유지보수 용이, 확장성 제공
 
-import com.sprint.mission.discodeit.dto.data.UserDTO;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
@@ -16,15 +16,15 @@ import java.util.UUID;
 public interface UserService {
 
   User create(UserCreateRequest userCreateRequest,
-      Optional<BinaryContentCreateRequest> binaryContentCreateRequest);
+      Optional<BinaryContentCreateRequest> profileCreateRequest);
 
-  UserDTO find(UUID id);
+  UserDto find(UUID userId);
 
-  List<UserDTO> findAll();
+  List<UserDto> findAll();
 
-  User update(UUID id, UserUpdateRequest userUpdateRequest,
-      Optional<BinaryContentCreateRequest> binaryContentCreateRequest);
+  User update(UUID userId, UserUpdateRequest userUpdateRequest,
+      Optional<BinaryContentCreateRequest> profileCreateRequest);
 
-  void delete(UUID id);
+  void delete(UUID userId);
 
 }

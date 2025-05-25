@@ -12,13 +12,14 @@ import java.util.UUID;
 // 도메인 모델 별 CRUD(생성, 읽기, 모두 읽기, 수정, 삭제) 기능을 인터페이스로 선언
 public interface MessageService {
 
-    Message create(MessageCreateRequest messageCreateRequest, List<BinaryContentCreateRequest> binaryContentCreateRequests);
+  Message create(MessageCreateRequest messageCreateRequest,
+      List<BinaryContentCreateRequest> binaryContentCreateRequests);
 
-    Message find(UUID messageId);
+  Message find(UUID messageId);
 
-    List<Message> findAllByChannelId(UUID channelId);
+  List<Message> findAllByChannelId(UUID channelId);
 
-    Message update(UUID messageId, MessageUpdateRequest messageUpdateRequest);
+  Message update(UUID messageId, MessageUpdateRequest request);
 
-    void delete(UUID messageId);
+  void delete(UUID messageId);
 }

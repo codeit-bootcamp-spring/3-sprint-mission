@@ -24,10 +24,10 @@ public class BasicReadStatusService implements ReadStatusService {
   private final UserRepository userRepository;
 
   @Override
-  public ReadStatus create(ReadStatusCreateRequest readStatusCreateRequest) {
-    UUID userId = readStatusCreateRequest.getUserId();
-    UUID channelId = readStatusCreateRequest.getChannelId();
-    Instant lastReadAt = readStatusCreateRequest.getLastReadAt();
+  public ReadStatus create(ReadStatusCreateRequest request) {
+    UUID userId = request.userId();
+    UUID channelId = request.channelId();
+    Instant lastReadAt = request.lastReadAt();
 
     // 의존관계 유효성( 존재하지 않는다면 예외 발생 )
     if (!userRepository.existsById(userId)) {
@@ -52,9 +52,10 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
-  public ReadStatus find(UUID id) {
-    return readStatusRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("ReadStatus with id " + id + " not found"));
+  public ReadStatus find(UUID readStatusId) {
+    return readStatusRepository.findById(readStatusId)
+        .orElseThrow(
+            () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
   }
 
 
@@ -65,11 +66,12 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
-  public ReadStatus update(UUID id, ReadStatusUpdateRequest readStatusUpdateRequest) {
+  public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
 
-    Instant newLastReadAt = readStatusUpdateRequest.getNewLastReadAt();
-    ReadStatus readStatus = readStatusRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("ReadStatus with id " + id + " not found"));
+    Instant newLastReadAt = request.newLastReadAt();
+    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+        .orElseThrow(
+            () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
 
     // Update
     readStatus.update(newLastReadAt);
@@ -77,11 +79,11 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
-  public void delete(UUID id) {
+  public void delete(UUID readStatusId) {
     // 유효성
-    if (!readStatusRepository.existsById(id)) {
-      throw new NoSuchElementException("ReadStatus with id " + id + " not found");
+    if (!readStatusRepository.existsById(readStatusId)) {
+      throw new NoSuchElementException("ReadStatus with id " + readStatusId + " not found");
     }
-    readStatusRepository.deleteById(id);
+    readStatusRepository.deleteById(readStatusId);
   }
 }

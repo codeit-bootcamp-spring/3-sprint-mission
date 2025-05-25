@@ -26,7 +26,7 @@ public class User implements Serializable {
       type = "string",
       format = "uuid"
   )
-  private final UUID userId;
+  private final UUID id;
 
   @Schema(
       description = "사용자 생성 시각",
@@ -50,7 +50,7 @@ public class User implements Serializable {
       type = "string"
   )
   @NotBlank(message = "사용자 이름은 필수입니다")
-  private String userName;
+  private String username;
 
 
   @Schema(
@@ -83,10 +83,10 @@ public class User implements Serializable {
   private UUID profileId;
 
   // 생성자
-  public User(String userName, String email, String password, UUID profileId) {
-    this.userId = UUID.randomUUID();
+  public User(String username, String email, String password, UUID profileId) {
+    this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
-    this.userName = userName;
+    this.username = username;
     this.email = email;
     this.password = password;
     //
@@ -95,18 +95,22 @@ public class User implements Serializable {
 
 
   // Update
-  public void update(String newUserName, String newPassword, String newEmail) {
+  public void update(String newUserName, String newEmail, String newPassword, UUID newProfileId) {
     boolean updated = false;
-    if (newUserName != null && !newUserName.equals(this.userName)) {
-      this.userName = newUserName;
+    if (newUserName != null && !newUserName.equals(this.username)) {
+      this.username = newUserName;
+      updated = true;
+    }
+    if (newEmail != null && !newEmail.equals(this.email)) {
+      this.email = newEmail;
       updated = true;
     }
     if (newPassword != null && !newPassword.equals(this.password)) {
       this.password = newPassword;
       updated = true;
     }
-    if (newEmail != null && !newEmail.equals(this.email)) {
-      this.email = newEmail;
+    if (newProfileId != null && !newProfileId.equals(this.profileId)) {
+      this.profileId = newProfileId;
       updated = true;
     }
     if (updated) {

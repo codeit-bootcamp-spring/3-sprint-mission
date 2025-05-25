@@ -21,7 +21,7 @@ public class ReadStatus implements Serializable {
       type = "string",
       format = "uuid"
   )
-  private final UUID readId;
+  private final UUID id;
 
   @Schema(
       description = "읽은 상태가 생성된 시각",
@@ -65,7 +65,7 @@ public class ReadStatus implements Serializable {
 
   // 생성자
   public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
-    this.readId = UUID.randomUUID();
+    this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
     //
     this.userId = userId;

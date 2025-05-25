@@ -17,8 +17,8 @@ public class BasicAuthService implements AuthService {
 
   @Override
   public User login(LoginRequest loginRequest) {
-    String username = loginRequest.getUsername();
-    String password = loginRequest.getPassword();
+    String username = loginRequest.username();
+    String password = loginRequest.password();
 
     User user = userRepository.findByUsername(username)
         .orElseThrow(

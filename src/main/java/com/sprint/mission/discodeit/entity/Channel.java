@@ -21,7 +21,7 @@ public class Channel implements Serializable {
       type = "string",
       format = "uuid"
   )
-  private final UUID channelId;
+  private final UUID id;
 
   @Schema(
       description = "채널 생성 시각",
@@ -46,14 +46,14 @@ public class Channel implements Serializable {
       format = "enum"
   )
   @NotBlank(message = "채널 유형( 공개 / 비공개 )은 필수입니다")
-  private ChannelType channelType;
+  private ChannelType type;
 
   @Schema(
       description = "채널 이름",
       example = "개발 커뮤니티"
   )
   @NotBlank(message = "채널 이름은 필수입니다")
-  private String channelName;
+  private String name;
 
   @Schema(
       description = "채널 설명",
@@ -63,21 +63,21 @@ public class Channel implements Serializable {
 
 
   // 생성자
-  public Channel(ChannelType channelType, String channelName, String description) {
-    this.channelId = UUID.randomUUID();
+  public Channel(ChannelType type, String name, String description) {
+    this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
 
-    this.channelType = channelType;
-    this.channelName = channelName;
+    this.type = type;
+    this.name = name;
     this.description = description;
   }
 
 
   // Update
-  public void update(String newChannelName, String newDescription) {
+  public void update(String newName, String newDescription) {
     boolean updated = false;
-    if (newChannelName != null && !newChannelName.equals(this.channelName)) {
-      this.channelName = newChannelName;
+    if (newName != null && !newName.equals(this.name)) {
+      this.name = newName;
       updated = true;
     }
     if (newDescription != null && !newDescription.equals(this.description)) {

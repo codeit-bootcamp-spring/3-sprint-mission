@@ -21,7 +21,7 @@ public class JCFMessageRepository implements MessageRepository {
 
   @Override
   public Message save(Message message) {
-    this.data.put(message.getMessageId(), message);
+    this.data.put(message.getId(), message);
     return message;
   }
 
@@ -49,7 +49,7 @@ public class JCFMessageRepository implements MessageRepository {
   @Override
   public void deleteAllByChannelId(UUID channelId) {
     this.findAllByChannelId(channelId)
-        .forEach(message -> this.deleteById(message.getMessageId()));
+        .forEach(message -> this.deleteById(message.getId()));
   }
 }
 

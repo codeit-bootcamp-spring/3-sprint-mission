@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -14,8 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-// @ConditionalOnProperty : Spring Boot에서 특정 프로퍼티의 값에 따라 Bean 생성 여부 제어
-// 해당 이름의 타입의 값을 file로 설정했다면 Bean 생성
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
 public class FileBinaryContentRepository implements BinaryContentRepository {
@@ -75,8 +74,8 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
   @Override
   public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
-    try {
-      return Files.list(DIRECTORY)
+    try (Stream<Path> paths = Files.list(DIRECTORY)) {
+      return paths
           .filter(path -> path.toString().endsWith(EXTENSION))
           .map(path -> {
             try (

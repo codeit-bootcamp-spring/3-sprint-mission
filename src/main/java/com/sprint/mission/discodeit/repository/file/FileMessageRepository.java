@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-// @ConditionalOnProperty : Spring Boot에서 특정 프로퍼티의 값에 따라 Bean 생성 여부 제어
-// 해당 이름의 타입의 값을 file로 설정했다면 Bean 생성
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
 public class FileMessageRepository implements MessageRepository {
@@ -44,7 +42,7 @@ public class FileMessageRepository implements MessageRepository {
 
   @Override
   public Message save(Message message) {
-    Path path = resolvePath(message.getMessageId());
+    Path path = resolvePath(message.getId());
     try (
         FileOutputStream fos = new FileOutputStream(path.toFile());
         ObjectOutputStream oos = new ObjectOutputStream(fos)
@@ -114,6 +112,6 @@ public class FileMessageRepository implements MessageRepository {
   @Override
   public void deleteAllByChannelId(UUID channelId) {
     this.findAllByChannelId(channelId)
-        .forEach(message -> this.deleteById(message.getMessageId()));
+        .forEach(message -> this.deleteById(message.getId()));
   }
 }

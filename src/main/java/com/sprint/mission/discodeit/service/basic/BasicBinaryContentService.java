@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,39 +19,44 @@ public class BasicBinaryContentService implements BinaryContentService {
 
 
   @Override
-  public BinaryContent create(BinaryContentCreateRequest binaryContentCreateRequest) {
+  public BinaryContent create(BinaryContentCreateRequest request) {
+
+    String fileName = request.fileName();
+
     // File size
-    byte[] bytes = binaryContentCreateRequest.getBytes();
+    byte[] bytes = request.bytes();
+
+    String contentType = request.contentType();
 
     BinaryContent binaryContent = new BinaryContent(
-        binaryContentCreateRequest.getFileName(),
+        fileName,
         (long) bytes.length,
-        binaryContentCreateRequest.getContentType(),
-        binaryContentCreateRequest.getBytes()
+        contentType,
+        bytes
     );
     return binaryContentRepository.save(binaryContent);
   }
 
   @Override
-  public BinaryContent find(UUID id) {
-    return binaryContentRepository.findById(id)
+  public BinaryContent find(UUID binaryContentId) {
+    return binaryContentRepository.findById(binaryContentId)
         .orElseThrow(
-            () -> new NoSuchElementException("BinaryContent with id " + id + " not found"));
+            () -> new NoSuchElementException(
+                "BinaryContent with id " + binaryContentId + " not found"));
   }
 
   @Override
-  public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
-    return binaryContentRepository.findAllByIdIn(ids).stream()
-        .filter(binaryContent -> ids.contains(binaryContent.getId()))
-        .collect(Collectors.toList());
+  public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
+    return binaryContentRepository.findAllByIdIn(binaryContentIds).stream()
+        .toList();
   }
 
   @Override
-  public void delete(UUID id) {
+  public void delete(UUID binaryContentId) {
     // 유효성
-    if (!binaryContentRepository.existsById(id)) {
-      throw new IllegalArgumentException("BinaryContent with id " + id + " not found");
+    if (!binaryContentRepository.existsById(binaryContentId)) {
+      throw new IllegalArgumentException("BinaryContent with id " + binaryContentId + " not found");
     }
-    binaryContentRepository.deleteById(id);
+    binaryContentRepository.deleteById(binaryContentId);
   }
 }

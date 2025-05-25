@@ -7,8 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
-// @ConditionalOnProperty : Spring Boot에서 특정 프로퍼티의 값에 따라 Bean 생성 여부 제어
-// 해당 이름의 타입의 값을 jcf로 설정했다면 Bean 생성
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 @Repository
 public class JCFUserRepository implements UserRepository {
@@ -21,7 +19,7 @@ public class JCFUserRepository implements UserRepository {
 
   @Override
   public User save(User user) {
-    this.data.put(user.getUserId(), user);
+    this.data.put(user.getId(), user);
     return user;
   }
 
@@ -33,7 +31,7 @@ public class JCFUserRepository implements UserRepository {
   @Override
   public Optional<User> findByUsername(String username) {
     return this.findAll().stream()
-        .filter(user -> user.getUserName().equals(username))
+        .filter(user -> user.getUsername().equals(username))
         .findFirst();
   }
 
@@ -59,6 +57,6 @@ public class JCFUserRepository implements UserRepository {
 
   @Override
   public boolean existsByUsername(String username) {
-    return this.findAll().stream().anyMatch(user -> user.getUserName().equals(username));
+    return this.findAll().stream().anyMatch(user -> user.getUsername().equals(username));
   }
 }

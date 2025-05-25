@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
-
 
 @RequiredArgsConstructor
 @Service
@@ -31,40 +29,40 @@ public class BasicMessageService implements MessageService {
   // 첨부 파일
   private final BinaryContentRepository binaryContentRepository;
 
-  // 리펙토링
-
 
   @Override
   public Message create(MessageCreateRequest messageCreateRequest,
       List<BinaryContentCreateRequest> binaryContentCreateRequests) {
-    // 채널과 사용자 존재 여부 확인
-    if (!channelRepository.existsById(messageCreateRequest.getChannelId())) {
-      throw new NoSuchElementException(
-          "Channel not found with id " + messageCreateRequest.getChannelId());
+    UUID channelId = messageCreateRequest.channelId();
+    UUID authorId = messageCreateRequest.authorId();
+
+    if (!channelRepository.existsById(channelId)) {
+      throw new NoSuchElementException("Channel with id " + channelId + " does not exist");
     }
-    if (!userRepository.existsById(messageCreateRequest.getAuthorId())) {
-      throw new NoSuchElementException(
-          "User not found with id " + messageCreateRequest.getAuthorId());
+    if (!userRepository.existsById(authorId)) {
+      throw new NoSuchElementException("Author with id " + authorId + " does not exist");
     }
 
-    // 선택적 첨부파일 여부 처리
     List<UUID> attachmentIds = binaryContentCreateRequests.stream()
-        .map(mcr -> binaryContentRepository.save(new BinaryContent(
-            mcr.getFileName(),
-            (long) mcr.getBytes().length,
-            mcr.getContentType(),
-            mcr.getBytes()
-        )).getId())
-        .collect(Collectors.toList());
+        .map(attachmentRequest -> {
+          String fileName = attachmentRequest.fileName();
+          String contentType = attachmentRequest.contentType();
+          byte[] bytes = attachmentRequest.bytes();
 
-    // 생성
+          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+              contentType, bytes);
+          BinaryContent createdBinaryContent = binaryContentRepository.save(binaryContent);
+          return createdBinaryContent.getId();
+        })
+        .toList();
+
+    String content = messageCreateRequest.content();
     Message message = new Message(
-        messageCreateRequest.getContent(),
-        messageCreateRequest.getChannelId(),
-        messageCreateRequest.getAuthorId(),
+        content,
+        channelId,
+        authorId,
         attachmentIds
     );
-
     return messageRepository.save(message);
   }
 
@@ -82,14 +80,14 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public Message update(UUID messageId, MessageUpdateRequest messageUpdateRequest) {
+  public Message update(UUID messageId, MessageUpdateRequest request) {
     // 유효성
     Message message = messageRepository.findById(messageId)
         .orElseThrow(
             () -> new NoSuchElementException("Message with id " + messageId + " not found"));
 
     // Update
-    message.update(messageUpdateRequest.getNewContent());
+    message.update(request.newContent());
 
     return messageRepository.save(message);
   }
