@@ -10,7 +10,6 @@ import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -31,16 +30,17 @@ public class BasicReadStatusService implements ReadStatusService {
         channelRepository.findById(request.channelId())
                 .orElseThrow(() -> new NoSuchElementException("Channel not found with id: " + request.channelId()));
 
-        Optional<ReadStatus> existingStatus = readStatusRepository.findByUserIdAndChannelId(request.userId(), request.channelId());
+        Optional<ReadStatus> existingStatus = readStatusRepository.findByUserIdAndChannelId(request.userId(),
+                request.channelId());
         if (existingStatus.isPresent()) {
-            throw new IllegalStateException("ReadStatus already exists for user " + request.userId() + " and channel " + request.channelId());
+            throw new IllegalStateException(
+                    "ReadStatus already exists for user " + request.userId() + " and channel " + request.channelId());
         }
 
         ReadStatus newReadStatus = new ReadStatus(
                 request.userId(),
                 request.channelId(),
-                request.lastReadAt()
-        );
+                request.lastReadAt());
         return readStatusRepository.save(newReadStatus);
     }
 
@@ -53,7 +53,8 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     public List<ReadStatus> findAllReadStatusesByUserId(UUID userId) {
         userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId + ". Cannot find read statuses."));
+                .orElseThrow(() -> new NoSuchElementException(
+                        "User not found with id: " + userId + ". Cannot find read statuses."));
         return readStatusRepository.findAllByUserId(userId);
     }
 

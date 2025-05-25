@@ -16,78 +16,60 @@ import java.util.UUID;
 import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
-@RequestMapping("/api") // 기본 경로 설정
+@RequestMapping("/api/readStatus")
 @Controller
 public class ReadStatusController {
 
     private final ReadStatusService readStatusService;
 
-    // 특정 채널의 메시지 수신 정보 생성
-    @RequestMapping(
-            path = "/user/{userId_path}/channel/{channelId_path}/readstatus", // 경로 변수명 변경하여 DTO와 구분
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    // 메시지 수신 정보 생성
+    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<?> createReadStatusForChannel(
-            @PathVariable("userId_path") UUID userIdFromPath,
-            @PathVariable("channelId_path") UUID channelIdFromPath,
-            @RequestBody ReadStatusCreateRequest request
-    ) {
-        // 경로 변수와 DTO의 ID 일치 여부 검증 (선택적)
-        if (!request.userId().equals(userIdFromPath) || !request.channelId().equals(channelIdFromPath)) {
-            return ResponseEntity.badRequest().body("{\"error\": \"User ID or Channel ID in path does not match request body.\"}");
-        }
+    public ResponseEntity<?> createReadStatus(
+            @RequestBody ReadStatusCreateRequest request) {
         try {
             ReadStatus createdReadStatus = readStatusService.createReadStatus(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdReadStatus);
         } catch (NoSuchElementException e) { // User 또는 Channel이 없을 경우
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": \"" + e.getMessage() + "\"}");
-        } catch (IllegalStateException e) { // 이미 ReadStatus가 존재할 경우
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"error\": \"" + e.getMessage() + "\"}");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Failed to create read status: " + e.getMessage() + "\"}");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to create read status: " + e.getMessage());
         }
     }
 
-    // 특정 채널의 메시지 수신 정보 수정 (ReadStatus ID 기반)
-    @RequestMapping(
-            path = "/readstatus/{readStatusId}",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    // 메시지 수신 정보 수정
+    @RequestMapping(path = "/{readStatusId}", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<?> updateReadStatusForChannel(
+    public ResponseEntity<?> updateReadStatus(
             @PathVariable("readStatusId") UUID readStatusId,
-            @RequestBody ReadStatusUpdateRequest request
-    ) {
+            @RequestBody ReadStatusUpdateRequest request) {
         try {
             ReadStatus updatedReadStatus = readStatusService.updateReadStatus(readStatusId, request);
             return ResponseEntity.ok(updatedReadStatus);
         } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": \"" + e.getMessage() + "\"}");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("ReadStatus with id " + readStatusId + " not found");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Failed to update read status: " + e.getMessage() + "\"}");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to update read status: " + e.getMessage());
         }
     }
 
     // 특정 사용자의 메시지 수신 정보 조회
-    @RequestMapping(
-            path = "/user/{userId}/readstatus",
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<?> getUserReadStatuses(@PathVariable("userId") UUID userId) {
+    public ResponseEntity<?> getUserReadStatuses(@RequestParam("userId") UUID userId) {
         try {
             List<ReadStatus> readStatuses = readStatusService.findAllReadStatusesByUserId(userId);
             return ResponseEntity.ok(readStatuses);
-        } catch (NoSuchElementException e) { // 사용자가 없을 경우
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": \"" + e.getMessage() + "\"}");
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Failed to retrieve read statuses: " + e.getMessage() + "\"}");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to retrieve read statuses: " + e.getMessage());
         }
     }
 }
