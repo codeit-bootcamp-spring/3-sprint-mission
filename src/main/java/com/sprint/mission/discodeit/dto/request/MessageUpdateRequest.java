@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@Getter
-@AllArgsConstructor
-public final class MessageUpdateRequest {
-    private final String messageContent;
+@Schema(description = "변경할 메세지 정보")
+public record MessageUpdateRequest(
+    @Schema(description = "변경할 메세지 내용", example = "changeText")
+    String newContent
+) {
+
 }

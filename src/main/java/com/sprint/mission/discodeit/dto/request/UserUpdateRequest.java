@@ -1,14 +1,17 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@Getter
-@AllArgsConstructor
-public final class UserUpdateRequest {
-    private String userName;
-    // pwd 필드는 별도의 dto로 표현
-    private String email;
-    private String phoneNumber;
-    private String StatusMessage;
+@Schema(description = "변경할 사용자 정보")
+public record UserUpdateRequest(
+    @Schema(description = "변경할 사용자 이름")
+    String newUsername,
+
+    @Schema(description = "변경할 사용자의 이메일", type = "string", format = "email")
+    String newEmail,
+
+    @Schema(description = "변경할 사용자의 비밀번호", type = "string", format = "password")
+    String newPassword
+) {
+
 }
