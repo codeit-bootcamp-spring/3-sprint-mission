@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -36,18 +36,17 @@ public class BasicChannelService implements ChannelService {
     public Channel createChannel(PublicChannelCreateRequest request) {
         String channelName = request.channelName();
         UUID ownerId = request.ownerId();
-        
-        Channel channel = new Channel(ChannelType.PUBLIC,channelName, null,ownerId);
-        Channel createdChannel = channelRepository.save(channel);
 
-        // 공개 채널 생성 시 소유자에 대한 ReadStatus 생성
-        // 채널 엔티티의 getParticipantIds()는 생성자를 통해 ownerId를 포함하게 됨
+        Channel channel = new Channel(ChannelType.PUBLIC, channelName, null, ownerId);
+        Channel createdChannel = channelRepository.save(channel);
         createdChannel.getParticipantIds().stream()
-                .map(participantUserId -> new ReadStatus(participantUserId, createdChannel.getChannelId(), Instant.MIN)) // 또는 적절한 초기 lastReadAt 값
+                .map(participantUserId -> new ReadStatus(participantUserId, createdChannel.getChannelId(),
+                        LocalDateTime.MIN))
                 .forEach(readStatusRepository::save);
 
         return createdChannel;
     }
+
     @Override
     public Channel createChannel(PrivateChannelCreateRequest request) {
         // 요청으로부터 채널 이름, 소유자 ID, 참가자 목록을 가져옴
@@ -63,13 +62,13 @@ public class BasicChannelService implements ChannelService {
                 channel.addParticipant(participantId);
             }
         }
-        
+
         Channel createdChannel = channelRepository.save(channel);
 
         // ReadStatus 생성: 채널의 최종 참가자 목록을 기준으로 생성
         // Channel 엔티티의 getParticipantIds()는 생성자 및 addParticipant를 통해 최신 상태를 가짐
         createdChannel.getParticipantIds().stream()
-                .map(userId -> new ReadStatus(userId, createdChannel.getChannelId(), Instant.MIN))
+                .map(userId -> new ReadStatus(userId, createdChannel.getChannelId(), LocalDateTime.MIN))
                 .forEach(readStatusRepository::save);
 
         return createdChannel;
@@ -91,13 +90,12 @@ public class BasicChannelService implements ChannelService {
         String password = request.password();
         UUID channelId = request.channelId();
 
-        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
         channel.updateChannelName(channelName);
         channel.updatePassword(password);
 
-        
         return channelRepository.save(channel);
-
     }
 
     @Override
@@ -134,8 +132,9 @@ public class BasicChannelService implements ChannelService {
                     .collect(Collectors.toList());
 
             // 4.2. 마지막 메시지 시간 조회
-            Optional<Message> lastMessageOpt = messageRepository.findTopByChannelIdOrderByCreatedAtDesc(channel.getChannelId());
-            Instant lastMessageAt = lastMessageOpt.map(Message::getCreatedAt).orElse(null);
+            Optional<Message> lastMessageOpt = messageRepository
+                    .findTopByChannelIdOrderByCreatedAtDesc(channel.getChannelId());
+            LocalDateTime lastMessageAt = lastMessageOpt.map(Message::getCreatedAt).orElse(null);
 
             return new ChannelDto(
                     channel.getChannelId(),
@@ -143,8 +142,7 @@ public class BasicChannelService implements ChannelService {
                     channel.getChannelName(),
                     channel.getPassword(),
                     participantIds,
-                    lastMessageAt
-            );
+                    lastMessageAt);
         }).collect(Collectors.toList());
     }
 }

@@ -13,6 +13,7 @@ public interface ChannelService {
 
     // Create: 새 공개 채널 생성
     Channel createChannel(PublicChannelCreateRequest request);
+
     // Create: 새 비공개 채널 생성
     Channel createChannel(PrivateChannelCreateRequest request);
 

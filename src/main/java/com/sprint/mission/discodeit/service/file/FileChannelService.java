@@ -2,9 +2,7 @@ package com.sprint.mission.discodeit.service.file;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
@@ -58,7 +56,7 @@ public class FileChannelService implements ChannelService {
         List<UUID> participantIds = request.participantIds();
 
         // 소유자 유효성 검사 (UserService가 주입되어 있음)
-        if (userService.getUserById(ownerId) == null) { 
+        if (userService.getUserById(ownerId) == null) {
             throw new IllegalArgumentException("Invalid owner ID for private channel creation: " + ownerId);
         }
 
@@ -104,10 +102,12 @@ public class FileChannelService implements ChannelService {
             channel.updateChannelName(request.channelName()); // Channel 엔티티에 updateChannelName 있음
         }
         if (request.password() != null && !request.password().isEmpty()) {
-             channel.updatePassword(request.password()); // Channel 엔티티에 updatePassword 있음
+            channel.updatePassword(request.password()); // Channel 엔티티에 updatePassword 있음
         }
         // 비공개 여부 업데이트 로직은 PublicChannelUpdateRequest에 isPrivate 필드가 있다면 추가
-        // if (request.isPrivate() != channel.isPrivate()) { channel.updatePrivate(request.isPrivate()); } // Channel 엔티티에 isPrivate, updatePrivate 필요
+        // if (request.isPrivate() != channel.isPrivate()) {
+        // channel.updatePrivate(request.isPrivate()); } // Channel 엔티티에 isPrivate,
+        // updatePrivate 필요
 
         return channelRepository.save(channel);
     }
@@ -138,18 +138,19 @@ public class FileChannelService implements ChannelService {
 
     // ChannelService 인터페이스에 정의되지 않은 메소드들은 주석 처리
 
-//    public Set<UUID> getChannelParticipants(UUID channelId) {
-//        // 로직 구현 (Channel 엔티티에 참가자 목록 필드 필요)
-//        throw new UnsupportedOperationException("getChannelParticipants not implemented.");
-//    }
+    // public Set<UUID> getChannelParticipants(UUID channelId) {
+    // // 로직 구현 (Channel 엔티티에 참가자 목록 필드 필요)
+    // throw new UnsupportedOperationException("getChannelParticipants not
+    // implemented.");
+    // }
 
-//    public boolean joinChannel(UUID channelId, UUID userId, String password) {
-//        // 로직 구현 (Channel 엔티티에 참가자 관리 메소드 필요)
-//        throw new UnsupportedOperationException("joinChannel not implemented.");
-//    }
+    // public boolean joinChannel(UUID channelId, UUID userId, String password) {
+    // // 로직 구현 (Channel 엔티티에 참가자 관리 메소드 필요)
+    // throw new UnsupportedOperationException("joinChannel not implemented.");
+    // }
 
-//    public boolean leaveChannel(UUID channelId, UUID userId) {
-//        // 로직 구현 (Channel 엔티티에 참가자 관리 메소드 필요)
-//        throw new UnsupportedOperationException("leaveChannel not implemented.");
-//    }
+    // public boolean leaveChannel(UUID channelId, UUID userId) {
+    // // 로직 구현 (Channel 엔티티에 참가자 관리 메소드 필요)
+    // throw new UnsupportedOperationException("leaveChannel not implemented.");
+    // }
 }
