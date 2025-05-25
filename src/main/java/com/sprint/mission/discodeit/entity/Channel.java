@@ -9,6 +9,7 @@ import java.util.UUID;
 
 @Getter
 public class Channel implements Serializable {
+
   private static final long serialVersionUID = 1L;
 
   private final UUID id;
@@ -16,17 +17,29 @@ public class Channel implements Serializable {
   private Instant updatedAt;
 
   private String channelName;
+  private String description;
   private User channelOwner;
   private List<User> channelMembers;
   private ChannelType channelType;
 
-  public Channel(String channelName, User channelOwner, List<User> channelUsers, ChannelType channelType) {
+  /*public Channel(String channelName, String description, User channelOwner, List<User> channelUsers,
+      ChannelType channelType) {
     this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
     this.channelName = channelName;
+    this.description = description;
     this.channelOwner = channelOwner;
     this.channelMembers = channelUsers;
+    this.channelType = channelType;
+  }*/
+
+  public Channel(String channelName, String description, ChannelType channelType) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    this.updatedAt = Instant.now();
+    this.channelName = channelName;
+    this.description = description;
     this.channelType = channelType;
   }
 

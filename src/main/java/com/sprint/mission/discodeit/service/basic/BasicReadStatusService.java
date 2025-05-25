@@ -22,7 +22,8 @@ public class BasicReadStatusService implements ReadStatusService {
   private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
 
-  public BasicReadStatusService(ReadStatusRepository readStatusRepository, UserRepository userRepository, ChannelRepository channelRepository) {
+  public BasicReadStatusService(ReadStatusRepository readStatusRepository,
+      UserRepository userRepository, ChannelRepository channelRepository) {
     this.readStatusRepository = readStatusRepository;
     this.userRepository = userRepository;
     this.channelRepository = channelRepository;
@@ -45,7 +46,7 @@ public class BasicReadStatusService implements ReadStatusService {
       throw new IllegalArgumentException("해당 유저와 채널의 ReadStatus는 이미 존재합니다.");
     }
 
-    ReadStatus newStatus = new ReadStatus(request.userId(), request.channelId());
+    ReadStatus newStatus = new ReadStatus(request.userId(), request.channelId(), Instant.MIN);
 
     return readStatusRepository.save(newStatus);
   }

@@ -8,6 +8,7 @@ import java.util.UUID;
 
 @Getter
 public class BinaryContent implements Serializable {
+
   private static final long serialVersionUID = 1L;
   private final UUID id;
   private final Instant createdAt;
@@ -16,20 +17,21 @@ public class BinaryContent implements Serializable {
   private UUID messageId; // 메시지와 관련된 파일 (선택적)
 
   private String fileName; // 파일 이름 (예: "123.png", "456.pdf")
-  private byte[] data;          // 이미지 바이너리 데이터
+  private byte[] bytes;          // 이미지 바이너리 데이터
   private String contentType;   // MIME 타입 예: "image/jpeg"
 
-  public BinaryContent(String fileName, UUID userId, byte[] data, String contentType) {
+  public BinaryContent(String fileName, UUID userId, byte[] bytes, String contentType) {
     this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
     this.fileName = fileName;
     this.userId = userId;
-    this.data = data;
+    this.bytes = bytes;
     this.contentType = contentType;
   }
 
-  public BinaryContent(String fileName, UUID userId, UUID messageId, byte[] data, String contentType) {
-    this(fileName, userId, data, contentType);
+  public BinaryContent(String fileName, UUID userId, UUID messageId, byte[] bytes,
+      String contentType) {
+    this(fileName, userId, bytes, contentType);
     this.messageId = messageId;
   }
 

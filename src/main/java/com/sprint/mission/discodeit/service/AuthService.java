@@ -25,7 +25,7 @@ public class AuthService {
         .map(user -> {
           boolean hasProfileImage = binaryContentRepository.findByUserId(user.getId()).isPresent();
           boolean isOnline = userStatusRepository.find(user.getId())
-              .map(UserStatus::checkUserConnect)
+              .map(UserStatus::isOnline)
               .orElse(false);
 
           return new UserDto(user, hasProfileImage, isOnline);

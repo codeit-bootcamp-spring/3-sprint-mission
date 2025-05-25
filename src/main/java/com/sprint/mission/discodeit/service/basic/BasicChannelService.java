@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +33,9 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public Channel create(PublicChannelCreateRequest request) {
-    User ownerUser = userRepository.findById(request.ownerUserId())
+    String name = request.channelName();
+    String description = request.description();
+   /* User ownerUser = userRepository.findById(request.ownerUserId())
         .orElseThrow(() -> new IllegalArgumentException("유효한 사용자 ID가 아닙니다."));
 
     boolean isDuplicate = channelRepository.findAll().stream()
@@ -46,13 +49,14 @@ public class BasicChannelService implements ChannelService {
     List<User> members = new ArrayList<>();
     members.add(ownerUser);
 
-    Channel channel = new Channel(request.channelName(), ownerUser, members, ChannelType.PUBLIC);
+    Channel channel = new Channel(name, description, ownerUser, members, ChannelType.PUBLIC);*/
+    Channel channel = new Channel(name, description, ChannelType.PUBLIC);
     return channelRepository.save(channel);
   }
 
   @Override
   public Channel create(PrivateChannelCreateRequest request) {
-    User ownerUser = userRepository.findById(request.ownerUserId())
+  /*  User ownerUser = userRepository.findById(request.ownerUserId())
         .orElseThrow(() -> new IllegalArgumentException("유효한 사용자 ID가 아닙니다."));
 
     // 채널 이름 중복 확인
@@ -66,11 +70,11 @@ public class BasicChannelService implements ChannelService {
 
     // 채널 생성 시 참여자와 ReadStatus 처리
     List<User> members = new ArrayList<>();
-    members.add(ownerUser);
+    members.add(ownerUser);*/
 
-    Channel channel = new Channel(request.channelName(), ownerUser, members, ChannelType.PRIVATE);
+    Channel channel = new Channel(null, null, ChannelType.PRIVATE);
     // ReadStatus 생성 (참여자들에 대해 ReadStatus 설정)
-    for (UUID userId : request.memberIds()) {
+   /* for (UUID userId : request.memberIds()) {
       User member = userRepository.findById(userId)
           .orElseThrow(() -> new IllegalArgumentException("유효한 사용자 ID가 아닙니다."));
       members.add(member);
@@ -79,7 +83,14 @@ public class BasicChannelService implements ChannelService {
       readStatusRepository.save(readStatus);
     }
 
-    return channelRepository.save(channel);
+    return channelRepository.save(channel);*/
+    Channel createdChannel = channelRepository.save(channel);
+
+    request.participantIds().stream()
+        .map(userId -> new ReadStatus(userId, createdChannel.getId(), Instant.MIN))
+        .forEach(readStatusRepository::save);
+
+    return createdChannel;
   }
 
 
@@ -162,7 +173,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public Channel update(UUID channelId, PublicChannelUpdateRequest request){
+  public Channel update(UUID channelId, PublicChannelUpdateRequest request) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
 
@@ -226,7 +237,7 @@ public class BasicChannelService implements ChannelService {
     channelRepository.update(channel);
 
     if (channel.getChannelType() == ChannelType.PRIVATE) {
-      ReadStatus readStatus = new ReadStatus(userId, channelId);
+      ReadStatus readStatus = new ReadStatus(userId, channelId, Instant.MIN);
       readStatusRepository.save(readStatus);
     }
   }
