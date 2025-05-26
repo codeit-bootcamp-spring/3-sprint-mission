@@ -1,55 +1,48 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.entitiy.Channel;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
-
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 @Repository
-@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "JCF", matchIfMissing = true)
 public class JCFChannelRepository implements ChannelRepository {
 
-  private final CopyOnWriteArrayList<Channel> data = new CopyOnWriteArrayList<>();
+  private final Map<UUID, Channel> data;
+
+  public JCFChannelRepository() {
+    this.data = new HashMap<>();
+  }
 
   @Override
   public Channel save(Channel channel) {
-    data.add(channel);
+    this.data.put(channel.getId(), channel);
     return channel;
   }
 
   @Override
-  public List<Channel> read() {
-    return data;
+  public Optional<Channel> findById(UUID id) {
+    return Optional.ofNullable(this.data.get(id));
   }
 
   @Override
-  public Optional<Channel> readById(UUID id) {
-    return data.stream()
-        .filter(channel -> channel.getId().equals(id))
-        .findAny();
+  public List<Channel> findAll() {
+    return this.data.values().stream().toList();
   }
 
   @Override
-  public void update(UUID id, Channel channel) {
-    data.stream()
-        .filter(chan -> chan.getId().equals(id))
-        .forEach(chan -> {
-          chan.setUpdatedAt(Instant.now());
-          chan.setName(channel.getName());
-          chan.setDescription(channel.getDescription());
-          chan.setType(channel.getType());
-        });
+  public boolean existsById(UUID id) {
+    return this.data.containsKey(id);
   }
 
   @Override
-  public void delete(UUID channelId) {
-    data.removeIf(channel -> channel.getId().equals(channelId));
+  public void deleteById(UUID id) {
+    this.data.remove(id);
   }
-
 }

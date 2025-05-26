@@ -1,70 +1,65 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.entitiy.User;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
-
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 @Repository
-@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "JCF",matchIfMissing = true)
 public class JCFUserRepository implements UserRepository {
 
+  private final Map<UUID, User> data;
 
-    private final CopyOnWriteArrayList<User> data = new CopyOnWriteArrayList<>();
+  public JCFUserRepository() {
+    this.data = new HashMap<>();
+  }
 
-    @Override
-    public User save(User user) {
-        data.add(user);
-        return user;
-    }
+  @Override
+  public User save(User user) {
+    this.data.put(user.getId(), user);
+    return user;
+  }
 
-    @Override
-    public Boolean duplicateCheck(User user) {
-        //user의 name이나 Email이 중복인지 검사
-        if(data.stream().anyMatch((c) -> c.getUsername().equals(user.getUsername())) || data.stream().anyMatch((c) -> c.getEmail().equals(user.getEmail())))
-            //중복이면 true
-            return true;
-        else
-            //중복이 아니면 false return
-            return false;
-    }
+  @Override
+  public Optional<User> findById(UUID id) {
+    return Optional.ofNullable(this.data.get(id));
+  }
 
-    @Override
-    public List<User> read() {
-        return data;
-    }
+  @Override
+  public Optional<User> findByUsername(String username) {
+    return this.findAll().stream()
+        .filter(user -> user.getUsername().equals(username))
+        .findFirst();
+  }
 
-    @Override
-    public Optional<User> readById(UUID id) {
-        return data.stream()
-                .filter(user -> user.getId().equals(id))
-                .findAny();
-    }
+  @Override
+  public List<User> findAll() {
+    return this.data.values().stream().toList();
+  }
 
-    @Override
-    public void update(UUID id, User user) {
-        data.stream()
-                .filter(u -> u.getId().equals(id))
-                .forEach(u-> {
-                    u.setUpdatedAt(Instant.now());
-                    u.setProfileId(user.getProfileId());
-                    u.setEmail(user.getEmail());
-                    u.setFriends(user.getFriends());
-                    u.setUsername(user.getUsername());
-                    u.setPassword(user.getPassword());
-                });
-    }
+  @Override
+  public boolean existsById(UUID id) {
+    return this.data.containsKey(id);
+  }
 
-    @Override
-    public void delete(UUID userId) {
-        data.removeIf(user -> user.getId().equals(userId));
-    }
+  @Override
+  public void deleteById(UUID id) {
+    this.data.remove(id);
+  }
 
+  @Override
+  public boolean existsByEmail(String email) {
+    return this.findAll().stream().anyMatch(user -> user.getEmail().equals(email));
+  }
+
+  @Override
+  public boolean existsByUsername(String username) {
+    return this.findAll().stream().anyMatch(user -> user.getUsername().equals(username));
+  }
 }

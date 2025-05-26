@@ -1,26 +1,21 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.entitiy.Channel;
-import com.sprint.mission.discodeit.entitiy.ReadStatus;
-import com.sprint.mission.discodeit.entitiy.User;
+import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
-import com.sun.jdi.request.DuplicateRequestException;
 import java.time.Instant;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
-
-@Service
 @RequiredArgsConstructor
+@Service
 public class BasicReadStatusService implements ReadStatusService {
 
   private final ReadStatusRepository readStatusRepository;
@@ -29,68 +24,54 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   public ReadStatus create(ReadStatusCreateRequest request) {
-    Optional<User> user = userRepository.readById(request.userId());
-    Optional<Channel> channel = channelRepository.readById(request.channelId());
-    try {
-      if (user.isEmpty() || channel.isEmpty()) {
-        throw new NoSuchElementException("userId 또는 channelId가 일치하지 않습니다");
-      } else {
-        List<ReadStatus> readByUserId = readStatusRepository.readByUserId(user.get().getId());
-        boolean duplicatedReadStatus = readByUserId.stream()
-            .anyMatch(readStatus -> readStatus.getChannelId().equals(channel.get().getId()));
-        if (duplicatedReadStatus) {
-          throw new DuplicateRequestException("중복된 readStatus입니다.");
-        } else {
-          return readStatusRepository.save(new ReadStatus(request.userId(), request.channelId(),
-              request.lastReadAt()));
-        }
-      }
-    } catch (NoSuchElementException | DuplicateRequestException e) {
-      System.out.println(e);
-      return null;
+    UUID userId = request.userId();
+    UUID channelId = request.channelId();
+
+    if (!userRepository.existsById(userId)) {
+      throw new NoSuchElementException("User with id " + userId + " does not exist");
     }
+    if (!channelRepository.existsById(channelId)) {
+      throw new NoSuchElementException("Channel with id " + channelId + " does not exist");
+    }
+    if (readStatusRepository.findAllByUserId(userId).stream()
+        .anyMatch(readStatus -> readStatus.getChannelId().equals(channelId))) {
+      throw new IllegalArgumentException(
+          "ReadStatus with userId " + userId + " and channelId " + channelId + " already exists");
+    }
+
+    Instant lastReadAt = request.lastReadAt();
+    ReadStatus readStatus = new ReadStatus(userId, channelId, lastReadAt);
+    return readStatusRepository.save(readStatus);
   }
 
   @Override
-  public ReadStatus find(UUID id) {
-    Optional<ReadStatus> readStatus = readStatusRepository.readById(id);
-    try {
-      if (readStatus.isPresent()) {
-        return readStatus.get();
-      } else {
-        throw new NoSuchElementException("해당하는 id의 ReadStatus는 존재하지 않습니다.");
-      }
-    } catch (NoSuchElementException e) {
-      System.out.println(e);
-      return null;
-    }
+  public ReadStatus find(UUID readStatusId) {
+    return readStatusRepository.findById(readStatusId)
+        .orElseThrow(
+            () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
   }
 
   @Override
   public List<ReadStatus> findAllByUserId(UUID userId) {
-    return readStatusRepository.readByUserId(userId);
+    return readStatusRepository.findAllByUserId(userId).stream()
+        .toList();
   }
 
   @Override
-  public void update(UUID readStatusId, ReadStatusUpdateRequest request) {
-    Optional<ReadStatus> readStatusIsValid = readStatusRepository.readById(readStatusId);
-    try {
-      if (readStatusIsValid.isPresent()) {
-        ReadStatus readStatus = readStatusIsValid.get();
-        readStatus.setLastReadAt(request.newLastReadAt());
-        readStatusRepository.update(readStatusId, readStatus);
-      } else {
-        throw new NoSuchElementException("해당하는 id의 ReadStatus는 존재하지 않습니다.");
-      }
-    } catch (NoSuchElementException e) {
-      System.out.println(e);
-    }
-
+  public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
+    Instant newLastReadAt = request.newLastReadAt();
+    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+        .orElseThrow(
+            () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
+    readStatus.update(newLastReadAt);
+    return readStatusRepository.save(readStatus);
   }
 
   @Override
   public void delete(UUID readStatusId) {
-    readStatusRepository.delete(readStatusId);
+    if (!readStatusRepository.existsById(readStatusId)) {
+      throw new NoSuchElementException("ReadStatus with id " + readStatusId + " not found");
+    }
+    readStatusRepository.deleteById(readStatusId);
   }
 }
-

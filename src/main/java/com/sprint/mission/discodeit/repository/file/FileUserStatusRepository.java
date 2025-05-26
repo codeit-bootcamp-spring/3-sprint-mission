@@ -1,125 +1,126 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entitiy.User;
-import com.sprint.mission.discodeit.entitiy.UserStatus;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
-@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "File")
 public class FileUserStatusRepository implements UserStatusRepository {
 
-  @Value("${discodeit.repository.fileDirectory}")
-  private String FILE_Directory;
-  private final String FILE_NAME = "userstatus.ser";
+  private final Path DIRECTORY;
+  private final String EXTENSION = ".ser";
 
-  public Path getFilePath() {
-    return Paths.get(FILE_Directory, FILE_NAME);
-  }
-
-  //File*Repository에서만 사용, 파일을 읽어들여 리스트 반환
-  public List<UserStatus> readFiles() {
-    try {
-      if (!Files.exists(getFilePath()) || Files.size(getFilePath()) == 0) {
-        return new ArrayList<>();
+  public FileUserStatusRepository(
+      @Value("${discodeit.repository.file-directory:data}") String fileDirectory
+  ) {
+    this.DIRECTORY = Paths.get(System.getProperty("user.dir"), fileDirectory,
+        UserStatus.class.getSimpleName());
+    if (Files.notExists(DIRECTORY)) {
+      try {
+        Files.createDirectories(DIRECTORY);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    List<UserStatus> userStatuses = new ArrayList<>();
-    try (ObjectInputStream reader = new ObjectInputStream(
-        new FileInputStream(getFilePath().toFile()))) {
-      while (true) {
-        try {
-          userStatuses.add((UserStatus) reader.readObject());
-        } catch (EOFException e) {
-          break;
-        }
-      }
-    } catch (IOException | ClassNotFoundException e) {
-      e.printStackTrace();
-    }
-    return userStatuses;
-  }
-
-
-  //File*Repository에서만 사용, 만들어 놓은 리스트를 인자로 받아 파일에 쓰기
-  public void writeFiles(List<UserStatus> userStatuses) {
-    try {
-      Files.createDirectories(getFilePath().getParent());
-      try (ObjectOutputStream writer = new ObjectOutputStream(
-          new FileOutputStream(getFilePath().toFile()))) {
-        for (UserStatus readStatus : userStatuses) {
-          writer.writeObject(readStatus);
-        }
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
     }
   }
 
+  private Path resolvePath(UUID id) {
+    return DIRECTORY.resolve(id + EXTENSION);
+  }
 
   @Override
   public UserStatus save(UserStatus userStatus) {
-    List<UserStatus> userStatuses = readFiles();
-    userStatuses.add(userStatus);
-    writeFiles(userStatuses);
+    Path path = resolvePath(userStatus.getId());
+    try (
+        FileOutputStream fos = new FileOutputStream(path.toFile());
+        ObjectOutputStream oos = new ObjectOutputStream(fos)
+    ) {
+      oos.writeObject(userStatus);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     return userStatus;
   }
 
   @Override
-  public List<UserStatus> read() {
-    List<UserStatus> userStatuses = readFiles();
-    return userStatuses;
+  public Optional<UserStatus> findById(UUID id) {
+    UserStatus userStatusNullable = null;
+    Path path = resolvePath(id);
+    if (Files.exists(path)) {
+      try (
+          FileInputStream fis = new FileInputStream(path.toFile());
+          ObjectInputStream ois = new ObjectInputStream(fis)
+      ) {
+        userStatusNullable = (UserStatus) ois.readObject();
+      } catch (IOException | ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return Optional.ofNullable(userStatusNullable);
   }
 
   @Override
-  public Optional<UserStatus> readById(UUID id) {
-    List<UserStatus> userStatuses = readFiles();
-    Optional<UserStatus> userStatus = userStatuses.stream()
-        .filter((u) -> u.getId().equals(id))
-        .findAny();
-    return userStatus;
+  public Optional<UserStatus> findByUserId(UUID userId) {
+    return findAll().stream()
+        .filter(userStatus -> userStatus.getUserId().equals(userId))
+        .findFirst();
   }
 
   @Override
-  public Optional<UserStatus> readByUserId(UUID userId) {
-    List<UserStatus> userStatuses = readFiles();
-    Optional<UserStatus> userStatus = userStatuses.stream()
-        .filter((u) -> u.getUserId().equals(userId))
-        .findAny();
-    return userStatus;
+  public List<UserStatus> findAll() {
+    try (Stream<Path> paths = Files.list(DIRECTORY)) {
+      return paths
+          .filter(path -> path.toString().endsWith(EXTENSION))
+          .map(path -> {
+            try (
+                FileInputStream fis = new FileInputStream(path.toFile());
+                ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+              return (UserStatus) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+              throw new RuntimeException(e);
+            }
+          })
+          .toList();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public void update(UUID id, UserStatus userStatus) {
-    List<UserStatus> userStatuses = readFiles();
-    userStatuses.stream()
-        .filter((c) -> c.getId().equals(id))
-        .forEach((c) -> {
-          c.setUpdatedAt(userStatus.getUpdatedAt());
-          c.setLastActiveAt(userStatus.getLastActiveAt());
-        });
-    writeFiles(userStatuses);
+  public boolean existsById(UUID id) {
+    Path path = resolvePath(id);
+    return Files.exists(path);
   }
 
   @Override
-  public void delete(UUID userStatusId) {
-    List<UserStatus> userStatuses = readFiles();
-    userStatuses.removeIf(userStatus -> userStatus.getId().equals(userStatusId));
-    writeFiles(userStatuses);
+  public void deleteById(UUID id) {
+    Path path = resolvePath(id);
+    try {
+      Files.delete(path);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void deleteByUserId(UUID userId) {
+    this.findByUserId(userId)
+        .ifPresent(userStatus -> this.deleteById(userStatus.getId()));
   }
 }

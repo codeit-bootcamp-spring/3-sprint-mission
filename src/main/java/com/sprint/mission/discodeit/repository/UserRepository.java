@@ -1,16 +1,25 @@
 package com.sprint.mission.discodeit.repository;
 
-import com.sprint.mission.discodeit.entitiy.User;
-
+import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface UserRepository {
-    public User save(User user);
-    public List<User> read();
-    public Optional<User> readById(UUID id);
-    public void update(UUID id, User user);
-    public void delete(UUID userId);
-    public Boolean duplicateCheck(User user);
+
+  User save(User user);
+
+  Optional<User> findById(UUID id);
+
+  Optional<User> findByUsername(String username);
+
+  List<User> findAll();
+
+  boolean existsById(UUID id);
+
+  void deleteById(UUID id);
+
+  boolean existsByEmail(String email);
+
+  boolean existsByUsername(String username);
 }
