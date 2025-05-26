@@ -66,12 +66,11 @@ public class BasicUserStatusService implements UserStatusService {
 
 
   @Override
-  public ResponseEntity<?> updateByUserId(UUID userId, Instant newLastActiveAt) {
+  public UpdateUserStatusResponse updateByUserId(UUID userId, Instant newLastActiveAt) {
     UserStatus userStatus = userStatusRepository.findUserStatusByUserId(userId);
     
     if (userStatus == null) {
-      return ResponseEntity.status(404)
-          .body("UserStatus with userId " + userId + " not found");
+      throw new NoSuchElementException("UserStatus with userId " + userId + " not found");
     }
     userStatusRepository.updateByUserId(
         Objects.requireNonNull(userId, "no userId in param"),
@@ -89,7 +88,7 @@ public class BasicUserStatusService implements UserStatusService {
         online
     );
 
-    return ResponseEntity.status(HttpStatus.OK).body(response);
+    return response;
   }
 
   @Override

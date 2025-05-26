@@ -9,8 +9,6 @@ import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,10 +43,10 @@ public class BasicMessageService implements MessageService {
 
 
     @Override
-    public ResponseEntity<?> findAllByChannelId(UUID channelId) {
+    public List<FoundMessagesResponse> findAllByChannelId(UUID channelId) {
         List<Message> messageList = messageRepository.findMessagesByChannelId(channelId);
         if (messageList.isEmpty()) {
-            return ResponseEntity.status(200).body(Collections.EMPTY_LIST);
+            return Collections.emptyList();
         }
         List<FoundMessagesResponse> responses = new ArrayList<>();
         for (Message message : messageList) {
@@ -63,9 +61,7 @@ public class BasicMessageService implements MessageService {
             ));
         }
 
-        return ResponseEntity
-                .status(200)
-                .body(responses);
+        return responses;
     }
 
 
@@ -73,17 +69,17 @@ public class BasicMessageService implements MessageService {
     // public 방일경우 작성을 해도 readstatus가 없음 최소 1회는 등록을 해야 하고 유저가 방에 있는지 확인 가능한 로직이 필요함
     // binary content
     @Override
-    public ResponseEntity<?> createMessage(
+    public MessageAttachmentsCreateResponse createMessage(
             MessageCreateRequest request,
             List<MultipartFile> fileList) {
 
 
         if (channelRepository.findChannelById(request.channelId()) == null) {
-            return ResponseEntity.status(404).body("channel with id " + request.channelId() + " not found");
+            throw new NoSuchElementException("channel with id " + request.channelId() + " not found");
         }
 
         if (userRepository.findUserById(request.authorId()) == null) {
-            return ResponseEntity.status(404).body("author with id " + request.authorId() + " not found");
+            throw new NoSuchElementException("author with id " + request.authorId() + " not found");
         }
 
 // -------- 추가된 public 의 read status 확인-생성 로직
@@ -158,41 +154,18 @@ public class BasicMessageService implements MessageService {
                 messageWithAttachments.getSenderId(),
                 messageWithAttachments.getAttachmentIds().stream().toList());
 
-        return ResponseEntity
-                .status(201)
-                .body(messageAttachmentsCreateResponse);
+        return messageAttachmentsCreateResponse;
         // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
     }
 
 
-    @Override
-    public ResponseEntity<?> updateMessage(UUID messageId, MessageUpdateRequest request) {
-        if (messageRepository.findMessageById(messageId) == null) {
-            return ResponseEntity.status(404).body("message with id " + messageId + " not found");
-        }
 
-        messageRepository.updateMessageById(messageId, request.newContent());
-
-        Message message = messageRepository.findMessageById(messageId);
-
-        UpdateMessageResponse response = new UpdateMessageResponse(
-                message.getId(),
-                message.getCreatedAt(),
-                message.getUpdatedAt(),
-                message.getContent(),
-                message.getChannelId(),
-                message.getSenderId(),
-                message.getAttachmentIds()
-        );
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(response);
-    }
 
     @Override
-    public ResponseEntity<?> deleteMessage(UUID messageId) {
+    public boolean deleteMessage(UUID messageId) {
         Optional.ofNullable(messageId).orElseThrow(() -> new IllegalArgumentException("require message Id : BasicMessageService.deleteMessage"));
         if (messageRepository.findMessageById(messageId) == null) {
-            return ResponseEntity.status(404).body("Message with id " + messageId + " not found");
+            throw new IllegalArgumentException("message with id " + messageId + " not found");
         }
         // attachments 삭제
         List<UUID> attachmentIds = messageRepository.findMessageById(messageId).getAttachmentIds();
@@ -217,7 +190,31 @@ public class BasicMessageService implements MessageService {
             }
         }
         messageRepository.deleteMessageById(messageId);
-        return ResponseEntity.status(204).body("");
+        return true;
+    }
+
+    @Override
+    public UpdateMessageResponse updateMessage(UUID messageId, MessageUpdateRequest request) {
+        if (messageRepository.findMessageById(messageId) == null) {
+            throw new NoSuchElementException("message with id " + messageId + " not found");
+        }
+
+        messageRepository.updateMessageById(messageId, request.newContent());
+
+        Message message = messageRepository.findMessageById(messageId);
+
+        UpdateMessageResponse response = new UpdateMessageResponse(
+                message.getId(),
+                message.getCreatedAt(),
+                message.getUpdatedAt(),
+                message.getContent(),
+                message.getChannelId(),
+                message.getSenderId(),
+                message.getAttachmentIds()
+        );
+//        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return response;
+
     }
 
     private boolean hasValue(List<MultipartFile> attachmentFiles) {
@@ -230,7 +227,7 @@ public class BasicMessageService implements MessageService {
     public Message findMessageById(UUID messageId) {
         Objects.requireNonNull(messageId, "no messageId: BasicMessageService.findMessageById");
         return Optional.ofNullable(messageRepository.findMessageById(messageId))
-                .orElseThrow(() -> new IllegalStateException("no message in DB: BasicMessageService.findMessageById"));
+                .orElseThrow(() -> new IllegalArgumentException("no message in DB: BasicMessageService.findMessageById"));
     }
 
     // not required

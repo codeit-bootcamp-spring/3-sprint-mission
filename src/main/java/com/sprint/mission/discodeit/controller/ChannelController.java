@@ -2,14 +2,17 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.Dto.channel.*;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,23 +30,27 @@ import java.util.UUID;
 public class ChannelController {
 
     private final ChannelService channelService;
+    private final UserService userService;
 
     @Operation(summary = "공개 채널 생성", description = "공개 채널을 생성합니다.")
     @PostMapping("/public")
     public ResponseEntity<?> create(@Valid @RequestBody PublicChannelCreateRequest request) {
-        return channelService.createChannel(request);
+        return ResponseEntity.status(201).body(channelService.createChannel(request));
     }
 
     @Operation(summary = "비공개 채널 생성", description = "비공개 채널을 생성합니다.")
     @PostMapping("/private")
     public ResponseEntity<?> create(@RequestBody PrivateChannelCreateRequest request) {
-        return channelService.createChannel(request);
+        return ResponseEntity.status(201).body(channelService.createChannel(request));
     }
 
     @Operation(summary = "채널 삭제", description = "채널을 삭제합니다.")
     @DeleteMapping("/{channelId}")
     public ResponseEntity<?> removeChannel(@PathVariable UUID channelId) {
-        return channelService.deleteChannel(channelId);
+        if (channelService.deleteChannel(channelId)) {
+            return ResponseEntity.status(204).build();
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "not found");
     }
 
     @Operation(summary = "채널 정보 수정", description = "채널 정보를 수정합니다.")
@@ -57,6 +64,6 @@ public class ChannelController {
     @Operation(summary = "유저가 참여중인 채널 목록 조회", description = "유저가 참여중인 채널 목록을 전체 조회합니다.")
     @GetMapping
     public ResponseEntity<?> findChannels(@RequestParam UUID userId) {
-        return channelService.findAllByUserId(userId);
+        return ResponseEntity.status(200).body(channelService.findAllByUserId(userId));
     }
 }

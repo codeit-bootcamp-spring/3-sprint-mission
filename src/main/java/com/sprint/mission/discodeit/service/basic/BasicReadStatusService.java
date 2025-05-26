@@ -35,7 +35,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
 
     @Override
-    public ResponseEntity<?> findAllByUserId(UUID userId) {
+    public List<FindReadStatusesResponse> findAllByUserId(UUID userId) {
         List<ReadStatus> readStatusList = Optional.ofNullable(readStatusRepository.findAllByUserId(userId))
                 .orElseThrow(() -> new IllegalStateException("userId로 찾을 수 없음: BasicReadStatusService.findAllByUserId"));
 
@@ -50,26 +50,26 @@ public class BasicReadStatusService implements ReadStatusService {
                     readStatus.getLastReadAt()
             ));
         }
-        return ResponseEntity.status(200).body(responses);
+        return responses;
     }
 
     @Override
-    public ResponseEntity<?> create(ReadStatusCreateRequest request) {
+    public ReadStatusCreateResponse create(ReadStatusCreateRequest request) {
         UUID userId = request.userId();
         UUID channelId = request.channelId();
         // user 검증
         if (userRepository.findUserById(userId) == null) {
-            return ResponseEntity.status(404).body("user with id " + userId + " not found");
+            throw new NoSuchElementException("user with id " + userId + " not found");
         }
         // channel 검증
         if (channelRepository.findChannelById(channelId) == null) {
-            return ResponseEntity.status(404).body("channel with id " + channelId + " not found");
+            throw new NoSuchElementException("channel with id " + channelId + " not found");
         }
         // ReadStatus 중복 방지
         List<ReadStatus> readStatusesByChannelId = readStatusRepository.findReadStatusesByChannelId(request.channelId());
         for (ReadStatus readStatus : readStatusesByChannelId) {
             if (readStatus.getUserId().equals(request.userId())) {
-                return ResponseEntity.status(400).body("readStatus with userId " + request.userId() + " and channelId " + request.channelId() + " already exists");
+                throw new IllegalArgumentException("readStatus with userId " + request.userId() + " and channelId " + request.channelId() + " already exists");
             }
         }
         ReadStatus readStatus = readStatusRepository.createByUserId(request.userId(), request.channelId(), request.lastReadAt());
@@ -81,16 +81,16 @@ public class BasicReadStatusService implements ReadStatusService {
                 readStatus.getChannelId(),
                 readStatus.getLastReadAt()
         );
-        return ResponseEntity.status(HttpStatus.CREATED).body(readStatusCreateResponse);
+        return readStatusCreateResponse;
     }
 
 
     @Override
-    public ResponseEntity<?> update(UUID readStatusId, ReadStatusUpdateRequest request) {
+    public UpdateReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest request) {
         readStatusRepository.updateUpdatedTime(readStatusId, request.newLastReadAt());
         ReadStatus readStatus = readStatusRepository.findById(readStatusId);
         if (readStatus == null) {
-            return ResponseEntity.status(404).body("readStatus with id " + readStatusId + " not found");
+            throw new NoSuchElementException("readStatus with id " + readStatusId + " not found");
         }
 
         UpdateReadStatusResponse response = new UpdateReadStatusResponse(
@@ -102,8 +102,7 @@ public class BasicReadStatusService implements ReadStatusService {
                 readStatus.getLastReadAt()
         );
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(response);
+        return response;
     }
 
     // --------------------------------------------------------------------------------------------------------------

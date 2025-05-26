@@ -1,10 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
 
-import com.sprint.mission.discodeit.Dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.Dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.Dto.message.*;
 import com.sprint.mission.discodeit.entity.Message;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -24,14 +22,13 @@ import java.util.UUID;
  */
 public interface MessageService {
 
+    List<FoundMessagesResponse> findAllByChannelId(UUID channelId);
 
-    ResponseEntity<?> createMessage(MessageCreateRequest MessageAttachmentRequest, List<MultipartFile> multipartFiles);
+    MessageAttachmentsCreateResponse createMessage(MessageCreateRequest MessageAttachmentRequest, List<MultipartFile> multipartFiles);
 
-    ResponseEntity<?> findAllByChannelId(UUID channelId);
+    UpdateMessageResponse updateMessage(UUID messageId, MessageUpdateRequest request);
 
-    ResponseEntity<?> updateMessage(UUID messageId, MessageUpdateRequest request);
-
-    ResponseEntity<?> deleteMessage(UUID messageId);
+    boolean deleteMessage(UUID messageId);
 
 
     // not required

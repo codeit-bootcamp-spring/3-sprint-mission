@@ -32,15 +32,15 @@ public class BasicBinaryContentService implements BinaryContentService {
 
 
     @Override
-    public ResponseEntity<?> findAllByIdIn(List<UUID> binaryContentIds) {
+    public List<FindBinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds) {
         List<FindBinaryContentResponse> responses = new ArrayList<>();
 
         if (binaryContentIds.isEmpty()) {
-            throw new IllegalStateException("no ids in param");
+            throw new RuntimeException("no ids in param");
         }
         List<BinaryContent> attachments = binaryContentRepository.findAllByIds(binaryContentIds);
         if (attachments.isEmpty()) {
-            return ResponseEntity.status(400).body("Not found all binaryContent by ids");
+            throw new RuntimeException("Not found all binaryContent by ids");
         }
 
         for (BinaryContent attachment : attachments) {
@@ -53,15 +53,15 @@ public class BasicBinaryContentService implements BinaryContentService {
                     Base64.getEncoder().encodeToString(attachment.getBytes())
             ));
         }
-        return ResponseEntity.status(200)
-                .body(responses);
+        return responses;
     }
 
     @Override
-    public ResponseEntity<?> find(UUID binaryContentId) {
+    public FindBinaryContentResponse find(UUID binaryContentId) {
         BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId);
         if (binaryContent == null)
-            return ResponseEntity.status(404).body("BinaryContent with id " + binaryContentId + " not found");
+            throw new RuntimeException("BinaryContent with id " + binaryContentId + " not found");
+//            return ResponseEntity.status(404).body("BinaryContent with id " + binaryContentId + " not found");
 
         FindBinaryContentResponse response = new FindBinaryContentResponse(
                 binaryContent.getId(),
@@ -71,8 +71,7 @@ public class BasicBinaryContentService implements BinaryContentService {
                 binaryContent.getContentType(),
                 Base64.getEncoder().encodeToString(binaryContent.getBytes()));
 
-        return ResponseEntity.status(200)
-                .body(response);
+        return response;
     }
 
     @Override

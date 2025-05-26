@@ -37,7 +37,7 @@ public class UserController {
     @Operation(summary = "모든 사용자 조회", description = "모든 사용자 정보를 조회합니다.")
     @GetMapping
     public ResponseEntity<?> findAll() {
-        return userService.findAllUsers();
+        return ResponseEntity.ok(userService.findAllUsers());
     }
 
 
@@ -48,13 +48,14 @@ public class UserController {
             @RequestPart(value = "profile", required = false) MultipartFile profileFile) {
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profileFile)
                 .flatMap(this::resolveProfileRequest);
-        return userService.create(request, profileRequest);
+        return ResponseEntity.status(201).body(userService.create(request, profileRequest));
     }
 
     @Operation(summary = "사용자 삭제", description = "사용자를 삭제합니다. 프로필 사진, 프로필 사진 정보, 유저 상태가 같이 삭제됩니다.")
     @DeleteMapping("/{userId}")
     public ResponseEntity<?> delete(@PathVariable UUID userId) {
-        return userService.deleteUser(userId);
+        userService.deleteUser(userId);
+        return ResponseEntity.status(204).build();
     }
 
     @Operation(summary = "사용자 정보 수정", description = "사용자 이름, 비밀번호, 이메일, 이미지를 수정합니다.")
@@ -63,7 +64,7 @@ public class UserController {
             @PathVariable UUID userId,
             @RequestPart("userUpdateRequest") UserUpdateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profileFile) {
-        return userService.update(userId, request, profileFile);
+        return ResponseEntity.ok(userService.update(userId, request, profileFile));
     }
 
 
@@ -74,8 +75,9 @@ public class UserController {
     public ResponseEntity<?> updateTime(
             @PathVariable UUID userId,
             @RequestBody UserStatusUpdateByUserIdRequest request) {
-        return userStatusService.updateByUserId(userId, request.newLastActiveAt());
+        return ResponseEntity.status(200).body(userStatusService.updateByUserId(userId, request.newLastActiveAt()));
     }
+
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
         if (profileFile.isEmpty()) {

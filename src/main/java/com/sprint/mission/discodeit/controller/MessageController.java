@@ -1,12 +1,12 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.Dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.Dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.Dto.message.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +36,8 @@ public class MessageController {
     @Operation(summary = "채널 메세지 목록 조회", description = "채널의 메세지 목록을 전체 조회 합니다.")
     @GetMapping
     public ResponseEntity<?> findChannelMessages(@RequestParam UUID channelId) {
-        return messageService.findAllByChannelId(channelId);
+        List<FoundMessagesResponse> allByChannelId = messageService.findAllByChannelId(channelId);
+        return ResponseEntity.ok(allByChannelId);
     }
 
     @Operation(summary = "메세지 생성", description = "메세지를 생성 합니다.")
@@ -45,13 +46,16 @@ public class MessageController {
             @RequestPart("messageCreateRequest") MessageCreateRequest request,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachmentFiles
     ) {
-        return messageService.createMessage(request, attachmentFiles);
+        MessageAttachmentsCreateResponse message = messageService.createMessage(request, attachmentFiles);
+        return ResponseEntity.status(201).body(message);
     }
 
     @Operation(summary = "메세지 삭제", description = "메세지를 삭제 합니다.")
     @DeleteMapping(path = "/{messageId}")
     public ResponseEntity<?> deleteMessage(@PathVariable UUID messageId) {
-        return messageService.deleteMessage(messageId);
+        boolean b = messageService.deleteMessage(messageId);
+        if (b) {return ResponseEntity.status(204).build();}
+        return ResponseEntity.status(500).body("unexpected error");
     }
 
     @Operation(summary = "메세지 수정", description = "메세지를 수정 합니다.")
@@ -59,6 +63,8 @@ public class MessageController {
     public ResponseEntity<?> updateMessage(
             @PathVariable UUID messageId,
             @Valid @RequestBody MessageUpdateRequest request) {
-        return messageService.updateMessage(messageId, request);
+        UpdateMessageResponse updateMessageResponse = messageService.updateMessage(messageId, request);
+        return ResponseEntity.status(200).body(updateMessageResponse);
+
     }
 }
