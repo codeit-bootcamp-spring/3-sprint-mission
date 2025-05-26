@@ -19,7 +19,7 @@ public class BasicAuthService implements AuthService {
     User user = userRepository.findByUsername(request.username())
         .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
 
-    if (!user.getPassword().equals(request.password())) {
+    if (!user.isPasswordMatch(request.password())) {
       throw new IllegalArgumentException("Invalid username or password");
     }
 
