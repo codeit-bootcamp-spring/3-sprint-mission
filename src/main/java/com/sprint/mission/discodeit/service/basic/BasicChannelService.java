@@ -34,7 +34,7 @@ public class BasicChannelService implements ChannelService {
   public ChannelResponse createPublicChannel(PublicChannelCreateRequest request) {
     String name = request.name();
     String description = request.description();
-    Channel saved = channelRepository.save(new Channel(ChannelType.PUBLIC, null, null));
+    Channel saved = channelRepository.save(new Channel(ChannelType.PUBLIC, name, description));
 
     return toResponse(saved);
   }
