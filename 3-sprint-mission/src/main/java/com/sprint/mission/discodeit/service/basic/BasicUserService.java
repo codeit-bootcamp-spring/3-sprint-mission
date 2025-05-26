@@ -11,12 +11,8 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.time.Instant;
 import java.util.*;
 
@@ -25,18 +21,15 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final UserStatusService userStatusService;
 
     public BasicUserService(
             UserRepository userRepository,
             UserStatusRepository userStatusRepository,
-            Optional<BinaryContentRepository> binaryContentRepository,
-            UserStatusService userStatusService
+            Optional<BinaryContentRepository> binaryContentRepository
     ) {
         this.userRepository = userRepository;
         this.userStatusRepository = userStatusRepository;
         this.binaryContentRepository = binaryContentRepository.orElse(null);
-        this.userStatusService = userStatusService;
     }
 
     @Override
@@ -65,6 +58,7 @@ public class BasicUserService implements UserService {
                     BinaryContent binaryContent =
                             BinaryContent.builder()
                                     .fileName(fileName)
+                                    .size((long) bytes.length)
                                     .content(bytes)
                                     .contentType(contentType)
                                     .build();
@@ -74,14 +68,12 @@ public class BasicUserService implements UserService {
                 .orElse(null);
 
         String password = userCreateRequest.password();
-        String name = userCreateRequest.name();
 
         User user =
                 User.builder()
                 .username(username)
                 .email(email)
                 .password(password)
-                .name(name)
                 .profileId(nullableProfileId)
                 .build();
 
@@ -91,7 +83,7 @@ public class BasicUserService implements UserService {
         UserStatus userStatus =
                 UserStatus.builder()
                         .userId(user.getId())
-                        .lastActiveTime(now)
+                        .lastActiveAt(now)
                         .build();
 
         userStatusRepository.save(userStatus);
@@ -113,13 +105,6 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
     }
 
-    @Override
-    public List<UserDTO> findByName(String name) {
-        return userRepository.findByName(name)
-                .stream()
-                .map(this::toDTO)
-                .toList();
-    }
 
     @Override
     public UserDTO findByEmail(String email) {
@@ -174,9 +159,7 @@ public class BasicUserService implements UserService {
                 .orElse(null);
 
         String newPassword = userUpdateDTO.newPassword();
-        String newName = userUpdateDTO.newName();
-
-        user.update(newUsername, newEmail, newPassword, newName, nullableProfileId);
+        user.update(newUsername, newEmail, newPassword, nullableProfileId);
 
         return userRepository.save(user);
     }
@@ -202,7 +185,6 @@ public class BasicUserService implements UserService {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .name(user.getName())
                 .profileId(user.getProfileId())
                 .online(online)
                 .createdAt(user.getCreatedAt())

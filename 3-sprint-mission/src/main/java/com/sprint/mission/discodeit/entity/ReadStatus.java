@@ -11,8 +11,8 @@ import java.util.UUID;
 @ToString
 public class ReadStatus implements Serializable {
     private final UUID id;
-    private final UUID userId;
-    private final UUID channelId;
+    private UUID userId;
+    private UUID channelId;
     private final Instant createdAt;
     private Instant updatedAt;
     private Instant lastReadAt;
@@ -28,8 +28,16 @@ public class ReadStatus implements Serializable {
 
     }
 
-    public void update(Instant lastReadAt) {
-        this.lastReadAt = lastReadAt;
+    public void update(Instant newLastReadAt) {
+        boolean anyValueUpdated = false;
+        if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
+            this.lastReadAt = newLastReadAt;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
 }

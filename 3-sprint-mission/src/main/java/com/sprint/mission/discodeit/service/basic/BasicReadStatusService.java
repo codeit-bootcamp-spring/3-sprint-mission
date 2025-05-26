@@ -62,6 +62,11 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public List<ReadStatus> findAllByUserId(UUID userId) {
+        System.out.println("Service의 findAllByUserId 메서드 호출됨!!");
+        System.out.println("userId = " + userId);
+
+        findAll().forEach(System.out::println);
+
         return readStatusRepository.findAllByUserId(userId).stream()
                 .toList();
     }

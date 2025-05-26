@@ -48,7 +48,14 @@ public class BasicMessageService implements MessageService {
                     byte[] bytes = contents.bytes();
                     String contentType = contents.contentType();
 
-                    BinaryContent binaryContent = new BinaryContent(fileName, contentType, bytes);
+                    BinaryContent binaryContent =
+                            BinaryContent.builder()
+                            .fileName(fileName)
+                            .size((long) bytes.length)
+                            .contentType(contentType)
+                            .content(bytes)
+                            .build();
+
                     binaryContentRepository.save(binaryContent);
                     return binaryContent.getId();
 
@@ -59,7 +66,7 @@ public class BasicMessageService implements MessageService {
                 Message.builder()
                         .currentChannelId(channelId)
                         .currentUserId(userId)
-                        .text(text)
+                        .content(text)
                         .attachmentIds(attachments)
                         .build();
 
@@ -82,9 +89,9 @@ public class BasicMessageService implements MessageService {
     };
 
     @Override
-    public List<Message> findByText(String text) {
+    public List<Message> findByContent(String text) {
 
-        return messageRepository.findByText(text)
+        return messageRepository.findByContent(text)
                 .stream()
                 .toList();
     }

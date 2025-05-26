@@ -18,26 +18,26 @@ public class Message implements Serializable {
     private final UUID id;
     private final UUID authorId;
     private final UUID channelId;
-    private String text;
+    private String content;
     private List<UUID> attachmentIds;
     private final Instant createdAt;
     private Instant updatedAt;
     private boolean updated;
 
     @Builder
-    public Message(UUID currentUserId, UUID currentChannelId, String text, List<UUID> attachmentIds) {
+    public Message(UUID currentUserId, UUID currentChannelId, String content, List<UUID> attachmentIds) {
         this.id = UUID.randomUUID();
         this.authorId = currentUserId;
         this.channelId = currentChannelId;
-        this.text = text;
+        this.content = content;
         this.attachmentIds = attachmentIds;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.updated = false;
     }
 
-    public void updateText(String text) {
-        this.text = text;
+    public void updateText(String content) {
+        this.content = content;
         updateDateTime();
         updated();
     }

@@ -5,3 +5,15 @@ server:
 spring:
   application:
     name: discodeit
+
+springdoc:
+  api-docs:
+    # OpenAPI 명세서 경로(JSON) -> 기억해두자!!! 미션 때 써먹어야됨.
+    #    path: /hi/my/name/is
+    path: /v3/api-docs
+    title:
+  swagger-ui:
+    # Swagger-ui 경로(HTML)
+    path: /my-swagger-ui.html
+    # API 정렬 기준 - HTTP 메서드의 알파벳순
+    operations-sorter: method

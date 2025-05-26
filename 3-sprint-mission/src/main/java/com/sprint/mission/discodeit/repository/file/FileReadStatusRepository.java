@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,7 +8,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -75,7 +73,12 @@ public class FileReadStatusRepository implements ReadStatusRepository {
                 .toList();
     }
 
+    @Override
     public List<ReadStatus> findAllByUserId(UUID userId) {
+        System.out.println("ReadStatus findAllByUserId 메서드 호출됨!!!!");
+        System.out.println("ReadStatus에 데이터 존재하니?");
+        findAll().forEach(System.out::println);
+        System.out.println("userId = " + userId);
         return findAll().stream()
                 .filter(readStatus -> readStatus.getUserId().equals(userId))
                 .toList();
@@ -85,6 +88,9 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     public Optional<ReadStatus> findById(UUID id) {
         ReadStatus readStatusNullable = null;
         Path path = resolvePath(id);
+
+        System.out.println("path = " + path);
+
         if (Files.exists(path)) {
             try (
                     FileInputStream fis = new FileInputStream(path.toFile());
@@ -95,6 +101,9 @@ public class FileReadStatusRepository implements ReadStatusRepository {
                 throw new RuntimeException(e);
             }
         }
+
+        System.out.println(readStatusNullable);
+
         return Optional.ofNullable(readStatusNullable);
     }
 

@@ -17,7 +17,6 @@ public interface UserService {
     User create(UserCreateRequest userCreateDTO, Optional<BinaryContentCreateRequest> profileCreateDTO);
     UserDTO find(UUID id);
     UserDTO findByUsername(String username);
-    List<UserDTO> findByName(String name);
     UserDTO findByEmail(String email);
     List<UserDTO> findAll();
     User update(UUID id, UserUpdateRequest userUpdateDTO, Optional<BinaryContentCreateRequest> profileCreateDTO);

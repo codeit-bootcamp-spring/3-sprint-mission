@@ -6,12 +6,13 @@ import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
 
-//@ControllerAdvice
-//@ResponseBody
+@RestControllerAdvice
+@ResponseBody
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(NullPointerException.class)

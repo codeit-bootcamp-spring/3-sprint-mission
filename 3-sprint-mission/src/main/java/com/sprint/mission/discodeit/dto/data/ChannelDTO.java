@@ -10,9 +10,10 @@ import java.util.UUID;
 @Builder
 public record ChannelDTO(
         UUID id,
-        String channelName,
-        UUID makerId,
-        ChannelType channelType,
+        String name,
+        String description,
+        List<UUID> participantIds,
+        ChannelType type,
         Instant lastMessageAt
 ) {
 }

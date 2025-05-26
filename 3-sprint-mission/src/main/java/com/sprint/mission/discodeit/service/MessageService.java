@@ -17,7 +17,7 @@ public interface MessageService {
                    List<BinaryContentCreateRequest> binaryContentCreateDTO);
     List<Message> findAllByChannelId(UUID channeId);
     Message find(UUID id);
-    List<Message> findByText(String text);
+    List<Message> findByContent(String content);
     Message update(UUID id, MessageUpdateRequest messageUpdateDTO);
     void delete(UUID id);
 

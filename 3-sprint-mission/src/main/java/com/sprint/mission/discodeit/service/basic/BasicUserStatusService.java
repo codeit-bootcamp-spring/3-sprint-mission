@@ -32,7 +32,12 @@ public class BasicUserStatusService implements UserStatusService {
         }
 
         Instant lastActiveAt = request.lastLoginTime();
-        UserStatus userStatus = new UserStatus(userId, lastActiveAt);
+        UserStatus userStatus =
+                UserStatus
+                    .builder()
+                    .userId(userId)
+                    .lastActiveAt(lastActiveAt)
+                    .build();
         return userStatusRepository.save(userStatus);
     }
 

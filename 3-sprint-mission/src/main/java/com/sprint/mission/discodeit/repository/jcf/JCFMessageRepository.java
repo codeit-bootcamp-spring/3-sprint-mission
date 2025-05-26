@@ -46,10 +46,10 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public List<Message> findByText(String text) {
+    public List<Message> findByContent(String content) {
 
         return findAll().stream()
-                .filter(m -> m.getText().contains(text))
+                .filter(m -> m.getContent().contains(content))
                 .collect(Collectors.toList());
     }
 
