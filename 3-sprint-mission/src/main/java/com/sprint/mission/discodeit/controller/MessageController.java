@@ -56,7 +56,7 @@ public class MessageController {
     @PostMapping(
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Message> create(
-            @RequestPart(value = "messageCreateRequest") MessageCreateRequest messageCreateDTO,
+            @RequestPart(value = "messageCreateRequest") MessageCreateRequest messageCreateRequest,
             @Parameter(
                     name = "attachments"
                     , description = "Message 첨부 파일들"
@@ -66,40 +66,28 @@ public class MessageController {
                             )
                     )
             )
-            @RequestPart(value = "attachments", required = false) List<MultipartFile> files
+            @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
 
-        List<BinaryContentCreateRequest> attachments =
-                resolveBinaryContentRequest(files);
+        List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
+                .map(files -> files.stream()
+                        .map(file -> {
+                            try {
+                                return new BinaryContentCreateRequest(
+                                        file.getOriginalFilename(),
+                                        file.getContentType(),
+                                        file.getBytes()
+                                );
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
+                        .toList())
+                .orElse(new ArrayList<>());
 
-        Message createdMessage = messageService.create(messageCreateDTO, attachments);
+        Message createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
-    }
-
-    // MultipartFile 타입의 요청값을 BinaryContentCreateRequest 타입으로 변환하기 위한 메서드
-    private List<BinaryContentCreateRequest> resolveBinaryContentRequest(List<MultipartFile> files) {
-
-        List<BinaryContentCreateRequest> attachments = new ArrayList<>();
-
-        for (MultipartFile file : files) {
-            if (!file.isEmpty()) {
-                try {
-                    BinaryContentCreateRequest dto = new BinaryContentCreateRequest(
-                            file.getOriginalFilename(),
-                            file.getContentType(),
-                            file.getBytes()
-                    );
-
-                    attachments.add(dto);
-                } catch (IOException e) {
-                    throw new RuntimeException("파일 처리 중 오류 발생: " + file.getOriginalFilename(), e);
-                }
-            }
-        }
-
-        return attachments;
-
     }
 
     // 메시지 다건 조회
