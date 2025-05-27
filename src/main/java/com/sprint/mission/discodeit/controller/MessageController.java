@@ -47,11 +47,13 @@ public class MessageController {
 
 
   @GetMapping
-  public ResponseEntity<List<Message>> getMessagesByChannel(
-      @RequestParam UUID channelId
-  ) {
-    return ResponseEntity.ok(messageService.findAllByChannelId(channelId));
+  public ResponseEntity<List<Message>> getMessagesByChannel(@RequestParam UUID channelId) {
+    System.out.println("📥 [GET] /api/messages called with channelId: " + channelId);
+    List<Message> messages = messageService.findAllByChannelId(channelId);
+    System.out.println("📤 Returning messages: " + messages.size() + " items");
+    return ResponseEntity.ok(messages);
   }
+
 
   @PatchMapping("/{messageId}")
   public ResponseEntity<MessageResponse> updateMessage(
@@ -62,8 +64,8 @@ public class MessageController {
   }
 
   @DeleteMapping("/{messageId}")
-  public ResponseEntity<Void> deleteMessage(@PathVariable UUID messageId) {
-    messageService.delete(messageId);
-    return ResponseEntity.noContent().build();
+  public ResponseEntity<MessageResponse> deleteMessage(@PathVariable UUID messageId) {
+    MessageResponse deletedMessage = messageService.delete(messageId);
+    return ResponseEntity.ok(deletedMessage);
   }
 }

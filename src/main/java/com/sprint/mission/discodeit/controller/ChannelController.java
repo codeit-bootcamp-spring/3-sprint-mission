@@ -32,7 +32,7 @@ public class ChannelController {
   @PostMapping("/public")
   public ResponseEntity<ChannelResponse> createPublicChannel(
       @RequestBody PublicChannelCreateRequest request) {
-    System.out.println("📥 채널 생성 요청: " + request);
+    System.out.println("📥 channel create request: " + request);
     System.out.println("➡ name: " + request.name());
     System.out.println("➡ description: " + request.description());
 
@@ -43,7 +43,7 @@ public class ChannelController {
   @PostMapping("/private")
   public ResponseEntity<ChannelResponse> createPrivateChannel(
       @RequestBody PrivateChannelCreateRequest request) {
-    System.out.println("📥 채널 생성 요청: " + request);
+    System.out.println("📥 channel create request: " + request);
 
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(channelService.createPrivateChannel(request));
