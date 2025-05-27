@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,23 +23,23 @@ public class ReadStatusController implements ReadStatusApi {
     @PostMapping
     public ResponseEntity<ReadStatus> create(@RequestBody ReadStatusCreateRequest request) {
         ReadStatus created = readStatusService.create(request);
-        return ResponseEntity.status(201).body(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     // 특정 채널 메시지 수신 정보 수정
     @PatchMapping("/{readStatusId}")
     public ResponseEntity<ReadStatus> update(
-            @PathVariable UUID readStatusId,
+            @PathVariable("readStatusId") UUID readStatusId,
             @RequestBody ReadStatusUpdateRequest request
     ) {
         ReadStatus updated = readStatusService.update(readStatusId, request);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.status(HttpStatus.OK).body(updated);
     }
 
     // 특정 사용자 메시지 수신 정보 조회
     @GetMapping
-    public ResponseEntity<List<ReadStatus>> findAllByUserId(@RequestParam UUID userId) {
+    public ResponseEntity<List<ReadStatus>> findAllByUserId(@RequestParam("userId") UUID userId) {
         List<ReadStatus> statuses = readStatusService.findAllByUserId(userId);
-        return ResponseEntity.ok(statuses);
+        return ResponseEntity.status(HttpStatus.OK).body(statuses);
     }
 }
