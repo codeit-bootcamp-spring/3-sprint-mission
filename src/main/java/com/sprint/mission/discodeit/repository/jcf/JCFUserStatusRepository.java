@@ -1,81 +1,57 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
+@Repository
 public class JCFUserStatusRepository implements UserStatusRepository {
+    private final Map<UUID, UserStatus> data;
 
-    Map<UUID, UserStatus> userStatusMap = new HashMap<>(); // userId와 UserStatus를 entry로 가지는 JCF 생성
-
-    UserRepository userRepository;
-    UserStatusRepository userStatusRepository;
-
-    public JCFUserStatusRepository(UserRepository userRepository, UserStatusRepository userStatusRepository) {
-        this.userStatusMap  = new HashMap<>();
-        //
-        this.userRepository = userRepository;
-        this.userStatusRepository = userStatusRepository;
+    public JCFUserStatusRepository() {
+        this.data = new HashMap<>();
     }
 
     @Override
     public UserStatus save(UserStatus userStatus) {
-
-        // 1. User 찾기
-        UUID userId = userStatus.getUserId();
-
-        // 2. <User, UserStatus>를 JCF에 저장
-        userStatusMap.put(userId, userStatus);
-
+        this.data.put(userStatus.getId(), userStatus);
         return userStatus;
     }
 
     @Override
-    public Optional<UserStatus> findByUserId(UUID userId) {
-
-        return Optional.ofNullable(userStatusMap.get(userId));
+    public Optional<UserStatus> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
-    public Optional<UserStatus> find(UUID id) {
-
-        // TODO Map에 저장되어 있는 UserStatus의 id로 UserStatus를 불러와야함
-        // 1. userStatusMap의 values를 List로 변환
-        UserStatus userStatus = userStatusMap.values()
-                .stream()
-                .filter(status -> status.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("UserStatus with that id not found"));
-
-        return Optional.ofNullable(userStatus);
+    public Optional<UserStatus> findByUserId(UUID userId) {
+        return this.findAll().stream()
+                .filter(userStatus -> userStatus.getUserId().equals(userId))
+                .findFirst();
     }
 
     @Override
     public List<UserStatus> findAll() {
-
-        List<UserStatus> userStatusList = userStatusMap.values()
-                .stream()
-                .toList();
-
-        return userStatusList;
+        return this.data.values().stream().toList();
     }
 
     @Override
-    public boolean existsByUserId(UUID userId) {
-
-        // 1. userStatusMap에서 userId에 해당하는 UserStatus가 존재하는지 확인
-        boolean exists = userStatusMap.values()
-                .stream()
-                .anyMatch(status -> status.getUserId().equals(userId));
-
-        return exists;
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
     }
 
     @Override
-    public void delete(UUID userId) {
+    public void deleteById(UUID id) {
+        this.data.remove(id);
+    }
 
-        userStatusMap.remove(userId);
+    @Override
+    public void deleteByUserId(UUID userId) {
+        this.findByUserId(userId)
+                .ifPresent(userStatus -> this.deleteByUserId(userStatus.getId()));
     }
 }

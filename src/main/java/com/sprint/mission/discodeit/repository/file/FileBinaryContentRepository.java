@@ -2,101 +2,108 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
-import java.nio.file.*;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Stream;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
+@Repository
 public class FileBinaryContentRepository implements BinaryContentRepository {
-
     private final Path DIRECTORY;
-    private final String EXTENSION = ".ser"; // 파일 확장자
+    private final String EXTENSION = ".ser";
 
-    public FileBinaryContentRepository() {
-        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", BinaryContent.class.getSimpleName());
+    public FileBinaryContentRepository(
+            @Value("${discodeit.repository.file-directory:data}") String fileDirectory
+    ) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), fileDirectory, BinaryContent.class.getSimpleName());
         if (Files.notExists(DIRECTORY)) {
             try {
-                Files.createDirectories(DIRECTORY); // 디렉토리가 없으면 생성
+                Files.createDirectories(DIRECTORY);
             } catch (IOException e) {
-                throw new RuntimeException("Error creating directory", e);
+                throw new RuntimeException(e);
             }
         }
     }
 
     private Path resolvePath(UUID id) {
-        return DIRECTORY.resolve(id + EXTENSION); // UUID를 기반으로 파일 경로 생성
+        return DIRECTORY.resolve(id + EXTENSION);
     }
 
     @Override
     public BinaryContent save(BinaryContent binaryContent) {
         Path path = resolvePath(binaryContent.getId());
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
-            oos.writeObject(binaryContent); // BinaryContent 객체를 파일에 저장
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
+            oos.writeObject(binaryContent);
         } catch (IOException e) {
-            throw new RuntimeException("Error writing BinaryContent to file", e);
+            throw new RuntimeException(e);
         }
         return binaryContent;
     }
 
     @Override
-    public BinaryContent findById(UUID id) {
+    public Optional<BinaryContent> findById(UUID id) {
+        BinaryContent binaryContentNullable = null;
         Path path = resolvePath(id);
         if (Files.exists(path)) {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
-                return (BinaryContent) ois.readObject(); // 파일에서 BinaryContent 객체 읽기
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                binaryContentNullable = (BinaryContent) ois.readObject();
             } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException("Error reading BinaryContent from file", e);
+                throw new RuntimeException(e);
             }
         }
-        return null; // 해당 파일이 없으면 null 반환
+        return Optional.ofNullable(binaryContentNullable);
     }
 
     @Override
     public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
-        List<BinaryContent> binaryContents = new ArrayList<>();
-        for (UUID id : ids) {
-            BinaryContent binaryContent = findById(id);
-            if (binaryContent != null) {
-                binaryContents.add(binaryContent);
-            }
-        }
-        return binaryContents;
-    }
-
-    @Override
-    public List<BinaryContent> findAll() {
-        List<BinaryContent> binaryContents = new ArrayList<>();
-        try {
-            Files.list(DIRECTORY) // 디렉토리 내 모든 파일 탐색
-                    .filter(path -> path.toString().endsWith(EXTENSION)) // 확장자가 ".ser"인 파일만 필터링
-                    .forEach(path -> {
-                        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
-                            binaryContents.add((BinaryContent) ois.readObject()); // 파일에서 BinaryContent 객체 읽기
+        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+            return paths
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (BinaryContent) ois.readObject();
                         } catch (IOException | ClassNotFoundException e) {
-                            e.printStackTrace(); // 예외 처리
+                            throw new RuntimeException(e);
                         }
-                    });
+                    })
+                    .filter(content -> ids.contains(content.getId()))
+                    .toList();
         } catch (IOException e) {
-            throw new RuntimeException("Error listing files", e);
+            throw new RuntimeException(e);
         }
-        return binaryContents; // 모든 BinaryContent 객체를 반환
     }
 
     @Override
     public boolean existsById(UUID id) {
         Path path = resolvePath(id);
-        return Files.exists(path); // 해당 id의 파일이 존재하는지 확인
+        return Files.exists(path);
     }
 
     @Override
-    public void delete(UUID id) {
+    public void deleteById(UUID id) {
         Path path = resolvePath(id);
         try {
-            Files.delete(path); // 해당 id의 파일을 삭제
+            Files.delete(path);
         } catch (IOException e) {
-            throw new RuntimeException("Error deleting BinaryContent", e);
+            throw new RuntimeException(e);
         }
     }
 }
-
