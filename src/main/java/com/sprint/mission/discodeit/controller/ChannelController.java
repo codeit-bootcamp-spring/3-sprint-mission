@@ -192,11 +192,4 @@ public class ChannelController {
     List<ChannelDto> channels = channelService.findAllByUserId(userId);
     return ResponseEntity.status(HttpStatus.OK).body(channels);
   }
-
-  @PostMapping("/{channelId}/members")
-  public ResponseEntity<Void> addMember(@PathVariable("channelId") UUID channelId,
-      @RequestParam("userId") UUID userId) {
-    channelService.addMember(channelId, userId);
-    return ResponseEntity.ok().build();
-  }
 }

@@ -14,7 +14,8 @@ import java.util.UUID;
 
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
-public class FileChannelRepository extends AbstractFileRepository<Channel, UUID> implements ChannelRepository {
+public class FileChannelRepository extends AbstractFileRepository<Channel, UUID> implements
+    ChannelRepository {
 
   public FileChannelRepository(
       @Value("${discodeit.repository.file-directory}") String fileDirectory
@@ -52,7 +53,8 @@ public class FileChannelRepository extends AbstractFileRepository<Channel, UUID>
   public void deleteByOwnerId(UUID userId) {
     lock.lock();
     try {
-      dataMap.entrySet().removeIf(entry -> entry.getValue().getChannelOwner().getId().equals(userId));
+      dataMap.entrySet()
+          .removeIf(entry -> entry.getValue().getChannelOwner().getId().equals(userId));
       saveData();
     } finally {
       lock.unlock();
@@ -62,7 +64,7 @@ public class FileChannelRepository extends AbstractFileRepository<Channel, UUID>
   @Override
   public void removeUserFromAllChannels(UUID userId) {
     lock.lock();
-    try{
+    try {
       for (Channel channel : dataMap.values()) {
         channel.getChannelMembers().removeIf(user -> user.getId().equals(userId));
       }
@@ -70,6 +72,11 @@ public class FileChannelRepository extends AbstractFileRepository<Channel, UUID>
     } finally {
       lock.unlock();
     }
+  }
+
+  @Override
+  public boolean existsById(UUID channelId) {
+    return super.existsById(channelId);
   }
     /*
  Repository: 데이터를 영속화(storage)하는 계층

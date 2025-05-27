@@ -20,7 +20,7 @@ public class JcfMessageRepository implements MessageRepository {
   public Message save(Message message) {
     messageMap.put(message.getId(), message);
     channelMessagesMap.computeIfAbsent(message.getChannelId(), k -> new ArrayList<>()).add(message);
-    userMessagesMap.computeIfAbsent(message.getSenderId(), k -> new ArrayList<>()).add(message);
+    userMessagesMap.computeIfAbsent(message.getAuthorId(), k -> new ArrayList<>()).add(message);
     return message;
   }
 

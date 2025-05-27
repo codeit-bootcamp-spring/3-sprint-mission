@@ -16,46 +16,35 @@ public class Channel implements Serializable {
   private final Instant createdAt;
   private Instant updatedAt;
 
-  private String channelName;
+  private String name;
   private String description;
   private User channelOwner;
   private List<User> channelMembers;
-  private ChannelType channelType;
+  private ChannelType type;
 
-  /*public Channel(String channelName, String description, User channelOwner, List<User> channelUsers,
-      ChannelType channelType) {
+  public Channel(String name, String description, User channelOwner, List<User> channelUsers,
+      ChannelType type) {
     this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
-    this.channelName = channelName;
+    this.name = name;
     this.description = description;
     this.channelOwner = channelOwner;
     this.channelMembers = channelUsers;
-    this.channelType = channelType;
-  }*/
+    this.type = type;
+  }
 
-  public Channel(String channelName, String description, ChannelType channelType) {
+  public Channel(ChannelType type, String name, String description) {
     this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
-    this.updatedAt = Instant.now();
-    this.channelName = channelName;
+    this.type = type;
+    this.name = name;
     this.description = description;
-    this.channelType = channelType;
   }
 
   public void updateChannelName(String channelName) {
-    this.channelName = channelName;
+    this.name = channelName;
     this.updatedAt = Instant.now();
-  }
-
-  public void addChannelUser(User user) {
-    this.channelMembers.add(user);
-    // 존재하는 유저인지?
-  }
-
-  public void removeChannelUser(User user) {
-    this.channelMembers.remove(user);
-    // 채널에 포함된 유저인지?  or 채널 소유자 인지?  채널소유자는 본인의 채널이 삭제되기전에는 채널을 나갈 수 없다.
   }
 
   @Override
@@ -63,7 +52,7 @@ public class Channel implements Serializable {
     return "[" +
         "createdAt= " + createdAt +
         ", updatedAt= " + updatedAt +
-        ", channelName=" + channelName +
+        ", channelName=" + name +
         ", channelOwner=" + channelOwner.getUsername() +
         ']';
   }

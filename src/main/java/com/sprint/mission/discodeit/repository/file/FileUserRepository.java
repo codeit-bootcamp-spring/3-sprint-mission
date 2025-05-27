@@ -14,7 +14,8 @@ import java.util.UUID;
 
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
-public class FileUserRepository extends AbstractFileRepository<User, UUID> implements UserRepository {
+public class FileUserRepository extends AbstractFileRepository<User, UUID> implements
+    UserRepository {
   //private static final String FILE_PATH = "users.ser";
 
   public FileUserRepository(
@@ -55,6 +56,11 @@ public class FileUserRepository extends AbstractFileRepository<User, UUID> imple
   @Override
   public void delete(UUID id) {
     super.delete(id);
+  }
+
+  @Override
+  public boolean existsById(UUID userId) {
+    return super.existsById(userId);
   }
 }
 

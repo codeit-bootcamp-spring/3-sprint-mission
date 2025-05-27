@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 @Repository
 public class JcfUserRepository implements UserRepository {
+
   private final Map<UUID, User> userMap;
 
   public JcfUserRepository() {
@@ -55,6 +56,11 @@ public class JcfUserRepository implements UserRepository {
       throw new IllegalArgumentException("해당 ID의 유저가 존재하지 않습니다: " + id);
     }
     userMap.remove(id);
+  }
+
+  @Override
+  public boolean existsById(UUID channelId) {
+    return userMap.containsKey(channelId);
   }
 
   /*

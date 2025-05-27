@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 @Repository
 public class JcfChannelRepository implements ChannelRepository {
+
   private final Map<UUID, Channel> channelMap = new ConcurrentHashMap<>();
 
   @Override
@@ -55,5 +56,10 @@ public class JcfChannelRepository implements ChannelRepository {
     for (Channel channel : channelMap.values()) {
       channel.getChannelMembers().removeIf(user -> user.getId().equals(userId));
     }
+  }
+
+  @Override
+  public boolean existsById(UUID channelId) {
+    return channelMap.containsKey(channelId);
   }
 }
