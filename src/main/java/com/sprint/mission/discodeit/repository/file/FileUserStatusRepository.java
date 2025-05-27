@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -91,16 +92,28 @@ public class FileUserStatusRepository implements UserStatusRepository {
                 FileInputStream fis = new FileInputStream(path.toFile());
                 ObjectInputStream ois = new ObjectInputStream(fis)
             ) {
-              return (UserStatus) ois.readObject();
+              Object obj = ois.readObject();
+              if (obj instanceof UserStatus status) {
+                return status;
+              } else {
+                System.err.println("❌ 예상과 다른 객체: " + path.getFileName());
+                return null;
+              }
+            } catch (EOFException e) {
+              System.err.println("⚠️ EOFException (파일 끝 도달): " + path.getFileName());
+              return null;
             } catch (IOException | ClassNotFoundException e) {
-              throw new RuntimeException(e);
+              System.err.println("⚠️ 역직렬화 실패: " + path.getFileName());
+              return null;
             }
           })
+          .filter(status -> status != null)
           .toList();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("📂 디렉토리 접근 실패", e);
     }
   }
+
 
   @Override
   public boolean existsById(UUID id) {

@@ -34,16 +34,14 @@ public class BasicChannelService implements ChannelService {
   public ChannelResponse createPublicChannel(PublicChannelCreateRequest request) {
     String name = request.name();
     String description = request.description();
-    Channel channel = new Channel(ChannelType.PUBLIC, name, description);
-    Channel saved = channelRepository.save(channel);
+    Channel saved = channelRepository.save(new Channel(ChannelType.PUBLIC, name, description));
+
     return toResponse(saved);
   }
 
   @Override
   public ChannelResponse createPrivateChannel(PrivateChannelCreateRequest request) {
-    Channel channel = new Channel(ChannelType.PRIVATE, null, null);
-    Channel saved = channelRepository.save(channel);
-
+    Channel saved = channelRepository.save(new Channel(ChannelType.PRIVATE, null, null));
     request.participantIds().stream()
         .map(userId -> new ReadStatus(userId, saved.getId(), Instant.MIN))
         .forEach(readStatusRepository::save);
@@ -76,8 +74,8 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public ChannelResponse update(UUID channelId, PublicChannelUpdateRequest request) {
-    String newName = request.NewName();
-    String newDescription = request.NewDescription();
+    String newName = request.newName();
+    String newDescription = request.newDescription();
 
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(
@@ -127,9 +125,8 @@ public class BasicChannelService implements ChannelService {
         channel.getType(),
         channel.getName(),
         channel.getDescription(),
-        lastMessageAt,
-        participantIds
-
+        participantIds,
+        lastMessageAt
     );
   }
 

@@ -7,10 +7,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -23,6 +21,8 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 class BasicMessageServiceTest {
 
@@ -52,17 +52,19 @@ class BasicMessageServiceTest {
     when(userRepository.existsById(userId)).thenReturn(true);
 
     byte[] data = "test".getBytes();
-    BinaryContentCreateRequest file = new BinaryContentCreateRequest("file.txt", "text/plain",
-        data);
-    BinaryContent savedBinary = new BinaryContent("file.txt", (long) data.length, "text/plain",
-        data);
-    when(binaryContentRepository.save(any())).thenReturn(savedBinary);
+    MultipartFile multipartFile = new MockMultipartFile(
+        "file",
+        "file.txt",
+        "text/plain",
+        data
+    );
 
     Message message = new Message(content, channelId, userId, List.of());
     when(messageRepository.save(any())).thenReturn(message);
 
-    MessageCreateRequest request = new MessageCreateRequest(userId, channelId, content);
-    messageService.create(request, List.of(file));
+    MessageCreateRequest request = new MessageCreateRequest(content, channelId, userId);
+
+    messageService.create(request, List.of(multipartFile));
 
     verify(messageRepository).save(any(Message.class));
   }
@@ -71,7 +73,7 @@ class BasicMessageServiceTest {
   void create_shouldThrowWhenChannelMissing() {
     UUID channelId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
-    MessageCreateRequest request = new MessageCreateRequest(userId, channelId, "hi");
+    MessageCreateRequest request = new MessageCreateRequest("hi", channelId, userId);
 
     when(channelRepository.existsById(channelId)).thenReturn(false);
 

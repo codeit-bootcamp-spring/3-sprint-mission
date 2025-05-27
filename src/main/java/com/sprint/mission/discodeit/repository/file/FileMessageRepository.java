@@ -22,17 +22,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class FileMessageRepository implements MessageRepository {
 
-  private final Path DIRECTORY;
+  private final Path directory;
   private final String EXTENSION = ".ser";
 
   public FileMessageRepository(
       @Value("${discodeit.repository.file-directory:data}") String fileDirectory
   ) {
-    this.DIRECTORY = Paths.get(System.getProperty("user.dir"), fileDirectory,
+    this.directory = Paths.get(System.getProperty("user.dir"), fileDirectory,
         Message.class.getSimpleName());
-    if (Files.notExists(DIRECTORY)) {
+    if (Files.notExists(directory)) {
       try {
-        Files.createDirectories(DIRECTORY);
+        Files.createDirectories(directory);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -40,7 +40,7 @@ public class FileMessageRepository implements MessageRepository {
   }
 
   private Path resolvePath(UUID id) {
-    return DIRECTORY.resolve(id + EXTENSION);
+    return directory.resolve(id + EXTENSION);
   }
 
   @Override
@@ -76,7 +76,7 @@ public class FileMessageRepository implements MessageRepository {
 
   @Override
   public List<Message> findAllByChannelId(UUID channelId) {
-    try (Stream<Path> paths = Files.list(DIRECTORY)) {
+    try (Stream<Path> paths = Files.list(directory)) {
       return paths
           .filter(path -> path.toString().endsWith(EXTENSION))
           .map(path -> {

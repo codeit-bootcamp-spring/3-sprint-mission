@@ -20,8 +20,8 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Override
   public BinaryContent create(BinaryContentCreateRequest request) {
-    String fileName = request.filename();
-    byte[] bytes = request.data();
+    String fileName = request.fileName();
+    byte[] bytes = request.bytes();
     String contentType = request.contentType();
     BinaryContent binaryContent = new BinaryContent(
         fileName,
