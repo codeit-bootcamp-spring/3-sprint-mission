@@ -38,11 +38,14 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Interface" />
         <option value="Class" />
         <option value="Record" />
+        <option value="Interface" />
       </list>
     </option>
+  </component>
+  <component name="FormatOnSaveOptions">
+    <option name="myRunOnSave" value="true" />
   </component>
   <component name="Git.Settings">
     <option name="PUSH_TAGS">
@@ -53,7 +56,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="박인규-sprint2" />
+        <entry key="$PROJECT_DIR$" value="박인규-sprint4" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -107,14 +110,15 @@
     &quot;Gradle.3-sprint-mission_01 [:com.sprint.mission.discodeit.JavaApplicationFile.main()].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.3-sprint-mission_01 [clean].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.Build 3-sprint-mission_01.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;Spring Boot.DiscodeitApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;박인규-sprint3&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;박인규-sprint5&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/myGitWs/3-sprint-mission_01&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/myGitWs/3-sprint-mission_01/src/main/java/com/sprint/mission/discodeit/repository&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -123,7 +127,7 @@
     &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.45524544&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;actions.on.save&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
   &quot;keyToStringList&quot;: {
@@ -136,7 +140,9 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\myGitWs\3-sprint-mission_01\src\main\java\com\sprint\mission\discodeit\repository" />
       <recent name="C:\myGitWs\3-sprint-mission_01\src\main\java\com\sprint\mission\discodeit\repository\jcf" />
+      <recent name="C:\myGitWs\3-sprint-mission_01\src\main\java\com\sprint\mission\discodeit\repository\file" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\myGitWs\3-sprint-mission_01\src\main\java" />
@@ -232,21 +238,29 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <list>
+      <item itemvalue="Application.DiscodeitApplication" />
+      <item itemvalue="Application.FileJavaApplication" />
+      <item itemvalue="Application.JavaApplication" />
+      <item itemvalue="Application.JavaApplicationFile" />
+      <item itemvalue="Gradle.3-sprint-mission_01 [clean]" />
+      <item itemvalue="Spring Boot.DiscodeitApplication" />
+    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.DiscodeitApplication" />
-        <item itemvalue="Application.FileJavaApplication" />
-        <item itemvalue="Application.JavaApplication" />
-        <item itemvalue="Application.JavaApplicationFile" />
         <item itemvalue="Gradle.3-sprint-mission_01 [clean]" />
+        <item itemvalue="Application.JavaApplicationFile" />
+        <item itemvalue="Application.JavaApplication" />
+        <item itemvalue="Application.FileJavaApplication" />
+        <item itemvalue="Application.DiscodeitApplication" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-fbdcb00ec9e3-intellij.indexing.shared.core-IU-251.23774.435" />
-        <option value="bundled-js-predefined-d6986cc7102b-f27c65a3e318-JavaScript-IU-251.23774.435" />
+        <option value="bundled-jdk-9823dce3aa75-fbdcb00ec9e3-intellij.indexing.shared.core-IU-251.25410.129" />
+        <option value="bundled-js-predefined-d6986cc7102b-6a121458b545-JavaScript-IU-251.25410.129" />
       </set>
     </attachedChunks>
   </component>
@@ -272,6 +286,9 @@
       <workItem from="1745468217168" duration="31661000" />
       <workItem from="1745804103129" duration="24154000" />
       <workItem from="1746576529331" duration="9027000" />
+      <workItem from="1748248464677" duration="1106000" />
+      <workItem from="1748304283151" duration="10884000" />
+      <workItem from="1748347829356" duration="386000" />
     </task>
     <task id="LOCAL-00001" summary="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인">
       <option name="closed" value="true" />
@@ -401,7 +418,63 @@
       <option name="project" value="LOCAL" />
       <updated>1746618644777</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="-미션4 수정 및 모든 기능 테스트 완료&#10; ㄴ postman 활용, 모든 기능 동작 확인됨">
+      <option name="closed" value="true" />
+      <created>1748195413439</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1748195413439</updated>
+    </task>
+    <task id="LOCAL-00018" summary="-미션4 수정 및 모든 기능 테스트 완료&#10; ㄴ postman 활용, 모든 기능 동작 확인됨">
+      <option name="closed" value="true" />
+      <created>1748195979132</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1748195979132</updated>
+    </task>
+    <task id="LOCAL-00019" summary="-미션4 수정 및 모든 기능 테스트 완료&#10; ㄴ postman 활용, 모든 기능 동작 확인됨">
+      <option name="closed" value="true" />
+      <created>1748196292014</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1748196292014</updated>
+    </task>
+    <task id="LOCAL-00020" summary="-미션4 수정 및 모든 기능 테스트 완료&#10; ㄴ postman 활용, 모든 기능 동작 확인됨">
+      <option name="closed" value="true" />
+      <created>1748204965705</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1748204965705</updated>
+    </task>
+    <task id="LOCAL-00021" summary="-미션4 수정 및 모든 기능 테스트 완료&#10; ㄴ postman 활용, 모든 기능 동작 확인됨">
+      <option name="closed" value="true" />
+      <created>1748205511374</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1748205511374</updated>
+    </task>
+    <task id="LOCAL-00022" summary="-미션5 수정 및 모든 기능 테스트 완료&#10; ㄴ postman 활용, 모든 기능 동작 확인됨&#10; ㄴ API 연결 테스트.&#10; ㄴ 로그인 ok&#10; ㄴ 참여중인 유저 목록 뷰 ok&#10; ㄴ 메세지 작성 ok / 메세지 내용,작성자가 뷰에서 확인 안됨&#10; ㄴ 공개채널 작성 불가 등 오류 발견.">
+      <option name="closed" value="true" />
+      <created>1748213903426</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1748213903426</updated>
+    </task>
+    <task id="LOCAL-00023" summary="-미션5 기능 테스트 진행함.&#10; ㄴ postman 활용, 모든 기능 동작 확인됨&#10; ㄴ API 연결 테스트.&#10;  ㄴ 로그인 ok&#10;  ㄴ 참여중인 유저 목록 뷰 ok&#10;  ㄴ 메세지 작성 ok / 메세지 내용,작성자가 뷰에서 확인 안됨&#10;  ㄴ 공개채널 작성 불가 등 오류 발견.">
+      <option name="closed" value="true" />
+      <created>1748214079728</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1748214079728</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -425,6 +498,31 @@
     </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="박인규-sprint5" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="박인규-sprint3" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="박인규-sprint2" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
     <option name="TAB_STATES">
       <map>
         <entry key="MAIN">
@@ -435,7 +533,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="박인규-sprint2" />
+                        <option value="박인규-sprint5" />
                       </list>
                     </value>
                   </entry>
@@ -459,6 +557,13 @@
     <MESSAGE value="- mission2 모범답안 활용&#10;- SpringBoot 적용함&#10;- @SpringBootApplicatin / @Service / @Repository 어노테이션 작성함&#10;-  ConfigurableApplicationContext getBean 활용하여 각 서비스 초기화 적용함&#10;- 셋업,테스트 코드 이용하여 테스트완료" />
     <MESSAGE value="-" />
     <MESSAGE value="-기한 도래로 미완성 제출" />
-    <option name="LAST_COMMIT_MESSAGE" value="-기한 도래로 미완성 제출" />
+    <MESSAGE value="-미션4 수정 및 모든 기능 테스트 완료&#10; ㄴ postman 활용, 모든 기능 동작 확인됨" />
+    <MESSAGE value="-미션5 수정 및 모든 기능 테스트 완료&#10; ㄴ postman 활용, 모든 기능 동작 확인됨&#10; ㄴ API 연결 테스트.&#10; ㄴ 로그인 ok&#10; ㄴ 참여중인 유저 목록 뷰 ok&#10; ㄴ 메세지 작성 ok / 메세지 내용,작성자가 뷰에서 확인 안됨&#10; ㄴ 공개채널 작성 불가 등 오류 발견." />
+    <MESSAGE value="-미션5 기능 테스트 진행함.&#10; ㄴ postman 활용, 모든 기능 동작 확인됨&#10; ㄴ API 연결 테스트.&#10;  ㄴ 로그인 ok&#10;  ㄴ 참여중인 유저 목록 뷰 ok&#10;  ㄴ 메세지 작성 ok / 메세지 내용,작성자가 뷰에서 확인 안됨&#10;  ㄴ 공개채널 작성 불가 등 오류 발견." />
+    <option name="LAST_COMMIT_MESSAGE" value="-미션5 기능 테스트 진행함.&#10; ㄴ postman 활용, 모든 기능 동작 확인됨&#10; ㄴ API 연결 테스트.&#10;  ㄴ 로그인 ok&#10;  ㄴ 참여중인 유저 목록 뷰 ok&#10;  ㄴ 메세지 작성 ok / 메세지 내용,작성자가 뷰에서 확인 안됨&#10;  ㄴ 공개채널 작성 불가 등 오류 발견." />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>
