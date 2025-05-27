@@ -29,17 +29,34 @@ public class BasicUserService implements UserService {
 
     @Override
     public User create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-        String username = userCreateRequest.username();
-        String email = userCreateRequest.email();
 
+        // 중복 유저 확인
+        validateUserUniqueness(userCreateRequest.email(), userCreateRequest.username());
+
+        // 프로필 처리
+        UUID nullableProfileId = createProfile(optionalProfileCreateRequest);
+
+        // 유저 생성 및 저장
+        User user = new User(userCreateRequest.username(), userCreateRequest.email(), userCreateRequest.password(), nullableProfileId);
+        User createdUser = userRepository.save(user);
+
+        // UserStatus 생성
+        createUserStatus(createdUser.getId());
+
+        return createdUser;
+    }
+
+    private void validateUserUniqueness(String email, String username) {
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("User with email " + email + " already exists");
         }
         if (userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("User with username " + username + " already exists");
         }
+    }
 
-        UUID nullableProfileId = optionalProfileCreateRequest
+    private UUID createProfile(Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+        return optionalProfileCreateRequest
                 .map(profileRequest -> {
                     String fileName = profileRequest.fileName();
                     String contentType = profileRequest.contentType();
@@ -48,16 +65,11 @@ public class BasicUserService implements UserService {
                     return binaryContentRepository.save(binaryContent).getId();
                 })
                 .orElse(null);
-        String password = userCreateRequest.password();
+    }
 
-        User user = new User(username, email, password, nullableProfileId);
-        User createdUser = userRepository.save(user);
-
-        Instant now = Instant.now();
-        UserStatus userStatus = new UserStatus(createdUser.getId(), now);
+    private void createUserStatus(UUID userId) {
+        UserStatus userStatus = new UserStatus(userId, Instant.now());
         userStatusRepository.save(userStatus);
-
-        return createdUser;
     }
 
     @Override
@@ -82,12 +94,7 @@ public class BasicUserService implements UserService {
 
         String newUsername = userUpdateRequest.newUsername();
         String newEmail = userUpdateRequest.newEmail();
-        if (userRepository.existsByEmail(newEmail)) {
-            throw new IllegalArgumentException("User with email " + newEmail + " already exists");
-        }
-        if (userRepository.existsByUsername(newUsername)) {
-            throw new IllegalArgumentException("User with username " + newUsername + " already exists");
-        }
+        validateUserUniqueness(newEmail, newUsername);
 
         UUID nullableProfileId = optionalProfileCreateRequest
                 .map(profileRequest -> {
