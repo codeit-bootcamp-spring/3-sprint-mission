@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.exception.ReadStatusAlreadyExistsException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -43,9 +44,11 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     // 3. ReadStatus 생성
-    ReadStatus readStatus = new ReadStatus(createRequest.userId(), createRequest.channelId());
+    Channel channel = this.channelRepository.findById(createRequest.channelId()).get();
+    ReadStatus readStatus = new ReadStatus(createRequest.userId(), createRequest.channelId(),
+        channel.getCreatedAt());
+    
     //4. DB저장
-
     return this.readStatusRepository.save(readStatus);
   }
 

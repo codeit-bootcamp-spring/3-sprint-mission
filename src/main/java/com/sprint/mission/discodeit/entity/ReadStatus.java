@@ -23,15 +23,15 @@ public class ReadStatus implements Serializable {
 
 
   // XXX. 처음에 생성될때 읽지않은 상태가 초기값이 맞나? -> YES
-  public ReadStatus(UUID userId, UUID channelId) {
+  public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
     this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
-    this.lastReadAt = null;
 
     //
     this.userId = userId;
     this.channelId = channelId;
+    this.lastReadAt = lastReadAt;
   }
 
   public void update(Instant lastReadAt) {
