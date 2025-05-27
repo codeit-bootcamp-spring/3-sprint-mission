@@ -1,33 +1,46 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@Entity
+@Table(name = "users")
+@NoArgsConstructor
+@AllArgsConstructor
 public class User extends BaseUpdatableEntity {
 
-  private UUID id;
-  private Instant createdAt;
-  private Instant updatedAt;
-  //
+  @Column(name = "username")
   private String username;
+
+  @Column(name = "email")
   private String email;
+
+  @Column(name = "password")
   private String password;
-  private UUID profileId;     // BinaryContent
 
-  public User(String username, String email, String password, UUID profileId) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    //
-    this.username = username;
-    this.email = email;
-    this.password = password;
-    this.profileId = profileId;
-  }
+  @OneToOne
+  @JoinColumn(name = "profile_id")
+  private BinaryContent profile;
+  // BinaryContent
 
-  public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
+  @OneToOne(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
+  private UserStatus status;
+
+
+  public void update(String newUsername, String newEmail, String newPassword,
+      BinaryContent newProfile) {
     boolean anyValueUpdated = false;
     if (newUsername != null && !newUsername.equals(this.username)) {
       this.username = newUsername;
@@ -41,8 +54,8 @@ public class User extends BaseUpdatableEntity {
       this.password = newPassword;
       anyValueUpdated = true;
     }
-    if (newProfileId != null && !newProfileId.equals(this.profileId)) {
-      this.profileId = newProfileId;
+    if (newProfile != null && !newProfile.equals(this.profile)) {
+      this.profile = newProfile;
       anyValueUpdated = true;
     }
 

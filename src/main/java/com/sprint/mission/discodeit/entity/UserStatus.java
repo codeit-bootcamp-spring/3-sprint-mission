@@ -1,29 +1,32 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@Entity
+@Table(name = "user_statuses")
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserStatus extends BaseUpdatableEntity {
 
-  private UUID id;
-  private Instant createdAt;
-  private Instant updatedAt;
-  //
-  private UUID userId;
-  private Instant lastActiveAt;
+  @OneToOne
+  @JoinColumn(name = "user_id")
+  private User user;
 
-  public UserStatus(UUID userId, Instant lastActiveAt) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    //
-    this.userId = userId;
-    this.lastActiveAt = lastActiveAt;
-  }
+  @Column(name = "last_active_at")
+  private Instant lastActiveAt;
 
   public void update(Instant lastActiveAt) {
     boolean anyValueUpdated = false;
