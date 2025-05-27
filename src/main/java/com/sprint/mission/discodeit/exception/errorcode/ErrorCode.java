@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.controller.errorcode;
+package com.sprint.mission.discodeit.exception.errorcode;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

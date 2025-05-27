@@ -1,6 +1,6 @@
-package com.sprint.mission.discodeit.controller.exception;
+package com.sprint.mission.discodeit.exception;
 
-import com.sprint.mission.discodeit.controller.errorcode.ErrorCode;
+import com.sprint.mission.discodeit.exception.errorcode.ErrorCode;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;

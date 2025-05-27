@@ -1,20 +1,12 @@
-package com.sprint.mission.discodeit.controller.exception;
-
-import com.sprint.mission.discodeit.controller.errorcode.ErrorCode;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.apache.coyote.Response;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
+package com.sprint.mission.discodeit.exception;
 
 import java.util.NoSuchElementException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice // 전역 예외 처리 클래스
+@RestControllerAdvice
 public class GlobalExceptionHandler extends RuntimeException /* 비검사 예외 */ {
 
     @ExceptionHandler(InvalidArgException.class)
