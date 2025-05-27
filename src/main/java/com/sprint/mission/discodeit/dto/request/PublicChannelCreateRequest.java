@@ -1,6 +1,11 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import java.util.UUID;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-public record PublicChannelCreateRequest(String channelName, UUID ownerUserId) {
+@Schema(description = "Public Channel 생성 정보")
+public record PublicChannelCreateRequest(
+    String name,
+    String description
+) {
+
 }

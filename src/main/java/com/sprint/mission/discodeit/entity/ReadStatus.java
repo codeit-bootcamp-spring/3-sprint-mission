@@ -8,6 +8,7 @@ import java.util.UUID;
 
 @Getter
 public class ReadStatus implements Serializable {
+
   private static final long serialVersionUID = 1L;
   private final UUID id;
   private final Instant createdAt;
@@ -17,13 +18,13 @@ public class ReadStatus implements Serializable {
   private UUID channelId;
   private Instant lastReadAt;
 
-  public ReadStatus(UUID userId, UUID channelId) {
+  public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
     this.id = UUID.randomUUID();
-    this.createdAt = Instant.now() ;
+    this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
     this.userId = userId;
     this.channelId = channelId;
-    this.lastReadAt = Instant.EPOCH; // 기본값을 Instant.EPOCH로 메시지를 읽지 않음을 표시
+    this.lastReadAt = lastReadAt; // 기본값을 Instant.EPOCH로 메시지를 읽지 않음을 표시
   }
 
   /*
@@ -32,9 +33,23 @@ public class ReadStatus implements Serializable {
   사용자가 각 채널에 읽지 않은 메세지를 확인위한 용도
   updateLastReadAt 호출 시점? 사용자가 채널에 접속할 때
    */
-  public void updateLastReadAt(Instant currentReadAt) {
+
+  /*public void updateLastReadAt(Instant currentReadAt) {
     if (currentReadAt.isAfter(this.lastReadAt)) {
       this.lastReadAt = currentReadAt;
+      this.updatedAt = Instant.now();
+    }
+  }
+*/
+
+  public void updateLastReadAt(Instant newLastReadAt) {
+    boolean anyValueUpdated = false;
+    if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
+      this.lastReadAt = newLastReadAt;
+      anyValueUpdated = true;
+    }
+
+    if (anyValueUpdated) {
       this.updatedAt = Instant.now();
     }
   }

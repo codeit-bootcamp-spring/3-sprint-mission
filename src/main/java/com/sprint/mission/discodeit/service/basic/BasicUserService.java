@@ -33,7 +33,8 @@ public class BasicUserService implements UserService {
   // @RequiredArgsConstructor 어노테이션이 자동으로 생성
 
   @Override
-  public User createUser(UserCreateRequest userRequest, Optional<BinaryContentCreateRequest> profileRequest) {
+  public User createUser(UserCreateRequest userRequest,
+      Optional<BinaryContentCreateRequest> profileRequest) {
     String username = userRequest.username();
     String email = userRequest.email();
 
@@ -46,11 +47,11 @@ public class BasicUserService implements UserService {
     }
 
     User user = new User(username, email, userRequest.password());
-    userRepository.save(user);
+    User createdUser = userRepository.save(user);
 
     // UserStatus 생성
-    UserStatus status = new UserStatus(user.getId());
-    status.update(Instant.now());
+    Instant now = Instant.now();
+    UserStatus status = new UserStatus(createdUser.getId(), now);
     userStatusRepository.save(status);
 
     // Optional 프로필 이미지 처리
@@ -64,7 +65,7 @@ public class BasicUserService implements UserService {
           userRepository.save(user);
         });
 
-    return user;
+    return createdUser;
   }
 
 
@@ -74,7 +75,7 @@ public class BasicUserService implements UserService {
         .map(user -> {
           boolean hasProfileImage = binaryContentRepository.findByUserId(user.getId()).isPresent();
           boolean isOnline = userStatusRepository.find(user.getId())
-              .map(UserStatus::checkUserConnect)
+              .map(UserStatus::isOnline)
               .orElse(false);
           return new UserDto(user, hasProfileImage, isOnline);
         });
@@ -87,7 +88,7 @@ public class BasicUserService implements UserService {
         .map(user -> {
           boolean hasProfileImage = binaryContentRepository.findByUserId(user.getId()).isPresent();
           boolean isOnline = userStatusRepository.findByUserId(user.getId())
-              .map(UserStatus::checkUserConnect)
+              .map(UserStatus::isOnline)
               .orElse(false);
           return new UserDto(user, hasProfileImage, isOnline);
         })
@@ -96,11 +97,13 @@ public class BasicUserService implements UserService {
 
 
   @Override
-  public User update(UUID userId, UserUpdateRequest userUpdateRequest, Optional<BinaryContentCreateRequest> profileCreateRequest) {
+  public User update(UUID userId, UserUpdateRequest userUpdateRequest,
+      Optional<BinaryContentCreateRequest> profileCreateRequest) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new IllegalArgumentException("해당 ID의 유저를 찾을 수 없습니다: " + userId));
 
-    if (userUpdateRequest.username() != null && !userUpdateRequest.username().equals(user.getUsername())) {
+    if (userUpdateRequest.username() != null && !userUpdateRequest.username()
+        .equals(user.getUsername())) {
       if (isNameDuplicate(userUpdateRequest.username())) {
         throw new IllegalArgumentException("이미 존재하는 이름입니다: " + userUpdateRequest.username());
       }
@@ -125,7 +128,6 @@ public class BasicUserService implements UserService {
     userRepository.update(user);
     return user;
   }
-
 
 
   @Override

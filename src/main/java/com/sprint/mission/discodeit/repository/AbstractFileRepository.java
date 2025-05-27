@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractFileRepository<T extends Serializable, ID> {
+
   protected final Map<ID, T> dataMap = new HashMap<>();
   private final String filePath;
   protected final ReentrantLock lock = new ReentrantLock();
@@ -30,7 +31,9 @@ public abstract class AbstractFileRepository<T extends Serializable, ID> {
     lock.lock();
     try {
       File file = new File(filePath);
-      if (!file.exists()) return;
+      if (!file.exists()) {
+        return;
+      }
 
       try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
         Map<ID, T> loadedData = (Map<ID, T>) ois.readObject();
@@ -104,6 +107,15 @@ public abstract class AbstractFileRepository<T extends Serializable, ID> {
     try {
       dataMap.remove(id);
       saveData();
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  public boolean existsById(ID id) {
+    lock.lock();
+    try {
+      return dataMap.containsKey(id);
     } finally {
       lock.unlock();
     }

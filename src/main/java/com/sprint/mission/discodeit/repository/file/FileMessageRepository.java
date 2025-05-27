@@ -21,7 +21,8 @@ public class FileMessageRepository implements MessageRepository {
   public FileMessageRepository(
       @Value("${discodeit.repository.file-directory}") String fileDirectory
   ) {
-    this.filePath = Paths.get(System.getProperty("user.dir"), fileDirectory, "messages.ser").toString();
+    this.filePath = Paths.get(System.getProperty("user.dir"), fileDirectory, "messages.ser")
+        .toString();
     loadData(); // 데이터를 로드
   }
 
@@ -58,7 +59,7 @@ public class FileMessageRepository implements MessageRepository {
 
     // 유저 인덱스
     dataStore.getUserMessagesMap()
-        .computeIfAbsent(message.getSenderId(), k -> new ArrayList<>())
+        .computeIfAbsent(message.getAuthorId(), k -> new ArrayList<>())
         .add(message);
 
     saveData();
@@ -78,7 +79,7 @@ public class FileMessageRepository implements MessageRepository {
           .getOrDefault(message.getChannelId(), new ArrayList<>())
           .remove(message);
       dataStore.getUserMessagesMap()
-          .getOrDefault(message.getSenderId(), new ArrayList<>())
+          .getOrDefault(message.getAuthorId(), new ArrayList<>())
           .remove(message);
       saveData();
     }

@@ -12,8 +12,8 @@ import java.util.UUID;
 public interface MessageService {
 
   // 메시지 생성: 채널, 발신자, 내용 필요
-  //Message createMessage(UUID channelId, UUID senderId, String content);
-  Message createMessage(MessageCreateRequest messageCreateRequest, List<BinaryContentCreateRequest> binaryContentCreateRequests);
+  Message createMessage(MessageCreateRequest messageCreateRequest,
+      List<BinaryContentCreateRequest> binaryContentCreateRequests);
 
   // 특정 채널에서 내가 보낸 메시지들 조회
   List<Message> getMessagesBySenderInChannel(UUID channelId, UUID senderId);
@@ -40,5 +40,6 @@ public interface MessageService {
   List<Message> findAllByChannelId(UUID channelId);
 
   Optional<Message> getMessageById(UUID messageId);
+
   String formatMessage(Message message);
 }

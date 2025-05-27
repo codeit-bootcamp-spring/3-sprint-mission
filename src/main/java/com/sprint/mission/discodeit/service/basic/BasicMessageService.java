@@ -1,17 +1,17 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,8 +23,9 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
+
   private final MessageRepository messageRepository;
-  private final UserService userService;
+  private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
   private final BinaryContentRepository binaryContentRepository;
 
@@ -33,43 +34,47 @@ public class BasicMessageService implements MessageService {
           .withZone(ZoneId.of("Asia/Seoul"));
 
   @Override
-  public Message createMessage(MessageCreateRequest messageCreateRequest, List<BinaryContentCreateRequest> binaryContentCreateRequests) {
+  public Message createMessage(MessageCreateRequest messageCreateRequest,
+      List<BinaryContentCreateRequest> binaryContentCreateRequests) {
     UUID channelId = messageCreateRequest.channelId();
-    UUID senderId = messageCreateRequest.senderId();
+    UUID authorId = messageCreateRequest.authorId();
 
-    Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
-    UserDto senderDTO = userService.find(senderId)
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 ID입니다."));
-
-    if (channel.getChannelMembers().size() < 2) {
-      throw new IllegalStateException("채널에 최소 두 명 이상의 유저가 있어야 메시지를 보낼 수 있습니다.");
+    if (!channelRepository.existsById(channelId)) {
+      throw new NoSuchElementException("해당 채널이 존재하지 않습니다.");
     }
 
-    boolean isMember = channel.getChannelMembers().stream()
-        .anyMatch(member -> member.getId().equals(senderId));
-    if (!isMember) {
-      throw new IllegalArgumentException("해당 유저는 이 채널의 멤버가 아닙니다.");
+    if (!userRepository.existsById(authorId)) {
+      throw new NoSuchElementException("존재하지 않는 유저 ID입니다.");
     }
 
-    Message message = new Message(messageCreateRequest.content(), channelId, senderId);
-    Message savedMessage = messageRepository.save(message);
-
+    List<UUID> attachmentIds = new ArrayList<>();
     if (binaryContentCreateRequests != null) {
       for (BinaryContentCreateRequest fileRequest : binaryContentCreateRequests) {
-        if (fileRequest.isValid()) {
-          BinaryContent binaryContent = new BinaryContent(fileRequest.fileName(), senderId, savedMessage.getId(),
-              fileRequest.bytes(), fileRequest.contentType());
-          message.addAttachment(binaryContent.getId());
-          binaryContentRepository.save(binaryContent);
-        } else {
+        if (!fileRequest.isValid()) {
           throw new IllegalArgumentException("메세지에 첨부파일을 추가할 수 없습니다. 파일을 확인해주세요.");
         }
-      }
-      messageRepository.save(savedMessage);
-    }
 
-    return savedMessage;
+        BinaryContent binaryContent = new BinaryContent(
+            fileRequest.fileName(),
+            authorId,
+            fileRequest.bytes(),
+            fileRequest.contentType()
+        );
+        BinaryContent saved = binaryContentRepository.save(binaryContent);
+        attachmentIds.add(saved.getId());
+      }
+    }
+    /*BinaryContent(첨부파일) 객체가 자신이 속한 Message(메시지)를 참조하도록 설계했지만,
+    첨부파일 기준으로 메시지를 역으로 조회할 필요가 없다고 생각해서
+    단방향 참조로 구조를 변경하였습니다. Message가 첨부파일의 ID만 가지고 있는 구조*/
+    Message message = new Message(
+        messageCreateRequest.content(),
+        channelId,
+        authorId,
+        attachmentIds
+    );
+
+    return messageRepository.save(message);
   }
 
   @Override
@@ -89,7 +94,7 @@ public class BasicMessageService implements MessageService {
     }
 
     return messageRepository.findByChannelId(channelId).stream()
-        .filter(m -> m.getSenderId().equals(senderId))
+        .filter(m -> m.getAuthorId().equals(senderId))
         .toList();
   }
 
@@ -102,7 +107,7 @@ public class BasicMessageService implements MessageService {
     }
 
     return messageRepository.findByChannelId(channelId).stream()
-        .filter(m -> !m.getSenderId().equals(receiverId))
+        .filter(m -> !m.getAuthorId().equals(receiverId))
         .toList();
   }
 
@@ -122,7 +127,7 @@ public class BasicMessageService implements MessageService {
     for (UUID chId : myChannels) {
       List<Message> messages = messageRepository.findByChannelId(chId);
       for (Message msg : messages) {
-        if (!msg.getSenderId().equals(receiverId)) {
+        if (!msg.getAuthorId().equals(receiverId)) {
           received.add(msg);
         }
       }
@@ -135,7 +140,7 @@ public class BasicMessageService implements MessageService {
     Message msg = messageRepository.findById(messageId)
         .orElseThrow(() -> new IllegalArgumentException("메시지를 찾을 수 없습니다."));
 
-    if (!msg.getSenderId().equals(request.senderId())) {
+    if (!msg.getAuthorId().equals(request.senderId())) {
       throw new SecurityException("해당 메시지를 수정할 권한이 없습니다.");
     }
 
@@ -148,7 +153,7 @@ public class BasicMessageService implements MessageService {
   public void deleteMessage(UUID messageId, UUID senderId) {
     Message msg = messageRepository.findById(messageId)
         .orElseThrow(() -> new IllegalArgumentException("메시지를 찾을 수 없습니다."));
-    if (!msg.getSenderId().equals(senderId)) {
+    if (!msg.getAuthorId().equals(senderId)) {
       throw new SecurityException("해당 메시지를 삭제할 권한이 없습니다.");
     }
 
@@ -171,12 +176,12 @@ public class BasicMessageService implements MessageService {
 
     String formattedDate = DATE_FORMATTER.format(timestamp);
 
-    Optional<UserDto> senderOpt = userService.find(message.getSenderId());
-    String senderName = senderOpt.map(UserDto::getUsername).orElse("알 수 없음");
-    String senderEmail = senderOpt.map(UserDto::getEmail).orElse("이메일 없음");
+    Optional<User> senderOpt = userRepository.findById(message.getAuthorId());
+    String senderName = senderOpt.map(User::getUsername).orElse("알 수 없음");
+    String senderEmail = senderOpt.map(User::getEmail).orElse("이메일 없음");
 
     String channelName = channelRepository.findById(message.getChannelId())
-        .map(Channel::getChannelName)
+        .map(Channel::getName)
         .orElse("알 수 없음");
 
     return String.format("[%s] %s, 보낸사람: %s(%s), 내용: \"%s\"",

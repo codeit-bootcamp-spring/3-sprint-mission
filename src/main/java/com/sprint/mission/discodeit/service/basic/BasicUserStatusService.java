@@ -18,14 +18,15 @@ public class BasicUserStatusService implements UserStatusService {
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
 
-  public BasicUserStatusService(UserRepository userRepository, UserStatusRepository userStatusRepository) {
+  public BasicUserStatusService(UserRepository userRepository,
+      UserStatusRepository userStatusRepository) {
     this.userRepository = userRepository;
     this.userStatusRepository = userStatusRepository;
   }
 
   @Override
   public UserStatus create(UserStatusCreateRequest request) {
-    UUID userId = request.id();
+    UUID userId = request.userId();
 
     if (userRepository.findById(userId).isEmpty()) {
       throw new IllegalArgumentException("userStatus가 존재하지 않음");
@@ -35,7 +36,8 @@ public class BasicUserStatusService implements UserStatusService {
       throw new IllegalStateException("userStatus가 존재하지 않음");
     }
 
-    UserStatus status = new UserStatus(userId);
+    Instant lastActiveAt = request.lastActiveAt();
+    UserStatus status = new UserStatus(userId, lastActiveAt);
     return userStatusRepository.save(status);
   }
 
@@ -47,22 +49,22 @@ public class BasicUserStatusService implements UserStatusService {
 
   @Override
   public UserStatus update(UUID userStatusId, UserStatusUpdateRequest request) {
-    Instant newLastUpdatedAt = request.newLastUpdatedAt();
+    Instant newLastActiveAt = request.newLastActiveAt();
 
     UserStatus status = userStatusRepository.find(userStatusId)
         .orElseThrow(() -> new NoSuchElementException("userStatus가 존재하지 않음"));
-    status.update(newLastUpdatedAt);
+    status.update(newLastActiveAt);
     return userStatusRepository.save(status);
   }
 
   @Override
   public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
-    Instant newLastUpdatedAt = request.newLastUpdatedAt();
+    Instant newLastActiveAt = request.newLastActiveAt();
 
     UserStatus status = userStatusRepository.findByUserId(userId)
         .orElseThrow(() -> new NoSuchElementException("userStatus가 존재하지 않음"));
 
-    status.update(newLastUpdatedAt);
+    status.update(newLastActiveAt);
     return userStatusRepository.save(status);
   }
 

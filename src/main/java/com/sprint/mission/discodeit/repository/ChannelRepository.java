@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ChannelRepository {
+
   // 1. 채널 생성
   Channel save(Channel channel);
 
@@ -27,4 +28,6 @@ public interface ChannelRepository {
 
   // 7. 유저가 참여 중인 모든 채널에서 삭제
   void removeUserFromAllChannels(UUID userId);
+
+  boolean existsById(UUID id);
 }

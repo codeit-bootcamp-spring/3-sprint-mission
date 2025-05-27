@@ -4,12 +4,12 @@ import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
 public class Message implements Serializable {
+
   private static final long serialVersionUID = 1L;
 
   private final UUID id;
@@ -18,22 +18,18 @@ public class Message implements Serializable {
 
   private String content;
   private UUID channelId;
-  private UUID senderId;
+  private UUID authorId;
   private List<UUID> attachmentIds;
 
-  public Message(String content, UUID channelId, UUID senderId) {
+  public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
     this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
     this.content = content;
     this.channelId = channelId;
-    this.senderId = senderId;
-    this.attachmentIds = new ArrayList<>();
-  }
-
-  // 첨부파일 추가
-  public void addAttachment(UUID attachmentId) {
-    this.attachmentIds.add(attachmentId); // 첨부파일 리스트에 추가
+    this.authorId = authorId;
+    this.attachmentIds = attachmentIds;
+    ;
   }
 
   public void updateContent(String content) {
@@ -49,7 +45,7 @@ public class Message implements Serializable {
         ", updatedAt=" + updatedAt +
         ", content='" + content + '\'' +
         ", channelId=" + channelId +
-        ", senderId=" + senderId +
+        ", senderId=" + authorId +
         '}';
   }
 }
