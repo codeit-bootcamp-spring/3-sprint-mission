@@ -6,13 +6,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -40,7 +33,6 @@ import java.util.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 @RestController
-@Tag(name = "User", description = "User API")
 public class UserController {
 
   private final UserService userService;
@@ -52,27 +44,9 @@ public class UserController {
   // 전체 조회 : GET
   // 온라인 상태 변경 : PATCH  << 전체 중 일부만 바꾸는게 확실하니
 
-  @Operation(
-      summary = "신규 사용자 생성",
-      description = "새로운 사용자를 등록하며, 선택적으로 프로필 이미지를 포함할 수 있습니다",
-      responses = {
-          @ApiResponse(
-              responseCode = "201",
-              description = "신규 사용자 생성 성공",
-              content = @Content(schema = @Schema(implementation = User.class))),
-          @ApiResponse(
-              responseCode = "400",
-              description = "잘못된 비밀번호 형식",
-              content = @Content(
-                  mediaType = "application/json",
-                  examples = @ExampleObject(value = "비밀번호는 대소문자, 숫자, 특수문자를 포함하여 최소 8자 이상이어야 합니다")
-              )
-          )
-      }
-  )
   // 신규 유저 생성 요청( POST )
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<?> create(
+  public ResponseEntity<User> create(
       @Valid
       @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
@@ -114,17 +88,6 @@ public class UserController {
   }
 
 
-  @Operation(
-      summary = "사용자 정보 수정",
-      description = "사용자 ID를 기반으로 사용자 정보를 수정합니다",
-      responses = {
-          @ApiResponse(
-              responseCode = "200",
-              description = "사용자 정보 수정 성공",
-              content = @Content(schema = @Schema(implementation = User.class))
-          )
-      }
-  )
   @PatchMapping("/{userId}")
   // 사용자 정보 수정( PATCH )
   public ResponseEntity<User> update(
@@ -144,28 +107,6 @@ public class UserController {
 
 
   // 사용자 삭제( DEL )
-  @Operation(
-      summary = "사용자 삭제",
-      description = "ID에 해당하는 사용자를 삭제합니다",
-      responses = {
-          @ApiResponse(
-              responseCode = "200",
-              description = "사용자 삭제 성공",
-              content = @Content(
-                  mediaType = "application/json",
-                  examples = @ExampleObject(value = "사용자 삭제에 성공했습니다")
-              )
-          ),
-          @ApiResponse(
-              responseCode = "404",
-              description = "사용자 찾을 수 없음",
-              content = @Content(
-                  mediaType = "application/json",
-                  examples = @ExampleObject(value = "해당 사용자를 찾을 수 없습니다")
-              )
-          )
-      }
-  )
   @DeleteMapping("/{userId}")
   public ResponseEntity<String> delete(@PathVariable UUID userId) {
     try {
@@ -182,19 +123,6 @@ public class UserController {
 
   // 모든 사용자 조회( GET )
   @GetMapping
-  @Operation(
-      summary = "전체 User 목록 조회",
-      description = "시스템에 등록된 전체 사용자 목록을 조회합니다",
-      responses = {
-          @ApiResponse(
-              responseCode = "200",
-              description = "사용자 목록 조회 성공",
-              content = @Content(
-                  array = @ArraySchema(schema = @Schema(implementation = UserDto.class))
-              )
-          )
-      }
-  )
   public ResponseEntity<List<UserDto>> findAll() {
     // 모든 사용자 조회
     List<UserDto> users = userService.findAll();
@@ -204,19 +132,8 @@ public class UserController {
 
 
   // 사용자 활동 상태 변경
-  @Operation(
-      summary = "사용자 상태 변경",
-      description = "해당 사용자의 활동 상태( 온라인 / 오프라인 )를 수정합니다",
-      responses = {
-          @ApiResponse(
-              responseCode = "200",
-              description = "사용자 상태 변경 성공",
-              content = @Content(schema = @Schema(implementation = UserStatus.class))
-          )
-      }
-  )
   @PatchMapping("/{userId}/userStatus")
-  public ResponseEntity<UserStatus> updateUserStatus(
+  public ResponseEntity<UserStatus> updateUserStatusByUserId(
       @PathVariable UUID userId,
       @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
   ) {

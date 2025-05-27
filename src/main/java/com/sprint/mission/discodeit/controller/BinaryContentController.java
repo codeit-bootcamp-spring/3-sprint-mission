@@ -3,12 +3,6 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,24 +22,8 @@ public class BinaryContentController {
   private final BinaryContentService binaryContentService;
 
   // 다건 조회 : 바이너리 파일 여러 개 조회( GET )
-  @Operation(
-      summary = "다건 바이너리 파일 조회",
-      description = "UUID 리스트를 이용하여 여러 개의 바이너리 콘텐츠 정보를 조회합니다"
-  )
-  @ApiResponses(value = {
-      @ApiResponse(
-          responseCode = "200",
-          description = "바이너리 콘텐츠 목록 조회 성공",
-          content = @Content(schema = @Schema(implementation = BinaryContent.class))
-      ),
-      @ApiResponse(
-          responseCode = "204",
-          description = "요청된 ID 리스트가 없거나 해당 ID들에 대한 콘텐츠가 존재하지 않음"
-      )
-  })
   @GetMapping
-  public ResponseEntity<List<BinaryContent>> findBinaryContents(
-      @Parameter(description = "조회할 바이너리 콘텐츠의 UUID 목록", required = true, example = "f47ac10b-58cc-4372-a567-0e02b2c3d479")
+  public ResponseEntity<List<BinaryContent>> findAllByIdIn(
       @RequestParam("binaryContentIds") List<UUID> binaryContentIds
   ) {
     List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
@@ -56,24 +34,8 @@ public class BinaryContentController {
 
 
   // 단건 조회 : 바이너리 파일을 1개 조회( GET )
-  @Operation(
-      summary = "단건 바이너리 파일 조회",
-      description = "UUID를 이용하여 하나의 바이너리 콘텐츠 정보를 조회합니다"
-  )
-  @ApiResponses(value = {
-      @ApiResponse(
-          responseCode = "200",
-          description = "바이너리 콘텐츠 조회 성공",
-          content = @Content(schema = @Schema(implementation = BinaryContent.class))
-      ),
-      @ApiResponse(
-          responseCode = "204",
-          description = "해당 ID의 콘텐츠가 존재하지 않음"
-      )
-  })
   @GetMapping("/{binaryContentId}")
-  public ResponseEntity<BinaryContent> findBinaryContent(
-      @Parameter(description = "조회할 바이너리 콘텐츠의 UUID", required = true, example = "f47ac10b-58cc-4372-a567-0e02b2c3d479")
+  public ResponseEntity<BinaryContent> find(
       @PathVariable UUID binaryContentId
   ) {
     BinaryContent binary = binaryContentService.find(binaryContentId);
