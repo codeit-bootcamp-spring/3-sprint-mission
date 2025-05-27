@@ -7,7 +7,6 @@ public record UserCreateRequest(
         String email,
         String password,
         boolean content,
-        byte[] profileImage,
         String profileContentType
 ) {
     @Builder

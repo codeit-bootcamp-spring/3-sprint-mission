@@ -6,6 +6,6 @@ import lombok.Builder;
 
 @Builder
 public record PrivateChannelCreateRequest(
-        List<UUID> participantsIds
+        List<UUID> participantIds
 ) {
 }

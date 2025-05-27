@@ -7,7 +7,7 @@ import java.util.UUID;
 import lombok.Builder;
 
 @Builder
-public record ChannelResponse(
+public record ChannelDto(
         UUID id,
         ChannelType type,
         String name,

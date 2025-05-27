@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.Channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.Channel.ChannelFindRequest;
-import com.sprint.mission.discodeit.dto.Channel.ChannelResponse;
 import com.sprint.mission.discodeit.dto.Channel.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.Channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.Channel.PublicChannelCreateRequest;
@@ -30,7 +30,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel create(PublicChannelCreateRequest request) {
-        Channel channel = new Channel(ChannelType.PUBLIC, request.channelName(), request.description());
+        Channel channel = new Channel(ChannelType.PUBLIC, request.name(), request.description());
         return channelRepository.save(channel);
     }
 
@@ -38,7 +38,7 @@ public class BasicChannelService implements ChannelService {
     public Channel create(PrivateChannelCreateRequest request) {
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         Channel createChannel = channelRepository.save(channel);
-        request.participantsIds().stream().map(userId -> new ReadStatus(userId, createChannel.getId(), Instant.MIN))
+        request.participantIds().stream().map(userId -> new ReadStatus(userId, createChannel.getId(), Instant.MIN))
                 .forEach(readStatusRepository::save);
 
         return channelRepository.save(channel);
@@ -46,7 +46,7 @@ public class BasicChannelService implements ChannelService {
 
 
     @Override
-    public ChannelResponse find(ChannelFindRequest request) {
+    public ChannelDto find(ChannelFindRequest request) {
         Channel channel = channelRepository.findById(request.id())
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 채널은 없습니다."));
 
@@ -59,7 +59,7 @@ public class BasicChannelService implements ChannelService {
                 .toList();
 
         if (channel.getType().equals(ChannelType.PUBLIC)) {
-            return ChannelResponse.builder()
+            return ChannelDto.builder()
                     .id(channel.getId())
                     .type(channel.getType())
                     .name(channel.getName())
@@ -68,7 +68,7 @@ public class BasicChannelService implements ChannelService {
                     .participantIds(null)
                     .build();
         } else {
-            return ChannelResponse.builder()
+            return ChannelDto.builder()
                     .id(channel.getId())
                     .type(channel.getType())
                     .name(channel.getName())
@@ -82,7 +82,7 @@ public class BasicChannelService implements ChannelService {
 
 
     @Override
-    public List<ChannelResponse> findAllByUserId(UUID userId) {
+    public List<ChannelDto> findAllByUserId(UUID userId) {
         List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
                 .map(ReadStatus::getChannelId)
                 .toList();
@@ -96,7 +96,7 @@ public class BasicChannelService implements ChannelService {
                 .toList();
     }
 
-    private ChannelResponse toResponse(Channel channel) {
+    private ChannelDto toResponse(Channel channel) {
 
         Instant lastMessageAt = messageRepository.findAllByChannelId(channel.getId()).stream()
                 .map(Message::getCreatedAt)
@@ -111,7 +111,7 @@ public class BasicChannelService implements ChannelService {
                     .toList();
         }
 
-        return ChannelResponse.builder()
+        return ChannelDto.builder()
                 .id(channel.getId())
                 .type(channel.getType())
                 .name(channel.getName())
@@ -123,14 +123,14 @@ public class BasicChannelService implements ChannelService {
 
 
     @Override
-    public Channel update(ChannelUpdateRequest request) {
-        Channel channel = channelRepository.findById(request.id())
+    public Channel update(UUID id, ChannelUpdateRequest request) {
+        Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 채널은 없습니다."));
 
-        if (request.type().equals(ChannelType.PRIVATE)) {
+        if (channel.getType().equals(ChannelType.PRIVATE)) {
             throw new RuntimeException("Private 채널은 수정할 수 없습니다. ");
         } else {
-            channel.update(request.name(), request.description());
+            channel.update(request.newName(), request.newDescription());
         }
 
         return channelRepository.save(channel);
