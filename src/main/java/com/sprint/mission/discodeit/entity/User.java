@@ -1,22 +1,16 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
-import lombok.Getter;
-
-import java.io.Serializable;
-import java.time.Instant;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.Getter;
 
 @Getter
-public class User implements Serializable {
+public class User extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
   private String username;
   private String email;
   private String password;
@@ -28,8 +22,6 @@ public class User implements Serializable {
   private List<UUID> messages;
 
   public User(String username, String email, String password, String introduction) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
     this.username = username;
     this.email = email;
     this.password = password;
@@ -42,27 +34,22 @@ public class User implements Serializable {
 
   public void updateName(String username) {
     this.username = username;
-    this.updatedAt = Instant.now();
   }
 
   public void updateEmail(String email) {
     this.email = email;
-    this.updatedAt = Instant.now();
   }
 
   public void updatePassword(String password) {
     this.password = password;
-    this.updatedAt = Instant.now();
   }
 
   public void updateIntroduction(String introduction) {
     this.introduction = introduction;
-    this.updatedAt = Instant.now();
   }
 
   public void updateProfileID(UUID profileId) {
     this.profileId = profileId;
-    this.updatedAt = Instant.now();
   }
 
   public void updateOnline(boolean online) {
@@ -88,9 +75,9 @@ public class User implements Serializable {
   @Override
   public String toString() {
     return "User {\n" +
-        "  id=" + id + ",\n" +
-        "  createdAt=" + createdAt + ",\n" +
-        "  updatedAt=" + updatedAt + ",\n" +
+        "  id=" + getId() + ",\n" +
+        "  createdAt=" + getCreatedAt() + ",\n" +
+        "  updatedAt=" + getUpdatedAt() + ",\n" +
         "  username='" + username + "',\n" +
         "  email='" + email + "',\n" +
         "  password='" + password + "',\n" +
@@ -108,11 +95,11 @@ public class User implements Serializable {
       return false;
     }
     User user = (User) o;
-    return Objects.equals(id, user.id);
+    return Objects.equals(getId(), user.getId());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(id);
+    return Objects.hashCode(getId());
   }
 }

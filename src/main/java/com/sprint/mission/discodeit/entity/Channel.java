@@ -1,19 +1,17 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.dto.channel.ChannelResponseDTO;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import lombok.Getter;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.*;
-
 @Getter
-public class Channel implements Serializable {
+public class Channel extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
   private String name;
   private UUID channelMaster;
   private String description;
@@ -23,8 +21,6 @@ public class Channel implements Serializable {
   private Instant lastMessageTime;
 
   public Channel(String name, UUID channelMaster, String description) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
     this.name = name;
     this.channelMaster = channelMaster;
     this.description = description;
@@ -34,8 +30,6 @@ public class Channel implements Serializable {
   }
 
   public Channel(UUID channelMaster, List<UUID> participantIds) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
     this.name = "";
     this.channelMaster = channelMaster;
     this.description = "";
@@ -46,12 +40,10 @@ public class Channel implements Serializable {
 
   public void updateName(String name) {
     this.name = name;
-    this.updatedAt = Instant.now();
   }
 
   public void updateDescription(String description) {
     this.description = description;
-    this.updatedAt = Instant.now();
   }
 
   public void updateLastMessageTime(Instant lastMessageTime) {
@@ -78,9 +70,9 @@ public class Channel implements Serializable {
   @Override
   public String toString() {
     return "Channel {\n" +
-        "  id=" + id + ",\n" +
-        "  createdAt=" + createdAt + ",\n" +
-        "  updatedAt=" + updatedAt + ",\n" +
+        "  id=" + getId() + ",\n" +
+        "  createdAt=" + getCreatedAt() + ",\n" +
+        "  updatedAt=" + getUpdatedAt() + ",\n" +
         "  name='" + name + "',\n" +
         "  channelMaster='" + channelMaster + "', \n" +
         "  description='" + description + "',\n" +
@@ -95,11 +87,11 @@ public class Channel implements Serializable {
       return false;
     }
     Channel channel = (Channel) o;
-    return Objects.equals(id, channel.id);
+    return Objects.equals(getId(), channel.getId());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(id);
+    return Objects.hashCode(getId());
   }
 }

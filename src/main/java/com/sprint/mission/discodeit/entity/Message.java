@@ -1,30 +1,22 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
-import lombok.Getter;
-
-import java.io.Serializable;
-import java.time.Instant;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.Getter;
 
 @Getter
-public class Message implements Serializable {
+public class Message extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
   private String content;
   private final UUID authorId;
   private final UUID channelId;
   private List<UUID> attachmentIds;
 
   public Message(UUID authorId, UUID channelId, String content) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
     this.content = content;
     this.authorId = authorId;
     this.channelId = channelId;
@@ -33,7 +25,6 @@ public class Message implements Serializable {
 
   public void updateContent(String content) {
     this.content = content;
-    this.updatedAt = Instant.now();
   }
 
   public void updateAttachmentIds(List<UUID> attachmentIds) {
@@ -55,9 +46,9 @@ public class Message implements Serializable {
   @Override
   public String toString() {
     return "Message {\n" +
-        "  id=" + id + ",\n" +
-        "  createdAt=" + createdAt + ",\n" +
-        "  updatedAt=" + updatedAt + ",\n" +
+        "  id=" + getId() + ",\n" +
+        "  createdAt=" + getCreatedAt() + ",\n" +
+        "  updatedAt=" + getUpdatedAt() + ",\n" +
         "  content='" + content + "',\n" +
         "  authorId=" + authorId + ",\n" +
         "  channelId=" + channelId + "\n" +
@@ -70,11 +61,11 @@ public class Message implements Serializable {
       return false;
     }
     Message message = (Message) o;
-    return Objects.equals(id, message.id);
+    return Objects.equals(getId(), message.getId());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(id);
+    return Objects.hashCode(getId());
   }
 }

@@ -1,37 +1,29 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDTO;
-import lombok.Getter;
-
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.Getter;
 
 /**
  * 사용자 별 마지막으로 확인된 접속 시간을 표현하는 도메인 모델 사용자의 온라인 상태를 확인하기 위해 활용
  */
 @Getter
-public class UserStatus implements Serializable {
+public class UserStatus extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
-  private UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
   private final UUID userId;
   private Instant lastActiveAt;
   private static final long LOGIN_TIMEOUT_MINUTES = 5L;
 
   public UserStatus(UUID userId, Instant lastActiveAt) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
     this.userId = userId;
     this.lastActiveAt = lastActiveAt;
   }
 
   public void updatelastActiveAt(Instant lastActiveAt) {
-    this.updatedAt = Instant.now();
     this.lastActiveAt = lastActiveAt;
   }
 
