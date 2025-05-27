@@ -1,10 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDTO;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
 import lombok.Getter;
 
 /**
@@ -13,13 +11,13 @@ import lombok.Getter;
 @Getter
 public class ReadStatus extends BaseUpdatableEntity {
 
-  private final UUID userId;
-  private final UUID channelId;
+  private User user;
+  private Channel channel;
   private Instant lastReadAt;
 
-  public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
-    this.userId = userId;
-    this.channelId = channelId;
+  public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+    this.user = user;
+    this.channel = channel;
     this.lastReadAt = lastReadAt;
   }
 
@@ -27,16 +25,16 @@ public class ReadStatus extends BaseUpdatableEntity {
     this.lastReadAt = lastReadAt;
   }
 
-  public static ReadStatusResponseDTO toDTO(ReadStatus readStatus) {
-    ReadStatusResponseDTO readStatusResponseDTO = new ReadStatusResponseDTO(readStatus.getId(),
-        readStatus.getCreatedAt(),
-        readStatus.getUpdatedAt(),
-        readStatus.getUserId(),
-        readStatus.getChannelId(),
-        readStatus.getLastReadAt());
-
-    return readStatusResponseDTO;
-  }
+//  public static ReadStatusResponseDTO toDTO(ReadStatus readStatus) {
+//    ReadStatusResponseDTO readStatusResponseDTO = new ReadStatusResponseDTO(readStatus.getId(),
+//        readStatus.getCreatedAt(),
+//        readStatus.getUpdatedAt(),
+//        readStatus.getUserId(),
+//        readStatus.getChannelId(),
+//        readStatus.getLastReadAt());
+//
+//    return readStatusResponseDTO;
+//  }
 
   @Override
   public boolean equals(Object o) {
@@ -44,12 +42,12 @@ public class ReadStatus extends BaseUpdatableEntity {
       return false;
     }
     ReadStatus that = (ReadStatus) o;
-    return Objects.equals(userId, that.userId) && Objects.equals(channelId,
-        that.channelId);
+    return Objects.equals(user, that.user) && Objects.equals(channel,
+        that.channel);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(userId, channelId);
+    return Objects.hash(user, channel);
   }
 }

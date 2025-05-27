@@ -1,25 +1,23 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import lombok.Getter;
 
 @Getter
 public class Message extends BaseUpdatableEntity {
 
   private String content;
-  private final UUID authorId;
-  private final UUID channelId;
-  private List<UUID> attachmentIds;
+  private Channel channel;
+  private User author;
+  private List<BinaryContent> attachmentIds;
 
-  public Message(UUID authorId, UUID channelId, String content) {
+  public Message(String content, Channel channel, User author) {
     this.content = content;
-    this.authorId = authorId;
-    this.channelId = channelId;
+    this.channel = channel;
+    this.author = author;
     this.attachmentIds = new ArrayList<>();
   }
 
@@ -27,32 +25,27 @@ public class Message extends BaseUpdatableEntity {
     this.content = content;
   }
 
-  public void updateAttachmentIds(List<UUID> attachmentIds) {
+  public void updateAttachmentIds(List<BinaryContent> attachmentIds) {
     this.attachmentIds = attachmentIds;
   }
 
-  public static MessageResponseDTO toDTO(Message message) {
-    MessageResponseDTO messageResponseDTO = new MessageResponseDTO(message.getId(),
-        message.getCreatedAt(),
-        message.getUpdatedAt(),
-        message.getContent(),
-        message.getAuthorId(),
-        message.getChannelId(),
-        message.getAttachmentIds());
-
-    return messageResponseDTO;
-  }
+//  public static MessageResponseDTO toDTO(Message message) {
+//    MessageResponseDTO messageResponseDTO = new MessageResponseDTO(message.getId(),
+//        message.getCreatedAt(),
+//        message.getUpdatedAt(),
+//        message.getContent(),
+//        message.getAuthorId(),
+//        message.getChannelId(),
+//        message.getAttachmentIds());
+//
+//    return messageResponseDTO;
+//  }
 
   @Override
   public String toString() {
-    return "Message {\n" +
-        "  id=" + getId() + ",\n" +
-        "  createdAt=" + getCreatedAt() + ",\n" +
-        "  updatedAt=" + getUpdatedAt() + ",\n" +
-        "  content='" + content + "',\n" +
-        "  authorId=" + authorId + ",\n" +
-        "  channelId=" + channelId + "\n" +
-        '}';
+    return "Message{" +
+        "content='" + content + '\'' +
+        "} " + super.toString();
   }
 
   @Override

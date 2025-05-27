@@ -1,11 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import lombok.Getter;
 
 @Getter
@@ -14,22 +10,15 @@ public class User extends BaseUpdatableEntity {
   private String username;
   private String email;
   private String password;
-  private UUID profileId;
-  private String introduction;
-  private boolean online;
-  private List<UUID> friends;
-  private List<UUID> channels;
-  private List<UUID> messages;
+  private BinaryContent profile;
+  private UserStatus status;
 
-  public User(String username, String email, String password, String introduction) {
+  public User(String username, String email, String password, BinaryContent profile, UserStatus status) {
     this.username = username;
     this.email = email;
     this.password = password;
-    this.introduction = introduction;
-    this.online = true;
-    this.friends = new ArrayList<>();
-    this.channels = new ArrayList<>();
-    this.messages = new ArrayList<>();
+    this.profile = profile;
+    this.status = status;
   }
 
   public void updateName(String username) {
@@ -44,49 +33,36 @@ public class User extends BaseUpdatableEntity {
     this.password = password;
   }
 
-  public void updateIntroduction(String introduction) {
-    this.introduction = introduction;
+  public void updateProfile(BinaryContent profile) {
+    this.profile = profile;
   }
 
-  public void updateProfileID(UUID profileId) {
-    this.profileId = profileId;
+  public void updateStatus(UserStatus status) {
+    this.status = status;
   }
 
-  public void updateOnline(boolean online) {
-    this.online = online;
-  }
-
-  public static UserResponseDTO toDTO(User user) {
-    UserResponseDTO userResponseDTO = new UserResponseDTO(user.getId(),
-        user.getCreatedAt(),
-        user.getUpdatedAt(),
-        user.getUsername(),
-        user.getEmail(),
-        user.getProfileId(),
-        user.getIntroduction(),
-        user.isOnline(),
-        user.getFriends(),
-        user.getChannels(),
-        user.getMessages());
-
-    return userResponseDTO;
-  }
+//  public static UserResponseDTO toDTO(User user) {
+//    UserResponseDTO userResponseDTO = new UserResponseDTO(user.getId(),
+//        user.getCreatedAt(),
+//        user.getUpdatedAt(),
+//        user.getUsername(),
+//        user.getEmail(),
+//        user.getProfile(),
+//        user.getStatus(),
+//        user.getFriends(),
+//        user.getChannels(),
+//        user.getMessages());
+//
+//    return userResponseDTO;
+//  }
 
   @Override
   public String toString() {
-    return "User {\n" +
-        "  id=" + getId() + ",\n" +
-        "  createdAt=" + getCreatedAt() + ",\n" +
-        "  updatedAt=" + getUpdatedAt() + ",\n" +
-        "  username='" + username + "',\n" +
-        "  email='" + email + "',\n" +
-        "  password='" + password + "',\n" +
-        "  introduction='" + introduction + "',\n" +
-        "  online=" + online + ",\n" +
-        "  friends=" + friends + ",\n" +
-        "  channels=" + channels.stream().toList() + "\n" +
-        "  messages=" + messages.stream().toList() + "\n" +
-        '}';
+    return "User{" +
+        "password='" + password + '\'' +
+        ", email='" + email + '\'' +
+        ", username='" + username + '\'' +
+        "} " + super.toString();
   }
 
   @Override

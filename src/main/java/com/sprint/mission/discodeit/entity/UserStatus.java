@@ -1,11 +1,9 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDTO;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
 import lombok.Getter;
 
 /**
@@ -14,12 +12,12 @@ import lombok.Getter;
 @Getter
 public class UserStatus extends BaseUpdatableEntity {
 
-  private final UUID userId;
+  private User user;
   private Instant lastActiveAt;
   private static final long LOGIN_TIMEOUT_MINUTES = 5L;
 
-  public UserStatus(UUID userId, Instant lastActiveAt) {
-    this.userId = userId;
+  public UserStatus(User user, Instant lastActiveAt) {
+    this.user = user;
     this.lastActiveAt = lastActiveAt;
   }
 
@@ -49,15 +47,16 @@ public class UserStatus extends BaseUpdatableEntity {
     return timeDiff.toMinutes() <= LOGIN_TIMEOUT_MINUTES;
   }
 
-  public static UserStatusResponseDTO toDTO(UserStatus userStatus) {
-    UserStatusResponseDTO userStatusResponseDTO = new UserStatusResponseDTO(userStatus.getId(),
-        userStatus.getCreatedAt(),
-        userStatus.getUpdatedAt(),
-        userStatus.getUserId(),
-        userStatus.getLastActiveAt());
+//  public static UserStatusResponseDTO toDTO(UserStatus userStatus) {
+//    UserStatusResponseDTO userStatusResponseDTO = new UserStatusResponseDTO(userStatus.getId(),
+//        userStatus.getCreatedAt(),
+//        userStatus.getUpdatedAt(),
+//        userStatus.getUserId(),
+//        userStatus.getLastActiveAt());
+//
+//    return userStatusResponseDTO;
+//  }
 
-    return userStatusResponseDTO;
-  }
 
   @Override
   public boolean equals(Object o) {
@@ -65,11 +64,11 @@ public class UserStatus extends BaseUpdatableEntity {
       return false;
     }
     UserStatus that = (UserStatus) o;
-    return Objects.equals(userId, that.userId);
+    return Objects.equals(user, that.user);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(userId);
+    return Objects.hashCode(user);
   }
 }
