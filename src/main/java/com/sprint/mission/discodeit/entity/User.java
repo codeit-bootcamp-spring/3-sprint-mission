@@ -27,7 +27,7 @@ public class User extends BaseUpdatableEntity {
   @Column(name = "password")
   private String password;
 
-  @ManyToOne
+  @OneToOne
   @JoinColumn(name = "profile_id")
   private BinaryContent profile;
 

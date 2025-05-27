@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -29,6 +30,9 @@ public class Message extends BaseUpdatableEntity {
   private User author;
 
   @OneToMany
+  @JoinTable(name = "message_attachments",
+  joinColumns = @JoinColumn(name = "message_id"),
+  inverseJoinColumns = @JoinColumn(name = "attachment_id"))
   private List<BinaryContent> attachmentIds;
 
   public Message() {
