@@ -1,14 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class User implements Serializable {
-
-  private static final long serialVersionUID = 1L;
+public class User extends BaseUpdatableEntity {
 
   private UUID id;
   private Instant createdAt;
