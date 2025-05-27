@@ -56,36 +56,37 @@ public class UserController implements UserApi {
     // 사용자 정보 수정
     @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<User> update(
-            @PathVariable UUID userId,
+            @PathVariable("userId") UUID userId,
             @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         BinaryContentCreateRequest profileRequest = resolveProfileRequest(profile);
         User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
     }
 
     // 사용자 삭제
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> delete(@PathVariable UUID userId) {
+    public ResponseEntity<Void> delete(@PathVariable("userId") UUID userId) {
         userService.delete(userId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     // 모든 사용자 조회
     @GetMapping
     public ResponseEntity<List<UserDto>> findAll() {
-        return ResponseEntity.ok(userService.findAll());
+        List<UserDto> users = userService.findAll();
+        return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 
     // 사용자 온라인 상태 업데이트
     @PatchMapping("/{userId}/userStatus")
     public ResponseEntity<UserStatus> updateUserStatusByUserId(
-            @PathVariable UUID userId,
+            @PathVariable("userId") UUID userId,
             @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
     ) {
         UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
-        return ResponseEntity.ok(updatedUserStatus);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedUserStatus);
     }
 
     // MultipartFile 타입의 요청값을 BinaryContentCreateRequest 타입으로 변경하기 위한 메서드

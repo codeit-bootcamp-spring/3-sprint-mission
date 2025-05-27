@@ -55,24 +55,24 @@ public class MessageController implements MessageApi {
     // 메시지 수정
     @PatchMapping("/{messageId}")
     public ResponseEntity<Message> update(
-            @PathVariable UUID messageId,
+            @PathVariable("messageId") UUID messageId,
             @RequestBody MessageUpdateRequest request
     ) {
         Message updated = messageService.update(messageId, request);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.status(HttpStatus.OK).body(updated);
     }
 
     // 메시지 삭제
     @DeleteMapping("/{messageId}")
-    public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
+    public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
         messageService.delete(messageId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     // 특정 채널 메시지 목록 조회
     @GetMapping
-    public ResponseEntity<List<Message>> findAllByChannelId(@RequestParam UUID channelId) {
+    public ResponseEntity<List<Message>> findAllByChannelId(@RequestParam("channelId") UUID channelId) {
         List<Message> messages = messageService.findAllByChannelId(channelId);
-        return ResponseEntity.ok(messages);
+        return ResponseEntity.status(HttpStatus.OK).body(messages);
     }
 }
