@@ -1,11 +1,24 @@
 server:
   port: 8080
+
 spring:
   application:
     name: discodeit
+  survlet:
+    multipart:
+      max-file-size: 10MB
+
   logging:
     level:
       root: info
+
+spring-doc:
+  api-docs:
+    # OpenAPI 명세서 경로(JSON)
+    path: /api-docs
+  swagger-ui:
+    # OpenAPI 명세서 경로(HTML)
+    path: /swagger-ui.html
 
 
   repository:
