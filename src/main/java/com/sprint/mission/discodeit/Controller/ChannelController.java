@@ -30,28 +30,28 @@ public class ChannelController {
 
   // 공개 채널 생성 (POST /api/channels/public)
   @PostMapping("/public")
-  public ResponseEntity<ChannelDto> create(@RequestBody PublicChannelCreateRequest request) {
+  public ResponseEntity<Channel> create(@RequestBody PublicChannelCreateRequest request) {
     Channel createdChannel = channelService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(ChannelDto.fromEntity(createdChannel, null));
+        .body(createdChannel);
   }
 
   // 비공개 채널 생성 (POST /api/channels/private)
   @PostMapping("/private")
-  public ResponseEntity<ChannelDto> create(@RequestBody PrivateChannelCreateRequest request) {
+  public ResponseEntity<Channel> create(@RequestBody PrivateChannelCreateRequest request) {
     Channel createdChannel = channelService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(ChannelDto.fromEntity(createdChannel, request.participantIds()));
+        .body(createdChannel);
   }
 
   //채널 수정 (PATCH /api/channels/{channelId})
   @PatchMapping("/{channelId}")
-  public ResponseEntity<ChannelDto> update(
+  public ResponseEntity<Channel> update(
       @PathVariable UUID channelId,
       @RequestBody PublicChannelUpdateRequest request
   ) {
     Channel updatedChannel = channelService.update(channelId, request);
-    return ResponseEntity.ok(ChannelDto.fromEntity(updatedChannel, null));
+    return ResponseEntity.ok(updatedChannel);
   }
 
   //채널 삭제 (DELETE /api/channels/{channelId})

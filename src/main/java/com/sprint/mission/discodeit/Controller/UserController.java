@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.Controller;
 
+import com.sprint.mission.discodeit.Controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
@@ -30,12 +31,13 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users")
-public class UserController {
+public class UserController implements UserApi {
 
   private final UserService userService;
   private final UserStatusService userStatusService;
 
   // 유저 생성 (POST /api/users)
+  @Override
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserDto> create(
       @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
@@ -52,6 +54,7 @@ public class UserController {
   }
 
   // 유저 수정 (PUT /api/users/{userId})
+  @Override
   @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserDto> update(
       @PathVariable UUID userId,
@@ -70,6 +73,7 @@ public class UserController {
   }
 
   // 유저 삭제 (DELETE /api/users/{userId}
+  @Override
   @DeleteMapping("/{userId}")
   public ResponseEntity<Void> delete(@PathVariable UUID userId) {
     userService.delete(userId);
@@ -77,6 +81,7 @@ public class UserController {
   }
 
   // 전체 유저 조회 (Get /api/users)
+  @Override
   @GetMapping
   public ResponseEntity<List<UserDto>> findAll() {
     List<UserDto> users = userService.findAll();
@@ -84,6 +89,7 @@ public class UserController {
   }
 
   //유저 상태 업데이트 (PATCH /api/users/{uerId}/status)
+  @Override
   @PatchMapping("/{userId}/userStatus")
   public ResponseEntity<UserStatus> updateUserStatusByUserId(
       @PathVariable UUID userId,
@@ -93,19 +99,19 @@ public class UserController {
   }
 
 
-  private BinaryContentCreateRequest resolveProfileRequest(MultipartFile profileFile) {
-    if (profileFile == null || profileFile.isEmpty()) {
-      return null;
-    } else {
-      try {
-        return new BinaryContentCreateRequest(
-            profileFile.getOriginalFilename(),
-            profileFile.getContentType(),
-            profileFile.getBytes()
-        );
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+    private BinaryContentCreateRequest resolveProfileRequest(MultipartFile profileFile) {
+        if (profileFile.isEmpty()) {
+            return null;
+        } else {
+            try {
+                return new BinaryContentCreateRequest(
+                        profileFile.getOriginalFilename(),
+                        profileFile.getContentType(),
+                        profileFile.getBytes()
+                );
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
-  }
 }
