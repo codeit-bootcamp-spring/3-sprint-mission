@@ -1,17 +1,32 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 
 @Getter
+@Entity
+@Table(name = "channels", schema = "discodeit")
 public class Channel extends BaseUpdatableEntity {
 
+  @Column(name = "name")
   private String name;
+
+  @Column(name = "description")
   private String description;
+
+  @Enumerated(EnumType.STRING)
   private ChannelType type;
+
+  public Channel() {
+  }
 
   public Channel(String name, String description) {
     this.name = name;
