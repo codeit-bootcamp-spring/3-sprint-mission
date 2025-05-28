@@ -51,7 +51,6 @@ public class BasicMessageService implements MessageService {
 
     // 메시지를 보낸 channel의 mesagesList에 해당 메시지 추가
     channel.getMessages().add(message);
-    channelRepository.save(channel);
 
     binaryContentRepository.saveAll(binaryContents);
     messageRepository.save(message);
