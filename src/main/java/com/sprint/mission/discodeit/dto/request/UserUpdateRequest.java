@@ -1,8 +1,11 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 
-@Schema(description = "수정할 User 정보")
-public record UserUpdateRequest(String username, String email) {
+public record UserUpdateRequest(
+    @NotBlank String newUsername,
+    @NotBlank String newEmail,
+    @NotBlank String newPassword
+) {
 
 }

@@ -1,8 +1,11 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 
-@Schema(description = "User 생성 정보")
-public record UserCreateRequest(String username, String email, String password) {
+public record UserCreateRequest(
+    @NotBlank String username,
+    @NotBlank String email,
+    @NotBlank String password
+) {
 
 }

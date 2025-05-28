@@ -8,22 +8,26 @@ import java.util.UUID;
 
 public interface UserRepository {
 
-  // 유저 생성
-  User save(User user);
+    // 유저 생성
+    User save(User user);
 
-  // 유저 단건 조회 (ID로)
-  Optional<User> findById(UUID id);
+    // 유저 단건 조회 (ID로)
+    Optional<User> findById(UUID id);
 
-  Optional<User> findByUsername(String username);
+    Optional<User> findByUsername(String username);
 
-  // 모든 유저 조회
-  List<User> findAll();
+    // 모든 유저 조회
+    List<User> findAll();
 
-  // 유저 수정
-  User update(User user);
+    // 유저 수정
+    User update(User user);
 
-  // 유저 삭제
-  void delete(UUID id);
+    // 유저 삭제
+    void delete(UUID id);
 
-  boolean existsById(UUID id);
+    boolean existsById(UUID id);
+
+    boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
 }

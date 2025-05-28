@@ -1,59 +1,55 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
+import lombok.Getter;
 
 @Getter
 public class Channel implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
+    private final UUID id;
+    private final Instant createdAt;
+    private Instant updatedAt;
 
-  private String name;
-  private String description;
-  private User channelOwner;
-  private List<User> channelMembers;
-  private ChannelType type;
+    private String name;
+    private String description;
+    private ChannelType type;
 
-  public Channel(String name, String description, User channelOwner, List<User> channelUsers,
-      ChannelType type) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.updatedAt = Instant.now();
-    this.name = name;
-    this.description = description;
-    this.channelOwner = channelOwner;
-    this.channelMembers = channelUsers;
-    this.type = type;
-  }
 
-  public Channel(ChannelType type, String name, String description) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.type = type;
-    this.name = name;
-    this.description = description;
-  }
+    public Channel(ChannelType type, String name, String description) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        this.type = type;
+        this.name = name;
+        this.description = description;
+    }
 
-  public void updateChannelName(String channelName) {
-    this.name = channelName;
-    this.updatedAt = Instant.now();
-  }
+    public void update(String newName, String newDescription) {
+        boolean anyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            anyValueUpdated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            anyValueUpdated = true;
+        }
 
-  @Override
-  public String toString() {
-    return "[" +
-        "createdAt= " + createdAt +
-        ", updatedAt= " + updatedAt +
-        ", channelName=" + name +
-        ", channelOwner=" + channelOwner.getUsername() +
-        ']';
-  }
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
+    }
+
+
+    @Override
+    public String toString() {
+        return "[" +
+            "createdAt= " + createdAt +
+            ", updatedAt= " + updatedAt +
+            ", channelName=" + name +
+            ']';
+    }
 }

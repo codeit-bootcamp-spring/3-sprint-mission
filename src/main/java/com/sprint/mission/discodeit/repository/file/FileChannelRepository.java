@@ -17,67 +17,42 @@ import java.util.UUID;
 public class FileChannelRepository extends AbstractFileRepository<Channel, UUID> implements
     ChannelRepository {
 
-  public FileChannelRepository(
-      @Value("${discodeit.repository.file-directory}") String fileDirectory
-  ) {
-    super(Paths.get(System.getProperty("user.dir"), fileDirectory, "channel.ser").toString());
-  }
-
-  @Override
-  public Channel save(Channel channel) {
-    super.save(channel, channel.getId());
-    return channel;
-  }
-
-  @Override
-  public Optional<Channel> findById(UUID channelId) {
-    return super.findById(channelId);
-  }
-
-  @Override
-  public List<Channel> findAll() {
-    return super.findAll();
-  }
-
-  @Override
-  public void update(Channel channel) {
-    super.update(channel, channel.getId());
-  }
-
-  @Override
-  public void delete(UUID channelId) {
-    super.delete(channelId);
-  }
-
-  @Override
-  public void deleteByOwnerId(UUID userId) {
-    lock.lock();
-    try {
-      dataMap.entrySet()
-          .removeIf(entry -> entry.getValue().getChannelOwner().getId().equals(userId));
-      saveData();
-    } finally {
-      lock.unlock();
+    public FileChannelRepository(
+        @Value("${discodeit.repository.file-directory}") String fileDirectory
+    ) {
+        super(Paths.get(System.getProperty("user.dir"), fileDirectory, "channel.ser").toString());
     }
-  }
 
-  @Override
-  public void removeUserFromAllChannels(UUID userId) {
-    lock.lock();
-    try {
-      for (Channel channel : dataMap.values()) {
-        channel.getChannelMembers().removeIf(user -> user.getId().equals(userId));
-      }
-      saveData();
-    } finally {
-      lock.unlock();
+    @Override
+    public Channel save(Channel channel) {
+        super.save(channel, channel.getId());
+        return channel;
     }
-  }
 
-  @Override
-  public boolean existsById(UUID channelId) {
-    return super.existsById(channelId);
-  }
+    @Override
+    public Optional<Channel> findById(UUID channelId) {
+        return super.findById(channelId);
+    }
+
+    @Override
+    public List<Channel> findAll() {
+        return super.findAll();
+    }
+
+    @Override
+    public void update(Channel channel) {
+        super.update(channel, channel.getId());
+    }
+
+    @Override
+    public void delete(UUID channelId) {
+        super.delete(channelId);
+    }
+
+    @Override
+    public boolean existsById(UUID channelId) {
+        return super.existsById(channelId);
+    }
     /*
  Repository: 데이터를 영속화(storage)하는 계층
 데이터를 단순히 저장/조회/삭제/갱신

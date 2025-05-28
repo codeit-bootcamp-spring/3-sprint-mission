@@ -16,51 +16,62 @@ import java.util.UUID;
 @Repository
 public class FileUserRepository extends AbstractFileRepository<User, UUID> implements
     UserRepository {
-  //private static final String FILE_PATH = "users.ser";
+    //private static final String FILE_PATH = "users.ser";
 
-  public FileUserRepository(
-      @Value("${discodeit.repository.file-directory}") String fileDirectory
-  ) {
-    super(Paths.get(System.getProperty("user.dir"), fileDirectory, "user.ser").toString());
-  }
+    public FileUserRepository(
+        @Value("${discodeit.repository.file-directory}") String fileDirectory
+    ) {
+        super(Paths.get(System.getProperty("user.dir"), fileDirectory, "user.ser").toString());
+    }
 
-  @Override
-  public User save(User user) {
-    super.save(user, user.getId());
-    return user;
-  }
+    @Override
+    public User save(User user) {
+        super.save(user, user.getId());
+        return user;
+    }
 
-  @Override
-  public Optional<User> findById(UUID id) {
-    return super.findById(id);
-  }
+    @Override
+    public Optional<User> findById(UUID id) {
+        return super.findById(id);
+    }
 
-  @Override
-  public Optional<User> findByUsername(String username) {
-    return super.findAll().stream()
-        .filter(user -> user.getUsername().equals(username))
-        .findFirst();
-  }
+    @Override
+    public Optional<User> findByUsername(String username) {
+        return super.findAll().stream()
+            .filter(user -> user.getUsername().equals(username))
+            .findFirst();
+    }
 
-  @Override
-  public List<User> findAll() {
-    return super.findAll();
-  }
+    @Override
+    public List<User> findAll() {
+        return super.findAll();
+    }
 
-  @Override
-  public User update(User user) {
-    super.update(user, user.getId());
-    return user;
-  }
+    @Override
+    public User update(User user) {
+        super.update(user, user.getId());
+        return user;
+    }
 
-  @Override
-  public void delete(UUID id) {
-    super.delete(id);
-  }
+    @Override
+    public void delete(UUID id) {
+        super.delete(id);
+    }
 
-  @Override
-  public boolean existsById(UUID userId) {
-    return super.existsById(userId);
-  }
+    @Override
+    public boolean existsById(UUID userId) {
+        return super.existsById(userId);
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        return this.findAll().stream()
+            .anyMatch(user -> user.getUsername().equals(username));
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return this.findAll().stream()
+            .anyMatch(user -> user.getEmail().equals(email));
+    }
 }
-
