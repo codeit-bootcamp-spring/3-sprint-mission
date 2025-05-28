@@ -8,6 +8,8 @@ import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -39,12 +41,17 @@ public class BasicAuthService implements AuthService {
 
     @Override
     public UserStatus updateUserStatus(UUID userId) {
-        UserStatus userStatus =  userStatusRepository.loadById(userId);
+        UserStatus userStatus = userStatusRepository
+                .loadById(userId)
+                .orElseThrow(() ->
+                        new NoSuchElementException("[Auth] 유효하지 않은 UserStatus. (userId=" + userId + ")")
+                );
+
         if (userStatus == null) {
             throw new IllegalArgumentException("[Auth] 유효하지 않은 UserStatus (userId: " + userId + ")");
         }
 
-        userStatus.update();
+        userStatus.update(Instant.now());
         return userStatusRepository.save(userStatus);
     }
 }

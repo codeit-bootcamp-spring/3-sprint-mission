@@ -1,16 +1,18 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -36,8 +38,10 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public UserStatus find(UUID id) {
-        return userStatusRepository.loadById(id);
+    public UserStatus find(UUID userId) {
+        return userStatusRepository.loadById(userId)
+                .orElseThrow(
+                        () -> new NoSuchElementException("[UserStatus] 존재하지 않은 사용자입니다. (userId=" + userId + ")"));
     }
 
     @Override
@@ -46,32 +50,15 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public UserStatus updateByStatusId(UserStatusUpdateRequest userStatusUpdateRequest) {
-        if (userRepository.loadById(userStatusUpdateRequest.getUserId()) == null) {
-            throw new IllegalArgumentException("[UserStatus] 존재하지 않은 사용자입니다. (userId=" + userStatusUpdateRequest.getUserId() + ")");
-        }
+    public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest userStatusUpdateRequest) {
+        Instant newUpdateaAT = userStatusUpdateRequest.newUpdateaAT();
 
-        UserStatus status = userStatusRepository.loadById(userStatusUpdateRequest.getUserStatusId());
-        status.update();
+        UserStatus userStatus = userStatusRepository.loadById(userId)
+                .orElseThrow(
+                        () -> new NoSuchElementException("[UserStatus] 존재하지 않은 사용자입니다. (userId=" + userId + ")"));
+        userStatus.update(newUpdateaAT);
 
-        userStatusRepository.save(status);
-        return status;
-    }
-
-
-    @Override
-    public UserStatus updateByUserId(UUID userId) {
-        if (userRepository.loadById(userId) == null) {
-            throw new IllegalArgumentException(
-                    "[UserStatus] 존재하지 않은 사용자입니다. (userId=" + userId + ")"
-            );
-        }
-
-        UserStatus status = userStatusRepository.loadById(userId);
-        status.update();
-        userStatusRepository.save(status);
-
-        return status;
+        return userStatusRepository.save(userStatus);
     }
 
     @Override

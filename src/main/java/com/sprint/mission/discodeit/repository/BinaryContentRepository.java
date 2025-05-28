@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface BinaryContentRepository {
-    void save(BinaryContent userProfileImage);
+    BinaryContent save(BinaryContent binaryContent);
     BinaryContent loadById(UUID userId);
     List<BinaryContent> loadAll();
     void delete(UUID id);
