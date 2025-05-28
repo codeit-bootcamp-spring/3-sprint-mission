@@ -1,77 +1,62 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
+import java.util.*;
+
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
+@Repository
 public class JCFUserRepository implements UserRepository {
-    private static JCFUserRepository instance;
-    private final Map<UUID, User> data = new ConcurrentHashMap<>();
 
-    private JCFUserRepository() {}
+  private final Map<UUID, User> data;
 
-    public static JCFUserRepository getInstance() {
-        if (instance == null) {
-            instance = new JCFUserRepository();
-        }
-        return instance;
-    }
+  public JCFUserRepository() {
+    this.data = new HashMap<>();
+  }
 
-    // 테스트용 메서드
-    public static void clearInstance() {
-        if (instance != null) {
-            instance.clearData();
-            instance = null;
-        }
-    }
+  @Override
+  public User save(User user) {
+    this.data.put(user.getId(), user);
+    return user;
+  }
 
-    // 데이터 초기화 메서드
-    public void clearData() {
-        data.clear();
-    }
+  @Override
+  public Optional<User> findById(UUID id) {
+    return Optional.ofNullable(this.data.get(id));
+  }
 
-    @Override
-    public User save(User user) {
-        data.put(user.getUserId(), user);
-        return user;
-    }
+  @Override
+  public Optional<User> findByUsername(String username) {
+    return this.findAll().stream()
+        .filter(user -> user.getUsername().equals(username))
+        .findFirst();
+  }
 
-    @Override
-    public Optional<User> findById(UUID userId) {
-        return Optional.ofNullable(data.get(userId));
-    }
+  @Override
+  public List<User> findAll() {
+    return this.data.values().stream().toList();
+  }
 
-    @Override
-    public List<User> findAll() {
-        return new ArrayList<>(data.values());
-    }
+  @Override
+  public boolean existsById(UUID id) {
+    return this.data.containsKey(id);
+  }
 
-    @Override
-    public void deleteById(UUID userId) {
-        data.remove(userId);
-    }
+  @Override
+  public void deleteById(UUID id) {
+    this.data.remove(id);
+  }
 
-    @Override
-    public Optional<User> findByUsername(String username) {
-        return data.values().stream()
-                .filter(user -> user.getUsername().equals(username))
-                .findFirst();
-    }
+  @Override
+  public boolean existsByEmail(String email) {
+    return this.findAll().stream().anyMatch(user -> user.getEmail().equals(email));
+  }
 
-    @Override
-    public boolean existsById(UUID id) {
-        return data.containsKey(id);
-    }
-
-    @Override
-    public boolean existsByEmail(String email) {
-        return data.values().stream()
-                .anyMatch(user -> user.getEmail().equals(email));
-    }
+  @Override
+  public boolean existsByUsername(String username) {
+    return this.findAll().stream().anyMatch(user -> user.getUsername().equals(username));
+  }
 }
