@@ -10,11 +10,10 @@ import com.sprint.mission.discodeit.exception.notfound.NotFoundUserStatusExcepti
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service("basicAuthService")
 @RequiredArgsConstructor
@@ -25,18 +24,17 @@ public class BasicAuthService implements AuthService {
 
   @Override
   public UserResponseDTO login(LoginDTO loginDTO) {
-    String name = loginDTO.username();
+    String username = loginDTO.username();
     String password = loginDTO.password();
 
-    User user = userRepository.findByName(name)
-        .orElseThrow(() -> new NotFoundUserException("name이 " + name + "인 사용자를 찾을 수 없습니다."));
+    User user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new NotFoundUserException("username이 " + username + "인 사용자를 찾을 수 없습니다."));
 
     if (!user.getPassword().equals(password)) {
       throw new LoginFailedException();
     }
 
     // User 로그인 시 User 온라인 상태 정보 변경
-    user.updateOnline(true);
     UserStatus userStatus = findUserStatus(user.getId());
     userStatus.updatelastActiveAt(Instant.now());
     userRepository.save(user);

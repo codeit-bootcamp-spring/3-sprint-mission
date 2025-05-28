@@ -14,8 +14,6 @@ public interface ReadStatusService {
 
   ReadStatusResponseDTO findById(UUID id);
 
-  List<ReadStatusResponseDTO> findAll();
-
   List<ReadStatusResponseDTO> findAllByUserId(UUID userId);
 
   ReadStatusResponseDTO update(UUID id, ReadStatusUpdateDTO readStatusUpdateDTO);

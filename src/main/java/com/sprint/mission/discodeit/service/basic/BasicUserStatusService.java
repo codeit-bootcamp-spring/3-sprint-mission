@@ -25,11 +25,12 @@ public class BasicUserStatusService implements UserStatusService {
 
   @Override
   public UserStatus create(UserStatusRequestDTO userStatusRequestDTO) {
-    if (userRepository.findById(userStatusRequestDTO.userId()).isEmpty()) {
+    UUID userId = userStatusRequestDTO.userId();
+    if (!userRepository.existsById(userId)) {
       throw new NotFoundUserException();
     }
 
-    if (userStatusRepository.findByUserId(userStatusRequestDTO.userId()).isPresent()) {
+    if (userStatusRepository.existsByUserId(userId)) {
       throw new UserStatusAlreadyExistsException();
     }
 

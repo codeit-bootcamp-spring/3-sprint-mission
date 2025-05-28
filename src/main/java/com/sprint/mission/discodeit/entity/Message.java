@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToOne;
@@ -22,14 +24,14 @@ public class Message extends BaseUpdatableEntity {
   private String content;
 
   @ManyToOne
-  @JoinColumn(name = "channel_id")
+  @JoinColumn(name = "channel_id", nullable = false)
   private Channel channel;
 
   @ManyToOne
-  @JoinColumn(name = "author_id")
+  @JoinColumn(name = "author_id", nullable = false)
   private User author;
 
-  @OneToMany
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinTable(name = "message_attachments",
   joinColumns = @JoinColumn(name = "message_id"),
   inverseJoinColumns = @JoinColumn(name = "attachment_id"))
@@ -47,6 +49,10 @@ public class Message extends BaseUpdatableEntity {
 
   public void updateContent(String content) {
     this.content = content;
+  }
+
+  public void updateChannel(Channel channel) {
+    this.channel = channel;
   }
 
   public void updateAttachmentIds(List<BinaryContent> attachmentIds) {

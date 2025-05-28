@@ -39,32 +39,18 @@ public class BasicMessageService implements MessageService {
 
     // Repository 저장용 데이터
     List<BinaryContent> binaryContents = convertBinaryContentDTOS(binaryContentDTOS);
-    // BinaryContent -> UUID
-    List<UUID> attachmentIds = binaryContents.stream()
-        .map(BinaryContent::getId)
-        .toList();
 
     Message message = MessageRequestDTO.toEntity(messageRequestDTO);
-    message.updateAttachmentIds(attachmentIds);
+    message.updateChannel(channel);
+    message.updateAttachmentIds(binaryContents);
 
-    // 메시지를 보낸 user의 mesagesList에 해당 메시지 추가
-    /* 스프린트 미션5 프론트엔드 테스트를 위해 주석 처리 */
-//    if (!user.getChannels().contains(channel.getId())) {
-//      throw new UserNotInChannelException();
-//    } else {
-//      user.getMessages().add(message.getId());
-//      userRepository.save(user);
-//    }
-    user.getMessages().add(message.getId());
     userRepository.save(user);
     
     // 메시지를 보낸 channel의 mesagesList에 해당 메시지 추가
-    channel.getMessages().add(message.getId());
+    channel.getMessages().add(message);
     channelRepository.save(channel);
 
-    for (BinaryContent binaryContent : binaryContents) {
-      binaryContentRepository.save(binaryContent);
-    }
+    binaryContentRepository.saveAll(binaryContents);
     messageRepository.save(message);
 
     return message;
@@ -79,71 +65,10 @@ public class BasicMessageService implements MessageService {
 
   @Override
   public List<MessageResponseDTO> findAllByChannelId(UUID channelId) {
-    Channel channel = findChannel(channelId);
 
-    List<MessageResponseDTO> channelMessages = channel.getMessages().stream()
-        .map(messageId -> {
-          Message message = findMessage(messageId);
-          return Message.toDTO(message);
-        })
-        .toList();
-
-    return channelMessages;
-  }
-
-  @Override
-  public List<MessageResponseDTO> findAll() {
-    return messageRepository.findAll().stream()
+    return messageRepository.findAllByChannelId(channelId).stream()
         .map(Message::toDTO)
         .toList();
-  }
-
-  @Override
-  public List<MessageResponseDTO> findAllByUserId(UUID userId) {
-    User user = findUser(userId);
-
-    List<MessageResponseDTO> userMessages = user.getMessages().stream()
-        .map(messageId -> {
-          Message message = findMessage(messageId);
-          return Message.toDTO(message);
-        })
-        .toList();
-
-    return userMessages;
-  }
-
-  @Override
-  public List<MessageResponseDTO> findAllByContainingWord(String word) {
-    return messageRepository.findMessageByContainingWord(word).stream()
-        .map(Message::toDTO)
-        .toList();
-  }
-
-  @Override
-  public MessageResponseDTO updateBinaryContent(UUID messageId,
-      List<BinaryContentDTO> binaryContentDTOS) {
-    Message message = findMessage(messageId);
-    // 기존 BinaryContent 제거
-    List<UUID> originAttachmentsIds = message.getAttachmentIds();
-    for (UUID id : originAttachmentsIds) {
-      binaryContentRepository.deleteById(id);
-    }
-
-    // Repository 저장용 데이터
-    List<BinaryContent> binaryContents = convertBinaryContentDTOS(binaryContentDTOS);
-    // BinaryContent -> UUID
-    List<UUID> attachmentIds = binaryContents.stream()
-        .map(BinaryContent::getId)
-        .toList();
-
-    message.updateAttachmentIds(attachmentIds);
-
-    for (BinaryContent binaryContent : binaryContents) {
-      binaryContentRepository.save(binaryContent);
-    }
-    messageRepository.save(message);
-
-    return Message.toDTO(message);
   }
 
   @Override
@@ -161,23 +86,17 @@ public class BasicMessageService implements MessageService {
   public void deleteById(UUID messageId) {
     Message message = findMessage(messageId);
 
-    // User의 메시지 목록에서 삭제
-    userRepository.findAll().forEach(user -> {
-      if (user.getMessages().removeIf(id -> id.equals(messageId))) {
-        userRepository.save(user);
-      }
-    });
-
     // Channel의 메시지 목록에서 삭제
-    channelRepository.findAll().forEach(channel -> {
-      if (channel.getMessages().removeIf(id -> id.equals(messageId))) {
-        channelRepository.save(channel);
-      }
-    });
-
-    for (UUID binaryContentId : message.getAttachmentIds()) {
-      binaryContentRepository.deleteById(binaryContentId);
+    Channel channel = message.getChannel();
+    if (channel != null) {
+      channel.getMessages().remove(message);
+      channelRepository.save(channel);
     }
+
+    for (BinaryContent binaryContent : message.getAttachmentIds()) {
+      binaryContentRepository.deleteById(binaryContent.getId());
+    }
+
     messageRepository.deleteById(messageId);
   }
 

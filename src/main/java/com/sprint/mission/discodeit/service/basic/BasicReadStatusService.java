@@ -28,18 +28,18 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   public ReadStatus create(ReadStatusRequestDTO readStatusRequestDTO) {
-    if (userRepository.findById(readStatusRequestDTO.userId()).isEmpty()) {
+    UUID userId = readStatusRequestDTO.userId();
+    UUID channelId = readStatusRequestDTO.channelId();
+
+    if (!userRepository.existsById(userId)) {
       throw new NotFoundUserException();
     }
 
-    if (channelRepository.findById(readStatusRequestDTO.channelId()).isEmpty()) {
+    if (!channelRepository.existsById(channelId)) {
       throw new NotFoundChannelException();
     }
 
-    UUID channelId = readStatusRequestDTO.channelId();
-    UUID userId = readStatusRequestDTO.userId();
-
-    if (readStatusRepository.findByChannelIdAndUserId(channelId, userId).isPresent()) {
+    if (readStatusRepository.existsByUserIdAndChannelId(userId, channelId)) {
       throw new ReadStatusAlreadyExistsException();
     }
 
@@ -55,13 +55,6 @@ public class BasicReadStatusService implements ReadStatusService {
     ReadStatus readStatus = findReadStatus(id);
 
     return ReadStatus.toDTO(readStatus);
-  }
-
-  @Override
-  public List<ReadStatusResponseDTO> findAll() {
-    return readStatusRepository.findAll().stream()
-        .map(ReadStatus::toDTO)
-        .toList();
   }
 
   @Override
