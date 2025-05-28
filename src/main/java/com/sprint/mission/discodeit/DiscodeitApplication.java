@@ -6,9 +6,10 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {
-        "com.sprint.mission.discodeit.service",
-        "com.sprint.mission.discodeit.repository.jcf",
-        "com.sprint.mission.discodeit.repository.file"
+    "com.sprint.mission.discodeit.controller",
+    "com.sprint.mission.discodeit.service",
+    "com.sprint.mission.discodeit.repository.jcf",
+    "com.sprint.mission.discodeit.repository.file"
 })
 public class DiscodeitApplication {
     public static void main(String[] args) {
