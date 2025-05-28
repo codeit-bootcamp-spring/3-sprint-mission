@@ -1,9 +1,10 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.dto.binaryContent.BinaryContentCreateRequestDto;
-import com.sprint.mission.discodeit.entity.dto.user.UserCreateDto;
-import com.sprint.mission.discodeit.entity.dto.user.UserResponseDto;
-import com.sprint.mission.discodeit.entity.dto.user.UserUpdateRequestDto;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,16 +12,15 @@ import java.util.UUID;
 
 public interface UserService {
 
+  User create(UserCreateRequest userCreateRequest,
+      Optional<BinaryContentCreateRequest> profileCreateRequest);
 
-    public UserResponseDto createUser(UserCreateDto userCreateDto, BinaryContentCreateRequestDto binaryContentCreateRequestDto);
+  UserDto find(UUID userId);
 
-    public Optional<UserResponseDto> getUser(UUID id);
+  List<UserDto> findAll();
 
-    public List<UserResponseDto> getAllUsers();
+  User update(UUID userId, UserUpdateRequest userUpdateRequest,
+      Optional<BinaryContentCreateRequest> profileCreateRequest);
 
-    public boolean modifyUser(UserUpdateRequestDto userUpdateRequestDto, BinaryContentCreateRequestDto binaryContentCreateRequestDto);
-
-    public boolean deleteUser(UUID id);
-
-
+  void delete(UUID userId);
 }

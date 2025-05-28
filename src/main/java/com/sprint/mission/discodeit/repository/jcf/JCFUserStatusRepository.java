@@ -7,55 +7,52 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 @Repository
-@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
-
 public class JCFUserStatusRepository implements UserStatusRepository {
 
-    private final Map<UUID, UserStatus> userStatuses;
+  private final Map<UUID, UserStatus> data;
 
-    public JCFUserStatusRepository() {
-        this.userStatuses = new HashMap<>();
-    }
+  public JCFUserStatusRepository() {
+    this.data = new HashMap<>();
+  }
 
-    @Override
-    public UserStatus createUserStatus(UserStatus userStatus) {
-        userStatuses.put(userStatus.getId(), userStatus);
-        return userStatus;
-    }
+  @Override
+  public UserStatus save(UserStatus userStatus) {
+    this.data.put(userStatus.getId(), userStatus);
+    return userStatus;
+  }
 
-    @Override
-    public Optional<UserStatus> findStatusById(UUID statusId) {
-        return Optional.ofNullable(userStatuses.get(statusId));
-    }
+  @Override
+  public Optional<UserStatus> findById(UUID id) {
+    return Optional.ofNullable(this.data.get(id));
+  }
 
-    @Override
-    public Optional<UserStatus> findByUserId(UUID userId) {
-        return userStatuses.values().stream()
-                .filter(status -> status.getUserId().equals(userId))
-                .findFirst();
-    }
+  @Override
+  public Optional<UserStatus> findByUserId(UUID userId) {
+    return this.findAll().stream()
+        .filter(userStatus -> userStatus.getUserId().equals(userId))
+        .findFirst();
+  }
 
-    @Override
-    public List<UserStatus> findAllStatus() {
-        return userStatuses.values().stream().toList();
-    }
+  @Override
+  public List<UserStatus> findAll() {
+    return this.data.values().stream().toList();
+  }
 
-    @Override
-    public boolean updateUserStatus(UserStatus userStatus) {
-        userStatuses.put(userStatus.getId(), userStatus);
-        return true;
-    }
+  @Override
+  public boolean existsById(UUID id) {
+    return this.data.containsKey(id);
+  }
 
-    @Override
-    public boolean updateByUserId(UserStatus userStatus) {
-        userStatuses.put(userStatus.getId(), userStatus);
-        return true;
-    }
+  @Override
+  public void deleteById(UUID id) {
+    this.data.remove(id);
+  }
 
-    @Override
-    public boolean deleteUserStatus(UUID statusId) {
-        userStatuses.remove(statusId);
-        return true;
-    }
+  @Override
+  public void deleteByUserId(UUID userId) {
+    this.findByUserId(userId)
+        .ifPresent(userStatus -> this.deleteByUserId(userStatus.getId()));
+  }
 }
