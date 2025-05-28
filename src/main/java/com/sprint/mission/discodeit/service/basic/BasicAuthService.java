@@ -40,7 +40,7 @@ public class BasicAuthService implements AuthService {
         user.getId(),
         user.getCreatedAt(),
         user.getUpdatedAt(),
-        user.getName(),
+        user.getUsername(),
         user.getEmail(),
         user.getProfileId(),
         Boolean.TRUE.equals(isOnline)

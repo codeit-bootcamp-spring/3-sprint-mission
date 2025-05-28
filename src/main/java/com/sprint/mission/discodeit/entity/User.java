@@ -1,38 +1,43 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.UserException;
-import java.io.Serial;
-import java.io.Serializable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+@Entity
 @Getter
 @ToString
-public class User implements Serializable {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "users")
+public class User extends BaseUpdatableEntity {
 
-  @Serial
-  private static final long serialVersionUID = 8019397210486307690L;
-
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-
+  @Column(name = "email", nullable = false, unique = true)
   private String email;
-  private String name;
+
+  @Column(name = "username", nullable = false, unique = true)
+  private String username;
+
+  @Column(name = "password", nullable = false)
   private String password;
+
+  @Column(name = "profile_id")
   private UUID profileId;
 
-  private User(String email, String name, String password, UUID profileId) {
-    validate(email, name, password);
+  private User(String email, String username, String password, UUID profileId) {
+    validate(email, username, password);
 
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
     this.email = email;
-    this.name = name;
+    this.username = username;
     this.password = password;
     this.profileId = profileId;
   }
@@ -73,7 +78,7 @@ public class User implements Serializable {
     if (name == null || name.isBlank()) {
       throw new UserException(ErrorCode.INVALID_INPUT, "이름은 비어 있을 수 없습니다.");
     }
-    this.name = name;
+    this.username = name;
     touch();
   }
 

@@ -16,15 +16,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
 
-  private static final Logger log = LogManager.getLogger(BasicUserService.class);
+//  private static final Logger log = LogManager.getLogger(BasicUserService.class);
 
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
@@ -100,7 +98,7 @@ public class BasicUserService implements UserService {
   public UserResponse update(UpdateUserCommand command) {
     return userRepository.findById(command.userId())
         .map(user -> {
-          if (command.newName() != null && !command.newName().equals(user.getName())) {
+          if (command.newName() != null && !command.newName().equals(user.getUsername())) {
             validateUserName(command.newName());
             user.updateName(command.newName());
           }
@@ -151,7 +149,7 @@ public class BasicUserService implements UserService {
 
       return binaryContentRepository.save(binaryContent).getId();
     } catch (Exception e) {
-      log.warn("프로필 이미지 등록 실패: 기본 이미지 사용", e);
+//      log.warn("프로필 이미지 등록 실패: 기본 이미지 사용", e);
       return null;
     }
   }
@@ -163,7 +161,7 @@ public class BasicUserService implements UserService {
         user.getId(),
         user.getCreatedAt(),
         user.getUpdatedAt(),
-        user.getName(),
+        user.getUsername(),
         user.getEmail(),
         user.getProfileId(),
         Boolean.TRUE.equals(isOnline)

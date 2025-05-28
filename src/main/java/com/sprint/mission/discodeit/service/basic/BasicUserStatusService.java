@@ -9,15 +9,13 @@ import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class BasicUserStatusService implements UserStatusService {
 
-  private static final Logger log = LogManager.getLogger(BasicUserStatusService.class);
+  //  private static final Logger log = LogManager.getLogger(BasicUserStatusService.class);
   private final UserStatusRepository userStatusRepository;
   private final UserRepository userRepository;
 
