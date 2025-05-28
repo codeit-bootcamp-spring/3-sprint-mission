@@ -17,11 +17,11 @@ import org.springframework.stereotype.Repository;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file", matchIfMissing = true)
 public class FileChannelRepository implements ChannelRepository {
 
-  private final FileStorage fileStorage;
+  private final FileStorage<Channel> fileStorage;
 
   public FileChannelRepository(
       @Value("${discodeit.repository.file-directory.folder:data}${discodeit.repository.file-directory.channel:/channel}") String fileDirectory) {
-    this.fileStorage = new FileStorageImpl(fileDirectory);
+    this.fileStorage = new FileStorageImpl<>(fileDirectory);
   }
 
   @Override

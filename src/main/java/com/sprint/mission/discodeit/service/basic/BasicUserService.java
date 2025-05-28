@@ -47,8 +47,11 @@ public class BasicUserService implements UserService {
     // 유저 상태 초기화
     userStatusRepository.save(UserStatus.create(savedUser.getId()));
 
-    // 프로필 이미지 첨부 시 저장 및 유저 업데이트
-    UUID savedProfileImageId = saveProfileImage(command.profile());
+    UUID savedProfileImageId = null;
+    if (command.profile() != null && command.profile().bytes() != null) {
+      // 프로필 이미지 첨부 시 저장 및 유저 업데이트
+      savedProfileImageId = saveProfileImage(command.profile());
+    }
 
     if (savedProfileImageId != null) {
       savedUser.updateProfileId(savedProfileImageId);
@@ -101,49 +104,52 @@ public class BasicUserService implements UserService {
             validateUserName(command.newName());
             user.updateName(command.newName());
           }
+          if (command.newEmail() != null && !command.newEmail().equals(user.getEmail())) {
+            validateUserEmail(command.newEmail());
+            user.updateEmail(command.newEmail());
+          }
           if (command.newPassword() != null) {
             user.updatePassword(command.newPassword());
           }
 
-          // 프로필 이미지 첨부 시 저장 및 유저 업데이트
-          UUID savedProfileImageId = saveProfileImage(command.profile());
+          UUID savedProfileImageId = null;
+          if (command.profile() != null && command.profile().bytes() != null) {
+            Optional.ofNullable(user.getProfileId()).ifPresent(binaryContentRepository::delete);
 
-          user.updateProfileId(savedProfileImageId);
+            savedProfileImageId = saveProfileImage(command.profile());
+            user.updateProfileId(savedProfileImageId);
+          }
+
           User savedUser = userRepository.save(user);
-
           return toUserResponse(savedUser);
         }).orElseThrow(() -> UserException.notFound(command.userId()));
   }
 
   @Override
-  public UserResponse delete(UUID userId) {
-    return userRepository.findById(userId).map(user -> {
+  public void delete(UUID userId) {
+    userRepository.findById(userId).ifPresentOrElse(user -> {
       userRepository.delete(userId);
 
       Optional.ofNullable(user.getProfileId())
           .ifPresent(binaryContentRepository::delete);
 
-      userStatusRepository.findByUserId(userId).ifPresent(status -> {
-        userStatusRepository.delete(status.getId());
-      });
-
-      return toUserResponse(user);
-    }).orElseThrow(() -> UserException.notFound(userId));
+      userStatusRepository.findByUserId(userId)
+          .ifPresent(status -> userStatusRepository.delete(status.getId()));
+    }, () -> {
+      throw UserException.notFound(userId);
+    });
   }
 
   private UUID saveProfileImage(BinaryContentData profile) {
     try {
-      if (profile.bytes() != null) {
-        BinaryContent binaryContent = BinaryContent.create(
-            profile.fileName(),
-            (long) profile.fileName().length(), // 길이를 size로 사용하는 경우
-            profile.contentType(),
-            profile.bytes()
-        );
+      BinaryContent binaryContent = BinaryContent.create(
+          profile.fileName(),
+          (long) profile.bytes().length,
+          profile.contentType(),
+          profile.bytes()
+      );
 
-        return binaryContentRepository.save(binaryContent).getId();
-      }
-      return null;
+      return binaryContentRepository.save(binaryContent).getId();
     } catch (Exception e) {
       log.warn("프로필 이미지 등록 실패: 기본 이미지 사용", e);
       return null;

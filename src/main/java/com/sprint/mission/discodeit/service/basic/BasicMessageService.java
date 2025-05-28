@@ -29,7 +29,7 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public Message create(CreateMessageCommand command) throws ChannelException {
+  public Message create(CreateMessageCommand command) {
     userRepository.findById(command.authorId())
         .orElseThrow(() -> UserException.notFound(command.authorId()));
 

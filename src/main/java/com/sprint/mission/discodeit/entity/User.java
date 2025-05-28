@@ -21,7 +21,7 @@ public class User implements Serializable {
   private final Instant createdAt;
   private Instant updatedAt;
 
-  private final String email;
+  private String email;
   private String name;
   private String password;
   private UUID profileId;
@@ -74,6 +74,14 @@ public class User implements Serializable {
       throw new UserException(ErrorCode.INVALID_INPUT, "이름은 비어 있을 수 없습니다.");
     }
     this.name = name;
+    touch();
+  }
+
+  public void updateEmail(String email) {
+    if (email == null || email.isBlank()) {
+      throw new UserException(ErrorCode.INVALID_INPUT, "이메일은 비어 있을 수 없습니다.");
+    }
+    this.email = email;
     touch();
   }
 

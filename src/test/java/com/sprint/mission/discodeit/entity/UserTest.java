@@ -50,6 +50,19 @@ class UserTest {
     }
 
     @Test
+    void 이메일을_수정하면_이메일과_수정시간이_업데이트된다() {
+      User user = UserFixture.createValidUser();
+      String newEmail = "updated@test.com";
+
+      user.updateEmail(newEmail);
+
+      assertAll(
+          () -> assertThat(user.getEmail()).isEqualTo(newEmail),
+          () -> assertThat(user.getUpdatedAt()).isNotNull()
+      );
+    }
+
+    @Test
     void 비밀번호를_수정하면_비밀번호와_수정시간이_업데이트된다() {
       User user = UserFixture.createValidUser();
       String newPassword = "newpass123";

@@ -61,5 +61,5 @@ public interface UserService {
    * @param userId 삭제할 사용자 ID
    * @return 삭제된 사용자 객체
    */
-  UserResponse delete(UUID userId);
+  void delete(UUID userId);
 }
