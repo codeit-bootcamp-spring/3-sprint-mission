@@ -1,52 +1,34 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.Instant;
-import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
-public class ReadStatus implements Serializable {
-    private static final long serialVersionUID = 8045686006427993964L;
-    private Instant cratedAt;
-    private Instant updatedAt;
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "tbl_read_statuses")
+public class ReadStatus extends BaseUpdatableEntity {
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    private UUID id;
-    private UUID userId;
-    private UUID channelId;
+    @ManyToOne
+    @JoinColumn(name = "channel_id")
+    private Channel channel;
 
     private Instant lastReadAt;
 
-
-    public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
-        this.cratedAt = Instant.now();
-        this.id = UUID.randomUUID();
-        this.userId = userId;
-        this.channelId = channelId;
+    public void update(Instant lastReadAt) {
         this.lastReadAt = lastReadAt;
-    }
-
-    @Override
-    public String toString() {
-        return "ReadStatus{" +
-                "cratedAt=" + cratedAt +
-                ", updatedAt=" + updatedAt +
-                ", id=" + id +
-                ", id=" + userId +
-                ", channelId=" + channelId +
-                ", lastReadAt=" + lastReadAt +
-                '}';
-    }
-
-    public void update(Instant newLastReadAt) {
-        boolean anyValueUpdated = false;
-        if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
-            this.lastReadAt = newLastReadAt;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
-        }
     }
 }

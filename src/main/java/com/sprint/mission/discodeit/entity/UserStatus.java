@@ -1,49 +1,30 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Instant;
-import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
-public class UserStatus implements Serializable {
-    private static final long serialVersionUID = -7488891392699063722L;
-    private Instant cratedAt;
-    private Instant updatedAt;
-    private Instant StatusAt;
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "tbl_user_statuses")
+public class UserStatus extends BaseUpdatableEntity {
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    private UUID id;
-    private UUID userId;
+    private Instant lastActiveAt;
 
-    public UserStatus(Instant recentStatusAt, UUID userId) {
-        this.cratedAt = Instant.now();
-        this.StatusAt = recentStatusAt;
-        this.updatedAt = Instant.now();
-        this.id = UUID.randomUUID();
-        this.userId = userId;
+    public void update(Instant recent) {
+        this.lastActiveAt = recent;
     }
-
-    public void update(Instant recentStatusAt) {
-        boolean anyValueUpdated = false;
-
-        if (recentStatusAt != null && !recentStatusAt.equals(this.StatusAt)) {
-            this.StatusAt = recentStatusAt;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
-        }
-    }
-
-    @Override
-    public String toString() {
-        return "UserStatus{" +
-                "cratedAt=" + cratedAt +
-                ", updatedAt=" + updatedAt +
-                ", id=" + id +
-                ", id=" + userId +
-                '}';
-    }
-
 }
