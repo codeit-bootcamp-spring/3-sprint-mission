@@ -16,7 +16,7 @@ public class BusinessException extends RuntimeException {
   public String toString() {
     return String.format("%s: [%s] %s",
         getClass().getName(),
-        errorCode.getCode(),
+        errorCode.getMessage(),
         getMessage());
   }
 }

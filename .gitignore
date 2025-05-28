@@ -47,6 +47,7 @@ bin/
 
 ### Files ###
 .discodeit
+.discodeit*
 data
 !**/src/main/**/data
 

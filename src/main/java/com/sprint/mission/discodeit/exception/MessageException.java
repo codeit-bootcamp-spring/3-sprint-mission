@@ -5,6 +5,10 @@ import java.util.UUID;
 
 public class MessageException extends BusinessException {
 
+  public MessageException(ErrorCode errorCode) {
+    super(errorCode, errorCode.getMessage());
+  }
+
   public MessageException(ErrorCode errorCode, String message) {
     super(errorCode, message);
   }

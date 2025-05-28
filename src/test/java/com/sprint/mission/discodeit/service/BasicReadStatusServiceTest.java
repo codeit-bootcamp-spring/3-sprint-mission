@@ -70,7 +70,7 @@ public class BasicReadStatusServiceTest {
       when(channelRepository.findById(channelId)).thenReturn(Optional.of(channel));
       when(readStatusRepository.save(any(ReadStatus.class))).thenReturn(readStatus);
 
-      ReadStatus createdStatus = readStatusService.create(request);
+      ReadStatus createdStatus = readStatusService.create(userId, channelId);
 
       assertNotNull(createdStatus);
       assertEquals(userId, createdStatus.getUserId());
@@ -84,7 +84,7 @@ public class BasicReadStatusServiceTest {
       when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
       ReadStatusException exception = assertThrows(ReadStatusException.class, () -> {
-        readStatusService.create(request);
+        readStatusService.create(userId, channelId);
       });
 
       assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
@@ -97,7 +97,7 @@ public class BasicReadStatusServiceTest {
       when(channelRepository.findById(channelId)).thenReturn(Optional.empty());
 
       ReadStatusException exception = assertThrows(ReadStatusException.class, () -> {
-        readStatusService.create(request);
+        readStatusService.create(userId, channelId);
       });
 
       assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
@@ -113,7 +113,7 @@ public class BasicReadStatusServiceTest {
           .thenReturn(Optional.of(readStatus));
 
       ReadStatusException exception = assertThrows(ReadStatusException.class, () -> {
-        readStatusService.create(request);
+        readStatusService.create(userId, channelId);
       });
 
       assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());

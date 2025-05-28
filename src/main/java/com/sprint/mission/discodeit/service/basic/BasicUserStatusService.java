@@ -1,8 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.UserException;
 import com.sprint.mission.discodeit.exception.UserStatusException;
@@ -10,7 +7,6 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -26,10 +22,8 @@ public class BasicUserStatusService implements UserStatusService {
   private final UserRepository userRepository;
 
   @Override
-  public UserStatus create(UserStatusCreateRequest request) {
-    UUID userId = request.userId();
-
-    User user = userRepository.findById(userId)
+  public UserStatus create(UUID userId) {
+    userRepository.findById(userId)
         .orElseThrow(() -> UserException.notFound(userId));
 
     if (userStatusRepository.findByUserId(userId).isPresent()) {
@@ -41,14 +35,15 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
-  public UserStatus find(UUID id) {
-    return userStatusRepository.findById(id)
-        .orElseThrow(() -> UserStatusException.notFound(id));
+  public UserStatus find(UUID userStatusId) {
+    return userStatusRepository.findById(userStatusId)
+        .orElseThrow(() -> UserStatusException.notFound(userStatusId));
   }
 
   @Override
-  public Optional<UserStatus> findByUserId(UUID userId) {
-    return userStatusRepository.findByUserId(userId);
+  public UserStatus findByUserId(UUID userId) {
+    return userStatusRepository.findByUserId(userId)
+        .orElseThrow(() -> UserStatusException.notFound(userId));
   }
 
   @Override
@@ -57,10 +52,9 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
-  public UserStatus update(UserStatusUpdateRequest request) {
-    UUID id = request.userId();
-    UserStatus userStatus = userStatusRepository.findById(id)
-        .orElseThrow(() -> UserStatusException.notFound(id));
+  public UserStatus update(UUID userId) {
+    UserStatus userStatus = userStatusRepository.findById(userId)
+        .orElseThrow(() -> UserStatusException.notFound(userId));
 
     userStatus.updateLastActiveAt();
     return userStatus;
@@ -76,10 +70,10 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
-  public void delete(UUID id) {
-    UserStatus userStatus = userStatusRepository.findById(id)
-        .orElseThrow(() -> UserStatusException.notFound(id));
+  public void delete(UUID userStatusId) {
+    UserStatus userStatus = userStatusRepository.findById(userStatusId)
+        .orElseThrow(() -> UserStatusException.notFound(userStatusId));
 
-    userStatusRepository.delete(id);
+    userStatusRepository.delete(userStatusId);
   }
 }

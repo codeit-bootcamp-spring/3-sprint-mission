@@ -16,11 +16,11 @@ import org.springframework.stereotype.Repository;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file", matchIfMissing = true)
 public class FileBinaryContentRepository implements BinaryContentRepository {
 
-  private final FileStorage fileStorage;
+  private final FileStorage<BinaryContent> fileStorage;
 
   public FileBinaryContentRepository(
       @Value("${discodeit.repository.file-directory.folder:data}${discodeit.repository.file-directory.binary-content:/binary-content}") String fileDirectory) {
-    this.fileStorage = new FileStorageImpl(fileDirectory);
+    this.fileStorage = new FileStorageImpl<>(fileDirectory);
   }
 
   @Override

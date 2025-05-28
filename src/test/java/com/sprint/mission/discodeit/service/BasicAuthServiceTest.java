@@ -54,7 +54,7 @@ class BasicAuthServiceTest {
     when(userStatusRepository.findByUserId(user.getId())).thenReturn(Optional.of(userStatus));
 
     // when
-    UserResponse response = authService.login(loginRequest);
+    UserResponse response = authService.login(loginRequest.username(), loginRequest.password());
 
     // Then
     assertThat(response).isNotNull();
@@ -62,7 +62,7 @@ class BasicAuthServiceTest {
         .usingRecursiveComparison()
         .isEqualTo(toUserResponse(user));
 
-    verify(userRepository).findByName(loginRequest.userName());
+    verify(userRepository).findByName(loginRequest.username());
     verify(userStatus).updateLastActiveAt();
   }
 
@@ -78,7 +78,7 @@ class BasicAuthServiceTest {
 
     // When & Then
     assertThrows(AuthException.class,
-        () -> authService.login(nonExistingRequest),
+        () -> authService.login(nonExistingRequest.username(), nonExistingRequest.password()),
         "예외 메시지 검증");
 
     verify(userRepository).findByName(nonExistingUserName);

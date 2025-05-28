@@ -5,11 +5,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.basic.BasicBinaryContentService;
+import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -38,7 +38,7 @@ class BasicBinaryContentServiceTest {
 
       when(binaryContentRepository.save(any())).thenReturn(expected);
 
-      var request = new BinaryContentCreateRequest(
+      var request = new BinaryContentData(
           expected.getFileName(),
           expected.getContentType(),
           expected.getBytes()

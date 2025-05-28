@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.storage.FileStorage;
 import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,11 +18,11 @@ import org.springframework.stereotype.Repository;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file", matchIfMissing = true)
 public class FileReadStatusRepository implements ReadStatusRepository {
 
-  private final FileStorage fileStorage;
+  private final FileStorage<ReadStatus> fileStorage;
 
   public FileReadStatusRepository(
       @Value("${discodeit.repository.file-directory.folder:data}${discodeit.repository.file-directory.read-status:/read-status}") String fileDirectory) {
-    this.fileStorage = new FileStorageImpl(fileDirectory);
+    this.fileStorage = new FileStorageImpl<>(fileDirectory);
   }
 
   @Override
@@ -70,7 +71,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
   @Override
   public List<ReadStatus> findAll() {
     return fileStorage.readAll().stream()
-        .filter(obj -> obj instanceof ReadStatus)
+        .filter(Objects::nonNull)
         .map(obj -> (ReadStatus) obj)
         .toList();
   }

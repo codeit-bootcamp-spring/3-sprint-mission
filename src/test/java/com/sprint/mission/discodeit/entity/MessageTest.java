@@ -32,7 +32,7 @@ public class MessageTest {
       assertAll(
           () -> assertThat(message.getId()).isNotNull(),
           () -> assertThat(message.getContent()).isEqualTo(MessageFixture.DEFAULT_MESSAGE_CONTENT),
-          () -> assertThat(message.getUserId()).isNotNull(),
+          () -> assertThat(message.getAuthorId()).isNotNull(),
           () -> assertThat(message.getChannelId()).isNotNull(),
           () -> assertThat(message.getCreatedAt()).isNotNull()
       );
@@ -46,7 +46,7 @@ public class MessageTest {
 
       assertAll(
           () -> assertThat(message.getContent()).isEqualTo(specialContent),
-          () -> assertThat(message.getUserId()).isEqualTo(user.getId()),
+          () -> assertThat(message.getAuthorId()).isEqualTo(user.getId()),
           () -> assertThat(message.getChannelId()).isEqualTo(channel.getId())
       );
     }
@@ -67,7 +67,7 @@ public class MessageTest {
 
       assertAll(
           () -> assertThat(message1.getId()).isNotEqualTo(message2.getId()),
-          () -> assertThat(message1.getUserId()).isNotEqualTo(message2.getUserId())
+          () -> assertThat(message1.getAuthorId()).isNotEqualTo(message2.getAuthorId())
       );
     }
   }

@@ -17,11 +17,11 @@ import org.springframework.stereotype.Repository;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file", matchIfMissing = true)
 public class FileMessageRepository implements MessageRepository {
 
-  private final FileStorage fileStorage;
+  private final FileStorage<Message> fileStorage;
 
   public FileMessageRepository(
       @Value("${discodeit.repository.file-directory.folder:data}${discodeit.repository.file-directory.message:/message}") String fileDirectory) {
-    this.fileStorage = new FileStorageImpl(fileDirectory);
+    this.fileStorage = new FileStorageImpl<>(fileDirectory);
   }
 
   @Override

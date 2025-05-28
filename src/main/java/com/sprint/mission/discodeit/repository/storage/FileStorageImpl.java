@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class FileStorageImpl implements FileStorage {
+public class FileStorageImpl<T> implements FileStorage<T> {
 
   private final File directory;
 
@@ -30,7 +30,7 @@ public class FileStorageImpl implements FileStorage {
   }
 
   @Override
-  public void saveObject(UUID id, Object obj) {
+  public void saveObject(UUID id, T obj) {
     File targetFile = resolveFile(id);
     if (targetFile.exists()) {
       throw new IllegalArgumentException(
@@ -40,7 +40,7 @@ public class FileStorageImpl implements FileStorage {
   }
 
   @Override
-  public Object readObject(UUID id) {
+  public T readObject(UUID id) {
     File targetFile = resolveFile(id);
     if (!targetFile.exists()) {
       throw new RuntimeException("파일이 존재하지 않습니다: " + targetFile.getName());
@@ -69,12 +69,12 @@ public class FileStorageImpl implements FileStorage {
   }
 
   @Override
-  public List<Object> readAll() {
-    List<Object> objects = new ArrayList<>();
+  public List<T> readAll() {
+    List<T> objects = new ArrayList<>();
     File[] files = directory.listFiles((dir, name) -> name.endsWith(".ser"));
     if (files != null) {
       for (File file : files) {
-        Object obj = readObjectFromFile(file);
+        T obj = readObjectFromFile(file);
         if (obj != null) {
           objects.add(obj);
         }
@@ -91,9 +91,10 @@ public class FileStorageImpl implements FileStorage {
     }
   }
 
-  private Object readObjectFromFile(File file) {
+  @SuppressWarnings("unchecked")
+  private T readObjectFromFile(File file) {
     try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-      return ois.readObject();
+      return (T) ois.readObject();
     } catch (IOException | ClassNotFoundException e) {
       throw new RuntimeException("파일 읽기 중 오류 발생: " + file.getName(), e);
     }

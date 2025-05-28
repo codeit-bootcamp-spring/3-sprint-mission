@@ -17,25 +17,29 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(BusinessException.class)
   public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
 
-    log.error("[서비스 오류] code: {}, messageKey: {}", e.getErrorCode().getCode(),
+    log.error("[서비스 오류] code: {}, messageKey: {}", e.getErrorCode().getMessage(),
         e.getErrorCode().getMessageKey(), e);
 
     ErrorCode errorCode = e.getErrorCode();
 
-    HttpStatus status = mapToHttpStatus(errorCode);
-
     ErrorResponse response = new ErrorResponse(
-        errorCode.getCode(),
+        errorCode.getMessage(),
         errorCode.getMessageKey(),
-        status.value(),
+        errorCode.getStatus(),
         Instant.now()
     );
 
-    return ResponseEntity.status(status).body(response);
+    return ResponseEntity.status(errorCode.getStatus()).body(response);
   }
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGeneralException(Exception e) {
+
+    // 크롬 버전 때문에 출력되는 에러
+    if (e.getMessage()
+        .equals("No static resource .well-known/appspecific/com.chrome.devtools.json.")) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
 
     log.error("[시스템 오류] {}", e.getMessage(), e);
 
@@ -46,17 +50,5 @@ public class GlobalExceptionHandler {
         Instant.now()
     );
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-  }
-
-  private HttpStatus mapToHttpStatus(ErrorCode errorCode) {
-    return switch (errorCode) {
-      case NOT_FOUND -> HttpStatus.NOT_FOUND;
-      case INVALID_INPUT -> HttpStatus.BAD_REQUEST;
-      case UNAUTHORIZED -> HttpStatus.UNAUTHORIZED;
-      case FORBIDDEN -> HttpStatus.FORBIDDEN;
-      case ALREADY_EXISTS -> HttpStatus.CONFLICT;
-      case PROCESSING_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
-      default -> HttpStatus.INTERNAL_SERVER_ERROR;
-    };
   }
 }

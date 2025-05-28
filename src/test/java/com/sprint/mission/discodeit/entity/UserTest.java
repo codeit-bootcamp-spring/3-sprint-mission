@@ -11,20 +11,17 @@ import org.junit.jupiter.api.Test;
 class UserTest {
 
   @Nested
-  class 사용자_생성 {
+  class Create {
 
     @Test
     void 기본_정보로_사용자_생성_시_필수_필드가_설정된다() {
-      User user = UserFixture.createValidUser();
+      User expected = User.create("test@example.com", "홍길동", "password123");
+      User actual = User.create("test@example.com", "홍길동", "password123");
 
-      assertAll(
-          () -> assertThat(user.getId()).isNotNull(),
-          () -> assertThat(user.getEmail()).isNotNull(),
-          () -> assertThat(user.getName()).isNotNull(),
-          () -> assertThat(user.getPassword()).isNotNull(),
-          () -> assertThat(user.getCreatedAt()).isNotNull(),
-          () -> assertThat(user.getProfileId()).isNull()
-      );
+      assertThat(actual)
+          .usingRecursiveComparison()
+          .ignoringFields("id", "createdAt", "updatedAt")
+          .isEqualTo(expected);
     }
 
     @Test
@@ -37,7 +34,7 @@ class UserTest {
   }
 
   @Nested
-  class 사용자_정보_수정 {
+  class Update {
 
     @Test
     void 이름을_수정하면_이름과_수정시간이_업데이트된다() {
@@ -48,6 +45,19 @@ class UserTest {
 
       assertAll(
           () -> assertThat(user.getName()).isEqualTo(newName),
+          () -> assertThat(user.getUpdatedAt()).isNotNull()
+      );
+    }
+
+    @Test
+    void 이메일을_수정하면_이메일과_수정시간이_업데이트된다() {
+      User user = UserFixture.createValidUser();
+      String newEmail = "updated@test.com";
+
+      user.updateEmail(newEmail);
+
+      assertAll(
+          () -> assertThat(user.getEmail()).isEqualTo(newEmail),
           () -> assertThat(user.getUpdatedAt()).isNotNull()
       );
     }

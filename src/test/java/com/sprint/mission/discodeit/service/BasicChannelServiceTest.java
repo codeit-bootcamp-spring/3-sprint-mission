@@ -84,7 +84,8 @@ class BasicChannelServiceTest {
     void 공개_채널_생성_시_PUBLIC_타입의_채널이_생성된다() {
       when(channelRepository.save(any(Channel.class))).thenReturn(publicChannel);
 
-      ChannelResponse result = channelService.create(publicRequest);
+      ChannelResponse result = channelService.create(publicRequest.name(),
+          publicRequest.description());
 
       assertEquals(publicRequest.name(), result.name());
       assertEquals(ChannelType.PUBLIC, result.type());
@@ -96,7 +97,7 @@ class BasicChannelServiceTest {
       when(readStatusRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
       when(channelRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-      ChannelResponse result = channelService.create(privateRequest);
+      ChannelResponse result = channelService.create(privateRequest.participantIds());
 
       verify(readStatusRepository).save(any());
       verify(channelRepository).save(any(Channel.class));
@@ -153,31 +154,38 @@ class BasicChannelServiceTest {
 
       when(channelRepository.findById(channelId)).thenReturn(Optional.of(privateChannel));
 
-      PublicChannelUpdateRequest request = new PublicChannelUpdateRequest(channelId, "new-name",
+      PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("new-username",
           null);
 
       assertThrows(ChannelException.class,
-          () -> channelService.update(request));
+          () -> channelService.update(
+              channelId,
+              request.newName(),
+              request.newDescription()
+          ));
     }
 
     @Test
     void 공개_채널의_이름을_업데이트하면_채널_이름이_변경된다() {
       UUID channelId = UUID.randomUUID();
-      Channel publicChannel = Channel.createPublic("old-name", "desc");
+      Channel publicChannel = Channel.createPublic("old-username", "desc");
 
       when(channelRepository.findById(channelId)).thenReturn(Optional.of(publicChannel));
       when(channelRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-      String newName = "new-name";
-      String description = "new-desc";
-      PublicChannelUpdateRequest request = new PublicChannelUpdateRequest(channelId, newName,
-          description);
+      String newName = "new-username";
+      String newDescription = "new-desc";
+      PublicChannelUpdateRequest request = new PublicChannelUpdateRequest(newName,
+          newDescription);
 
-      Optional<ChannelResponse> result = channelService.update(request);
+      ChannelResponse result = channelService.update(
+          channelId,
+          request.newName(),
+          request.newDescription()
+      );
 
-      assertTrue(result.isPresent());
-      assertEquals(newName, result.get().name());
-      assertEquals(description, result.get().description());
+      assertEquals(newName, result.name());
+      assertEquals(newDescription, result.description());
       verify(channelRepository).save(any());
     }
   }
@@ -197,9 +205,8 @@ class BasicChannelServiceTest {
       when(messageRepository.findAll()).thenReturn(List.of(message));
       when(readStatusRepository.findAllByChannelId(channelId)).thenReturn(List.of(status));
 
-      Optional<ChannelResponse> result = channelService.delete(channelId);
+      ChannelResponse result = channelService.delete(channelId);
 
-      assertTrue(result.isPresent());
       verify(messageRepository).delete(message.getId());
       verify(readStatusRepository).delete(status.getId());
       verify(channelRepository).delete(channelId);

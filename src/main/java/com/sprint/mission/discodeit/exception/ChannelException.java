@@ -5,6 +5,10 @@ import java.util.UUID;
 
 public class ChannelException extends BusinessException {
 
+  public ChannelException(ErrorCode errorCode) {
+    super(errorCode, errorCode.getMessage());
+  }
+
   public ChannelException(ErrorCode errorCode, String message) {
     super(errorCode, message);
   }

@@ -1,29 +1,24 @@
 package com.sprint.mission.discodeit.exception;
 
-public enum ErrorCode {
-  NOT_FOUND("error.not_found", "E404"),
-  INVALID_INPUT("error.invalid_input", "E400"),
-  UNAUTHORIZED("error.unauthorized", "E401"),
-  FORBIDDEN("error.forbidden", "E403"),
-  ALREADY_EXISTS("error.already_exists", "E409"),
-  PROCESSING_ERROR("error.processing_error", "E500"),
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
-  INVALID_NAME("error.auth.invalid_name", "A001"),
-  INVALID_PASSWORD("error.auth.invalid_password", "A002");
+@Getter
+public enum ErrorCode {
+  NOT_FOUND("NOT_FOUND", "리소스를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+  INVALID_INPUT("INVALID_INPUT", "입력값이 유효하지 않습니다.", HttpStatus.BAD_REQUEST),
+  UNAUTHORIZED("UNAUTHORIZED", "인증이 필요합니다.", HttpStatus.UNAUTHORIZED),
+  FORBIDDEN("FORBIDDEN", "권한이 없습니다.", HttpStatus.FORBIDDEN),
+  ALREADY_EXISTS("ALREADY_EXISTS", "이미 존재합니다.", HttpStatus.CONFLICT),
+  PROCESSING_ERROR("PROCESSING_ERROR", "처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
   private final String messageKey;
-  private final String code;
+  private final String message;
+  private final int status;
 
-  ErrorCode(String messageKey, String code) {
+  ErrorCode(String messageKey, String message, HttpStatus status) {
     this.messageKey = messageKey;
-    this.code = code;
-  }
-
-  public String getMessageKey() {
-    return messageKey;
-  }
-
-  public String getCode() {
-    return code;
+    this.message = message;
+    this.status = status.value();
   }
 }
