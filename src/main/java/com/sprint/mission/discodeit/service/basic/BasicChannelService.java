@@ -92,7 +92,7 @@ public class BasicChannelService implements ChannelService {
                 Instant lastMessageAt = messageList.stream()
                         .filter(message -> message.getChannelId().equals(channel.getId()))
                         .peek(message -> participantIds.add(message.getSenderId()))
-                        .map(BaseEntity::getUpdatedAt)
+                        .map(BaseUpdatableEntity::getUpdatedAt)
                         .max(Instant::compareTo)
                         .orElse(null);
 
@@ -124,7 +124,7 @@ public class BasicChannelService implements ChannelService {
                 if (userIds.contains(userId)) {
                     Instant lastMessageAt = messageList.stream()
                             .filter(message -> message.getChannelId().equals(channel.getId()))
-                            .map(BaseEntity::getUpdatedAt)
+                            .map(BaseUpdatableEntity::getUpdatedAt)
                             .max(Instant::compareTo)
                             .orElse(null);
 

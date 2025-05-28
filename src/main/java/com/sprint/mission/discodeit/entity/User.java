@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.logging.log4j.util.Lazy;
 
 import java.awt.*;
 import java.io.Serializable;
@@ -20,13 +23,27 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Getter
-public class User extends BaseEntity implements Serializable {
+@Entity
+@NoArgsConstructor
+@Table(name = "users", schema = "discodeit")
+public class User extends BaseUpdatableEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Column(name = "username", nullable = false, length = 50)
     private String username;
-    private String password;
+
+    @Column(name = "email", nullable = false,length = 100)
     private String email;
-    private UUID profileId;
+
+    @Column(name = "password", nullable = false, length = 60)
+    private String password;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_id")
+    private BinaryContent profile;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserStatus status;
 
 
 
@@ -37,12 +54,23 @@ public class User extends BaseEntity implements Serializable {
         this.password = password;
     }
 
-    public User(String username, String email, String password, UUID profileId) {
+    // 프로필 있음
+    public User(String username, String email, String password, UserStatus status, BinaryContent profile) {
         super();
         this.username = username;
         this.password = password;
         this.email = email;
-        this.profileId = profileId;
+        this.status = status;
+        this.profile = profile;
+    }
+
+    // 프로필 없음
+    public User(String username, String email, String password, UserStatus status) {
+        super();
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.status = status;
     }
 
     public void setPassword(String password) {
@@ -55,9 +83,8 @@ public class User extends BaseEntity implements Serializable {
         this.updatedAt = Instant.now();
     }
 
-    public void setProfileId(UUID profileId) {
-        this.profileId = profileId;
-        this.updatedAt = Instant.now();
+    public void setProfileId(BinaryContent profile) {
+        this.profile = profile;
     }
 
     public void setUsername(String username) {
@@ -74,7 +101,7 @@ public class User extends BaseEntity implements Serializable {
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", email='" + email + '\'' +
-                ", profileId=" + profileId +
+//                ", profileId=" + profileId +
                 '}';
     }
 }
