@@ -4,12 +4,11 @@ import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +17,6 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "users")
 @NoArgsConstructor
-@AllArgsConstructor
 public class User extends BaseUpdatableEntity {
 
   @Column(name = "username")
@@ -30,7 +28,7 @@ public class User extends BaseUpdatableEntity {
   @Column(name = "password")
   private String password;
 
-  @OneToOne
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "profile_id")
   private BinaryContent profile;
   // BinaryContent
@@ -38,6 +36,12 @@ public class User extends BaseUpdatableEntity {
   @OneToOne(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
   private UserStatus status;
 
+  public User(String username, String email, String password, BinaryContent profile) {
+    this.username = username;
+    this.email = email;
+    this.password = password;
+    this.profile = profile;
+  }
 
   public void update(String newUsername, String newEmail, String newPassword,
       BinaryContent newProfile) {
