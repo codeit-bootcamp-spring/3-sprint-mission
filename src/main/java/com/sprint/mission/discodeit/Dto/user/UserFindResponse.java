@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.Dto.user;
 
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,7 +25,7 @@ public record UserFindResponse
      Instant updatedAt,
      String username,
      String email,
-     UUID profileId,
+     BinaryContent profile,
      boolean online){
 
 }

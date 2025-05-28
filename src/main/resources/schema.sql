@@ -35,9 +35,6 @@ CREATE TABLE IF NOT EXISTS users
     CONSTRAINT fk_profile_id FOREIGN KEY (profile_id) REFERENCES binary_contents (id) ON DELETE SET NULL
 );
 
-
-
-
 CREATE TABLE IF NOT EXISTS user_statuses
 (
     id             UUID,
@@ -49,7 +46,6 @@ CREATE TABLE IF NOT EXISTS user_statuses
     CONSTRAINT pk_user_statuses PRIMARY KEY (id),
     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
-
 
 CREATE TABLE IF NOT EXISTS channels
 (
@@ -78,7 +74,6 @@ CREATE TABLE IF NOT EXISTS read_statuses
     CONSTRAINT uq_user_channel UNIQUE (user_id, channel_id)
 );
 
-
 CREATE TABLE IF NOT EXISTS messages
 (
     id         UUID,
@@ -102,6 +97,3 @@ CREATE TABLE IF NOT EXISTS message_attachments
     CONSTRAINT fk_message_id FOREIGN KEY (message_id) REFERENCES messages (id) ON DELETE CASCADE,
     CONSTRAINT fk_attachment_id FOREIGN KEY (attachment_id) REFERENCES binary_contents (id) ON DELETE CASCADE
 );
-
-
-

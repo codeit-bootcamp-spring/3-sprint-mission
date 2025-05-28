@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -24,12 +25,13 @@ import java.time.Instant;
 @Entity
 @Table(name = "user_statuses", schema = "discodeit")
 @Setter
+@Getter
 @NoArgsConstructor
 public class UserStatus extends BaseUpdatableEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false ,updatable = true)
     private User user;
 
     @Column(name = "last_active_at", nullable = false)

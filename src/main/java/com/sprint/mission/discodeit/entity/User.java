@@ -24,6 +24,7 @@ import java.util.UUID;
  */
 @Getter
 @Entity
+@Setter
 @NoArgsConstructor
 @Table(name = "users", schema = "discodeit")
 public class User extends BaseUpdatableEntity implements Serializable {
@@ -38,20 +39,28 @@ public class User extends BaseUpdatableEntity implements Serializable {
     @Column(name = "password", nullable = false, length = 60)
     private String password;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "profile_id")
     private BinaryContent profile;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private UserStatus status;
 
 
-
+    // 프로필 없음
     public User(String username, String email, String password) {
         super();
         this.username = username;
         this.email = email;
         this.password = password;
+    }
+
+    public User(String username, String email, String password, BinaryContent profile) {
+        super();
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.profile = profile;
     }
 
     // 프로필 있음
@@ -73,24 +82,15 @@ public class User extends BaseUpdatableEntity implements Serializable {
         this.status = status;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-        this.updatedAt = Instant.now();
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-        this.updatedAt = Instant.now();
+    public void setUserStatus(UserStatus status) {
+        this.status = status;
     }
 
     public void setProfileId(BinaryContent profile) {
         this.profile = profile;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-        this.updatedAt = Instant.now();
-    }
+
 
     @Override
     public String toString() {

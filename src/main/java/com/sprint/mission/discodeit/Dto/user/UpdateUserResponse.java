@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.Dto.user;
 
+import com.sprint.mission.discodeit.entity.BinaryContent;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -14,6 +16,6 @@ public record UpdateUserResponse(Instant createdAt,
                                  String username,
                                  String email,
                                  String password,
-                                 UUID profileId) {
+                                 BinaryContent profileId) {
 
 }
