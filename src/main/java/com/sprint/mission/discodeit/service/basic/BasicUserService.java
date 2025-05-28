@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.exception.duplicate.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.duplicate.DuplicateNameException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserStatusException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -31,12 +32,13 @@ public class BasicUserService implements UserService {
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
   private final UserStatusRepository userStatusRepository;
+  private final UserMapper userMapper;
 
   @Override
   @Transactional
-  public User create(UserRequestDto userRequestDTO, BinaryContentDto binaryContentDTO) {
-    String username = userRequestDTO.username();
-    String email = userRequestDTO.email();
+  public UserResponseDto create(UserRequestDto userRequestDto, BinaryContentDto binaryContentDto) {
+    String username = userRequestDto.username();
+    String email = userRequestDto.email();
 
     if (userRepository.existsByUsername(username)) {
       throw new DuplicateNameException(username);
@@ -46,21 +48,28 @@ public class BasicUserService implements UserService {
       throw new DuplicateEmailException(email);
     }
 
-    User user = UserRequestDto.toEntity(userRequestDTO);
+    String password = userRequestDto.password();
+    User user = new User(username, email, password, null, null);
 
     // 프로필 이미지를 등록한 경우
-    if (binaryContentDTO != null) {
-      BinaryContent profileImage = BinaryContentDto.toEntity(binaryContentDTO);
+    if (binaryContentDto != null) {
+      BinaryContent profileImage = new BinaryContent(binaryContentDto.fileName(),
+          binaryContentDto.size(),
+          binaryContentDto.contentType(),
+          binaryContentDto.bytes());
+
       user.updateProfile(profileImage);
+
       binaryContentRepository.save(profileImage);
     }
 
     UserStatus userStatus = new UserStatus(user, Instant.now());
+    user.updateStatus(userStatus);
 
-    userStatusRepository.save(userStatus);
     userRepository.save(user);
+    userStatusRepository.save(userStatus);
 
-    return user;
+    return userMapper.toDto(user);
   }
 
   @Override
@@ -72,7 +81,7 @@ public class BasicUserService implements UserService {
     // 마지막 접속 시간 확인
     user.updateStatus(userStatus);
 
-    return User.toDTO(user);
+    return userMapper.toDto(user);
   }
 
   @Override
@@ -81,7 +90,7 @@ public class BasicUserService implements UserService {
         .map(user -> {
           UserStatus userStatus = findUserStatus(user.getId());
           user.updateStatus(userStatus);
-          return User.toDTO(user);
+          return userMapper.toDto(user);
         })
         .toList();
 
@@ -90,12 +99,12 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional
-  public UserResponseDto update(UUID id, UserUpdateDto userUpdateDTO,
-      BinaryContentDto binaryContentDTO) {
+  public UserResponseDto update(UUID id, UserUpdateDto userUpdateDto,
+      BinaryContentDto binaryContentDto) {
     User user = findUser(id);
 
-    String newUsername = userUpdateDTO.newUsername();
-    String newEmail = userUpdateDTO.newEmail();
+    String newUsername = userUpdateDto.newUsername();
+    String newEmail = userUpdateDto.newEmail();
 
     if (newUsername != null) {
       userRepository.findByUsername(newUsername)
@@ -117,8 +126,12 @@ public class BasicUserService implements UserService {
 
     // 프로필 이미지 처리
     BinaryContent profile = user.getProfile();
-    if (binaryContentDTO != null) {
-      BinaryContent profileImage = BinaryContentDto.toEntity(binaryContentDTO);
+    if (binaryContentDto != null) {
+      BinaryContent profileImage = new BinaryContent(binaryContentDto.fileName(),
+          binaryContentDto.size(),
+          binaryContentDto.contentType(),
+          binaryContentDto.bytes());
+
       if (profile != null) {
         binaryContentRepository.deleteById(profile.getId());
       }
@@ -129,11 +142,11 @@ public class BasicUserService implements UserService {
       user.updateProfile(null);
     }
 
-    Optional.ofNullable(userUpdateDTO.newPassword()).ifPresent(user::updatePassword);
+    Optional.ofNullable(userUpdateDto.newPassword()).ifPresent(user::updatePassword);
 
     userRepository.save(user);
 
-    return User.toDTO(user);
+    return userMapper.toDto(user);
   }
 
   @Override

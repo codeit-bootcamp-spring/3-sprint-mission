@@ -32,15 +32,4 @@ public class BinaryContent extends BaseEntity {
     this.contentType = contentType;
     this.bytes = bytes;
   }
-
-//  public static BinaryContentResponseDTO toDTO(BinaryContent binaryContent) {
-//    BinaryContentResponseDTO binaryContentResponseDTO = new BinaryContentResponseDTO(
-//        binaryContent.getId(),
-//        binaryContent.getCreatedAt(),
-//        binaryContent.getFileName(),
-//        binaryContent.getContentType(),
-//        binaryContent.getBytes());
-//
-//    return binaryContentResponseDTO;
-//  }
 }

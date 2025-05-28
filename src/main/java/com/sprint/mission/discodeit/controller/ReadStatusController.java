@@ -28,21 +28,17 @@ public class ReadStatusController implements ReadStatusApi {
   private final ReadStatusService readStatusService;
 
   @PostMapping
-  public ResponseEntity<ReadStatus> create(@RequestBody ReadStatusRequestDto readStatusRequestDTO) {
-    ReadStatus createdReadStatus = readStatusService.create(readStatusRequestDTO);
+  public ResponseEntity<ReadStatusResponseDto> create(@RequestBody ReadStatusRequestDto readStatusRequestDTO) {
+    ReadStatusResponseDto createdReadStatus = readStatusService.create(readStatusRequestDTO);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(createdReadStatus);
   }
 
   @GetMapping
-  public ResponseEntity<List<ReadStatusResponseDto>> findAll(@RequestParam(required = false) UUID userId) {
+  public ResponseEntity<List<ReadStatusResponseDto>> findAll(@RequestParam(required = true) UUID userId) {
     List<ReadStatusResponseDto> readStatuses;
 
-    if (userId != null) {
-      readStatuses = readStatusService.findAllByUserId(userId);
-    } else {
-      readStatuses = readStatusService.findAll();
-    }
+    readStatuses = readStatusService.findAllByUserId(userId);
 
     return ResponseEntity.status(HttpStatus.OK).body(readStatuses);
   }

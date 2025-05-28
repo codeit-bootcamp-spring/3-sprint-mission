@@ -10,16 +10,16 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundChannelException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundMessageException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("basicMessageService")
@@ -31,23 +31,24 @@ public class BasicMessageService implements MessageService {
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
+  private final MessageMapper messageMapper;
 
   @Override
   @Transactional
-  public Message create(MessageRequestDto messageRequestDTO,
+  public MessageResponseDto create(MessageRequestDto messageRequestDto,
       List<BinaryContentDto> binaryContentDtos) {
-    User user = findUser(messageRequestDTO.authorId());
-    Channel channel = findChannel(messageRequestDTO.channelId());
+    User author = findUser(messageRequestDto.authorId());
+    Channel channel = findChannel(messageRequestDto.channelId());
 
     // Repository 저장용 데이터
-    List<BinaryContent> binaryContents = convertBinaryContentDTOS(binaryContentDtos);
+    List<BinaryContent> binaryContents = convertBinaryContentDtos(binaryContentDtos);
 
-    Message message = MessageRequestDto.toEntity(messageRequestDTO);
+    String content = messageRequestDto.content();
+
+    Message message = new Message(content, channel, author);
     message.updateChannel(channel);
     message.updateAttachmentIds(binaryContents);
 
-    userRepository.save(user);
-    
     // 메시지를 보낸 channel의 mesagesList에 해당 메시지 추가
     channel.getMessages().add(message);
     channelRepository.save(channel);
@@ -55,21 +56,21 @@ public class BasicMessageService implements MessageService {
     binaryContentRepository.saveAll(binaryContents);
     messageRepository.save(message);
 
-    return message;
+    return messageMapper.toDto(message);
   }
 
   @Override
   public MessageResponseDto findById(UUID messageId) {
     Message message = findMessage(messageId);
 
-    return Message.toDTO(message);
+    return messageMapper.toDto(message);
   }
 
   @Override
   public List<MessageResponseDto> findAllByChannelId(UUID channelId) {
 
     return messageRepository.findAllByChannelId(channelId).stream()
-        .map(Message::toDTO)
+        .map(messageMapper::toDto)
         .toList();
   }
 
@@ -82,7 +83,7 @@ public class BasicMessageService implements MessageService {
 
     messageRepository.save(message);
 
-    return Message.toDTO(message);
+    return messageMapper.toDto(message);
   }
 
   @Override
@@ -97,16 +98,19 @@ public class BasicMessageService implements MessageService {
       channelRepository.save(channel);
     }
 
-    for (BinaryContent binaryContent : message.getAttachmentIds()) {
+    for (BinaryContent binaryContent : message.getAttachments()) {
       binaryContentRepository.deleteById(binaryContent.getId());
     }
 
     messageRepository.deleteById(messageId);
   }
 
-  private List<BinaryContent> convertBinaryContentDTOS(List<BinaryContentDto> binaryContentDtos) {
+  private List<BinaryContent> convertBinaryContentDtos(List<BinaryContentDto> binaryContentDtos) {
     return binaryContentDtos.stream()
-        .map(BinaryContentDto::toEntity)
+        .map(binaryContentDto -> new BinaryContent(binaryContentDto.fileName(),
+            binaryContentDto.size(),
+            binaryContentDto.contentType(),
+            binaryContentDto.bytes()))
         .toList();
   }
 

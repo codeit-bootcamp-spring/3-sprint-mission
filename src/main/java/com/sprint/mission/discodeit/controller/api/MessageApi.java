@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.controller.api;
 import com.sprint.mission.discodeit.dto.message.MessageRequestDto;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateDto;
-import com.sprint.mission.discodeit.entity.Message;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,7 +31,7 @@ public interface MessageApi {
               @ExampleObject(value = "Channel | Sender with id {channelId | authorId} not found")}))
       }
   )
-  ResponseEntity<Message> create(
+  ResponseEntity<MessageResponseDto> create(
       @RequestPart("messageCreateRequest") MessageRequestDto messageRequestDTO,
       @Parameter(description = "Message 첨부 파일들")
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachedFiles);

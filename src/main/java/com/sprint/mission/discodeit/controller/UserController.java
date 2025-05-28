@@ -50,13 +50,13 @@ public class UserController implements UserApi {
 
   // 신규 유저 생성 요청
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<User> create(
+  public ResponseEntity<UserResponseDto> create(
       @RequestPart("userCreateRequest") UserRequestDto userRequestDTO,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
 
     BinaryContentDto profileRequest = FileConverter.resolveFileRequest(profile);
 
-    User createdUser = userService.create(userRequestDTO, profileRequest);
+    UserResponseDto createdUser = userService.create(userRequestDTO, profileRequest);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
   }

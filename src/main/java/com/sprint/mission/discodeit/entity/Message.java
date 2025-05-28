@@ -35,7 +35,7 @@ public class Message extends BaseUpdatableEntity {
   @JoinTable(name = "message_attachments",
   joinColumns = @JoinColumn(name = "message_id"),
   inverseJoinColumns = @JoinColumn(name = "attachment_id"))
-  private List<BinaryContent> attachmentIds;
+  private List<BinaryContent> attachments;
 
   public Message() {
   }
@@ -44,7 +44,7 @@ public class Message extends BaseUpdatableEntity {
     this.content = content;
     this.channel = channel;
     this.author = author;
-    this.attachmentIds = new ArrayList<>();
+    this.attachments = new ArrayList<>();
   }
 
   public void updateContent(String content) {
@@ -55,21 +55,9 @@ public class Message extends BaseUpdatableEntity {
     this.channel = channel;
   }
 
-  public void updateAttachmentIds(List<BinaryContent> attachmentIds) {
-    this.attachmentIds = attachmentIds;
+  public void updateAttachmentIds(List<BinaryContent> attachments) {
+    this.attachments = attachments;
   }
-
-//  public static MessageResponseDTO toDTO(Message message) {
-//    MessageResponseDTO messageResponseDTO = new MessageResponseDTO(message.getId(),
-//        message.getCreatedAt(),
-//        message.getUpdatedAt(),
-//        message.getContent(),
-//        message.getAuthorId(),
-//        message.getChannelId(),
-//        message.getAttachmentIds());
-//
-//    return messageResponseDTO;
-//  }
 
   @Override
   public String toString() {

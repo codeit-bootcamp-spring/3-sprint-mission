@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.LoginFailedException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserStatusException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -22,6 +23,7 @@ public class BasicAuthService implements AuthService {
 
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
+  private final UserMapper userMapper;
 
   @Override
   @Transactional
@@ -42,7 +44,7 @@ public class BasicAuthService implements AuthService {
     userRepository.save(user);
     userStatusRepository.save(userStatus);
 
-    return User.toDTO(user);
+    return userMapper.toDto(user);
   }
 
   private UserStatus findUserStatus(UUID userId) {

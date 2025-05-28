@@ -6,7 +6,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -68,21 +67,6 @@ public class User extends BaseUpdatableEntity {
   public void updateStatus(UserStatus status) {
     this.status = status;
   }
-
-//  public static UserResponseDTO toDTO(User user) {
-//    UserResponseDTO userResponseDTO = new UserResponseDTO(user.getId(),
-//        user.getCreatedAt(),
-//        user.getUpdatedAt(),
-//        user.getUsername(),
-//        user.getEmail(),
-//        user.getProfile(),
-//        user.getStatus(),
-//        user.getFriends(),
-//        user.getChannels(),
-//        user.getMessages());
-//
-//    return userResponseDTO;
-//  }
 
   @Override
   public String toString() {

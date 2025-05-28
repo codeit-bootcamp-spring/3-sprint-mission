@@ -18,6 +18,7 @@ public class FileConverter {
       try {
         BinaryContentDto binaryContentDTO = new BinaryContentDto(
             multipartFile.getOriginalFilename(),
+            multipartFile.getSize(),
             multipartFile.getContentType(),
             multipartFile.getBytes());
 
@@ -42,6 +43,7 @@ public class FileConverter {
       try {
         binaryContentList.add(new BinaryContentDto(
             file.getOriginalFilename(),
+            file.getSize(),
             file.getContentType(),
             file.getBytes()
         ));

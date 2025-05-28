@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -36,16 +37,17 @@ public class Channel extends BaseUpdatableEntity {
   private List<Message> messages;
 
   public Channel() {
+    this.type = ChannelType.PRIVATE;
+    this.readStatuses = new ArrayList<>();
+    this.messages = new ArrayList<>();
   }
 
   public Channel(String name, String description) {
     this.name = name;
     this.description = description;
     this.type = ChannelType.PUBLIC;
-  }
-
-  public Channel(List<UUID> participantIds) {
-    this.type = ChannelType.PRIVATE;
+    this.readStatuses = new ArrayList<>();
+    this.messages = new ArrayList<>();
   }
 
   public void updateName(String name) {
@@ -56,22 +58,14 @@ public class Channel extends BaseUpdatableEntity {
     this.description = description;
   }
 
-//  public static ChannelResponseDTO toDTO(Channel channel) {
-//    ChannelResponseDTO channelResponseDTO = new ChannelResponseDTO(
-//        channel.getId(),
-//        channel.getCreatedAt(),
-//        channel.getUpdatedAt(),
-//        channel.getName(),
-//        channel.getDescription(),
-//        channel.getType(),
-//        channel.getParticipantIds(),
-//        channel.getMessages(),
-//        channel.getLastMessageTime()
-//    );
-//
-//    return channelResponseDTO;
-//  }
-
+  @Override
+  public String toString() {
+    return "Channel{" +
+        "name='" + name + '\'' +
+        ", description='" + description + '\'' +
+        ", type=" + type +
+        "} " + super.toString();
+  }
 
   @Override
   public boolean equals(Object o) {

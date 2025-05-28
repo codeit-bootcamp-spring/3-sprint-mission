@@ -4,5 +4,5 @@ import com.sprint.mission.discodeit.dto.auth.LoginDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 
 public interface AuthService {
-    UserResponseDto login(LoginDto loginDTO);
+    UserResponseDto login(LoginDto loginDto);
 }

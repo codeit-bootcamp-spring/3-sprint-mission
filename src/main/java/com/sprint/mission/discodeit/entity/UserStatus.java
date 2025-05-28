@@ -62,17 +62,6 @@ public class UserStatus extends BaseUpdatableEntity {
     return timeDiff.toMinutes() <= LOGIN_TIMEOUT_MINUTES;
   }
 
-//  public static UserStatusResponseDTO toDTO(UserStatus userStatus) {
-//    UserStatusResponseDTO userStatusResponseDTO = new UserStatusResponseDTO(userStatus.getId(),
-//        userStatus.getCreatedAt(),
-//        userStatus.getUpdatedAt(),
-//        userStatus.getUserId(),
-//        userStatus.getLastActiveAt());
-//
-//    return userStatusResponseDTO;
-//  }
-
-
   @Override
   public boolean equals(Object o) {
     if (o == null || getClass() != o.getClass()) {

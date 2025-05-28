@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.message.MessageRequestDto;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateDto;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.util.FileConverter;
 import java.util.List;
@@ -34,12 +33,12 @@ public class MessageController implements MessageApi {
   private final MessageService messageService;
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<Message> create(
+  public ResponseEntity<MessageResponseDto> create(
       @RequestPart("messageCreateRequest") MessageRequestDto messageRequestDTO,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachedFiles) {
     List<BinaryContentDto> binaryContentDtos = FileConverter.resolveFileRequest(attachedFiles);
 
-    Message createdMessage = messageService.create(messageRequestDTO, binaryContentDtos);
+    MessageResponseDto createdMessage = messageService.create(messageRequestDTO, binaryContentDtos);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
   }

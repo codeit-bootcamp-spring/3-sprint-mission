@@ -42,17 +42,6 @@ public class ReadStatus extends BaseUpdatableEntity {
     this.lastReadAt = lastReadAt;
   }
 
-//  public static ReadStatusResponseDTO toDTO(ReadStatus readStatus) {
-//    ReadStatusResponseDTO readStatusResponseDTO = new ReadStatusResponseDTO(readStatus.getId(),
-//        readStatus.getCreatedAt(),
-//        readStatus.getUpdatedAt(),
-//        readStatus.getUserId(),
-//        readStatus.getChannelId(),
-//        readStatus.getLastReadAt());
-//
-//    return readStatusResponseDTO;
-//  }
-
   @Override
   public boolean equals(Object o) {
     if (o == null || getClass() != o.getClass()) {

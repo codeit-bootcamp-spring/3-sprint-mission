@@ -33,7 +33,7 @@ public interface ReadStatusApi {
               @ExampleObject(value = "Channel | User with id {channelId | userId} not found")}))
       }
   )
-  ResponseEntity<ReadStatus> create(@RequestBody ReadStatusRequestDto readStatusRequestDTO);
+  ResponseEntity<ReadStatusResponseDto> create(@RequestBody ReadStatusRequestDto readStatusRequestDTO);
 
 
   @Operation(summary = "User의 Message 읽음 상태 목록 조회")

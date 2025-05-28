@@ -33,7 +33,7 @@ public interface UserApi {
               @ExampleObject(value = "User with email {email} already exists")}))
       }
   )
- ResponseEntity<User> create(
+ ResponseEntity<UserResponseDto> create(
       @RequestPart("userCreateRequest") UserRequestDto userRequestDTO,
       @Parameter(description = "User 프로필 이미지")
       @RequestPart(value = "profile", required = false) MultipartFile profile);
