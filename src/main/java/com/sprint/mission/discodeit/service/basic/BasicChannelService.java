@@ -23,9 +23,11 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("basicChannelService")
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BasicChannelService implements ChannelService {
 
   private final ChannelRepository channelRepository;
@@ -34,6 +36,7 @@ public class BasicChannelService implements ChannelService {
   private final ReadStatusRepository readStatusRepository;
 
   @Override
+  @Transactional
   public Channel createPublicChannel(PublicChannelDTO publicChannelDTO) {
 
     Channel channel = PublicChannelDTO.toEntity(publicChannelDTO);
@@ -44,6 +47,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
+  @Transactional
   public Channel createPrivateChannel(PrivateChannelDTO privateChannelDTO) {
     Channel channel = PrivateChannelDTO.toEntity(privateChannelDTO);
 
@@ -82,6 +86,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
+  @Transactional
   public ChannelResponseDTO update(UUID channelId, PublicChannelUpdateDTO publicChannelUpdateDTO) {
     Channel channel = findChannel(channelId);
 
@@ -100,6 +105,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
+  @Transactional
   public void deleteById(UUID channelId) {
     Channel channel = findChannel(channelId);
 
@@ -116,6 +122,7 @@ public class BasicChannelService implements ChannelService {
     return userRepository.findById(id)
         .orElseThrow(NotFoundUserException::new);
   }
+
   private Instant getLastMessageTime(Channel channel) {
     if (!channel.getMessages().isEmpty()) {
       int messageCount = channel.getMessages().size();

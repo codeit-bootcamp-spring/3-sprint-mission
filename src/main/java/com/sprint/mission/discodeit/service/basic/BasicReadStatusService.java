@@ -17,9 +17,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("basicReadStatusService")
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BasicReadStatusService implements ReadStatusService {
 
   private final ReadStatusRepository readStatusRepository;
@@ -27,6 +29,7 @@ public class BasicReadStatusService implements ReadStatusService {
   private final ChannelRepository channelRepository;
 
   @Override
+  @Transactional
   public ReadStatus create(ReadStatusRequestDTO readStatusRequestDTO) {
     UUID userId = readStatusRequestDTO.userId();
     UUID channelId = readStatusRequestDTO.channelId();
@@ -65,6 +68,7 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
+  @Transactional
   public ReadStatusResponseDTO update(UUID id, ReadStatusUpdateDTO readStatusUpdateDTO) {
     ReadStatus readStatus = findReadStatus(id);
 
@@ -75,6 +79,7 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
+  @Transactional
   public void deleteById(UUID id) {
     readStatusRepository.deleteById(id);
   }

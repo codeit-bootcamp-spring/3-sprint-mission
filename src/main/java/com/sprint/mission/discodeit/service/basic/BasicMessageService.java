@@ -21,9 +21,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("basicMessageService")
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BasicMessageService implements MessageService {
 
   private final MessageRepository messageRepository;
@@ -32,6 +34,7 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
+  @Transactional
   public Message create(MessageRequestDTO messageRequestDTO,
       List<BinaryContentDTO> binaryContentDTOS) {
     User user = findUser(messageRequestDTO.authorId());
@@ -72,6 +75,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @Transactional
   public MessageResponseDTO updateContent(UUID messageId, String content) {
     Message message = findMessage(messageId);
 
@@ -83,6 +87,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @Transactional
   public void deleteById(UUID messageId) {
     Message message = findMessage(messageId);
 

@@ -15,15 +15,18 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("basicUserStatusService")
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BasicUserStatusService implements UserStatusService {
 
   private final UserStatusRepository userStatusRepository;
   private final UserRepository userRepository;
 
   @Override
+  @Transactional
   public UserStatus create(UserStatusRequestDTO userStatusRequestDTO) {
     UUID userId = userStatusRequestDTO.userId();
     if (!userRepository.existsById(userId)) {
@@ -56,6 +59,7 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
+  @Transactional
   public UserStatusResponseDTO update(UUID id, UserStatusUpdateDTO userStatusUpdateDTO) {
     UserStatus userStatus = findUserStatus(id);
 
@@ -66,6 +70,7 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
+  @Transactional
   public UserStatusResponseDTO updateByUserId(UUID userId,
       UserStatusUpdateDTO userStatusUpdateDTO) {
     UserStatus userStatus = userStatusRepository.findByUserId(userId)
@@ -78,6 +83,7 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
+  @Transactional
   public void deleteById(UUID id) {
     userStatusRepository.deleteById(id);
   }

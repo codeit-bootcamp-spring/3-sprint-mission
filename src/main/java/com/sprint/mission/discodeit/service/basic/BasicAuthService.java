@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("basicAuthService")
 @RequiredArgsConstructor
@@ -23,6 +24,7 @@ public class BasicAuthService implements AuthService {
   private final UserStatusRepository userStatusRepository;
 
   @Override
+  @Transactional
   public UserResponseDTO login(LoginDTO loginDTO) {
     String username = loginDTO.username();
     String password = loginDTO.password();

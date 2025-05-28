@@ -21,9 +21,11 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("basicUserService")
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
@@ -31,6 +33,7 @@ public class BasicUserService implements UserService {
   private final UserStatusRepository userStatusRepository;
 
   @Override
+  @Transactional
   public User create(UserRequestDTO userRequestDTO, BinaryContentDTO binaryContentDTO) {
     String username = userRequestDTO.username();
     String email = userRequestDTO.email();
@@ -85,8 +88,8 @@ public class BasicUserService implements UserService {
     return users;
   }
 
-
   @Override
+  @Transactional
   public UserResponseDTO update(UUID id, UserUpdateDTO userUpdateDTO,
       BinaryContentDTO binaryContentDTO) {
     User user = findUser(id);
@@ -134,6 +137,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @Transactional
   public void deleteById(UUID id) {
     User user = findUser(id);
 
