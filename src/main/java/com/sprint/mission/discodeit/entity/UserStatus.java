@@ -4,43 +4,43 @@ import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
 public class UserStatus implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private UUID id;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+
+  private static final long serialVersionUID = 1L;
+  private UUID id;
+  private Instant createdAt;
+  private Instant updatedAt;
+  //
+  private UUID userId;
+  private Instant lastActiveAt;
+
+  public UserStatus(UUID userId, Instant lastActiveAt) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
     //
-    private UUID userId;
-    private LocalDateTime lastActiveAt;
+    this.userId = userId;
+    this.lastActiveAt = lastActiveAt;
+  }
 
-    public UserStatus(UUID userId, LocalDateTime lastActiveAt) {
-        this.id = UUID.randomUUID();
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = this.createdAt;
-        //
-        this.userId = userId;
-        this.lastActiveAt = lastActiveAt;
+  public void update(Instant lastActiveAt) {
+    boolean anyValueUpdated = false;
+    if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
+      this.lastActiveAt = lastActiveAt;
+      anyValueUpdated = true;
     }
 
-    public void update(LocalDateTime lastActiveAt) {
-        boolean anyValueUpdated = false;
-        if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
-            this.lastActiveAt = lastActiveAt;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = LocalDateTime.now();
-        }
+    if (anyValueUpdated) {
+      this.updatedAt = Instant.now();
     }
+  }
 
-    public Boolean isOnline() {
-        LocalDateTime fiveMinutesAgo = LocalDateTime.now().minus(Duration.ofMinutes(5));
+  public Boolean isOnline() {
+    Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
 
-        return lastActiveAt.isAfter(fiveMinutesAgo);
-    }
+    return lastActiveAt.isAfter(instantFiveMinutesAgo);
+  }
 }
