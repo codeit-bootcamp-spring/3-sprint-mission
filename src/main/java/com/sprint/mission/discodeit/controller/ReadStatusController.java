@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusRequestDTO;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDTO;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateDTO;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusRequestDto;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDto;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import java.util.List;
@@ -28,15 +28,15 @@ public class ReadStatusController implements ReadStatusApi {
   private final ReadStatusService readStatusService;
 
   @PostMapping
-  public ResponseEntity<ReadStatus> create(@RequestBody ReadStatusRequestDTO readStatusRequestDTO) {
+  public ResponseEntity<ReadStatus> create(@RequestBody ReadStatusRequestDto readStatusRequestDTO) {
     ReadStatus createdReadStatus = readStatusService.create(readStatusRequestDTO);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(createdReadStatus);
   }
 
   @GetMapping
-  public ResponseEntity<List<ReadStatusResponseDTO>> findAll(@RequestParam(required = false) UUID userId) {
-    List<ReadStatusResponseDTO> readStatuses;
+  public ResponseEntity<List<ReadStatusResponseDto>> findAll(@RequestParam(required = false) UUID userId) {
+    List<ReadStatusResponseDto> readStatuses;
 
     if (userId != null) {
       readStatuses = readStatusService.findAllByUserId(userId);
@@ -48,10 +48,10 @@ public class ReadStatusController implements ReadStatusApi {
   }
 
   @PatchMapping(path = "/{readStatusId}")
-  public ResponseEntity<ReadStatusResponseDTO> update(
+  public ResponseEntity<ReadStatusResponseDto> update(
       @PathVariable UUID readStatusId,
-      @RequestBody ReadStatusUpdateDTO readStatusUpdateDTO) {
-    ReadStatusResponseDTO updatedReadStatus = readStatusService.update(readStatusId,
+      @RequestBody ReadStatusUpdateDto readStatusUpdateDTO) {
+    ReadStatusResponseDto updatedReadStatus = readStatusService.update(readStatusId,
         readStatusUpdateDTO);
 
     return ResponseEntity.status(HttpStatus.OK).body(updatedReadStatus);

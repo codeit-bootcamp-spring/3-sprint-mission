@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusRequestDTO;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDTO;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDTO;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusRequestDto;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDto;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDto;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.alreadyexist.UserStatusAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
@@ -27,7 +27,7 @@ public class BasicUserStatusService implements UserStatusService {
 
   @Override
   @Transactional
-  public UserStatus create(UserStatusRequestDTO userStatusRequestDTO) {
+  public UserStatus create(UserStatusRequestDto userStatusRequestDTO) {
     UUID userId = userStatusRequestDTO.userId();
     if (!userRepository.existsById(userId)) {
       throw new NotFoundUserException();
@@ -37,7 +37,7 @@ public class BasicUserStatusService implements UserStatusService {
       throw new UserStatusAlreadyExistsException();
     }
 
-    UserStatus userStatus = UserStatusRequestDTO.toEntity(userStatusRequestDTO);
+    UserStatus userStatus = UserStatusRequestDto.toEntity(userStatusRequestDTO);
 
     userStatusRepository.save(userStatus);
 
@@ -45,14 +45,14 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
-  public UserStatusResponseDTO findById(UUID id) {
+  public UserStatusResponseDto findById(UUID id) {
     UserStatus userStatus = findUserStatus(id);
 
     return UserStatus.toDTO(userStatus);
   }
 
   @Override
-  public List<UserStatusResponseDTO> findAll() {
+  public List<UserStatusResponseDto> findAll() {
     return userStatusRepository.findAll().stream()
         .map(UserStatus::toDTO)
         .toList();
@@ -60,7 +60,7 @@ public class BasicUserStatusService implements UserStatusService {
 
   @Override
   @Transactional
-  public UserStatusResponseDTO update(UUID id, UserStatusUpdateDTO userStatusUpdateDTO) {
+  public UserStatusResponseDto update(UUID id, UserStatusUpdateDto userStatusUpdateDTO) {
     UserStatus userStatus = findUserStatus(id);
 
     userStatus.updatelastActiveAt(userStatusUpdateDTO.newLastActiveAt());
@@ -71,8 +71,8 @@ public class BasicUserStatusService implements UserStatusService {
 
   @Override
   @Transactional
-  public UserStatusResponseDTO updateByUserId(UUID userId,
-      UserStatusUpdateDTO userStatusUpdateDTO) {
+  public UserStatusResponseDto updateByUserId(UUID userId,
+      UserStatusUpdateDto userStatusUpdateDTO) {
     UserStatus userStatus = userStatusRepository.findByUserId(userId)
         .orElseThrow(NotFoundUserStatusException::new);
 

@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelResponseDTO;
-import com.sprint.mission.discodeit.dto.channel.PrivateChannelDTO;
-import com.sprint.mission.discodeit.dto.channel.PublicChannelDTO;
-import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateDTO;
+import com.sprint.mission.discodeit.dto.channel.ChannelResponseDto;
+import com.sprint.mission.discodeit.dto.channel.PrivateChannelDto;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelDto;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,16 +25,16 @@ public interface ChannelApi {
   @Operation(summary = "Public Channel 생성")
   @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨")
   ResponseEntity<Channel> createPublicChannel(
-      @RequestBody PublicChannelDTO publicChannelDTO);
+      @RequestBody PublicChannelDto publicChannelDTO);
 
   @Operation(summary = "Private Channel 생성")
   @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨")
   ResponseEntity<Channel> createPrivateChannel(
-      @RequestBody PrivateChannelDTO privateChannelDTO);
+      @RequestBody PrivateChannelDto privateChannelDTO);
 
   @Operation(summary = "User가 참여 중인 Channel 목록 조회")
   @ApiResponse(responseCode = "200", description = "Channel 목록 조회 성공")
-  ResponseEntity<List<ChannelResponseDTO>> findAllByUserId(
+  ResponseEntity<List<ChannelResponseDto>> findAllByUserId(
       @Parameter(description = "조회할 User ID") @RequestParam(required = true) UUID userId);
 
   @Operation(summary = "Channel 정보 수정")
@@ -49,9 +49,9 @@ public interface ChannelApi {
               @ExampleObject(value = "Channel with id {channelId} not found")}))
       }
   )
-  ResponseEntity<ChannelResponseDTO> update(
+  ResponseEntity<ChannelResponseDto> update(
       @Parameter(description = "수정할 Channel ID") @PathVariable UUID channelId,
-      @RequestBody PublicChannelUpdateDTO publicChannelUpdateDTO);
+      @RequestBody PublicChannelUpdateDto publicChannelUpdateDTO);
 
   @Operation(summary = "Channel 삭제")
   @ApiResponses(

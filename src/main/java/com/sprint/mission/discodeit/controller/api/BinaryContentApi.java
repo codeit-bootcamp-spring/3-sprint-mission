@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,11 +26,11 @@ public interface BinaryContentApi {
                   @ExampleObject(value = "BinaryContent with id {binaryContentId} not found")}))
       }
   )
-  ResponseEntity<BinaryContentResponseDTO> findById(
+  ResponseEntity<BinaryContentResponseDto> findById(
       @Parameter(description = "조회할 첨부 파일 ID") @PathVariable UUID binaryContentId);
 
   @Operation(summary = "여러 첨부 파일 조회")
   @ApiResponse(responseCode = "200", description = "첨부 파일 목록 조회 성공")
-  ResponseEntity<List<BinaryContentResponseDTO>> findAll(
+  ResponseEntity<List<BinaryContentResponseDto>> findAll(
       @Parameter(description = "조회할 첨부 파일 ID 목록") @RequestBody(required = false) List<UUID> ids);
 }

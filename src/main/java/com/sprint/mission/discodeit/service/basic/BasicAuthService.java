@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.auth.LoginDTO;
-import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.LoginFailedException;
@@ -25,7 +25,7 @@ public class BasicAuthService implements AuthService {
 
   @Override
   @Transactional
-  public UserResponseDTO login(LoginDTO loginDTO) {
+  public UserResponseDto login(LoginDTO loginDTO) {
     String username = loginDTO.username();
     String password = loginDTO.password();
 

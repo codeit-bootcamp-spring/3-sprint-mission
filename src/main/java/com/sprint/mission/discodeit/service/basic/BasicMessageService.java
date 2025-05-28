@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDTO;
-import com.sprint.mission.discodeit.dto.message.MessageRequestDTO;
-import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.message.MessageRequestDto;
+import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -10,7 +10,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundChannelException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundMessageException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
-import com.sprint.mission.discodeit.exception.UserNotInChannelException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -35,15 +34,15 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional
-  public Message create(MessageRequestDTO messageRequestDTO,
-      List<BinaryContentDTO> binaryContentDTOS) {
+  public Message create(MessageRequestDto messageRequestDTO,
+      List<BinaryContentDto> binaryContentDtos) {
     User user = findUser(messageRequestDTO.authorId());
     Channel channel = findChannel(messageRequestDTO.channelId());
 
     // Repository 저장용 데이터
-    List<BinaryContent> binaryContents = convertBinaryContentDTOS(binaryContentDTOS);
+    List<BinaryContent> binaryContents = convertBinaryContentDTOS(binaryContentDtos);
 
-    Message message = MessageRequestDTO.toEntity(messageRequestDTO);
+    Message message = MessageRequestDto.toEntity(messageRequestDTO);
     message.updateChannel(channel);
     message.updateAttachmentIds(binaryContents);
 
@@ -60,14 +59,14 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public MessageResponseDTO findById(UUID messageId) {
+  public MessageResponseDto findById(UUID messageId) {
     Message message = findMessage(messageId);
 
     return Message.toDTO(message);
   }
 
   @Override
-  public List<MessageResponseDTO> findAllByChannelId(UUID channelId) {
+  public List<MessageResponseDto> findAllByChannelId(UUID channelId) {
 
     return messageRepository.findAllByChannelId(channelId).stream()
         .map(Message::toDTO)
@@ -76,7 +75,7 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional
-  public MessageResponseDTO updateContent(UUID messageId, String content) {
+  public MessageResponseDto updateContent(UUID messageId, String content) {
     Message message = findMessage(messageId);
 
     message.updateContent(content);
@@ -105,9 +104,9 @@ public class BasicMessageService implements MessageService {
     messageRepository.deleteById(messageId);
   }
 
-  private List<BinaryContent> convertBinaryContentDTOS(List<BinaryContentDTO> binaryContentDTOS) {
-    return binaryContentDTOS.stream()
-        .map(BinaryContentDTO::toEntity)
+  private List<BinaryContent> convertBinaryContentDTOS(List<BinaryContentDto> binaryContentDtos) {
+    return binaryContentDtos.stream()
+        .map(BinaryContentDto::toEntity)
         .toList();
   }
 

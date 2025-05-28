@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDTO;
-import com.sprint.mission.discodeit.dto.user.UserRequestDTO;
-import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
-import com.sprint.mission.discodeit.dto.user.UserUpdateDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.user.UserRequestDto;
+import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -34,7 +34,7 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional
-  public User create(UserRequestDTO userRequestDTO, BinaryContentDTO binaryContentDTO) {
+  public User create(UserRequestDto userRequestDTO, BinaryContentDto binaryContentDTO) {
     String username = userRequestDTO.username();
     String email = userRequestDTO.email();
 
@@ -46,11 +46,11 @@ public class BasicUserService implements UserService {
       throw new DuplicateEmailException(email);
     }
 
-    User user = UserRequestDTO.toEntity(userRequestDTO);
+    User user = UserRequestDto.toEntity(userRequestDTO);
 
     // 프로필 이미지를 등록한 경우
     if (binaryContentDTO != null) {
-      BinaryContent profileImage = BinaryContentDTO.toEntity(binaryContentDTO);
+      BinaryContent profileImage = BinaryContentDto.toEntity(binaryContentDTO);
       user.updateProfile(profileImage);
       binaryContentRepository.save(profileImage);
     }
@@ -64,7 +64,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public UserResponseDTO findById(UUID id) {
+  public UserResponseDto findById(UUID id) {
     User user = findUser(id);
 
     UserStatus userStatus = findUserStatus(id);
@@ -76,8 +76,8 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public List<UserResponseDTO> findAll() {
-    List<UserResponseDTO> users = userRepository.findAll().stream()
+  public List<UserResponseDto> findAll() {
+    List<UserResponseDto> users = userRepository.findAll().stream()
         .map(user -> {
           UserStatus userStatus = findUserStatus(user.getId());
           user.updateStatus(userStatus);
@@ -90,8 +90,8 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional
-  public UserResponseDTO update(UUID id, UserUpdateDTO userUpdateDTO,
-      BinaryContentDTO binaryContentDTO) {
+  public UserResponseDto update(UUID id, UserUpdateDto userUpdateDTO,
+      BinaryContentDto binaryContentDTO) {
     User user = findUser(id);
 
     String newUsername = userUpdateDTO.newUsername();
@@ -118,7 +118,7 @@ public class BasicUserService implements UserService {
     // 프로필 이미지 처리
     BinaryContent profile = user.getProfile();
     if (binaryContentDTO != null) {
-      BinaryContent profileImage = BinaryContentDTO.toEntity(binaryContentDTO);
+      BinaryContent profileImage = BinaryContentDto.toEntity(binaryContentDTO);
       if (profile != null) {
         binaryContentRepository.deleteById(profile.getId());
       }

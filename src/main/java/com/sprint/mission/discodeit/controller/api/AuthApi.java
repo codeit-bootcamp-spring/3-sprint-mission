@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.auth.LoginDTO;
-import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -26,5 +26,5 @@ public interface AuthApi {
               @ExampleObject(value = "Wrong password")}))
       }
   )
-  ResponseEntity<UserResponseDTO> login(@RequestBody LoginDTO loginDTO);
+  ResponseEntity<UserResponseDto> login(@RequestBody LoginDTO loginDTO);
 }

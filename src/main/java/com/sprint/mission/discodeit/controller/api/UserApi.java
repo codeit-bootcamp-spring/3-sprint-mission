@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.user.UserRequestDTO;
-import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
-import com.sprint.mission.discodeit.dto.user.UserUpdateDTO;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDTO;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDTO;
+import com.sprint.mission.discodeit.dto.user.UserRequestDto;
+import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDto;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDto;
 import com.sprint.mission.discodeit.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -34,13 +34,13 @@ public interface UserApi {
       }
   )
  ResponseEntity<User> create(
-      @RequestPart("userCreateRequest") UserRequestDTO userRequestDTO,
+      @RequestPart("userCreateRequest") UserRequestDto userRequestDTO,
       @Parameter(description = "User 프로필 이미지")
       @RequestPart(value = "profile", required = false) MultipartFile profile);
 
   @Operation(summary = "전체 User 목록 조회")
   @ApiResponse(responseCode = "200", description = "User 목록 조회 성공")
-  ResponseEntity<List<UserResponseDTO>> findAll();
+  ResponseEntity<List<UserResponseDto>> findAll();
 
   @Operation(summary = "User 정보 수정")
   @ApiResponses(
@@ -54,8 +54,8 @@ public interface UserApi {
               @ExampleObject(value = "User with id {userId} not found")}))
       }
   )
-  ResponseEntity<UserResponseDTO> update(@PathVariable UUID userId,
-      @RequestPart("userUpdateRequest") UserUpdateDTO userUpdateDTO,
+  ResponseEntity<UserResponseDto> update(@PathVariable UUID userId,
+      @RequestPart("userUpdateRequest") UserUpdateDto userUpdateDTO,
       @Parameter(description = "수정할 User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile);
 
   @Operation(summary = "User 삭제")
@@ -79,7 +79,7 @@ public interface UserApi {
               @ExampleObject(value = "UserStatus with userId {userId} not found")}))
       }
   )
-  ResponseEntity<UserStatusResponseDTO> updateUserStatus(
+  ResponseEntity<UserStatusResponseDto> updateUserStatus(
       @Parameter(description = "상태를 변경할 User ID") @PathVariable UUID userId,
-      @RequestBody UserStatusUpdateDTO userStatusUpdateDTO);
+      @RequestBody UserStatusUpdateDto userStatusUpdateDTO);
 }

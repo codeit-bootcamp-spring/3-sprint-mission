@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusRequestDTO;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDTO;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateDTO;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusRequestDto;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDto;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundChannelException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundReadStatusException;
@@ -30,7 +30,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   @Transactional
-  public ReadStatus create(ReadStatusRequestDTO readStatusRequestDTO) {
+  public ReadStatus create(ReadStatusRequestDto readStatusRequestDTO) {
     UUID userId = readStatusRequestDTO.userId();
     UUID channelId = readStatusRequestDTO.channelId();
 
@@ -46,7 +46,7 @@ public class BasicReadStatusService implements ReadStatusService {
       throw new ReadStatusAlreadyExistsException();
     }
 
-    ReadStatus readStatus = ReadStatusRequestDTO.toEntity(readStatusRequestDTO);
+    ReadStatus readStatus = ReadStatusRequestDto.toEntity(readStatusRequestDTO);
 
     readStatusRepository.save(readStatus);
 
@@ -54,14 +54,14 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
-  public ReadStatusResponseDTO findById(UUID id) {
+  public ReadStatusResponseDto findById(UUID id) {
     ReadStatus readStatus = findReadStatus(id);
 
     return ReadStatus.toDTO(readStatus);
   }
 
   @Override
-  public List<ReadStatusResponseDTO> findAllByUserId(UUID userId) {
+  public List<ReadStatusResponseDto> findAllByUserId(UUID userId) {
     return readStatusRepository.findAllByUserId(userId).stream()
         .map(ReadStatus::toDTO)
         .toList();
@@ -69,7 +69,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   @Transactional
-  public ReadStatusResponseDTO update(UUID id, ReadStatusUpdateDTO readStatusUpdateDTO) {
+  public ReadStatusResponseDto update(UUID id, ReadStatusUpdateDto readStatusUpdateDTO) {
     ReadStatus readStatus = findReadStatus(id);
 
     readStatus.updateLastReadAt(readStatusUpdateDTO.newLastAt());

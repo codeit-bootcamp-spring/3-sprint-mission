@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.message.MessageRequestDTO;
-import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
-import com.sprint.mission.discodeit.dto.message.MessageUpdateDTO;
+import com.sprint.mission.discodeit.dto.message.MessageRequestDto;
+import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
+import com.sprint.mission.discodeit.dto.message.MessageUpdateDto;
 import com.sprint.mission.discodeit.entity.Message;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,14 +33,14 @@ public interface MessageApi {
       }
   )
   ResponseEntity<Message> create(
-      @RequestPart("messageCreateRequest") MessageRequestDTO messageRequestDTO,
+      @RequestPart("messageCreateRequest") MessageRequestDto messageRequestDTO,
       @Parameter(description = "Message 첨부 파일들")
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachedFiles);
 
 
   @Operation(summary = "Channel의 Message 목록 조회")
   @ApiResponse(responseCode = "200", description = "Message 읽음 상태 목록 조회 성공")
-  ResponseEntity<List<MessageResponseDTO>> findAllByChannelId(@RequestParam UUID channelId);
+  ResponseEntity<List<MessageResponseDto>> findAllByChannelId(@RequestParam UUID channelId);
 
   @Operation(summary = "Message 내용 수정")
   @ApiResponses(
@@ -51,9 +51,9 @@ public interface MessageApi {
               @ExampleObject(value = "Message with id {messageId} not found")}))
       }
   )
-  ResponseEntity<MessageResponseDTO> updateContent(
+  ResponseEntity<MessageResponseDto> updateContent(
       @Parameter(description = "수정할 Message ID") @PathVariable UUID messageId,
-      @RequestBody MessageUpdateDTO messageUpdateDTO);
+      @RequestBody MessageUpdateDto messageUpdateDTO);
 
   @Operation(summary = "Message 삭제")
   @ApiResponses(

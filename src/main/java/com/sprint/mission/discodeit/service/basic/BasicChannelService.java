@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelResponseDTO;
-import com.sprint.mission.discodeit.dto.channel.PrivateChannelDTO;
-import com.sprint.mission.discodeit.dto.channel.PublicChannelDTO;
-import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateDTO;
+import com.sprint.mission.discodeit.dto.channel.ChannelResponseDto;
+import com.sprint.mission.discodeit.dto.channel.PrivateChannelDto;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelDto;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -37,9 +37,9 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional
-  public Channel createPublicChannel(PublicChannelDTO publicChannelDTO) {
+  public Channel createPublicChannel(PublicChannelDto publicChannelDTO) {
 
-    Channel channel = PublicChannelDTO.toEntity(publicChannelDTO);
+    Channel channel = PublicChannelDto.toEntity(publicChannelDTO);
 
     channelRepository.save(channel);
 
@@ -48,8 +48,8 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional
-  public Channel createPrivateChannel(PrivateChannelDTO privateChannelDTO) {
-    Channel channel = PrivateChannelDTO.toEntity(privateChannelDTO);
+  public Channel createPrivateChannel(PrivateChannelDto privateChannelDTO) {
+    Channel channel = PrivateChannelDto.toEntity(privateChannelDTO);
 
     Channel createdChannel = channelRepository.save(channel);
 
@@ -62,17 +62,17 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public ChannelResponseDTO findById(UUID channelId) {
+  public ChannelResponseDto findById(UUID channelId) {
     Channel channel = findChannel(channelId);
 
     Instant lastMessageTime = getLastMessageTime(channel);
-    ChannelResponseDTO channelResponseDTO = Channel.toDTO(channel);
+    ChannelResponseDto channelResponseDTO = Channel.toDTO(channel);
 
     return channelResponseDTO;
   }
 
   @Override
-  public List<ChannelResponseDTO> findAllByUserId(UUID userId) {
+  public List<ChannelResponseDto> findAllByUserId(UUID userId) {
     List<UUID> participatedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
         .map(readStatus -> readStatus.getChannel().getId())
         .toList();
@@ -87,7 +87,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional
-  public ChannelResponseDTO update(UUID channelId, PublicChannelUpdateDTO publicChannelUpdateDTO) {
+  public ChannelResponseDto update(UUID channelId, PublicChannelUpdateDto publicChannelUpdateDTO) {
     Channel channel = findChannel(channelId);
 
     // PRIVATE 채널은 수정 불가

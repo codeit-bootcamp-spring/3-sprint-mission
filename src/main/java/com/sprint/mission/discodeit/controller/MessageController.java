@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.MessageApi;
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDTO;
-import com.sprint.mission.discodeit.dto.message.MessageRequestDTO;
-import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
-import com.sprint.mission.discodeit.dto.message.MessageUpdateDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.message.MessageRequestDto;
+import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
+import com.sprint.mission.discodeit.dto.message.MessageUpdateDto;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.util.FileConverter;
@@ -35,27 +35,27 @@ public class MessageController implements MessageApi {
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Message> create(
-      @RequestPart("messageCreateRequest") MessageRequestDTO messageRequestDTO,
+      @RequestPart("messageCreateRequest") MessageRequestDto messageRequestDTO,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachedFiles) {
-    List<BinaryContentDTO> binaryContentDTOS = FileConverter.resolveFileRequest(attachedFiles);
+    List<BinaryContentDto> binaryContentDtos = FileConverter.resolveFileRequest(attachedFiles);
 
-    Message createdMessage = messageService.create(messageRequestDTO, binaryContentDTOS);
+    Message createdMessage = messageService.create(messageRequestDTO, binaryContentDtos);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
   }
 
   @GetMapping
-  public ResponseEntity<List<MessageResponseDTO>> findAllByChannelId(@RequestParam UUID channelId) {
-    List<MessageResponseDTO> foundMessages = messageService.findAllByChannelId(channelId);
+  public ResponseEntity<List<MessageResponseDto>> findAllByChannelId(@RequestParam UUID channelId) {
+    List<MessageResponseDto> foundMessages = messageService.findAllByChannelId(channelId);
 
     return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
   }
 
   @PatchMapping(path = "/{messageId}")
-  public ResponseEntity<MessageResponseDTO> updateContent(
+  public ResponseEntity<MessageResponseDto> updateContent(
       @PathVariable UUID messageId,
-      @RequestBody MessageUpdateDTO messageUpdateDTO) {
-    MessageResponseDTO updatedMessage = messageService.updateContent(messageId,
+      @RequestBody MessageUpdateDto messageUpdateDTO) {
+    MessageResponseDto updatedMessage = messageService.updateContent(messageId,
         messageUpdateDTO.newContent());
 
     return ResponseEntity.status(HttpStatus.OK).body(updatedMessage);
