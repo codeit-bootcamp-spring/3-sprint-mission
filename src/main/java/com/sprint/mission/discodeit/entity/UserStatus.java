@@ -20,10 +20,10 @@ import lombok.Getter;
 public class UserStatus extends BaseUpdatableEntity {
 
   @OneToOne
-  @JoinColumn(name = "user_id")
+  @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @Column(name = "last_active_at")
+  @Column(name = "last_active_at", nullable = false)
   private Instant lastActiveAt;
 
   private static final long LOGIN_TIMEOUT_MINUTES = 5L;

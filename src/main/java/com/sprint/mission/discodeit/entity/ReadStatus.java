@@ -19,14 +19,14 @@ import lombok.Getter;
 public class ReadStatus extends BaseUpdatableEntity {
 
   @ManyToOne
-  @JoinColumn(name = "user_id")
+  @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
   @ManyToOne
-  @JoinColumn(name = "channel_id")
+  @JoinColumn(name = "channel_id", nullable = false)
   private Channel channel;
 
-  @Column(name = "last_read_at")
+  @Column(name = "last_read_at", nullable = false)
   private Instant lastReadAt;
 
   public ReadStatus() {

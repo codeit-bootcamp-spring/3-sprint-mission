@@ -19,13 +19,13 @@ import lombok.Getter;
 @Table(name = "users", schema = "discodeit")
 public class User extends BaseUpdatableEntity {
 
-  @Column(name = "username")
+  @Column(name = "username", nullable = false, unique = true)
   private String username;
 
-  @Column(name = "email")
+  @Column(name = "email", nullable = false, unique = true)
   private String email;
 
-  @Column(name = "password")
+  @Column(name = "password", nullable = false)
   private String password;
 
   @OneToOne

@@ -11,16 +11,16 @@ import lombok.Getter;
 @Table(name = "binary_contents", schema = "discodeit")
 public class BinaryContent extends BaseEntity {
 
-  @Column(name = "file_name")
+  @Column(name = "file_name", nullable = false)
   private String fileName;
 
-  @Column(name = "size")
+  @Column(name = "size", nullable = false)
   private Long size;
 
-  @Column(name = "content_type")
+  @Column(name = "content_type", nullable = false)
   private String contentType;
 
-  @Column(name = "bytes")
+  @Column(name = "bytes", nullable = false)
   private byte[] bytes;
 
   public BinaryContent() {
