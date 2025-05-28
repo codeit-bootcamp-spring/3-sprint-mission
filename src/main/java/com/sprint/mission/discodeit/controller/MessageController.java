@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -91,7 +92,8 @@ public class MessageController implements MessageApi {
     // 특정 채널 메시지 목록 조회
     @GetMapping
     public ResponseEntity<List<Message>> findAllByChannelId(
-        @RequestParam("channelId") UUID channelId
+        @RequestParam("channelId") UUID channelId,
+        Pageable pageable
     ) {
         List<Message> messageList = messageService.findAllByChannelId(channelId);
 

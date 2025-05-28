@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.request.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -67,10 +67,12 @@ public interface MessageApi {
     @Operation(summary = "Channel의 Message 목록 조회")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = Message.class)))),
+            content = @Content(schema = @Schema(implementation = Message.class))),
         @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음",
-            content = @Content(mediaType = "*/*", examples = @ExampleObject(value = "Channel not found")))
+            content = @Content(examples = @ExampleObject(value = "Channel not found")))
     })
     ResponseEntity<List<Message>> findAllByChannelId(
-        @Parameter(name = "channelId", description = "조회할 Channel ID", required = true) UUID channelId);
+        @Parameter(name = "channelId", description = "조회할 Channel ID", required = true) UUID channelId,
+        @Parameter(description = "페이징 정보 (page, size, sort)", required = true, schema = @Schema(implementation = Pageable.class)) Pageable pageable
+        );
 }

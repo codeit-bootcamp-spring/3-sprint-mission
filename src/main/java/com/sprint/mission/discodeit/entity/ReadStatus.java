@@ -1,41 +1,43 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.NoArgsConstructor;
 
+@Entity(name = "readStatus")
+@Table(name = "tbl_read_statuses")
 @Getter
-public class ReadStatus implements Serializable {
+@NoArgsConstructor
+public class ReadStatus extends BaseUpdatableEntity {
 
-    private static final long serialVersionUID = 1L;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Schema(hidden = true)
-    private UUID id;
+    @ManyToOne
+    @JoinColumn(name = "channel_id")
+    private Channel channel;
 
-    @Schema(hidden = true)
-    private Instant createdAt;
-
-    @Schema(hidden = true)
-    private Instant updatedAt;
-    //
-    @Schema(hidden = true)
-    private UUID userId;
-
-    @Schema(hidden = true)
-    private UUID channelId;
-
-    @Schema(hidden = true)
+    @Column(name = "last_read_at")
     private Instant lastReadAt;
 
-    public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
+    public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+        super.setId(UUID.randomUUID());
+        super.setCreatedAt(Instant.now());
         //
-        this.userId = userId;
-        this.channelId = channelId;
+        this.user = user;
+        this.channel = channel;
         this.lastReadAt = lastReadAt;
     }
 
@@ -47,7 +49,7 @@ public class ReadStatus implements Serializable {
         }
 
         if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
+            super.setUpdatedAt(Instant.now());
         }
     }
 }
