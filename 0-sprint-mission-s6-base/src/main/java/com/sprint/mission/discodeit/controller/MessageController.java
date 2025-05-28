@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.MessageApi;
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.request.MessageRequest;
+import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -28,14 +28,14 @@ public class MessageController implements MessageApi {
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Message> create(
-      @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
+      @RequestPart("messageCreateRequest") MessageRequest messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
-    List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
+    List<BinaryContentResponse> attachmentRequests = Optional.ofNullable(attachments)
         .map(files -> files.stream()
             .map(file -> {
               try {
-                return new BinaryContentCreateRequest(
+                return new BinaryContentResponse(
                     file.getOriginalFilename(),
                     file.getContentType(),
                     file.getBytes()
@@ -54,7 +54,7 @@ public class MessageController implements MessageApi {
 
   @PatchMapping(path = "{messageId}")
   public ResponseEntity<Message> update(@PathVariable("messageId") UUID messageId,
-      @RequestBody MessageUpdateRequest request) {
+      @RequestBody MessageResponse request) {
     Message updatedMessage = messageService.update(messageId, request);
     return ResponseEntity
         .status(HttpStatus.OK)

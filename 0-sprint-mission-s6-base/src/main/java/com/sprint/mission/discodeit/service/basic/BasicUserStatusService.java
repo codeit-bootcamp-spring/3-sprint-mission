@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.UserStatusRequest;
+import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -22,7 +22,7 @@ public class BasicUserStatusService implements UserStatusService {
   private final UserRepository userRepository;
 
   @Override
-  public UserStatus create(UserStatusCreateRequest request) {
+  public UserStatus create(UserStatusRequest request) {
     UUID userId = request.userId();
 
     if (!userRepository.existsById(userId)) {
@@ -51,7 +51,7 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
-  public UserStatus update(UUID userStatusId, UserStatusUpdateRequest request) {
+  public UserStatus update(UUID userStatusId, UserStatusResponse request) {
     Instant newLastActiveAt = request.newLastActiveAt();
 
     UserStatus userStatus = userStatusRepository.findById(userStatusId)
@@ -63,7 +63,7 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
-  public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
+  public UserStatus updateByUserId(UUID userId, UserStatusResponse request) {
     Instant newLastActiveAt = request.newLastActiveAt();
 
     UserStatus userStatus = userStatusRepository.findByUserId(userId)

@@ -3,8 +3,8 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.controller.api.ChannelApi;
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.ChannelRequest;
+import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class ChannelController implements ChannelApi {
   private final ChannelService channelService;
 
   @PostMapping(path = "public")
-  public ResponseEntity<Channel> create(@RequestBody PublicChannelCreateRequest request) {
+  public ResponseEntity<Channel> create(@RequestBody ChannelRequest request) {
     Channel createdChannel = channelService.create(request);
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -40,7 +40,7 @@ public class ChannelController implements ChannelApi {
 
   @PatchMapping(path = "{channelId}")
   public ResponseEntity<Channel> update(@PathVariable("channelId") UUID channelId,
-      @RequestBody PublicChannelUpdateRequest request) {
+      @RequestBody ChannelResponse request) {
     Channel udpatedChannel = channelService.update(channelId, request);
     return ResponseEntity
         .status(HttpStatus.OK)

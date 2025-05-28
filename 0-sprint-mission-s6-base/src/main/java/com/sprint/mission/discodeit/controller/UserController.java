@@ -2,9 +2,9 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.request.UserRequest;
+import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -33,10 +33,10 @@ public class UserController implements UserApi {
   @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
   @Override
   public ResponseEntity<User> create(
-      @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
+      @RequestPart("userCreateRequest") UserRequest userCreateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
+    Optional<BinaryContentResponse> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
     User createdUser = userService.create(userCreateRequest, profileRequest);
     return ResponseEntity
@@ -54,7 +54,7 @@ public class UserController implements UserApi {
       @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
+    Optional<BinaryContentResponse> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
     User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
     return ResponseEntity
@@ -83,19 +83,19 @@ public class UserController implements UserApi {
   @PatchMapping(path = "{userId}/userStatus")
   @Override
   public ResponseEntity<UserStatus> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
-      @RequestBody UserStatusUpdateRequest request) {
+      @RequestBody UserStatusResponse request) {
     UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, request);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(updatedUserStatus);
   }
 
-  private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
+  private Optional<BinaryContentResponse> resolveProfileRequest(MultipartFile profileFile) {
     if (profileFile.isEmpty()) {
       return Optional.empty();
     } else {
       try {
-        BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
+        BinaryContentResponse binaryContentCreateRequest = new BinaryContentResponse(
             profileFile.getOriginalFilename(),
             profileFile.getContentType(),
             profileFile.getBytes()

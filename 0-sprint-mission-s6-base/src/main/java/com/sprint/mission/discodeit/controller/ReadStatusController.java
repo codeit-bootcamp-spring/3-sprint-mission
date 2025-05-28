@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
-import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.ReadStatusRequest;
+import com.sprint.mission.discodeit.dto.response.ReadStatusResponse;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class ReadStatusController implements ReadStatusApi {
   private final ReadStatusService readStatusService;
 
   @PostMapping
-  public ResponseEntity<ReadStatus> create(@RequestBody ReadStatusCreateRequest request) {
+  public ResponseEntity<ReadStatus> create(@RequestBody ReadStatusRequest request) {
     ReadStatus createdReadStatus = readStatusService.create(request);
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -30,7 +30,7 @@ public class ReadStatusController implements ReadStatusApi {
 
   @PatchMapping(path = "{readStatusId}")
   public ResponseEntity<ReadStatus> update(@PathVariable("readStatusId") UUID readStatusId,
-      @RequestBody ReadStatusUpdateRequest request) {
+      @RequestBody ReadStatusResponse request) {
     ReadStatus updatedReadStatus = readStatusService.update(readStatusId, request);
     return ResponseEntity
         .status(HttpStatus.OK)

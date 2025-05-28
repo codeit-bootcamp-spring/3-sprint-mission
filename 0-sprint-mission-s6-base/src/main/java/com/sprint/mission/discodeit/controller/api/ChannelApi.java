@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.ChannelRequest;
+import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,7 +30,7 @@ public interface ChannelApi {
       )
   })
   ResponseEntity<Channel> create(
-      @Parameter(description = "Public Channel 생성 정보") PublicChannelCreateRequest request
+      @Parameter(description = "Public Channel 생성 정보") ChannelRequest request
   );
 
   @Operation(summary = "Private Channel 생성")
@@ -61,7 +61,7 @@ public interface ChannelApi {
   })
   ResponseEntity<Channel> update(
       @Parameter(description = "수정할 Channel ID") UUID channelId,
-      @Parameter(description = "수정할 Channel 정보") PublicChannelUpdateRequest request
+      @Parameter(description = "수정할 Channel 정보") ChannelResponse request
   );
 
   @Operation(summary = "Channel 삭제")

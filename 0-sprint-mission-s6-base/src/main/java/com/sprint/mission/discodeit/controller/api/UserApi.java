@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.UserRequest;
+import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -40,7 +40,7 @@ public interface UserApi {
       @Parameter(
           description = "User 생성 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
-      ) UserCreateRequest userCreateRequest,
+      ) UserRequest userCreateRequest,
       @Parameter(
           description = "User 프로필 이미지",
           content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -106,6 +106,6 @@ public interface UserApi {
   })
   ResponseEntity<UserStatus> updateUserStatusByUserId(
       @Parameter(description = "상태를 변경할 User ID") UUID userId,
-      @Parameter(description = "변경할 User 온라인 상태 정보") UserStatusUpdateRequest request
+      @Parameter(description = "변경할 User 온라인 상태 정보") UserStatusResponse request
   );
 }

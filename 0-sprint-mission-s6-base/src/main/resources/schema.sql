@@ -8,7 +8,8 @@ CREATE TABLE binary_contents
     content_type VARCHAR(100) NOT NULL,
     bytes        BYTEA        NOT NULL
 );
-
+alter table binary_contents
+    drop bytes;
 
 
 CREATE TABLE users
