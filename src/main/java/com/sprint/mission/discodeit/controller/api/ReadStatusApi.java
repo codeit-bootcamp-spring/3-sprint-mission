@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.controller.api;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusRequestDto;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDto;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateDto;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -28,7 +27,7 @@ public interface ReadStatusApi {
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "201", description = "Message 읽음 상태가 성공적으로 생성됨",
-                            content = @Content(schema = @Schema(implementation = ReadStatus.class))),
+                            content = @Content(schema = @Schema(implementation = ReadStatusResponseDto.class))),
                     @ApiResponse(responseCode = "400", description = "이미 읽음 상태가 존재함"
                             , content = @Content(examples = {
                             @ExampleObject(value = "ReadStatus with userId {userId} and channelId {channelId} already exists")})),

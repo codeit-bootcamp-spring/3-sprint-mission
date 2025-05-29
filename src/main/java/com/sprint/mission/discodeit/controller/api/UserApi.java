@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDto;
-import com.sprint.mission.discodeit.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -51,7 +50,7 @@ public interface UserApi {
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "200", description = "User 정보가 성공적으로 수정됨",
-                            content = @Content(schema = @Schema(implementation = User.class))),
+                            content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
                     @ApiResponse(responseCode = "400", description = "같은 email 또는 name을 사용하는 User가 이미 존재함"
                             , content = @Content(examples = {
                             @ExampleObject(value = "user with email {newEmail} already exists")})),
