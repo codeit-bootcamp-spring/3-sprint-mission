@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.request.UserRequest;
-import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
@@ -16,15 +13,13 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
@@ -40,16 +35,13 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional
-  public UserResponse create(UserRequest request,
-      MultipartFile userProfile) {
-    String username = request.username();
-    String email = request.email();
+  public UserResponse create(UserRequest request, MultipartFile userProfile) {
 
-    if (userRepository.existsByEmail(email)) {
-      throw new IllegalArgumentException("User with email " + email + " already exists");
+    if (userRepository.existsByEmail(request.email())) {
+      throw new IllegalArgumentException("User with email already exists");
     }
-    if (userRepository.existsByUsername(username)) {
-      throw new IllegalArgumentException("User with username " + username + " already exists");
+    if (userRepository.existsByUsername(request.username())) {
+      throw new IllegalArgumentException("User with username already exists");
     }
 
     BinaryContent newProFile = null;
@@ -61,14 +53,14 @@ public class BasicUserService implements UserService {
       ));
       binaryContentStorage.put(newProFile.getId(), convertToBytes(userProfile));
     }
-    User newUser = new User(username, email, request.password(), newProFile);
-    User createdUser = userRepository.save(newUser);
-    UserStatus newUserStaus = userStatusRepository.save(UserStatus.createUserStatus(newUser));
-    newUser.updateUserStatus(newUserStaus);
+    User newUser = userRepository.save(User.createUser(
+        request.username(), request.email(), request.password(), newProFile));
+    UserStatus newUserStatus = userStatusRepository.save(UserStatus.createUserStatus(newUser));
+    newUser.updateUserStatus(newUserStatus);
 
     log.info("생성된 유저 : {}", newUser);
 
-    return userMapper.entityToDto(createdUser);
+    return userMapper.entityToDto(newUser);
   }
 
   @Override
@@ -88,31 +80,33 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional
-  public UserResponse update(UUID id, UserRequest request,
-      MultipartFile userProFile) {
+  public UserResponse update(UUID id, UserRequest.Update request, MultipartFile userProfile) {
     User user = userRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("User with id " + id + " not found"));
 
-    String newUsername = request.username();
-    String newEmail = request.email();
-    if (userRepository.existsByEmail(newEmail)) {
-      throw new IllegalArgumentException("User with email " + newEmail + " already exists");
+    String newUsername = request.newUsername();
+    String newEmail = request.newEmail();
+
+    if (newEmail != null && !newEmail.equals(user.getEmail()) && userRepository.existsByEmail(
+        newEmail)) {
+      throw new IllegalArgumentException("User with email already exists");
     }
-    if (userRepository.existsByUsername(newUsername)) {
-      throw new IllegalArgumentException("User with username " + newUsername + " already exists");
+    if (newUsername != null && !newUsername.equals(user.getUsername())
+        && userRepository.existsByUsername(newUsername)) {
+      throw new IllegalArgumentException("User with username already exists");
     }
 
     Optional.ofNullable(newUsername).ifPresent(user::updateName);
     Optional.ofNullable(newEmail).ifPresent(user::updateEmail);
-    Optional.ofNullable(request.password()).ifPresent(user::updatePassword);
-    Optional.ofNullable(userProFile).ifPresent(profile -> {
-      if(profile.isEmpty()) {
+    Optional.ofNullable(request.newPassword()).ifPresent(user::updatePassword);
+    Optional.ofNullable(userProfile).ifPresent(profile -> {
+      if (!profile.isEmpty()) {
         BinaryContent binaryContent = binaryContentRepository.save(
             BinaryContent.createBinaryContent(
                 profile.getOriginalFilename(),
                 profile.getSize(),
                 profile.getContentType()));
-        binaryContentStorage.put(binaryContent.getId(),convertToBytes(profile));
+        binaryContentStorage.put(binaryContent.getId(), convertToBytes(profile));
         user.updateProfileId(binaryContent);
       }
     });
@@ -123,18 +117,15 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public void delete(UUID userId) {
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+  public void delete(UUID id) {
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new NoSuchElementException("User with id " + id + " not found"));
 
-    Optional.ofNullable(user.getProfileId())
-        .ifPresent(binaryContentRepository::deleteById);
-    userStatusRepository.deleteByUserId(userId);
+    userStatusRepository.deleteByUserId(id);
 
-    userRepository.deleteById(userId);
+    userRepository.deleteById(id);
   }
 
-  =
 
   private byte[] convertToBytes(MultipartFile imageFile) {
     try {

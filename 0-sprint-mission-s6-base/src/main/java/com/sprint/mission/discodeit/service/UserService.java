@@ -21,7 +21,7 @@ public interface UserService {
 
   List<UserResponse> findAll();
 
-  UserResponse update(UUID id, UserRequest request, MultipartFile userProfileImage);
+  UserResponse update(UUID id, UserRequest.Update request, MultipartFile userProfileImage);
 
   void delete(UUID id);
 }

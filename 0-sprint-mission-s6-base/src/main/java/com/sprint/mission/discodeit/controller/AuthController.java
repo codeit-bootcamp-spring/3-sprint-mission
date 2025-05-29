@@ -19,7 +19,7 @@ public class AuthController implements AuthApi {
 
   private final AuthService authService;
 
-  @PostMapping(path = "login")
+  @PostMapping(path = "/login")
   @Override
   public ResponseEntity<CustomApiResponse<UserResponse>> login(
       @RequestBody UserRequest.Login loginRequest) {

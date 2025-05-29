@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.request.MessageRequest;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.global.response.CustomApiResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,54 +28,42 @@ public class MessageController implements MessageApi {
   private final MessageService messageService;
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<Message> create(
-      @RequestPart("messageCreateRequest") MessageRequest messageCreateRequest,
+  @Override
+  public ResponseEntity<CustomApiResponse<MessageResponse>> create(
+      @RequestPart("messageCreateRequest") MessageRequest.Create messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
-    List<BinaryContentResponse> attachmentRequests = Optional.ofNullable(attachments)
-        .map(files -> files.stream()
-            .map(file -> {
-              try {
-                return new BinaryContentResponse(
-                    file.getOriginalFilename(),
-                    file.getContentType(),
-                    file.getBytes()
-                );
-              } catch (IOException e) {
-                throw new RuntimeException(e);
-              }
-            })
-            .toList())
-        .orElse(new ArrayList<>());
-    Message createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(createdMessage);
+        .body(CustomApiResponse.created(messageService.create(messageCreateRequest, attachments)));
   }
 
   @PatchMapping(path = "{messageId}")
-  public ResponseEntity<Message> update(@PathVariable("messageId") UUID messageId,
-      @RequestBody MessageResponse request) {
-    Message updatedMessage = messageService.update(messageId, request);
+  @Override
+  public ResponseEntity<CustomApiResponse<MessageResponse>> update(
+      @PathVariable("messageId") UUID messageId,
+      @RequestBody MessageRequest.Update request) {
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(updatedMessage);
+        .body(CustomApiResponse.success(messageService.update(messageId, request)));
   }
 
   @DeleteMapping(path = "{messageId}")
-  public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
+  @Override
+  public ResponseEntity<CustomApiResponse<Void>> delete(
+      @PathVariable("messageId") UUID messageId) {
     messageService.delete(messageId);
     return ResponseEntity
-        .status(HttpStatus.NO_CONTENT)
-        .build();
+        .status(HttpStatus.OK)
+        .body(CustomApiResponse.success("메시지 삭제 성공"));
   }
 
   @GetMapping
-  public ResponseEntity<List<Message>> findAllByChannelId(
+  @Override
+  public ResponseEntity<CustomApiResponse<List<MessageResponse>>> findAllByChannelId(
       @RequestParam("channelId") UUID channelId) {
-    List<Message> messages = messageService.findAllByChannelId(channelId);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(messages);
+        .body(CustomApiResponse.success(messageService.findAllByChannelId(channelId)));
   }
 }

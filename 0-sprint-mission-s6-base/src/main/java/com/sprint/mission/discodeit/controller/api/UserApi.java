@@ -2,10 +2,13 @@ package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserRequest;
+import com.sprint.mission.discodeit.dto.request.UserStatusRequest;
+import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.global.response.CustomApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -36,7 +39,7 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject(value = "User with email {email} already exists"))
       ),
   })
-  ResponseEntity<User> create(
+  ResponseEntity<CustomApiResponse<UserResponse>> create(
       @Parameter(
           description = "User 생성 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
@@ -62,9 +65,9 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject("user with email {newEmail} already exists"))
       )
   })
-  ResponseEntity<User> update(
-      @Parameter(description = "수정할 User ID") UUID userId,
-      @Parameter(description = "수정할 User 정보") UserUpdateRequest userUpdateRequest,
+  ResponseEntity<CustomApiResponse<UserResponse>> update(
+      @Parameter(description = "수정할 User ID") UUID id,
+      @Parameter(description = "수정할 User 정보") UserRequest.Update userRequest,
       @Parameter(description = "수정할 User 프로필 이미지") MultipartFile profile
   );
 
@@ -80,8 +83,8 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject(value = "User with id {id} not found"))
       )
   })
-  ResponseEntity<Void> delete(
-      @Parameter(description = "삭제할 User ID") UUID userId
+  ResponseEntity<CustomApiResponse<Void>> delete(
+      @Parameter(description = "삭제할 User ID") UUID id
   );
 
   @Operation(summary = "전체 User 목록 조회")
@@ -91,7 +94,7 @@ public interface UserApi {
           content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDto.class)))
       )
   })
-  ResponseEntity<List<UserDto>> findAll();
+  ResponseEntity<CustomApiResponse<List<UserResponse>>> findAll();
 
   @Operation(summary = "User 온라인 상태 업데이트")
   @ApiResponses(value = {
@@ -104,8 +107,8 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject(value = "UserStatus with userId {userId} not found"))
       )
   })
-  ResponseEntity<UserStatus> updateUserStatusByUserId(
-      @Parameter(description = "상태를 변경할 User ID") UUID userId,
-      @Parameter(description = "변경할 User 온라인 상태 정보") UserStatusResponse request
+  ResponseEntity<CustomApiResponse<UserStatusResponse>> updateUserStatusByUserId(
+      @Parameter(description = "상태를 변경할 User ID") UUID id,
+      @Parameter(description = "변경할 User 온라인 상태 정보") UserStatusRequest.Update request
   );
 }

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.controller.api;
 import com.sprint.mission.discodeit.dto.request.ReadStatusRequest;
 import com.sprint.mission.discodeit.dto.response.ReadStatusResponse;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.global.response.CustomApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -35,8 +36,8 @@ public interface ReadStatusApi {
           content = @Content(examples = @ExampleObject(value = "ReadStatus with userId {userId} and channelId {channelId} already exists"))
       )
   })
-  ResponseEntity<ReadStatus> create(
-      @Parameter(description = "Message 읽음 상태 생성 정보") ReadStatusRequest request
+  ResponseEntity<CustomApiResponse<ReadStatusResponse>> create(
+      @Parameter(description = "Message 읽음 상태 생성 정보") ReadStatusRequest.Create request
   );
 
   @Operation(summary = "Message 읽음 상태 수정")
@@ -50,9 +51,9 @@ public interface ReadStatusApi {
           content = @Content(examples = @ExampleObject(value = "ReadStatus with id {readStatusId} not found"))
       )
   })
-  ResponseEntity<ReadStatus> update(
+  ResponseEntity<CustomApiResponse<ReadStatusResponse>> update(
       @Parameter(description = "수정할 읽음 상태 ID") UUID readStatusId,
-      @Parameter(description = "수정할 읽음 상태 정보") ReadStatusResponse request
+      @Parameter(description = "수정할 읽음 상태 정보") ReadStatusRequest.Update request
   );
 
   @Operation(summary = "User의 Message 읽음 상태 목록 조회")
@@ -62,7 +63,7 @@ public interface ReadStatusApi {
           content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReadStatus.class)))
       )
   })
-  ResponseEntity<List<ReadStatus>> findAllByUserId(
+  ResponseEntity<CustomApiResponse<List<ReadStatusResponse>>> findAllByUserId(
       @Parameter(description = "조회할 User ID") UUID userId
   );
 } 

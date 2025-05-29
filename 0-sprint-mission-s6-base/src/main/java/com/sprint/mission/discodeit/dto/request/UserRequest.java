@@ -12,4 +12,12 @@ public record UserRequest(
   ) {
 
   }
+
+  public record Update(
+      String newUsername,
+      String newEmail,
+      String newPassword
+  ) {
+
+  }
 }

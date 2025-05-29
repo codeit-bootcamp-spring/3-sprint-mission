@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.controller.api;
 import com.sprint.mission.discodeit.dto.request.MessageRequest;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.global.response.CustomApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -33,11 +34,11 @@ public interface MessageApi {
           content = @Content(examples = @ExampleObject(value = "Channel | Author with id {channelId | authorId} not found"))
       ),
   })
-  ResponseEntity<Message> create(
+  ResponseEntity<CustomApiResponse<MessageResponse>> create(
       @Parameter(
           description = "Message 생성 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
-      ) MessageRequest messageCreateRequest,
+      ) MessageRequest.Create messageCreateRequest,
       @Parameter(
           description = "Message 첨부 파일들",
           content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -55,9 +56,9 @@ public interface MessageApi {
           content = @Content(examples = @ExampleObject(value = "Message with id {messageId} not found"))
       ),
   })
-  ResponseEntity<Message> update(
+  ResponseEntity<CustomApiResponse<MessageResponse>> update(
       @Parameter(description = "수정할 Message ID") UUID messageId,
-      @Parameter(description = "수정할 Message 내용") MessageResponse request
+      @Parameter(description = "수정할 Message 내용") MessageRequest.Update request
   );
 
   @Operation(summary = "Message 삭제")
@@ -70,7 +71,7 @@ public interface MessageApi {
           content = @Content(examples = @ExampleObject(value = "Message with id {messageId} not found"))
       ),
   })
-  ResponseEntity<Void> delete(
+  ResponseEntity<CustomApiResponse<Void>> delete(
       @Parameter(description = "삭제할 Message ID") UUID messageId
   );
 
@@ -81,7 +82,7 @@ public interface MessageApi {
           content = @Content(array = @ArraySchema(schema = @Schema(implementation = Message.class)))
       )
   })
-  ResponseEntity<List<Message>> findAllByChannelId(
+  ResponseEntity<CustomApiResponse<List<MessageResponse>>> findAllByChannelId(
       @Parameter(description = "조회할 Channel ID") UUID channelId
   );
 } 

@@ -13,11 +13,13 @@ public interface UserStatusService {
 
   UserStatusResponse find(UUID id);
 
+  UserStatusResponse findByUserId(UUID userId);
+
   List<UserStatusResponse> findAll();
 
-  UserStatus update(UUID id, UserStatusRequest.Update request);
+  UserStatusResponse updateByUserId(UUID userId, UserStatusRequest.Update request);
 
-  UserStatus updateByUserId(UUID userId, UserStatusRequest.Update request);
+  void delete(UUID id);
 
-  void delete(UUID userStatusId);
+  void deleteByUserId(UUID userId);
 }

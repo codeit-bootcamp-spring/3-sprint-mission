@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
 import com.sprint.mission.discodeit.dto.request.ReadStatusRequest;
 import com.sprint.mission.discodeit.dto.response.ReadStatusResponse;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.global.response.CustomApiResponse;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,27 +22,30 @@ public class ReadStatusController implements ReadStatusApi {
   private final ReadStatusService readStatusService;
 
   @PostMapping
-  public ResponseEntity<ReadStatus> create(@RequestBody ReadStatusRequest request) {
-    ReadStatus createdReadStatus = readStatusService.create(request);
+  @Override
+  public ResponseEntity<CustomApiResponse<ReadStatusResponse>> create(
+      @RequestBody ReadStatusRequest.Create request) {
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(createdReadStatus);
+        .body(CustomApiResponse.created(readStatusService.create(request)));
   }
 
   @PatchMapping(path = "{readStatusId}")
-  public ResponseEntity<ReadStatus> update(@PathVariable("readStatusId") UUID readStatusId,
-      @RequestBody ReadStatusResponse request) {
-    ReadStatus updatedReadStatus = readStatusService.update(readStatusId, request);
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(updatedReadStatus);
+  @Override
+  public ResponseEntity<CustomApiResponse<ReadStatusResponse>> update(
+      @PathVariable("readStatusId") UUID readStatusId,
+      @RequestBody ReadStatusRequest.Update request) {
+    return ResponseEntity.ok(
+        CustomApiResponse.success(readStatusService.update(readStatusId, request))
+    );
   }
 
   @GetMapping
-  public ResponseEntity<List<ReadStatus>> findAllByUserId(@RequestParam("userId") UUID userId) {
-    List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(readStatuses);
+  @Override
+  public ResponseEntity<CustomApiResponse<List<ReadStatusResponse>>> findAllByUserId(
+      @RequestParam("userId") UUID userId) {
+    return ResponseEntity.ok(
+        CustomApiResponse.success(readStatusService.findAllByUserId(userId))
+    );
   }
 }

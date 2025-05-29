@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ChannelRequest;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.global.response.CustomApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -29,8 +30,8 @@ public interface ChannelApi {
           content = @Content(schema = @Schema(implementation = Channel.class))
       )
   })
-  ResponseEntity<Channel> create(
-      @Parameter(description = "Public Channel 생성 정보") ChannelRequest request
+  ResponseEntity<CustomApiResponse<ChannelResponse>> create(
+      @Parameter(description = "Public Channel 생성 정보") ChannelRequest.CreatePublic request
   );
 
   @Operation(summary = "Private Channel 생성")
@@ -40,8 +41,8 @@ public interface ChannelApi {
           content = @Content(schema = @Schema(implementation = Channel.class))
       )
   })
-  ResponseEntity<Channel> create(
-      @Parameter(description = "Private Channel 생성 정보") PrivateChannelCreateRequest request
+  ResponseEntity<CustomApiResponse<ChannelResponse>> create(
+      @Parameter(description = "Private Channel 생성 정보") ChannelRequest.CreatePrivate request
   );
 
   @Operation(summary = "Channel 정보 수정")
@@ -59,9 +60,9 @@ public interface ChannelApi {
           content = @Content(examples = @ExampleObject(value = "Private channel cannot be updated"))
       )
   })
-  ResponseEntity<Channel> update(
+  ResponseEntity<CustomApiResponse<ChannelResponse>> update(
       @Parameter(description = "수정할 Channel ID") UUID channelId,
-      @Parameter(description = "수정할 Channel 정보") ChannelResponse request
+      @Parameter(description = "수정할 Channel 정보") ChannelRequest.Update publicChannelRequest
   );
 
   @Operation(summary = "Channel 삭제")
@@ -74,7 +75,7 @@ public interface ChannelApi {
           content = @Content(examples = @ExampleObject(value = "Channel with id {channelId} not found"))
       )
   })
-  ResponseEntity<Void> delete(
+  ResponseEntity<CustomApiResponse<Void>> delete(
       @Parameter(description = "삭제할 Channel ID") UUID channelId
   );
 
@@ -85,7 +86,7 @@ public interface ChannelApi {
           content = @Content(array = @ArraySchema(schema = @Schema(implementation = ChannelDto.class)))
       )
   })
-  ResponseEntity<List<ChannelDto>> findAll(
+  ResponseEntity<CustomApiResponse<List<ChannelResponse>>> findAll(
       @Parameter(description = "조회할 User ID") UUID userId
   );
 } 
