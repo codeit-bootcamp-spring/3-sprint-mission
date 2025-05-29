@@ -25,10 +25,10 @@ public interface ChannelApi {
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "201", description = "Public Channel이 성공적으로 생성됨",
-          content = @Content(schema = @Schema(implementation = Channel.class))
+          content = @Content(schema = @Schema(implementation = ChannelDto.class))
       )
   })
-  ResponseEntity<Channel> create(
+  ResponseEntity<ChannelDto> create(
       @Parameter(description = "Public Channel 생성 정보") PublicChannelCreateRequest request
   );
 
@@ -36,10 +36,10 @@ public interface ChannelApi {
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "201", description = "Private Channel이 성공적으로 생성됨",
-          content = @Content(schema = @Schema(implementation = Channel.class))
+          content = @Content(schema = @Schema(implementation = ChannelDto.class))
       )
   })
-  ResponseEntity<Channel> create(
+  ResponseEntity<ChannelDto> create(
       @Parameter(description = "Private Channel 생성 정보") PrivateChannelCreateRequest request
   );
 
@@ -47,7 +47,7 @@ public interface ChannelApi {
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "200", description = "Channel 정보가 성공적으로 수정됨",
-          content = @Content(schema = @Schema(implementation = Channel.class))
+          content = @Content(schema = @Schema(implementation = ChannelDto.class))
       ),
       @ApiResponse(
           responseCode = "404", description = "Channel을 찾을 수 없음",
@@ -58,7 +58,7 @@ public interface ChannelApi {
           content = @Content(examples = @ExampleObject(value = "Private channel cannot be updated"))
       )
   })
-  ResponseEntity<Channel> update(
+  ResponseEntity<ChannelDto> update(
       @Parameter(description = "수정할 Channel ID") UUID channelId,
       @Parameter(description = "수정할 Channel 정보") PublicChannelUpdateRequest request
   );

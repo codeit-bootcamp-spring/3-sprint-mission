@@ -30,28 +30,28 @@ public class ChannelController implements ChannelApi {
   private final ChannelService channelService;
 
   @PostMapping(path = "public")
-  public ResponseEntity<Channel> create(@RequestBody PublicChannelCreateRequest request) {
-    Channel createdChannel = channelService.create(request);
+  public ResponseEntity<ChannelDto> create(@RequestBody PublicChannelCreateRequest request) {
+    ChannelDto createdChannelDto = channelService.create(request);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(createdChannel);
+        .body(createdChannelDto);
   }
 
   @PostMapping(path = "private")
-  public ResponseEntity<Channel> create(@RequestBody PrivateChannelCreateRequest request) {
-    Channel createdChannel = channelService.create(request);
+  public ResponseEntity<ChannelDto> create(@RequestBody PrivateChannelCreateRequest request) {
+    ChannelDto createdChannelDto = channelService.create(request);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(createdChannel);
+        .body(createdChannelDto);
   }
 
   @PatchMapping(path = "{channelId}")
-  public ResponseEntity<Channel> update(@PathVariable("channelId") UUID channelId,
+  public ResponseEntity<ChannelDto> update(@PathVariable("channelId") UUID channelId,
       @RequestBody PublicChannelUpdateRequest request) {
-    Channel udpatedChannel = channelService.update(channelId, request);
+    ChannelDto udpatedChannelDto = channelService.update(channelId, request);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(udpatedChannel);
+        .body(udpatedChannelDto);
   }
 
   @DeleteMapping(path = "{channelId}")
@@ -64,9 +64,9 @@ public class ChannelController implements ChannelApi {
 
   @GetMapping
   public ResponseEntity<List<ChannelDto>> findAll(@RequestParam("userId") UUID userId) {
-    List<ChannelDto> channels = channelService.findAllByUserId(userId);
+    List<ChannelDto> channelsDto = channelService.findAllByUserId(userId);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(channels);
+        .body(channelsDto);
   }
 }
