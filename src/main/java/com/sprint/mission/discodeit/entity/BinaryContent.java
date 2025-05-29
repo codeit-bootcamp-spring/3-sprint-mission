@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -21,6 +23,7 @@ import java.util.UUID;
 @Getter
 @Entity
 @NoArgsConstructor
+@SuperBuilder
 @Table(name = "binary_contents", schema = "discodeit")
 public class BinaryContent extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;

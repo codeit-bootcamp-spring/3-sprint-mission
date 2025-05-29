@@ -4,16 +4,21 @@ import com.sprint.mission.discodeit.Dto.userStatus.UpdateUserStatusResponse;
 import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateResponse;
 import com.sprint.mission.discodeit.Dto.userStatus.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
@@ -29,7 +34,25 @@ public class BasicUserStatusService implements UserStatusService {
 
   private final JpaUserStatusRepository userStatusRepository;
 //  private final UserStatusRepository userStatusRepository;
-//  private final UserRepository userRepository;
+  private final JpaUserRepository userRepository;
+
+  @Transactional
+  @Override
+  public UpdateUserStatusResponse updateByUserId(UUID userId, Instant newLastActiveAt) {
+    Objects.requireNonNull(userId, "no userId in param");
+    Objects.requireNonNull(newLastActiveAt, "no userId in param");
+
+    User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("UserStatus with userId " + userId + " not found"));
+    UserStatus userStatus = user.getStatus();
+    userStatus.setLastActiveAt(newLastActiveAt);
+
+    UpdateUserStatusResponse response = new UpdateUserStatusResponse(
+            userStatus.getId(),
+            userStatus.getUser().getId(),
+            newLastActiveAt
+    );
+    return response;
+  }
 
   @Override
   public UserStatusCreateResponse create(UserStatusCreateRequest request) {
@@ -69,38 +92,15 @@ public class BasicUserStatusService implements UserStatusService {
 //    );
   }
 
-
-  @Override
-  public UpdateUserStatusResponse updateByUserId(UUID userId, Instant newLastActiveAt) {
-//    UserStatus userStatus = userStatusRepository.findUserStatusByUserId(userId);
-//
-//    if (userStatus == null) {
-//      throw new NoSuchElementException("UserStatus with userId " + userId + " not found");
-//    }
-//    userStatusRepository.updateByUserId(
-//        Objects.requireNonNull(userId, "no userId in param"),
-//        Objects.requireNonNull(newLastActiveAt, "no userId in param")
-//    );
-//
-//    boolean online = userStatusRepository.isOnline(userStatus.getId());
-//
-//    UpdateUserStatusResponse response = new UpdateUserStatusResponse(
-//        userStatus.getId(),
-//        userStatus.getCreatedAt(),
-//        userStatus.getUpdatedAt(),
-//        userStatus.getUserId(),
-//        newLastActiveAt,
-//        online
-//    );
-//
-//    return response;
-    return null;
-  }
-
   @Override
   public void delete(UUID userStatusId) {
 //    Objects.requireNonNull(userStatusId, "no userStatusId");
 //    userStatusRepository.deleteById(userStatusId); // throw
 
+  }
+
+  private static boolean isOnline(UserStatus userStatus) {
+    Instant now = Instant.now();
+    return Duration.between(userStatus.getLastActiveAt(), now).toMinutes() < 5;
   }
 }

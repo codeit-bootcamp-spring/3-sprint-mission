@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.Dto.message;
 
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.User;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -20,8 +23,8 @@ public record FoundMessagesResponse (
     Instant createdAt,
     Instant updatedAt,
     String content,
-    UUID channelId,
-    UUID authorId,
+    UUID channel,
+    UUID author,
     List<UUID> attachmentIds
 ){
 

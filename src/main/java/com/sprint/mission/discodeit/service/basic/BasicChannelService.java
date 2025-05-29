@@ -1,22 +1,23 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.Dto.channel.*;
+import com.sprint.mission.discodeit.Dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.Dto.user.UpdateUserResponse;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
+import com.sprint.mission.discodeit.repository.jpa.*;
 import com.sprint.mission.discodeit.service.ChannelService;
+import jdk.jfr.ContentType;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.sql.Update;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -34,14 +35,12 @@ import java.util.stream.Collectors;
 @Primary
 @Service("basicChannelService")
 @RequiredArgsConstructor
+@Transactional
 public class BasicChannelService implements ChannelService {
     private final JpaChannelRepository channelRepository;
     private final JpaReadStatusRepository readStatusRepository;
     private final JpaUserRepository userRepository;
-//
-//    private final ChannelRepository channelRepository;
-//    private final MessageRepository messageRepository;
-//    private final ReadStatusRepository readStatusRepository;
+    private final JpaMessageRepository messageRepository;
 
 
     @Override
@@ -55,54 +54,55 @@ public class BasicChannelService implements ChannelService {
 
         ChannelCreateResponse channelCreateResponse = new ChannelCreateResponse(
                 channel.getId(),
-                channel.getCreatedAt(),
-                channel.getUpdatedAt(),
                 channel.getType(),
                 channel.getName(),
-                channel.getDescription()
+                channel.getDescription(),
+                Collections.emptyList(),
+                null
         );
+
         return channelCreateResponse;
     }
 
     @Override
     public ChannelCreateResponse createChannel(PrivateChannelCreateRequest request) {
         List<UUID> userIds = request.participantIds().stream().map(UUID::fromString).toList();
-        List<User> allUsers = userRepository.findAllById(userIds);
+        List<User> users = userRepository.findAllById(userIds);
 
         // channel 생성
         Channel channel = new Channel();
         channelRepository.save(channel);
 //
-        // readStatus 생성
-        for (User user : allUsers) {
+        // readStatus 생성 -> participants dto 생성
+        List<JpaUserResponse> participants=new ArrayList<>();
+        List<ReadStatus> readStatuses = new ArrayList<>();
+        for (User user : users) {
             ReadStatus readStatus = new ReadStatus(user, channel);
             readStatusRepository.save(readStatus);
+            readStatuses.add(readStatus);
         }
-
-        ChannelCreateResponse channelCreateResponse = new ChannelCreateResponse(
-                channel.getId(),
-                channel.getCreatedAt(),
-                channel.getUpdatedAt(),
-                channel.getType());
+        ChannelCreateResponse channelCreateResponse =
+                modifyResponse(readStatuses.stream().map(r -> r.getUser()).toList(), channel, null);
         return channelCreateResponse;
     }
 
-    @Override
-    public List<ChannelsFindResponse> findAllByUserId(UUID userId) {
-//
+//    @Transactional(readOnly = true)
+////    @Override
+//    public List<ChannelsFindResponse> findAllByUserId2(UUID userId) {
+////
 //        List<ChannelsFindResponse> responses = new ArrayList<>();
 //        // 유저가 참가한 방이 없을 수 있음
-//        List<Channel> allChannels = channelRepository.findAllChannel();
-//        List<Message> messageList = messageRepository.findAllMessages();
-//
-//        // 모든 방 순회
+//        List<Channel> allChannels = channelRepository.findAll();
+//        List<Message> messageList = messageRepository.findAll();
+////
+////        // 모든 방 순회
 //        for (Channel channel : allChannels) {
 //            // PUBLIC - 메세지 리스트에서 메세지의 체널아이디 확인 - 참가자 uuid 리스트 뽑아냄 - 시간만 뽑아냄 - 가장 최근 시간은 뽑아옴
 //            if (channel.getType().equals(ChannelType.PUBLIC)) {
 //                Set<UUID> participantIds = new HashSet<>();
 //                Instant lastMessageAt = messageList.stream()
-//                        .filter(message -> message.getChannelId().equals(channel.getId()))
-//                        .peek(message -> participantIds.add(message.getSenderId()))
+//                        .filter(message -> message.getChannel().getId().equals(channel.getId()))
+//                        .peek(message -> participantIds.add(message.getAuthor().getId()))
 //                        .map(BaseUpdatableEntity::getUpdatedAt)
 //                        .max(Instant::compareTo)
 //                        .orElse(null);
@@ -128,13 +128,14 @@ public class BasicChannelService implements ChannelService {
 //            // PRIVATE
 //            if (channel.getType().equals(ChannelType.PRIVATE)) {
 //
-//                Set<UUID> userIds = readStatusRepository.findReadStatusesByChannelId(channel.getId()).stream()
-//                        .map(ReadStatus::getUserId)
+//                Set<UUID> userIds = readStatusRepository.findAllByChannelId(channel.getId()).stream()
+//                        .map(readStatus -> readStatus.getUser().getId())
 //                        .collect(Collectors.toSet());
+//
 //
 //                if (userIds.contains(userId)) {
 //                    Instant lastMessageAt = messageList.stream()
-//                            .filter(message -> message.getChannelId().equals(channel.getId()))
+//                            .filter(message -> message.getChannel().getId().equals(channel.getId()))
 //                            .map(BaseUpdatableEntity::getUpdatedAt)
 //                            .max(Instant::compareTo)
 //                            .orElse(null);
@@ -152,63 +153,130 @@ public class BasicChannelService implements ChannelService {
 //            }
 //        }
 //        return responses;
-        return null;
+//    }
+
+    @Transactional(readOnly = true)
+    public List<ChannelCreateResponse> findAllByUserId(UUID userId) {
+        if(!userRepository.existsById(userId)) {
+            return Collections.emptyList();
+        }
+
+        List<ChannelCreateResponse> responses = new ArrayList<>();
+        List<Channel> publicChannels = channelRepository.findAllByType(ChannelType.PUBLIC);
+        // 유저가 참가한 방이 없을 수 있음
+        List<ReadStatus> readStatuses = readStatusRepository.findAllByUserId(userId);
+
+        System.out.println("publicUserChannels = " + publicChannels.size());
+
+        // 모든 방 순회
+        for (Channel channel : publicChannels) {
+            System.out.println("public");
+            List<Message> messages = messageRepository.findAllByChannelId(channel.getId());
+            Set<User> usersSet = messages.stream().map(m-> m.getAuthor()).collect(Collectors.toSet());
+            List<User> usersList = usersSet.stream().toList();
+            responses.add(modifyResponse(usersList, channel, messages));
+        }
+        for(ReadStatus readStatus : readStatuses) {
+            // 이때만 확인해서 추가
+            if(readStatus.getChannel().getType().equals(ChannelType.PRIVATE)) {
+                Channel channel = readStatus.getChannel();
+                List<Message> messages = messageRepository.findAllByChannelId(channel.getId());
+                List<User> users = readStatusRepository.findAllByChannel(channel).stream().map(rs -> rs.getUser()).toList();
+                responses.add(modifyResponse(users, channel, messages));
+            }
+        }
+        return responses;
     }
 
 
     @Override
-    public UpdateChannelResponse update(UUID channelId, ChannelUpdateRequest request) {
+    public ChannelCreateResponse update(UUID channelId, ChannelUpdateRequest request) {
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(()-> new IllegalArgumentException("channel with id " + channelId + "not found"));
 
-//        Channel channel = channelRepository.findChannelById(channelId);
-//
-//        channelRepository.findChannelById(channelId);
-//
-//        if (channel == null) {
-//            throw new IllegalArgumentException("channel with id " + channelId + "not found");
-//        }
-//
-//        if (channel.getType().equals(ChannelType.PUBLIC)) {
-//            channelRepository.updateChannelName(channelId, request.newName());
-//            channelRepository.updateChannelDescription(channelId, request.newDescription());
-//        } else {
-//            throw new NoSuchElementException("private channel cannot be updated");
-//        }
-//        channel = channelRepository.findChannelById(channelId);
-//        UpdateChannelResponse response = new UpdateChannelResponse(
-//                channel.getId(),
-//                channel.getCreatedAt(),
-//                channel.getUpdatedAt(),
-//                channel.getType(),
-//                channel.getName(),
-//                channel.getDescription()
-//        );
-//        return response;
-        return null;
+        // channel update
+        if (channel.getType().equals(ChannelType.PUBLIC)) {
+            channel.setName(request.newName());
+            channel.setDescription(request.newDescription());
+        } else {
+            throw new NoSuchElementException("private channel cannot be updated");
+        }
+
+        List<ReadStatus> readStatuses = readStatusRepository.findAllByChannel(channel);
+        List<User> users = readStatuses.stream().map(ReadStatus::getUser).collect(Collectors.toList());
+        List<Message> messages = messageRepository.findAllByChannelId(channelId);
+
+
+        return modifyResponse(users, channel, messages);
     }
 
+    @Transactional
     @Override
     public boolean deleteChannel(UUID channelId) {
-//        if (channelId == null) {
-//            throw new NoSuchElementException("Channel with id " + channelId + " not found");
-//        }
-//
-//        // 하나의 객체도 삭제 실패가 없어야 하나? YES
-//        List<ReadStatus> targetReadStatuses = readStatusRepository.findReadStatusesByChannelId(channelId);
-//        for (ReadStatus readStatus : targetReadStatuses) {
-//            readStatusRepository.deleteReadStatusById(readStatus.getId()); // throw
-//        }
-//
-//        List<Message> targetMessages = messageRepository.findMessagesByChannelId(channelId);
-//        for (Message targetMessage : targetMessages) {
-//            messageRepository.deleteMessageById(targetMessage.getId()); // throw
-//        }
-//
-//        boolean deleted = channelRepository.deleteChannel(channelId);
-//        if (deleted) {
-//            return true;
-//        }
-//        throw new RuntimeException("channel not deleted for some random reason");
-        return false;
+
+        if (!channelRepository.existsById(channelId)) {
+            throw new NoSuchElementException("channel with id " + channelId + " not found");
+        }
+
+        List<ReadStatus> targetReadStatuses = readStatusRepository.findAllByChannelId(channelId);
+
+        readStatusRepository.deleteAll(targetReadStatuses);
+
+        List<Message> targetMessages = messageRepository.findAllByChannelId(channelId);
+
+        messageRepository.deleteAll(targetMessages);
+
+        channelRepository.deleteById(channelId);
+        return true;
+    }
+
+    private static boolean isOnline(UserStatus userStatus) {
+        Instant now = Instant.now();
+        return Duration.between(userStatus.getLastActiveAt(), now).toMinutes() < 5;
+    }
+
+    private static ChannelCreateResponse modifyResponse(List<User> users, Channel channel, List<Message> messagees) {
+        Instant lastMessageAt = null;
+        if (!messagees.isEmpty()) {
+            lastMessageAt = messagees.get(0).getCreatedAt();
+            for (Message message : messagees) {
+                if(message.getCreatedAt().isAfter(lastMessageAt)) {
+                    lastMessageAt = message.getUpdatedAt();
+                }
+            }
+        }
+
+        List<JpaUserResponse> participants = new ArrayList<>();
+        for (User user : users) {
+            BinaryContent profile = user.getProfile();
+            JpaBinaryContentResponse profileDto = null;
+            if(profile != null) {
+                profileDto = new JpaBinaryContentResponse(
+                        profile.getId(),
+                        profile.getFileName(),
+                        profile.getSize(),
+                        profile.getContentType()
+                );
+            }
+            JpaUserResponse userDto = new JpaUserResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    profileDto,
+                    isOnline(user.getStatus())
+            );
+            participants.add(userDto);
+        }
+
+        ChannelCreateResponse channelCreateResponse = new ChannelCreateResponse(
+                channel.getId(),
+                channel.getType(),
+                channel.getName(),
+                channel.getDescription(),
+                participants,
+                lastMessageAt
+        );
+        return channelCreateResponse;
     }
 
 }

@@ -1,21 +1,18 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.Dto.user.*;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,19 +51,27 @@ public class BasicUserService implements UserService {
         List<UserFindResponse> userFindResponses = new ArrayList<>();
         // user fields + online 으로 response 생성
         for (User user : users) {
-
-
             UserStatus userStatus = Optional.ofNullable(userStatusRepository.findByUserId(user.getId()))
                     .orElseThrow(()->new RuntimeException("User status not found"));
 
+            BinaryContent profile = user.getProfile();
+            JpaBinaryContentResponse profileDto;
+            if (profile == null) {
+                profileDto = null;
+            } else {
+                profileDto = new JpaBinaryContentResponse(
+                        profile.getId(),
+                        profile.getFileName(),
+                        profile.getSize(),
+                        profile.getContentType()
+                );
+            }
 
             userFindResponses.add(new UserFindResponse(
                     user.getId(),
-                    user.getCreatedAt(),
-                    user.getUpdatedAt(),
                     user.getUsername(),
                     user.getEmail(),
-                    user.getProfile(),
+                    profileDto,
                     isOnline(userStatus)));
         }
         return userFindResponses;
@@ -136,16 +141,24 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(userStatus);
         user.setUserStatus(userStatus); // 양방향성을 위한 주입
 
-//
+        JpaBinaryContentResponse profileDto = null;
+        if(nullableProfile != null) {
+            profileDto = new JpaBinaryContentResponse(
+                    nullableProfile.getId(),
+                    nullableProfile.getFileName(),
+                    nullableProfile.getSize(),
+                    nullableProfile.getContentType()
+            );
+        }
+
         CreateUserResponse createUserResponse = new CreateUserResponse(
                 user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getPassword(),
-                nullableProfile != null ? nullableProfile.getId() : null
+                profileDto,
+                isOnline(userStatus)
         );
+
         return createUserResponse;
 //        BinaryContent 생성 -> (분기)이미지 없을 경우 -> User 생성 -> userStatus 생성 -> return response
 //                           -> (분기)이미지 있을 경우 -> User 생성 -> attachment 저장 -> userStatus 생성 -> return response
@@ -155,13 +168,7 @@ public class BasicUserService implements UserService {
     public void deleteUser(UUID userId) {
         Objects.requireNonNull(userId, "no user Id: BasicUserService.deleteUser");
 
-        User user = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("sdf"));
-
-//        UserStatus userStatus = Optional.ofNullable(userStatusRepository.findUserStatusByUserId(userId))
-//                .orElseThrow(() -> new IllegalArgumentException("no userStatus exist: you have to think about why the user does not have userStatus might be deleted or not created"));
-//
-//        // UserStatus 삭제
-//        userStatusRepository.deleteById(userStatus.getId()); // throw
+        User user = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException(userId + " not found"));
 
         if (user.getProfile() != null) { // 프로필 있으면
             BinaryContent profile = user.getProfile();
@@ -177,11 +184,8 @@ public class BasicUserService implements UserService {
                     throw new RuntimeException("could not delete file");
                 }
             }
-            // BinaryContent 삭제
-//            binaryContentRepository.deleteBinaryContentById(user.getProfileId()); // throw
         }
 //        // User 삭제
-//        userRepository2.deleteUserById(userId); // throw
         userRepository.delete(user);
     }
 
@@ -221,15 +225,13 @@ public class BasicUserService implements UserService {
         if (request.newPassword() != null) {
             user.setPassword(request.newPassword());
         }
-        // 메모리 유저정보 업데이트
-//        user = userRepository2.findUserById(userId);
+
+        UserStatus userStatus = userStatusRepository.findByUserId(userId);
 
         // 프로필 여부 확인 (있으면 삭제 후 추가)
         if (hasValue(file)) {
             if (user.getProfile() != null) {
                 // delete file
-//                BinaryContent profile = binaryContentRepository.findById(user.getProfileId());
-
                 String directory = fileUploadUtils.getUploadPath(PROFILE_PATH);
                 String extension = user.getProfile().getExtension();
                 String fileName = user.getProfile().getId() + extension;
@@ -254,6 +256,7 @@ public class BasicUserService implements UserService {
 
                 byte[] bytes = file.getBytes();
                 binaryContent = new BinaryContent(filename,(long)bytes.length,contentType,bytes,extension);
+                binaryContentRepository.save(binaryContent);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -277,13 +280,21 @@ public class BasicUserService implements UserService {
         }
 
 
+        BinaryContent profile = user.getProfile();
+        JpaBinaryContentResponse profileDto = new JpaBinaryContentResponse(
+                profile.getId(),
+                profile.getFileName(),
+                profile.getSize(),
+                profile.getContentType()
+        );
+
         UpdateUserResponse response = new UpdateUserResponse(
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
+                user.getId(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getPassword(),
-                user.getProfile()
+                profileDto,
+                isOnline(userStatus)
         );
 
         return response;
@@ -318,7 +329,7 @@ public class BasicUserService implements UserService {
 
     private static boolean isOnline(UserStatus userStatus) {
         Instant now = Instant.now();
-        return Duration.between(userStatus.getLastActiveAt(), now).toMillis() < 5;
+        return Duration.between(userStatus.getLastActiveAt(), now).toMinutes() < 5;
     }
 
     private boolean hasValue(MultipartFile attachmentFiles) {

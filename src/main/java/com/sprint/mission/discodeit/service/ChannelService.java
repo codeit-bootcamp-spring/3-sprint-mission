@@ -23,11 +23,11 @@ public interface ChannelService {
 
     ChannelCreateResponse createChannel(PublicChannelCreateRequest request);
 
-    UpdateChannelResponse update(UUID channelId, ChannelUpdateRequest request);
+    ChannelCreateResponse update(UUID channelId, ChannelUpdateRequest request);
 
     boolean deleteChannel(UUID channelId);
 
-    List<ChannelsFindResponse> findAllByUserId(UUID userId);
+    List<ChannelCreateResponse> findAllByUserId(UUID userId);
 
     //    ChannelFindResponse find(ChannelFindRequest request);
 }

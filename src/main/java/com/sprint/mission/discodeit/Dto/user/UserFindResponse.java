@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.Dto.user;
 
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import lombok.Getter;
-import lombok.Setter;
+import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -21,11 +19,9 @@ import java.util.UUID;
 
 public record UserFindResponse
      (UUID id,
-     Instant createdAt,
-     Instant updatedAt,
      String username,
      String email,
-     BinaryContent profile,
+      JpaBinaryContentResponse profile,
      boolean online){
 
 }

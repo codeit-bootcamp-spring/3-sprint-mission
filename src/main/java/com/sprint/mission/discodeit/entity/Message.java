@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -23,6 +24,7 @@ import java.util.*;
 @Getter
 @Entity
 @NoArgsConstructor
+@SuperBuilder
 @Table(name = "messages", schema = "discodeit")
 public class Message extends BaseUpdatableEntity implements Serializable {
     private static final long serialVersionUID = 1L;

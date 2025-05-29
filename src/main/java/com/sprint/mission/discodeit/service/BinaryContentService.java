@@ -26,5 +26,6 @@ public interface BinaryContentService {
 
     List<FindBinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds);
 
+
     void delete(UUID attachmentId);
 }

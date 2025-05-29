@@ -31,7 +31,7 @@ public class UserStatus extends BaseUpdatableEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "user_id", nullable = false ,updatable = true)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(name = "last_active_at", nullable = false)
@@ -48,14 +48,19 @@ public class UserStatus extends BaseUpdatableEntity implements Serializable {
         super.setUpdatedAt(updatedAt);
     }
 
+    public void setLastActiveAt() {
+        this.lastActiveAt = Instant.now();
+    }
 
     @Override
     public String toString() {
         return "UserStatus{" +
-//                "userId=" + userId +
-                ", createdAt=" + createdAt +
+//                "user=" + user +
+                ", lastActiveAt=" + lastActiveAt +
                 ", updatedAt=" + updatedAt +
                 ", id=" + id +
-                "} " + super.toString();
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
     }
 }
