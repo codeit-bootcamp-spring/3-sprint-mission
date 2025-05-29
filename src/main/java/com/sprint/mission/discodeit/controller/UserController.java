@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.sprint.mission.discodeit.exception.CustomException;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users")
@@ -30,12 +32,11 @@ public class UserController implements UserApi {
   private final UserService userService;
   private final UserStatusService userStatusService;
 
-  @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+  @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
   @Override
   public ResponseEntity<User> create(
       @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
-      @RequestPart(value = "profile", required = false) MultipartFile profile
-  ) {
+      @RequestPart(value = "profile", required = false) MultipartFile profile) {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
     User createdUser = userService.create(userCreateRequest, profileRequest);
@@ -44,16 +45,12 @@ public class UserController implements UserApi {
         .body(createdUser);
   }
 
-  @PatchMapping(
-      path = "{userId}",
-      consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
-  )
+  @PatchMapping(path = "{userId}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
   @Override
   public ResponseEntity<User> update(
       @PathVariable("userId") UUID userId,
       @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
-      @RequestPart(value = "profile", required = false) MultipartFile profile
-  ) {
+      @RequestPart(value = "profile", required = false) MultipartFile profile) {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
     User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
@@ -98,11 +95,10 @@ public class UserController implements UserApi {
         BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
             profileFile.getOriginalFilename(),
             profileFile.getContentType(),
-            profileFile.getBytes()
-        );
+            profileFile.getBytes());
         return Optional.of(binaryContentCreateRequest);
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new CustomException.BinaryContentNotFoundException("파일을 읽는 중 오류가 발생했습니다: " + e.getMessage());
       }
     }
   }

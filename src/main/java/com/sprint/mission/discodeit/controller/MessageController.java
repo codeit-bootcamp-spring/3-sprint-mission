@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,8 +30,7 @@ public class MessageController implements MessageApi {
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Message> create(
       @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
-      @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
-  ) {
+      @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) {
     List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
         .map(files -> files.stream()
             .map(file -> {
@@ -38,10 +38,9 @@ public class MessageController implements MessageApi {
                 return new BinaryContentCreateRequest(
                     file.getOriginalFilename(),
                     file.getContentType(),
-                    file.getBytes()
-                );
+                    file.getBytes());
               } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new CustomException.BinaryContentNotFoundException("첨부파일을 읽는 중 오류가 발생했습니다: " + e.getMessage());
               }
             })
             .toList())
