@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -28,6 +30,7 @@ public class BasicChannelService implements ChannelService {
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
+  private final UserMapper userMapper;
 
   @Override
   public Channel create(PrivateChannelCreateRequest request) {
@@ -129,11 +132,11 @@ public class BasicChannelService implements ChannelService {
         .findFirst()
         .orElse(Instant.MIN);
 
-    List<UUID> participantIds = new ArrayList<>();
+    List<UserDto> participantIds = new ArrayList<>();
     if (channel.getType().equals(ChannelType.PRIVATE)) {
       readStatusRepository.findAllByChannelId(channel.getId())
           .stream()
-          .map(readStatus -> readStatus.getUser().getId())
+          .map(readStatus -> userMapper.toDto(readStatus.getUser()))
           .forEach(participantIds::add);
     }
 

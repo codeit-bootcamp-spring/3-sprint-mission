@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.controller;
 
 
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,18 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BinaryContentController {
 
   private final BinaryContentService binaryContentService;
-
-  // 다건 조회 : 바이너리 파일 여러 개 조회( GET )
-  @GetMapping
-  public ResponseEntity<List<BinaryContent>> findAllByIdIn(
-      @RequestParam("binaryContentIds") List<UUID> binaryContentIds
-  ) {
-    List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(binaryContents);
-  }
-
+  private final BinaryContentStorage binaryContentStorage;
 
   // 단건 조회 : 바이너리 파일을 1개 조회( GET )
   @GetMapping("/{binaryContentId}")
@@ -47,5 +38,33 @@ public class BinaryContentController {
 
     // 파일의 실제 데이터, 설정된 헤더 정보 포함, 상태코드( 200 ) 반환
     return ResponseEntity.status(HttpStatus.OK).body(binary);
+  }
+
+  // 다건 조회 : 바이너리 파일 여러 개 조회( GET )
+  @GetMapping
+  public ResponseEntity<List<BinaryContent>> findAllByIdIn(
+      @RequestParam("binaryContentIds") List<UUID> binaryContentIds
+  ) {
+    List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(binaryContents);
+  }
+
+  // 파일 다운로드
+  @GetMapping("/{binaryContentId}/download")
+  public ResponseEntity<?> download(
+      @PathVariable UUID binaryContentId
+  ) {
+    BinaryContent binaryContent = binaryContentService.find(binaryContentId);
+
+    BinaryContentDto dtoForDownload = new BinaryContentDto(
+        binaryContent.getId(),
+        binaryContent.getFileName(),
+        binaryContent.getSize(),
+        binaryContent.getContentType(),
+        null
+    );
+    return binaryContentStorage.download(dtoForDownload);
   }
 }

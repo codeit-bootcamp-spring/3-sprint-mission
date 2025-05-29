@@ -33,6 +33,10 @@ server:
   port: 8080
 
 discodeit:
+  storage:
+    type: local
+    local:
+      root-path: ./storage
   repository:
     type: file   # jcf | file
     file-directory: .discodeit
