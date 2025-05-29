@@ -33,7 +33,7 @@ public class User extends BaseUpdatableEntity {
   private BinaryContent profile;
   // BinaryContent
 
-  @OneToOne(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private UserStatus status;
 
   public User(String username, String email, String password, BinaryContent profile) {

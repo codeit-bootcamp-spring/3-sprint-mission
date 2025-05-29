@@ -2,9 +2,8 @@ server:
   port: 8080
 
 discodeit:
-  repository:
-    type: File
-    fileDirectory: src/main/java/com/sprint/mission/discodeit/repository/file/data
+  storage:
+    type: local
 
 spring:
   servlet:
