@@ -59,8 +59,8 @@ CREATE TABLE IF NOT EXISTS messages
     created_at timestamptz NOT NULL,
     updated_at timestamptz,
     content    text,
-    author_id  UUID        NOT NULL,
-    channel_id UUID,
+    author_id  UUID,
+    channel_id UUID        NOT NULL,
 
     CONSTRAINT fk_author_id FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE SET NULL,
     CONSTRAINT fk_channel_id FOREIGN KEY (channel_id) REFERENCES channels (id) ON DELETE CASCADE
