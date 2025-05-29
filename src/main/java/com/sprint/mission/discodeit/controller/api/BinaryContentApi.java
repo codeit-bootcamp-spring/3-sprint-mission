@@ -37,7 +37,7 @@ public interface BinaryContentApi {
 
     @Operation(summary = "여러 첨부 파일 조회")
     @ApiResponse(responseCode = "200", description = "첨부 파일 목록 조회 성공",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = BinaryContent.class))))
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = BinaryContentResponseDto.class))))
     ResponseEntity<List<BinaryContentResponseDto>> findAll(
             @Parameter(description = "조회할 첨부 파일 ID 목록") @RequestBody(required = false) List<UUID> ids);
 }
