@@ -2,12 +2,13 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.User.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.User.UserDto;
 import com.sprint.mission.discodeit.dto.User.UserFindRequest;
 import com.sprint.mission.discodeit.dto.User.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -25,26 +26,36 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Transactional
 public class BasicUserService implements UserService {
+
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
+    private final UserMapper userMapper;
 
     @Override
-    public User create(UserCreateRequest request, Optional<BinaryContentCreateRequest> binaryContentCreateRequest) {
+    public UserDto create(UserCreateRequest request,
+                          Optional<BinaryContentCreateRequest> binaryContentCreateRequest) {
         validateUniqueUser(request);
 
         BinaryContent profile = binaryContentCreateRequest
                 .map(this::saveBinaryContent)
                 .orElse(null);
 
-        User user = new User(request.username(), request.email(), request.password(), profile, null);
+        User user = new User(
+                request.username(),
+                request.email(),
+                request.password(),
+                profile,
+                null
+        );
         User savedUser = userRepository.save(user);
 
         UserStatus status = new UserStatus(savedUser, Instant.now());
         userStatusRepository.save(status);
 
-        return savedUser;
+        return userMapper.toDto(savedUser);
     }
+
 
     private BinaryContent saveBinaryContent(BinaryContentCreateRequest request) {
         BinaryContent binaryContent = new BinaryContent(
@@ -70,54 +81,34 @@ public class BasicUserService implements UserService {
     public UserDto find(UserFindRequest request) {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저는 없습니다."));
-
-        boolean isOnline = Optional.ofNullable(user.getStatus())
-                .map(status -> status.getLastActiveAt().isAfter(Instant.now().minusSeconds(300)))
-                .orElse(false);
-
-        return UserDto.builder()
-                .id(user.getId())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .profileId(Optional.ofNullable(user.getProfile()).map(BinaryContent::getId).orElse(null))
-                .online(isOnline)
-                .build();
+        return userMapper.toDto(user);
     }
 
     @Override
     public List<UserDto> findAll() {
         return userRepository.findAll().stream()
-                .map(user -> {
-                    boolean isOnline = Optional.ofNullable(user.getStatus())
-                            .map(status -> status.getLastActiveAt().isAfter(Instant.now().minusSeconds(300)))
-                            .orElse(false);
-
-                    return UserDto.builder()
-                            .id(user.getId())
-                            .username(user.getUsername())
-                            .email(user.getEmail())
-                            .profileId(Optional.ofNullable(user.getProfile()).map(BinaryContent::getId).orElse(null))
-                            .online(isOnline)
-                            .createdAt(user.getCreatedAt())
-                            .updatedAt(user.getUpdatedAt())
-                            .build();
-                }).toList();
+                .map(userMapper::toDto)
+                .toList();
     }
 
     @Override
-    public User update(UUID userId, UserUpdateRequest request,
-                       Optional<BinaryContentCreateRequest> binaryContentCreateRequest) {
+    public UserDto update(UUID userId, UserUpdateRequest request,
+                          Optional<BinaryContentCreateRequest> profileRequest) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저는 없습니다."));
 
-        binaryContentCreateRequest.ifPresent(profileRequest -> {
+        if (profileRequest.isPresent()) {
             Optional.ofNullable(user.getProfile())
                     .ifPresent(binaryContentRepository::delete);
-            BinaryContent newProfile = saveBinaryContent(profileRequest);
-            user.setProfile(newProfile);
-        });
+
+            BinaryContent newProfile = new BinaryContent(
+                    profileRequest.get().fileName(),
+                    (long) profileRequest.get().bytes().length,
+                    profileRequest.get().contentType(),
+                    profileRequest.get().bytes()
+            );
+            user.setProfile(binaryContentRepository.save(newProfile));
+        }
 
         user.update(
                 request.newUsername(),
@@ -130,14 +121,15 @@ public class BasicUserService implements UserService {
             status.update(Instant.now());
         });
 
-        return user;
+        User updated = userRepository.save(user);
+        return userMapper.toDto(updated);
     }
 
     @Override
     public void delete(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저는 없습니다."));
-
-        userRepository.delete(user);
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("해당 id를 가진 유저는 없습니다.");
+        }
+        userRepository.deleteById(userId);
     }
 }
