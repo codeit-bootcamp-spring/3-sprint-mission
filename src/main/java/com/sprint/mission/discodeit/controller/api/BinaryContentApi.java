@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -15,32 +15,21 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name = "BinaryContent", description = "첨부 파일 API")
+@Tag(name = "BinaryContent", description = "BinaryContent API")
 public interface BinaryContentApi {
 
-  @Operation(summary = "첨부 파일 조회")
-  @ApiResponses(value = {
-      @ApiResponse(
-          responseCode = "200", description = "첨부 파일 조회 성공",
-          content = @Content(schema = @Schema(implementation = BinaryContent.class))
-      ),
-      @ApiResponse(
-          responseCode = "404", description = "첨부 파일을 찾을 수 없음",
-          content = @Content(examples = @ExampleObject(value = "BinaryContent with id {binaryContentId} not found"))
-      )
-  })
-  ResponseEntity<BinaryContent> find(
-      @Parameter(description = "조회할 첨부 파일 ID") UUID binaryContentId
-  );
+        @Operation(summary = "BinaryContent 메타데이터 조회")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "BinaryContent 메타데이터 조회 성공", content = @Content(schema = @Schema(implementation = BinaryContentResponse.class))),
+                        @ApiResponse(responseCode = "404", description = "BinaryContent를 찾을 수 없음", content = @Content(examples = @ExampleObject("BinaryContent with id {binaryContentId} not found")))
+        })
+        ResponseEntity<BinaryContentResponse> find(
+                        @Parameter(description = "BinaryContent ID") UUID binaryContentId);
 
-  @Operation(summary = "여러 첨부 파일 조회")
-  @ApiResponses(value = {
-      @ApiResponse(
-          responseCode = "200", description = "첨부 파일 목록 조회 성공",
-          content = @Content(array = @ArraySchema(schema = @Schema(implementation = BinaryContent.class)))
-      )
-  })
-  ResponseEntity<List<BinaryContent>> findAllByIdIn(
-      @Parameter(description = "조회할 첨부 파일 ID 목록") List<UUID> binaryContentIds
-  );
-} 
+        @Operation(summary = "여러 BinaryContent 메타데이터 조회")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "BinaryContent 목록 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = BinaryContentResponse.class))))
+        })
+        ResponseEntity<List<BinaryContentResponse>> findAllByIdIn(
+                        @Parameter(description = "BinaryContent ID 목록") List<UUID> binaryContentIds);
+}
