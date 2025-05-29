@@ -1,3 +1,9 @@
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: ./binaries
+
 springdoc:
   api-docs:
     # OpenAPI 명세서 경로(JSON)
