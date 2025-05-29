@@ -1,15 +1,13 @@
 package com.sprint.mission.discodeit.dto;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.UUID;
 
 
 public record UserDto(UUID id,
-                      @Schema(description = "사용자 이름", example = "kate")
                       String username,
                       String email,
-                      UUID profileId,
+                      BinaryContentDto profile,
                       Boolean online,
                       Instant createdAt,
                       Instant updatedAt
