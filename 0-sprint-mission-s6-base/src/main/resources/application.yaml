@@ -25,6 +25,10 @@ discodeit:
   repository:
     type: file   # jcf | file
     file-directory: .discodeit
+  storage:
+    type: local
+    local:
+      root-path: ${user.dir}/binaryContents
 
 logging:
   level:

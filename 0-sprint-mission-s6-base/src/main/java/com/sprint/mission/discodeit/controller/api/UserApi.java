@@ -1,11 +1,9 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
-import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.global.response.CustomApiResponse;
@@ -91,7 +89,7 @@ public interface UserApi {
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "200", description = "User 목록 조회 성공",
-          content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDto.class)))
+          content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class)))
       )
   })
   ResponseEntity<CustomApiResponse<List<UserResponse>>> findAll();

@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.request.MessageRequest;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.global.response.CustomApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -82,7 +83,7 @@ public interface MessageApi {
           content = @Content(array = @ArraySchema(schema = @Schema(implementation = Message.class)))
       )
   })
-  ResponseEntity<CustomApiResponse<List<MessageResponse>>> findAllByChannelId(
+  ResponseEntity<CustomApiResponse<PageResponse<MessageResponse>>> findAllByChannelId(
       @Parameter(description = "조회할 Channel ID") UUID channelId
   );
 } 

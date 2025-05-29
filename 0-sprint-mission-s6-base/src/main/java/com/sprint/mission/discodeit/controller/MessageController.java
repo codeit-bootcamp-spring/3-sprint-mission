@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.controller.api.MessageApi;
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.request.MessageRequest;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.global.response.CustomApiResponse;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -60,7 +61,7 @@ public class MessageController implements MessageApi {
 
   @GetMapping
   @Override
-  public ResponseEntity<CustomApiResponse<List<MessageResponse>>> findAllByChannelId(
+  public ResponseEntity<CustomApiResponse<PageResponse<MessageResponse>>> findAllByChannelId(
       @RequestParam("channelId") UUID channelId) {
     return ResponseEntity
         .status(HttpStatus.OK)
