@@ -28,7 +28,4 @@ public class BinaryContent extends BaseEntity {
   @Column(name = "content_type")
   private String contentType;
 
-  @Column(name = "bytes")
-  private byte[] bytes;
-
 }

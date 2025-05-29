@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import java.time.Instant;
 import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -30,12 +31,13 @@ public class ChannelMapper {
             .map(ReadStatus::getUser)
             .map(userMapper::toDto)
             .toList(),
-        messageRepository
-            .findAllByChannelId(channel.getId())
+        messageRepository.findAllByChannelId(channel.getId())
             .stream()
+            .sorted(Comparator.comparing(Message::getCreatedAt).reversed())
             .map(Message::getCreatedAt)
-            .max(Comparator.naturalOrder())
-            .orElse(null)
+            .limit(1)
+            .findFirst()
+            .orElse(Instant.MIN)
     );
 
 
