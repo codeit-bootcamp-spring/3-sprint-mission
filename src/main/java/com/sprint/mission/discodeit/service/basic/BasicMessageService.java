@@ -22,6 +22,8 @@ import java.util.UUID;
 
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,22 +49,22 @@ public class BasicMessageService implements MessageService {
         // Dto -> Entity
         List<BinaryContent> binaryContents = convertBinaryContentDtos(binaryContentDtos);
 
+        binaryContentRepository.saveAll(binaryContents);
+
         for (int i = 0; i < binaryContents.size(); i++) {
             UUID id = binaryContents.get(i).getId();
             byte[] bytes = binaryContentDtos.get(i).bytes();
             binaryContentStorage.put(id, bytes);
         }
-        
+
         String content = messageRequestDto.content();
 
         Message message = new Message(content, channel, author);
-        message.updateChannel(channel);
         message.updateAttachmentIds(binaryContents);
 
         // 메시지를 보낸 channel의 mesagesList에 해당 메시지 추가
         channel.getMessages().add(message);
 
-        binaryContentRepository.saveAll(binaryContents);
         messageRepository.save(message);
 
         return messageMapper.toDto(message);
@@ -76,11 +78,10 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<MessageResponseDto> findAllByChannelId(UUID channelId) {
+    public Page<MessageResponseDto> findAllByChannelId(UUID channelId, Pageable pageable) {
+        Page<Message> messagePage = messageRepository.findPageByChannelId(channelId, pageable);
 
-        return messageRepository.findAllByChannelId(channelId).stream()
-                .map(messageMapper::toDto)
-                .toList();
+        return messagePage.map(messageMapper::toDto);
     }
 
     @Override
