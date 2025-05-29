@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sprint.mission.discodeit.controller.api.AuthApi;
+import com.sprint.mission.discodeit.dto.mapper.ResponseMapper;
+import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
@@ -22,10 +24,11 @@ public class AuthController implements AuthApi {
   private final AuthService authService;
 
   @PostMapping(path = "login")
-  public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
+  public ResponseEntity<UserResponse> login(@RequestBody LoginRequest loginRequest) {
     User user = authService.login(loginRequest);
+    UserResponse userResponse = ResponseMapper.toResponse(user);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(user);
+        .body(userResponse);
   }
 }

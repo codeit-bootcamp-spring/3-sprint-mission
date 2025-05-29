@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
+import com.sprint.mission.discodeit.dto.mapper.ResponseMapper;
+import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
@@ -19,19 +21,23 @@ public class BinaryContentController implements BinaryContentApi {
   private final BinaryContentService binaryContentService;
 
   @GetMapping(path = "{binaryContentId}")
-  public ResponseEntity<BinaryContent> find(@PathVariable("binaryContentId") UUID binaryContentId) {
+  public ResponseEntity<BinaryContentResponse> find(@PathVariable("binaryContentId") UUID binaryContentId) {
     BinaryContent binaryContent = binaryContentService.find(binaryContentId);
+    BinaryContentResponse response = ResponseMapper.toResponse(binaryContent);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(binaryContent);
+        .body(response);
   }
 
   @GetMapping
-  public ResponseEntity<List<BinaryContent>> findAllByIdIn(
+  public ResponseEntity<List<BinaryContentResponse>> findAllByIdIn(
       @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
     List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+    List<BinaryContentResponse> responses = binaryContents.stream()
+        .map(ResponseMapper::toResponse)
+        .toList();
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(binaryContents);
+        .body(responses);
   }
 }

@@ -23,6 +23,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.sprint.mission.discodeit.exception.CustomException;
+import com.sprint.mission.discodeit.dto.mapper.ResponseMapper;
+import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 
 @RequiredArgsConstructor
 @RestController
@@ -34,29 +37,31 @@ public class UserController implements UserApi {
 
   @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
   @Override
-  public ResponseEntity<User> create(
+  public ResponseEntity<UserResponse> create(
       @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
     User createdUser = userService.create(userCreateRequest, profileRequest);
+    UserResponse response = ResponseMapper.toResponse(createdUser);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(createdUser);
+        .body(response);
   }
 
   @PatchMapping(path = "{userId}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
   @Override
-  public ResponseEntity<User> update(
+  public ResponseEntity<UserResponse> update(
       @PathVariable("userId") UUID userId,
       @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
     User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
+    UserResponse response = ResponseMapper.toResponse(updatedUser);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(updatedUser);
+        .body(response);
   }
 
   @DeleteMapping(path = "{userId}")
@@ -79,12 +84,13 @@ public class UserController implements UserApi {
 
   @PatchMapping(path = "{userId}/userStatus")
   @Override
-  public ResponseEntity<UserStatus> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
+  public ResponseEntity<UserStatusResponse> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
       @RequestBody UserStatusUpdateRequest request) {
     UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, request);
+    UserStatusResponse response = ResponseMapper.toResponse(updatedUserStatus);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(updatedUserStatus);
+        .body(response);
   }
 
   private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {

@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
+import com.sprint.mission.discodeit.dto.mapper.ResponseMapper;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.ReadStatusResponse;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
@@ -21,27 +23,32 @@ public class ReadStatusController implements ReadStatusApi {
   private final ReadStatusService readStatusService;
 
   @PostMapping
-  public ResponseEntity<ReadStatus> create(@RequestBody ReadStatusCreateRequest request) {
+  public ResponseEntity<ReadStatusResponse> create(@RequestBody ReadStatusCreateRequest request) {
     ReadStatus createdReadStatus = readStatusService.create(request);
+    ReadStatusResponse response = ResponseMapper.toResponse(createdReadStatus);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(createdReadStatus);
+        .body(response);
   }
 
   @PatchMapping(path = "{readStatusId}")
-  public ResponseEntity<ReadStatus> update(@PathVariable("readStatusId") UUID readStatusId,
+  public ResponseEntity<ReadStatusResponse> update(@PathVariable("readStatusId") UUID readStatusId,
       @RequestBody ReadStatusUpdateRequest request) {
     ReadStatus updatedReadStatus = readStatusService.update(readStatusId, request);
+    ReadStatusResponse response = ResponseMapper.toResponse(updatedReadStatus);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(updatedReadStatus);
+        .body(response);
   }
 
   @GetMapping
-  public ResponseEntity<List<ReadStatus>> findAllByUserId(@RequestParam("userId") UUID userId) {
+  public ResponseEntity<List<ReadStatusResponse>> findAllByUserId(@RequestParam("userId") UUID userId) {
     List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
+    List<ReadStatusResponse> responses = readStatuses.stream()
+        .map(ResponseMapper::toResponse)
+        .toList();
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(readStatuses);
+        .body(responses);
   }
 }
