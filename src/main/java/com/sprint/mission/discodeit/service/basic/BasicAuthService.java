@@ -18,7 +18,7 @@ public class BasicAuthService implements AuthService {
 
     @Override
     public AuthLoginReponse login(LoginRequest request) {
-        User user = userRepository.findByUserName(request.username())
+        User user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new NoSuchElementException("해당하는 유저는 존재하지 않습니다."));
 
         if (!user.getPassword().equals(request.password())) {

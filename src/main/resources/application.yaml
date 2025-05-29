@@ -12,7 +12,7 @@ spring:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -21,9 +21,10 @@ spring:
     show-sql: true
 
 discodeit:
+  storage:
+    type: local              # 로컬 스토리지 구현체를 활성화하려면 반드시 이 값을 "local" 로!
+    local:
+      root-path: ./uploads   # 로컬 디스크에 파일을 저장할 루트 디렉터리
   repository:
     type: file
     file-directory: .discodeit
-
-server:
-  port: 8080

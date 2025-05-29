@@ -13,7 +13,9 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.transaction.Transactional;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -31,6 +33,7 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserMapper userMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
     @Override
     public UserDto create(UserCreateRequest request,
@@ -38,7 +41,7 @@ public class BasicUserService implements UserService {
         validateUniqueUser(request);
 
         BinaryContent profile = binaryContentCreateRequest
-                .map(this::saveBinaryContent)
+                .map(this::storeBinaryContentMeta)
                 .orElse(null);
 
         User user = new User(
@@ -56,16 +59,25 @@ public class BasicUserService implements UserService {
         return userMapper.toDto(savedUser);
     }
 
+    /**
+     * 파일 데이터를 스토리지에 저장하고, 메타 정보만 담은 BinaryContent 엔티티를 반환
+     */
+    private BinaryContent storeBinaryContentMeta(BinaryContentCreateRequest request) {
+        UUID fileId;
+        try {
+            // 실제 파일 저장: storage.put(id=null -> 새 UUID 생성, bytes)
+            fileId = binaryContentStorage.put(null, request.bytes());
+        } catch (IOException e) {
+            throw new RuntimeException("파일 저장 중 오류가 발생했습니다.", e);
+        }
 
-    private BinaryContent saveBinaryContent(BinaryContentCreateRequest request) {
-        BinaryContent binaryContent = new BinaryContent(
-                request.fileName(),
-                (long) request.bytes().length,
-                request.contentType(),
-                request.bytes()
-        );
-
-        return binaryContent;
+        // 메타 정보만 담아서 엔티티로 저장
+        BinaryContent meta = new BinaryContent();
+        meta.setId(fileId);
+        meta.setFileName(request.fileName());
+        meta.setSize((long) request.bytes().length);
+        meta.setContentType(request.contentType());
+        return binaryContentRepository.save(meta);
     }
 
     private void validateUniqueUser(UserCreateRequest request) {
@@ -98,16 +110,13 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저는 없습니다."));
 
         if (profileRequest.isPresent()) {
+            // 기존 프로필이 있으면 삭제
             Optional.ofNullable(user.getProfile())
                     .ifPresent(binaryContentRepository::delete);
 
-            BinaryContent newProfile = new BinaryContent(
-                    profileRequest.get().fileName(),
-                    (long) profileRequest.get().bytes().length,
-                    profileRequest.get().contentType(),
-                    profileRequest.get().bytes()
-            );
-            user.setProfile(binaryContentRepository.save(newProfile));
+            // 새 파일 저장 및 메타 저장
+            BinaryContent newProfile = storeBinaryContentMeta(profileRequest.get());
+            user.setProfile(newProfile);
         }
 
         user.update(

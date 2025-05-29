@@ -28,7 +28,7 @@ public class Message extends BaseUpdatableEntity {
     private Channel channel;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id")
+    @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
     @OneToMany(cascade = CascadeType.ALL)
