@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import com.sprint.mission.discodeit.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,14 +30,14 @@ public class BasicReadStatusService implements ReadStatusService {
     UUID channelId = request.channelId();
 
     if (!userRepository.existsById(userId)) {
-      throw new NoSuchElementException("User with id " + userId + " does not exist");
+      throw new CustomException.UserNotFoundException("User with id " + userId + " does not exist");
     }
     if (!channelRepository.existsById(channelId)) {
-      throw new NoSuchElementException("Channel with id " + channelId + " does not exist");
+      throw new CustomException.ChannelNotFoundException("Channel with id " + channelId + " does not exist");
     }
     if (readStatusRepository.findAllByUserId(userId).stream()
         .anyMatch(readStatus -> readStatus.getChannelId().equals(channelId))) {
-      throw new IllegalArgumentException(
+      throw new CustomException.DuplicateReadStatusException(
           "ReadStatus with userId " + userId + " and channelId " + channelId + " already exists");
     }
 
@@ -49,7 +50,7 @@ public class BasicReadStatusService implements ReadStatusService {
   public ReadStatus find(UUID readStatusId) {
     return readStatusRepository.findById(readStatusId)
         .orElseThrow(
-            () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
+            () -> new CustomException.ReadStatusNotFoundException("ReadStatus with id " + readStatusId + " not found"));
   }
 
   @Override
@@ -63,7 +64,7 @@ public class BasicReadStatusService implements ReadStatusService {
     Instant newLastReadAt = request.newLastReadAt();
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(
-            () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
+            () -> new CustomException.ReadStatusNotFoundException("ReadStatus with id " + readStatusId + " not found"));
     readStatus.update(newLastReadAt);
     return readStatusRepository.save(readStatus);
   }
@@ -71,7 +72,7 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   public void delete(UUID readStatusId) {
     if (!readStatusRepository.existsById(readStatusId)) {
-      throw new NoSuchElementException("ReadStatus with id " + readStatusId + " not found");
+      throw new CustomException.ReadStatusNotFoundException("ReadStatus with id " + readStatusId + " not found");
     }
     readStatusRepository.deleteById(readStatusId);
   }

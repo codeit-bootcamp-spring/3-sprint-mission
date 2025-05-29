@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -36,10 +37,10 @@ public class BasicUserService implements UserService {
     String email = userCreateRequest.email();
 
     if (userRepository.existsByEmail(email)) {
-      throw new IllegalArgumentException("User with email " + email + " already exists");
+      throw new CustomException.DuplicateUserException("User with email " + email + " already exists");
     }
     if (userRepository.existsByUsername(username)) {
-      throw new IllegalArgumentException("User with username " + username + " already exists");
+      throw new CustomException.DuplicateUserException("User with username " + username + " already exists");
     }
 
     UUID nullableProfileId = optionalProfileCreateRequest
@@ -68,7 +69,7 @@ public class BasicUserService implements UserService {
   public UserDto find(UUID userId) {
     return userRepository.findById(userId)
         .map(this::toDto)
-        .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+        .orElseThrow(() -> new CustomException.UserNotFoundException("User with id " + userId + " not found"));
   }
 
   @Override
@@ -83,15 +84,15 @@ public class BasicUserService implements UserService {
   public User update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+        .orElseThrow(() -> new CustomException.UserNotFoundException("User with id " + userId + " not found"));
 
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
     if (userRepository.existsByEmail(newEmail)) {
-      throw new IllegalArgumentException("User with email " + newEmail + " already exists");
+      throw new CustomException.DuplicateUserException("User with email " + newEmail + " already exists");
     }
     if (userRepository.existsByUsername(newUsername)) {
-      throw new IllegalArgumentException("User with username " + newUsername + " already exists");
+      throw new CustomException.DuplicateUserException("User with username " + newUsername + " already exists");
     }
 
     UUID nullableProfileId = optionalProfileCreateRequest
@@ -117,7 +118,7 @@ public class BasicUserService implements UserService {
   @Override
   public void delete(UUID userId) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+        .orElseThrow(() -> new CustomException.UserNotFoundException("User with id " + userId + " not found"));
 
     Optional.ofNullable(user.getProfileId())
         .ifPresent(binaryContentRepository::deleteById);
@@ -138,7 +139,6 @@ public class BasicUserService implements UserService {
         user.getUsername(),
         user.getEmail(),
         user.getProfileId(),
-        online
-    );
+        online);
   }
 }

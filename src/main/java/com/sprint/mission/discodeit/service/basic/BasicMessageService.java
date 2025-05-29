@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -34,10 +35,10 @@ public class BasicMessageService implements MessageService {
     UUID authorId = messageCreateRequest.authorId();
 
     if (!channelRepository.existsById(channelId)) {
-      throw new NoSuchElementException("Channel with id " + channelId + " does not exist");
+      throw new CustomException.ChannelNotFoundException("Channel with id " + channelId + " does not exist");
     }
     if (!userRepository.existsById(authorId)) {
-      throw new NoSuchElementException("Author with id " + authorId + " does not exist");
+      throw new CustomException.UserNotFoundException("Author with id " + authorId + " does not exist");
     }
 
     List<UUID> attachmentIds = binaryContentCreateRequests.stream()
@@ -58,8 +59,7 @@ public class BasicMessageService implements MessageService {
         content,
         channelId,
         authorId,
-        attachmentIds
-    );
+        attachmentIds);
     return messageRepository.save(message);
   }
 
@@ -67,7 +67,7 @@ public class BasicMessageService implements MessageService {
   public Message find(UUID messageId) {
     return messageRepository.findById(messageId)
         .orElseThrow(
-            () -> new NoSuchElementException("Message with id " + messageId + " not found"));
+            () -> new CustomException.MessageNotFoundException("Message with id " + messageId + " not found"));
   }
 
   @Override

@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.sprint.mission.discodeit.exception.CustomException;
 
 import java.time.Instant;
 import java.util.*;
@@ -42,7 +43,7 @@ public class BasicChannelService implements ChannelService {
     Channel createdChannel = channelRepository.save(channel);
 
     request.participantIds().stream()
-        .map(userId -> new ReadStatus(userId, createdChannel.getId(), Instant.MIN))
+        .map(userId -> new ReadStatus(userId, createdChannel.getId(), channel.getCreatedAt()))
         .forEach(readStatusRepository::save);
 
     return createdChannel;
@@ -53,7 +54,7 @@ public class BasicChannelService implements ChannelService {
     return channelRepository.findById(channelId)
         .map(this::toDto)
         .orElseThrow(
-            () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+            () -> new CustomException.ChannelNotFoundException("Channel with id " + channelId + " not found"));
   }
 
   @Override
@@ -63,10 +64,8 @@ public class BasicChannelService implements ChannelService {
         .toList();
 
     return channelRepository.findAll().stream()
-        .filter(channel ->
-            channel.getType().equals(ChannelType.PUBLIC)
-                || mySubscribedChannelIds.contains(channel.getId())
-        )
+        .filter(channel -> channel.getType().equals(ChannelType.PUBLIC)
+            || mySubscribedChannelIds.contains(channel.getId()))
         .map(this::toDto)
         .toList();
   }
@@ -77,9 +76,9 @@ public class BasicChannelService implements ChannelService {
     String newDescription = request.newDescription();
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(
-            () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+            () -> new CustomException.ChannelNotFoundException("Channel with id " + channelId + " not found"));
     if (channel.getType().equals(ChannelType.PRIVATE)) {
-      throw new IllegalArgumentException("Private channel cannot be updated");
+      throw new CustomException.PrivateChannelUpdateException("Private channel cannot be updated");
     }
     channel.update(newName, newDescription);
     return channelRepository.save(channel);
@@ -89,7 +88,7 @@ public class BasicChannelService implements ChannelService {
   public void delete(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(
-            () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+            () -> new CustomException.ChannelNotFoundException("Channel with id " + channelId + " not found"));
 
     messageRepository.deleteAllByChannelId(channel.getId());
     readStatusRepository.deleteAllByChannelId(channel.getId());
@@ -120,7 +119,6 @@ public class BasicChannelService implements ChannelService {
         channel.getName(),
         channel.getDescription(),
         participantIds,
-        lastMessageAt
-    );
+        lastMessageAt);
   }
 }
