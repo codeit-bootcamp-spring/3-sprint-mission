@@ -14,7 +14,9 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.transaction.Transactional;
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -30,23 +32,35 @@ public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final MessageMapper messageMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
     @Override
     public MessageDto create(MessageCreateRequest req, List<BinaryContentCreateRequest> files) {
         User author = userRepository.findById(req.authorId())
                 .orElseThrow(() -> new NoSuchElementException("해당 유저는 존재하지 않습니다."));
-
         Channel channel = channelRepository.findById(req.channelId())
                 .orElseThrow(() -> new NoSuchElementException("해당 채널은 존재하지 않습니다."));
 
         List<BinaryContent> attachments = files.stream()
-                .map(attachmentRequest -> binaryContentRepository.save(
-                        new BinaryContent(attachmentRequest.fileName(), (long) attachmentRequest.bytes().length,
-                                attachmentRequest.contentType(), attachmentRequest.bytes())))
+                .map(fileReq -> {
+                    UUID fileId = null;
+                    try {
+                        fileId = binaryContentStorage.put(null, fileReq.bytes());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    BinaryContent meta = new BinaryContent();
+                    meta.setId(fileId);
+                    meta.setFileName(fileReq.fileName());
+                    meta.setSize((long) fileReq.bytes().length);
+                    meta.setContentType(fileReq.contentType());
+                    return binaryContentRepository.save(meta);
+                })
                 .toList();
 
         Message message = new Message(req.content(), channel, author, attachments);
-        return messageMapper.toDto(messageRepository.save(message));
+        Message saved = messageRepository.save(message);
+        return messageMapper.toDto(saved);
     }
 
     @Override
