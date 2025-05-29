@@ -1,26 +1,22 @@
 package com.sprint.mission.discodeit.repository;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.Optional;
-
 import com.sprint.mission.discodeit.entity.Message;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface MessageRepository {
 
-    Message save(Message message); // 메시지 저장/업데이트
+  Message save(Message message);
 
-    Optional<Message> findById(UUID messageId); // 메시지 조회
+  Optional<Message> findById(UUID id);
 
-    List<Message> findAll(); // 전체 메시지 목록
+  List<Message> findAllByChannelId(UUID channelId);
 
-    List<Message> findByChannelId(UUID channelId); // 채널별 메시지 목록
+  boolean existsById(UUID id);
 
-    List<Message> findByAuthorId(UUID authorId); // 작성자별 메시지 목록
+  void deleteById(UUID id);
 
-    List<Message> findAllByChannelIdOrderByCreatedAtAsc(UUID channelId); // 채널별 정렬된 메시지 목록
-
-    void deleteById(UUID messageId); // 메시지 삭제
-
-    Optional<Message> findTopByChannelIdOrderByCreatedAtDesc(UUID channelId); // 마지막 메시지 조회 추가
+  void deleteAllByChannelId(UUID channelId);
 }

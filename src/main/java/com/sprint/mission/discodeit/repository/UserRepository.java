@@ -1,24 +1,26 @@
 package com.sprint.mission.discodeit.repository;
 
+import com.sprint.mission.discodeit.entity.User;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.sprint.mission.discodeit.entity.User;
-
 public interface UserRepository {
 
-    User save(User user); // 사용자 저장/업데이트
+  User save(User user);
 
-    Optional<User> findById(UUID userId); // 사용자 조회
+  Optional<User> findById(UUID id);
 
-    Optional<User> findByUsername(String username); // 사용자 이름 조회
+  Optional<User> findByUsername(String username);
 
-    List<User> findAll(); // 전체 사용자 목록
+  List<User> findAll();
 
-    void deleteById(UUID userId); // 사용자 삭제
+  boolean existsById(UUID id);
 
-    boolean existsById(UUID id); // 사용자 존재 확인
+  void deleteById(UUID id);
 
-    boolean existsByEmail(String email); // 이메일 중복 확인
+  boolean existsByEmail(String email);
+
+  boolean existsByUsername(String username);
 }
