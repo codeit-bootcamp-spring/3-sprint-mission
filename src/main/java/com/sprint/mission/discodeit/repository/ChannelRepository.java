@@ -1,24 +1,23 @@
 package com.sprint.mission.discodeit.repository;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import java.util.List;
-import java.util.Optional;
+import com.sprint.mission.discodeit.entity.User;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ChannelRepository {
+public interface ChannelRepository extends JpaRepository<User, UUID> {
 
-  public Channel save(Channel channel);
-
-  public Optional<Channel> findById(UUID channelId);
-
-  public List<Channel> findAll();
-
-  //TODO :  이게 필요할거같음!
-//    public List<Message> findAllByUserId(UUID userId);
-
-  public boolean existsById(UUID channelId);
-
-  public void deleteById(UUID channelId);
-
-  // XXX : joinChannel, leavelChannel, readparticipantIds 도 repo에서 작성해야하나???
+//    /* CrudRepository의 기본 메소드 */
+//  public Channel save(Channel channel);
+//
+//    /* CrudRepository의 기본 메소드 */
+//  public Optional<Channel> findById(UUID channelId);
+//
+//    /* JpaRepository의 기본 메소드 */
+//  public List<Channel> findAll();
+//
+//    /* CrudRepository의 기본 메소드 */
+//  public boolean existsById(UUID channelId);
+//
+//    /* CrudRepository의 기본 메소드 */
+//  public void deleteById(UUID channelId);
 }

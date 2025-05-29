@@ -1,24 +1,28 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Message;
-
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MessageRepository {
+public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-    public Message save(Message message);
+  public List<Message> findAllByChannelId(UUID channelId);
 
-    public Optional<Message> findById(UUID messageId);
+  public void deleteAllByChannelId(UUID channelId);
 
-    public List<Message> findAll();
-
-    public List<Message> findAllByChannelId(UUID channelId);
-
-    public boolean existsById(UUID messageId);
-
-    public void deleteById(UUID messageId);
-
-    public void deleteAllByChannelId(UUID channelId);
+//      /* CrudRepository의 기본 메소드 */
+//    public Message save(Message message);
+//
+//      /* CrudRepository의 기본 메소드 */
+//    public Optional<Message> findById(UUID messageId);
+//
+//      /* JpaRepository의 기본 메소드 */
+//    public List<Message> findAll();
+//
+//      /* CrudRepository의 기본 메소드 */
+//    public boolean existsById(UUID messageId);
+//
+//      /* CrudRepository의 기본 메소드 */
+//    public void deleteById(UUID messageId);
 }
