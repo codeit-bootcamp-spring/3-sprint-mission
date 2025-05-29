@@ -9,16 +9,18 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicAuthService implements AuthService {
 
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
 
   public UserResponse login(String username, String password) throws AuthException {
-    User user = userRepository.findByName(username)
+    User user = userRepository.findByUsername(username)
         .orElseThrow(AuthException::usernameNotFound);
 
     if (!user.getPassword().equals(password)) {
@@ -36,14 +38,6 @@ public class BasicAuthService implements AuthService {
   private UserResponse toUserResponse(User user) {
     Boolean isOnline = userStatusRepository.findByUserId(user.getId())
         .map(UserStatus::isOnline).orElse(null);
-    return new UserResponse(
-        user.getId(),
-        user.getCreatedAt(),
-        user.getUpdatedAt(),
-        user.getUsername(),
-        user.getEmail(),
-        user.getProfileId(),
-        Boolean.TRUE.equals(isOnline)
-    );
+    return UserResponse.from(user, isOnline);
   }
 }

@@ -1,28 +1,37 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.ChannelException;
+import com.sprint.mission.discodeit.exception.UserException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicChannelService implements ChannelService {
 
+  private final UserRepository userRepository;
+  private final UserStatusRepository userStatusRepository;
   private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
@@ -37,10 +46,15 @@ public class BasicChannelService implements ChannelService {
   @Override
   public ChannelResponse create(List<UUID> participantIds) {
     Channel channel = Channel.createPrivate();
-    for (UUID participantId : participantIds) {
-      readStatusRepository.save(ReadStatus.create(participantId, channel.getId()));
-    }
     Channel savedChannel = channelRepository.save(channel);
+
+    for (UUID participantId : participantIds) {
+      User participant = userRepository.findById(participantId)
+          .orElseThrow(() -> UserException.notFound(participantId));
+      ReadStatus status = ReadStatus.create(participant, savedChannel);
+      readStatusRepository.save(status);
+    }
+
     return toResponse(savedChannel);
   }
 
@@ -53,16 +67,9 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public List<ChannelResponse> findAllByUserId(UUID userId) {
-    List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
-        .map(ReadStatus::getChannelId)
-        .toList();
-
-    return channelRepository.findAll().stream()
-        .filter(
-            channel -> channel.getType() == ChannelType.PUBLIC || mySubscribedChannelIds.contains(
-                channel.getId()))
+    return channelRepository.findAllByUserId(userId).stream()
         .map(this::toResponse)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @Override
@@ -94,32 +101,37 @@ public class BasicChannelService implements ChannelService {
 
     // 연관된 메시지 삭제
     messageRepository.findAll().stream()
-        .filter(m -> m.getChannelId().equals(channelId))
-        .forEach(m -> messageRepository.delete(m.getId()));
+        .filter(m -> m.getChannel().equals(channel))
+        .forEach(m -> messageRepository.deleteById(m.getId()));
 
     // 연관된 읽음 상태 삭제
     readStatusRepository.findAllByChannelId(channelId)
-        .forEach(rs -> readStatusRepository.delete(rs.getId()));
+        .forEach(rs -> readStatusRepository.deleteById(rs.getId()));
 
     // 채널 삭제
-    channelRepository.delete(channelId);
+    channelRepository.deleteById(channelId);
 
     return toResponse(channel);
   }
 
   private ChannelResponse toResponse(Channel channel) {
     Instant lastMessageAt = messageRepository.findAll().stream()
-        .filter(m -> m.getChannelId().equals(channel.getId()))
+        .filter(m -> m.getChannel().equals(channel))
         .map(Message::getCreatedAt)
         .max(Comparator.naturalOrder())
         .orElse(null);
 
-    List<UUID> participantIds = new ArrayList<>();
+    List<UserResponse> participants = new ArrayList<>();
     if (channel.getType().equals(ChannelType.PRIVATE)) {
-      readStatusRepository.findAllByChannelId(channel.getId())
-          .stream()
-          .map(ReadStatus::getUserId)
-          .forEach(participantIds::add);
+      participants = readStatusRepository.findAllByChannelId(channel.getId()).stream()
+          .map(ReadStatus::getUser)
+          .map(user -> {
+            Boolean isOnline = userStatusRepository.findByUserId(user.getId())
+                .map(UserStatus::isOnline)
+                .orElse(null);
+            return UserResponse.from(user, isOnline);
+          })
+          .toList();
     }
 
     return new ChannelResponse(
@@ -127,7 +139,7 @@ public class BasicChannelService implements ChannelService {
         channel.getType(),
         channel.getName(),
         channel.getDescription(),
-        participantIds,
+        participants,
         lastMessageAt
     );
   }

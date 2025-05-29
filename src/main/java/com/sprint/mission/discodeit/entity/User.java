@@ -3,20 +3,21 @@ package com.sprint.mission.discodeit.entity;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.UserException;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Entity
 @Getter
-@ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "users")
 public class User extends BaseUpdatableEntity {
@@ -30,16 +31,20 @@ public class User extends BaseUpdatableEntity {
   @Column(name = "password", nullable = false)
   private String password;
 
-  @Column(name = "profile_id")
-  private UUID profileId;
+  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "profile_id")
+  private BinaryContent profile;
 
-  private User(String email, String username, String password, UUID profileId) {
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private UserStatus userStatus;
+
+  private User(String email, String username, String password, BinaryContent profile) {
     validate(email, username, password);
 
     this.email = email;
     this.username = username;
     this.password = password;
-    this.profileId = profileId;
+    this.profile = profile;
   }
 
   private static void validate(String email, String name, String password) {
@@ -54,16 +59,12 @@ public class User extends BaseUpdatableEntity {
     }
   }
 
-  public static User create(String email, String name, String password) {
-    return new User(email, name, password, null);
+  public static User create(String email, String name, String password, BinaryContent profile) {
+    return new User(email, name, password, profile);
   }
 
-  public static User create(String email, String name, String password, UUID profileId) {
-    return new User(email, name, password, profileId);
-  }
-
-  public void touch() {
-    this.updatedAt = Instant.now();
+  public void assignIdForTest(UUID id) {
+    this.id = id;
   }
 
   public void updatePassword(String password) {
@@ -71,7 +72,6 @@ public class User extends BaseUpdatableEntity {
       throw new UserException(ErrorCode.INVALID_INPUT, "비밀번호는 비어 있을 수 없습니다.");
     }
     this.password = password;
-    touch();
   }
 
   public void updateName(String name) {
@@ -79,7 +79,6 @@ public class User extends BaseUpdatableEntity {
       throw new UserException(ErrorCode.INVALID_INPUT, "이름은 비어 있을 수 없습니다.");
     }
     this.username = name;
-    touch();
   }
 
   public void updateEmail(String email) {
@@ -87,12 +86,14 @@ public class User extends BaseUpdatableEntity {
       throw new UserException(ErrorCode.INVALID_INPUT, "이메일은 비어 있을 수 없습니다.");
     }
     this.email = email;
-    touch();
   }
 
-  public void updateProfileId(UUID profileId) {
-    this.profileId = profileId;
-    touch();
+  public void updateProfile(BinaryContent profile) {
+    this.profile = profile;
+  }
+
+  public void updateUserStatus(UserStatus userStatus) {
+    this.userStatus = userStatus;
   }
 
   @Override

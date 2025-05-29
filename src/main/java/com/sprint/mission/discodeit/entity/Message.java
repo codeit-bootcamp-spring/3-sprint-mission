@@ -1,73 +1,67 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serial;
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.ToString;
+import lombok.NoArgsConstructor;
 
+@Entity
 @Getter
-@ToString
-public class Message implements Serializable {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "messages")
+public class Message extends BaseUpdatableEntity {
 
-  @Serial
-  private static final long serialVersionUID = 5091331492371241399L;
-
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-
+  @Column(name = "content", columnDefinition = "TEXT")
   private String content;
-  private final UUID authorId;
-  private final UUID channelId;
-  private Instant deletedAt;
-  private Set<UUID> attachmentIds;
+
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "author_id")
+  private User author;
+
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "channel_id")
+  private Channel channel;
+
+  @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
+  private final Set<MessageAttachment> attachments = new HashSet<>();
 
   private Message(
       String content,
-      UUID authorId,
-      UUID channelId,
-      Instant deletedAt,
-      Set<UUID> attachmentIds
+      User author,
+      Channel channel
   ) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
     this.content = content;
-    this.authorId = authorId;
-    this.channelId = channelId;
-    this.deletedAt = deletedAt;
-    this.attachmentIds = attachmentIds != null ? attachmentIds : new HashSet<>();
+    this.author = author;
+    this.channel = channel;
   }
 
-  public static Message create(String content, UUID userId, UUID channelId,
-      Set<UUID> attachmentIds) {
-    return new Message(content, userId, channelId, null, attachmentIds);
+  public static Message create(String content, User author, Channel channel) {
+    return new Message(content, author, channel);
   }
 
-  public void touch() {
-    this.updatedAt = Instant.now();
+  public void attach(BinaryContent binaryContent) {
+    MessageAttachment attachment = MessageAttachment.attach(this, binaryContent);
+    attachments.add(attachment);
+  }
+
+  public void assignCreatedAtForTest(Instant createdAt) {
+    this.createdAt = createdAt;
   }
 
   public void updateContent(String content) {
-    if (deletedAt == null) {
-      this.content = content;
-      touch();
-    }
-  }
-
-  public void isDeleted() {
-    this.deletedAt = Instant.now();
-  }
-
-  public void delete() {
-    if (deletedAt == null) {
-      deletedAt = Instant.now();
-      touch();
-    }
+    this.content = content;
   }
 
   @Override
@@ -78,7 +72,6 @@ public class Message implements Serializable {
     if (!(o instanceof Message message)) {
       return false;
     }
-
     return Objects.equals(id, message.id);
   }
 

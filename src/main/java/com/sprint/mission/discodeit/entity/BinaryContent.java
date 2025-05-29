@@ -1,66 +1,48 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.Instant;
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.Basic;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.ToString;
+import lombok.NoArgsConstructor;
 
+@Entity
 @Getter
-@ToString
-public class BinaryContent implements Serializable {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "binary_contents")
+public class BinaryContent extends BaseEntity {
 
-  @Serial
-  private static final long serialVersionUID = 8121899659000317030L;
+  @Column(name = "file_name", nullable = false)
+  private String fileName;
 
-  private final UUID id;
-  private final Instant createdAt;
+  @Column(name = "size", nullable = false)
+  private Long size;
 
-  private final String fileName;
-  private final Long size;
-  private final String contentType;
-  private final byte[] bytes;
+  @Column(name = "content_type", nullable = false)
+  private String contentType;
+
+  @Lob
+  @Basic(fetch = FetchType.LAZY)
+  @Column(name = "bytes", nullable = false, columnDefinition = "BYTEA")
+  private byte[] bytes;
 
   private BinaryContent(
-      UUID id,
-      Instant createdAt,
       String fileName,
       Long size,
       String contentType,
       byte[] bytes
   ) {
-    this.id = Objects.requireNonNullElseGet(id, UUID::randomUUID);
-    this.createdAt = Objects.requireNonNullElseGet(createdAt, Instant::now);
     this.fileName = fileName;
     this.size = size;
     this.contentType = contentType;
     this.bytes = bytes;
-  }
-
-  public static BinaryContent createWithNow(String fileName, Long size, String contentType,
-      byte[] bytes) {
-    return new BinaryContent(
-        UUID.randomUUID(),
-        Instant.now(),
-        fileName,
-        size,
-        contentType,
-        bytes
-    );
-  }
-
-  public static BinaryContent createWithTimestamp(Instant createdAt, String fileName, Long size,
-      String contentType, byte[] bytes) {
-    return new BinaryContent(
-        UUID.randomUUID(),
-        Objects.requireNonNull(createdAt),
-        fileName,
-        size,
-        contentType,
-        bytes
-    );
   }
 
   public static BinaryContent create(
@@ -70,8 +52,6 @@ public class BinaryContent implements Serializable {
       byte[] bytes
   ) {
     return BinaryContent.builder()
-        .id(UUID.randomUUID())
-        .createdAt(Instant.now())
         .fileName(Objects.requireNonNull(fileName))
         .size(size)
         .contentType(Objects.requireNonNull(contentType))
@@ -85,23 +65,10 @@ public class BinaryContent implements Serializable {
 
   public static class Builder {
 
-    private UUID id;
-    private Instant createdAt;
-
     private String fileName;
     private Long size;
     private String contentType;
     private byte[] bytes;
-
-    public Builder id(UUID id) {
-      this.id = id;
-      return this;
-    }
-
-    public Builder createdAt(Instant createdAt) {
-      this.createdAt = createdAt;
-      return this;
-    }
 
     public Builder fileName(String fileName) {
       this.fileName = fileName;
@@ -124,8 +91,12 @@ public class BinaryContent implements Serializable {
     }
 
     public BinaryContent build() {
-      return new BinaryContent(id, createdAt, fileName, size, contentType, bytes);
+      return new BinaryContent(fileName, size, contentType, bytes);
     }
+  }
+
+  public void assignIdForTest(UUID id) {
+    this.id = id;
   }
 
   @Override

@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.UserException;
 import com.sprint.mission.discodeit.exception.UserStatusException;
@@ -8,11 +10,14 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicUserStatusService implements UserStatusService {
 
   //  private static final Logger log = LogManager.getLogger(BasicUserStatusService.class);
@@ -20,58 +25,62 @@ public class BasicUserStatusService implements UserStatusService {
   private final UserRepository userRepository;
 
   @Override
-  public UserStatus create(UUID userId) {
-    userRepository.findById(userId)
+  public UserStatusResponse create(UUID userId) {
+    User user = userRepository.findById(userId)
         .orElseThrow(() -> UserException.notFound(userId));
 
     if (userStatusRepository.findByUserId(userId).isPresent()) {
       throw UserStatusException.duplicate(userId);
     }
 
-    UserStatus userStatus = UserStatus.create(userId);
-    return userStatusRepository.save(userStatus);
+    UserStatus userStatus = UserStatus.create(user);
+    return UserStatusResponse.from(userStatusRepository.save(userStatus));
   }
 
   @Override
-  public UserStatus find(UUID userStatusId) {
+  public UserStatusResponse find(UUID userStatusId) {
     return userStatusRepository.findById(userStatusId)
+        .map(UserStatusResponse::from)
         .orElseThrow(() -> UserStatusException.notFound(userStatusId));
   }
 
   @Override
-  public UserStatus findByUserId(UUID userId) {
+  public UserStatusResponse findByUserId(UUID userId) {
     return userStatusRepository.findByUserId(userId)
+        .map(UserStatusResponse::from)
         .orElseThrow(() -> UserStatusException.notFound(userId));
   }
 
   @Override
-  public List<UserStatus> findAll() {
-    return userStatusRepository.findAll();
+  public List<UserStatusResponse> findAll() {
+    return userStatusRepository.findAll().stream()
+        .map(UserStatusResponse::from)
+        .collect(Collectors.toList());
   }
 
   @Override
-  public UserStatus update(UUID userId) {
+  public UserStatusResponse update(UUID userId) {
     UserStatus userStatus = userStatusRepository.findById(userId)
         .orElseThrow(() -> UserStatusException.notFound(userId));
 
     userStatus.updateLastActiveAt();
-    return userStatus;
+    return UserStatusResponse.from(userStatusRepository.save(userStatus));
   }
 
   @Override
-  public UserStatus updateByUserId(UUID userId) {
+  public UserStatusResponse updateByUserId(UUID userId) {
     UserStatus userStatus = userStatusRepository.findByUserId(userId)
         .orElseThrow(() -> UserStatusException.notFoundByUserId(userId));
 
     userStatus.updateLastActiveAt();
-    return userStatus;
+    return UserStatusResponse.from(userStatus);
   }
 
   @Override
   public void delete(UUID userStatusId) {
-    UserStatus userStatus = userStatusRepository.findById(userStatusId)
+    userStatusRepository.findById(userStatusId)
         .orElseThrow(() -> UserStatusException.notFound(userStatusId));
 
-    userStatusRepository.delete(userStatusId);
+    userStatusRepository.deleteById(userStatusId);
   }
 }

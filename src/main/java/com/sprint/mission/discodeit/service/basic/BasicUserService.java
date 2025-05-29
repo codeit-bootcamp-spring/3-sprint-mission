@@ -16,13 +16,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicUserService implements UserService {
 
-//  private static final Logger log = LogManager.getLogger(BasicUserService.class);
+  private static final Logger log = LogManager.getLogger(BasicUserService.class);
 
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
@@ -43,16 +47,16 @@ public class BasicUserService implements UserService {
     User savedUser = userRepository.save(newUser);
 
     // 유저 상태 초기화
-    userStatusRepository.save(UserStatus.create(savedUser.getId()));
+    userStatusRepository.save(UserStatus.create(savedUser));
 
-    UUID savedProfileImageId = null;
+    BinaryContent savedProfile = null;
     if (command.profile() != null && command.profile().bytes() != null) {
       // 프로필 이미지 첨부 시 저장 및 유저 업데이트
-      savedProfileImageId = saveProfileImage(command.profile());
+      savedProfile = saveProfileImage(command.profile());
     }
 
-    if (savedProfileImageId != null) {
-      savedUser.updateProfileId(savedProfileImageId);
+    if (savedProfile != null) {
+      savedUser.updateProfile(savedProfile);
       userRepository.save(savedUser); // 프로필 반영 후 다시 저장
     }
 
@@ -66,7 +70,7 @@ public class BasicUserService implements UserService {
   }
 
   private void validateUserName(String name) {
-    userRepository.findByName(name).ifPresent(user -> {
+    userRepository.findByUsername(name).ifPresent(user -> {
       throw UserException.duplicateName();
     });
   }
@@ -79,7 +83,7 @@ public class BasicUserService implements UserService {
 
   @Override
   public UserResponse findByName(String name) {
-    return userRepository.findByName(name).map(this::toUserResponse)
+    return userRepository.findByUsername(name).map(this::toUserResponse)
         .orElseThrow(UserException::notFound);
   }
 
@@ -110,12 +114,13 @@ public class BasicUserService implements UserService {
             user.updatePassword(command.newPassword());
           }
 
-          UUID savedProfileImageId = null;
+          BinaryContent savedProfile = null;
           if (command.profile() != null && command.profile().bytes() != null) {
-            Optional.ofNullable(user.getProfileId()).ifPresent(binaryContentRepository::delete);
+            Optional.ofNullable(user.getProfile())
+                .ifPresent(profile -> binaryContentRepository.deleteById(profile.getId()));
 
-            savedProfileImageId = saveProfileImage(command.profile());
-            user.updateProfileId(savedProfileImageId);
+            savedProfile = saveProfileImage(command.profile());
+            user.updateProfile(savedProfile);
           }
 
           User savedUser = userRepository.save(user);
@@ -126,19 +131,19 @@ public class BasicUserService implements UserService {
   @Override
   public void delete(UUID userId) {
     userRepository.findById(userId).ifPresentOrElse(user -> {
-      userRepository.delete(userId);
+      userRepository.deleteById(userId);
 
-      Optional.ofNullable(user.getProfileId())
-          .ifPresent(binaryContentRepository::delete);
+      Optional.ofNullable(user.getProfile())
+          .ifPresent(profile -> binaryContentRepository.deleteById(profile.getId()));
 
       userStatusRepository.findByUserId(userId)
-          .ifPresent(status -> userStatusRepository.delete(status.getId()));
+          .ifPresent(status -> userStatusRepository.deleteById(status.getId()));
     }, () -> {
       throw UserException.notFound(userId);
     });
   }
 
-  private UUID saveProfileImage(BinaryContentData profile) {
+  private BinaryContent saveProfileImage(BinaryContentData profile) {
     try {
       BinaryContent binaryContent = BinaryContent.create(
           profile.fileName(),
@@ -147,9 +152,9 @@ public class BasicUserService implements UserService {
           profile.bytes()
       );
 
-      return binaryContentRepository.save(binaryContent).getId();
+      return binaryContentRepository.save(binaryContent);
     } catch (Exception e) {
-//      log.warn("프로필 이미지 등록 실패: 기본 이미지 사용", e);
+      log.warn("프로필 이미지 등록 실패: 기본 이미지 사용", e);
       return null;
     }
   }
@@ -157,14 +162,6 @@ public class BasicUserService implements UserService {
   private UserResponse toUserResponse(User user) {
     Boolean isOnline = userStatusRepository.findByUserId(user.getId())
         .map(UserStatus::isOnline).orElse(null);
-    return new UserResponse(
-        user.getId(),
-        user.getCreatedAt(),
-        user.getUpdatedAt(),
-        user.getUsername(),
-        user.getEmail(),
-        user.getProfileId(),
-        Boolean.TRUE.equals(isOnline)
-    );
+    return UserResponse.from(user, isOnline);
   }
 }

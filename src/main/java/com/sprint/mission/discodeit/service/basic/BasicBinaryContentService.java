@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.exception.BinaryContentException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -9,15 +10,17 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public BinaryContent create(BinaryContentData binaryContentData) {
+  public BinaryContentResponse create(BinaryContentData binaryContentData) {
     if (binaryContentData.bytes() == null || binaryContentData.fileName() == null
         || binaryContentData.contentType() == null) {
       throw BinaryContentException.invalidRequest();
@@ -30,18 +33,20 @@ public class BasicBinaryContentService implements BinaryContentService {
         binaryContentData.bytes()
     );
 
-    return binaryContentRepository.save(binaryContent);
+    BinaryContent saved = binaryContentRepository.save(binaryContent);
+
+    return BinaryContentResponse.from(saved);
   }
 
   @Override
-  public BinaryContent find(UUID binaryContentId) {
+  public BinaryContentResponse find(UUID binaryContentId) {
     return binaryContentRepository.findById(binaryContentId)
-        .orElseThrow(
-            () -> BinaryContentException.notFound(binaryContentId));
+        .map(BinaryContentResponse::from)
+        .orElseThrow(() -> BinaryContentException.notFound(binaryContentId));
   }
 
   @Override
-  public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
+  public List<BinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds) {
     return binaryContentIds.stream()
         .map(this::find)
         .toList();
@@ -49,6 +54,6 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Override
   public void delete(UUID id) {
-    binaryContentRepository.delete(id);
+    binaryContentRepository.deleteById(id);
   }
 }

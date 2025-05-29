@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.controller.api.MessageApi;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.exception.BinaryContentException;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
@@ -37,25 +37,25 @@ public class MessageController implements MessageApi {
   @PostMapping(
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE
   )
-  public ResponseEntity<Message> create(
+  public ResponseEntity<MessageResponse> create(
       @RequestPart("message") MessageCreateRequest request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) {
 
     List<BinaryContentData> binaryContentDataList = resolveAttachmentRequest(attachments);
     CreateMessageCommand command = toCreateCommand(request, binaryContentDataList);
-    Message message = messageService.create(command);
+    MessageResponse message = messageService.create(command);
 
-    return ResponseEntity.created(URI.create("/api/messages/" + message.getId()))
+    return ResponseEntity.created(URI.create("/api/messages/" + message.id()))
         .body(message);
   }
 
   @GetMapping
-  public ResponseEntity<List<Message>> findAllByChannelId(@RequestParam UUID channelId) {
+  public ResponseEntity<List<MessageResponse>> findAllByChannelId(@RequestParam UUID channelId) {
     return ResponseEntity.ok(messageService.findAllByChannelId(channelId));
   }
 
   @PatchMapping("/{messageId}")
-  public ResponseEntity<Message> update(@PathVariable UUID messageId,
+  public ResponseEntity<MessageResponse> update(@PathVariable UUID messageId,
       @RequestBody MessageUpdateRequest request) {
     return ResponseEntity.ok(messageService.updateContent(messageId, request.newContent()));
   }

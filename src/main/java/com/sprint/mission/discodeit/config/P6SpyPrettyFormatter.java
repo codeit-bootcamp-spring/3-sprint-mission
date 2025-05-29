@@ -41,12 +41,29 @@ public class P6SpyPrettyFormatter implements MessageFormattingStrategy {
       return sql;
     }
 
-    String trimmedSQL = trim(sql);
+    // 긴 binary 또는 values(...) 축약
+    String compactSql = shortenLargeValues(sql);
+
+    String trimmedSQL = trim(compactSql);
     String formatted =
-        isDdl(trimmedSQL) ? FormatStyle.DDL.getFormatter().format(sql)
-            : FormatStyle.BASIC.getFormatter().format(sql);
+        isDdl(trimmedSQL) ? FormatStyle.DDL.getFormatter().format(compactSql)
+            : FormatStyle.BASIC.getFormatter().format(compactSql);
 
     return highlightKeywords(formatted);
+  }
+
+  private static final Pattern BYTE_LITERAL_PATTERN =
+      Pattern.compile("'[0-9A-Fa-f]{100,}'"); // 100자 이상 hex literal
+
+  private String shortenLargeValues(String sql) {
+    Matcher matcher = BYTE_LITERAL_PATTERN.matcher(sql);
+    StringBuffer sb = new StringBuffer();
+
+    while (matcher.find()) {
+      matcher.appendReplacement(sb, "'[long value...]'");
+    }
+    matcher.appendTail(sb);
+    return sb.toString();
   }
 
   private String highlightKeywords(String sql) {

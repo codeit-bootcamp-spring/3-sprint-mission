@@ -3,9 +3,10 @@ package com.sprint.mission.discodeit.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.mission.discodeit.config.JpaAuditingConfig;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -22,25 +23,28 @@ class UserRepositoryTest {
   TestEntityManager em;
 
   @Autowired
-  private JpaUserRepository userRepository;
+  private UserRepository userRepository;
 
   @Test
   void 사용자를_저장하고_조회할_수_있다() {
     // given
-    UUID profileId = UUID.randomUUID();
-    User user = User.create("test@example.com", "테스트 유저", "password123!", profileId);
+    String email = "test@test.com";
+    String name = "길동쓰";
+    String password = "pwd123";
+
+    BinaryContent profile = BinaryContentFixture.createValid();
+    User user = User.create(email, name, password, profile);
+    user.updateProfile(profile);
 
     // when
-    User saved = userRepository.save(user);
-    em.flush();
-
-    Optional<User> result = userRepository.findById(saved.getId());
+    userRepository.save(user);
+    Optional<User> result = userRepository.findById(user.getId());
 
     // then
     assertThat(result).isPresent();
-    assertThat(result.get().getEmail()).isEqualTo("test@example.com");
-    assertThat(result.get().getUsername()).isEqualTo("테스트 유저");
-    assertThat(result.get().getPassword()).isEqualTo("password123!");
-    assertThat(result.get().getProfileId()).isEqualTo(profileId);
+    assertThat(result.get().getEmail()).isEqualTo(email);
+    assertThat(result.get().getUsername()).isEqualTo(name);
+    assertThat(result.get().getPassword()).isEqualTo(password);
+    assertThat(result.get().getProfile()).isEqualTo(profile);
   }
 }
