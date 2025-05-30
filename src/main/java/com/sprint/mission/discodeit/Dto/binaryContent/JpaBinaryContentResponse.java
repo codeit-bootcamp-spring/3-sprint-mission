@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.Dto.binaryContent;
 
+import lombok.Builder;
+
 import java.util.UUID;
 
 /**
@@ -8,6 +10,7 @@ import java.util.UUID;
  * Author       : dounguk
  * Date         : 2025. 5. 28.
  */
+@Builder
 public record JpaBinaryContentResponse(
                 UUID id,
                 String fileName,

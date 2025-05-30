@@ -1,12 +1,16 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.Dto.message.*;
+import com.sprint.mission.discodeit.Dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.jpa.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +18,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic
@@ -39,28 +46,28 @@ public class BasicMessageService implements MessageService {
     private final JpaUserRepository userRepository;
     private final JpaBinaryContentRepository binaryContentRepository;
     private final JpaReadStatusRepository readStatusRepository;
+    private final MessageMapper messageMapper;
 
 
     @Override
-    public List<FoundMessagesResponse> findAllByChannelId(UUID channelId) {
-        List<Message> messageList = messageRepository.findAllByChannelId(channelId);
+    public MessageResponse findAllByChannelId(UUID channelId, Pageable pageable) {
+        List<Message> messagePage = messageRepository.findAllByChannelIdOrderByCreatedAt(channelId, pageable);
 
-        if (messageList.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<FoundMessagesResponse> responses = new ArrayList<>();
-        for (Message message : messageList) {
-            responses.add(new FoundMessagesResponse(
-                    message.getId(),
-                    message.getCreatedAt(),
-                    message.getUpdatedAt(),
-                    message.getContent(),
-                    message.getChannel().getId(),
-                    message.getAuthor().getId(),
-                    message.getAttachments().stream().map(BaseEntity::getId).toList()
-            ));
-        }
-        return responses;
+        long totalMessages = messageRepository.count();
+        int totalPages = (int) Math.ceil((double) totalMessages / pageable.getPageSize());
+        boolean hasNext = pageable.getPageNumber() + 1 < totalPages;
+
+        List<String> contents = messagePage.stream().map(Message::getContent).collect(Collectors.toList());
+
+        MessageResponse response = new MessageResponse(
+                contents,
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                hasNext,
+                totalMessages
+        );
+
+        return response;
     }
 
 
@@ -68,7 +75,7 @@ public class BasicMessageService implements MessageService {
     // public 방일경우 작성을 해도 readstatus가 없음 최소 1회는 등록을 해야 하고 유저가 방에 있는지 확인 가능한 로직이 필요함
     // binary content
     @Override
-    public MessageAttachmentsCreateResponse createMessage(
+    public JpaMessageResponse createMessage(
             MessageCreateRequest request,
             List<MultipartFile> fileList) {
 
@@ -102,7 +109,6 @@ public class BasicMessageService implements MessageService {
                             .extension(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")))
                             .build();
                     attachment = binaryContentRepository.save(binaryContent);
-                    System.out.println("attachment = " + attachment);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -134,17 +140,9 @@ public class BasicMessageService implements MessageService {
                 .build();
         messageRepository.save(message);
 
-        // body
-        MessageAttachmentsCreateResponse messageAttachmentsCreateResponse = new MessageAttachmentsCreateResponse(
-                message.getId(),
-                message.getCreatedAt(),
-                message.getUpdatedAt(),
-                message.getContent(),
-                message.getChannel().getId(),
-                message.getAuthor().getId(),
-                message.getAttachments().stream().map(BaseEntity::getId).toList());
+        JpaMessageResponse response = messageMapper.toDto(message);
 
-        return messageAttachmentsCreateResponse;
+        return response;
         // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
     }
 
@@ -159,20 +157,11 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public UpdateMessageResponse updateMessage(UUID messageId, MessageUpdateRequest request) {
+    public JpaMessageResponse updateMessage(UUID messageId, MessageUpdateRequest request) {
         Message message = messageRepository.findById(messageId).orElseThrow(() -> new NoSuchElementException("message with id " + messageId + " not found"));
-//
         message.setContent(request.newContent());
-//
-        UpdateMessageResponse response = new UpdateMessageResponse(
-                message.getId(),
-                message.getCreatedAt(),
-                message.getUpdatedAt(),
-                message.getContent(),
-                message.getChannel().getId(),
-                message.getAuthor().getId(),
-                message.getAttachments().stream().map(BaseEntity::getId).toList()
-        );
+
+        JpaMessageResponse response = messageMapper.toDto(message);
         return response;
     }
 
@@ -180,20 +169,64 @@ public class BasicMessageService implements MessageService {
         return (attachmentFiles != null) && (!attachmentFiles.isEmpty()) && (attachmentFiles.get(0).getSize() != 0);
     }
 
+//
+//    private static JpaMessageResponse modifyMessageResponse(Message message) {
+//        JpaMessageResponse response;
+//        User author = message.getAuthor();
+//        BinaryContent profile = author.getProfile();
+//
+//        JpaBinaryContentResponse profileDto=null;
+//        if(author.getProfile() != null) {
+//            profileDto = new JpaBinaryContentResponse(
+//                    profile.getId(),
+//                    profile.getFileName(),
+//                    profile.getSize(),
+//                    profile.getContentType()
+//            );
+//        }
+//
+//        JpaUserResponse userDto = new JpaUserResponse(
+//                author.getId(),
+//                author.getUsername(),
+//                author.getEmail(),
+//                profileDto,
+//                isOnline(author.getStatus())
+//        );
+//
+//        List<JpaBinaryContentResponse> attachmentDtos = getJpaBinaryContentResponses(message);
+//
+//        response = new JpaMessageResponse(
+//                message.getId(),
+//                message.getCreatedAt(),
+//                message.getUpdatedAt(),
+//                message.getContent(),
+//                message.getChannel().getId(),
+//                userDto,
+//                attachmentDtos
+//                );
+//        return response;
+//    }
+//
+//    private static List<JpaBinaryContentResponse> getJpaBinaryContentResponses(Message message) {
+//        List<BinaryContent> attachments = message.getAttachments();
+//
+//        List<JpaBinaryContentResponse> attachmentDtos = new ArrayList<>();
+//        if(attachments != null) {
+//            for (BinaryContent attachment : attachments) {
+//                JpaBinaryContentResponse attachmentDto = new JpaBinaryContentResponse(
+//                        attachment.getId(),
+//                        attachment.getFileName(),
+//                        attachment.getSize(),
+//                        attachment.getContentType()
+//                );
+//                attachmentDtos.add(attachmentDto);
+//            }
+//        }
+//        return attachmentDtos;
+//    }
 
-    // not required
-    @Override
-    public Message findMessageById(UUID messageId) {
-//        Objects.requireNonNull(messageId, "no messageId: BasicMessageService.findMessageById");
-//        return Optional.ofNullable(messageRepository.findMessageById(messageId))
-//                .orElseThrow(() -> new IllegalArgumentException("no message in DB: BasicMessageService.findMessageById"));
-        return null;
-    }
-
-    // not required
-    @Override
-    public List<Message> findAllMessages() {
-//        return messageRepository.findAllMessages();
-        return null;
+    private static boolean isOnline(UserStatus userStatus) {
+        Instant now = Instant.now();
+        return Duration.between(userStatus.getLastActiveAt(), now).toMinutes() < 5;
     }
 }

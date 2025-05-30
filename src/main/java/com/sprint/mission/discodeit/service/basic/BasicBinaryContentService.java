@@ -2,11 +2,14 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateResponse;
 import com.sprint.mission.discodeit.Dto.binaryContent.FindBinaryContentResponse;
+import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -25,10 +28,11 @@ import java.util.*;
 @RequiredArgsConstructor
 public class BasicBinaryContentService implements BinaryContentService {
     private final JpaBinaryContentRepository binaryContentRepository;
+    private final BinaryContentMapper binaryContentMapper;
 
     @Override
-    public List<FindBinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds) {
-        List<FindBinaryContentResponse> responses = new ArrayList<>();
+    public List<JpaBinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds) {
+        List<JpaBinaryContentResponse> responses = new ArrayList<>();
 //
         if (binaryContentIds.isEmpty()) {
             throw new RuntimeException("no ids in param");
@@ -40,43 +44,47 @@ public class BasicBinaryContentService implements BinaryContentService {
         }
 //
         for (BinaryContent attachment : attachments) {
-            responses.add(new FindBinaryContentResponse(
-                    attachment.getId(),
-//                    attachment.getCreatedAt(),
-                    attachment.getFileName(),
-                    attachment.getSize(),
-                    attachment.getContentType()
-//                    , Base64.getEncoder().encodeToString(attachment.getBytes())
-            ));
+//            responses.add(new JpaBinaryContentResponse(
+//                    attachment.getId(),
+//                    attachment.getFileName(),
+//                    attachment.getSize(),
+//                    attachment.getContentType()
+//            ));
+            responses.add(binaryContentMapper.toDto(attachment));
+
         }
         return responses;
 
     }
 
     @Override
-    public FindBinaryContentResponse find(UUID binaryContentId) {
+    public JpaBinaryContentResponse find(UUID binaryContentId) {
         BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
                 .orElseThrow(() -> new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found"));
 
-        FindBinaryContentResponse response = new FindBinaryContentResponse(
-                binaryContent.getId(),
-                binaryContent.getFileName(),
-                binaryContent.getSize(),
-                binaryContent.getContentType());
+//        JpaBinaryContentResponse response = new JpaBinaryContentResponse(
+//                binaryContent.getId(),
+//                binaryContent.getFileName(),
+//                binaryContent.getSize(),
+//                binaryContent.getContentType());
 
-        return response;
+        return binaryContentMapper.toDto(binaryContent);
     }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public BinaryContent download(UUID binaryContentId) {
+        BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
+                .orElse(null);
+        return binaryContent;
+    }
+
 
     @Override
     public BinaryContentCreateResponse create(String fileName, Long size, String contentType, byte[] bytes, String extension) {
 //        BinaryContent binaryContent = binaryContentRepository.createBinaryContent(fileName, size, contentType, bytes, extension);
 //        return new BinaryContentCreateResponse(binaryContent.getId());
         return null;
-    }
-
-    @Override
-    public void delete(UUID attachmentId) {
-//        binaryContentRepository.deleteBinaryContentById(attachmentId); // file, jcf : throw exception
-        return;
     }
 }

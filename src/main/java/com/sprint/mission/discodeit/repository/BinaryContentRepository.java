@@ -28,4 +28,6 @@ public interface BinaryContentRepository {
     BinaryContent findById(UUID attachmentId);
 
     List<BinaryContent> findAllByIds(List<UUID> attachmentIds);
+
+
 }

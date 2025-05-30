@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
@@ -42,44 +43,49 @@ public class BasicUserService implements UserService {
     private final JpaBinaryContentRepository binaryContentRepository;
     private final JpaUserStatusRepository userStatusRepository;
     private final FileUploadUtils fileUploadUtils;
+    private final UserMapper userMapper;
 
 
     @Transactional(readOnly = true)
-    public List<UserFindResponse> findAllUsers() {
+    public List<JpaUserResponse> findAllUsers() {
         List<User> users = userRepository.findAll();
 
-        List<UserFindResponse> userFindResponses = new ArrayList<>();
+        List<JpaUserResponse> responses = new ArrayList<>();
         // user fields + online 으로 response 생성
         for (User user : users) {
-            UserStatus userStatus = Optional.ofNullable(userStatusRepository.findByUserId(user.getId()))
-                    .orElseThrow(()->new RuntimeException("User status not found"));
+            userMapper.toDto(user);
+            responses.add(userMapper.toDto(user));
 
-            BinaryContent profile = user.getProfile();
-            JpaBinaryContentResponse profileDto;
-            if (profile == null) {
-                profileDto = null;
-            } else {
-                profileDto = new JpaBinaryContentResponse(
-                        profile.getId(),
-                        profile.getFileName(),
-                        profile.getSize(),
-                        profile.getContentType()
-                );
-            }
-
-            userFindResponses.add(new UserFindResponse(
-                    user.getId(),
-                    user.getUsername(),
-                    user.getEmail(),
-                    profileDto,
-                    isOnline(userStatus)));
+//            UserStatus userStatus = Optional.ofNullable(userStatusRepository.findByUserId(user.getId()))
+//                    .orElseThrow(()->new RuntimeException("User status not found"));
+//
+//
+//            BinaryContent profile = user.getProfile();
+//            JpaBinaryContentResponse profileDto;
+//            if (profile == null) {
+//                profileDto = null;
+//            } else {
+//                profileDto = new JpaBinaryContentResponse(
+//                        profile.getId(),
+//                        profile.getFileName(),
+//                        profile.getSize(),
+//                        profile.getContentType()
+//                );
+//            }
+//
+//            userFindResponses.add(new UserFindResponse(
+//                    user.getId(),
+//                    user.getUsername(),
+//                    user.getEmail(),
+//                    profileDto,
+//                    isOnline(userStatus)));
         }
-        return userFindResponses;
+        return responses;
     }
 
 
     @Override
-    public CreateUserResponse create(
+    public JpaUserResponse create(
             UserCreateRequest userCreateRequest,
             Optional<BinaryContentCreateRequest> profile
     ) {
@@ -97,12 +103,7 @@ public class BasicUserService implements UserService {
                             String contentType = profileRequest.contentType();
                             byte[] bytes = profileRequest.bytes();
                             String extension = profileRequest.fileName().substring(filename.lastIndexOf("."));
-                            BinaryContent binaryContent = new BinaryContent(
-                                    filename,
-                                    (long)bytes.length,
-                                    contentType,
-                                    bytes,
-                                    extension);
+                            BinaryContent binaryContent = new BinaryContent(filename, (long)bytes.length, contentType, bytes, extension);
                             binaryContentRepository.save(binaryContent);
                             return binaryContent;
                         }
@@ -141,25 +142,27 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(userStatus);
         user.setUserStatus(userStatus); // 양방향성을 위한 주입
 
-        JpaBinaryContentResponse profileDto = null;
-        if(nullableProfile != null) {
-            profileDto = new JpaBinaryContentResponse(
-                    nullableProfile.getId(),
-                    nullableProfile.getFileName(),
-                    nullableProfile.getSize(),
-                    nullableProfile.getContentType()
-            );
-        }
+        JpaUserResponse response = userMapper.toDto(user);
 
-        CreateUserResponse createUserResponse = new CreateUserResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                profileDto,
-                isOnline(userStatus)
-        );
+//        JpaBinaryContentResponse profileDto = null;
+//        if(nullableProfile != null) {
+//            profileDto = new JpaBinaryContentResponse(
+//                    nullableProfile.getId(),
+//                    nullableProfile.getFileName(),
+//                    nullableProfile.getSize(),
+//                    nullableProfile.getContentType()
+//            );
+//        }
+//
+//        CreateUserResponse createUserResponse = new CreateUserResponse(
+//                user.getId(),
+//                user.getUsername(),
+//                user.getEmail(),
+//                profileDto,
+//                isOnline(userStatus)
+//        );
 
-        return createUserResponse;
+        return response;
 //        BinaryContent 생성 -> (분기)이미지 없을 경우 -> User 생성 -> userStatus 생성 -> return response
 //                           -> (분기)이미지 있을 경우 -> User 생성 -> attachment 저장 -> userStatus 생성 -> return response
     }
@@ -192,7 +195,7 @@ public class BasicUserService implements UserService {
     // name, email, password 수정 image는 optional
     @Transactional
     @Override
-    public UpdateUserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file) {
+    public JpaUserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file) {
 
         User user = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("user with id " + userId + " not found"));
 
@@ -279,51 +282,29 @@ public class BasicUserService implements UserService {
             user.setProfile(binaryContent);
         }
 
-
-        BinaryContent profile = user.getProfile();
-        JpaBinaryContentResponse profileDto = new JpaBinaryContentResponse(
-                profile.getId(),
-                profile.getFileName(),
-                profile.getSize(),
-                profile.getContentType()
-        );
-
-        UpdateUserResponse response = new UpdateUserResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getPassword(),
-                profileDto,
-                isOnline(userStatus)
-        );
+        JpaUserResponse response = userMapper.toDto(user);
+//
+//        BinaryContent profile = user.getProfile();
+//        JpaBinaryContentResponse profileDto = new JpaBinaryContentResponse(
+//                profile.getId(),
+//                profile.getFileName(),
+//                profile.getSize(),
+//                profile.getContentType()
+//        );
+//
+//        UpdateUserResponse response = new UpdateUserResponse(
+//                user.getId(),
+//                user.getUsername(),
+//                user.getEmail(),
+//                user.getPassword(),
+//                profileDto,
+//                isOnline(userStatus)
+//        );
 
         return response;
 //        // 파일 확인(있음) -> 파일 삭제 -> binary content 삭제 -> binary content 추가 -> 파일 생성 -> user 업데이트
 //        // 파일 확인(없음) ->                                  -> binary content 추가 -> 파일 생성 -> user 업데이트
 
-    }
-
-
-    @Override
-    public ResponseEntity<?> findUserById(UUID userId) {
-//        Objects.requireNonNull(userId, "User 아이디 입력 없음: BasicUserService.findUserById");
-//        User user = userRepository2.findUserById(userId); // throw
-//
-//        UserStatus userStatus = Optional.ofNullable(userStatusRepository.findUserStatusByUserId(userId))
-//                .orElseThrow(() -> new IllegalStateException("userStatus is null"));
-//
-//        boolean online = userStatusRepository.isOnline(userStatus.getId()); // throw
-//
-//        UserFindResponse userFindResponse = new UserFindResponse(
-//                user.getId(),
-//                user.getCreatedAt(),
-//                user.getUpdatedAt(),
-//                user.getUsername(),
-//                user.getEmail(),
-//                user.getProfileId(),
-//                online);
-//        return ResponseEntity.status(HttpStatus.OK).body(userFindResponse);
-        return null;
     }
 
 
@@ -337,16 +318,5 @@ public class BasicUserService implements UserService {
     }
 
 
-    // not required
-    @Override
-    public ResponseEntity<?> updateUser(UUID userId, String name) {
-//        Objects.requireNonNull(userId, "user 아이디 입력 없음: BasicUserService.updateUser");
-//        Objects.requireNonNull(name, "이름 입력 없음: BasicUserService.updateUser");
-//        userRepository2.updateNameById(userId, name);
-//
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(Map.of("message", "name updated " + name));
-        return null;
-    }
 
 }
