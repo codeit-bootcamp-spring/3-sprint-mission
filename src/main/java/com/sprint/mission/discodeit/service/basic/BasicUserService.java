@@ -12,6 +12,8 @@ import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.ResponseEntity;
@@ -38,12 +40,13 @@ import java.util.*;
 @Transactional
 public class BasicUserService implements UserService {
 
-    private static final String PROFILE_PATH = "img/profile";
+    private static final String PROFILE_PATH = "img";
     private final JpaUserRepository userRepository;
     private final JpaBinaryContentRepository binaryContentRepository;
     private final JpaUserStatusRepository userStatusRepository;
     private final FileUploadUtils fileUploadUtils;
     private final UserMapper userMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
 
     @Transactional(readOnly = true)
@@ -55,30 +58,6 @@ public class BasicUserService implements UserService {
         for (User user : users) {
             userMapper.toDto(user);
             responses.add(userMapper.toDto(user));
-
-//            UserStatus userStatus = Optional.ofNullable(userStatusRepository.findByUserId(user.getId()))
-//                    .orElseThrow(()->new RuntimeException("User status not found"));
-//
-//
-//            BinaryContent profile = user.getProfile();
-//            JpaBinaryContentResponse profileDto;
-//            if (profile == null) {
-//                profileDto = null;
-//            } else {
-//                profileDto = new JpaBinaryContentResponse(
-//                        profile.getId(),
-//                        profile.getFileName(),
-//                        profile.getSize(),
-//                        profile.getContentType()
-//                );
-//            }
-//
-//            userFindResponses.add(new UserFindResponse(
-//                    user.getId(),
-//                    user.getUsername(),
-//                    user.getEmail(),
-//                    profileDto,
-//                    isOnline(userStatus)));
         }
         return responses;
     }
@@ -96,6 +75,8 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("User with email " + userCreateRequest.email() + " already exitsts");
         }
 
+
+
         BinaryContent nullableProfile = profile
                 .map(
                         profileRequest -> {
@@ -103,8 +84,9 @@ public class BasicUserService implements UserService {
                             String contentType = profileRequest.contentType();
                             byte[] bytes = profileRequest.bytes();
                             String extension = profileRequest.fileName().substring(filename.lastIndexOf("."));
-                            BinaryContent binaryContent = new BinaryContent(filename, (long)bytes.length, contentType, bytes, extension);
+                            BinaryContent binaryContent = new BinaryContent(filename, (long)bytes.length, contentType, extension);
                             binaryContentRepository.save(binaryContent);
+                            binaryContentStorage.put(binaryContent.getId(), bytes);
                             return binaryContent;
                         }
                 ).orElse(null);
@@ -115,19 +97,19 @@ public class BasicUserService implements UserService {
             userRepository.save(user);
         } else {
             // 사진 저장 로직 (BinaryContent 객체 생성 -> 유저 생성 -> 파일 BinaryContent ID로 저장)
-            String uploadPath = fileUploadUtils.getUploadPath(PROFILE_PATH);
-
-            String originalFileName = nullableProfile.getFileName();
-            String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-            String newFileName = nullableProfile.getId() + extension;
-
-            File profileImage = new File(uploadPath, newFileName);
-            // 사진 저장
-            try (FileOutputStream fos = new FileOutputStream(profileImage)) {
-                fos.write(nullableProfile.getBytes());
-            } catch (IOException e) {
-                throw new RuntimeException("image not saved", e);
-            }
+//            String uploadPath = fileUploadUtils.getUploadPath(PROFILE_PATH);
+//
+//            String originalFileName = nullableProfile.getFileName();
+//            String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+//            String newFileName = nullableProfile.getId() + extension;
+//
+//            File profileImage = new File(uploadPath, newFileName);
+//            // 사진 저장
+//            try (FileOutputStream fos = new FileOutputStream(profileImage)) {
+//                fos.write(nullableProfile.getBytes());
+//            } catch (IOException e) {
+//                throw new RuntimeException("image not saved", e);
+//            }
 
             // USER 객체 생성
             user = new User(
@@ -143,25 +125,6 @@ public class BasicUserService implements UserService {
         user.setUserStatus(userStatus); // 양방향성을 위한 주입
 
         JpaUserResponse response = userMapper.toDto(user);
-
-//        JpaBinaryContentResponse profileDto = null;
-//        if(nullableProfile != null) {
-//            profileDto = new JpaBinaryContentResponse(
-//                    nullableProfile.getId(),
-//                    nullableProfile.getFileName(),
-//                    nullableProfile.getSize(),
-//                    nullableProfile.getContentType()
-//            );
-//        }
-//
-//        CreateUserResponse createUserResponse = new CreateUserResponse(
-//                user.getId(),
-//                user.getUsername(),
-//                user.getEmail(),
-//                profileDto,
-//                isOnline(userStatus)
-//        );
-
         return response;
 //        BinaryContent 생성 -> (분기)이미지 없을 경우 -> User 생성 -> userStatus 생성 -> return response
 //                           -> (분기)이미지 있을 경우 -> User 생성 -> attachment 저장 -> userStatus 생성 -> return response
@@ -188,7 +151,7 @@ public class BasicUserService implements UserService {
                 }
             }
         }
-//        // User 삭제
+        // User 삭제
         userRepository.delete(user);
     }
 
@@ -229,8 +192,6 @@ public class BasicUserService implements UserService {
             user.setPassword(request.newPassword());
         }
 
-        UserStatus userStatus = userStatusRepository.findByUserId(userId);
-
         // 프로필 여부 확인 (있으면 삭제 후 추가)
         if (hasValue(file)) {
             if (user.getProfile() != null) {
@@ -238,6 +199,7 @@ public class BasicUserService implements UserService {
                 String directory = fileUploadUtils.getUploadPath(PROFILE_PATH);
                 String extension = user.getProfile().getExtension();
                 String fileName = user.getProfile().getId() + extension;
+                System.out.println("----------------------------"+fileName);
                 File oldFile = new File(directory, fileName);
 
                 if (oldFile.exists()) {
@@ -252,65 +214,42 @@ public class BasicUserService implements UserService {
 
             // binary content
             BinaryContent binaryContent;
+
             try {
                 String filename = file.getOriginalFilename();
                 String contentType = file.getContentType();
                 String extension = file.getOriginalFilename().substring(filename.lastIndexOf("."));
 
                 byte[] bytes = file.getBytes();
-                binaryContent = new BinaryContent(filename,(long)bytes.length,contentType,bytes,extension);
+                binaryContent = new BinaryContent(filename, (long) bytes.length, contentType, extension);
                 binaryContentRepository.save(binaryContent);
+                binaryContentStorage.put(binaryContent.getId(), bytes);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
             // add file
-            String uploadPath = fileUploadUtils.getUploadPath(PROFILE_PATH);
-
-            String originalFileName = binaryContent.getFileName();
-            String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-            String newFileName = binaryContent.getId() + extension;
-
-            File profileImage = new File(uploadPath, newFileName);
-
-            try (FileOutputStream fos = new FileOutputStream(profileImage)) {
-                fos.write(binaryContent.getBytes());
-            } catch (IOException e) {
-                throw new RuntimeException("image not saved", e);
-            }
+//            String uploadPath = fileUploadUtils.getUploadPath(PROFILE_PATH);
+//
+//            String originalFileName = binaryContent.getFileName();
+//            String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+//            String newFileName = binaryContent.getId() + extension;
+//
+//            File profileImage = new File(uploadPath, newFileName);
+//
+//            try (FileOutputStream fos = new FileOutputStream(profileImage)) {
+//                fos.write(binaryContent.getBytes());
+//            } catch (IOException e) {
+//                throw new RuntimeException("image not saved", e);
+//            }
             // update user
             user.setProfile(binaryContent);
         }
 
         JpaUserResponse response = userMapper.toDto(user);
-//
-//        BinaryContent profile = user.getProfile();
-//        JpaBinaryContentResponse profileDto = new JpaBinaryContentResponse(
-//                profile.getId(),
-//                profile.getFileName(),
-//                profile.getSize(),
-//                profile.getContentType()
-//        );
-//
-//        UpdateUserResponse response = new UpdateUserResponse(
-//                user.getId(),
-//                user.getUsername(),
-//                user.getEmail(),
-//                user.getPassword(),
-//                profileDto,
-//                isOnline(userStatus)
-//        );
-
         return response;
 //        // 파일 확인(있음) -> 파일 삭제 -> binary content 삭제 -> binary content 추가 -> 파일 생성 -> user 업데이트
 //        // 파일 확인(없음) ->                                  -> binary content 추가 -> 파일 생성 -> user 업데이트
 
-    }
-
-
-    private static boolean isOnline(UserStatus userStatus) {
-        Instant now = Instant.now();
-        return Duration.between(userStatus.getLastActiveAt(), now).toMinutes() < 5;
     }
 
     private boolean hasValue(MultipartFile attachmentFiles) {

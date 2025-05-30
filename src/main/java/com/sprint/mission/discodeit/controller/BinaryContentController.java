@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentWithBytes;
 import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -49,15 +50,15 @@ public class BinaryContentController {
     @Operation(summary = "첨부파일 다운로드", description = "단일 첨부파일을 다운 합니다.")
     @GetMapping(path = "/{binaryContentId}/download")
     public ResponseEntity<?> downloadBinaryContent(@PathVariable UUID binaryContentId) {
-        BinaryContent attachment = binaryContentService.download(binaryContentId);
+        BinaryContentWithBytes attachment = binaryContentService.download(binaryContentId);
 
         return ResponseEntity
                 .ok()
-                .contentType(MediaType.parseMediaType(attachment.getContentType())) // image/webp
+                .contentType(MediaType.parseMediaType(attachment.contentType())) // image/webp
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + attachment.getFileName() + "\"")
-                .contentLength(attachment.getSize())
-                .body(attachment.getBytes());
+                        "attachment; filename=\"" + attachment.fileName() + "\"")
+                .contentLength(attachment.size())
+                .body(attachment.bytes());
 
     }
 }

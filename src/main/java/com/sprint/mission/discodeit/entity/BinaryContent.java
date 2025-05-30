@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,7 +24,7 @@ import java.util.UUID;
 @Getter
 @Entity
 @NoArgsConstructor
-@SuperBuilder
+@Builder
 @Table(name = "binary_contents", schema = "discodeit")
 public class BinaryContent extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -37,18 +38,18 @@ public class BinaryContent extends BaseEntity implements Serializable {
     @Column(name = "content_type", nullable = false, length = 100)
     private String contentType;
 
-    @Column(name = "bytes", nullable = false)
-    private byte[] bytes;
+//    @Column(name = "bytes", nullable = false)
+//    private byte[] bytes;
 
     @Column(name = "extensions", nullable = false, length = 20)
     private String extension;
 
-    public BinaryContent(String fileName, Long size, String contentType, byte[] bytes, String extension) {
+    public BinaryContent(String fileName, Long size, String contentType, String extension) {
         super();
         this.fileName = fileName;
         this.size = size;
         this.contentType = contentType;
-        this.bytes = bytes;
+//        this.bytes = bytes;
         this.extension = extension;
     }
 }
