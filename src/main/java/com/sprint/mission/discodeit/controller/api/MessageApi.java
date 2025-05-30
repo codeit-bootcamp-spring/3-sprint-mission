@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,7 +50,7 @@ public interface MessageApi {
     @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = MessageResponseDto.class))))
     ResponseEntity<PageResponse<MessageResponseDto>> findAllByChannelId(@RequestParam UUID channelId,
-                                                                        @PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.DESC)
+                                                                        @RequestParam(required = false) Instant cursor,
                                                                         Pageable pageable);
 
     @Operation(summary = "Message 내용 수정")

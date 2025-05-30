@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.util.FileConverter;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,7 +40,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class MessageController implements MessageApi {
 
     private final MessageService messageService;
-    private final PageResponseMapper<MessageResponseDto> pageResponseMapper;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MessageResponseDto> create(
@@ -54,12 +54,13 @@ public class MessageController implements MessageApi {
 
     @GetMapping
     public ResponseEntity<PageResponse<MessageResponseDto>> findAllByChannelId(@RequestParam UUID channelId,
+                                                                               @RequestParam(required = false) Instant cursor,
                                                                                @PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.DESC)
                                                                                Pageable pageable) {
-        Page<MessageResponseDto> foundMessages = messageService.findAllByChannelId(channelId, pageable);
-        PageResponse<MessageResponseDto> messagesPageResponse = pageResponseMapper.fromPage(foundMessages);
 
-        return ResponseEntity.status(HttpStatus.OK).body(messagesPageResponse);
+        PageResponse<MessageResponseDto> foundMessages = messageService.findAllByChannelId(channelId, cursor, pageable);
+
+        return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
     }
 
     @PatchMapping(path = "/{messageId}")
