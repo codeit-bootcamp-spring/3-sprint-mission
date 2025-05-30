@@ -12,22 +12,21 @@ import com.sprint.mission.discodeit.exception.notfound.NotFoundChannelException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundMessageException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.struct.BinaryContentStructMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service("basicMessageService")
 @RequiredArgsConstructor
@@ -40,6 +39,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final MessageMapper messageMapper;
+    private final BinaryContentStructMapper binaryContentMapper;
 
     @Override
     @Transactional
@@ -133,9 +133,7 @@ public class BasicMessageService implements MessageService {
 
     private List<BinaryContent> convertBinaryContentDtos(List<BinaryContentDto> binaryContentDtos) {
         return binaryContentDtos.stream()
-                .map(binaryContentDto -> new BinaryContent(binaryContentDto.fileName(),
-                        binaryContentDto.size(),
-                        binaryContentDto.contentType()))
+                .map(binaryContentMapper::toEntity)
                 .toList();
     }
 

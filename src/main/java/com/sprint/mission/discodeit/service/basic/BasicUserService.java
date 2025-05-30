@@ -12,20 +12,20 @@ import com.sprint.mission.discodeit.exception.duplicate.DuplicateNameException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserStatusException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.mapper.struct.BinaryContentStructMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service("basicUserService")
 @RequiredArgsConstructor
@@ -37,6 +37,7 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
+    private final BinaryContentStructMapper binaryContentMapper;
 
     @Override
     @Transactional
@@ -59,9 +60,7 @@ public class BasicUserService implements UserService {
         if (binaryContentDto != null) {
             byte[] bytes = binaryContentDto.bytes();
 
-            BinaryContent profileImage = new BinaryContent(binaryContentDto.fileName(),
-                    binaryContentDto.size(),
-                    binaryContentDto.contentType());
+            BinaryContent profileImage = binaryContentMapper.toEntity(binaryContentDto);
 
             user.updateProfile(profileImage);
 
@@ -135,9 +134,7 @@ public class BasicUserService implements UserService {
         if (binaryContentDto != null) {
             byte[] bytes = binaryContentDto.bytes();
 
-            BinaryContent profileImage = new BinaryContent(binaryContentDto.fileName(),
-                    binaryContentDto.size(),
-                    binaryContentDto.contentType());
+            BinaryContent profileImage = binaryContentMapper.toEntity(binaryContentDto);
 
             // 기존 프로필 이미지 제거
             if (profile != null) {
