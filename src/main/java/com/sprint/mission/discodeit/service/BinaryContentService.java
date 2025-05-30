@@ -1,9 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateResponse;
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentFindRequest;
-import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.Dto.binaryContent.FindBinaryContentResponse;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -24,9 +22,10 @@ public interface BinaryContentService {
 
     BinaryContentCreateResponse create(String fileName, Long size, String contentType, byte[] bytes, String extension);
 
-    ResponseEntity<?> find(UUID binaryContentId);
+    FindBinaryContentResponse find(UUID binaryContentId);
 
-    ResponseEntity<?> findAllByIdIn(List<UUID> binaryContentIds);
+    List<FindBinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds);
+
 
     void delete(UUID attachmentId);
 }

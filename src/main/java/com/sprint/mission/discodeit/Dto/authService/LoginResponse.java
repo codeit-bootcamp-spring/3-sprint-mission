@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.Dto.authService;
 
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -13,14 +13,12 @@ import java.util.UUID;
  * 최초 생성
  */
 public record LoginResponse(
-    UUID id,
-    Instant createdAt,
-    Instant updatedAt,
-    String username,
-    String email,
-    String password,
-    UUID profileId
-//        boolean isOnline
+        UUID id,
+        String username,
+        String email,
+        JpaBinaryContentResponse profile,
+        boolean online
+
 ) {
 
 }

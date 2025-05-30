@@ -1,10 +1,13 @@
 package com.sprint.mission.discodeit.Dto.channel;
 
+import com.sprint.mission.discodeit.Dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -17,29 +20,27 @@ import java.util.UUID;
 public class ChannelCreateResponse {
 
   private final UUID id;
-  private final Instant createdAt;
-  private final Instant updatedAt;
   private final ChannelType type;
   private final String name;
   private final String description;
+  private final List<JpaUserResponse> participants;
+  private final Instant lastMessageAt;
 
-
-  public ChannelCreateResponse(UUID id, Instant createdAt, Instant updatedAt, ChannelType type) {
+  public ChannelCreateResponse(UUID id, ChannelType type, List<JpaUserResponse> participants, Instant lastMessageAt) {
     this.id = id;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
     this.type = type;
     this.name ="";
     this.description = "";
+    this.participants = participants;
+    this.lastMessageAt = lastMessageAt;
   }
 
-  public ChannelCreateResponse(UUID id, Instant createdAt, Instant updatedAt, ChannelType type,
-      String name, String description) {
+  public ChannelCreateResponse(UUID id, ChannelType type, String name, String description,List<JpaUserResponse> participants, Instant lastMessageAt) {
     this.id = id;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
     this.type = type;
     this.name = name;
     this.description = description;
+    this.participants = participants;
+    this.lastMessageAt = lastMessageAt;
   }
 }

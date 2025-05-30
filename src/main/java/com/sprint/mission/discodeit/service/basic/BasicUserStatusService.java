@@ -4,15 +4,21 @@ import com.sprint.mission.discodeit.Dto.userStatus.UpdateUserStatusResponse;
 import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateResponse;
 import com.sprint.mission.discodeit.Dto.userStatus.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
+import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
@@ -26,76 +32,75 @@ import java.util.*;
 @RequiredArgsConstructor
 public class BasicUserStatusService implements UserStatusService {
 
-  private final UserStatusRepository userStatusRepository;
-  private final UserRepository userRepository;
+  private final JpaUserStatusRepository userStatusRepository;
+//  private final UserStatusRepository userStatusRepository;
+  private final JpaUserRepository userRepository;
+
+  @Transactional
+  @Override
+  public UpdateUserStatusResponse updateByUserId(UUID userId, Instant newLastActiveAt) {
+    Objects.requireNonNull(userId, "no userId in param");
+    Objects.requireNonNull(newLastActiveAt, "no userId in param");
+
+    User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("UserStatus with userId " + userId + " not found"));
+    UserStatus userStatus = user.getStatus();
+    userStatus.setLastActiveAt(newLastActiveAt);
+
+    UpdateUserStatusResponse response = new UpdateUserStatusResponse(
+            userStatus.getId(),
+            userStatus.getUser().getId(),
+            newLastActiveAt
+    );
+    return response;
+  }
 
   @Override
   public UserStatusCreateResponse create(UserStatusCreateRequest request) {
-    UUID userId = request.userId();
-
-    userRepository.findUserById(userId); // 없으면 throw error 날림
-
-    if (userStatusRepository.findUserStatusByUserId(userId) != null) { // userStatus 이미 있으면 예외 발생
-      throw new RuntimeException("user status already exist");
-    }
-
-    UserStatus userStatus = userStatusRepository.createUserStatus(request.userId());
-    boolean online = userStatusRepository.isOnline(userStatus.getId()); // throw
-
-    return new UserStatusCreateResponse(userStatus.getId(), userStatus.getUserId(), online);
+//    UUID userId = request.userId();
+//
+//    userRepository.findUserById(userId); // 없으면 throw error 날림
+//
+//    if (userStatusRepository.findUserStatusByUserId(userId) != null) { // userStatus 이미 있으면 예외 발생
+//      throw new RuntimeException("user status already exist");
+//    }
+//
+//    UserStatus userStatus = userStatusRepository.createUserStatus(request.userId());
+//    boolean online = userStatusRepository.isOnline(userStatus.getId()); // throw
+//
+//    return new UserStatusCreateResponse(userStatus.getId(), userStatus.getUserId(), online);
+    return null;
   }
 
 
   @Override
   public UserStatus find(UUID userStatusId) {
-    Objects.requireNonNull(userStatusId, "no userStatusId param");
-    return userStatusRepository.findById(userStatusId);
+//    Objects.requireNonNull(userStatusId, "no userStatusId param");
+//    return userStatusRepository.findById(userStatusId);
+    return null;
   }
 
   @Override
   public List<UserStatus> findAll() {
-    return userStatusRepository.findAllUserStatus();
+//    return userStatusRepository.findAllUserStatus();
+    return null;
   }
 
   @Override
   public void update(UserStatusUpdateRequest request) {
-    userStatusRepository.update(
-        request.userStatusId(), request.newTime()
-    );
-  }
-
-
-  @Override
-  public ResponseEntity<?> updateByUserId(UUID userId, Instant newLastActiveAt) {
-    UserStatus userStatus = userStatusRepository.findUserStatusByUserId(userId);
-    
-    if (userStatus == null) {
-      return ResponseEntity.status(404)
-          .body("UserStatus with userId " + userId + " not found");
-    }
-    userStatusRepository.updateByUserId(
-        Objects.requireNonNull(userId, "no userId in param"),
-        Objects.requireNonNull(newLastActiveAt, "no userId in param")
-    );
-
-    boolean online = userStatusRepository.isOnline(userStatus.getId());
-
-    UpdateUserStatusResponse response = new UpdateUserStatusResponse(
-        userStatus.getId(),
-        userStatus.getCreatedAt(),
-        userStatus.getUpdatedAt(),
-        userStatus.getUserId(),
-        newLastActiveAt,
-        online
-    );
-
-    return ResponseEntity.status(HttpStatus.OK).body(response);
+//    userStatusRepository.update(
+//        request.userStatusId(), request.newTime()
+//    );
   }
 
   @Override
   public void delete(UUID userStatusId) {
-    Objects.requireNonNull(userStatusId, "no userStatusId");
-    userStatusRepository.deleteById(userStatusId); // throw
+//    Objects.requireNonNull(userStatusId, "no userStatusId");
+//    userStatusRepository.deleteById(userStatusId); // throw
 
+  }
+
+  private static boolean isOnline(UserStatus userStatus) {
+    Instant now = Instant.now();
+    return Duration.between(userStatus.getLastActiveAt(), now).toMinutes() < 5;
   }
 }

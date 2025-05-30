@@ -19,16 +19,15 @@ import java.util.UUID;
  */
 public interface ChannelService {
 
-    ResponseEntity<ChannelCreateResponse> createChannel(PrivateChannelCreateRequest request);
+    ChannelCreateResponse createChannel(PrivateChannelCreateRequest request);
 
-    ResponseEntity<ChannelCreateResponse> createChannel(PublicChannelCreateRequest request);
+    ChannelCreateResponse createChannel(PublicChannelCreateRequest request);
 
-    ChannelFindResponse find(ChannelFindRequest request);
+    ChannelCreateResponse update(UUID channelId, ChannelUpdateRequest request);
 
-    ResponseEntity<?> findAllByUserId(UUID userId);
+    boolean deleteChannel(UUID channelId);
 
-    ResponseEntity<?> update(UUID channelId, ChannelUpdateRequest request);
+    List<ChannelCreateResponse> findAllByUserId(UUID userId);
 
-    ResponseEntity<?> deleteChannel(UUID channelId);
-
+    //    ChannelFindResponse find(ChannelFindRequest request);
 }

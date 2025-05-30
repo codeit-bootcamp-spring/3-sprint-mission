@@ -34,4 +34,9 @@ public interface UserRepository {
     boolean isUniqueUsername(String username);
 
     boolean isUniqueEmail(String email);
+
+    boolean hasSameName(String name);
+
+    boolean hasSameEmail(String email);
+
 }

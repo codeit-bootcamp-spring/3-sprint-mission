@@ -1,15 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateResponse;
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentFindRequest;
 import com.sprint.mission.discodeit.Dto.binaryContent.FindBinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -28,81 +24,59 @@ import java.util.*;
 @Service("basicBinaryContentService")
 @RequiredArgsConstructor
 public class BasicBinaryContentService implements BinaryContentService {
-    private final BinaryContentRepository binaryContentRepository;
-
+    private final JpaBinaryContentRepository binaryContentRepository;
 
     @Override
-    public ResponseEntity<?> findAllByIdIn(List<UUID> binaryContentIds) {
+    public List<FindBinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds) {
         List<FindBinaryContentResponse> responses = new ArrayList<>();
-
-
+//
         if (binaryContentIds.isEmpty()) {
-            throw new IllegalStateException("no ids in param");
+            throw new RuntimeException("no ids in param");
         }
-        List<BinaryContent> attachments = binaryContentRepository.findAllByIds(binaryContentIds);
-        if (attachments.isEmpty()) {
-            return ResponseEntity.status(400).body("Not found all binaryContent by ids");
-        }
+        List<BinaryContent> attachments = binaryContentRepository.findAllByIdIn(binaryContentIds);
 
+        if (attachments.isEmpty()) {
+            throw new RuntimeException("Not found all binaryContent by ids");
+        }
+//
         for (BinaryContent attachment : attachments) {
             responses.add(new FindBinaryContentResponse(
                     attachment.getId(),
-                    attachment.getCreatedAt(),
+//                    attachment.getCreatedAt(),
                     attachment.getFileName(),
                     attachment.getSize(),
-                    attachment.getContentType(),
-                    Base64.getEncoder().encodeToString(attachment.getBytes())
+                    attachment.getContentType()
+//                    , Base64.getEncoder().encodeToString(attachment.getBytes())
             ));
         }
-        return ResponseEntity.status(200)
-                .body(responses);
+        return responses;
+
     }
 
     @Override
-    public ResponseEntity<?> find(UUID binaryContentId) {
-        BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId);
-        if (binaryContent == null)
-            return ResponseEntity.status(404).body("BinaryContent with id " + binaryContentId + " not found");
-
+    public FindBinaryContentResponse find(UUID binaryContentId) {
+        BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
+                .orElseThrow(() -> new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found"));
 
         FindBinaryContentResponse response = new FindBinaryContentResponse(
                 binaryContent.getId(),
-                binaryContent.getCreatedAt(),
                 binaryContent.getFileName(),
                 binaryContent.getSize(),
-                binaryContent.getContentType(),
-                Base64.getEncoder().encodeToString(binaryContent.getBytes()));
+                binaryContent.getContentType());
 
-
-        return ResponseEntity.status(200)
-                .body(response);
+        return response;
     }
 
     @Override
     public BinaryContentCreateResponse create(String fileName, Long size, String contentType, byte[] bytes, String extension) {
-        BinaryContent binaryContent = binaryContentRepository.createBinaryContent(fileName, size, contentType, bytes, extension);
-        return new BinaryContentCreateResponse(binaryContent.getId());
+//        BinaryContent binaryContent = binaryContentRepository.createBinaryContent(fileName, size, contentType, bytes, extension);
+//        return new BinaryContentCreateResponse(binaryContent.getId());
+        return null;
     }
 
     @Override
     public void delete(UUID attachmentId) {
-        binaryContentRepository.deleteBinaryContentById(attachmentId); // file, jcf : throw exception
+//        binaryContentRepository.deleteBinaryContentById(attachmentId); // file, jcf : throw exception
+        return;
     }
-
-    //    @Override
-//    public ResponseEntity<?> findAllByIdIn2(List<UUID> binaryContentIds) {
-//        if (binaryContentIds.isEmpty()) {
-//            throw new IllegalStateException("no ids in param");
-//        }
-//        List<BinaryContent> attachments = binaryContentRepository.findAllByIds(binaryContentIds);
-//
-//        List<String> attachmentPaths = new ArrayList<>();
-//
-//        for (BinaryContent att : attachments) {
-//            attachmentPaths.add("/uploads/img/attachments/" + att.getId() + att.getExtension());
-//        }
-//
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(attachmentPaths);
-//    }
 }

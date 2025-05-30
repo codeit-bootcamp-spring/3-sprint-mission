@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.Dto.user;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Objects;
 
@@ -21,15 +18,8 @@ import java.util.Objects;
 
 
 public record UserCreateRequest(
-        String username,
-        String email,
-        String password
-
-) {
-    public UserCreateRequest {
-        Objects.requireNonNull(username, "no username in request");
-        Objects.requireNonNull(email, "no email in request");
-        Objects.requireNonNull(password, "no password in request");
-    }
-}
+        @NotNull String username,
+        @NotNull String email,
+        @NotNull String password
+) { }
 

@@ -1,5 +1,9 @@
 package com.sprint.mission.discodeit.Dto.message;
 
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.User;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

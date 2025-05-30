@@ -16,10 +16,8 @@ import java.util.UUID;
  */
 public record FindBinaryContentResponse(
         UUID id,
-        Instant createdAt,
         String fileName,
         long size,
-        String contentType,
-        String bytes
+        String contentType
 ) {
 }

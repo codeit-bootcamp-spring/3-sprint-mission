@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.Dto.channel;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 import java.util.Objects;
@@ -18,13 +19,6 @@ import java.util.UUID;
  */
 
 public record ChannelUpdateRequest(
-        String newName,
-        String newDescription
-
-        ) {
-        public ChannelUpdateRequest {
-
-                Objects.requireNonNull(newName, "no name in request");
-                Objects.requireNonNull(newDescription, "no description in request");
-        }
-}
+        @NotNull String newName,
+        @NotNull String newDescription
+        ) { }

@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.Dto.userStatus;
 
+import com.sprint.mission.discodeit.entity.User;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -12,16 +14,9 @@ import java.util.UUID;
 public record UpdateUserStatusResponse(
     UUID id,
 
-    Instant createdAt,
-
-    Instant updatedAt,
-
     UUID userId,
 
-    Instant lastActiveAt,
-
-    boolean online
-
+    Instant lastActiveAt
 ) {
 
 }
