@@ -3,6 +3,8 @@ server:
 
 
 discodeit:
+  storage:
+    type: local
   repository:
     type: jcf  # jcf | file
     file-directory: data/

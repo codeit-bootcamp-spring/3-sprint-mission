@@ -1,14 +1,11 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentWithBytes;
 import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +29,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
+    private final BinaryContentStorage binaryContentStorage;
 
     @Operation(summary = "여러 첨부 파일 조회", description = "여러 첨부파일들을 조회 합니다.")
     @GetMapping
@@ -50,15 +48,7 @@ public class BinaryContentController {
     @Operation(summary = "첨부파일 다운로드", description = "단일 첨부파일을 다운 합니다.")
     @GetMapping(path = "/{binaryContentId}/download")
     public ResponseEntity<?> downloadBinaryContent(@PathVariable UUID binaryContentId) {
-        BinaryContentWithBytes attachment = binaryContentService.download(binaryContentId);
-
-        return ResponseEntity
-                .ok()
-                .contentType(MediaType.parseMediaType(attachment.contentType())) // image/webp
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + attachment.fileName() + "\"")
-                .contentLength(attachment.size())
-                .body(attachment.bytes());
-
+        JpaBinaryContentResponse binaryContentResponse = binaryContentService.find(binaryContentId);
+        return binaryContentStorage.download(binaryContentResponse);
     }
 }

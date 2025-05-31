@@ -33,7 +33,6 @@ import java.util.*;
 public class BasicBinaryContentService implements BinaryContentService {
     private final JpaBinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
-    private final BinaryContentStorage binaryContentStorage;
 
     @Override
     public List<JpaBinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds) {
@@ -63,41 +62,4 @@ public class BasicBinaryContentService implements BinaryContentService {
         return binaryContentMapper.toDto(binaryContent);
     }
 
-
-    @Override
-    @Transactional(readOnly = true)
-    public BinaryContentWithBytes download(UUID binaryContentId) {
-        BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
-                .orElse(null);
-
-        InputStream inputStream = binaryContentStorage.get(binaryContentId);
-        byte[] bytes;
-        try {
-            bytes = inputStream.readAllBytes();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        BinaryContentWithBytes attachment = null;
-
-        if (binaryContent != null) {
-            attachment = new BinaryContentWithBytes(
-                    binaryContent.getFileName(),
-                    binaryContent.getSize(),
-                    binaryContent.getContentType(),
-                    binaryContent.getExtension(),
-                    bytes
-            );
-        }
-
-        return attachment;
-    }
-
-
-    @Override
-    public BinaryContentCreateResponse create(String fileName, Long size, String contentType, byte[] bytes, String extension) {
-//        BinaryContent binaryContent = binaryContentRepository.createBinaryContent(fileName, size, contentType, bytes, extension);
-//        return new BinaryContentCreateResponse(binaryContent.getId());
-        return null;
-    }
 }

@@ -26,12 +26,4 @@ public interface BinaryContentService {
     JpaBinaryContentResponse find(UUID binaryContentId);
 
     List<JpaBinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds);
-
-    BinaryContentWithBytes download(UUID binaryContentId);
-
-
-
-
-
-    BinaryContentCreateResponse create(String fileName, Long size, String contentType, byte[] bytes, String extension);
 }
