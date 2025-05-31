@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +33,10 @@ public class AuthController implements AuthApi {
         , consumes = "application/json"        // 클라이언트가 JSON 보내고
         , produces = "application/json"        // 서버도 JSON 응답함
     )
-    public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<User> login(@Valid @RequestBody LoginRequest loginRequest) {
         User loginUser = authService.login(loginRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(loginUser);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(loginUser);
     }
 }

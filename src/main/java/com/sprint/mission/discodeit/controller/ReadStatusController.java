@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -49,22 +50,26 @@ public class ReadStatusController implements ReadStatusApi {
     // 특정 채널 메시지 수신 정보 생성
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ReadStatus> create(
-        @RequestBody ReadStatusCreateRequest readStatusCreateRequest
+        @Valid @RequestBody ReadStatusCreateRequest readStatusCreateRequest
     ) {
         ReadStatus readStatus = readStatusService.create(readStatusCreateRequest);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(readStatus);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(readStatus);
     }
 
     // 특정 채널 메시지 수신 정보 수정
     @PatchMapping("/{readStatusId}")
     public ResponseEntity<ReadStatus> update(
         @PathVariable UUID readStatusId,
-        @RequestBody ReadStatusUpdateRequest readStatusUpdateRequest
+        @Valid @RequestBody ReadStatusUpdateRequest readStatusUpdateRequest
     ) {
         ReadStatus updatedStatus = readStatusService.update(readStatusId, readStatusUpdateRequest);
 
-        return ResponseEntity.status(HttpStatus.OK).body(updatedStatus);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(updatedStatus);
     }
 
     // 특정 사용자의 메시지 수신 정보 조회
@@ -75,6 +80,8 @@ public class ReadStatusController implements ReadStatusApi {
         // ReadStatus가 없을 시 Error 메시지(or 페이지)
         List<ReadStatus> userReadStatuses = readStatusService.findAllByUserId(userId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(userReadStatuses);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(userReadStatuses);
     }
 }

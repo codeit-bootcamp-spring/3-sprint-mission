@@ -11,12 +11,14 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity(name = "user")
 @Table(name = "tbl_users")
 @Getter
 @NoArgsConstructor
-public class User extends BaseUpdatableEntity  {
+@DynamicUpdate
+public class User extends BaseUpdatableEntity {
 
     @Column(name = "username")
     private String username;
@@ -31,12 +33,12 @@ public class User extends BaseUpdatableEntity  {
     @JoinColumn(name = "profile_id")
     private BinaryContent profile;
 
-    @OneToOne(mappedBy = "user_status",
-        cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "user_status", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserStatus status;
 
 
-    public User(String username, String email, String password, BinaryContent profile, UserStatus status) {
+    public User(String username, String email, String password, BinaryContent profile,
+        UserStatus status) {
         super.setId(UUID.randomUUID());
         super.setCreatedAt(Instant.now());
         //
@@ -47,7 +49,8 @@ public class User extends BaseUpdatableEntity  {
         this.status = status;
     }
 
-    public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
+    public void update(String newUsername, String newEmail, String newPassword,
+        BinaryContent newProfile) {
         boolean anyValueUpdated = false;
         if (newUsername != null && !newUsername.equals(this.username)) {
             this.username = newUsername;

@@ -4,18 +4,17 @@ import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import java.io.Serial;
-import lombok.Getter;
-
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity(name = "binary_content")
 @Table(name = "tbl_binary_contents")
 @NoArgsConstructor
 @Getter
+@DynamicUpdate
 public class BinaryContent extends BaseEntity {
 
     @Column(name = "file_name")

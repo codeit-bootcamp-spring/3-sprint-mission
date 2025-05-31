@@ -4,19 +4,18 @@ import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import java.io.Serial;
-import lombok.Getter;
-
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity(name = "channel")
 @Table(name = "tbl_channels")
 @NoArgsConstructor
 @Getter
-public class Channel extends BaseUpdatableEntity  {
+@DynamicUpdate
+public class Channel extends BaseUpdatableEntity {
 
     @Column(name = "type")
     private ChannelType type;

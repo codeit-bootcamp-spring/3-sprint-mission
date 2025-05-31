@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -12,11 +11,13 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity(name = "user_status")
 @Table(name = "tbl_user_statuses")
 @NoArgsConstructor
 @Getter
+@DynamicUpdate
 public class UserStatus extends BaseUpdatableEntity {
 
     @OneToOne // 양방향

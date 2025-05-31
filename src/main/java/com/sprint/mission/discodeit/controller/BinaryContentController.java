@@ -27,7 +27,9 @@ public class BinaryContentController implements BinaryContentApi {
     ) {
         BinaryContent binaryContent = binaryContentService.find(binaryContentId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(binaryContent);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(binaryContent);
     }
 
     @GetMapping
@@ -37,6 +39,8 @@ public class BinaryContentController implements BinaryContentApi {
         List<BinaryContent> binaryContentList = binaryContentService.findAllByIdIn(
             binaryContentIds);
 
-        return ResponseEntity.status(HttpStatus.OK).body(binaryContentList);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(binaryContentList);
     }
 }

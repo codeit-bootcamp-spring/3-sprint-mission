@@ -1,24 +1,21 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.io.Serial;
-import lombok.Getter;
-
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -26,7 +23,8 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "tbl_messages")
 @Getter
 @NoArgsConstructor
-public class Message extends BaseUpdatableEntity  {
+@DynamicUpdate
+public class Message extends BaseUpdatableEntity {
 
     @Column(name = "content")
     private String content;
@@ -41,7 +39,7 @@ public class Message extends BaseUpdatableEntity  {
     @OnDelete(action = OnDeleteAction.SET_NULL) // ON DELETE SET NULL
     private User author;
 
-    @ManyToMany
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
         name = "tbl_message_attachments",
         joinColumns = @JoinColumn(name = "message_id"),

@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.request.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -36,13 +37,15 @@ public class MessageController implements MessageApi {
     // 신규 메시지 생성
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Message> create(
-        @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
+        @Valid @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
         @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) {
 
         List<BinaryContentCreateRequest> binaryContents = resolveAttachmentRequest(attachments);
         Message message = messageService.create(messageCreateRequest, binaryContents);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(message);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(message);
     }
 
     // MultipartFile 타입의 요청값을 BinaryContentCreateRequest 타입으로 변환하기 위한 메서드
@@ -72,11 +75,13 @@ public class MessageController implements MessageApi {
     @PatchMapping("/{messageId}")
     public ResponseEntity<Message> update(
         @PathVariable UUID messageId,
-        @RequestBody MessageUpdateRequest messageUpdateRequest
+        @Valid @RequestBody MessageUpdateRequest messageUpdateRequest
     ) {
         Message updatedMessage = messageService.update(messageId, messageUpdateRequest);
 
-        return ResponseEntity.status(HttpStatus.OK).body(updatedMessage);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(updatedMessage);
     }
 
     // 메시지 삭제
@@ -86,7 +91,9 @@ public class MessageController implements MessageApi {
     ) {
         messageService.delete(messageId);
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
     }
 
     // 특정 채널 메시지 목록 조회
@@ -97,7 +104,9 @@ public class MessageController implements MessageApi {
     ) {
         List<Message> messageList = messageService.findAllByChannelId(channelId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(messageList);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(messageList);
     }
 }
 

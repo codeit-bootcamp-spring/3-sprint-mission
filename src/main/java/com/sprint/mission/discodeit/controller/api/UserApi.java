@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.data.UserDtoData;
 import com.sprint.mission.discodeit.dto.request.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.user.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.user.UserUpdateRequest;
@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -83,9 +82,9 @@ public interface UserApi {
     // 유저 다건 조회 요청
     @Operation(summary = "전체 User 목록 조회")
     @ApiResponse(responseCode = "200", description = "User 목록 조회 성공",
-        content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDto.class))))
+        content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDtoData.class))))
     @GetMapping
-    ResponseEntity<List<UserDto>> findAll();
+    ResponseEntity<List<UserDtoData>> findAll();
 
     // 유저 상태 정보 수정 요청
     @Operation(summary = "User 온라인 상태 수정")

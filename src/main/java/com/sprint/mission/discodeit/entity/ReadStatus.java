@@ -1,24 +1,22 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Getter;
-
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity(name = "readStatus")
 @Table(name = "tbl_read_statuses")
 @Getter
 @NoArgsConstructor
+@DynamicUpdate
 public class ReadStatus extends BaseUpdatableEntity {
 
     @ManyToOne
