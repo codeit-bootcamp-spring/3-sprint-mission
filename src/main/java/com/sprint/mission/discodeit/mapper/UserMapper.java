@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
-import com.sprint.mission.discodeit.Dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import lombok.RequiredArgsConstructor;

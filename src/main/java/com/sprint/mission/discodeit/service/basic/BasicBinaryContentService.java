@@ -1,20 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateResponse;
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentWithBytes;
-import com.sprint.mission.discodeit.Dto.binaryContent.FindBinaryContentResponse;
-import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 
 /**

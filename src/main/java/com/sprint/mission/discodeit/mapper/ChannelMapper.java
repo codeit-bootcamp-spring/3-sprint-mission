@@ -1,18 +1,13 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
-import com.sprint.mission.discodeit.Dto.channel.JpaChannelResponse;
-import com.sprint.mission.discodeit.Dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.channel.JpaChannelResponse;
+import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

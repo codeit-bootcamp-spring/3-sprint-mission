@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
-import com.sprint.mission.discodeit.Dto.channel.*;
-import com.sprint.mission.discodeit.Dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.channel.*;
+import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
@@ -14,10 +13,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic

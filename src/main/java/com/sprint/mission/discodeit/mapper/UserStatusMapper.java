@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
-import com.sprint.mission.discodeit.Dto.user.JpaUserResponse;
-import com.sprint.mission.discodeit.Dto.userStatus.JpaUserStatusResponse;
+import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import org.springframework.stereotype.Component;
 

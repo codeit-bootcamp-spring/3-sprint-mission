@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.storage;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;

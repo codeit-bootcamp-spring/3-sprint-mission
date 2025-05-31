@@ -1,13 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.Dto.userStatus.JpaUserStatusResponse;
-import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateResponse;
-import com.sprint.mission.discodeit.Dto.userStatus.UserStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 /**

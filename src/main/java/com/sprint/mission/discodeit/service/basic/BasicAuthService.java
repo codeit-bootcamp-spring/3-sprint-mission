@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.Dto.authService.LoginRequest;
-import com.sprint.mission.discodeit.Dto.authService.LoginResponse;
-import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.authService.LoginRequest;
+import com.sprint.mission.discodeit.dto.authService.LoginResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;

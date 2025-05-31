@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.Dto.user.*;
-import org.springframework.http.ResponseEntity;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.user.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;

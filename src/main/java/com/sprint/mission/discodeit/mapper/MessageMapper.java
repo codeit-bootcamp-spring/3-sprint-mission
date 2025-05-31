@@ -1,16 +1,12 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.JpaBinaryContentResponse;
-import com.sprint.mission.discodeit.Dto.channel.JpaChannelResponse;
-import com.sprint.mission.discodeit.Dto.message.JpaMessageResponse;
-import com.sprint.mission.discodeit.Dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.message.JpaMessageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 

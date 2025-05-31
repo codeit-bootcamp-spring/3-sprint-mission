@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.Dto.userStatus.JpaUserStatusResponse;
-import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateResponse;
-import com.sprint.mission.discodeit.Dto.userStatus.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
@@ -15,7 +12,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 

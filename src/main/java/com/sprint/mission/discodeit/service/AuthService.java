@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.Dto.authService.LoginRequest;
-import com.sprint.mission.discodeit.Dto.authService.LoginResponse;
-import org.springframework.http.ResponseEntity;
+import com.sprint.mission.discodeit.dto.authService.LoginRequest;
+import com.sprint.mission.discodeit.dto.authService.LoginResponse;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic
