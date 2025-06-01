@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -25,6 +26,7 @@ public class BasicUserStatusService implements UserStatusService {
   private final UserRepository userRepository;
   private final UserStatusMapper userStatusMapper;
 
+  @Transactional
   @Override
   public UserStatusDto create(UserStatusCreateRequest request) {
     UUID userId = request.userId();
@@ -44,6 +46,7 @@ public class BasicUserStatusService implements UserStatusService {
     return userStatusMapper.toDto(userStatusRepository.save(userStatus));
   }
 
+  @Transactional
   @Override
   public UserStatusDto find(UUID userStatusId) {
     return userStatusRepository.findById(userStatusId)
@@ -52,6 +55,7 @@ public class BasicUserStatusService implements UserStatusService {
             () -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
   }
 
+  @Transactional
   @Override
   public List<UserStatusDto> findAll() {
     return userStatusRepository.findAll().stream()
@@ -59,6 +63,7 @@ public class BasicUserStatusService implements UserStatusService {
         .toList();
   }
 
+  @Transactional
   @Override
   public UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request) {
     Instant newLastActiveAt = request.newLastActiveAt();
@@ -71,6 +76,7 @@ public class BasicUserStatusService implements UserStatusService {
     return userStatusMapper.toDto(userStatusRepository.save(userStatus));
   }
 
+  @Transactional
   @Override
   public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
     Instant newLastActiveAt = request.newLastActiveAt();
@@ -83,6 +89,7 @@ public class BasicUserStatusService implements UserStatusService {
     return userStatusMapper.toDto(userStatusRepository.save(userStatus));
   }
 
+  @Transactional
   @Override
   public void delete(UUID userStatusId) {
     if (!userStatusRepository.existsById(userStatusId)) {

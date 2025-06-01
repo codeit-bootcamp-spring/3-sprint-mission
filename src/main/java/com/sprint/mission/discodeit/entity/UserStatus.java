@@ -14,20 +14,34 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Getter
 @Entity
 @Table(name = "user_statuses")
 @NoArgsConstructor
-@AllArgsConstructor
 public class UserStatus extends BaseUpdatableEntity {
 
   @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "id")
+  @JoinColumn(name = "user_id")
   private User user;
 
   @Column(name = "last_active_at")
   private Instant lastActiveAt;
+
+
+  public void setUser(User user) {
+    this.user = user;
+  }
+
+  public UserStatus(Instant lastActiveAt) {
+    this.lastActiveAt = lastActiveAt;
+  }
+
+  public UserStatus(User user, Instant lastActiveAt) {
+    this.user = user;
+    this.lastActiveAt = lastActiveAt;
+  }
 
   public void update(Instant lastActiveAt) {
     boolean anyValueUpdated = false;

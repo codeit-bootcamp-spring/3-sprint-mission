@@ -43,6 +43,11 @@ public class User extends BaseUpdatableEntity {
     this.profile = profile;
   }
 
+  public void setStatus(UserStatus status) {
+    this.status = status;
+    status.setUser(this);
+  }
+
   public void update(String newUsername, String newEmail, String newPassword,
       BinaryContent newProfile) {
     boolean anyValueUpdated = false;

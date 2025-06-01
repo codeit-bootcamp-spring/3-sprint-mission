@@ -13,6 +13,9 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import jakarta.transaction.Transactional;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -32,6 +35,7 @@ public class BasicUserService implements UserService {
   private final UserMapper userMapper;
   private final BinaryContentStorage binaryContentStorage;
 
+  @Transactional
   @Override
   public UserDto create(UserCreateRequest userCreateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
@@ -52,36 +56,64 @@ public class BasicUserService implements UserService {
           byte[] bytes = profileRequest.bytes();
           BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
               contentType);
-          binaryContentStorage.put(binaryContent.getId(), bytes);
-          return binaryContentRepository.save(binaryContent);
+          BinaryContent save = binaryContentRepository.save(binaryContent);
+          binaryContentStorage.put(save.getId(), bytes);
+          return save;
         })
         .orElse(null);
     String password = userCreateRequest.password();
     User user = new User(username, email, password, nullableProfile);
-    User createdUser = userRepository.save(user);
-
     Instant now = Instant.now();
-    UserStatus userStatus = new UserStatus(createdUser, now);
-    userStatusRepository.save(userStatus);
+    UserStatus userStatus = new UserStatus(user, now);
+    user.setStatus(userStatus);
+
+    User createdUser = userRepository.save(user);
+//    userStatusRepository.save(userStatus);
 
     return userMapper.toDto(createdUser);
   }
 
+  @Transactional
   @Override
   public UserDto find(UUID userId) {
+
     return userRepository.findById(userId)
         .map(userMapper::toDto)
+        .map(userDto -> {
+          InputStream inputStream = binaryContentStorage.get(userDto.profile().getId());
+          try {
+            byte[] bytes = inputStream.readAllBytes();
+            userDto.profile().setBytes(bytes);
+            return userDto;
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        })
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
   }
 
+  @Transactional
   @Override
   public List<UserDto> findAll() {
     return userRepository.findAll()
         .stream()
         .map(userMapper::toDto)
-        .toList();
+        .map(userDto -> {
+          if (userDto.profile() == null) {
+            return userDto;
+          }
+          InputStream inputStream = binaryContentStorage.get(userDto.profile().getId());
+          try {
+            byte[] bytes = inputStream.readAllBytes();
+            userDto.profile().setBytes(bytes);
+            return userDto;
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        }).toList();
   }
 
+  @Transactional
   @Override
   public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
@@ -99,7 +131,8 @@ public class BasicUserService implements UserService {
 
     BinaryContent nullableProfile = optionalProfileCreateRequest
         .map(profileRequest -> {
-          Optional.ofNullable(user.getProfile().getId())
+          Optional.ofNullable(user.getProfile())
+              .map(BinaryContent::getId)
               .ifPresent(binaryContentRepository::deleteById);
 
           String fileName = profileRequest.fileName();
@@ -107,8 +140,10 @@ public class BasicUserService implements UserService {
           byte[] bytes = profileRequest.bytes();
           BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
               contentType);
-          binaryContentStorage.put(binaryContent.getId(), bytes);
-          return binaryContentRepository.save(binaryContent);
+          BinaryContent save = binaryContentRepository.save(binaryContent);
+          binaryContentStorage.put(save.getId(), bytes);
+          return save;
+
         })
         .orElse(null);
 
@@ -118,6 +153,7 @@ public class BasicUserService implements UserService {
     return userMapper.toDto(userRepository.save(user));
   }
 
+  @Transactional
   @Override
   public void delete(UUID userId) {
     User user = userRepository.findById(userId)

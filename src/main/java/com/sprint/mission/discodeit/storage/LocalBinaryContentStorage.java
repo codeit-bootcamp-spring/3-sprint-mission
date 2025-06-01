@@ -4,11 +4,17 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import jakarta.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,13 +55,12 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   @Override
   public UUID put(UUID id, byte[] bytes) {
+    System.out.println("id = " + id);
     Path path = resolvePath(id);
-    if (Files.exists(path)) {
-      try {
-        Files.write(path, bytes); // 파일에서 byte[] 읽기
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+    try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
+      fos.write(bytes);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
     return id;
   }
@@ -63,22 +68,23 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   @Override
   public InputStream get(UUID id) {
     Path path = resolvePath(id);
-    if (Files.exists(path)) {
-      try {
-        byte[] data = Files.readAllBytes(path); // 파일에서 byte[] 읽기
-        return new ByteArrayInputStream(data);  // byte[]를 InputStream으로 래핑
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+    if (Files.notExists(path)) {
+      throw new NoSuchElementException();
     }
-    return null;
+    try {
+      FileInputStream fis = new FileInputStream(path.toFile());
+      return fis;
+
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
 
   }
 
   @Override
   public ResponseEntity<Resource> download(BinaryContentDto binaryContentDto) {
     byte[] bytes = binaryContentDto.getBytes();
-    ByteArrayResource resource = new ByteArrayResource(bytes);
+    Resource resource = new ByteArrayResource(bytes);
 
     String filename = binaryContentDto.getFileName();
     String contentType = binaryContentDto.getContentType();

@@ -16,6 +16,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -50,14 +52,13 @@ public class BasicBinaryContentService implements BinaryContentService {
     try {
       BinaryContentDto binaryContentDto = binaryContentRepository
           .findById(binaryContentId)
-          .map(binaryContent -> {
-            BinaryContentDto dto = binaryContentMapper.toDto(binaryContent);
-            return dto;
-          }).orElseThrow(() -> new NoSuchElementException(
+          .map(binaryContentMapper::toDto).orElseThrow(() -> new NoSuchElementException(
               "BinaryContent with id " + binaryContentId + " not found"));
       InputStream inputStream = binaryContentStorage.get(binaryContentId);
       byte[] data = inputStream.readAllBytes();
       binaryContentDto.setBytes(data);
+      inputStream.close();
+      System.out.println("binaryContentDto.getBytes() = " + binaryContentDto.getBytes());
       return binaryContentDto;
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -90,5 +91,19 @@ public class BasicBinaryContentService implements BinaryContentService {
       throw new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found");
     }
     binaryContentRepository.deleteById(binaryContentId);
+  }
+
+  @Transactional
+  @Override
+  public ResponseEntity<?> download(UUID binaryContentId) {
+    BinaryContentDto binaryContentDto = binaryContentRepository.findById(binaryContentId)
+        .map(binaryContentMapper::toDto).orElseThrow(NoSuchElementException::new);
+    try {
+      byte[] bytes = binaryContentStorage.get(binaryContentId).readAllBytes();
+      binaryContentDto.setBytes(bytes);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return binaryContentStorage.download(binaryContentDto);
   }
 }

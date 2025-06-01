@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -35,6 +36,7 @@ public class BasicChannelService implements ChannelService {
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
 
+  @Transactional
   @Override
   public ChannelDto create(PublicChannelCreateRequest request) {
     String name = request.name();
@@ -44,6 +46,7 @@ public class BasicChannelService implements ChannelService {
     return channelMapper.toDto(channel);
   }
 
+  @Transactional
   @Override
   public ChannelDto create(PrivateChannelCreateRequest request) {
     Channel channel = new Channel(ChannelType.PRIVATE, null, null);
@@ -53,12 +56,13 @@ public class BasicChannelService implements ChannelService {
         .map(userId -> new ReadStatus(
             userRepository.findById(userId).orElseThrow(NoSuchElementException::new),
             createdChannel,
-            Instant.MIN))
+            Instant.EPOCH))
         .forEach(readStatusRepository::save);
 
     return channelMapper.toDto(createdChannel);
   }
 
+  @Transactional
   @Override
   public ChannelDto find(UUID channelId) {
     return channelRepository.findById(channelId)
@@ -67,6 +71,7 @@ public class BasicChannelService implements ChannelService {
             () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
   }
 
+  @Transactional
   @Override
   public List<ChannelDto> findAllByUserId(UUID userId) {
     List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
@@ -83,6 +88,7 @@ public class BasicChannelService implements ChannelService {
         .toList();
   }
 
+  @Transactional
   @Override
   public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
     String newName = request.newName();
@@ -98,6 +104,7 @@ public class BasicChannelService implements ChannelService {
     return channelMapper.toDto(channel);
   }
 
+  @Transactional
   @Override
   public void delete(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)

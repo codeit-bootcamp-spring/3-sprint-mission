@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -27,6 +28,7 @@ public class BasicReadStatusService implements ReadStatusService {
   private final ChannelRepository channelRepository;
   private final ReadStatusMapper readStatusMapper;
 
+  @Transactional
   @Override
   public ReadStatusDto create(ReadStatusCreateRequest request) {
     UUID userId = request.userId();
@@ -58,6 +60,7 @@ public class BasicReadStatusService implements ReadStatusService {
     return readStatusMapper.toDto(readStatusRepository.save(readStatus));
   }
 
+  @Transactional
   @Override
   public ReadStatusDto find(UUID readStatusId) {
     return readStatusRepository.findById(readStatusId)
@@ -66,6 +69,7 @@ public class BasicReadStatusService implements ReadStatusService {
             () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
   }
 
+  @Transactional
   @Override
   public List<ReadStatusDto> findAllByUserId(UUID userId) {
     return readStatusRepository.findAllByUserId(userId).stream()
@@ -73,6 +77,7 @@ public class BasicReadStatusService implements ReadStatusService {
         .toList();
   }
 
+  @Transactional
   @Override
   public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
     Instant newLastReadAt = request.newLastReadAt();
@@ -83,6 +88,7 @@ public class BasicReadStatusService implements ReadStatusService {
     return readStatusMapper.toDto(readStatusRepository.save(readStatus));
   }
 
+  @Transactional
   @Override
   public void delete(UUID readStatusId) {
     if (!readStatusRepository.existsById(readStatusId)) {
