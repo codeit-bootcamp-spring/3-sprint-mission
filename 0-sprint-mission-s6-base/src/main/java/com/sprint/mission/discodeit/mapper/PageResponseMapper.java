@@ -9,22 +9,23 @@ import org.springframework.stereotype.Component;
 public class PageResponseMapper {
 
   public static <T> PageResponse<T> fromSlice(Slice<T> slice) {
-    return PageResponse.<T>builder()
-        .content(slice.getContent())
-        .number(slice.getNumber())
-        .size(slice.getSize())
-        .hasNext(slice.hasNext())
-        .build();
+    return new PageResponse<>(
+        slice.getContent(),
+        slice.getNumber(),
+        slice.getSize(),
+        slice.hasNext(),
+        null
+    );
   }
 
   public static <T> PageResponse<T> fromPage(Page<T> page) {
-    return PageResponse.<T>builder()
-        .content(page.getContent())
-        .number(page.getNumber())
-        .size(page.getSize())
-        .hasNext(page.hasNext())
-        .totalElements(page.getTotalElements())
-        .build();
+    return new PageResponse<>(
+        page.getContent(),
+        page.getNumber(),
+        page.getSize(),
+        page.hasNext(),
+        page.getTotalElements()
+    );
   }
 
 }

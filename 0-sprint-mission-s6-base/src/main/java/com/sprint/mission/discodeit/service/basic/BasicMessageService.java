@@ -42,6 +42,7 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
 
+
   @Override
   @Transactional
   public MessageResponse create(MessageRequest.Create request,
@@ -90,12 +91,12 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public PageResponse<MessageResponse> findAllByChannelId(UUID channelId) {
+  public PageResponse<MessageResponse> findAllByChannelId(UUID channelId, Pageable pageable) {
     channelRepository.findById(channelId).orElseThrow(
         () -> new NoSuchElementException("Channel with id " + channelId + " not found")
     );
 
-    Pageable pageable = PageRequest.of(0, 50, Sort.by("createdAt").descending());
+    PageRequest pageRequest = PageRequest.of(0, 50, Sort.by("createdAt").descending());
     Slice<Message> slice = messageRepository.findAllByChannelId(channelId, pageable);
     Slice<MessageResponse> messageResponseSlice = slice.map(messageMapper::entityToDto);
 

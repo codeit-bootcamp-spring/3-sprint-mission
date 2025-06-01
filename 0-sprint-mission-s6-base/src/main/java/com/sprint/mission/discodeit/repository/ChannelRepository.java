@@ -11,9 +11,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ChannelRepository extends JpaRepository<Channel, UUID> {
 
-  @Query("SELECT c FROM Channel c LEFT JOIN ReadStatus r ON c.id = r.channel.id WHERE c.type = :type or r.user.id = :userId")
-  List<Channel> findAllByTypeOrUserId(
-      @Param("userId") UUID userId,
-      @Param("type") Channel.ChannelType type
-  );
+  @Query("""
+          SELECT c FROM Channel c
+          WHERE c.type = 'PUBLIC'
+             OR c.id IN (
+                 SELECT r.channel.id FROM ReadStatus r WHERE r.user.id = :userId
+             )
+      """)
+  List<Channel> findAllByTypeOrUserId(UUID userId);
 }

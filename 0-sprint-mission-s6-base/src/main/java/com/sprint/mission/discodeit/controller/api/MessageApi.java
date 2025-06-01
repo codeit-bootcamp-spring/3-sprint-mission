@@ -79,7 +79,8 @@ public interface MessageApi {
   @Operation(summary = "Channel의 Message 목록 조회")
   @ApiResponses(value = {
       @ApiResponse(
-          responseCode = "200", description = "Message 목록 조회 성공"
+          responseCode = "200", description = "Message 목록 조회 성공",
+          content = @Content(array = @ArraySchema(schema = @Schema(implementation = Message.class)))
       )
   })
   ResponseEntity<PageResponse<MessageResponse>> findAllByChannelId(

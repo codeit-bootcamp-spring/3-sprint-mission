@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.request.ChannelRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusRequest;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -35,10 +36,10 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional
-  public ChannelResponse create(ChannelRequest.CreatePublic request) {
+  public ChannelResponse createPublicChannel(ChannelRequest.CreatePublic request) {
     String name = request.name();
     String description = request.description();
-    Channel channel = new Channel(Channel.ChannelType.PUBLIC, name, description);
+    Channel channel = new Channel(ChannelType.PUBLIC, name, description);
     channelRepository.save(channel);
 
     log.info("Public 채널 생성 : {}", channel);
@@ -48,8 +49,8 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional
-  public ChannelResponse create(ChannelRequest.CreatePrivate request) {
-    Channel channel = new Channel(Channel.ChannelType.PRIVATE, null, null);
+  public ChannelResponse createPrivateChannel(ChannelRequest.CreatePrivate request) {
+    Channel channel = new Channel(ChannelType.PRIVATE, null, null);
     Channel createdChannel = channelRepository.save(channel);
 
     for (UUID userId : request.participantIds()) {
@@ -75,7 +76,7 @@ public class BasicChannelService implements ChannelService {
     User user = userRepository.findById(userId).orElseThrow(() ->
         new NoSuchElementException("User with id " + userId + " not found"));
 
-    return channelRepository.findAllByTypeOrUserId(userId, Channel.ChannelType.PUBLIC).stream()
+    return channelRepository.findAllByTypeOrUserId(userId).stream()
         .map(channelMapper::entityToDto)
         .collect(Collectors.toList());
   }
@@ -90,7 +91,7 @@ public class BasicChannelService implements ChannelService {
         .orElseThrow(
             () -> new NoSuchElementException("Channel with id " + id + " not found"));
 
-    if (channel.getType() == Channel.ChannelType.PRIVATE) {
+    if (channel.getType() == ChannelType.PRIVATE) {
       throw new IllegalArgumentException("Private channel cannot be updated");
     }
     Optional.ofNullable(newName).ifPresent(channel::updateName);

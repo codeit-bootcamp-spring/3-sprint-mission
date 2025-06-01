@@ -8,9 +8,9 @@ import java.util.UUID;
 
 public interface ChannelService {
 
-  ChannelResponse create(ChannelRequest.CreatePublic request);
+  ChannelResponse createPublicChannel(ChannelRequest.CreatePublic request);
 
-  ChannelResponse create(ChannelRequest.CreatePrivate request);
+  ChannelResponse createPrivateChannel(ChannelRequest.CreatePrivate request);
 
   ChannelResponse find(UUID id);
 

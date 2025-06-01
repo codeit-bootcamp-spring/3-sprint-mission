@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -66,15 +67,21 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   @Override
   public ResponseEntity<Resource> download(BinaryContentResponse binaryContentResponse) {
+
     InputStream inputStream = get(binaryContentResponse.id());
     InputStreamResource resource = new InputStreamResource(inputStream);
 
-    return ResponseEntity.status(HttpStatus.OK)
-        .header(
-            HttpHeaders.CONTENT_DISPOSITION,
-            "attachment; filename=\""
-                + binaryContentResponse.fileName() + "\"")
-        .contentType(MediaType.valueOf(binaryContentResponse.contentType()))
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentDisposition(ContentDisposition
+        .builder("attachment")
+        .filename(binaryContentResponse.fileName())
+        .build());
+
+    headers.setContentType(MediaType.parseMediaType(binaryContentResponse.contentType()));
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .headers(headers)
         .body(resource);
   }
 
@@ -82,11 +89,5 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     return root.resolve(uuid.toString());
   }
 
-  private String getExtension(String contentType) {
-    if (contentType == null || !contentType.contains("/")) {
-      return "";
-    }
-    return "." + contentType.substring(contentType.lastIndexOf("/") + 1);
-  }
 
 }

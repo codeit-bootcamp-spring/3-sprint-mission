@@ -28,7 +28,7 @@ public interface ChannelApi {
           content = @Content(schema = @Schema(implementation = Channel.class))
       )
   })
-  ResponseEntity<ChannelResponse> create(
+  ResponseEntity<ChannelResponse> createPublicChannel(
       @Parameter(description = "Public Channel 생성 정보") ChannelRequest.CreatePublic request
   );
 
@@ -39,7 +39,7 @@ public interface ChannelApi {
           content = @Content(schema = @Schema(implementation = Channel.class))
       )
   })
-  ResponseEntity<ChannelResponse> create(
+  ResponseEntity<ChannelResponse> createPrivateChannel(
       @Parameter(description = "Private Channel 생성 정보") ChannelRequest.CreatePrivate request
   );
 

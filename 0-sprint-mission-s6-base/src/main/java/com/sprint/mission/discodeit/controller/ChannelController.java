@@ -29,19 +29,19 @@ public class ChannelController implements ChannelApi {
 
   @PostMapping(path = "public")
   @Override
-  public ResponseEntity<ChannelResponse> create(
+  public ResponseEntity<ChannelResponse> createPublicChannel(
       @RequestBody ChannelRequest.CreatePublic request) {
-    ChannelResponse createChannel = channelService.create(request);
+    ChannelResponse createChannel = channelService.createPublicChannel(request);
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(createChannel);
   }
 
-  @PostMapping(path = "private")
+  @PostMapping(path = "/private")
   @Override
-  public ResponseEntity<ChannelResponse> create(
+  public ResponseEntity<ChannelResponse> createPrivateChannel(
       @RequestBody ChannelRequest.CreatePrivate request) {
-    ChannelResponse createChannel = channelService.create(request);
+    ChannelResponse createChannel = channelService.createPrivateChannel(request);
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(createChannel);
@@ -71,6 +71,9 @@ public class ChannelController implements ChannelApi {
   public ResponseEntity<List<ChannelResponse>> findAll(
       @RequestParam("userId") UUID userId) {
     List<ChannelResponse> channels = channelService.findAllByUserId(userId);
+    if (channels == null) {
+      channels = List.of();
+    }
     return ResponseEntity.ok(channels);
   }
 }

@@ -24,11 +24,12 @@ public class ChannelMapper {
   public ChannelResponse entityToDto(Channel channel) {
     return ChannelResponse.builder()
         .id(channel.getId())
-        .name(channel.getName())
-        .description(channel.getDescription())
+        .name(channel.getName() == null ? "이름 없는 채널" : channel.getName())
+        .description(channel.getDescription() == null ? " 설명 없음 " : channel.getDescription())
         .type(channel.getType())
         .participants(getParticipants(channel.getId()))
-        .lastMessageAt(getLastMessageTime(channel.getId()))
+        .lastMessageAt(getLastMessageTime(channel.getId()) == null ? Instant.EPOCH
+            : getLastMessageTime(channel.getId()))
         .build();
   }
 
@@ -39,7 +40,7 @@ public class ChannelMapper {
   }
 
   private Instant getLastMessageTime(UUID channelId) {
-    return messageRepository.findByChannelIdOrderByCreatedAtDesc(channelId)
+    return messageRepository.findTop1ByChannelIdOrderByCreatedAtDesc(channelId)
         .map(BaseEntity::getCreatedAt)
         .orElse(null);
   }

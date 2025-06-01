@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,12 +20,19 @@ public class MessageMapper {
   public MessageResponse entityToDto(Message message) {
     return MessageResponse.builder()
         .id(message.getId())
-        .author(userMapper.entityToDto(message.getAuthor()))
+        .author(message.getAuthor() == null ? UserResponse.builder()
+            .id(null)
+            .username("탈퇴한 사용자")
+            .email("")
+            .profile(null)
+            .online(false)
+            .build()
+            : userMapper.entityToDto(message.getAuthor()))
         .channelId(message.getChannel().getId())
-        .content(message.getContent())
+        .content(message.getContent() == null ? "" : message.getContent())
         .createdAt(message.getCreatedAt())
         .updatedAt(message.getUpdatedAt())
-        .attachments(getAttachments(message))
+        .attachments(message.getAttachments() == null ? List.of() : getAttachments(message))
         .build();
   }
 

@@ -115,3 +115,6 @@ CREATE TABLE message_attachments
         ON DELETE CASCADE
 );
 
+DELETE
+FROM binary_contents
+where file_name = 'profile';
