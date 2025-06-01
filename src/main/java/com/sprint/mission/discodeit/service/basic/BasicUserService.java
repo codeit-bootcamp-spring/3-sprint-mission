@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,7 +55,14 @@ public class BasicUserService implements UserService {
         }
 
         String password = userRequestDto.password();
-        User user = new User(username, email, password, null, null);
+        User user = User.builder()
+                .username(username)
+                .email(email)
+                .password(password)
+                .profile(null)
+                .status(null)
+                .readStatuses(new ArrayList<>())
+                .build();
 
         // 프로필 이미지를 등록한 경우
         if (binaryContentDto != null) {
@@ -68,7 +76,11 @@ public class BasicUserService implements UserService {
             binaryContentStorage.put(profileImage.getId(), bytes);
         }
 
-        UserStatus userStatus = new UserStatus(user, Instant.now());
+        UserStatus userStatus = UserStatus.builder()
+                .user(user)
+                .lastActiveAt(Instant.now())
+                .build();
+
         user.updateStatus(userStatus);
 
         userRepository.save(user);

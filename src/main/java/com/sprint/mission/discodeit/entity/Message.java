@@ -15,11 +15,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
 
 @Getter
 @Entity
+@Builder
+@AllArgsConstructor
 @Table(name = "messages", schema = "discodeit")
 public class Message extends BaseUpdatableEntity {
 
@@ -44,22 +48,11 @@ public class Message extends BaseUpdatableEntity {
     public Message() {
     }
 
-    public Message(String content, Channel channel, User author) {
-        this.content = content;
-        this.channel = channel;
-        this.author = author;
-        this.attachments = new ArrayList<>();
-    }
-
     public void updateContent(String content) {
         this.content = content;
     }
 
-    public void updateChannel(Channel channel) {
-        this.channel = channel;
-    }
-
-    public void updateAttachmentIds(List<BinaryContent> attachments) {
+    public void updateAttachments(List<BinaryContent> attachments) {
         this.attachments = attachments;
     }
 

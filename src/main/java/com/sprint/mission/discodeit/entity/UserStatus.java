@@ -6,9 +6,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 /**
@@ -16,63 +20,60 @@ import lombok.Getter;
  */
 @Getter
 @Entity
+@Builder
+@AllArgsConstructor
 @Table(name = "user_statuses", schema = "discodeit")
 public class UserStatus extends BaseUpdatableEntity {
 
-  @OneToOne
-  @JoinColumn(name = "user_id", nullable = false)
-  private User user;
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-  @Column(name = "last_active_at", nullable = false)
-  private Instant lastActiveAt;
+    @Column(name = "last_active_at", nullable = false)
+    private Instant lastActiveAt;
 
-  private static final long LOGIN_TIMEOUT_MINUTES = 5L;
+    private static final long LOGIN_TIMEOUT_MINUTES = 5L;
 
-  public UserStatus() {
-  }
-
-  public UserStatus(User user, Instant lastActiveAt) {
-    this.user = user;
-    this.lastActiveAt = lastActiveAt;
-  }
-
-  public void updatelastActiveAt(Instant lastActiveAt) {
-    this.lastActiveAt = lastActiveAt;
-  }
-
-  /**
-   * 마지막 접속 시간을 기준으로 현재 로그인한 유저로 판단할 수 있는 메소드
-   *
-   * @return 마지막 접속 시간이 현재 시간으로부터 5분 이내인지
-   */
-  public boolean isLogin() {
-    if (lastActiveAt == null) {
-      return false;
+    public UserStatus() {
     }
 
-    Instant now = Instant.now();
-
-    // lastActiveAt이 현재 시간보다 미래일 수는 없기 때문에 false 반환
-    if (lastActiveAt.isAfter(now)) {
-      return false;
+    public void updatelastActiveAt(Instant lastActiveAt) {
+        this.lastActiveAt = lastActiveAt;
     }
 
-    Duration timeDiff = Duration.between(this.lastActiveAt, now);
+    /**
+     * 마지막 접속 시간을 기준으로 현재 로그인한 유저로 판단할 수 있는 메소드
+     *
+     * @return 마지막 접속 시간이 현재 시간으로부터 5분 이내인지
+     */
+    public boolean isLogin() {
+        if (lastActiveAt == null) {
+            return false;
+        }
 
-    return timeDiff.toMinutes() <= LOGIN_TIMEOUT_MINUTES;
-  }
+        Instant now = Instant.now();
 
-  @Override
-  public boolean equals(Object o) {
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+        // lastActiveAt이 현재 시간보다 미래일 수는 없기 때문에 false 반환
+        if (lastActiveAt.isAfter(now)) {
+            return false;
+        }
+
+        Duration timeDiff = Duration.between(this.lastActiveAt, now);
+
+        return timeDiff.toMinutes() <= LOGIN_TIMEOUT_MINUTES;
     }
-    UserStatus that = (UserStatus) o;
-    return Objects.equals(user, that.user);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(user);
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        UserStatus that = (UserStatus) o;
+        return Objects.equals(user, that.user);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(user);
+    }
 }

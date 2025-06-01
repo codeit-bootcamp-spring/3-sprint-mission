@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -10,6 +12,8 @@ import java.util.Objects;
 
 @Getter
 @Entity
+@Builder
+@AllArgsConstructor
 @Table(name = "channels", schema = "discodeit")
 public class Channel extends BaseUpdatableEntity {
 
@@ -31,14 +35,6 @@ public class Channel extends BaseUpdatableEntity {
 
     public Channel() {
         this.type = ChannelType.PRIVATE;
-        this.readStatuses = new ArrayList<>();
-        this.messages = new ArrayList<>();
-    }
-
-    public Channel(String name, String description) {
-        this.name = name;
-        this.description = description;
-        this.type = ChannelType.PUBLIC;
         this.readStatuses = new ArrayList<>();
         this.messages = new ArrayList<>();
     }

@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,7 +41,13 @@ public class BasicChannelService implements ChannelService {
         String name = publicChannelDto.name();
         String description = publicChannelDto.description();
 
-        Channel channel = new Channel(name, description);
+        Channel channel = Channel.builder()
+                .name(name)
+                .description(description)
+                .type(ChannelType.PUBLIC)
+                .readStatuses(new ArrayList<>())
+                .messages(new ArrayList<>())
+                .build();
 
         channelRepository.save(channel);
 
@@ -58,7 +65,12 @@ public class BasicChannelService implements ChannelService {
         List<ReadStatus> readStatuses = privateChannelDto.participantIds().stream()
                 .map(userId -> {
                     User user = findUser(userId);
-                    ReadStatus readStatus = new ReadStatus(user, createdChannel, channel.getCreatedAt());
+                    ReadStatus readStatus = ReadStatus.builder()
+                            .user(user)
+                            .channel(channel)
+                            .lastReadAt(createdChannel.getCreatedAt())
+                            .build();
+                    
                     createdChannel.getReadStatuses().add(readStatus);
                     return readStatus;
                 })

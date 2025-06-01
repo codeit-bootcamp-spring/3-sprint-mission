@@ -55,7 +55,11 @@ public class BasicReadStatusService implements ReadStatusService {
         Channel channel = findChannel(channelId);
         Instant lastReadAt = readStatusRequestDTO.lastReadAt();
 
-        ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
+        ReadStatus readStatus = ReadStatus.builder()
+                .user(user)
+                .channel(channel)
+                .lastReadAt(lastReadAt)
+                .build();
 
         readStatusRepository.save(readStatus);
 

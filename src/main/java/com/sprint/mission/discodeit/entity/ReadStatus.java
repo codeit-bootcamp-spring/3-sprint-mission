@@ -6,8 +6,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+
 import java.time.Instant;
 import java.util.Objects;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 /**
@@ -15,45 +19,41 @@ import lombok.Getter;
  */
 @Getter
 @Entity
+@Builder
+@AllArgsConstructor
 @Table(name = "read_statuses", schema = "discodeit")
 public class ReadStatus extends BaseUpdatableEntity {
 
-  @ManyToOne
-  @JoinColumn(name = "user_id", nullable = false)
-  private User user;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-  @ManyToOne
-  @JoinColumn(name = "channel_id", nullable = false)
-  private Channel channel;
+    @ManyToOne
+    @JoinColumn(name = "channel_id", nullable = false)
+    private Channel channel;
 
-  @Column(name = "last_read_at", nullable = false)
-  private Instant lastReadAt;
+    @Column(name = "last_read_at", nullable = false)
+    private Instant lastReadAt;
 
-  public ReadStatus() {
-  }
-
-  public ReadStatus(User user, Channel channel, Instant lastReadAt) {
-    this.user = user;
-    this.channel = channel;
-    this.lastReadAt = lastReadAt;
-  }
-
-  public void updateLastReadAt(Instant lastReadAt) {
-    this.lastReadAt = lastReadAt;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+    public ReadStatus() {
     }
-    ReadStatus that = (ReadStatus) o;
-    return Objects.equals(user, that.user) && Objects.equals(channel,
-        that.channel);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(user, channel);
-  }
+    public void updateLastReadAt(Instant lastReadAt) {
+        this.lastReadAt = lastReadAt;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ReadStatus that = (ReadStatus) o;
+        return Objects.equals(user, that.user) && Objects.equals(channel,
+                that.channel);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(user, channel);
+    }
 }

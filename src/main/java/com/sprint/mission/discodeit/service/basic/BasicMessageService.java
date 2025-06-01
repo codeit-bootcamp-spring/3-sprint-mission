@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -61,8 +62,14 @@ public class BasicMessageService implements MessageService {
 
         String content = messageRequestDto.content();
 
-        Message message = new Message(content, channel, author);
-        message.updateAttachmentIds(binaryContents);
+        Message message = Message.builder()
+                .content(content)
+                .author(author)
+                .channel(channel)
+                .attachments(new ArrayList<>())
+                .build();
+
+        message.updateAttachments(binaryContents);
 
         // 메시지를 보낸 channel의 mesagesList에 해당 메시지 추가
         channel.getMessages().add(message);

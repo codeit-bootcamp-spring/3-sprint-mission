@@ -44,7 +44,10 @@ public class BasicUserStatusService implements UserStatusService {
         User user = findUser(userStatusRequestDTO.userId());
         Instant lastActiveAt = userStatusRequestDTO.lastActiveAt();
 
-        UserStatus userStatus = new UserStatus(user, lastActiveAt);
+        UserStatus userStatus = UserStatus.builder()
+                .user(user)
+                .lastActiveAt(lastActiveAt)
+                .build();
 
         userStatusRepository.save(userStatus);
 
