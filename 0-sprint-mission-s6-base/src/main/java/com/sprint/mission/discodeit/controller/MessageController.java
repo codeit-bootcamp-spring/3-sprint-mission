@@ -30,41 +30,43 @@ public class MessageController implements MessageApi {
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Override
-  public ResponseEntity<CustomApiResponse<MessageResponse>> create(
+  public ResponseEntity<MessageResponse> create(
       @RequestPart("messageCreateRequest") MessageRequest.Create messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
+    MessageResponse createdMessage = messageService.create(messageCreateRequest, attachments);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(CustomApiResponse.created(messageService.create(messageCreateRequest, attachments)));
+        .body(createdMessage);
   }
 
   @PatchMapping(path = "{messageId}")
   @Override
-  public ResponseEntity<CustomApiResponse<MessageResponse>> update(
+  public ResponseEntity<MessageResponse> update(
       @PathVariable("messageId") UUID messageId,
       @RequestBody MessageRequest.Update request) {
+    MessageResponse updatedMessage = messageService.update(messageId, request);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(CustomApiResponse.success(messageService.update(messageId, request)));
+        .body(updatedMessage);
   }
 
   @DeleteMapping(path = "{messageId}")
   @Override
-  public ResponseEntity<CustomApiResponse<Void>> delete(
+  public ResponseEntity<Void> delete(
       @PathVariable("messageId") UUID messageId) {
     messageService.delete(messageId);
     return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(CustomApiResponse.success("메시지 삭제 성공"));
+        .status(HttpStatus.NO_CONTENT)
+        .build();
   }
 
   @GetMapping
   @Override
-  public ResponseEntity<CustomApiResponse<PageResponse<MessageResponse>>> findAllByChannelId(
+  public ResponseEntity<PageResponse<MessageResponse>> findAllByChannelId(
       @RequestParam("channelId") UUID channelId) {
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(CustomApiResponse.success(messageService.findAllByChannelId(channelId)));
+        .body(messageService.findAllByChannelId(channelId));
   }
 }

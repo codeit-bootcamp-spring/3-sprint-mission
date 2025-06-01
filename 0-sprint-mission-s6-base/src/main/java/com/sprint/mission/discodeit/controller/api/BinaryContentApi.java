@@ -31,7 +31,7 @@ public interface BinaryContentApi {
           content = @Content(examples = @ExampleObject(value = "BinaryContent with id {binaryContentId} not found"))
       )
   })
-  ResponseEntity<CustomApiResponse<BinaryContentResponse>> getFile(
+  ResponseEntity<BinaryContentResponse> getFile(
       @Parameter(description = "조회할 첨부 파일 ID") UUID binaryContentId
   );
 
@@ -42,7 +42,7 @@ public interface BinaryContentApi {
           content = @Content(array = @ArraySchema(schema = @Schema(implementation = BinaryContent.class)))
       )
   })
-  ResponseEntity<CustomApiResponse<List<BinaryContentResponse>>> getFileList(
+  ResponseEntity<List<BinaryContentResponse>> getFileList(
       @Parameter(description = "조회할 첨부 파일 ID 목록") List<UUID> binaryContentIds
   );
 

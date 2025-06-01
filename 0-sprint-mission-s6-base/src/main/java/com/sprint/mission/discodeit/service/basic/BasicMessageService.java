@@ -118,6 +118,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @Transactional
   public void delete(UUID id) {
     Message message = messageRepository.findById(id)
         .orElseThrow(

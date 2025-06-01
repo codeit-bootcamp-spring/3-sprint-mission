@@ -28,7 +28,7 @@ public interface ChannelApi {
           content = @Content(schema = @Schema(implementation = Channel.class))
       )
   })
-  ResponseEntity<CustomApiResponse<ChannelResponse>> create(
+  ResponseEntity<ChannelResponse> create(
       @Parameter(description = "Public Channel 생성 정보") ChannelRequest.CreatePublic request
   );
 
@@ -39,7 +39,7 @@ public interface ChannelApi {
           content = @Content(schema = @Schema(implementation = Channel.class))
       )
   })
-  ResponseEntity<CustomApiResponse<ChannelResponse>> create(
+  ResponseEntity<ChannelResponse> create(
       @Parameter(description = "Private Channel 생성 정보") ChannelRequest.CreatePrivate request
   );
 
@@ -58,7 +58,7 @@ public interface ChannelApi {
           content = @Content(examples = @ExampleObject(value = "Private channel cannot be updated"))
       )
   })
-  ResponseEntity<CustomApiResponse<ChannelResponse>> update(
+  ResponseEntity<ChannelResponse> update(
       @Parameter(description = "수정할 Channel ID") UUID channelId,
       @Parameter(description = "수정할 Channel 정보") ChannelRequest.Update publicChannelRequest
   );
@@ -73,18 +73,17 @@ public interface ChannelApi {
           content = @Content(examples = @ExampleObject(value = "Channel with id {channelId} not found"))
       )
   })
-  ResponseEntity<CustomApiResponse<Void>> delete(
+  ResponseEntity<Void> delete(
       @Parameter(description = "삭제할 Channel ID") UUID channelId
   );
 
   @Operation(summary = "User가 참여 중인 Channel 목록 조회")
   @ApiResponses(value = {
       @ApiResponse(
-          responseCode = "200", description = "Channel 목록 조회 성공",
-          content = @Content(array = @ArraySchema(schema = @Schema(implementation = ChannelResponse.class)))
+          responseCode = "200", description = "Channel 목록 조회 성공"
       )
   })
-  ResponseEntity<CustomApiResponse<List<ChannelResponse>>> findAll(
+  ResponseEntity<List<ChannelResponse>> findAll(
       @Parameter(description = "조회할 User ID") UUID userId
   );
 } 

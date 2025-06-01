@@ -26,20 +26,20 @@ public class BinaryContentController implements BinaryContentApi {
 
   @GetMapping(path = "{binaryContentId}")
   @Override
-  public ResponseEntity<CustomApiResponse<BinaryContentResponse>> getFile(
+  public ResponseEntity<BinaryContentResponse> getFile(
       @PathVariable("binaryContentId") UUID binaryContentId) {
-    return ResponseEntity.ok(
-        CustomApiResponse.success(binaryContentService.findByIdOrThrow(binaryContentId))
-    );
+    BinaryContentResponse binaryContentResponse = binaryContentService.findByIdOrThrow(
+        binaryContentId);
+    return ResponseEntity.ok(binaryContentResponse);
   }
 
   @GetMapping
   @Override
-  public ResponseEntity<CustomApiResponse<List<BinaryContentResponse>>> getFileList(
+  public ResponseEntity<List<BinaryContentResponse>> getFileList(
       @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
-    return ResponseEntity.ok(
-        CustomApiResponse.success(binaryContentService.findAllByIdIn(binaryContentIds))
-    );
+    List<BinaryContentResponse> binaryContentResponses = binaryContentService.findAllByIdIn(
+        binaryContentIds);
+    return ResponseEntity.ok(binaryContentResponses);
   }
 
   @GetMapping("/{binaryContentId}/download")

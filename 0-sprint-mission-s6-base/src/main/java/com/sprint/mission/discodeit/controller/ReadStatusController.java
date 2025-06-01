@@ -23,29 +23,28 @@ public class ReadStatusController implements ReadStatusApi {
 
   @PostMapping
   @Override
-  public ResponseEntity<CustomApiResponse<ReadStatusResponse>> create(
+  public ResponseEntity<ReadStatusResponse> create(
       @RequestBody ReadStatusRequest.Create request) {
+    ReadStatusResponse createdReadStatus = readStatusService.create(request);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(CustomApiResponse.created(readStatusService.create(request)));
+        .body(createdReadStatus);
   }
 
   @PatchMapping(path = "{readStatusId}")
   @Override
-  public ResponseEntity<CustomApiResponse<ReadStatusResponse>> update(
+  public ResponseEntity<ReadStatusResponse> update(
       @PathVariable("readStatusId") UUID readStatusId,
       @RequestBody ReadStatusRequest.Update request) {
-    return ResponseEntity.ok(
-        CustomApiResponse.success(readStatusService.update(readStatusId, request))
-    );
+    ReadStatusResponse updatedReadStatus = readStatusService.update(readStatusId, request);
+    return ResponseEntity.ok(updatedReadStatus);
   }
 
   @GetMapping
   @Override
-  public ResponseEntity<CustomApiResponse<List<ReadStatusResponse>>> findAllByUserId(
+  public ResponseEntity<List<ReadStatusResponse>> findAllByUserId(
       @RequestParam("userId") UUID userId) {
-    return ResponseEntity.ok(
-        CustomApiResponse.success(readStatusService.findAllByUserId(userId))
-    );
+    List<ReadStatusResponse> readStatusResponses = readStatusService.findAllByUserId(userId);
+    return ResponseEntity.ok(readStatusResponses);
   }
 }

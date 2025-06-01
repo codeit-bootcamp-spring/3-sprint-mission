@@ -1,4 +1,13 @@
+-- DROP TABLE message_attachments;
+-- DROP TABLE user_statuses;
+-- DROP TABLE read_statuses;
+-- DROP TABLE messages;
+-- DROP TABLE channels;
+-- DROP TABLE users;
+-- DROP TABLE binary_contents;
+
 /* binary_contents*/
+
 CREATE TABLE binary_contents
 (
     id           UUID PRIMARY KEY,

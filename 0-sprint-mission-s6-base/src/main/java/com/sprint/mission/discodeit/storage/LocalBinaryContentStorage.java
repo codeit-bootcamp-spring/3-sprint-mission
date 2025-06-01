@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -18,11 +19,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnProperty(value = "discodeit.storage.type", havingValue = "local", matchIfMissing = false)
 public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   private final Path root;
 
-  public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") Path path) {
+  public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-paath") Path path) {
     this.root = path;
     init();
   }
@@ -31,7 +33,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     if (!Files.exists(root)) {
       try {
         Files.createDirectories(root);
-      } catch (Exception e) {
+      } catch (IOException e) {
         throw new RuntimeException("Failed to create root directory for local storage", e);
       }
     }

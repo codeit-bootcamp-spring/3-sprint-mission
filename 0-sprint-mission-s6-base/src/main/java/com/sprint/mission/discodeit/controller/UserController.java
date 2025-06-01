@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.request.UserRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
-import com.sprint.mission.discodeit.global.response.CustomApiResponse;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.List;
@@ -35,12 +34,14 @@ public class UserController implements UserApi {
 
   @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
   @Override
-  public ResponseEntity<CustomApiResponse<UserResponse>> create(
+  public ResponseEntity<UserResponse> create(
       @RequestPart("userCreateRequest") UserRequest userCreateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(CustomApiResponse.created(userService.create(userCreateRequest, profile)));
+    UserResponse createUser = userService.create(userCreateRequest, profile);
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(createUser);
   }
 
   @PatchMapping(
@@ -48,35 +49,38 @@ public class UserController implements UserApi {
       consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
   )
   @Override
-  public ResponseEntity<CustomApiResponse<UserResponse>> update(
+  public ResponseEntity<UserResponse> update(
       @PathVariable("userId") UUID userId,
       @RequestPart("userUpdateRequest") UserRequest.Update userRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
+    UserResponse updateUser = userService.update(userId, userRequest, profile);
     return ResponseEntity.status(HttpStatus.OK)
-        .body(CustomApiResponse.success(userService.update(userId, userRequest, profile)));
+        .body(updateUser);
   }
 
   @DeleteMapping(path = "{userId}")
   @Override
-  public ResponseEntity<CustomApiResponse<Void>> delete(@PathVariable("userId") UUID userId) {
+  public ResponseEntity<Void> delete(@PathVariable("userId") UUID userId) {
     userService.delete(userId);
-    return ResponseEntity.ok(CustomApiResponse.success("유저 삭제 성공"));
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
   }
 
   @GetMapping
   @Override
-  public ResponseEntity<CustomApiResponse<List<UserResponse>>> findAll() {
-    return ResponseEntity.ok(CustomApiResponse.success(userService.findAll()));
+  public ResponseEntity<List<UserResponse>> findAll() {
+    return ResponseEntity.ok(userService.findAll());
   }
 
   @PatchMapping(path = "{userId}/userStatus")
   @Override
-  public ResponseEntity<CustomApiResponse<UserStatusResponse>> updateUserStatusByUserId(
+  public ResponseEntity<UserStatusResponse> updateUserStatusByUserId(
       @PathVariable("userId") UUID userId,
       @RequestBody UserStatusRequest.Update request) {
-    return ResponseEntity.ok(
-        CustomApiResponse.success(userStatusService.updateByUserId(userId, request))
-    );
+    UserStatusResponse updateUserStatus = userStatusService.updateByUserId(userId, request);
+    return ResponseEntity.ok(updateUserStatus);
   }
+
 }

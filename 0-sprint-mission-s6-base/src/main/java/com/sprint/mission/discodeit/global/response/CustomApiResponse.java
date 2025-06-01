@@ -11,7 +11,7 @@ import org.springframework.lang.Nullable;
 
 
 /* @Builder로 static 팩토리 메서드로만 생성 유도
-   @JsonInclude를 NON_NULL로 생성하여 null인 필드를 JSON에서 제거하여 응답을 더 간결하게* */
+   @JsonInclude를 NON_NULL로 두어 null인 필드를 JSON에서 제거하여 응답을 더 간결하게* */
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @JsonInclude(value = Include.NON_NULL)

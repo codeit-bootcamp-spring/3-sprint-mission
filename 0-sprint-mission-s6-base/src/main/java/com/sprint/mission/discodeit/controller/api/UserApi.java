@@ -37,7 +37,7 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject(value = "User with email {email} already exists"))
       ),
   })
-  ResponseEntity<CustomApiResponse<UserResponse>> create(
+  ResponseEntity<UserResponse> create(
       @Parameter(
           description = "User 생성 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
@@ -63,7 +63,7 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject("user with email {newEmail} already exists"))
       )
   })
-  ResponseEntity<CustomApiResponse<UserResponse>> update(
+  ResponseEntity<UserResponse> update(
       @Parameter(description = "수정할 User ID") UUID id,
       @Parameter(description = "수정할 User 정보") UserRequest.Update userRequest,
       @Parameter(description = "수정할 User 프로필 이미지") MultipartFile profile
@@ -81,18 +81,17 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject(value = "User with id {id} not found"))
       )
   })
-  ResponseEntity<CustomApiResponse<Void>> delete(
+  ResponseEntity<Void> delete(
       @Parameter(description = "삭제할 User ID") UUID id
   );
 
   @Operation(summary = "전체 User 목록 조회")
   @ApiResponses(value = {
       @ApiResponse(
-          responseCode = "200", description = "User 목록 조회 성공",
-          content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class)))
+          responseCode = "200", description = "User 목록 조회 성공"
       )
   })
-  ResponseEntity<CustomApiResponse<List<UserResponse>>> findAll();
+  ResponseEntity<List<UserResponse>> findAll();
 
   @Operation(summary = "User 온라인 상태 업데이트")
   @ApiResponses(value = {
@@ -105,7 +104,7 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject(value = "UserStatus with userId {userId} not found"))
       )
   })
-  ResponseEntity<CustomApiResponse<UserStatusResponse>> updateUserStatusByUserId(
+  ResponseEntity<UserStatusResponse> updateUserStatusByUserId(
       @Parameter(description = "상태를 변경할 User ID") UUID id,
       @Parameter(description = "변경할 User 온라인 상태 정보") UserStatusRequest.Update request
   );

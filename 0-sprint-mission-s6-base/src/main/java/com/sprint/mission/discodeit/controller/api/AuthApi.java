@@ -32,7 +32,7 @@ public interface AuthApi {
           content = @Content(examples = @ExampleObject(value = "Wrong password"))
       )
   })
-  ResponseEntity<CustomApiResponse<UserResponse>> login(
+  ResponseEntity<UserResponse> login(
       @Parameter(description = "로그인 정보") UserRequest.Login loginRequest
   );
 } 

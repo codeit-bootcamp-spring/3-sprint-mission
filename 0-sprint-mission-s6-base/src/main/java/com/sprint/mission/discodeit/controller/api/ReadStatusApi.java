@@ -36,7 +36,7 @@ public interface ReadStatusApi {
           content = @Content(examples = @ExampleObject(value = "ReadStatus with userId {userId} and channelId {channelId} already exists"))
       )
   })
-  ResponseEntity<CustomApiResponse<ReadStatusResponse>> create(
+  ResponseEntity<ReadStatusResponse> create(
       @Parameter(description = "Message 읽음 상태 생성 정보") ReadStatusRequest.Create request
   );
 
@@ -51,7 +51,7 @@ public interface ReadStatusApi {
           content = @Content(examples = @ExampleObject(value = "ReadStatus with id {readStatusId} not found"))
       )
   })
-  ResponseEntity<CustomApiResponse<ReadStatusResponse>> update(
+  ResponseEntity<ReadStatusResponse> update(
       @Parameter(description = "수정할 읽음 상태 ID") UUID readStatusId,
       @Parameter(description = "수정할 읽음 상태 정보") ReadStatusRequest.Update request
   );
@@ -63,7 +63,7 @@ public interface ReadStatusApi {
           content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReadStatus.class)))
       )
   })
-  ResponseEntity<CustomApiResponse<List<ReadStatusResponse>>> findAllByUserId(
+  ResponseEntity<List<ReadStatusResponse>> findAllByUserId(
       @Parameter(description = "조회할 User ID") UUID userId
   );
 } 

@@ -117,6 +117,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @Transactional
   public void delete(UUID id) {
     User user = userRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("User with id " + id + " not found"));

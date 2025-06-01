@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.request.UserRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.global.response.CustomApiResponse;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +20,9 @@ public class AuthController implements AuthApi {
 
   @PostMapping(path = "/login")
   @Override
-  public ResponseEntity<CustomApiResponse<UserResponse>> login(
+  public ResponseEntity<UserResponse> login(
       @RequestBody UserRequest.Login loginRequest) {
-    return ResponseEntity.ok(
-        CustomApiResponse.success(authService.login(loginRequest))
-    );
+    UserResponse userResponse = authService.login(loginRequest);
+    return ResponseEntity.ok(userResponse);
   }
 }

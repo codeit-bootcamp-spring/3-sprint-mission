@@ -101,6 +101,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
+  @Transactional
   public void delete(UUID id) {
     Channel channel = channelRepository.findById(id)
         .orElseThrow(

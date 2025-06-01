@@ -29,48 +29,48 @@ public class ChannelController implements ChannelApi {
 
   @PostMapping(path = "public")
   @Override
-  public ResponseEntity<CustomApiResponse<ChannelResponse>> create(
+  public ResponseEntity<ChannelResponse> create(
       @RequestBody ChannelRequest.CreatePublic request) {
+    ChannelResponse createChannel = channelService.create(request);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(CustomApiResponse.created(channelService.create(request)));
+        .body(createChannel);
   }
 
   @PostMapping(path = "private")
   @Override
-  public ResponseEntity<CustomApiResponse<ChannelResponse>> create(
+  public ResponseEntity<ChannelResponse> create(
       @RequestBody ChannelRequest.CreatePrivate request) {
+    ChannelResponse createChannel = channelService.create(request);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(CustomApiResponse.created(channelService.create(request)));
+        .body(createChannel);
   }
 
   @PatchMapping(path = "{channelId}")
   @Override
-  public ResponseEntity<CustomApiResponse<ChannelResponse>> update(
+  public ResponseEntity<ChannelResponse> update(
       @PathVariable("channelId") UUID channelId,
       @RequestBody ChannelRequest.Update request) {
-    return ResponseEntity.ok(
-        CustomApiResponse.success(channelService.update(channelId, request))
-    );
+    ChannelResponse updateChannel = channelService.update(channelId, request);
+    return ResponseEntity.ok(updateChannel);
   }
 
   @DeleteMapping(path = "{channelId}")
   @Override
-  public ResponseEntity<CustomApiResponse<Void>> delete(
+  public ResponseEntity<Void> delete(
       @PathVariable("channelId") UUID channelId) {
     channelService.delete(channelId);
-    return ResponseEntity.ok(
-        CustomApiResponse.success("성공적으로 채널을 삭제하였습니다.")
-    );
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
   }
 
   @GetMapping
   @Override
-  public ResponseEntity<CustomApiResponse<List<ChannelResponse>>> findAll(
+  public ResponseEntity<List<ChannelResponse>> findAll(
       @RequestParam("userId") UUID userId) {
-    return ResponseEntity.ok(
-        CustomApiResponse.success(channelService.findAllByUserId(userId))
-    );
+    List<ChannelResponse> channels = channelService.findAllByUserId(userId);
+    return ResponseEntity.ok(channels);
   }
 }
