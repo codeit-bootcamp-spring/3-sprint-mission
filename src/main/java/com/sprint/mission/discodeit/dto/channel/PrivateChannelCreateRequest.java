@@ -15,7 +15,6 @@ import java.util.*;
  */
 
 public record PrivateChannelCreateRequest(Set<String> participantIds) {
-
     public PrivateChannelCreateRequest {
         if ((participantIds == null) || (participantIds.isEmpty())) {
             throw new RuntimeException("request must need one or more ids");

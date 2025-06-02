@@ -8,5 +8,4 @@ package com.sprint.mission.discodeit.dto.user;
  * 최초 생성
  */
 public record UserUpdateRequest(String newUsername, String newEmail, String newPassword) {
-
 }

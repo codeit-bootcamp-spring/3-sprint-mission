@@ -10,5 +10,4 @@ import java.time.Instant;
  * 최초 생성
  */
 public record UserStatusUpdateByUserIdRequest(Instant newLastActiveAt) {
-
 }

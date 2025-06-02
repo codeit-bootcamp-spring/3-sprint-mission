@@ -64,7 +64,7 @@ public class Message extends BaseUpdatableEntity implements Serializable {
         this.author = author;
         this.channel = channel;
         this.content = content;
-//        this.attachments = attachments;
+        this.attachments = attachments;
     }
 
     public void setContent(String content) {

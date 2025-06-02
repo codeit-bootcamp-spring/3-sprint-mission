@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.message.JpaMessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.JpaPageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,7 +39,7 @@ public class MessageController {
     @Operation(summary = "채널 메세지 목록 조회", description = "채널의 메세지 목록을 전체 조회 합니다.")
     @GetMapping
     public ResponseEntity<?> findChannelMessages(@RequestParam UUID channelId, Pageable pageable) {
-        MessageResponse allByChannelId = messageService.findAllByChannelId(channelId, pageable);
+        JpaPageResponse allByChannelId = messageService.findAllByChannelId(channelId, pageable);
         return ResponseEntity.ok(allByChannelId);
     }
 

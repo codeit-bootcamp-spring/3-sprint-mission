@@ -69,10 +69,6 @@ public class FilePathProperties {
         }
     }
 
-//    public void setFileDirectory(String fileDirectory) {
-//        this.fileDirectory = fileDirectory;
-//    }
-
     public Path getUserFilePath(UUID id) {
         return userDirectory.resolve(id + TO_SER);
     }

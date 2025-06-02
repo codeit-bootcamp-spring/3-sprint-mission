@@ -22,7 +22,7 @@ import java.util.UUID;
  */
 public interface MessageService {
 
-    MessageResponse findAllByChannelId(UUID channelId, Pageable pageable);
+    JpaPageResponse findAllByChannelId(UUID channelId, Pageable pageable);
 
     JpaMessageResponse createMessage(MessageCreateRequest MessageAttachmentRequest, List<MultipartFile> multipartFiles);
 

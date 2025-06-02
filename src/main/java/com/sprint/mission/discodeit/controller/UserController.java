@@ -40,7 +40,6 @@ public class UserController {
         return ResponseEntity.ok(userService.findAllUsers());
     }
 
-
     @Operation(summary = "사용자 생성", description = "사용자를 생성합니다. 이미지는 옵션입니다.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> create(
@@ -67,7 +66,6 @@ public class UserController {
         return ResponseEntity.ok(userService.update(userId, request, profileFile));
     }
 
-
     // 🗣 USER STATUS에서 가져온 메서드
     // 관심사 분리를 위해선 userStatus에서 하는게 맞지 않나? 메서드가 하나라 그냥 하는건가?
     @Operation(summary = "사용자 활동상태 수정", description = "사용자의 최근 접속시간을 수정합니다.")
@@ -77,7 +75,6 @@ public class UserController {
             @RequestBody UserStatusUpdateByUserIdRequest request) {
         return ResponseEntity.status(200).body(userStatusService.updateByUserId(userId, request.newLastActiveAt()));
     }
-
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
         if (profileFile.isEmpty()) {

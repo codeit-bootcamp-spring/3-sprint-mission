@@ -32,14 +32,12 @@ import java.util.UUID;
 public class ReadStatusController {
     private final ReadStatusService readStatusService;
 
-
     @Operation(summary = "사용자의 읽음 상태 목록 조회", description = "사용자의 읽음 상태 목록을 전체 조회 합니다.")
     @GetMapping
     public ResponseEntity<?> find(@RequestParam UUID userId) {
         List<JpaReadStatusResponse> allByUserId = readStatusService.findAllByUserId(userId);
         return ResponseEntity.ok(allByUserId);
     }
-
 
     @Operation(summary = "사용자의 읽음 상태 생성", description = "사용자의 읽음 상태 생성 합니다.")
     @PostMapping
@@ -55,7 +53,5 @@ public class ReadStatusController {
             @Valid @RequestBody ReadStatusUpdateRequest request) {
         JpaReadStatusResponse update = readStatusService.update(readStatusId, request);
         return ResponseEntity.ok(update);
-
-
     }
 }

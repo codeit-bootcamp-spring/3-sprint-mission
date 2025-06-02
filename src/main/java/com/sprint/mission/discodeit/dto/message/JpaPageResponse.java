@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.dto.message;
 
+import lombok.Builder;
+
 import java.util.List;
 
 /**
@@ -8,8 +10,9 @@ import java.util.List;
  * Author       : dounguk
  * Date         : 2025. 5. 30.
  */
-public record MessageResponse(
-        List<String> content,
+@Builder
+public record JpaPageResponse(
+        List<JpaMessageResponse> content,
         long number,
         long size,
         boolean hasNext,

@@ -55,9 +55,9 @@ public class UserStatus extends BaseUpdatableEntity implements Serializable {
     @Override
     public String toString() {
         return "UserStatus{" +
-//                "user=" + user +
+                "user=" + user +
                 ", lastActiveAt=" + lastActiveAt +
-                ", updatedAt=" + updatedAt +
+                ", updatedAt(updatable)=" + updatedAt +
                 ", id=" + id +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +

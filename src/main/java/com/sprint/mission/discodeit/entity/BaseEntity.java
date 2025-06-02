@@ -41,6 +41,4 @@ public abstract class BaseEntity implements Serializable {
 
     @LastModifiedDate
     protected Instant updatedAt;
-
-
 }

@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.repository.jpa;
 
 import com.sprint.mission.discodeit.entity.Message;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -20,9 +20,11 @@ public interface JpaMessageRepository extends JpaRepository<Message, UUID> {
 
     boolean existsById(UUID messageId);
 
-    List<Message> findAllByChannelIdOrderByCreatedAt(UUID channelId, Pageable pageable);
+//    List<Message> findAllByChannelIdOrderByCreatedAt(UUID channelId, Pageable pageable);
 
     Message findTopByChannelIdOrderByCreatedAtDesc(UUID channelId);
+
+    Page<Message> findAllByChannelIdOrderByCreatedAt(UUID channelId, Pageable pageable);
 
 
 }

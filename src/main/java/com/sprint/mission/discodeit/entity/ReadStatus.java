@@ -26,8 +26,8 @@ public class ReadStatus extends BaseUpdatableEntity {
     @Column(name = "last_read_at")
     private Instant lastReadAt;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", unique = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)

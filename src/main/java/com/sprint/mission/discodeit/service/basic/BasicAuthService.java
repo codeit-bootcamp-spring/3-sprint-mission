@@ -27,10 +27,7 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 @Service("basicAuthService")
 public class BasicAuthService implements AuthService {
-
     private final JpaUserRepository userRepository;
-//    private final UserRepository userRepository;
-
 
     public LoginResponse login(LoginRequest request) {
 
@@ -39,7 +36,6 @@ public class BasicAuthService implements AuthService {
 
         User user = userRepository.findByUsername(username).orElseThrow(() -> new NoSuchElementException("User with username " + username + " not found"));
 
-        
         BinaryContent profile = user.getProfile();
         JpaBinaryContentResponse profileDto = null;
         if(profile != null) {

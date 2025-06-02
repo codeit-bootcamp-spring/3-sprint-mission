@@ -88,22 +88,18 @@ public class User extends BaseUpdatableEntity implements Serializable {
         this.status = status;
     }
 
-    public void setProfileId(BinaryContent profile) {
-        this.profile = profile;
-    }
-
-
-
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
+                "username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", profile=" + profile +
+                ", status=" + status +
+                ", updatedAt(updatable)=" + updatedAt +
+                ", id=" + id +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", email='" + email + '\'' +
-//                ", profileId=" + profileId +
                 '}';
     }
 }

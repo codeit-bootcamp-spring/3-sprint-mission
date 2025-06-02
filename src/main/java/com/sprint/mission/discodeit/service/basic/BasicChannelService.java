@@ -1,12 +1,18 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.channel.*;
+import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.channel.JpaChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.jpa.*;
+import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
+import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
+import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
@@ -38,7 +44,6 @@ public class BasicChannelService implements ChannelService {
     private final JpaMessageRepository messageRepository;
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
-    private final BinaryContentMapper binaryContentMapper;
 
     @Override
     public JpaChannelResponse createChannel(PublicChannelCreateRequest request) {
@@ -69,12 +74,10 @@ public class BasicChannelService implements ChannelService {
             readStatusRepository.save(readStatus);
             readStatuses.add(readStatus);
         }
-
         List<User> userList = readStatuses.stream().map(r -> r.getUser()).toList();
         for (User user : userList) {
             participants.add(userMapper.toDto(user));
         }
-
         return channelMapper.toDto(channel);
     }
 
@@ -86,39 +89,21 @@ public class BasicChannelService implements ChannelService {
 
         List<JpaChannelResponse> responses = new ArrayList<>();
         List<Channel> channels = channelRepository.findAll();
-//        List<Channel> publicChannels = channelRepository.findAllByType(ChannelType.PUBLIC);
-//        List<Channel> privateChannels = channelRepository.findAllByType(ChannelType.PRIVATE);
 
         // 유저가 참가한 방이 없을 수 있음
         List<ReadStatus> readStatuses = readStatusRepository.findAllByUserId(userId);
-//         모든 방 순회
+        // 모든 방 순회
         for (Channel channel : channels) {
             if (channel.getType().equals(ChannelType.PUBLIC)) {
                 responses.add(channelMapper.toDto(channel));
             } else {
-                if(readStatuses.contains(channel)) {
+                if (readStatuses.stream().anyMatch(status -> status.getChannel().getId().equals(channel.getId()))) {
                     responses.add(channelMapper.toDto(channel));
                 }
             }
         }
-//        for (Channel channel : publicChannels) {
-//            responses.add(channelMapper.toDto(channel));
-//        }
-
-
-//        for (Channel channel : privateChannels) {
-//            for(ReadStatus readStatus : readStatuses) {
-//                // 이때만 확인해서 추가
-//                if(readStatus.getChannel().getType().equals(ChannelType.PRIVATE)) {
-//                    Channel channel = readStatus.getChannel();
-//                    responses.add(channelMapper.toDto(channel));
-//                }
-//            }
-//        }
-
         return responses;
     }
-
 
     @Override
     public JpaChannelResponse update(UUID channelId, ChannelUpdateRequest request) {
@@ -132,20 +117,12 @@ public class BasicChannelService implements ChannelService {
         } else {
             throw new NoSuchElementException("private channel cannot be updated");
         }
-
-//        List<ReadStatus> readStatuses = readStatusRepository.findAllByChannel(channel);
-//        List<User> users = readStatuses.stream().map(ReadStatus::getUser).collect(Collectors.toList());
-//        List<Message> messages = messageRepository.findAllByChannelId(channelId);
-//
-//
-//        return modifyResponse(users, channel, messages);
         return channelMapper.toDto(channel);
     }
 
     @Transactional
     @Override
     public boolean deleteChannel(UUID channelId) {
-
         if (!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException("channel with id " + channelId + " not found");
         }
@@ -161,54 +138,4 @@ public class BasicChannelService implements ChannelService {
         channelRepository.deleteById(channelId);
         return true;
     }
-//
-//    private static boolean isOnline(UserStatus userStatus) {
-//        Instant now = Instant.now();
-//        return Duration.between(userStatus.getLastActiveAt(), now).toMinutes() < 5;
-//    }
-//
-//    private static JpaChannelResponse modifyResponse(List<User> users, Channel channel, List<Message> messagees) {
-//        Instant lastMessageAt = null;
-//        if (!messagees.isEmpty()) {
-//            lastMessageAt = messagees.get(0).getCreatedAt();
-//            for (Message message : messagees) {
-//                if(message.getCreatedAt().isAfter(lastMessageAt)) {
-//                    lastMessageAt = message.getUpdatedAt();
-//                }
-//            }
-//        }
-//
-//        List<JpaUserResponse> participants = new ArrayList<>();
-//        for (User user : users) {
-//            BinaryContent profile = user.getProfile();
-//            JpaBinaryContentResponse profileDto = null;
-//            if(profile != null) {
-//                profileDto = new JpaBinaryContentResponse(
-//                        profile.getId(),
-//                        profile.getFileName(),
-//                        profile.getSize(),
-//                        profile.getContentType()
-//                );
-//            }
-//            JpaUserResponse userDto = new JpaUserResponse(
-//                    user.getId(),
-//                    user.getUsername(),
-//                    user.getEmail(),
-//                    profileDto,
-//                    isOnline(user.getStatus())
-//            );
-//            participants.add(userDto);
-//        }
-//
-//        JpaChannelResponse channelCreateResponse = new JpaChannelResponse(
-//                channel.getId(),
-//                channel.getType(),
-//                channel.getName(),
-//                channel.getDescription(),
-//                participants,
-//                lastMessageAt
-//        );
-//        return channelCreateResponse;
-//    }
-
 }

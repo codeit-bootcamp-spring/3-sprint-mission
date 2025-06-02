@@ -2,13 +2,14 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.message.*;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.jpa.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic
@@ -34,8 +34,6 @@ import java.util.stream.Collectors;
 @Service("basicMessageService")
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
-    private static final String ATTACHMENT_PATH = "img";
-    private final FileUploadUtils fileUploadUtils;
     private final JpaMessageRepository messageRepository;
     private final JpaChannelRepository channelRepository;
     private final JpaUserRepository userRepository;
@@ -43,24 +41,27 @@ public class BasicMessageService implements MessageService {
     private final JpaReadStatusRepository readStatusRepository;
     private final MessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
+    private final PageResponseMapper pageResponseMapper;
 
     @Override
-    public MessageResponse findAllByChannelId(UUID channelId, Pageable pageable) {
-        List<Message> messagePage = messageRepository.findAllByChannelIdOrderByCreatedAt(channelId, pageable);
+    public JpaPageResponse findAllByChannelId(UUID channelId, Pageable pageable) {
+        Page<Message> messagePage = messageRepository.findAllByChannelIdOrderByCreatedAt(channelId, pageable);
 
-        long totalMessages = messageRepository.count();
-        int totalPages = (int) Math.ceil((double) totalMessages / pageable.getPageSize());
-        boolean hasNext = pageable.getPageNumber() + 1 < totalPages;
+//        long totalMessages = messageRepository.count();
+//        int totalPages = (int) Math.ceil((double) totalMessages / pageable.getPageSize());
+//        boolean hasNext = pageable.getPageNumber() + 1 < totalPages;
 
-        List<String> contents = messagePage.stream().map(Message::getContent).collect(Collectors.toList());
+//        List<String> contents = messagePage.stream().map(Message::getContent).collect(Collectors.toList());
 
-        MessageResponse response = new MessageResponse(
-                contents,
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                hasNext,
-                totalMessages
-        );
+        JpaPageResponse response = pageResponseMapper.fromPage(messagePage);
+
+//        PageResponse response = new PageResponse(
+//                contents,
+//                pageable.getPageNumber(),
+//                pageable.getPageSize(),
+//                hasNext,
+//                totalMessages
+//        );
 
         return response;
     }
@@ -75,16 +76,16 @@ public class BasicMessageService implements MessageService {
         Channel channel = channelRepository.findById(request.channelId()).orElseThrow(() -> new NoSuchElementException("channel with id " + request.channelId() + " not found"));
         User user = userRepository.findById(request.authorId()).orElseThrow(() -> new NoSuchElementException("author with id " + request.authorId() + " not found"));
 
-        boolean isReadStatusExist = readStatusRepository.existsByUserAndChannel(user, channel);
-        System.out.println("isReadStatusExist = " + isReadStatusExist);
+//        boolean isReadStatusExist = readStatusRepository.existsByUserAndChannel(user, channel);
+//        System.out.println("isReadStatusExist = " + isReadStatusExist);
 
-        if (!isReadStatusExist) {
-            ReadStatus readStatus = ReadStatus.builder()
-                    .user(user)
-                    .channel(channel)
-                    .build();
-            readStatusRepository.save(readStatus);
-        }
+//        if (!isReadStatusExist) {
+//            ReadStatus readStatus = ReadStatus.builder()
+//                    .user(user)
+//                    .channel(channel)
+//                    .build();
+//            readStatusRepository.save(readStatus);
+//        }
 
         // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)
         List<BinaryContent> attachments = new ArrayList<>();
@@ -106,21 +107,6 @@ public class BasicMessageService implements MessageService {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
-                // 사진 저장
-//                String uploadFilePath = fileUploadUtils.getUploadPath(ATTACHMENT_PATH);
-//
-//                String originalFileName = attachment.getFileName();
-//                String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-//                String newFileName = attachment.getId() + extension;
-//
-//                File attachmentFile = new File(uploadFilePath, newFileName);
-//
-//                try (FileOutputStream fos = new FileOutputStream(attachmentFile)) {
-//                    fos.write(attachment.getBytes());
-//                } catch (IOException e) {
-//                    throw new RuntimeException("attachment not saved", e);
-//                }
                 attachments.add(attachment);
                 try {
                     binaryContentStorage.put(attachment.getId(), file.getBytes());

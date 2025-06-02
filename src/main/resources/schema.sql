@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS binary_contents
     file_name    VARCHAR(255) NOT NULL,
     size         BIGINT       NOT NULL,
     content_type VARCHAR(100) NOT NULL,
-    bytes        BYTEA        NOT NULL,
+--     bytes        BYTEA        NOT NULL,
     extensions   VARCHAR(20)  NOT NULL,
 
     CONSTRAINT pk_binary_contents PRIMARY KEY (id)

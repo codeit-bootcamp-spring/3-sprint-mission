@@ -35,5 +35,4 @@ public class AuthController {
         LoginResponse loginResponse = authService.login(loginRequest);
         return ResponseEntity.status(200).body(loginResponse);
     }
-
 }

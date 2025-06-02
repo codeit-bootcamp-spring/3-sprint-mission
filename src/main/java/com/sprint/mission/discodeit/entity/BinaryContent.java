@@ -38,9 +38,6 @@ public class BinaryContent extends BaseEntity implements Serializable {
     @Column(name = "content_type", nullable = false, length = 100)
     private String contentType;
 
-//    @Column(name = "bytes", nullable = false)
-//    private byte[] bytes;
-
     @Column(name = "extensions", nullable = false, length = 20)
     private String extension;
 
@@ -49,7 +46,6 @@ public class BinaryContent extends BaseEntity implements Serializable {
         this.fileName = fileName;
         this.size = size;
         this.contentType = contentType;
-//        this.bytes = bytes;
         this.extension = extension;
     }
 }

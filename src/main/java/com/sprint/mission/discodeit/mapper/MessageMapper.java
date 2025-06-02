@@ -31,7 +31,6 @@ public class MessageMapper {
             attachmentsDto.add(binaryContentMapper.toDto(attachment));
         }
 
-
         return JpaMessageResponse.builder()
                 .id(message.getId())
                 .createdAt(message.getCreatedAt())
