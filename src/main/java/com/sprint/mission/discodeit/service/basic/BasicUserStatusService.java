@@ -9,14 +9,13 @@ import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -46,7 +45,7 @@ public class BasicUserStatusService implements UserStatusService {
     return userStatusMapper.toDto(userStatusRepository.save(userStatus));
   }
 
-  @Transactional
+  @Transactional(readOnly = true)
   @Override
   public UserStatusDto find(UUID userStatusId) {
     return userStatusRepository.findById(userStatusId)
@@ -55,7 +54,7 @@ public class BasicUserStatusService implements UserStatusService {
             () -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
   }
 
-  @Transactional
+  @Transactional(readOnly = true)
   @Override
   public List<UserStatusDto> findAll() {
     return userStatusRepository.findAll().stream()

@@ -13,7 +13,6 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
@@ -23,6 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -73,7 +73,7 @@ public class BasicUserService implements UserService {
     return userMapper.toDto(createdUser);
   }
 
-  @Transactional
+  @Transactional(readOnly = true)
   @Override
   public UserDto find(UUID userId) {
 
@@ -92,7 +92,7 @@ public class BasicUserService implements UserService {
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
   }
 
-  @Transactional
+  @Transactional(readOnly = true)
   @Override
   public List<UserDto> findAll() {
     return userRepository.findAll()
