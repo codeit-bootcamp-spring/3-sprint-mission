@@ -49,7 +49,7 @@ public class BasicChannelService implements ChannelService {
         request.participantIds().forEach(userId -> {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new NoSuchElementException("해당 유저가 존재하지 않습니다."));
-            ReadStatus readStatus = new ReadStatus(user, createChannel, Instant.MIN);
+            ReadStatus readStatus = new ReadStatus(user, createChannel, Instant.EPOCH);
             readStatusRepository.save(readStatus);
         });
 
