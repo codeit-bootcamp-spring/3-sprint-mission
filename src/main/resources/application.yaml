@@ -6,3 +6,7 @@ discodeit:
   repository:
     type: file   # jcf | file
     file-directory: .discodeit
+
+logging:
+  level:
+    com.sprint.mission.discodeit: INFO
