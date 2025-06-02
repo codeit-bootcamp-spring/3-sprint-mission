@@ -35,7 +35,6 @@ public class BinaryContentController implements BinaryContentApi {
     @GetMapping
     public ResponseEntity<List<BinaryContentResponseDto>> findAll(@RequestBody List<UUID> ids) {
         List<BinaryContentResponseDto> binaryContents = binaryContentService.findAllByIdIn(ids);
-        ;
 
         return ResponseEntity.status(HttpStatus.OK).body(binaryContents);
     }
