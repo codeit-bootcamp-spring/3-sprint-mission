@@ -1,105 +1,64 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelResponseDTO;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import org.hibernate.annotations.DynamicUpdate;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.*;
+import java.util.Objects;
 
 @Getter
-public class Channel implements Serializable {
+@Entity
+@Builder
+@AllArgsConstructor
+@DynamicUpdate
+@Table(name = "channels", schema = "discodeit")
+public class Channel extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-  private String name;
-  private UUID channelMaster;
-  private String description;
-  private ChannelType type;
-  private final List<UUID> participantIds;
-  private final List<UUID> messages;
-  private Instant lastMessageTime;
+    @Column(name = "name")
+    private String name;
 
-  public Channel(String name, UUID channelMaster, String description) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.name = name;
-    this.channelMaster = channelMaster;
-    this.description = description;
-    this.type = ChannelType.PUBLIC;
-    this.participantIds = new ArrayList<>();
-    this.messages = new ArrayList<>();
-  }
+    @Column(name = "description")
+    private String description;
 
-  public Channel(UUID channelMaster, List<UUID> participantIds) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.name = "";
-    this.channelMaster = channelMaster;
-    this.description = "";
-    this.type = ChannelType.PRIVATE;
-    this.participantIds = participantIds;
-    this.messages = new ArrayList<>();
-  }
+    @Column(name = "type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ChannelType type;
 
-  public void updateName(String name) {
-    this.name = name;
-    this.updatedAt = Instant.now();
-  }
-
-  public void updateDescription(String description) {
-    this.description = description;
-    this.updatedAt = Instant.now();
-  }
-
-  public void updateLastMessageTime(Instant lastMessageTime) {
-    this.lastMessageTime = lastMessageTime;
-  }
-
-  public static ChannelResponseDTO toDTO(Channel channel) {
-    ChannelResponseDTO channelResponseDTO = new ChannelResponseDTO(
-        channel.getId(),
-        channel.getCreatedAt(),
-        channel.getUpdatedAt(),
-        channel.getName(),
-        channel.getChannelMaster(),
-        channel.getDescription(),
-        channel.getType(),
-        channel.getParticipantIds(),
-        channel.getMessages(),
-        channel.getLastMessageTime()
-    );
-
-    return channelResponseDTO;
-  }
-
-  @Override
-  public String toString() {
-    return "Channel {\n" +
-        "  id=" + id + ",\n" +
-        "  createdAt=" + createdAt + ",\n" +
-        "  updatedAt=" + updatedAt + ",\n" +
-        "  name='" + name + "',\n" +
-        "  channelMaster='" + channelMaster + "', \n" +
-        "  description='" + description + "',\n" +
-        "  users=" + participantIds.stream().toList() + ",\n" +
-        "  messages=" + messages.stream().toList() + "\n" +
-        '}';
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+    public Channel() {
+        this.type = ChannelType.PRIVATE;
     }
-    Channel channel = (Channel) o;
-    return Objects.equals(id, channel.id);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(id);
-  }
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    public void updateDescription(String description) {
+        this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return "Channel{" +
+                "name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", type=" + type +
+                "} " + super.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Channel channel = (Channel) o;
+        return Objects.equals(getId(), channel.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getId());
+    }
 }

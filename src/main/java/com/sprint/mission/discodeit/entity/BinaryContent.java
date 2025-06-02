@@ -1,38 +1,33 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDTO;
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.Getter;
-
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
+import lombok.Setter;
 
 @Getter
-public class BinaryContent implements Serializable {
+@Setter
+@Entity
+@Table(name = "binary_contents", schema = "discodeit")
+public class BinaryContent extends BaseEntity {
 
-  private static final long serialVersionUID = 1L;
-  private final UUID id;
-  private final Instant createdAt;
-  private String fileName;
-  private String contentType;
-  private byte[] bytes;
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
 
-  public BinaryContent(String fileName, String contentType, byte[] bytes) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.fileName = fileName;
-    this.contentType = contentType;
-    this.bytes = bytes;
-  }
+    @Column(name = "size", nullable = false)
+    private Long size;
 
-  public static BinaryContentResponseDTO toDTO(BinaryContent binaryContent) {
-    BinaryContentResponseDTO binaryContentResponseDTO = new BinaryContentResponseDTO(
-        binaryContent.getId(),
-        binaryContent.getCreatedAt(),
-        binaryContent.getFileName(),
-        binaryContent.getContentType(),
-        binaryContent.getBytes());
+    @Column(name = "content_type", nullable = false)
+    private String contentType;
 
-    return binaryContentResponseDTO;
-  }
+    public BinaryContent() {
+    }
+
+    public BinaryContent(String fileName, Long size, String contentType) {
+        this.fileName = fileName;
+        this.size = size;
+        this.contentType = contentType;
+    }
 }
