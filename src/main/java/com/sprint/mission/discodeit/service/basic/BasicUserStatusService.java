@@ -9,12 +9,12 @@ import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +38,7 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserStatusDto find(UUID id) {
         return userStatusMapper.toDto(
                 userStatusRepository.findByUserId(id)
@@ -46,6 +47,7 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserStatusDto> findAll() {
         return userStatusRepository.findAll().stream()
                 .map(userStatusMapper::toDto)

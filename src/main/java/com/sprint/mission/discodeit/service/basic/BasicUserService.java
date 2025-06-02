@@ -14,7 +14,6 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
@@ -23,6 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -60,22 +60,21 @@ public class BasicUserService implements UserService {
     }
 
     private BinaryContent storeBinaryContentMeta(BinaryContentCreateRequest request) {
+        BinaryContent meta = new BinaryContent();
+        meta.setFileName(request.fileName());
+        meta.setSize((long) request.bytes().length);
+        meta.setContentType(request.contentType());
+
+        BinaryContent savedMeta = binaryContentRepository.save(meta);
+
         try {
-            BinaryContent meta = new BinaryContent();
-            meta.setFileName(request.fileName());
-            meta.setSize((long) request.bytes().length);
-            meta.setContentType(request.contentType());
-
-            BinaryContent savedMeta = binaryContentRepository.save(meta);
-
             UUID newFileId = savedMeta.getId();
             binaryContentStorage.put(newFileId, request.bytes());
-
-            return savedMeta;
-
         } catch (IOException e) {
             throw new RuntimeException("프로필 사진 저장 중 오류가 발생했습니다.", e);
         }
+
+        return savedMeta;
     }
 
     private void validateUniqueUser(UserCreateRequest request) {
@@ -88,6 +87,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserDto find(UserFindRequest request) {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저는 없습니다."));
@@ -95,6 +95,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserDto> findAll() {
         return userRepository.findAll().stream()
                 .map(userMapper::toDto)

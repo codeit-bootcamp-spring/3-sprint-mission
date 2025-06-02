@@ -7,7 +7,6 @@ import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -15,6 +14,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +40,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BinaryContentDto find(UUID id) {
         BinaryContent meta = binaryContentRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 ID는 존재하지 않습니다."));
@@ -47,6 +48,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
         return binaryContentRepository.findAllByIdIn(ids).stream()
                 .map(binaryContentMapper::toDto)
@@ -61,6 +63,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         storage.put(id, new byte[0]);
     }
 
+    @Transactional(readOnly = true)
     public ResponseEntity<?> download(UUID id) throws IOException {
         BinaryContent meta = binaryContentRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 ID는 존재하지 않습니다."));

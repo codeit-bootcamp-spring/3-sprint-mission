@@ -17,7 +17,6 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -28,6 +27,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -51,31 +51,30 @@ public class BasicMessageService implements MessageService {
 
         List<BinaryContent> attachments = files.stream()
                 .map(fileReq -> {
+                    BinaryContent meta = new BinaryContent();
+                    meta.setFileName(fileReq.fileName());
+                    meta.setSize((long) fileReq.bytes().length);
+                    meta.setContentType(fileReq.contentType());
+                    BinaryContent savedMeta = binaryContentRepository.save(meta);
+
                     try {
-                        BinaryContent meta = new BinaryContent();
-                        meta.setFileName(fileReq.fileName());
-                        meta.setSize((long) fileReq.bytes().length);
-                        meta.setContentType(fileReq.contentType());
-
-                        BinaryContent savedMeta = binaryContentRepository.save(meta);
-
                         UUID fileId = savedMeta.getId();
                         binaryContentStorage.put(fileId, fileReq.bytes());
-
-                        return savedMeta;
                     } catch (IOException e) {
                         throw new RuntimeException("첨부파일 저장 중 오류가 발생했습니다", e);
                     }
+
+                    return savedMeta;
                 })
                 .toList();
 
         Message message = new Message(req.content(), channel, author, attachments);
         Message saved = messageRepository.save(message);
-
         return messageMapper.toDto(saved);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public MessageDto find(UUID messageId) {
         Message entity = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 메시지는 없습니다."));
@@ -83,6 +82,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page) {
         Pageable pageable = PageRequest.of(page, 50, Sort.by("createdAt").descending());
         Page<Message> paged = messageRepository.findAllByChannelIdOrderByCreatedAtDesc(channelId, pageable);

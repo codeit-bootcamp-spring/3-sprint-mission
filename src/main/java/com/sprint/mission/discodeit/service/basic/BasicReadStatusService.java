@@ -11,13 +11,12 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
-import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,25 +31,31 @@ public class BasicReadStatusService implements ReadStatusService {
     public ReadStatusDto create(ReadStatusCreateRequest request) {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new NoSuchElementException("해당 유저는 존재하지 않습니다."));
-
         Channel channel = channelRepository.findById(request.channelId())
                 .orElseThrow(() -> new NoSuchElementException("해당하는 채널은 존재하지 않습니다."));
-
         ReadStatus readStatus = readStatusRepository.save(new ReadStatus(user, channel, request.recentReadAt()));
         return readStatusMapper.toDto(readStatus);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ReadStatusDto find(UUID readStatusId) {
-        return readStatusMapper.toDto(
-                readStatusRepository.findById(readStatusId)
-                        .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 ReadStatus는 없습니다."))
-        );
+        ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+                .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 ReadStatus는 없습니다."));
+        readStatus.getUser().getUsername();
+        readStatus.getChannel().getType();
+        return readStatusMapper.toDto(readStatus);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ReadStatusDto> findAllByUserId(UUID userId) {
-        return readStatusRepository.findAllByUserId(userId).stream()
+        List<ReadStatus> statuses = readStatusRepository.findAllByUserId(userId);
+        statuses.forEach(rs -> {
+            rs.getChannel().getId();
+            rs.getUser().getUsername();
+        });
+        return statuses.stream()
                 .map(readStatusMapper::toDto)
                 .toList();
     }

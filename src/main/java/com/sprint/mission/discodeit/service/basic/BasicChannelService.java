@@ -15,13 +15,15 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -57,22 +59,41 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ChannelDto find(ChannelFindRequest request) {
         Channel channel = channelRepository.findById(request.id())
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 채널은 없습니다."));
+
+        if (channel.getType() == ChannelType.PRIVATE) {
+            List<ReadStatus> statuses = readStatusRepository.findAllByChannelId(channel.getId());
+            statuses.forEach(rs -> rs.getUser().getUsername());
+        }
+        messageRepository.findByChannelId(
+                channel.getId(),
+                PageRequest.of(0, 1, Sort.by("createdAt").descending())
+        ).stream().findFirst().ifPresent(m -> m.getCreatedAt());
+
         return channelMapper.toDto(channel);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ChannelDto> findAllByUserId(UUID userId) {
         List<Channel> channels = channelRepository.findAll();
+
+        List<UUID> joinedChannelIds = readStatusRepository.findAllByUserId(userId)
+                .stream()
+                .map(rs -> rs.getChannel().getId())
+                .toList();
+
         return channels.stream()
-                .filter(channel -> channel.getType() == ChannelType.PUBLIC
-                        || readStatusRepository.findAllByUserId(userId).stream()
-                        .map(ReadStatus::getChannel)
-                        .map(Channel::getId)
-                        .toList()
-                        .contains(channel.getId()))
+                .filter(ch -> ch.getType() == ChannelType.PUBLIC || joinedChannelIds.contains(ch.getId()))
+                .peek(ch -> {
+                    messageRepository.findByChannelId(
+                            ch.getId(),
+                            PageRequest.of(0, 1, Sort.by("createdAt").descending())
+                    ).stream().findFirst().ifPresent(m -> m.getCreatedAt());
+                })
                 .map(channelMapper::toDto)
                 .toList();
     }
@@ -85,7 +106,6 @@ public class BasicChannelService implements ChannelService {
             throw new RuntimeException("Private 채널은 수정할 수 없습니다.");
         }
         channel.update(request.newName(), request.newDescription());
-
         Channel saved = channelRepository.save(channel);
         return channelMapper.toDto(saved);
     }
