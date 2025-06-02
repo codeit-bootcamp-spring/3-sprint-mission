@@ -2,7 +2,9 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -10,6 +12,7 @@ import com.sprint.mission.discodeit.service.ReadStatusService;
 import com.sprint.mission.discodeit.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -17,6 +20,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class BasicReadStatusService implements ReadStatusService {
 
   private final ReadStatusRepository readStatusRepository;
@@ -28,24 +32,32 @@ public class BasicReadStatusService implements ReadStatusService {
     UUID userId = request.userId();
     UUID channelId = request.channelId();
 
-    if (!userRepository.existsById(userId)) {
-      throw new CustomException.UserNotFoundException("User with id " + userId + " does not exist");
-    }
-    if (!channelRepository.existsById(channelId)) {
-      throw new CustomException.ChannelNotFoundException("Channel with id " + channelId + " does not exist");
-    }
-    if (readStatusRepository.findAllByUserId(userId).stream()
-        .anyMatch(readStatus -> readStatus.getChannelId().equals(channelId))) {
+    // 연관 엔티티들을 로드
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new CustomException.UserNotFoundException("User with id " + userId + " does not exist"));
+
+    Channel channel = channelRepository.findById(channelId)
+        .orElseThrow(
+            () -> new CustomException.ChannelNotFoundException("Channel with id " + channelId + " does not exist"));
+
+    // User의 ReadStatus 컬렉션을 통한 중복 체크 (지연 로딩 활용)
+    boolean alreadyExists = user.getReadStatuses().stream()
+        .anyMatch(readStatus -> readStatus.getChannel().getId().equals(channelId));
+
+    if (alreadyExists) {
       throw new CustomException.DuplicateReadStatusException(
           "ReadStatus with userId " + userId + " and channelId " + channelId + " already exists");
     }
 
     Instant lastReadAt = request.lastReadAt();
-    ReadStatus readStatus = new ReadStatus(userId, channelId, lastReadAt);
+    // 엔티티 연관관계를 활용한 ReadStatus 생성
+    ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
+
     return readStatusRepository.save(readStatus);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public ReadStatus find(UUID readStatusId) {
     return readStatusRepository.findById(readStatusId)
         .orElseThrow(
@@ -53,26 +65,35 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<ReadStatus> findAllByUserId(UUID userId) {
-    return readStatusRepository.findAllByUserId(userId).stream()
-        .toList();
+    // User 엔티티를 통한 연관관계 활용 (지연 로딩)
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new CustomException.UserNotFoundException("User with id " + userId + " not found"));
+
+    return user.getReadStatuses().stream().toList();
   }
 
   @Override
   public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
     Instant newLastReadAt = request.newLastReadAt();
+
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(
             () -> new CustomException.ReadStatusNotFoundException("ReadStatus with id " + readStatusId + " not found"));
+
+    // 변경 감지(Dirty Checking) 활용 - save() 호출 불필요
     readStatus.update(newLastReadAt);
-    return readStatusRepository.save(readStatus);
+
+    return readStatus; // 트랜잭션 커밋 시 자동으로 변경 사항 반영
   }
 
   @Override
   public void delete(UUID readStatusId) {
-    if (!readStatusRepository.existsById(readStatusId)) {
-      throw new CustomException.ReadStatusNotFoundException("ReadStatus with id " + readStatusId + " not found");
-    }
-    readStatusRepository.deleteById(readStatusId);
+    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+        .orElseThrow(
+            () -> new CustomException.ReadStatusNotFoundException("ReadStatus with id " + readStatusId + " not found"));
+
+    readStatusRepository.delete(readStatus);
   }
 }

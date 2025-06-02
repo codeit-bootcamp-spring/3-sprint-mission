@@ -13,6 +13,8 @@ public interface MessageService {
   Message create(MessageCreateRequest messageCreateRequest,
       List<BinaryContentCreateRequest> binaryContentCreateRequests);
 
+  Message create(MessageCreateRequest messageCreateRequest);
+
   Message find(UUID messageId);
 
   List<Message> findAllByChannelId(UUID channelId);

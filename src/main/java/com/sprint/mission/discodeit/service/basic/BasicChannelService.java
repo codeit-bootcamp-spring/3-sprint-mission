@@ -6,27 +6,27 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.sprint.mission.discodeit.exception.CustomException;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class BasicChannelService implements ChannelService {
 
   private final ChannelRepository channelRepository;
-  //
-  private final ReadStatusRepository readStatusRepository;
-  private final MessageRepository messageRepository;
+  private final UserRepository userRepository;
 
   @Override
   public Channel create(PublicChannelCreateRequest request) {
@@ -40,16 +40,24 @@ public class BasicChannelService implements ChannelService {
   @Override
   public Channel create(PrivateChannelCreateRequest request) {
     Channel channel = new Channel(ChannelType.PRIVATE, null, null);
-    Channel createdChannel = channelRepository.save(channel);
+    Channel savedChannel = channelRepository.save(channel);
 
-    request.participantIds().stream()
-        .map(userId -> new ReadStatus(userId, createdChannel.getId(), channel.getCreatedAt()))
-        .forEach(readStatusRepository::save);
+    // User 엔티티들을 로드하여 ReadStatus 생성
+    List<User> participants = userRepository.findAllById(request.participantIds());
 
-    return createdChannel;
+    List<ReadStatus> readStatuses = participants.stream()
+        .map(user -> new ReadStatus(user, savedChannel, savedChannel.getCreatedAt()))
+        .collect(Collectors.toList());
+
+    // ReadStatus들을 Channel에 설정 (cascade로 자동 저장됨)
+    // 실제로는 cascade 설정에 따라 자동 처리되지만, 여기서는 명시적으로 저장
+    savedChannel.getReadStatuses().addAll(readStatuses);
+
+    return savedChannel;
   }
 
   @Override
+  @Transactional(readOnly = true)
   public ChannelDto find(UUID channelId) {
     return channelRepository.findById(channelId)
         .map(this::toDto)
@@ -58,14 +66,19 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<ChannelDto> findAllByUserId(UUID userId) {
-    List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
-        .map(ReadStatus::getChannelId)
-        .toList();
+    // User의 ReadStatus를 통해 구독 채널 ID 조회 (지연 로딩 활용)
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new CustomException.UserNotFoundException("User with id " + userId + " not found"));
+
+    Set<UUID> subscribedChannelIds = user.getReadStatuses().stream()
+        .map(readStatus -> readStatus.getChannel().getId())
+        .collect(Collectors.toSet());
 
     return channelRepository.findAll().stream()
         .filter(channel -> channel.getType().equals(ChannelType.PUBLIC)
-            || mySubscribedChannelIds.contains(channel.getId()))
+            || subscribedChannelIds.contains(channel.getId()))
         .map(this::toDto)
         .toList();
   }
@@ -74,14 +87,19 @@ public class BasicChannelService implements ChannelService {
   public Channel update(UUID channelId, PublicChannelUpdateRequest request) {
     String newName = request.newName();
     String newDescription = request.newDescription();
+
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(
             () -> new CustomException.ChannelNotFoundException("Channel with id " + channelId + " not found"));
+
     if (channel.getType().equals(ChannelType.PRIVATE)) {
       throw new CustomException.PrivateChannelUpdateException("Private channel cannot be updated");
     }
+
+    // 변경 감지(Dirty Checking) 활용 - save() 호출 불필요
     channel.update(newName, newDescription);
-    return channelRepository.save(channel);
+
+    return channel; // 트랜잭션 커밋 시 자동으로 변경 사항 반영
   }
 
   @Override
@@ -90,27 +108,24 @@ public class BasicChannelService implements ChannelService {
         .orElseThrow(
             () -> new CustomException.ChannelNotFoundException("Channel with id " + channelId + " not found"));
 
-    messageRepository.deleteAllByChannelId(channel.getId());
-    readStatusRepository.deleteAllByChannelId(channel.getId());
-
-    channelRepository.deleteById(channelId);
+    // cascade = ALL, orphanRemoval = true로 설정되어 있어
+    // Channel 삭제 시 연관된 Message, ReadStatus 자동 삭제됨
+    channelRepository.delete(channel);
   }
 
   private ChannelDto toDto(Channel channel) {
-    Instant lastMessageAt = messageRepository.findAllByChannelId(channel.getId())
-        .stream()
-        .sorted(Comparator.comparing(Message::getCreatedAt).reversed())
-        .map(Message::getCreatedAt)
-        .limit(1)
-        .findFirst()
+    // 지연 로딩 활용 - messages 컬렉션 접근 시 필요한 경우만 로드
+    Instant lastMessageAt = channel.getMessages().stream()
+        .max(Comparator.comparing(message -> message.getCreatedAt()))
+        .map(message -> message.getCreatedAt())
         .orElse(Instant.MIN);
 
     List<UUID> participantIds = new ArrayList<>();
     if (channel.getType().equals(ChannelType.PRIVATE)) {
-      readStatusRepository.findAllByChannelId(channel.getId())
-          .stream()
-          .map(ReadStatus::getUserId)
-          .forEach(participantIds::add);
+      // 지연 로딩 활용 - readStatuses 컬렉션 접근
+      participantIds = channel.getReadStatuses().stream()
+          .map(readStatus -> readStatus.getUser().getId())
+          .collect(Collectors.toList());
     }
 
     return new ChannelDto(
