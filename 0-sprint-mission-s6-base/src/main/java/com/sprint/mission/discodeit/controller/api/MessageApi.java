@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.request.MessageRequest;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.global.response.CustomApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -14,12 +13,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-import java.util.UUID;
 
 @Tag(name = "Message", description = "Message API")
 public interface MessageApi {
@@ -84,6 +83,7 @@ public interface MessageApi {
       )
   })
   ResponseEntity<PageResponse<MessageResponse>> findAllByChannelId(
-      @Parameter(description = "조회할 Channel ID") UUID channelId
+      @Parameter(description = "조회할 Channel ID") UUID channelId,
+      Pageable pageable
   );
 } 
