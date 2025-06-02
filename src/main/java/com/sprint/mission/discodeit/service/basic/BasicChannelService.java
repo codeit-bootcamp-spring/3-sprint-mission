@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
+import com.sprint.mission.discodeit.dto.mapper.EntityDtoMapper;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.sprint.mission.discodeit.exception.CustomException;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,6 +27,7 @@ public class BasicChannelService implements ChannelService {
 
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
+  private final EntityDtoMapper entityDtoMapper;
 
   @Override
   public Channel create(PublicChannelCreateRequest request) {
@@ -60,7 +61,7 @@ public class BasicChannelService implements ChannelService {
   @Transactional(readOnly = true)
   public ChannelDto find(UUID channelId) {
     return channelRepository.findById(channelId)
-        .map(this::toDto)
+        .map(entityDtoMapper::toDto)
         .orElseThrow(
             () -> new CustomException.ChannelNotFoundException("Channel with id " + channelId + " not found"));
   }
@@ -79,7 +80,7 @@ public class BasicChannelService implements ChannelService {
     return channelRepository.findAll().stream()
         .filter(channel -> channel.getType().equals(ChannelType.PUBLIC)
             || subscribedChannelIds.contains(channel.getId()))
-        .map(this::toDto)
+        .map(entityDtoMapper::toDto)
         .toList();
   }
 
@@ -111,29 +112,5 @@ public class BasicChannelService implements ChannelService {
     // cascade = ALL, orphanRemoval = true로 설정되어 있어
     // Channel 삭제 시 연관된 Message, ReadStatus 자동 삭제됨
     channelRepository.delete(channel);
-  }
-
-  private ChannelDto toDto(Channel channel) {
-    // 지연 로딩 활용 - messages 컬렉션 접근 시 필요한 경우만 로드
-    Instant lastMessageAt = channel.getMessages().stream()
-        .max(Comparator.comparing(message -> message.getCreatedAt()))
-        .map(message -> message.getCreatedAt())
-        .orElse(Instant.MIN);
-
-    List<UUID> participantIds = new ArrayList<>();
-    if (channel.getType().equals(ChannelType.PRIVATE)) {
-      // 지연 로딩 활용 - readStatuses 컬렉션 접근
-      participantIds = channel.getReadStatuses().stream()
-          .map(readStatus -> readStatus.getUser().getId())
-          .collect(Collectors.toList());
-    }
-
-    return new ChannelDto(
-        channel.getId(),
-        channel.getType(),
-        channel.getName(),
-        channel.getDescription(),
-        participantIds,
-        lastMessageAt);
   }
 }

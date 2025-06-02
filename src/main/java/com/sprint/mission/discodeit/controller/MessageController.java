@@ -1,13 +1,12 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.MessageApi;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.exception.CustomException;
-import com.sprint.mission.discodeit.dto.mapper.ResponseMapper;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
@@ -47,8 +47,17 @@ public class MessageController implements MessageApi {
             })
             .toList())
         .orElse(new ArrayList<>());
-    Message createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
-    MessageResponse response = ResponseMapper.toResponse(createdMessage);
+    MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
+    MessageResponse response = new MessageResponse(
+        createdMessage.id(),
+        createdMessage.createdAt(),
+        createdMessage.updatedAt(),
+        createdMessage.content(),
+        createdMessage.channelId(),
+        createdMessage.author() != null ? createdMessage.author().id() : null,
+        createdMessage.attachments().stream()
+            .map(attachment -> attachment.id())
+            .collect(Collectors.toList()));
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(response);
@@ -57,8 +66,17 @@ public class MessageController implements MessageApi {
   @PatchMapping(path = "{messageId}")
   public ResponseEntity<MessageResponse> update(@PathVariable("messageId") UUID messageId,
       @RequestBody MessageUpdateRequest request) {
-    Message updatedMessage = messageService.update(messageId, request);
-    MessageResponse response = ResponseMapper.toResponse(updatedMessage);
+    MessageDto updatedMessage = messageService.update(messageId, request);
+    MessageResponse response = new MessageResponse(
+        updatedMessage.id(),
+        updatedMessage.createdAt(),
+        updatedMessage.updatedAt(),
+        updatedMessage.content(),
+        updatedMessage.channelId(),
+        updatedMessage.author() != null ? updatedMessage.author().id() : null,
+        updatedMessage.attachments().stream()
+            .map(attachment -> attachment.id())
+            .collect(Collectors.toList()));
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(response);
@@ -75,9 +93,18 @@ public class MessageController implements MessageApi {
   @GetMapping
   public ResponseEntity<List<MessageResponse>> findAllByChannelId(
       @RequestParam("channelId") UUID channelId) {
-    List<Message> messages = messageService.findAllByChannelId(channelId);
+    List<MessageDto> messages = messageService.findAllByChannelId(channelId);
     List<MessageResponse> responses = messages.stream()
-        .map(ResponseMapper::toResponse)
+        .map(message -> new MessageResponse(
+            message.id(),
+            message.createdAt(),
+            message.updatedAt(),
+            message.content(),
+            message.channelId(),
+            message.author() != null ? message.author().id() : null,
+            message.attachments().stream()
+                .map(attachment -> attachment.id())
+                .collect(Collectors.toList())))
         .toList();
     return ResponseEntity
         .status(HttpStatus.OK)
