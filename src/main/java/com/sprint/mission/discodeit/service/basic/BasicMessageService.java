@@ -70,10 +70,7 @@ public class BasicMessageService implements MessageService {
                 .build();
 
         message.updateAttachments(binaryContents);
-
-        // 메시지를 보낸 channel의 mesagesList에 해당 메시지 추가
-        channel.getMessages().add(message);
-
+        
         messageRepository.save(message);
 
         return messageMapper.toDto(message);
@@ -123,13 +120,6 @@ public class BasicMessageService implements MessageService {
     @Transactional
     public void deleteById(UUID messageId) {
         Message message = findMessage(messageId);
-
-        // Channel의 메시지 목록에서 삭제
-        Channel channel = message.getChannel();
-        if (channel != null) {
-            channel.getMessages().remove(message);
-            channelRepository.save(channel);
-        }
 
         for (BinaryContent binaryContent : message.getAttachments()) {
             binaryContentRepository.deleteById(binaryContent.getId());

@@ -61,7 +61,6 @@ public class BasicUserService implements UserService {
                 .password(password)
                 .profile(null)
                 .status(null)
-                .readStatuses(new ArrayList<>())
                 .build();
 
         // 프로필 이미지를 등록한 경우

@@ -45,8 +45,6 @@ public class BasicChannelService implements ChannelService {
                 .name(name)
                 .description(description)
                 .type(ChannelType.PUBLIC)
-                .readStatuses(new ArrayList<>())
-                .messages(new ArrayList<>())
                 .build();
 
         channelRepository.save(channel);
@@ -71,7 +69,6 @@ public class BasicChannelService implements ChannelService {
                             .lastReadAt(createdChannel.getCreatedAt())
                             .build();
                     
-                    createdChannel.getReadStatuses().add(readStatus);
                     return readStatus;
                 })
                 .toList();
