@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -20,9 +22,21 @@ public class User extends BaseUpdateableEntity {
   @Column(name = "password", nullable = false, length = 60)
   private String password;
 
-  @OneToOne // User-BinaryContent = 1:1
+  @OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }) // User-BinaryContent = 1:1
   @JoinColumn(name = "profile_id") // Foreign Key
   private BinaryContent profile;
+
+  // User → UserStatus 양방향 관계 (부모 → 자식)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private UserStatus userStatus;
+
+  // User → Message 양방향 관계 (독립적 관계 - ON DELETE SET NULL)
+  @OneToMany(mappedBy = "author")
+  private List<Message> authoredMessages;
+
+  // User → ReadStatus 양방향 관계 (부모 → 자식)
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<ReadStatus> readStatuses;
 
   public User(String username, String email, String password, BinaryContent profile) {
     this.username = username;

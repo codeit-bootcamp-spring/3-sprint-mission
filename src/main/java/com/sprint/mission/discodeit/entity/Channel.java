@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "channels")
 @Getter
@@ -20,6 +22,14 @@ public class Channel extends BaseUpdateableEntity {
 
   @Column(name = "description", length = 500)
   private String description;
+
+  // Channel → Message 양방향 관계 (부모 → 자식)
+  @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Message> messages;
+
+  // Channel → ReadStatus 양방향 관계 (부모 → 자식)
+  @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<ReadStatus> readStatuses;
 
   public Channel(ChannelType type, String name, String description) {
     this.type = type;
