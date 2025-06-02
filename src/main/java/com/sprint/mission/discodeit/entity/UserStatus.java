@@ -1,17 +1,24 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdateableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Duration;
 import java.time.Instant;
 
+@Entity
+@Table(name = "user_statuses")
 @Getter
 @NoArgsConstructor
 public class UserStatus extends BaseUpdateableEntity {
 
-  private User user; // User 객체 참조
+  @OneToOne // User-UserStatus = 1:1
+  @JoinColumn(name = "user_id", nullable = false, unique = true) // Foreign Key + Unique
+  private User user;
+
+  @Column(name = "last_active_at", nullable = false)
   private Instant lastActiveAt;
 
   public UserStatus(User user, Instant lastActiveAt) {
