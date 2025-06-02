@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Getter;
 import org.hibernate.annotations.DynamicUpdate;
 
-import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -33,10 +32,7 @@ public class User extends BaseUpdatableEntity {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserStatus status;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<ReadStatus> readStatuses;
-
+    
     public User() {
     }
 

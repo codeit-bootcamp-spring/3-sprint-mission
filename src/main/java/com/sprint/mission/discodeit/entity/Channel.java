@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Getter;
 import org.hibernate.annotations.DynamicUpdate;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -29,16 +27,8 @@ public class Channel extends BaseUpdatableEntity {
     @Enumerated(EnumType.STRING)
     private ChannelType type;
 
-    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<ReadStatus> readStatuses;
-
-    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Message> messages;
-
     public Channel() {
         this.type = ChannelType.PRIVATE;
-        this.readStatuses = new ArrayList<>();
-        this.messages = new ArrayList<>();
     }
 
     public void updateName(String name) {
