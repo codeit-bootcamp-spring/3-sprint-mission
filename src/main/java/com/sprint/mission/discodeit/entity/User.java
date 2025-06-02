@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.util.List;
 import java.util.Objects;
@@ -13,6 +14,7 @@ import java.util.Objects;
 @Entity
 @Builder
 @AllArgsConstructor
+@DynamicUpdate
 @Table(name = "users", schema = "discodeit")
 public class User extends BaseUpdatableEntity {
 

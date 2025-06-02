@@ -13,6 +13,7 @@ import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.hibernate.annotations.DynamicUpdate;
 
 /**
  * 사용자가 채널 별 마지막으로 메시지를 읽은 시간을 표현하는 도메인 모델 사용자별 각 채널에 읽지 않은 메시지를 확인하기 위해 활용
@@ -21,6 +22,7 @@ import lombok.Getter;
 @Entity
 @Builder
 @AllArgsConstructor
+@DynamicUpdate
 @Table(name = "read_statuses", schema = "discodeit")
 public class ReadStatus extends BaseUpdatableEntity {
 

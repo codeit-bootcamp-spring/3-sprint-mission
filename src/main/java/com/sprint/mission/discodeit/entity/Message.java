@@ -1,29 +1,21 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.DynamicUpdate;
+
+import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Entity
 @Builder
 @AllArgsConstructor
+@DynamicUpdate
 @Table(name = "messages", schema = "discodeit")
 public class Message extends BaseUpdatableEntity {
 

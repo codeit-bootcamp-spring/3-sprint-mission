@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.Objects;
 @Entity
 @Builder
 @AllArgsConstructor
+@DynamicUpdate
 @Table(name = "channels", schema = "discodeit")
 public class Channel extends BaseUpdatableEntity {
 
