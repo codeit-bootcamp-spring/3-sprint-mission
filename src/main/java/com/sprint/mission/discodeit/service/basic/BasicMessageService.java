@@ -18,6 +18,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -96,12 +97,28 @@ public class BasicMessageService implements MessageService {
         ;
   }
 
+//  @Transactional(readOnly = true)
+//  @Override
+//  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable) {
+//    return pageResponseMapper.fromPage(messageRepository
+//        .findAllByChannelId(channelId, pageable)
+//        .map(messageMapper::toDto));
+//  }
+
   @Transactional(readOnly = true)
   @Override
-  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable) {
-    return pageResponseMapper.fromPage(messageRepository
-        .findAllByChannelId(channelId, pageable)
-        .map(messageMapper::toDto));
+  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor,
+      Pageable pageable) {
+    if (cursor != null) {
+      return pageResponseMapper.fromPage(messageRepository
+          .findAllByChannelId(channelId, cursor, pageable)
+          .map(messageMapper::toDto));
+    } else {
+      return pageResponseMapper.fromPage(messageRepository
+          .findAllByChannelId(channelId, pageable)
+          .map(messageMapper::toDto));
+    }
+
   }
 
   @Transactional

@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.dto.respond.PageResponse;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -89,8 +90,10 @@ public class MessageController implements MessageApi {
   @GetMapping
   public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
       @RequestParam("channelId") UUID channelId,
+      @RequestParam(name = "cursor", required = false) Instant cursor,
       @PageableDefault(page = 0, size = 50, sort = "createdAt", direction = Direction.DESC) Pageable pageable) {
-    PageResponse<MessageDto> pageResponse = messageService.findAllByChannelId(channelId, pageable);
+    PageResponse<MessageDto> pageResponse = messageService.findAllByChannelId(channelId, cursor,
+        pageable);
 
     return ResponseEntity
         .status(HttpStatus.OK)
