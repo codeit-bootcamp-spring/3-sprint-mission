@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
@@ -25,7 +26,7 @@ public class BasicUserStatusService implements UserStatusService {
   private final UserStatusRepository userStatusRepository;
 
   @Override
-  public UserStatus create(UserStatusCreateRequest request) {
+  public UserStatusDto create(UserStatusCreateRequest request) {
     UUID userId = request.userId();
 
     User user = userRepository.findById(userId)
@@ -37,35 +38,42 @@ public class BasicUserStatusService implements UserStatusService {
 
     Instant lastActiveAt = request.lastActiveAt();
     UserStatus userStatus = new UserStatus(user, lastActiveAt);
-    return userStatusRepository.save(userStatus);
+
+    UserStatus saved = userStatusRepository.save(userStatus);
+    return toDto(saved);
   }
 
   @Override
-  public UserStatus find(UUID userStatusId) {
-    return userStatusRepository.findById(userStatusId)
+  public UserStatusDto find(UUID userStatusId) {
+    UserStatus userStatus = userStatusRepository.findById(userStatusId)
         .orElseThrow(
             () -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
+    return toDto(userStatus);
   }
 
   @Override
-  public List<UserStatus> findAll() {
-    return userStatusRepository.findAll();
+  public List<UserStatusDto> findAll() {
+    return userStatusRepository.findAll().stream()
+        .map(this::toDto)
+        .toList();
   }
 
   @Override
-  public UserStatus update(UUID userStatusId, UserStatusUpdateRequest request) {
+  public UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request) {
 
-    UserStatus userStatus = find(userStatusId);
+    UserStatus userStatus = userStatusRepository.findById(userStatusId)
+        .orElseThrow(
+            () -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
 
     Instant newLastOnline = request.newLastActiveAt();
 
     userStatus.update(newLastOnline);
 
-    return userStatus;
+    return toDto(userStatus);
   }
 
   @Override
-  public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
+  public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
 
     Instant newLastOnlineAt = request.newLastActiveAt();
 
@@ -74,7 +82,7 @@ public class BasicUserStatusService implements UserStatusService {
             () -> new NoSuchElementException("UserStatus with userId " + userId + " not found"));
     userStatus.update(newLastOnlineAt);
 
-    return userStatus;
+    return toDto(userStatus);
   }
 
   @Override
@@ -83,5 +91,15 @@ public class BasicUserStatusService implements UserStatusService {
       throw new NoSuchElementException("UserStatus with id " + userStatusId + " not found");
     }
     userStatusRepository.deleteById(userStatusId);
+  }
+
+
+  // Dto
+  private UserStatusDto toDto(UserStatus userStatus) {
+    return new UserStatusDto(
+        userStatus.getId(),
+        userStatus.getUser().getId(),
+        userStatus.getLastActiveAt()
+    );
   }
 }

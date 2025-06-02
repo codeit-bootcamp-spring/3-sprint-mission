@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
 
+import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/readStatus")
+@RequestMapping("/api/readStatuses")
 @RestController
 public class ReadStatusController {
 
@@ -22,10 +22,10 @@ public class ReadStatusController {
 
   // 특정 채널의 메세지 수신 정보 생성( POST )
   @PostMapping
-  public ResponseEntity<ReadStatus> create(
+  public ResponseEntity<ReadStatusDto> create(
       @RequestBody ReadStatusCreateRequest request
   ) {
-    ReadStatus createdReadStatus = readStatusService.create(request);
+    ReadStatusDto createdReadStatus = readStatusService.create(request);
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(createdReadStatus);
@@ -34,11 +34,11 @@ public class ReadStatusController {
 
   // 특정 채널의 메세지 수신 정보 수정( PATCH )
   @PatchMapping("/{readStatusId}")
-  public ResponseEntity<ReadStatus> update(
+  public ResponseEntity<ReadStatusDto> update(
       @PathVariable("readStatusId") UUID readStatusId,
       @RequestBody ReadStatusUpdateRequest request
   ) {
-    ReadStatus updatedReadStatus = readStatusService.update(readStatusId, request);
+    ReadStatusDto updatedReadStatus = readStatusService.update(readStatusId, request);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(updatedReadStatus);
@@ -47,10 +47,10 @@ public class ReadStatusController {
 
   // 특정 사용자의 메세지 수신 정보 조회( GET )
   @GetMapping
-  public ResponseEntity<List<ReadStatus>> findAllByUserId(
+  public ResponseEntity<List<ReadStatusDto>> findAllByUserId(
       @RequestParam("userId") UUID userId
   ) {
-    List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
+    List<ReadStatusDto> readStatuses = readStatusService.findAllByUserId(userId);
 
     // 리스트가 비었을 시 HTTP 상태 코드 204 발생
     if (readStatuses.isEmpty()) {

@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.controller;
 
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -26,10 +25,10 @@ public class BinaryContentController {
 
   // 단건 조회 : 바이너리 파일을 1개 조회( GET )
   @GetMapping("/{binaryContentId}")
-  public ResponseEntity<BinaryContent> find(
+  public ResponseEntity<BinaryContentDto> find(
       @PathVariable UUID binaryContentId
   ) {
-    BinaryContent binary = binaryContentService.find(binaryContentId);
+    BinaryContentDto binary = binaryContentService.find(binaryContentId);
 
     // 조회한 바이너리 파일이 없을 경우
     if (binary == null) {
@@ -42,10 +41,10 @@ public class BinaryContentController {
 
   // 다건 조회 : 바이너리 파일 여러 개 조회( GET )
   @GetMapping
-  public ResponseEntity<List<BinaryContent>> findAllByIdIn(
+  public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
       @RequestParam("binaryContentIds") List<UUID> binaryContentIds
   ) {
-    List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+    List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(binaryContents);
@@ -56,15 +55,11 @@ public class BinaryContentController {
   public ResponseEntity<?> download(
       @PathVariable UUID binaryContentId
   ) {
-    BinaryContent binaryContent = binaryContentService.find(binaryContentId);
+    BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
 
-    BinaryContentDto dtoForDownload = new BinaryContentDto(
-        binaryContent.getId(),
-        binaryContent.getFileName(),
-        binaryContent.getSize(),
-        binaryContent.getContentType(),
-        null
-    );
-    return binaryContentStorage.download(dtoForDownload);
+    if (binaryContent == null) {
+      return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+    return binaryContentStorage.download(binaryContent);
   }
 }

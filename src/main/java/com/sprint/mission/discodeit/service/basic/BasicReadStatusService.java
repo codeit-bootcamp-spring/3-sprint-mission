@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -26,9 +28,10 @@ public class BasicReadStatusService implements ReadStatusService {
   private final ReadStatusRepository readStatusRepository;
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
+  private final ReadStatusMapper readStatusMapper;
 
   @Override
-  public ReadStatus create(ReadStatusCreateRequest request) {
+  public ReadStatusDto create(ReadStatusCreateRequest request) {
     UUID userId = request.userId();
     UUID channelId = request.channelId();
     Instant lastReadAt = request.lastReadAt();
@@ -53,27 +56,31 @@ public class BasicReadStatusService implements ReadStatusService {
         channel,
         lastReadAt
     );
-    return readStatusRepository.save(readStatus);
+    ReadStatus saved = readStatusRepository.save(readStatus);
+
+    return readStatusMapper.toDto(saved);
   }
 
   @Override
   @Transactional(Transactional.TxType.SUPPORTS)
-  public ReadStatus find(UUID readStatusId) {
-    return readStatusRepository.findById(readStatusId)
+  public ReadStatusDto find(UUID readStatusId) {
+    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(
             () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
+    return readStatusMapper.toDto(readStatus);
   }
 
 
   @Override
   @Transactional(Transactional.TxType.SUPPORTS)
-  public List<ReadStatus> findAllByUserId(UUID userId) {
+  public List<ReadStatusDto> findAllByUserId(UUID userId) {
     return readStatusRepository.findAllByUserId(userId).stream()
+        .map(readStatusMapper::toDto)
         .toList();
   }
 
   @Override
-  public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
+  public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
 
     Instant newLastReadAt = request.newLastReadAt();
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
@@ -82,7 +89,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
     // Update
     readStatus.update(newLastReadAt);
-    return readStatus;
+    return readStatusMapper.toDto(readStatus);
   }
 
   @Override

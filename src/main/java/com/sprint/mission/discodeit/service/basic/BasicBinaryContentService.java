@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -20,10 +22,11 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
+  private final BinaryContentMapper binaryContentMapper;
 
 
   @Override
-  public BinaryContent create(BinaryContentCreateRequest request) {
+  public BinaryContentDto create(BinaryContentCreateRequest request) {
 
     String fileName = request.fileName();
 
@@ -38,26 +41,28 @@ public class BasicBinaryContentService implements BinaryContentService {
         contentType
     );
 
-    BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+    BinaryContent saved = binaryContentRepository.save(binaryContent);
 
-    binaryContentStorage.put(savedBinaryContent.getId(), bytes);
+    binaryContentStorage.put(saved.getId(), bytes);
 
-    return binaryContentRepository.save(binaryContent);
+    return binaryContentMapper.toDto(saved);
   }
 
   @Override
   @Transactional(Transactional.TxType.SUPPORTS)
-  public BinaryContent find(UUID binaryContentId) {
-    return binaryContentRepository.findById(binaryContentId)
+  public BinaryContentDto find(UUID binaryContentId) {
+    BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
         .orElseThrow(
             () -> new NoSuchElementException(
                 "BinaryContent with id " + binaryContentId + " not found"));
+    return binaryContentMapper.toDto(binaryContent);
   }
 
   @Override
   @Transactional(Transactional.TxType.SUPPORTS)
-  public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
+  public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
     return binaryContentRepository.findAllByIdIn(binaryContentIds).stream()
+        .map(binaryContentMapper::toDto)
         .toList();
   }
 

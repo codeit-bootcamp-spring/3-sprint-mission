@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,10 +24,10 @@ public class ChannelController {
 
   // PUBLIC Channel Create( POST )
   @PostMapping("/public")
-  public ResponseEntity<Channel> create(
+  public ResponseEntity<ChannelDto> create(
       @RequestBody PublicChannelCreateRequest request
   ) {
-    Channel createdChannel = channelService.create(request);
+    ChannelDto createdChannel = channelService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(createdChannel);
 
@@ -37,10 +36,10 @@ public class ChannelController {
 
   // PRIVATE Channel Create( POST )
   @PostMapping("/private")
-  public ResponseEntity<Channel> create(
+  public ResponseEntity<ChannelDto> create(
       @RequestBody PrivateChannelCreateRequest request
   ) {
-    Channel createdChannel = channelService.create(request);
+    ChannelDto createdChannel = channelService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(createdChannel);
   }
@@ -48,11 +47,11 @@ public class ChannelController {
 
   // 공개 채널 수정( PATCH )
   @PatchMapping("/{channelId}")
-  public ResponseEntity<Channel> update(
+  public ResponseEntity<ChannelDto> update(
       @PathVariable UUID channelId
       , @RequestBody PublicChannelUpdateRequest request
   ) {
-    Channel updatedChannel = channelService.update(channelId, request);
+    ChannelDto updatedChannel = channelService.update(channelId, request);
 
     // 유효성 검사
     if (updatedChannel == null) {

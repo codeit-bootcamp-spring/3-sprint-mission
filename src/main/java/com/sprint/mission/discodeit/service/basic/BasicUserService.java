@@ -39,7 +39,7 @@ public class BasicUserService implements UserService {
   // 리펙토링
 
   @Override
-  public User create(UserCreateRequest userCreateRequest,
+  public UserDto create(UserCreateRequest userCreateRequest,
       Optional<BinaryContentCreateRequest> profileCreateRequest) {
 
     String username = userCreateRequest.username();
@@ -57,7 +57,7 @@ public class BasicUserService implements UserService {
     Instant now = Instant.now();
     userStatusRepository.save(new UserStatus(createdUser, now));
 
-    return createdUser;
+    return toDto(createdUser);
   }
 
   @Override
@@ -79,7 +79,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  public User update(UUID userId, UserUpdateRequest userUpdateRequest,
+  public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
 
     User user = userRepository.findById(userId)
@@ -99,7 +99,7 @@ public class BasicUserService implements UserService {
 
     user.update(newUsername, newEmail, newPassword, newProfile);
 
-    return user;
+    return toDto(user);
   }
 
 
