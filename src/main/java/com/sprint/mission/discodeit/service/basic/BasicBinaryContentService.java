@@ -16,41 +16,41 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicBinaryContentService implements BinaryContentService {
 
-    private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentRepository binaryContentRepository;
 
-    @Override
-    public BinaryContent create(BinaryContentDTO binaryContentDTO) {
-        BinaryContent binaryContent = BinaryContentDTO.fromDTO(binaryContentDTO);
+  @Override
+  public BinaryContent create(BinaryContentDTO binaryContentDTO) {
+    BinaryContent binaryContent = BinaryContentDTO.toEntity(binaryContentDTO);
 
-        binaryContentRepository.save(binaryContent);
+    binaryContentRepository.save(binaryContent);
 
-        return binaryContent;
-    }
+    return binaryContent;
+  }
 
-    @Override
-    public BinaryContentResponseDTO findById(UUID id) {
-        BinaryContent foundBinaryContent = binaryContentRepository.findById(id)
-                .orElseThrow(NotFoundBinaryContentException::new);
+  @Override
+  public BinaryContentResponseDTO findById(UUID id) {
+    BinaryContent foundBinaryContent = binaryContentRepository.findById(id)
+        .orElseThrow(NotFoundBinaryContentException::new);
 
-        return BinaryContent.toDTO(foundBinaryContent);
-    }
+    return BinaryContent.toDTO(foundBinaryContent);
+  }
 
-    @Override
-    public List<BinaryContentResponseDTO> findAll() {
-        return binaryContentRepository.findAll().stream()
-                .map(BinaryContent::toDTO)
-                .toList();
-    }
+  @Override
+  public List<BinaryContentResponseDTO> findAll() {
+    return binaryContentRepository.findAll().stream()
+        .map(BinaryContent::toDTO)
+        .toList();
+  }
 
-    @Override
-    public List<BinaryContentResponseDTO> findAllByIdIn(List<UUID> ids) {
-        return binaryContentRepository.findAllByIdIn(ids).stream()
-                .map(BinaryContent::toDTO)
-                .toList();
-    }
+  @Override
+  public List<BinaryContentResponseDTO> findAllByIdIn(List<UUID> ids) {
+    return binaryContentRepository.findAllByIdIn(ids).stream()
+        .map(BinaryContent::toDTO)
+        .toList();
+  }
 
-    @Override
-    public void deleteById(UUID id) {
-        binaryContentRepository.deleteById(id);
-    }
+  @Override
+  public void deleteById(UUID id) {
+    binaryContentRepository.deleteById(id);
+  }
 }

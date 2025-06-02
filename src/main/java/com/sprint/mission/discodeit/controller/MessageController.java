@@ -3,133 +3,107 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDTO;
 import com.sprint.mission.discodeit.dto.message.MessageRequestDTO;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
+import com.sprint.mission.discodeit.dto.message.MessageUpdateDTO;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.util.FileConverter;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-
-@Controller
+@Tag(name = "Message", description = "Message API")
+@RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/message")
+@RequestMapping("/api/messages")
 public class MessageController {
 
-    private final MessageService messageService;
+  private final MessageService messageService;
 
-    @RequestMapping(path = "/create",
-            method = RequestMethod.POST,
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @ResponseBody
-    public ResponseEntity<Message> create(@RequestPart("messageRequest") MessageRequestDTO messageRequestDTO,
-                                          @RequestPart(value = "attachedFiles", required = false) List<MultipartFile> attachedFiles) {
-        List<BinaryContentDTO> binaryContentDTOS = resolveFileRequest(attachedFiles);
+  @Operation(summary = "Message 생성")
+  @ApiResponses(
+      value = {
+          @ApiResponse(responseCode = "201", description = "Message가 성공적으로 생성됨"),
+          @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음"
+              , content = @Content(examples = {
+              @ExampleObject(value = "Channel | Sender with id {channelId | authorId} not found")}))
+      }
+  )
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<Message> create(
+      @RequestPart("messageCreateRequest") MessageRequestDTO messageRequestDTO,
+      @Parameter(description = "Message 첨부 파일들")
+      @RequestPart(value = "attachments", required = false) List<MultipartFile> attachedFiles) {
+    List<BinaryContentDTO> binaryContentDTOS = FileConverter.resolveFileRequest(attachedFiles);
 
-        Message createdMessage = messageService.create(messageRequestDTO, binaryContentDTOS);
+    Message createdMessage = messageService.create(messageRequestDTO, binaryContentDTOS);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
-    }
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
+  }
 
-    @RequestMapping(path = "/find", method = RequestMethod.GET)
-    @ResponseBody
-    public ResponseEntity<MessageResponseDTO> findById(@RequestParam UUID messageId) {
-        MessageResponseDTO foundMessage = messageService.findById(messageId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(foundMessage);
-    }
+  @Operation(summary = "Channel의 Message 목록 조회")
+  @ApiResponse(responseCode = "200", description = "Message 읽음 상태 목록 조회 성공")
+  @GetMapping
+  public ResponseEntity<List<MessageResponseDTO>> findAllByChannelId(@RequestParam UUID channelId) {
+    List<MessageResponseDTO> foundMessages = messageService.findAllByChannelId(channelId);
 
-    @RequestMapping(path = "/findAllByChannel", method = RequestMethod.GET)
-    @ResponseBody
-    public ResponseEntity<List<MessageResponseDTO>> findAllByChannelId(@RequestParam UUID channelId) {
-        List<MessageResponseDTO> foundMessages = messageService.findAllByChannelId(channelId);
+    return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
+  }
 
-        return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
-    }
+  @Operation(summary = "Message 내용 수정")
+  @ApiResponses(
+      value = {
+          @ApiResponse(responseCode = "200", description = "Message가 성공적으로 수정됨"),
+          @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음"
+              , content = @Content(examples = {
+              @ExampleObject(value = "Message with id {messageId} not found")}))
+      }
+  )
+  @PatchMapping(path = "/{messageId}")
+  public ResponseEntity<MessageResponseDTO> updateContent(
+      @Parameter(description = "수정할 Message ID") @PathVariable UUID messageId,
+      @RequestBody MessageUpdateDTO messageUpdateDTO) {
+    MessageResponseDTO updatedMessage = messageService.updateContent(messageId,
+        messageUpdateDTO.newContent());
 
-    @RequestMapping(path = "/findAll", method = RequestMethod.GET)
-    @ResponseBody
-    public ResponseEntity<List<MessageResponseDTO>> findAll() {
-        List<MessageResponseDTO> foundMessages = messageService.findAll();
+    return ResponseEntity.status(HttpStatus.OK).body(updatedMessage);
+  }
 
-        return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
-    }
+  @Operation(summary = "Message 삭제")
+  @ApiResponses(
+      value = {
+          @ApiResponse(responseCode = "204", description = "Message가 성공적으로 삭제됨"),
+          @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음"
+              , content = @Content(examples = {
+              @ExampleObject(value = "Message with id {messageId} not found")}))
+      }
+  )
+  @DeleteMapping(path = "/{messageId}")
+  public ResponseEntity<String> deleteById(
+      @Parameter(description = "삭제할 Message ID") @PathVariable UUID messageId) {
+    messageService.deleteById(messageId);
 
-    @RequestMapping(path = "/findAllByUser", method = RequestMethod.GET)
-    @ResponseBody
-    public ResponseEntity<List<MessageResponseDTO>> findAllByUserId(@RequestParam UUID userId) {
-        List<MessageResponseDTO> foundMessages = messageService.findAllByUserId(userId);
-
-        return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
-    }
-
-    @RequestMapping(path = "/findAllByWord", method = RequestMethod.GET)
-    @ResponseBody
-    public ResponseEntity<List<MessageResponseDTO>> findAllByContainingWord(@RequestParam String word) {
-        List<MessageResponseDTO> foundMessages = messageService.findAllByContainingWord(word);
-
-        return ResponseEntity.status(HttpStatus.OK).body(foundMessages);
-    }
-
-    @RequestMapping(path = "/updateAttachFiles",
-            method = RequestMethod.PUT,
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @ResponseBody
-    public ResponseEntity<MessageResponseDTO> updateBinaryContent(@RequestParam UUID messageId,
-                                                                  @RequestPart(value = "attachedFiles", required = false) List<MultipartFile> attachedFiles) {
-        List<BinaryContentDTO> binaryContentDTOS = resolveFileRequest(attachedFiles);
-
-        MessageResponseDTO updatedMessage = messageService.updateBinaryContent(messageId, binaryContentDTOS);
-
-        return ResponseEntity.status(HttpStatus.OK).body(updatedMessage);
-    }
-
-    @RequestMapping(path = "/updateContent", method = RequestMethod.PUT)
-    @ResponseBody
-    public ResponseEntity<MessageResponseDTO> updateContent(@RequestParam UUID messageId, String content) {
-        MessageResponseDTO updatedMessage = messageService.updateContent(messageId, content);
-
-        return ResponseEntity.status(HttpStatus.OK).body(updatedMessage);
-    }
-
-    @RequestMapping(path = "/delete", method = RequestMethod.DELETE)
-    @ResponseBody
-    public ResponseEntity<String> deleteById(@RequestParam UUID messageId) {
-        messageService.deleteById(messageId);
-
-        return ResponseEntity.status(HttpStatus.OK).body("[Success]: 메시지 삭제 성공!");
-    }
-
-    private List<BinaryContentDTO> resolveFileRequest(List<MultipartFile> attachedFiles) {
-        if (attachedFiles == null || attachedFiles.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        List<BinaryContentDTO> binaryContentList = new ArrayList<>();
-        for (MultipartFile file : attachedFiles) {
-            if (file.isEmpty()) {
-                continue;
-            }
-            try {
-                binaryContentList.add(new BinaryContentDTO(
-                        file.getOriginalFilename(),
-                        file.getContentType(),
-                        file.getBytes()
-                ));
-            } catch (IOException e) {
-                throw new UncheckedIOException("파일 변환 중 오류 발생", e);
-            }
-        }
-
-        return binaryContentList;
-    }
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  }
 }

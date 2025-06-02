@@ -2,14 +2,24 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.util.FileSaveManager;
 import jakarta.annotation.PostConstruct;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
-
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
@@ -22,7 +32,10 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
     @PostConstruct
     public void init() {
-        data.putAll(loadFile());
+        Map<UUID, ReadStatus> loaded = FileSaveManager.loadFromFile(getFile());
+        if (loaded != null) {
+            data.putAll(loaded);
+        }
     }
 
     private File getFile() {
@@ -33,7 +46,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     public void save(ReadStatus readStatus) {
         data.put(readStatus.getId(), readStatus);
 
-        saveFile();
+        FileSaveManager.saveToFile(getFile(), data);
     }
 
     @Override
@@ -73,14 +86,14 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     public void deleteById(UUID id) {
         data.remove(id);
 
-        saveFile();
+        FileSaveManager.saveToFile(getFile(), data);
     }
 
     @Override
     public void deleteByChannelId(UUID channelId) {
         data.entrySet().removeIf(entry -> entry.getValue().getChannelId().equals(channelId));
 
-        saveFile();
+        FileSaveManager.saveToFile(getFile(), data);
     }
 
     @Override
@@ -88,30 +101,6 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         data.entrySet().removeIf(entry -> entry.getValue().getChannelId().equals(channelId)
                 && entry.getValue().getUserId().equals(userId));
 
-        saveFile();
-    }
-
-    private Map<UUID, ReadStatus> loadFile() {
-        Map<UUID, ReadStatus> data = new HashMap<>();
-
-        if (getFile().exists()) {
-            try (FileInputStream fis = new FileInputStream(getFile());
-                 ObjectInputStream in = new ObjectInputStream(fis)) {
-                data = (Map<UUID, ReadStatus>)in.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return data;
-    }
-
-    private synchronized void saveFile() {
-        try (FileOutputStream fos = new FileOutputStream(getFile());
-             ObjectOutputStream out = new ObjectOutputStream(fos)) {
-            out.writeObject(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+       FileSaveManager.saveToFile(getFile(), data);
     }
 }

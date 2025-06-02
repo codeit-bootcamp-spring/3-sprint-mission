@@ -9,28 +9,30 @@ import java.util.UUID;
 
 @Getter
 public class BinaryContent implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private final UUID id;
-    private final Instant createdAt;
-    private String fileName;
-    private String mimeType;
-    private byte[] data;
 
-    public BinaryContent(String fileName, String mimeType, byte[] data) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.fileName = fileName;
-        this.mimeType = mimeType;
-        this.data = data;
-    }
+  private static final long serialVersionUID = 1L;
+  private final UUID id;
+  private final Instant createdAt;
+  private String fileName;
+  private String contentType;
+  private byte[] bytes;
 
-    public static BinaryContentResponseDTO toDTO(BinaryContent binaryContent) {
-        BinaryContentResponseDTO binaryContentResponseDTO = new BinaryContentResponseDTO(binaryContent.getId(),
-                binaryContent.getCreatedAt(),
-                binaryContent.getFileName(),
-                binaryContent.getMimeType(),
-                binaryContent.getData());
+  public BinaryContent(String fileName, String contentType, byte[] bytes) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    this.fileName = fileName;
+    this.contentType = contentType;
+    this.bytes = bytes;
+  }
 
-        return binaryContentResponseDTO;
-    }
+  public static BinaryContentResponseDTO toDTO(BinaryContent binaryContent) {
+    BinaryContentResponseDTO binaryContentResponseDTO = new BinaryContentResponseDTO(
+        binaryContent.getId(),
+        binaryContent.getCreatedAt(),
+        binaryContent.getFileName(),
+        binaryContent.getContentType(),
+        binaryContent.getBytes());
+
+    return binaryContentResponseDTO;
+  }
 }

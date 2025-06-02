@@ -20,68 +20,69 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicUserStatusService implements UserStatusService {
 
-    private final UserStatusRepository userStatusRepository;
-    private final UserRepository userRepository;
+  private final UserStatusRepository userStatusRepository;
+  private final UserRepository userRepository;
 
-    @Override
-    public UserStatus create(UserStatusRequestDTO userStatusRequestDTO) {
-        if (userRepository.findById(userStatusRequestDTO.userId()).isEmpty()) {
-            throw new NotFoundUserException();
-        }
-
-        if (userStatusRepository.findByUserId(userStatusRequestDTO.userId()).isPresent()) {
-            throw new UserStatusAlreadyExistsException();
-        }
-
-        UserStatus userStatus = UserStatusRequestDTO.fromDTO(userStatusRequestDTO);
-
-        userStatusRepository.save(userStatus);
-
-        return userStatus;
+  @Override
+  public UserStatus create(UserStatusRequestDTO userStatusRequestDTO) {
+    if (userRepository.findById(userStatusRequestDTO.userId()).isEmpty()) {
+      throw new NotFoundUserException();
     }
 
-    @Override
-    public UserStatusResponseDTO findById(UUID id) {
-        UserStatus userStatus = findUserStatus(id);
-
-        return UserStatus.toDTO(userStatus);
+    if (userStatusRepository.findByUserId(userStatusRequestDTO.userId()).isPresent()) {
+      throw new UserStatusAlreadyExistsException();
     }
 
-    @Override
-    public List<UserStatusResponseDTO> findAll() {
-        return userStatusRepository.findAll().stream()
-                .map(UserStatus::toDTO)
-                .toList();
-    }
+    UserStatus userStatus = UserStatusRequestDTO.toEntity(userStatusRequestDTO);
 
-    @Override
-    public UserStatusResponseDTO update(UUID id, UserStatusUpdateDTO userStatusUpdateDTO) {
-        UserStatus userStatus = findUserStatus(id);
+    userStatusRepository.save(userStatus);
 
-        userStatus.updateLastLoginTime(userStatusUpdateDTO.lastLoginTime());
-        userStatusRepository.save(userStatus);
+    return userStatus;
+  }
 
-        return UserStatus.toDTO(userStatus);
-    }
+  @Override
+  public UserStatusResponseDTO findById(UUID id) {
+    UserStatus userStatus = findUserStatus(id);
 
-    @Override
-    public UserStatusResponseDTO updateByUserId(UUID userId, UserStatusUpdateDTO userStatusUpdateDTO) {
-        UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(NotFoundUserStatusException::new);
+    return UserStatus.toDTO(userStatus);
+  }
 
-        userStatus.updateLastLoginTime(userStatusUpdateDTO.lastLoginTime());
-        userStatusRepository.save(userStatus);
+  @Override
+  public List<UserStatusResponseDTO> findAll() {
+    return userStatusRepository.findAll().stream()
+        .map(UserStatus::toDTO)
+        .toList();
+  }
 
-        return UserStatus.toDTO(userStatus);
-    }
+  @Override
+  public UserStatusResponseDTO update(UUID id, UserStatusUpdateDTO userStatusUpdateDTO) {
+    UserStatus userStatus = findUserStatus(id);
 
-    @Override
-    public void deleteById(UUID id) {
-        userStatusRepository.deleteById(id);
-    }
+    userStatus.updatelastActiveAt(userStatusUpdateDTO.newLastActiveAt());
+    userStatusRepository.save(userStatus);
 
-    private UserStatus findUserStatus(UUID id) {
-        return userStatusRepository.findById(id)
-                .orElseThrow(NotFoundUserStatusException::new);
-    }
+    return UserStatus.toDTO(userStatus);
+  }
+
+  @Override
+  public UserStatusResponseDTO updateByUserId(UUID userId,
+      UserStatusUpdateDTO userStatusUpdateDTO) {
+    UserStatus userStatus = userStatusRepository.findByUserId(userId)
+        .orElseThrow(NotFoundUserStatusException::new);
+
+    userStatus.updatelastActiveAt(userStatusUpdateDTO.newLastActiveAt());
+    userStatusRepository.save(userStatus);
+
+    return UserStatus.toDTO(userStatus);
+  }
+
+  @Override
+  public void deleteById(UUID id) {
+    userStatusRepository.deleteById(id);
+  }
+
+  private UserStatus findUserStatus(UUID id) {
+    return userStatusRepository.findById(id)
+        .orElseThrow(NotFoundUserStatusException::new);
+  }
 }

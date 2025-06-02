@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.LoginFailedException;
+import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserStatusException;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -19,30 +20,33 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
 
-    private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
+  private final UserRepository userRepository;
+  private final UserStatusRepository userStatusRepository;
 
-    @Override
-    public UserResponseDTO login(LoginDTO loginDTO) {
-        String name = loginDTO.name();
-        String password = loginDTO.password();;
+  @Override
+  public UserResponseDTO login(LoginDTO loginDTO) {
+    String name = loginDTO.username();
+    String password = loginDTO.password();
 
-        // 로그인 성공 시 해당 유저의 마지막 접속 시간 변경
-        userRepository.findByNameAndPassword(name, password).ifPresent(user -> {
-            user.updateisLogin(true);
-            UserStatus userStatus = findUserStatus(user.getId());
-            userStatus.updateLastLoginTime(Instant.now());
-            userRepository.save(user);
-            userStatusRepository.save(userStatus);
-        });
+    User user = userRepository.findByName(name)
+        .orElseThrow(() -> new NotFoundUserException("name이 " + name + "인 사용자를 찾을 수 없습니다."));
 
-        return userRepository.findByNameAndPassword(name, password)
-                .map(User::toDTO)
-                .orElseThrow(LoginFailedException::new);
+    if (!user.getPassword().equals(password)) {
+      throw new LoginFailedException();
     }
 
-    private UserStatus findUserStatus(UUID userId) {
-        return userStatusRepository.findByUserId(userId)
-                .orElseThrow(NotFoundUserStatusException::new);
-    }
+    // User 로그인 시 User 온라인 상태 정보 변경
+    user.updateOnline(true);
+    UserStatus userStatus = findUserStatus(user.getId());
+    userStatus.updatelastActiveAt(Instant.now());
+    userRepository.save(user);
+    userStatusRepository.save(userStatus);
+
+    return User.toDTO(user);
+  }
+
+  private UserStatus findUserStatus(UUID userId) {
+    return userStatusRepository.findByUserId(userId)
+        .orElseThrow(NotFoundUserStatusException::new);
+  }
 }
