@@ -5,11 +5,12 @@ import com.sprint.mission.discodeit.dto.Message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.Message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
 public interface MessageService {
-    MessageDto create(MessageCreateRequest req, List<BinaryContentCreateRequest> attachments);
+    MessageDto create(MessageCreateRequest req, List<BinaryContentCreateRequest> attachments) throws IOException;
 
     MessageDto find(UUID messageId);
 

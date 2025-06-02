@@ -67,5 +67,4 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContentDto dto = binaryContentMapper.toDto(meta);
         return storage.download(dto);
     }
-
 }

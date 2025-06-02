@@ -43,7 +43,7 @@ public class BasicMessageService implements MessageService {
     private final PageResponseMapper pageResponseMapper;
 
     @Override
-    public MessageDto create(MessageCreateRequest req, List<BinaryContentCreateRequest> files) {
+    public MessageDto create(MessageCreateRequest req, List<BinaryContentCreateRequest> files) throws IOException {
         User author = userRepository.findById(req.authorId())
                 .orElseThrow(() -> new NoSuchElementException("해당 유저는 존재하지 않습니다."));
         Channel channel = channelRepository.findById(req.channelId())
@@ -51,18 +51,21 @@ public class BasicMessageService implements MessageService {
 
         List<BinaryContent> attachments = files.stream()
                 .map(fileReq -> {
-                    UUID fileId;
                     try {
-                        fileId = binaryContentStorage.put(null, fileReq.bytes());
+                        BinaryContent meta = new BinaryContent();
+                        meta.setFileName(fileReq.fileName());
+                        meta.setSize((long) fileReq.bytes().length);
+                        meta.setContentType(fileReq.contentType());
+
+                        BinaryContent savedMeta = binaryContentRepository.save(meta);
+
+                        UUID fileId = savedMeta.getId();
+                        binaryContentStorage.put(fileId, fileReq.bytes());
+
+                        return savedMeta;
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        throw new RuntimeException("첨부파일 저장 중 오류가 발생했습니다", e);
                     }
-                    BinaryContent meta = new BinaryContent();
-                    meta.setId(fileId);
-                    meta.setFileName(fileReq.fileName());
-                    meta.setSize((long) fileReq.bytes().length);
-                    meta.setContentType(fileReq.contentType());
-                    return binaryContentRepository.save(meta);
                 })
                 .toList();
 
@@ -83,9 +86,7 @@ public class BasicMessageService implements MessageService {
     public PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page) {
         Pageable pageable = PageRequest.of(page, 50, Sort.by("createdAt").descending());
         Page<Message> paged = messageRepository.findAllByChannelIdOrderByCreatedAtDesc(channelId, pageable);
-
         Page<MessageDto> dtoPage = paged.map(messageMapper::toDto);
-
         return pageResponseMapper.fromPage(dtoPage);
     }
 

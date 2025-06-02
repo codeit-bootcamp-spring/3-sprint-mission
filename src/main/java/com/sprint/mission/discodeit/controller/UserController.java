@@ -39,7 +39,7 @@ public class UserController {
     public ResponseEntity<UserDto> create(
             @RequestPart("userCreateRequest") UserCreateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profile
-    ) {
+    ) throws IOException {
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest);
 

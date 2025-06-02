@@ -37,7 +37,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserDto create(UserCreateRequest request,
-                          Optional<BinaryContentCreateRequest> binaryContentCreateRequest) {
+                          Optional<BinaryContentCreateRequest> binaryContentCreateRequest) throws IOException {
         validateUniqueUser(request);
 
         BinaryContent profile = binaryContentCreateRequest
@@ -59,25 +59,23 @@ public class BasicUserService implements UserService {
         return userMapper.toDto(savedUser);
     }
 
-    /**
-     * 파일 데이터를 스토리지에 저장하고, 메타 정보만 담은 BinaryContent 엔티티를 반환
-     */
     private BinaryContent storeBinaryContentMeta(BinaryContentCreateRequest request) {
-        UUID fileId;
         try {
-            // 실제 파일 저장: storage.put(id=null -> 새 UUID 생성, bytes)
-            fileId = binaryContentStorage.put(null, request.bytes());
-        } catch (IOException e) {
-            throw new RuntimeException("파일 저장 중 오류가 발생했습니다.", e);
-        }
+            BinaryContent meta = new BinaryContent();
+            meta.setFileName(request.fileName());
+            meta.setSize((long) request.bytes().length);
+            meta.setContentType(request.contentType());
 
-        // 메타 정보만 담아서 엔티티로 저장
-        BinaryContent meta = new BinaryContent();
-        meta.setId(fileId);
-        meta.setFileName(request.fileName());
-        meta.setSize((long) request.bytes().length);
-        meta.setContentType(request.contentType());
-        return binaryContentRepository.save(meta);
+            BinaryContent savedMeta = binaryContentRepository.save(meta);
+
+            UUID newFileId = savedMeta.getId();
+            binaryContentStorage.put(newFileId, request.bytes());
+
+            return savedMeta;
+
+        } catch (IOException e) {
+            throw new RuntimeException("프로필 사진 저장 중 오류가 발생했습니다.", e);
+        }
     }
 
     private void validateUniqueUser(UserCreateRequest request) {
@@ -110,11 +108,9 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저는 없습니다."));
 
         if (profileRequest.isPresent()) {
-            // 기존 프로필이 있으면 삭제
             Optional.ofNullable(user.getProfile())
                     .ifPresent(binaryContentRepository::delete);
 
-            // 새 파일 저장 및 메타 저장
             BinaryContent newProfile = storeBinaryContentMeta(profileRequest.get());
             user.setProfile(newProfile);
         }

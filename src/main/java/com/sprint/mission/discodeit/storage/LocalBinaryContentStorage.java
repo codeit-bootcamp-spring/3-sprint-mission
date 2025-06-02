@@ -29,7 +29,6 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         this.root = root;
     }
 
-
     @PostConstruct
     public void init() throws IOException {
         if (Files.notExists(root)) {
@@ -39,11 +38,21 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
     @Override
     public UUID put(UUID id, byte[] data) throws IOException {
-        Path file = resolvePath(id);
-        Files.write(file, data,
+        UUID fileId = (id != null) ? id : UUID.randomUUID();
+
+        if (Files.notExists(root)) {
+            Files.createDirectories(root);
+        }
+
+        Path file = resolvePath(fileId);
+
+        Files.write(
+                file,
+                data,
                 StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING);
-        return id;
+                StandardOpenOption.TRUNCATE_EXISTING
+        );
+        return fileId;
     }
 
     @Override
