@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
@@ -14,7 +15,8 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
+import java.io.IOException;
+import java.io.InputStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -61,7 +63,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  @Transactional(TxType.SUPPORTS)
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public UserDto find(UUID userId) {
     return userRepository.findById(userId)
         .map(this::toDto)
@@ -69,7 +71,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  @Transactional(TxType.SUPPORTS)
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public List<UserDto> findAll() {
     // 리스트로 전체 유저를 조회
     return userRepository.findAll()
@@ -93,6 +95,11 @@ public class BasicUserService implements UserService {
     validateUniqueUsernameAndEmail(newUsername, newEmail, user);
 
     BinaryContent newProfile = optionalProfileCreateRequest.map(request -> {
+
+      if (request.bytes() == null) {
+        return user.getProfile();
+      }
+
       Optional.ofNullable(user.getProfile()).ifPresent(binaryContentRepository::delete);
       return saveProfile(request);
     }).orElse(null);
@@ -120,13 +127,30 @@ public class BasicUserService implements UserService {
         .map(UserStatus::isOnline)
         .orElse(null);
 
+    BinaryContent profile = user.getProfile();
+    BinaryContentDto profileDto = null;
+
+    if (profile != null) {
+      try (InputStream is = binaryContentStorage.get(profile.getId())) {
+        byte[] bytes = is.readAllBytes();
+
+        profileDto = new BinaryContentDto(
+            profile.getId(),
+            profile.getFileName(),
+            profile.getSize(),
+            profile.getContentType(),
+            bytes
+        );
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to load profile image bytes", e);
+      }
+    }
+
     return new UserDto(
         user.getId(),
         user.getUsername(),
         user.getEmail(),
-        Optional.ofNullable(user.getProfile())
-            .map(binaryContentMapper::toDto)
-            .orElse(null),
+        profileDto,
         online
     );
   }
@@ -158,11 +182,14 @@ public class BasicUserService implements UserService {
   // 유효성 검사( username, email, userId ) : update
   private void validateUniqueUsernameAndEmail(String newUsername, String newEmail,
       User currentUser) {
-    if (!newUsername.equals(currentUser.getUsername()) && userRepository.existsByUsername(
-        newUsername)) {
+    if (newUsername != null &&
+        !newUsername.equals(currentUser.getUsername()) &&
+        userRepository.existsByUsername(newUsername)) {
       throw new IllegalArgumentException("User with username " + newUsername + " already exists");
     }
-    if (!newEmail.equals(currentUser.getEmail()) && userRepository.existsByEmail(newEmail)) {
+    if (newEmail != null &&
+        !newEmail.equals(currentUser.getEmail()) &&
+        userRepository.existsByEmail(newEmail)) {
       throw new IllegalArgumentException("User with email " + newEmail + " already exists");
     }
   }

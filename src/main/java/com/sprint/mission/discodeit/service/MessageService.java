@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,5 +26,5 @@ public interface MessageService {
   void delete(UUID messageId);
 
   // 페이징
-  PageResponse<MessageDto> getMessages(UUID channelId, int page, int size);
+  PageResponse<MessageDto> getMessages(UUID channelId, Instant before, int size);
 }

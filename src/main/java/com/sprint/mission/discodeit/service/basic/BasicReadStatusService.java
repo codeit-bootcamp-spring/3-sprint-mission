@@ -62,7 +62,7 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
-  @Transactional(Transactional.TxType.SUPPORTS)
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public ReadStatusDto find(UUID readStatusId) {
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(
@@ -72,7 +72,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
 
   @Override
-  @Transactional(Transactional.TxType.SUPPORTS)
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public List<ReadStatusDto> findAllByUserId(UUID userId) {
     return readStatusRepository.findAllByUserId(userId).stream()
         .map(readStatusMapper::toDto)

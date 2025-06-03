@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -79,14 +80,14 @@ public class MessageController {
 
 
   // 특정 채널의 소속된 메세지 목록 조회( GET )
-  @GetMapping("")
+  @GetMapping
   public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
       @RequestParam("channelId") UUID channelId,
       // 페이징 기본 값 지정
-      @RequestParam(value = "page", defaultValue = "0") int page,
+      @RequestParam(value = "cursor", required = false) Instant cursor,
       @RequestParam(value = "size", defaultValue = "50") int size
   ) {
-    PageResponse<MessageDto> response = messageService.getMessages(channelId, page, size);
+    PageResponse<MessageDto> response = messageService.getMessages(channelId, cursor, size);
     return ResponseEntity.ok(response);
   }
 }

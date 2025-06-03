@@ -49,7 +49,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
-  @Transactional(Transactional.TxType.SUPPORTS)
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public BinaryContentDto find(UUID binaryContentId) {
     BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
         .orElseThrow(
@@ -59,7 +59,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
-  @Transactional(Transactional.TxType.SUPPORTS)
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
     return binaryContentRepository.findAllByIdIn(binaryContentIds).stream()
         .map(binaryContentMapper::toDto)

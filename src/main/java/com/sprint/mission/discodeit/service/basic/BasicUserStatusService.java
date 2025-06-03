@@ -44,6 +44,7 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public UserStatusDto find(UUID userStatusId) {
     UserStatus userStatus = userStatusRepository.findById(userStatusId)
         .orElseThrow(
@@ -52,6 +53,7 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public List<UserStatusDto> findAll() {
     return userStatusRepository.findAll().stream()
         .map(this::toDto)

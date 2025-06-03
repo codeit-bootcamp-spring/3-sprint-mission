@@ -74,7 +74,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  @Transactional(Transactional.TxType.SUPPORTS)
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public ChannelDto find(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(
@@ -83,7 +83,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  @Transactional(Transactional.TxType.SUPPORTS)
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public List<ChannelDto> findAllByUserId(UUID userId) {
     List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
         .map(readStatus -> readStatus.getChannel().getId())

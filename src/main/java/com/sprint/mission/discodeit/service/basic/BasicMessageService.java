@@ -16,9 +16,10 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.transaction.Transactional;
-import java.util.Collections;
-import java.util.Comparator;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 
@@ -72,7 +73,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  @Transactional(Transactional.TxType.SUPPORTS)
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public MessageDto find(UUID messageId) {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(
@@ -81,7 +82,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  @Transactional(Transactional.TxType.SUPPORTS)
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public List<MessageDto> findAllByChannelId(UUID channelId) {
     return messageRepository.findAllByChannelId(channelId).stream()
         .map(messageMapper::toDto)
@@ -112,39 +113,35 @@ public class BasicMessageService implements MessageService {
 
   // 페이징
   @Override
-  public PageResponse<MessageDto> getMessages(UUID channelId, int page, int size) {
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
+  public PageResponse<MessageDto> getMessages(UUID channelId, Instant before, int size) {
 
-    // 초기값
-    int fromIndex = page * size;
-    int toIndex = fromIndex + size + 1;
+    // 기준 시간 설정
+    // before가 null이면 현재 시각 기준
+    Instant cursor = before != null ? before : Instant.now();
 
-    List<Message> allMessages = messageRepository.findAllByChannelId(channelId);
+    Pageable pageable = PageRequest.of(0, size + 1);
 
-    // 생성일자 기준 내림차순 정렬
-    allMessages.sort(Comparator.comparing(Message::getCreatedAt).reversed());
+    List<Message> messages = messageRepository
+        .findByChannelIdAndCreatedBeforeOrderByCreatedAtDesc(channelId, cursor, pageable);
 
-    // 페이징 + 다음 페이지 여부 확인
-    List<Message> pagedMessages;
-    boolean hasNext = false;
+    boolean hasNext = messages.size() > size;
 
-    if (fromIndex >= allMessages.size()) {
-      pagedMessages = Collections.emptyList();
-    } else {
-      int actualToIndex = Math.min(toIndex, allMessages.size());
-      pagedMessages = allMessages.subList(fromIndex, actualToIndex);
-      hasNext = pagedMessages.size() > size;
-      if (hasNext) {
-        pagedMessages = pagedMessages.subList(0, size);
-      }
+    if (hasNext) {
+      messages = messages.subList(0, size);
     }
 
-    List<MessageDto> content = pagedMessages.stream()
+    List<MessageDto> content = messages.stream()
         .map(messageMapper::toDto)
         .toList();
 
+    // 다음 조회 시 사용할 커서 결정
+    // 마지막 메세지의 생성 시각을 다음 커서로 사용, 없다면 현재 커서 유지
+    Instant nextCursor = hasNext ? messages.get(messages.size() - 1).getCreatedAt() : cursor;
+
     return new PageResponse<>(
         content,
-        page,
+        nextCursor,
         size,
         hasNext,
         // 총 메시지가 몇개인지 알 필요는 없습니다.
