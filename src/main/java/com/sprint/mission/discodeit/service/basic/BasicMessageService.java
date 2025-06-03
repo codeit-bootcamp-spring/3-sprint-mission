@@ -9,10 +9,12 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,8 @@ public class BasicMessageService implements MessageService {
   private final MessageRepository messageRepository;
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
+  private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
   private final EntityDtoMapper entityDtoMapper;
 
   @Override
@@ -45,13 +49,21 @@ public class BasicMessageService implements MessageService {
     User author = userRepository.findById(authorId)
         .orElseThrow(() -> new CustomException.UserNotFoundException("Author with id " + authorId + " does not exist"));
 
-    // 첨부파일이 있는 경우 - BinaryContent 리스트 생성 후 첨부파일 포함 생성자 사용
+    // 첨부파일이 있는 경우 - BinaryContent 생성 후 Storage에 저장
     List<BinaryContent> attachments = binaryContentCreateRequests.stream()
         .map(attachmentRequest -> {
           String fileName = attachmentRequest.fileName();
           String contentType = attachmentRequest.contentType();
           byte[] bytes = attachmentRequest.bytes();
-          return new BinaryContent(fileName, (long) bytes.length, contentType, bytes);
+
+          // 1. 메타정보만으로 BinaryContent 생성 및 저장
+          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
+          BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+
+          // 2. 실제 바이너리 데이터는 Storage에 저장
+          binaryContentStorage.put(savedBinaryContent.getId(), bytes);
+
+          return savedBinaryContent;
         })
         .collect(Collectors.toList());
 

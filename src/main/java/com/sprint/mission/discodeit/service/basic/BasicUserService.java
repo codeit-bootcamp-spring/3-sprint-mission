@@ -8,9 +8,11 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,8 @@ public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
+  private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
   private final EntityDtoMapper entityDtoMapper;
 
   @Override
@@ -48,7 +52,15 @@ public class BasicUserService implements UserService {
           String fileName = profileRequest.fileName();
           String contentType = profileRequest.contentType();
           byte[] bytes = profileRequest.bytes();
-          return new BinaryContent(fileName, (long) bytes.length, contentType, bytes);
+
+          // 1. 메타정보만으로 BinaryContent 생성 및 저장
+          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
+          BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+
+          // 2. 실제 바이너리 데이터는 Storage에 저장
+          binaryContentStorage.put(savedBinaryContent.getId(), bytes);
+
+          return savedBinaryContent;
         })
         .orElse(null);
 
@@ -100,7 +112,15 @@ public class BasicUserService implements UserService {
           String fileName = profileRequest.fileName();
           String contentType = profileRequest.contentType();
           byte[] bytes = profileRequest.bytes();
-          return new BinaryContent(fileName, (long) bytes.length, contentType, bytes);
+
+          // 1. 메타정보만으로 BinaryContent 생성 및 저장
+          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
+          BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+
+          // 2. 실제 바이너리 데이터는 Storage에 저장
+          binaryContentStorage.put(savedBinaryContent.getId(), bytes);
+
+          return savedBinaryContent;
         })
         .orElse(user.getProfile());
 
