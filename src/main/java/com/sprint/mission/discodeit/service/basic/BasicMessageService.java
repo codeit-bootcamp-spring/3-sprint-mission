@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +32,7 @@ public class BasicMessageService implements MessageService {
   private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
   private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
   private final MessageAssembler messageAssembler;
 
   @Override
@@ -41,14 +43,14 @@ public class BasicMessageService implements MessageService {
         .orElseThrow(() -> ChannelException.notFound(command.channelId()));
     Message message = Message.create(command.content(), author, channel);
 
-    command.attachments().forEach(attachmentRequest -> {
+    command.attachments().forEach(attachment -> {
       BinaryContent binaryContent = BinaryContent.create(
-          attachmentRequest.fileName(),
-          (long) attachmentRequest.bytes().length,
-          attachmentRequest.contentType(),
-          attachmentRequest.bytes()
+          attachment.fileName(),
+          (long) attachment.bytes().length,
+          attachment.contentType()
       );
       BinaryContent saved = binaryContentRepository.save(binaryContent);
+      binaryContentStorage.put(saved.getId(), attachment.bytes());
       message.attach(saved);
     });
 

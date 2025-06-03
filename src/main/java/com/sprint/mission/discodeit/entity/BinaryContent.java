@@ -1,11 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
-import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import java.util.Objects;
 import java.util.UUID;
@@ -28,34 +25,25 @@ public class BinaryContent extends BaseEntity {
   @Column(name = "content_type", nullable = false)
   private String contentType;
 
-  @Lob
-  @Basic(fetch = FetchType.LAZY)
-  @Column(name = "bytes", nullable = false, columnDefinition = "BYTEA")
-  private byte[] bytes;
-
   private BinaryContent(
       String fileName,
       Long size,
-      String contentType,
-      byte[] bytes
+      String contentType
   ) {
     this.fileName = fileName;
     this.size = size;
     this.contentType = contentType;
-    this.bytes = bytes;
   }
 
   public static BinaryContent create(
       String fileName,
       Long size,
-      String contentType,
-      byte[] bytes
+      String contentType
   ) {
     return BinaryContent.builder()
         .fileName(Objects.requireNonNull(fileName))
         .size(size)
         .contentType(Objects.requireNonNull(contentType))
-        .bytes(Objects.requireNonNull(bytes))
         .build();
   }
 
@@ -68,7 +56,6 @@ public class BinaryContent extends BaseEntity {
     private String fileName;
     private Long size;
     private String contentType;
-    private byte[] bytes;
 
     public Builder fileName(String fileName) {
       this.fileName = fileName;
@@ -85,13 +72,8 @@ public class BinaryContent extends BaseEntity {
       return this;
     }
 
-    public Builder bytes(byte[] bytes) {
-      this.bytes = bytes;
-      return this;
-    }
-
     public BinaryContent build() {
-      return new BinaryContent(fileName, size, contentType, bytes);
+      return new BinaryContent(fileName, size, contentType);
     }
   }
 

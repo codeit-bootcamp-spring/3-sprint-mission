@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -10,7 +11,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.basic.BasicBinaryContentService;
-import com.sprint.mission.discodeit.vo.BinaryContentData;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,6 +26,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class BasicBinaryContentServiceTest {
 
   @Mock
+  private BinaryContentStorage binaryContentStorage;
+
+  @Mock
   private BinaryContentRepository binaryContentRepository;
 
   @InjectMocks
@@ -35,23 +39,31 @@ class BasicBinaryContentServiceTest {
 
     @Test
     void BinaryContent를_생성한다() {
-      BinaryContent expected = BinaryContentFixture.createValid();
+      // given
+      byte[] mockBytes = BinaryContentFixture.getDefaultData();
+
+      BinaryContent expected = BinaryContent.create(
+          BinaryContentFixture.getDefaultFileName(),
+          (long) mockBytes.length,
+          BinaryContentFixture.getDefaultMimeType()
+      );
+      expected.assignIdForTest(UUID.randomUUID());
 
       when(binaryContentRepository.save(any())).thenReturn(expected);
 
-      var request = new BinaryContentData(
-          expected.getFileName(),
-          expected.getContentType(),
-          expected.getBytes()
-      );
+      var request = BinaryContentFixture.createValidData();
 
+      // when
       BinaryContentResponse result = binaryContentService.create(request);
 
+      // then
       assertThat(result).isNotNull();
       assertThat(result.fileName()).isEqualTo(expected.getFileName());
       assertThat(result.contentType()).isEqualTo(expected.getContentType());
       assertThat(result.size()).isEqualTo(expected.getSize());
+
       verify(binaryContentRepository).save(any());
+      verify(binaryContentStorage).put(any(UUID.class), eq(mockBytes));
     }
   }
 

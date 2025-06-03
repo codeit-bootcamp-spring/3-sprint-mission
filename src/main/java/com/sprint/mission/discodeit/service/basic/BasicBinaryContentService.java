@@ -5,10 +5,13 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.exception.BinaryContentException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
 
   @Override
   public BinaryContentResponse create(BinaryContentData binaryContentData) {
@@ -29,11 +33,12 @@ public class BasicBinaryContentService implements BinaryContentService {
     BinaryContent binaryContent = BinaryContent.create(
         binaryContentData.fileName(),
         (long) binaryContentData.bytes().length,
-        binaryContentData.contentType(),
-        binaryContentData.bytes()
+        binaryContentData.contentType()
     );
 
     BinaryContent saved = binaryContentRepository.save(binaryContent);
+
+    binaryContentStorage.put(saved.getId(), binaryContentData.bytes());
 
     return BinaryContentResponse.from(saved);
   }
@@ -50,6 +55,14 @@ public class BasicBinaryContentService implements BinaryContentService {
     return binaryContentIds.stream()
         .map(this::find)
         .toList();
+  }
+
+  @Override
+  public ResponseEntity<Resource> download(UUID binaryContentId) {
+    BinaryContent entity = binaryContentRepository.findById(binaryContentId)
+        .orElseThrow(() -> BinaryContentException.notFound(binaryContentId));
+
+    return binaryContentStorage.download(entity);
   }
 
   @Override

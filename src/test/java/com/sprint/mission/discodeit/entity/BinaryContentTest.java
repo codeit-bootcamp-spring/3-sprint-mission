@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -39,7 +38,6 @@ public class BinaryContentTest {
       assertAll(
           () -> assertNotNull(found.getId()),
           () -> assertNotNull(found.getCreatedAt()),
-          () -> assertArrayEquals(BinaryContentFixture.getDefaultData(), found.getBytes()),
           () -> assertEquals(BinaryContentFixture.getDefaultFileName(), found.getFileName()),
           () -> assertEquals(BinaryContentFixture.getDefaultMimeType(), found.getContentType()),
           () -> assertEquals(BinaryContentFixture.getDefaultData().length, found.getSize())
@@ -68,7 +66,6 @@ public class BinaryContentTest {
           .fileName(fileName)
           .size(123L)
           .contentType(contentType)
-          .bytes(bytes)
           .build();
 
       em.persist(content);
@@ -80,7 +77,6 @@ public class BinaryContentTest {
       assertAll(
           () -> assertEquals(fileName, found.getFileName()),
           () -> assertEquals(contentType, found.getContentType()),
-          () -> assertArrayEquals(bytes, found.getBytes()),
           () -> assertEquals(123L, found.getSize())
       );
     }

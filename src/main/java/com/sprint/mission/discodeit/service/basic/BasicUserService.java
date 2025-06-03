@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +33,7 @@ public class BasicUserService implements UserService {
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
   private final UserMapper userMapper;
 
   @Override
@@ -52,7 +54,7 @@ public class BasicUserService implements UserService {
     userStatusRepository.save(UserStatus.create(savedUser));
 
     BinaryContent savedProfile = null;
-    if (command.profile() != null && command.profile().bytes() != null) {
+    if (command.profile() != null) {
       // 프로필 이미지 첨부 시 저장 및 유저 업데이트
       savedProfile = saveProfileImage(command.profile());
     }
@@ -150,11 +152,14 @@ public class BasicUserService implements UserService {
       BinaryContent binaryContent = BinaryContent.create(
           profile.fileName(),
           (long) profile.bytes().length,
-          profile.contentType(),
-          profile.bytes()
+          profile.contentType()
       );
 
-      return binaryContentRepository.save(binaryContent);
+      BinaryContent saved = binaryContentRepository.save(binaryContent);
+
+      binaryContentStorage.put(saved.getId(), profile.bytes());
+
+      return saved;
     } catch (Exception e) {
       log.warn("프로필 이미지 등록 실패: 기본 이미지 사용", e);
       return null;

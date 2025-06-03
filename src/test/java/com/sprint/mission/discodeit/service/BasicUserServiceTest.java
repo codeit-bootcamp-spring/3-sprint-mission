@@ -14,13 +14,11 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.UserException;
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
-import com.sprint.mission.discodeit.fixture.ChannelFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.fixture.UserStatusFixture;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -29,6 +27,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,19 +56,14 @@ class BasicUserServiceTest {
   @Mock
   private UserMapper userMapper;
 
+  @Mock
+  private BinaryContentStorage binaryContentStorage;
+
   @InjectMocks
   private BasicUserService basicUserService;
 
-  private User user;
-  private Channel publicChannel;
-  private Channel privateChannel;
-
   @BeforeEach
   void setUp() {
-    user = UserFixture.createValidUserWithId();
-    publicChannel = ChannelFixture.createPublic();
-    privateChannel = ChannelFixture.createPrivate();
-
     Mockito.lenient().when(userMapper.toResponse(any(User.class)))
         .thenAnswer(invocation -> {
           User u = invocation.getArgument(0);
@@ -129,6 +123,8 @@ class BasicUserServiceTest {
 
     @Test
     void 새로운_사용자를_생성하며_프로필_이미지를_같이_등록할_수_있다() {
+      byte[] mockBytes = BinaryContentFixture.getDefaultData();
+
       String email = "test@test.com";
       String name = "길동쓰";
       String password = "pwd123";
@@ -136,8 +132,9 @@ class BasicUserServiceTest {
       BinaryContentData profile = new BinaryContentData(
           binaryContent.getFileName(),
           binaryContent.getContentType(),
-          binaryContent.getBytes()
+          mockBytes
       );
+      binaryContent.assignIdForTest(binaryContent.getId());
       CreateUserCommand command = new CreateUserCommand(email, name, password, profile);
 
       User savedUser = UserFixture.createCustomUserWithId(email, name, password, binaryContent);

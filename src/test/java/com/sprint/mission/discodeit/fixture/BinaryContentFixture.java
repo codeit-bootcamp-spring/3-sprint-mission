@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.fixture;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.UUID;
 
 public class BinaryContentFixture {
@@ -13,14 +14,21 @@ public class BinaryContentFixture {
     return BinaryContent.create(
         DEFAULT_FILE_NAME,
         (long) DEFAULT_DATA.length,
-        DEFAULT_MIME_TYPE,
-        DEFAULT_DATA);
+        DEFAULT_MIME_TYPE);
   }
 
   public static BinaryContent createValidWithId() {
     BinaryContent binaryContent = createValid();
     binaryContent.assignIdForTest(UUID.randomUUID());
     return binaryContent;
+  }
+
+  public static BinaryContentData createValidData() {
+    return new BinaryContentData(
+        getDefaultFileName(),
+        getDefaultMimeType(),
+        getDefaultData()
+    );
   }
 
   public static BinaryContent createCustom(
@@ -31,8 +39,7 @@ public class BinaryContentFixture {
     return BinaryContent.create(
         fileName,
         (long) bytes.length,
-        contentType,
-        bytes);
+        contentType);
   }
 
   public static byte[] getDefaultData() {

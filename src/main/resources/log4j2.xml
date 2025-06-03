@@ -40,6 +40,16 @@
     <Logger name="com.sprint" level="DEBUG">
       <AppenderRef ref="DEBUG_LOG"/>
     </Logger>
+
+    <!-- Hibernate 로그는 WARN 이상 -->
+    <Logger name="org.hibernate" level="WARN"/>
+
+    <!--  Root에 전파되어 중복 로깅되는 것을 방지, IntelliJ에선 경고가 표시된다.
+    Attribute additivity is not allowed here  -->
+    <Logger name="p6spy" level="DEBUG" additivity="false">
+      <AppenderRef ref="CONSOLE"/>
+      <AppenderRef ref="DEBUG_LOG"/>
+    </Logger>
   </Loggers>
 
 </Configuration>

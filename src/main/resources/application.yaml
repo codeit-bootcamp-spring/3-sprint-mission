@@ -19,3 +19,9 @@ spring:
         default_batch_fetch_size: 100
         format_sql: false
         show_sql: false
+
+discodeit:
+  storage:
+    type: "local"
+    local:
+      root-path: .discodeit/binary-content
