@@ -8,7 +8,8 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
-import com.sprint.mission.discodeit.mapper.original.UserMapper;
+//import com.sprint.mission.discodeit.mapper.original.UserMapper;
+import com.sprint.mission.discodeit.mapper.advanced.AdvancedUserMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
@@ -41,7 +42,8 @@ public class BasicUserService implements UserService {
     private final JpaBinaryContentRepository binaryContentRepository;
     private final JpaUserStatusRepository userStatusRepository;
     private final FileUploadUtils fileUploadUtils;
-    private final UserMapper userMapper;
+//    private final UserMapper userMapper;
+    private final AdvancedUserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
 
 

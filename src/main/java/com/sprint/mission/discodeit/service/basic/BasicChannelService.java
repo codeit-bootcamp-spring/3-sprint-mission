@@ -6,8 +6,9 @@ import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequ
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.mapper.advanced.AdvancedUserMapper;
 import com.sprint.mission.discodeit.mapper.original.ChannelMapper;
-import com.sprint.mission.discodeit.mapper.original.UserMapper;
+//import com.sprint.mission.discodeit.mapper.original.UserMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
@@ -42,7 +43,8 @@ public class BasicChannelService implements ChannelService {
     private final JpaUserRepository userRepository;
     private final JpaMessageRepository messageRepository;
     private final ChannelMapper channelMapper;
-    private final UserMapper userMapper;
+//    private final UserMapper userMapper;
+    private final AdvancedUserMapper userMapper;
 
     @Override
     public JpaChannelResponse createChannel(PublicChannelCreateRequest request) {
@@ -114,9 +116,12 @@ public class BasicChannelService implements ChannelService {
         }
 
         List<JpaChannelResponse> responses = new ArrayList<>();
+        List<UUID> channelIds = new ArrayList<>();
+
         List<Channel> channels = channelRepository.findAllByType(ChannelType.PUBLIC);
         for (Channel channel : channels) {
             responses.add(channelMapper.toDto(channel));
+            channelIds.add(channel.getId());
         }
 
         // 유저가 참가한 방이 없을 수 있음
@@ -124,12 +129,13 @@ public class BasicChannelService implements ChannelService {
         // 모든 방 순회
         for (Channel channel : readStatuses.stream().map(readStatus -> readStatus.getChannel()).toList()) {
             if (readStatuses.stream().anyMatch(status -> status.getChannel().getId().equals(channel.getId()))) {
-                responses.add(channelMapper.toDto(channel));
+                if(!channelIds.contains(channel.getId())) {
+                    responses.add(channelMapper.toDto(channel));
+                }
             }
         }
         return responses;
     }
-
 
     @Override
     public JpaChannelResponse update(UUID channelId, ChannelUpdateRequest request) {

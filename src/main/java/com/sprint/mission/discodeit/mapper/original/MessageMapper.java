@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.mapper.advanced.AdvancedBinaryContentMapper;
+import com.sprint.mission.discodeit.mapper.advanced.AdvancedUserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,8 +21,10 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class MessageMapper {
-    private final UserMapper userMapper;
-    private final BinaryContentMapper binaryContentMapper;
+//    private final UserMapper userMapper;
+    private final AdvancedUserMapper userMapper;
+//    private final BinaryContentMapper binaryContentMapper;
+    private final AdvancedBinaryContentMapper binaryContentMapper;
 
     public JpaMessageResponse toDto(Message message) {
         if(message == null) return null;

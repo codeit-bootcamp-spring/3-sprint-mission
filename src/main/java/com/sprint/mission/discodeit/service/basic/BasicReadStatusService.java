@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusUpdateReque
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.advanced.AdvancedReadStatusMapper;
 import com.sprint.mission.discodeit.mapper.original.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
@@ -37,6 +38,7 @@ public class BasicReadStatusService implements ReadStatusService {
     private final JpaUserRepository userRepository;
     private final JpaChannelRepository channelRepository;
     private final ReadStatusMapper readStatusMapper;
+    private final AdvancedReadStatusMapper advancedReadStatusMapper;
 
 
     @Override
@@ -48,13 +50,17 @@ public class BasicReadStatusService implements ReadStatusService {
         List<JpaReadStatusResponse> responses = new ArrayList<>();
         for (ReadStatus readStatus : readStatusList) {
             responses.add(
-                    readStatusMapper.toDto(readStatus)
+                    // original
+//                    readStatusMapper.toDto(readStatus)
+                    // advanced
+                    advancedReadStatusMapper.toDto(readStatus)
 //                    new JpaReadStatusResponse(
 //                    readStatus.getId(),
 //                    readStatus.getUser().getId(),
 //                    readStatus.getChannel().getId(),
 //                    readStatus.getLastReadAt()
             );
+
         }
         return responses;
     }
@@ -79,7 +85,10 @@ public class BasicReadStatusService implements ReadStatusService {
                 .build();
         readStatusRepository.save(readStatus);
 
-        JpaReadStatusResponse response = readStatusMapper.toDto(readStatus);
+        // original
+//        JpaReadStatusResponse response = readStatusMapper.toDto(readStatus);
+        // advanced
+        JpaReadStatusResponse response = advancedReadStatusMapper.toDto(readStatus);
 //                = new JpaReadStatusResponse(
 //                readStatus.getId(),
 //                readStatus.getUser().getId(),

@@ -6,13 +6,13 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.advanced.AdvancedUserMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 public class ChannelMapper {
     private final JpaMessageRepository messageRepository;
     private final JpaReadStatusRepository readStatusRepository;
-    private final UserMapper userMapper;
+    private final AdvancedUserMapper userMapper;
 
     public JpaChannelResponse toDto(Channel channel) {
         if(channel == null) return null;
@@ -40,14 +40,16 @@ public class ChannelMapper {
             lastMessageAt = message.getCreatedAt();
         }
 
-//        List<ReadStatus> readStatuses = readStatusRepository.findAllByChannel(channel);
         List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelWithUser(channel);
-        List<JpaUserResponse> participants = new ArrayList<>();
-        if (!readStatuses.isEmpty()) {
-            Set<User> users = readStatuses.stream().map(rs -> rs.getUser()).collect(Collectors.toSet());
-            users.stream().map(user -> userMapper.toDto(user))
-            .forEach(participants::add);
-        }
+
+        Set<User> users = readStatuses.stream()
+                .map(ReadStatus::getUser)
+                .collect(Collectors.toSet());
+
+        List<JpaUserResponse> participants = users.stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
+
         return JpaChannelResponse.builder()
                 .id(channel.getId())
                 .type(channel.getType())

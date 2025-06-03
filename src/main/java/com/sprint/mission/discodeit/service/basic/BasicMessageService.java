@@ -6,7 +6,7 @@ import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse
 import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
 import com.sprint.mission.discodeit.dto.message.response.JpaPageResponse;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.mapper.original.MessageMapper;
+import com.sprint.mission.discodeit.mapper.advanced.AdvancedMessageMapper;
 import com.sprint.mission.discodeit.mapper.original.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.jpa.*;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -44,23 +44,25 @@ public class BasicMessageService implements MessageService {
     private final JpaUserRepository userRepository;
     private final JpaBinaryContentRepository binaryContentRepository;
     private final JpaReadStatusRepository readStatusRepository;
-    private final MessageMapper messageMapper;
+//    private final MessageMapper messageMapper;
+    private final AdvancedMessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
-    private final PageResponseMapper pageResponseMapper;
+//    private final PageResponseMapper pageResponseMapper;
 
-    @Override
-    public JpaPageResponse findAllByChannelId(UUID channelId, Pageable pageable) {
-        Page<Message> messagePage = messageRepository.findAllPageByChannelIdOrderByCreatedAt(channelId, pageable);
-        JpaPageResponse response = pageResponseMapper.fromPage(messagePage);
-        return response;
-    }
+//    @Override
+//    public JpaPageResponse findAllByChannelId(UUID channelId, Pageable pageable) {
+//        Page<Message> messagePage = messageRepository.findAllPageByChannelIdOrderByCreatedAt(channelId, pageable);
+//        JpaPageResponse response = pageResponseMapper.fromPage(messagePage);
+//        return response;
+//    }
 
     @Override
     public AdvancedJpaPageResponse findAllByChannelIdAndCursor(UUID channelId, Instant cursor, Pageable pageable) {
 
         List<Message> messages;
         if(cursor == null) {
-            messages = messageRepository.findAllByChannelIdOrderByCreatedAt(channelId, pageable);
+//            messages = messageRepository.findAllByChannelIdOrderByCreatedAt(channelId, pageable);
+            messages = messageRepository.findAllByChannelId(channelId, pageable);
         }else {
             messages = messageRepository.findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(channelId, cursor, pageable);
         }

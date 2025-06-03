@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.advanced.AdvancedUserStatusMapper;
 import com.sprint.mission.discodeit.mapper.original.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
@@ -27,6 +28,7 @@ public class BasicUserStatusService implements UserStatusService {
 
   private final JpaUserStatusRepository userStatusRepository;
   private final UserStatusMapper userStatusMapper;
+  private final AdvancedUserStatusMapper advancedUserStatusMapper;
 //  private final UserStatusRepository userStatusRepository;
   private final JpaUserRepository userRepository;
 
@@ -40,7 +42,10 @@ public class BasicUserStatusService implements UserStatusService {
     UserStatus userStatus = user.getStatus();
     userStatus.setLastActiveAt(newLastActiveAt);
 
-    JpaUserStatusResponse response = userStatusMapper.toDto(userStatus);
+    // original
+//    JpaUserStatusResponse response = userStatusMapper.toDto(userStatus);
+    // advanced
+    JpaUserStatusResponse response = advancedUserStatusMapper.toDto(userStatus);
     return response;
   }
 
