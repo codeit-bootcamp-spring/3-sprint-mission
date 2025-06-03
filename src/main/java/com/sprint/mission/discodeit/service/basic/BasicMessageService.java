@@ -18,11 +18,12 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -83,11 +84,52 @@ public class BasicMessageService implements MessageService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page) {
-        Pageable pageable = PageRequest.of(page, 50, Sort.by("createdAt").descending());
-        Page<Message> paged = messageRepository.findAllByChannelIdOrderByCreatedAtDesc(channelId, pageable);
-        Page<MessageDto> dtoPage = paged.map(messageMapper::toDto);
-        return pageResponseMapper.fromPage(dtoPage);
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, String cursor, int size) {
+        if (!channelRepository.existsById(channelId)) {
+            throw new NoSuchElementException("해당 채널은 존재하지 않습니다.");
+        }
+
+        Pageable pageRequest = PageRequest.of(0, size, Sort.by("createdAt").descending());
+
+        List<Message> messages;
+        Instant cursorInstant = null;
+
+        if (cursor != null && !cursor.isBlank()) {
+            try {
+                cursorInstant = Instant.parse(cursor);
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("유효하지 않은 cursor 형식입니다. ISO-8601 형식으로 주세요.");
+            }
+        }
+
+        if (cursorInstant == null) {
+
+            messages = messageRepository.findAllByChannelIdOrderByCreatedAtDesc(channelId, pageRequest);
+        } else {
+
+            messages = messageRepository.findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(
+                    channelId, cursorInstant, pageRequest);
+        }
+
+        List<MessageDto> dtoList = messages.stream()
+                .map(messageMapper::toDto)
+                .toList();
+
+        String nextCursor = null;
+        if (messages.size() == size) {
+            Message lastMessage = messages.get(messages.size() - 1);
+            nextCursor = lastMessage.getCreatedAt().toString();
+        }
+
+        long totalElements = messageRepository.countByChannelId(channelId);
+
+        return new PageResponse<>(
+                dtoList,
+                nextCursor,
+                size,
+                (messages.size() == size),
+                totalElements
+        );
     }
 
     @Override

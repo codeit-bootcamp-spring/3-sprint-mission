@@ -8,18 +8,16 @@ import lombok.Setter;
 @Setter
 public class PageResponse<T> {
     private final List<T> content;
-    private final int number;
+    private final String nextCursor;
     private final int size;
     private final boolean hasNext;
-    private final Long totalElements; // nullable
+    private final Long totalElements;
 
-    public PageResponse(List<T> content, int number, int size, boolean hasNext, Long totalElements) {
+    public PageResponse(List<T> content, String nextCursor, int size, boolean hasNext, Long totalElements) {
         this.content = content;
-        this.number = number;
+        this.nextCursor = nextCursor;
         this.size = size;
         this.hasNext = hasNext;
         this.totalElements = totalElements;
     }
-
-
 }

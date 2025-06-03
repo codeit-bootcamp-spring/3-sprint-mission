@@ -68,10 +68,13 @@ public class BasicChannelService implements ChannelService {
             List<ReadStatus> statuses = readStatusRepository.findAllByChannelId(channel.getId());
             statuses.forEach(rs -> rs.getUser().getUsername());
         }
-        messageRepository.findByChannelId(
-                channel.getId(),
-                PageRequest.of(0, 1, Sort.by("createdAt").descending())
-        ).stream().findFirst().ifPresent(m -> m.getCreatedAt());
+
+        messageRepository.findAllByChannelIdOrderByCreatedAtDesc(
+                        channel.getId(),
+                        PageRequest.of(0, 1, Sort.by("createdAt").descending())
+                ).stream()
+                .findFirst()
+                .ifPresent(m -> channel.setCreatedAt(m.getCreatedAt()));
 
         return channelMapper.toDto(channel);
     }
@@ -89,10 +92,17 @@ public class BasicChannelService implements ChannelService {
         return channels.stream()
                 .filter(ch -> ch.getType() == ChannelType.PUBLIC || joinedChannelIds.contains(ch.getId()))
                 .peek(ch -> {
-                    messageRepository.findByChannelId(
-                            ch.getId(),
-                            PageRequest.of(0, 1, Sort.by("createdAt").descending())
-                    ).stream().findFirst().ifPresent(m -> m.getCreatedAt());
+                    messageRepository.findAllByChannelIdOrderByCreatedAtDesc(
+                                    ch.getId(),
+                                    PageRequest.of(0, 1, Sort.by("createdAt").descending())
+                            ).stream()
+                            .findFirst()
+                            .ifPresent(m -> ch.setCreatedAt(m.getCreatedAt()));
+
+                    if (ch.getType() == ChannelType.PRIVATE) {
+                        readStatusRepository.findAllByChannelId(ch.getId())
+                                .forEach(rs -> rs.getUser().getUsername());
+                    }
                 })
                 .map(channelMapper::toDto)
                 .toList();

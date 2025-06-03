@@ -52,9 +52,10 @@ public class MessageController {
     @GetMapping
     public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
             @RequestParam("channelId") UUID channelId,
-            @RequestParam(value = "page", defaultValue = "0") int page
+            @RequestParam(value = "cursor", required = false) String cursor,
+            @RequestParam(value = "size", defaultValue = "50") int size
     ) {
-        PageResponse<MessageDto> resp = messageService.findAllByChannelId(channelId, page);
+        PageResponse<MessageDto> resp = messageService.findAllByChannelId(channelId, cursor, size);
         return ResponseEntity.ok(resp);
     }
 
