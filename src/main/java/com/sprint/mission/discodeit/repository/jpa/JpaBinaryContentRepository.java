@@ -20,6 +20,4 @@ public interface JpaBinaryContentRepository extends JpaRepository<BinaryContent,
     List<BinaryContent> findAllByIdIn(Collection<UUID> ids);
 
     Optional<BinaryContent> findById(UUID binaryContentId);
-
-
 }

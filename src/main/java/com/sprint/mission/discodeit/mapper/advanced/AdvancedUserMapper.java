@@ -19,7 +19,6 @@ import java.time.Instant;
  * Author       : dounguk
  * Date         : 2025. 6. 3.
  */
-//@Component
 @Mapper(uses = {AdvancedBinaryContentMapper.class}, componentModel = "spring")
 public interface AdvancedUserMapper {
     AdvancedUserMapper INSTANCE = Mappers.getMapper(AdvancedUserMapper.class);

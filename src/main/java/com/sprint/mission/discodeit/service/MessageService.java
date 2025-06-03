@@ -27,6 +27,7 @@ import java.util.UUID;
  */
 public interface MessageService {
 
+    //page 방식
 //    JpaPageResponse findAllByChannelId(UUID channelId, Pageable pageable);
 
     JpaMessageResponse createMessage(MessageCreateRequest MessageAttachmentRequest, List<MultipartFile> multipartFiles);

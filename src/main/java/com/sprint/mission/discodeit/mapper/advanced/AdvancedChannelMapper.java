@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
  * Date         : 2025. 6. 3.
  */
 // 코드만 더 복잡해지는데 이게 맞을까?
-@Component
-@Mapper(componentModel = "spring",uses = {AdvancedUserMapper.class})
+//@Component
+//@Mapper(componentModel = "spring",uses = {AdvancedUserMapper.class})
 public interface AdvancedChannelMapper {
 //    AdvancedChannelMapper INSTANCE = Mappers.getMapper(AdvancedChannelMapper.class);
 //

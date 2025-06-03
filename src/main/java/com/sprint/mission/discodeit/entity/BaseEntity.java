@@ -40,8 +40,4 @@ public abstract class BaseEntity implements Serializable {
     @CreatedDate
     @Column(name = "created_at")
     protected Instant createdAt;
-//
-//    @LastModifiedDate
-//    @Column(name = "updated_at")
-//    protected Instant updatedAt;
 }

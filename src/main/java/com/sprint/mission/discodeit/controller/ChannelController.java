@@ -61,6 +61,6 @@ public class ChannelController {
     @Operation(summary = "유저가 참여중인 채널 목록 조회", description = "유저가 참여중인 채널 목록을 전체 조회합니다.")
     @GetMapping
     public ResponseEntity<?> findChannels(@RequestParam UUID userId) {
-        return ResponseEntity.status(200).body(channelService.findAllByUserId2(userId));
+        return ResponseEntity.status(200).body(channelService.findAllByUserId(userId));
     }
 }

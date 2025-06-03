@@ -38,7 +38,7 @@ public class FilePathProperties {
     private Path binaryContentDirectory;
     private Path readStatusDirectory;
 
-    private static final String TO_SER = ".ser";
+//    private static final String TO_SER = ".ser";
 
     @PostConstruct
     public void init() {
@@ -69,29 +69,29 @@ public class FilePathProperties {
         }
     }
 
-    public Path getUserFilePath(UUID id) {
-        return userDirectory.resolve(id + TO_SER);
-    }
-
-    public Path getChannelFilePath(UUID id) {
-        return channelDirectory.resolve(id + TO_SER);
-    }
-
-    public Path getMessageFilePath(UUID id) {
-        return messageDirectory.resolve(id + TO_SER);
-    }
-
-    public Path getUserStatusFilePath(UUID id) {
-        return userStatusDirectory.resolve(id + TO_SER);
-    }
-
-    public Path getBinaryContentFilePath(UUID id) {
-        return binaryContentDirectory.resolve(id + TO_SER);
-    }
-
-    public Path getReadStatusFilePath(UUID id) {
-        return readStatusDirectory.resolve(id + TO_SER);
-    }
+//    public Path getUserFilePath(UUID id) {
+//        return userDirectory.resolve(id + TO_SER);
+//    }
+//
+//    public Path getChannelFilePath(UUID id) {
+//        return channelDirectory.resolve(id + TO_SER);
+//    }
+//
+//    public Path getMessageFilePath(UUID id) {
+//        return messageDirectory.resolve(id + TO_SER);
+//    }
+//
+//    public Path getUserStatusFilePath(UUID id) {
+//        return userStatusDirectory.resolve(id + TO_SER);
+//    }
+//
+//    public Path getBinaryContentFilePath(UUID id) {
+//        return binaryContentDirectory.resolve(id + TO_SER);
+//    }
+//
+//    public Path getReadStatusFilePath(UUID id) {
+//        return readStatusDirectory.resolve(id + TO_SER);
+//    }
 
 }
 

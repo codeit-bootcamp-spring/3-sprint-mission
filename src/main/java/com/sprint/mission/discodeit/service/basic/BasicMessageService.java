@@ -43,12 +43,13 @@ public class BasicMessageService implements MessageService {
     private final JpaChannelRepository channelRepository;
     private final JpaUserRepository userRepository;
     private final JpaBinaryContentRepository binaryContentRepository;
-    private final JpaReadStatusRepository readStatusRepository;
+//    private final JpaReadStatusRepository readStatusRepository;
 //    private final MessageMapper messageMapper;
     private final AdvancedMessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
 //    private final PageResponseMapper pageResponseMapper;
 
+    // page 방식
 //    @Override
 //    public JpaPageResponse findAllByChannelId(UUID channelId, Pageable pageable) {
 //        Page<Message> messagePage = messageRepository.findAllPageByChannelIdOrderByCreatedAt(channelId, pageable);

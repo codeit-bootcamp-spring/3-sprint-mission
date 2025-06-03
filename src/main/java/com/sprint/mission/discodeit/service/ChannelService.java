@@ -29,8 +29,6 @@ public interface ChannelService {
 
     boolean deleteChannel(UUID channelId);
 
-    List<JpaChannelResponse> findAllByUserId(UUID userId);
-    List<JpaChannelResponse> findAllByUserId2(UUID userId);
 
-    //    ChannelFindResponse find(ChannelFindRequest request);
+    List<JpaChannelResponse> findAllByUserId(UUID userId);
 }

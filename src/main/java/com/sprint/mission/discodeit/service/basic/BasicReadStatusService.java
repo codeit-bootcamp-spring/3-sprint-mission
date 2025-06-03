@@ -7,7 +7,6 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.advanced.AdvancedReadStatusMapper;
-import com.sprint.mission.discodeit.mapper.original.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
@@ -37,8 +36,7 @@ public class BasicReadStatusService implements ReadStatusService {
     private final JpaReadStatusRepository readStatusRepository;
     private final JpaUserRepository userRepository;
     private final JpaChannelRepository channelRepository;
-    private final ReadStatusMapper readStatusMapper;
-    private final AdvancedReadStatusMapper advancedReadStatusMapper;
+    private final AdvancedReadStatusMapper readStatusMapper;
 
 
     @Override
@@ -53,7 +51,7 @@ public class BasicReadStatusService implements ReadStatusService {
                     // original
 //                    readStatusMapper.toDto(readStatus)
                     // advanced
-                    advancedReadStatusMapper.toDto(readStatus)
+                    readStatusMapper.toDto(readStatus)
 //                    new JpaReadStatusResponse(
 //                    readStatus.getId(),
 //                    readStatus.getUser().getId(),
@@ -88,7 +86,7 @@ public class BasicReadStatusService implements ReadStatusService {
         // original
 //        JpaReadStatusResponse response = readStatusMapper.toDto(readStatus);
         // advanced
-        JpaReadStatusResponse response = advancedReadStatusMapper.toDto(readStatus);
+        JpaReadStatusResponse response = readStatusMapper.toDto(readStatus);
 //                = new JpaReadStatusResponse(
 //                readStatus.getId(),
 //                readStatus.getUser().getId(),

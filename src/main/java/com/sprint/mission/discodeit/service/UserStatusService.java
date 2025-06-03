@@ -16,14 +16,4 @@ import java.util.UUID;
 public interface UserStatusService {
 
   JpaUserStatusResponse updateByUserId(UUID userId, Instant newLastActiveAt);  // throw
-
-//  UserStatusCreateResponse create(UserStatusCreateRequest request);
-//  UserStatus find(UUID userStatusId);
-//
-//  List<UserStatus> findAll();
-//
-//  void update(UserStatusUpdateRequest request);
-//
-//
-//  void delete(UUID userStatusId);
 }

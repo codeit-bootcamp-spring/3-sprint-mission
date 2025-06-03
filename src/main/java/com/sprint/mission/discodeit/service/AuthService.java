@@ -15,8 +15,6 @@ import com.sprint.mission.discodeit.dto.authService.LoginResponse;
  * 2025. 4. 25.        doungukkim       최초 생성
  */
 public interface AuthService {
-
-//    ResponseEntity<?> login(LoginRequest request);
     LoginResponse login(LoginRequest request);
 
 }

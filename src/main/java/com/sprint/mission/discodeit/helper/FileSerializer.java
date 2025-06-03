@@ -16,6 +16,8 @@ import java.nio.file.Path;
  * -----------------------------------------------------------
  * 2025. 4. 16.        doungukkim       최초 생성
  */
+
+// 더이상 사용하지 않음
 @Component
 public class FileSerializer {
 

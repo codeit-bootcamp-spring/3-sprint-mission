@@ -18,8 +18,6 @@ import java.util.UUID;
  */
 public interface UserService {
 
-//    List<JpaUserResponse> findAllUsers2(); n+1 문제
-
     List<JpaUserResponse> findAllUsers();
 
     JpaUserResponse create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profile);

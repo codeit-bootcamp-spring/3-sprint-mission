@@ -42,24 +42,8 @@ public class BasicUserService implements UserService {
     private final JpaBinaryContentRepository binaryContentRepository;
     private final JpaUserStatusRepository userStatusRepository;
     private final FileUploadUtils fileUploadUtils;
-//    private final UserMapper userMapper;
     private final AdvancedUserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
-
-
-    // n+1 문제 있는 버전
-//    @Transactional(readOnly = true)
-//    public List<JpaUserResponse> findAllUsers2() {
-//        List<User> users = userRepository.findAll();
-//
-//        List<JpaUserResponse> responses = new ArrayList<>();
-//        // user fields + online 으로 response 생성
-//        for (User user : users) {
-//            userMapper.toDto(user);
-//            responses.add(userMapper.toDto(user));
-//        }
-//        return responses;
-//    }
 
     // 1회 조회로 수정
     @Transactional(readOnly = true)

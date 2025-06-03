@@ -14,12 +14,12 @@ import java.util.UUID;
  * Author       : dounguk
  * Date         : 2025. 6. 1.
  */
-@Builder
+//@Builder
 public record JpaMessagePageResponse (
-        UUID id,
-        User author,
-        Channel channel,
-        List<BinaryContent> attachments,
-        String content
+//        UUID id,
+//        User author,
+//        Channel channel,
+//        List<BinaryContent> attachments,
+//        String content
 ){
 }

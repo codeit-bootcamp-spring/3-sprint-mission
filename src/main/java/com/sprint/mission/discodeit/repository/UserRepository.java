@@ -11,6 +11,7 @@ import java.util.UUID;
  * =========================================================== DATE              AUTHOR NOTE
  * ----------------------------------------------------------- 2025. 4. 17.        doungukkim 최초 생성
  */
+// 사용 안합
 public interface UserRepository {
 
     User createUserByName(String username, String email, String password);

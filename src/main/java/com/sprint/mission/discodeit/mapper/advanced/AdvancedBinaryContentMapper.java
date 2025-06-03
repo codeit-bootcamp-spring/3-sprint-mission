@@ -2,10 +2,8 @@ package com.sprint.mission.discodeit.mapper.advanced;
 
 import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 import org.mapstruct.Mapper;
-import org.springframework.stereotype.Component;
+import org.mapstruct.factory.Mappers;
 
 /**
  * PackageName  : com.sprint.mission.discodeit.mapper.advanced
@@ -13,7 +11,6 @@ import org.springframework.stereotype.Component;
  * Author       : dounguk
  * Date         : 2025. 6. 3.
  */
-@Component
 @Mapper(componentModel = "spring")
 public interface AdvancedBinaryContentMapper {
     AdvancedBinaryContentMapper INSTANCE = Mappers.getMapper(AdvancedBinaryContentMapper.class);

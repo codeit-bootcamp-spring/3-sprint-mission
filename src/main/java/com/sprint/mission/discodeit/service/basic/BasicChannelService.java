@@ -43,7 +43,6 @@ public class BasicChannelService implements ChannelService {
     private final JpaUserRepository userRepository;
     private final JpaMessageRepository messageRepository;
     private final ChannelMapper channelMapper;
-//    private final UserMapper userMapper;
     private final AdvancedUserMapper userMapper;
 
     @Override
@@ -81,36 +80,10 @@ public class BasicChannelService implements ChannelService {
         }
         return channelMapper.toDto(channel);
     }
-
-    // quaries: 19개
-    // 4 채널 2 public 2 private
-    @Transactional(readOnly = true)
-    public List<JpaChannelResponse> findAllByUserId(UUID userId) {
-        if(!userRepository.existsById(userId)) {
-            return Collections.emptyList();
-        }
-
-        List<JpaChannelResponse> responses = new ArrayList<>();
-        List<Channel> channels = channelRepository.findAll();
-
-        // 유저가 참가한 방이 없을 수 있음
-        List<ReadStatus> readStatuses = readStatusRepository.findAllByUserId(userId);
-        // 모든 방 순회
-        for (Channel channel : channels) {
-            if (channel.getType().equals(ChannelType.PUBLIC)) {
-                responses.add(channelMapper.toDto(channel));
-            } else {
-                if (readStatuses.stream().anyMatch(status -> status.getChannel().getId().equals(channel.getId()))) {
-                    responses.add(channelMapper.toDto(channel));
-                }
-            }
-        }
-        return responses;
-    }
     // quaries: 16개
     // 4 채널 2 public 2 private(-1 per channel) 전체 로직(-1)
     @Override
-    public List<JpaChannelResponse> findAllByUserId2(UUID userId) {
+    public List<JpaChannelResponse> findAllByUserId(UUID userId) {
         if(!userRepository.existsById(userId)) {
             return Collections.emptyList();
         }

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
  * Author       : dounguk
  * Date         : 2025. 6. 3.
  */
-@Component
 @Mapper(componentModel = "spring")
 public interface AdvancedUserStatusMapper {
     AdvancedUserStatusMapper INSTANCE = Mappers.getMapper(AdvancedUserStatusMapper.class);
