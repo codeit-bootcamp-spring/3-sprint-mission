@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -9,13 +10,7 @@ import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class Message implements Serializable {
-    private static final long serialVersionUID = 1L;
-
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
-    //
+public class Message extends BaseUpdatableEntity {
     private String content;
     //
     private UUID channelId;
@@ -23,10 +18,6 @@ public class Message implements Serializable {
     private List<UUID> attachmentIds;
 
     public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
-        //
         this.content = Objects.requireNonNull(content, "Message content must not be null");
         this.channelId = Objects.requireNonNull(channelId, "Channel ID must not be null");
         this.authorId = Objects.requireNonNull(authorId, "Author ID must not be null");
