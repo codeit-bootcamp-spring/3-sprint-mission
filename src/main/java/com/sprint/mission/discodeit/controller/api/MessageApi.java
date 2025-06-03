@@ -1,8 +1,9 @@
 package com.sprint.mission.discodeit.controller.api;
 
+import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,7 +45,7 @@ public interface MessageApi {
             )
         }
     )
-    ResponseEntity<MessageResponse> createMessage(
+    ResponseEntity<MessageDto> createMessage(
         @Parameter(
             description = "Message 생성 정보",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
@@ -83,7 +85,7 @@ public interface MessageApi {
         required = true,
         schema = @Schema(type = "String", format = "uuid")
     )
-    ResponseEntity<MessageResponse> updateMessage(
+    ResponseEntity<MessageDto> updateMessage(
         @Parameter(description = "수정할 Message ID") UUID messageId,
         @Parameter(description = "수정할 Message 내용") MessageUpdateRequest request
     );
@@ -129,12 +131,8 @@ public interface MessageApi {
         description = "Message 목록 조회 성공",
         content = @Content(mediaType = "*/*", array = @ArraySchema(schema = @Schema(implementation = Message.class)))
     )
-    @Parameter(
-        name = "channelId",
-        in = ParameterIn.QUERY,
-        description = "조회할 Channel ID",
-        required = true,
-        schema = @Schema(type = "string", format = "uuid")
-    )
-    ResponseEntity<List<MessageResponse>> findAllMessageInChannel(UUID channelId);
+    ResponseEntity<PageResponse<MessageDto>> findAllMessageInChannel(
+        @Parameter(description = "조회할 Channel ID") UUID channelId,
+        @Parameter(description = "페이징 정보",
+            example = "{\"size\": 50, \"page\": 0, \"sort\": \"createdAt,desc\"}") Pageable pageable);
 }

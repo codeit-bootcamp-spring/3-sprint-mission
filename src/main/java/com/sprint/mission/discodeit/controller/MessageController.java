@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.MessageApi;
+import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.MessageResponse;
-import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import jakarta.validation.Valid;
 import java.io.IOException;
@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ public class MessageController implements MessageApi {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Override
-    public ResponseEntity<MessageResponse> createMessage(
+    public ResponseEntity<MessageDto> createMessage(
         @Valid @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
         @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
@@ -48,8 +49,9 @@ public class MessageController implements MessageApi {
                     try {
                         return new BinaryContentCreateRequest(
                             file.getOriginalFilename(),
-                            file.getBytes(),
-                            file.getContentType()
+                            file.getSize(),
+                            file.getContentType(),
+                            file.getBytes()
                         );
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -57,22 +59,23 @@ public class MessageController implements MessageApi {
                 })
                 .toList())
             .orElse(new ArrayList<>());
-        Message newMessage = messageService.createMessage(messageCreateRequest, attachmentRequests);
-        MessageResponse response = MessageResponse.fromEntity(newMessage);
+        MessageDto newMessage = messageService.createMessage(messageCreateRequest,
+            attachmentRequests);
+
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(response);
+            .body(newMessage);
     }
 
     @PatchMapping("/{messageId}")
     @Override
-    public ResponseEntity<MessageResponse> updateMessage(@PathVariable("messageId") UUID messageId,
+    public ResponseEntity<MessageDto> updateMessage(@PathVariable("messageId") UUID messageId,
         @Valid @RequestBody MessageUpdateRequest request) {
-        Message updatedMessage = messageService.updateMessage(messageId, request);
-        MessageResponse response = MessageResponse.fromEntity(updatedMessage);
+        MessageDto updatedMessage = messageService.updateMessage(messageId, request);
+
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(response);
+            .body(updatedMessage);
     }
 
     @DeleteMapping("/{messageId}")
@@ -87,16 +90,12 @@ public class MessageController implements MessageApi {
 
     @GetMapping
     @Override
-    public ResponseEntity<List<MessageResponse>> findAllMessageInChannel(
-        @RequestParam("channelId") UUID channelId) {
-        List<Message> messages = messageService.findAllByChannelId(channelId);
-
-        List<MessageResponse> responses = messages.stream()
-            .map(MessageResponse::fromEntity)
-            .toList();
+    public ResponseEntity<PageResponse<MessageDto>> findAllMessageInChannel(
+        @RequestParam("channelId") UUID channelId, Pageable pageable) {
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, pageable);
 
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(responses);
+            .body(messages);
     }
 }

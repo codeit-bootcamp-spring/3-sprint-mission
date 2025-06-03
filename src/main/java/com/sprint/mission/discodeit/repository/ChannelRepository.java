@@ -5,8 +5,11 @@ import com.sprint.mission.discodeit.entity.Channel;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface ChannelRepository {
+@Repository
+public interface ChannelRepository extends JpaRepository<Channel, UUID> {
 
     Channel save(Channel channel);
 
@@ -14,9 +17,7 @@ public interface ChannelRepository {
 
     List<Channel> findAll();
 
-    void update(Channel channel);
-
-    void delete(UUID channelId);
+    void deleteById(UUID channelId);
 
     boolean existsById(UUID id);
 }

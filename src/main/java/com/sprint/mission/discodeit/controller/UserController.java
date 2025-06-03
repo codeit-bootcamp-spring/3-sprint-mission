@@ -2,14 +2,11 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.dto.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.validation.Valid;
@@ -41,22 +38,20 @@ public class UserController implements UserApi {
     private final UserService userService;
     private final UserStatusService userStatusService;
 
-
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)   // 파일(프로필 이미지)이 있을수도 있고 없을수도 있다.
     @Override
-    public ResponseEntity<UserResponse> create(
+    public ResponseEntity<UserDto> create(
         @Valid @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
         @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         Optional<BinaryContentCreateRequest> profileReq = Optional.ofNullable(profile)
             .flatMap(this::resolveProfileRequest);
-        User createdUser = userService.createUser(userCreateRequest, profileReq);
 
-        UserResponse response = UserResponse.fromEntity(createdUser);
+        UserDto createdUser = userService.createUser(userCreateRequest, profileReq);
 
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(response);
+            .body(createdUser);
     }
 
     @GetMapping
@@ -74,18 +69,18 @@ public class UserController implements UserApi {
         consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
     )
     @Override
-    public ResponseEntity<UserResponse> update(@PathVariable("userId") UUID userId,
+    public ResponseEntity<UserDto> update(@PathVariable("userId") UUID userId,
         @Valid @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
         @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
             .flatMap(this::resolveProfileRequest);
-        User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
 
-        UserResponse response = UserResponse.fromEntity(updatedUser);
+        UserDto updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
+
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(response);
+            .body(updatedUser);
     }
 
     @DeleteMapping("/{userId}")
@@ -99,14 +94,14 @@ public class UserController implements UserApi {
 
     @PatchMapping("/{userId}/userStatus")
     @Override
-    public ResponseEntity<UserStatusResponse> updateUserStatusByUserId(
+    public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
         @PathVariable("userId") UUID userId,
         @Valid @RequestBody UserStatusUpdateRequest request) {
-        UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, request);
-        UserStatusResponse response = UserStatusResponse.fromEntity(updatedUserStatus);
+        UserStatusDto updatedUserStatus = userStatusService.updateByUserId(userId, request);
+
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(response);
+            .body(updatedUserStatus);
     }
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profile) {
@@ -116,8 +111,9 @@ public class UserController implements UserApi {
             try {
                 BinaryContentCreateRequest req = new BinaryContentCreateRequest(
                     profile.getOriginalFilename(),
-                    profile.getBytes(),
-                    profile.getContentType());
+                    profile.getSize(),
+                    profile.getContentType(),
+                    profile.getBytes());
                 return Optional.of(req);
             } catch (IOException e) {
                 throw new RuntimeException(e);

@@ -1,57 +1,51 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.Instant;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "read_statuses")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class ReadStatus implements Serializable {
+public class ReadStatus extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-  private UUID userId;
-  private UUID channelId;
-  private Instant lastReadAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id", nullable = false)
+    private Channel channel;
 
-  public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.updatedAt = Instant.now();
-    this.userId = userId;
-    this.channelId = channelId;
-    this.lastReadAt = lastReadAt; // 기본값을 Instant.EPOCH로 메시지를 읽지 않음을 표시
-  }
+    @Column(name = "last_read_at", nullable = false)
+    private Instant lastReadAt;
 
-  /*
-  사용자가 채널 별 마지막 메세지를 읽은 시간을 표현
-  마지막으로 읽은 시간 업데이트 필요
-  사용자가 각 채널에 읽지 않은 메세지를 확인위한 용도
-  updateLastReadAt 호출 시점? 사용자가 채널에 접속할 때
-   */
-
-  /*public void updateLastReadAt(Instant currentReadAt) {
-    if (currentReadAt.isAfter(this.lastReadAt)) {
-      this.lastReadAt = currentReadAt;
-      this.updatedAt = Instant.now();
-    }
-  }
-*/
-
-  public void updateLastReadAt(Instant newLastReadAt) {
-    boolean anyValueUpdated = false;
-    if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
-      this.lastReadAt = newLastReadAt;
-      anyValueUpdated = true;
+    public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+        super();
+        this.user = user;
+        this.channel = channel;
+        this.lastReadAt = lastReadAt;
     }
 
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
+    public void updateLastReadAt(Instant newLastReadAt) {
+        boolean anyValueUpdated = false;
+        if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
+            this.lastReadAt = newLastReadAt;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            update();
+        }
     }
-  }
 }
 

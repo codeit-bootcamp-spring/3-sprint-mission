@@ -1,47 +1,32 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
-
+@Entity
+@Table(name = "binary_contents")
 @Getter
-public class BinaryContent implements Serializable {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class BinaryContent extends BaseEntity {
 
-  private static final long serialVersionUID = 1L;
-  private final UUID id;
-  private final Instant createdAt;
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
 
-  private UUID userId; // 프로필 이미지와 관련된 유저 ID
-  private UUID messageId; // 메시지와 관련된 파일 (선택적)
+    @Column(nullable = false)
+    private Long size;
 
-  private String fileName; // 파일 이름 (예: "123.png", "456.pdf")
-  private byte[] bytes;          // 이미지 바이너리 데이터
-  private String contentType;   // MIME 타입 예: "image/jpeg"
+    @Column(name = "content_type", nullable = false)
+    private String contentType;
 
-  public BinaryContent(String fileName, UUID userId, byte[] bytes, String contentType) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.fileName = fileName;
-    this.userId = userId;
-    this.bytes = bytes;
-    this.contentType = contentType;
-  }
-
-  public BinaryContent(String fileName, UUID userId, UUID messageId, byte[] bytes,
-      String contentType) {
-    this(fileName, userId, bytes, contentType);
-    this.messageId = messageId;
-  }
-
-  @Override
-  public String toString() {
-    return "BinaryContent{" +
-        "fileName='" + fileName + '\'' +
-        ", userId=" + userId +
-        ", messageId=" + messageId +
-        '}';
-  }
+    public BinaryContent(String fileName, Long size, String contentType) {
+        super();
+        this.fileName = fileName;
+        this.size = size;
+        this.contentType = contentType;
+    }
 }
-

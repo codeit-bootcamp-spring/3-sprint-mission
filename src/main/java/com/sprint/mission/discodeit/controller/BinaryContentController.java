@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
-import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -22,30 +22,39 @@ import org.springframework.web.bind.annotation.RestController;
 public class BinaryContentController implements BinaryContentApi {
 
     private final BinaryContentService binaryContentService;
+    private final BinaryContentStorage binaryContentStorage;
 
     @GetMapping("/{binaryContentId}")
     @Override
-    public ResponseEntity<BinaryContentResponse> find(
+    public ResponseEntity<BinaryContentDto> find(
         @PathVariable("binaryContentId") UUID binaryContentId) {
-        BinaryContent file = binaryContentService.findById(binaryContentId)
+        BinaryContentDto file = binaryContentService.findById(binaryContentId)
             .orElseThrow(() -> new NoSuchElementException("파일 조회에 실패하였습니다.: " + binaryContentId));
-        BinaryContentResponse response = BinaryContentResponse.fromEntity(file);
+
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(response);
+            .body(file);
     }
 
     @GetMapping
     @Override
-    public ResponseEntity<List<BinaryContentResponse>> findAll(
+    public ResponseEntity<List<BinaryContentDto>> findAll(
         @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
-        List<BinaryContent> files = binaryContentService.findAllByIdIn(binaryContentIds);
-        List<BinaryContentResponse> responses = files.stream()
-            .map(BinaryContentResponse::fromEntity)
-            .toList();
+        List<BinaryContentDto> files = binaryContentService.findAllByIdIn(binaryContentIds);
 
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(responses);
+            .body(files);
     }
+
+    @GetMapping("/{binaryContentId}/download")
+    public ResponseEntity<?> download(@PathVariable("binaryContentId") UUID binaryContentId) {
+        BinaryContentDto binaryContentDto = binaryContentService.findById(binaryContentId)
+            .orElseThrow(() -> new NoSuchElementException("파일 조회에 실패하였습니다.: " + binaryContentId));
+
+        ResponseEntity<?> response = binaryContentStorage.download(binaryContentDto);
+
+        return response;
+    }
+
 }

@@ -1,10 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
+import com.sprint.mission.discodeit.dto.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.ReadStatusResponse;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -30,39 +29,35 @@ public class ReadStatusController implements ReadStatusApi {
 
     @PostMapping
     @Override
-    public ResponseEntity<ReadStatusResponse> createReadStatus(
+    public ResponseEntity<ReadStatusDto> createReadStatus(
         @Valid @RequestBody ReadStatusCreateRequest request) {
-        ReadStatus readStatus = readStatusService.create(request);
-        ReadStatusResponse response = ReadStatusResponse.fromEntity(readStatus);
+        ReadStatusDto newReadStatus = readStatusService.create(request);
+
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(response);
+            .body(newReadStatus);
     }
 
     @PatchMapping("/{readStatusId}")
     @Override
-    public ResponseEntity<ReadStatusResponse> updateReadStatus(
+    public ResponseEntity<ReadStatusDto> updateReadStatus(
         @PathVariable("readStatusId") UUID readStatusId,
         @Valid @RequestBody ReadStatusUpdateRequest request) {
-        ReadStatus updatedReadStatus = readStatusService.update(readStatusId, request);
-        ReadStatusResponse response = ReadStatusResponse.fromEntity(updatedReadStatus);
+        ReadStatusDto updatedReadStatus = readStatusService.update(readStatusId, request);
+
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(response);
+            .body(updatedReadStatus);
     }
 
     @GetMapping
     @Override
-    public ResponseEntity<List<ReadStatusResponse>> findAllReadStatus(
+    public ResponseEntity<List<ReadStatusDto>> findAllReadStatus(
         @RequestParam("userId") UUID userId) {
-        List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
-
-        List<ReadStatusResponse> responses = readStatuses.stream()
-            .map(ReadStatusResponse::fromEntity)
-            .toList();
+        List<ReadStatusDto> readStatuses = readStatusService.findAllByUserId(userId);
 
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(responses);
+            .body(readStatuses);
     }
 }

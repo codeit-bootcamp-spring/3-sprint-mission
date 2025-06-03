@@ -2,8 +2,9 @@ package com.sprint.mission.discodeit.dto.request;
 
 public record BinaryContentCreateRequest(
     String fileName,
-    byte[] bytes,
-    String contentType
+    Long size,
+    String contentType,
+    byte[] bytes
 ) {
 
     public boolean isValid() {

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -51,7 +51,7 @@ public interface BinaryContentApi {
         required = true,
         schema = @Schema(type = "string", format = "uuid")
     )
-    ResponseEntity<BinaryContentResponse> find(UUID binaryContentId);
+    ResponseEntity<BinaryContentDto> find(UUID binaryContentId);
 
     @Operation(
         summary = "여러 첨부 파일 조회",
@@ -73,5 +73,5 @@ public interface BinaryContentApi {
         required = true,
         array = @ArraySchema(schema = @Schema(type = "string", format = "uuid"))
     )
-    ResponseEntity<List<BinaryContentResponse>> findAll(List<UUID> binaryContentIds);
+    ResponseEntity<List<BinaryContentDto>> findAll(List<UUID> binaryContentIds);
 }

@@ -5,8 +5,6 @@ import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.ChannelResponse;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -33,36 +31,36 @@ public class ChannelController implements ChannelApi {
 
     @PostMapping("/public")
     @Override
-    public ResponseEntity<ChannelResponse> create(
+    public ResponseEntity<ChannelDto> create(
         @Valid @RequestBody PublicChannelCreateRequest request) {
-        Channel createdChannel = channelService.create(request);
-        ChannelResponse response = ChannelResponse.fromEntity(createdChannel);
+        ChannelDto createdChannel = channelService.create(request);
+
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(response);
+            .body(createdChannel);
     }
 
 
     @PostMapping("/private")
     @Override
-    public ResponseEntity<ChannelResponse> create(
+    public ResponseEntity<ChannelDto> create(
         @Valid @RequestBody PrivateChannelCreateRequest request) {
-        Channel createdChannel = channelService.create(request);
-        ChannelResponse response = ChannelResponse.fromEntity(createdChannel);
+        ChannelDto createdChannel = channelService.create(request);
+
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(response);
+            .body(createdChannel);
     }
 
     @PatchMapping("/{channelId}")
     @Override
-    public ResponseEntity<ChannelResponse> update(@PathVariable("channelId") UUID channelId,
+    public ResponseEntity<ChannelDto> update(@PathVariable("channelId") UUID channelId,
         @Valid @RequestBody PublicChannelUpdateRequest request) {
-        Channel updatedChannel = channelService.update(channelId, request);
-        ChannelResponse response = ChannelResponse.fromEntity(updatedChannel);
+        ChannelDto updatedChannel = channelService.update(channelId, request);
+
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(response);
+            .body(updatedChannel);
     }
 
     @DeleteMapping("/{channelId}")
