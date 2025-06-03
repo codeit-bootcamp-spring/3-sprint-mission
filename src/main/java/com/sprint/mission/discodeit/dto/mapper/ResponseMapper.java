@@ -69,7 +69,6 @@ public class ResponseMapper {
         binaryContent.getCreatedAt(),
         binaryContent.getFileName(),
         binaryContent.getSize(),
-        binaryContent.getContentType(),
-        binaryContent.getBytes());
+        binaryContent.getContentType());
   }
 }
