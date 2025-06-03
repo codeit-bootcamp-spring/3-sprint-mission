@@ -1,9 +1,13 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.MessageApi;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,11 +19,19 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,31 +51,14 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/messages")
-public class MessageController {
+public class MessageController implements MessageApi {
 
   private final MessageService messageService;
+  private final PageResponseMapper pageResponseMapper;
 
-  @Operation(summary = "Message 생성")
-  @ApiResponses({
-      @ApiResponse(
-          responseCode = "201",
-          description = "Message가 성공적으로 생성됨",
-          content = @Content(
-              mediaType = "*/*",
-              schema = @Schema(implementation = Message.class)
-          )
-      ),
-      @ApiResponse(
-          responseCode = "404",
-          description = "Channel 또는 User를 찾을 수 없음",
-          content = @Content(
-              mediaType = "*/*",
-              examples = @ExampleObject(value = "Channel | Author with id {channelId | authorId} not found")
-          )
-      )
-  })
+  @Override
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<Message> create(
+  public ResponseEntity<MessageDto> create(
       @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
@@ -75,91 +70,42 @@ public class MessageController {
       }
     }
 
-    Message created = messageService.create(messageCreateRequest, attachmentRequests);
-    return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
   }
 
-  @Operation(summary = "Message 내용 수정")
-  @ApiResponses({
-      @ApiResponse(
-          responseCode = "200",
-          description = "Message가 성공적으로 수정됨",
-          content = @Content(
-              mediaType = "*/*",
-              schema = @Schema(implementation = Message.class)
-          )
-      ),
-      @ApiResponse(
-          responseCode = "404",
-          description = "Message를 찾을 수 없음",
-          content = @Content(
-              mediaType = "*/*",
-              examples = @ExampleObject(value = "Message with id {messageId} not found")
-          )
-      )
-  })
+  @Override
   @PatchMapping("/{messageId}")
-  public ResponseEntity<Message> update(
-      @Parameter(
-          name = "messageId",
-          description = "수정할 Message ID",
-          required = true) @PathVariable("messageId") UUID messageId,
+  public ResponseEntity<MessageDto> update(
+      @PathVariable("messageId") UUID messageId,
       @RequestBody MessageUpdateRequest request
   ) {
 
-    Message updatedmessage = messageService.update(messageId, request);
-    return ResponseEntity.status(HttpStatus.OK).body(updatedmessage);
+    MessageDto updatedMessage = messageService.update(messageId, request);
+    return ResponseEntity.status(HttpStatus.OK).body(updatedMessage);
 
   }
 
-  @Operation(summary = "Message 삭제")
-  @ApiResponses({
-      @ApiResponse(
-          responseCode = "204",
-          description = "Message가 성공적으로 삭제됨"
-      ),
-      @ApiResponse(
-          responseCode = "404",
-          description = "Message를 찾을 수 없음",
-          content = @Content(
-              mediaType = "*/*",
-              examples = @ExampleObject(value = "Message with id {messageId} not found")
-          )
-      )
-  })
+  @Override
   @DeleteMapping("/{messageId}")
   public ResponseEntity<Void> delete(
-      @Parameter(
-          name = "messageId",
-          description = "삭제할 Message ID",
-          required = true) @PathVariable("messageId") UUID messageId
+      @PathVariable("messageId") UUID messageId
   ) {
 
     messageService.delete(messageId);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
-  @Operation(
-      summary = "Channel의 Message 목록 조회"
-  )
-  @ApiResponses({
-      @ApiResponse(
-          responseCode = "200",
-          description = "Message 목록 조회 성공",
-          content = @Content(
-              mediaType = "*/*",
-              array = @ArraySchema(schema = @Schema(implementation = Message.class))
-          )
-      )
-  })
+  @Override
   @GetMapping
-  public ResponseEntity<List<Message>> findAllByChannelId
-      (@Parameter(
-          name = "channelId",
-          description = "조회할 Channel ID",
-          required = true) @RequestParam("channelId") UUID channelId
+  public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId
+      (
+          @RequestParam("channelId") UUID channelId,
+          @RequestParam(value = "cursor", required = false) Instant cursor,
+          @PageableDefault(size = 50, sort = "createdAt", direction = Direction.DESC) Pageable pageable
       ) {
-    List<Message> messages = messageService.findAllByChannelId(channelId);
+    PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId,
+        cursor, pageable);
 
     return ResponseEntity.status(HttpStatus.OK).body(messages);
   }
