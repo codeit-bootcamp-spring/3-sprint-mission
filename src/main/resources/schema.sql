@@ -1,4 +1,4 @@
--- 1. 테이블 드롭
+-- 테이블 드롭
 DROP TABLE IF EXISTS message_attachments CASCADE;
 DROP TABLE IF EXISTS messages CASCADE;
 DROP TABLE IF EXISTS read_statuses CASCADE;
@@ -7,21 +7,15 @@ DROP TABLE IF EXISTS binary_contents CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS channels CASCADE;
 
--- 2. ENUM 타입 제거
-DROP TYPE IF EXISTS channel_type;
-
--- 3. ENUM 타입 생성
-CREATE TYPE channel_type AS ENUM ('PUBLIC', 'PRIVATE');
-
--- 4. 테이블 생성
+-- 테이블 생성
 CREATE TABLE channels
 (
     id          UUID PRIMARY KEY,
-    created_at  TIMESTAMPTZ  NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL,
     updated_at  TIMESTAMPTZ,
     name        VARCHAR(100),
     description VARCHAR(500),
-    type        channel_type NOT NULL
+    type        VARCHAR(10) NOT NULL CHECK (type IN ('PUBLIC', 'PRIVATE'))
 );
 
 CREATE TABLE users
@@ -41,8 +35,7 @@ CREATE TABLE binary_contents
     created_at   TIMESTAMPTZ  NOT NULL,
     file_name    VARCHAR(255) NOT NULL,
     size         BIGINT       NOT NULL,
-    content_type VARCHAR(100) NOT NULL,
-    bytes        BYTEA
+    content_type VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE messages
@@ -81,7 +74,7 @@ CREATE TABLE message_attachments
     PRIMARY KEY (message_id, attachment_id)
 );
 
--- 5. FK 제약 추가
+-- FK 제약 추가
 ALTER TABLE users
     ADD CONSTRAINT fk_profile FOREIGN KEY (profile_id) REFERENCES binary_contents (id);
 ALTER TABLE messages

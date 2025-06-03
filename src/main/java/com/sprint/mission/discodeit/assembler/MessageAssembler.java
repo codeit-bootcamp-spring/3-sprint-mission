@@ -36,7 +36,7 @@ public class MessageAssembler {
     );
 
     var attachments = message.getAttachments().stream()
-        .map(att -> binaryContentMapper.toResponse(att.getBinaryContent()))
+        .map(att -> binaryContentMapper.toResponse(att.getAttachment()))
         .toList();
 
     return new MessageResponse(

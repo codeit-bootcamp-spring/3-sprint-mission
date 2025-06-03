@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 
 public interface MessageService {
 
@@ -30,6 +33,15 @@ public interface MessageService {
    * @return 채널 내 모든 메시지 목록
    */
   List<MessageResponse> findAllByChannelId(UUID channelId);
+
+  /**
+   * 채널의 모든 메시지를 커서 페이징 처리하여 조회한다
+   *
+   * @param channelId 채널 ID
+   * @return 채널 내 모든 메시지 목록
+   */
+  PageResponse<MessageResponse> findAllByChannelIdWithCursor(UUID channelId, Instant cursor,
+      Pageable pageable);
 
   /**
    * 메시지 내용을 업데이트한다

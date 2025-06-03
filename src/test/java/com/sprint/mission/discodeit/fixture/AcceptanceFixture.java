@@ -3,8 +3,8 @@ package com.sprint.mission.discodeit.fixture;
 import static com.sprint.mission.discodeit.support.TestUtils.json;
 import static com.sprint.mission.discodeit.support.TestUtils.jsonHeader;
 
+import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.entity.Message;
 import java.util.UUID;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.ClassPathResource;
@@ -70,13 +70,13 @@ public class AcceptanceFixture {
     );
   }
 
-  public static ResponseEntity<Message> createMessage(
+  public static ResponseEntity<MessageResponse> createMessage(
       TestRestTemplate restTemplate,
       UUID userId,
       UUID channelId
   ) {
     MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add("message", new HttpEntity<>(json("""
+    body.add("messageCreateRequest", new HttpEntity<>(json("""
         {
           "content": "첨부 메시지 테스트",
           "authorId": "%s",
@@ -90,6 +90,6 @@ public class AcceptanceFixture {
     headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
     return restTemplate.postForEntity(
-        "/api/messages", new HttpEntity<>(body, headers), Message.class);
+        "/api/messages", new HttpEntity<>(body, headers), MessageResponse.class);
   }
 }

@@ -4,15 +4,20 @@ import com.sprint.mission.discodeit.controller.api.MessageApi;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.exception.BinaryContentException;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
 import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.io.IOException;
 import java.net.URI;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,7 +43,7 @@ public class MessageController implements MessageApi {
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE
   )
   public ResponseEntity<MessageResponse> create(
-      @RequestPart("message") MessageCreateRequest request,
+      @RequestPart("messageCreateRequest") MessageCreateRequest request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) {
 
     List<BinaryContentData> binaryContentDataList = resolveAttachmentRequest(attachments);
@@ -50,8 +55,14 @@ public class MessageController implements MessageApi {
   }
 
   @GetMapping
-  public ResponseEntity<List<MessageResponse>> findAllByChannelId(@RequestParam UUID channelId) {
-    return ResponseEntity.ok(messageService.findAllByChannelId(channelId));
+  public ResponseEntity<PageResponse<MessageResponse>> findAllByChannelId(
+      @RequestParam UUID channelId,
+      @RequestParam(required = false) Instant cursor,
+      @PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+    return ResponseEntity.ok(
+        messageService.findAllByChannelIdWithCursor(channelId, cursor, pageable)
+    );
   }
 
   @PatchMapping("/{messageId}")
