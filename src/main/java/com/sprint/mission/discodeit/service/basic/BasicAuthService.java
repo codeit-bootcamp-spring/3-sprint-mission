@@ -1,36 +1,37 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.LoginRequest;
-import com.sprint.mission.discodeit.entitiy.User;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.LoginRequest;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.rmi.NoSuchObjectException;
-import java.util.List;
-import java.util.Optional;
-
-@Service
 @RequiredArgsConstructor
+@Service
 public class BasicAuthService implements AuthService {
 
-    private final UserRepository userRepository;
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
 
-    @Override
-    public User login(LoginRequest request) {
-        List<User> userList = userRepository.read();
-        Optional<User> user = userList.stream()
-                .filter(u -> u.getUsername().equals(request.username()) && u.getPassword().equals(request.password()))
-                .findAny();
-        try {
-            if (user.isPresent()) {
-                return user.get();
-            } else
-                throw new NoSuchObjectException("일치하지 않는 아이디 또는 비밀번호 입니다.");
-        } catch (NoSuchObjectException e) {
-            System.out.println(e);
-            return null;
-        }
+  @Transactional
+  @Override
+  public UserDto login(LoginRequest loginRequest) {
+    String username = loginRequest.username();
+    String password = loginRequest.password();
+
+    User user = userRepository.findByUsername(username)
+        .orElseThrow(
+            () -> new NoSuchElementException("User with username " + username + " not found"));
+
+    if (!user.getPassword().equals(password)) {
+      throw new IllegalArgumentException("Wrong password");
     }
+
+    return userMapper.toDto(user);
+  }
 }
