@@ -7,7 +7,6 @@ import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -16,7 +15,6 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -49,11 +47,7 @@ public class ChannelAssembler {
   }
 
   public ChannelResponse toResponse(Channel channel) {
-    Instant lastMessageAt = messageRepository.findAll().stream()
-        .filter(m -> m.getChannel().equals(channel))
-        .map(Message::getCreatedAt)
-        .max(Comparator.naturalOrder())
-        .orElse(null);
+    Instant lastMessageAt = messageRepository.findLastCreatedAtByChannelId(channel.getId());
 
     List<UserResponse> participants = List.of();
     if (channel.getType() == ChannelType.PRIVATE) {
