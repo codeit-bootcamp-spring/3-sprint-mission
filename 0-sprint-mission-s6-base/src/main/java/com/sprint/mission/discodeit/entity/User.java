@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,23 +47,28 @@ public class User extends BaseUpdatableEntity {
     this.profile = profile;
   }
 
-  public void updateName(String username) {
-    this.username = username;
-  }
+  public void update(String newUsername, String newEmail, String newPassword,
+      BinaryContent newProfile) {
+    boolean anyValueUpdated = false;
+    if (newUsername != null && !newUsername.equals(this.username)) {
+      this.username = newUsername;
+      anyValueUpdated = true;
+    }
+    if (newEmail != null && !newEmail.equals(this.email)) {
+      this.email = newEmail;
+      anyValueUpdated = true;
+    }
+    if (newPassword != null && !newPassword.equals(this.password)) {
+      this.password = newPassword;
+      anyValueUpdated = true;
+    }
+    if (newProfile != null && !newProfile.equals(this.profile)) {
+      this.profile = newProfile;
+      anyValueUpdated = true;
+    }
 
-  public void updatePassword(String password) {
-    this.password = password;
-  }
-
-  public void updateEmail(String email) {
-    this.email = email;
-  }
-
-  public void updateProfileId(BinaryContent profile) {
-    this.profile = profile;
-  }
-
-  public void updateUserStatus(UserStatus userStatus) {
-    this.userStatus = userStatus;
+    if (anyValueUpdated) {
+      this.updatedAt = Instant.now();
+    }
   }
 }

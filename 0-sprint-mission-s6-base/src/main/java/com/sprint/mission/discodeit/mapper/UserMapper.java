@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserMapper {
 
-  private final BinaryContentMapper binartContentMapper;
+  private final BinaryContentMapper binaryContentMapper;
 
   public UserResponse entityToDto(User user) {
     if (user == null) {
@@ -19,7 +19,7 @@ public class UserMapper {
         .id(user.getId())
         .username(user.getUsername())
         .email(user.getEmail())
-        .profile(binartContentMapper.entityToDto(user.getProfile()))
+        .profile(binaryContentMapper.entityToDto(user.getProfile()))
         .online(user.getUserStatus().isOnline())
         .build();
   }
