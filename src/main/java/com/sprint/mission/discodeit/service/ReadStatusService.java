@@ -1,13 +1,10 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.Dto.readStatus.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.Dto.readStatus.ReadStatusCreateResponse;
-import com.sprint.mission.discodeit.Dto.readStatus.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.ReadStatus;
-import org.springframework.http.ResponseEntity;
+import com.sprint.mission.discodeit.dto.readStatus.*;
+import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusUpdateRequest;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -24,14 +21,10 @@ import java.util.UUID;
 
 public interface ReadStatusService {
 
-    ResponseEntity<?> create(ReadStatusCreateRequest request);
+    List<JpaReadStatusResponse> findAllByUserId(UUID userId);
 
+    JpaReadStatusResponse create(ReadStatusCreateRequest request);
 
-    ReadStatus findById(UUID readStatusId);
+    JpaReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest request);
 
-    ResponseEntity<?> findAllByUserId(UUID userId);
-
-    ResponseEntity<?> update(UUID readStatusId, ReadStatusUpdateRequest request);
-
-    void delete(UUID readStatusId);
 }

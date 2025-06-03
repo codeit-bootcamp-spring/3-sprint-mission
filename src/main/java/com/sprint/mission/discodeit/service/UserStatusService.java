@@ -1,13 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.Dto.userStatus.UserStatusCreateResponse;
-import com.sprint.mission.discodeit.Dto.userStatus.UserStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import org.springframework.http.ResponseEntity;
+import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -20,15 +15,5 @@ import java.util.UUID;
 
 public interface UserStatusService {
 
-  UserStatusCreateResponse create(UserStatusCreateRequest request);
-
-  UserStatus find(UUID userStatusId);
-
-  List<UserStatus> findAll();
-
-  void update(UserStatusUpdateRequest request);
-
-  ResponseEntity<?> updateByUserId(UUID userId, Instant newLastActiveAt);  // throw
-
-  void delete(UUID userStatusId);
+  JpaUserStatusResponse updateByUserId(UUID userId, Instant newLastActiveAt);  // throw
 }

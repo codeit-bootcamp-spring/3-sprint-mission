@@ -1,23 +1,20 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.Dto.authService.LoginRequest;
-import com.sprint.mission.discodeit.Dto.authService.LoginResponse;
+import com.sprint.mission.discodeit.dto.authService.LoginRequest;
+import com.sprint.mission.discodeit.dto.authService.LoginResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.NoSuchElementException;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic fileName       : BasicAuthService
@@ -30,42 +27,41 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Service("basicAuthService")
 public class BasicAuthService implements AuthService {
+    private final JpaUserRepository userRepository;
 
-  private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
+    public LoginResponse login(LoginRequest request) {
 
+        String username = request.username();
+        String password = request.password();
 
-  public ResponseEntity<?> login(LoginRequest request) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NoSuchElementException("User with username " + username + " not found"));
 
-    String username = request.username();
-    String password = request.password();
+        BinaryContent profile = user.getProfile();
+        JpaBinaryContentResponse profileDto = null;
+        if(profile != null) {
+            profileDto = new JpaBinaryContentResponse(
+                    profile.getId(),
+                    profile.getFileName(),
+                    profile.getSize(),
+                    profile.getContentType()
+            );
+        }
 
-    List<User> users = userRepository.findAllUsers();
-    List<User> selectedUser = users.stream().filter(user -> user.getUsername().equals(username))
-        .toList();
-
-    if (selectedUser.isEmpty()) {
-      return ResponseEntity.status(404).body("User with username " + username + " not found");
+        if(user.getPassword().equals(password)) {
+            LoginResponse loginResponse = new LoginResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    profileDto,
+                    isOnline(user.getStatus())
+            );
+            return loginResponse;
+        }
+        throw new IllegalArgumentException("wrong password");
     }
-
-    if ((selectedUser.size() == 1) && (selectedUser.get(0).getPassword().equals(password))) {
-
-      LoginResponse loginResponse = new LoginResponse(
-          selectedUser.get(0).getId(),
-          selectedUser.get(0).getCreatedAt(),
-          selectedUser.get(0).getUpdatedAt(),
-          selectedUser.get(0).getUsername(),
-          selectedUser.get(0).getEmail(),
-          selectedUser.get(0).getPassword(),
-          selectedUser.get(0).getProfileId()
-      );
-      return ResponseEntity
-          .status(200)
-          .body(loginResponse);
+    
+    private static boolean isOnline(UserStatus userStatus) {
+        Instant now = Instant.now();
+        return Duration.between(userStatus.getLastActiveAt(), now).toMinutes() < 5;
     }
-    if (selectedUser.size() >= 2) {
-      return ResponseEntity.status(404).body("USERNAME IS NOT UNIQUE I AM IN TROUBLE!!!");
-    }
-    return ResponseEntity.status(400).body("wrong password");
-  }
 }

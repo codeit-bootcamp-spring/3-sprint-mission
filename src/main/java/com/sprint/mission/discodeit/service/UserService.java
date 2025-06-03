@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.Dto.user.UserUpdateRequest;
-import org.springframework.http.ResponseEntity;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.user.*;
+import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,18 +18,12 @@ import java.util.UUID;
  */
 public interface UserService {
 
-    ResponseEntity<?> create(UserCreateRequest userCreateRequest,
-                             Optional<BinaryContentCreateRequest> profile);
+    List<JpaUserResponse> findAllUsers();
 
-    ResponseEntity<?> findUserById(UUID userId);
+    JpaUserResponse create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profile);
 
-    ResponseEntity<?> findAllUsers();
+    JpaUserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file);
 
-    ResponseEntity<?> updateImage(UUID userId, UserUpdateRequest request,
-                                  MultipartFile file);
+    void deleteUser(UUID userId);
 
-    // not required
-    ResponseEntity<?> updateUser(UUID userId, String name);
-
-    ResponseEntity<?> deleteUser(UUID userId);
 }

@@ -12,6 +12,7 @@ import java.util.UUID;
  * =========================================================== DATE              AUTHOR NOTE
  * ----------------------------------------------------------- 2025. 4. 23.        doungukkim 최초 생성
  */
+// 사용 안함
 public interface UserStatusRepository {
 
   boolean isOnline(UUID userStatusId); // throw

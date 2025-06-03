@@ -1,10 +1,8 @@
 package com.sprint.mission.discodeit.repository;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -18,6 +16,7 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 24.        doungukkim       최초 생성
  */
+// 사용 안함
 public interface BinaryContentRepository {
     BinaryContent createBinaryContent(String fileName, Long size, String contentType, byte[] bytes, String extension);
 
@@ -30,4 +29,6 @@ public interface BinaryContentRepository {
     BinaryContent findById(UUID attachmentId);
 
     List<BinaryContent> findAllByIds(List<UUID> attachmentIds);
+
+
 }
