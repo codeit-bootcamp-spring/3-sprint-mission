@@ -1,20 +1,18 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
 import lombok.Getter;
 
 @Getter
 public class UserStatus extends BaseUpdatableEntity {
-    private UUID userId;
+    private User user;
     private Instant lastActiveAt;
 
-    public UserStatus(UUID userId, Instant lastActiveAt) {
-        this.userId = Objects.requireNonNull(userId, "User ID must not be null");
+    public UserStatus(User user, Instant lastActiveAt) {
+        this.user = Objects.requireNonNull(user, "User ID must not be null");
         this.lastActiveAt = Objects.requireNonNull(lastActiveAt, "Last active time must not be null");
     }
 

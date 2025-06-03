@@ -1,27 +1,25 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import lombok.Getter;
 
 @Getter
 public class Message extends BaseUpdatableEntity {
     private String content;
     //
-    private UUID channelId;
-    private UUID authorId;
-    private List<UUID> attachmentIds;
+    private Channel channel;
+    private User author;
+    private List<BinaryContent> attachments;
 
-    public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
+    public Message(String content, Channel channel, User author, List<BinaryContent> attachments) {
         this.content = Objects.requireNonNull(content, "Message content must not be null");
-        this.channelId = Objects.requireNonNull(channelId, "Channel ID must not be null");
-        this.authorId = Objects.requireNonNull(authorId, "Author ID must not be null");
-        this.attachmentIds = (attachmentIds != null) ? attachmentIds : new ArrayList<>();
+        this.channel = Objects.requireNonNull(channel, "Channel ID must not be null");
+        this.author = Objects.requireNonNull(author, "Author ID must not be null");
+        this.attachments = (attachments != null) ? attachments : new ArrayList<>();
     }
 
     public void update(String newContent) {
@@ -40,8 +38,8 @@ public class Message extends BaseUpdatableEntity {
     public String toString() {
         return "Message{" +
                 "content='" + getContent() + '\'' +
-                ", user='" + getAuthorId() + '\'' +
-                ", channel='" + getChannelId() + '\'' +
+                ", user='" + getAuthor() + '\'' +
+                ", channel='" + getChannel() + '\'' +
                 ", id='" + getId() + '\'' +
                 ", createdAt='" + getCreatedAt() + '\'' +
                 ", updatedAt='" + getUpdatedAt() + '\'' +
