@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.UserException;
 import com.sprint.mission.discodeit.exception.UserStatusException;
+import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -23,6 +24,7 @@ public class BasicUserStatusService implements UserStatusService {
   //  private static final Logger log = LogManager.getLogger(BasicUserStatusService.class);
   private final UserStatusRepository userStatusRepository;
   private final UserRepository userRepository;
+  private final UserStatusMapper userStatusMapper;
 
   @Override
   public UserStatusResponse create(UUID userId) {
@@ -33,38 +35,38 @@ public class BasicUserStatusService implements UserStatusService {
       throw UserStatusException.duplicate(userId);
     }
 
-    UserStatus userStatus = UserStatus.create(user);
-    return UserStatusResponse.from(userStatusRepository.save(userStatus));
+    UserStatus saved = userStatusRepository.save(UserStatus.create(user));
+    return userStatusMapper.toResponse(saved);
   }
 
   @Override
   public UserStatusResponse find(UUID userStatusId) {
     return userStatusRepository.findById(userStatusId)
-        .map(UserStatusResponse::from)
+        .map(userStatusMapper::toResponse)
         .orElseThrow(() -> UserStatusException.notFound(userStatusId));
   }
 
   @Override
   public UserStatusResponse findByUserId(UUID userId) {
     return userStatusRepository.findByUserId(userId)
-        .map(UserStatusResponse::from)
+        .map(userStatusMapper::toResponse)
         .orElseThrow(() -> UserStatusException.notFound(userId));
   }
 
   @Override
   public List<UserStatusResponse> findAll() {
     return userStatusRepository.findAll().stream()
-        .map(UserStatusResponse::from)
+        .map(userStatusMapper::toResponse)
         .collect(Collectors.toList());
   }
 
   @Override
-  public UserStatusResponse update(UUID userId) {
-    UserStatus userStatus = userStatusRepository.findById(userId)
-        .orElseThrow(() -> UserStatusException.notFound(userId));
+  public UserStatusResponse update(UUID userStatusId) {
+    UserStatus userStatus = userStatusRepository.findById(userStatusId)
+        .orElseThrow(() -> UserStatusException.notFound(userStatusId));
 
     userStatus.updateLastActiveAt();
-    return UserStatusResponse.from(userStatusRepository.save(userStatus));
+    return userStatusMapper.toResponse(userStatusRepository.save(userStatus));
   }
 
   @Override
@@ -73,7 +75,7 @@ public class BasicUserStatusService implements UserStatusService {
         .orElseThrow(() -> UserStatusException.notFoundByUserId(userId));
 
     userStatus.updateLastActiveAt();
-    return UserStatusResponse.from(userStatus);
+    return userStatusMapper.toResponse(userStatus);
   }
 
   @Override

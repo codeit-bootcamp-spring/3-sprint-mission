@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.assembler.MessageAssembler;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -30,6 +31,7 @@ public class BasicMessageService implements MessageService {
   private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
   private final BinaryContentRepository binaryContentRepository;
+  private final MessageAssembler messageAssembler;
 
   @Override
   public MessageResponse create(CreateMessageCommand command) {
@@ -50,13 +52,13 @@ public class BasicMessageService implements MessageService {
       message.attach(saved);
     });
 
-    return MessageResponse.from(messageRepository.save(message));
+    return messageAssembler.toResponse(messageRepository.save(message));
   }
 
   @Override
   public MessageResponse findById(UUID messageId) {
     return messageRepository.findById(messageId)
-        .map(MessageResponse::from)
+        .map(messageAssembler::toResponse)
         .orElseThrow(() -> MessageException.notFound(messageId));
   }
 
@@ -64,7 +66,7 @@ public class BasicMessageService implements MessageService {
   public List<MessageResponse> findAllByChannelId(UUID channelId) {
     return messageRepository.findAllByChannelId(channelId).stream()
         .sorted(Comparator.comparing(Message::getCreatedAt))
-        .map(MessageResponse::from)
+        .map(messageAssembler::toResponse)
         .toList();
   }
 
@@ -73,24 +75,15 @@ public class BasicMessageService implements MessageService {
     return messageRepository.findById(messageId)
         .map(message -> {
           message.updateContent(newContent);
-          return MessageResponse.from(messageRepository.save(message));
+          return messageAssembler.toResponse(messageRepository.save(message));
         })
         .orElseThrow(() -> MessageException.notFound(messageId));
   }
 
   @Override
   public void delete(UUID messageId) {
-    Message message = messageRepository.findById(messageId)
+    messageRepository.findById(messageId)
         .orElseThrow(() -> MessageException.notFound(messageId));
-
-    for (var attachment : message.getAttachments()) {
-      System.out.println("attachment = " + attachment);
-      System.out.println("binaryContent = " + attachment.getBinaryContent());
-      System.out.println("binaryContentId = " +
-          (attachment.getBinaryContent() != null ? attachment.getBinaryContent().getId() : "null")
-      );
-    }
-
     messageRepository.deleteById(messageId);
   }
 }

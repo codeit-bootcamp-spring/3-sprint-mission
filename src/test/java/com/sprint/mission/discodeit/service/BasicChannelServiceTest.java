@@ -8,8 +8,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.sprint.mission.discodeit.assembler.ChannelAssembler;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -18,18 +20,16 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.ChannelException;
 import com.sprint.mission.discodeit.fixture.ChannelFixture;
 import com.sprint.mission.discodeit.fixture.MessageFixture;
-import com.sprint.mission.discodeit.fixture.ReadStatusFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -37,13 +37,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("BasicChannelService 단위 테스트")
 class BasicChannelServiceTest {
-
-  private static final Logger log = LogManager.getLogger(BasicChannelServiceTest.class);
 
   @Mock
   UserRepository userRepository;
@@ -53,6 +52,8 @@ class BasicChannelServiceTest {
   MessageRepository messageRepository;
   @Mock
   ReadStatusRepository readStatusRepository;
+  @Mock
+  ChannelAssembler channelAssembler;
 
   @InjectMocks
   BasicChannelService channelService;
@@ -66,27 +67,37 @@ class BasicChannelServiceTest {
     user = UserFixture.createValidUserWithId();
     publicChannel = ChannelFixture.createPublic();
     privateChannel = ChannelFixture.createPrivate();
+
+    Mockito.lenient().when(channelAssembler.toResponse(any(Channel.class)))
+        .thenAnswer(invocation -> {
+          Channel ch = invocation.getArgument(0);
+          List<UserResponse> participants = List.of(new UserResponse(
+              user.getId(), user.getUsername(), user.getEmail(), null, false));
+          return new ChannelResponse(
+              ch.getId(), ch.getType(), ch.getName(), ch.getDescription(),
+              participants, Instant.now());
+        });
   }
 
   @Nested
-  class Create {
+  @DisplayName("Create 테스트")
+  class CreateTests {
 
     @Test
-    void 공개_채널_생성_시_PUBLIC_타입의_채널이_생성된다() {
-      String name = "테스트 채널";
-      String description = "테스트 채널임";
-
+    @DisplayName("공개 채널 생성")
+    void 공개채널_생성() {
       when(channelRepository.save(any(Channel.class))).thenReturn(publicChannel);
 
-      ChannelResponse result = channelService.create(name, description);
+      ChannelResponse response = channelService.create("테스트 채널", "테스트 채널임");
 
-      assertEquals(name, result.name());
-      assertEquals(ChannelType.PUBLIC, result.type());
+      assertEquals("테스트 채널", response.name());
+      assertEquals(ChannelType.PUBLIC, response.type());
       verify(channelRepository).save(any());
     }
 
     @Test
-    void 비공개_채널_생성_시_참여자의_ReadStatus도_함께_생성된다() {
+    @DisplayName("비공개 채널 생성 및 ReadStatus 생성")
+    void 비공개채널_및_ReadStatus_생성() {
       when(readStatusRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
       when(channelRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
       when(userRepository.findById(any())).thenReturn(Optional.of(user));
@@ -99,103 +110,94 @@ class BasicChannelServiceTest {
   }
 
   @Nested
-  class Read {
+  @DisplayName("Read 테스트")
+  class ReadTests {
 
     @Test
-    void 채널_조회는_채널_타입을_구분해서_적절한_응답을_반환해야_한다() {
-      ReadStatus readStatus = ReadStatusFixture.create(user, privateChannel);
-
-      Message privateMessage = MessageFixture.createCustom("testMessage", user, privateChannel);
-      Message publicMessage = MessageFixture.createCustom("testMessage", user, publicChannel);
-
-      when(messageRepository.findAll()).thenReturn(List.of(privateMessage, publicMessage));
+    @DisplayName("유저별 채널 조회 및 응답 검증")
+    void findAllByUserIdReturnsProperResponses() {
       when(channelRepository.findAllByUserId(user.getId())).thenReturn(
           List.of(privateChannel, publicChannel));
-      when(readStatusRepository.findAllByChannelId(privateChannel.getId())).thenReturn(
-          List.of(readStatus));
 
-      List<ChannelResponse> result = channelService.findAllByUserId(user.getId());
+      List<ChannelResponse> responses = channelService.findAllByUserId(user.getId());
 
-      assertEquals(2, result.size());
+      assertEquals(2, responses.size());
+      responses.forEach(this::verifyChannelResponse);
+    }
 
-      for (ChannelResponse response : result) {
-        assertNotNull(response.lastMessageAt());
-
-        if (response.type() == ChannelType.PRIVATE) {
-          assertEquals(privateChannel.getId(), response.id());
-          assertTrue(response.participants().contains(user));
-          assertNotNull(response.lastMessageAt());
-        } else {
-          assertEquals(publicChannel.getId(), response.id());
-        }
+    private void verifyChannelResponse(ChannelResponse response) {
+      assertNotNull(response.lastMessageAt());
+      if (response.type() == ChannelType.PRIVATE) {
+        verifyPrivateChannelResponse(response);
+      } else {
+        verifyPublicChannelResponse(response);
       }
+    }
 
-      verify(readStatusRepository).findAllByChannelId(any());
+    private void verifyPrivateChannelResponse(ChannelResponse response) {
+      assertEquals(privateChannel.getId(), response.id());
+      assertTrue(response.participants().stream()
+          .anyMatch(p -> p.id().equals(user.getId())));
+    }
+
+    private void verifyPublicChannelResponse(ChannelResponse response) {
+      assertEquals(publicChannel.getId(), response.id());
     }
   }
 
   @Nested
-  class Update {
+  @DisplayName("Update 테스트")
+  class UpdateTests {
 
     @Test
-    void 비공개_채널의_이름을_업데이트하려고_하면_ChannelException이_발생한다() {
+    @DisplayName("비공개 채널 이름 변경 시 예외")
+    void updatePrivateChannelNameThrowsException() {
       UUID channelId = UUID.randomUUID();
-      Channel privateChannel = Channel.createPrivate();
+      Channel privateCh = Channel.createPrivate();
+      when(channelRepository.findById(channelId)).thenReturn(Optional.of(privateCh));
 
-      when(channelRepository.findById(channelId)).thenReturn(Optional.of(privateChannel));
-
-      PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("new-username",
-          null);
+      PublicChannelUpdateRequest req = new PublicChannelUpdateRequest("new-name", null);
 
       assertThrows(ChannelException.class,
-          () -> channelService.update(
-              channelId,
-              request.newName(),
-              request.newDescription()
-          ));
+          () -> channelService.update(channelId, req.newName(), req.newDescription()));
     }
 
     @Test
-    void 공개_채널의_이름을_업데이트하면_채널_이름이_변경된다() {
+    @DisplayName("공개 채널 이름 및 설명 변경 성공")
+    void updatePublicChannelName_success() {
       UUID channelId = UUID.randomUUID();
-      Channel publicChannel = Channel.createPublic("old-username", "desc");
-
-      when(channelRepository.findById(channelId)).thenReturn(Optional.of(publicChannel));
+      Channel publicCh = Channel.createPublic("old-name", "old-desc");
+      when(channelRepository.findById(channelId)).thenReturn(Optional.of(publicCh));
       when(channelRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-      String newName = "new-username";
-      String newDescription = "new-desc";
-      PublicChannelUpdateRequest request = new PublicChannelUpdateRequest(newName,
-          newDescription);
+      PublicChannelUpdateRequest req = new PublicChannelUpdateRequest("new-name", "new-desc");
 
-      ChannelResponse result = channelService.update(
-          channelId,
-          request.newName(),
-          request.newDescription()
-      );
+      ChannelResponse response = channelService.update(channelId, req.newName(),
+          req.newDescription());
 
-      assertEquals(newName, result.name());
-      assertEquals(newDescription, result.description());
+      assertEquals(req.newName(), response.name());
+      assertEquals(req.newDescription(), response.description());
       verify(channelRepository).save(any());
     }
   }
 
   @Nested
-  class Delete {
+  @DisplayName("Delete 테스트")
+  class DeleteTests {
 
     @Test
-    void 채널_삭제_시_채널과_관련된_도메인의_데이터를_함께_삭제해야_한다() {
+    @DisplayName("채널 삭제 시 관련 메시지, ReadStatus, 채널 삭제 확인")
+    void deleteChannelAlsoDeletesRelatedData() {
       UUID channelId = UUID.randomUUID();
       Channel channel = Channel.createPublic("general", "desc");
-
-      Message message = MessageFixture.createCustom("testMessage", user, channel);
+      Message message = MessageFixture.createCustom("msg", user, channel);
       ReadStatus status = ReadStatus.create(user, channel);
 
       when(channelRepository.findById(channelId)).thenReturn(Optional.of(channel));
       when(messageRepository.findAll()).thenReturn(List.of(message));
       when(readStatusRepository.findAllByChannelId(channelId)).thenReturn(List.of(status));
 
-      ChannelResponse result = channelService.delete(channelId);
+      channelService.delete(channelId);
 
       verify(messageRepository).deleteById(message.getId());
       verify(readStatusRepository).deleteById(status.getId());

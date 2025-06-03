@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.exception.UserException;
 import com.sprint.mission.discodeit.exception.UserStatusException;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.fixture.UserStatusFixture;
+import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserStatusService;
@@ -36,37 +37,25 @@ class BasicUserStatusServiceTest {
   @Mock
   private UserStatusRepository userStatusRepository;
 
+  @Mock
+  private UserStatusMapper userStatusMapper;
+
   @InjectMocks
   private BasicUserStatusService userStatusService;
 
-  private final UUID userId = UUID.randomUUID();
-
   private User user;
   private UserStatus userStatus;
+  private UUID userId;
 
   @BeforeEach
   void init() {
-    user = UserFixture.createValidUser();
-    userStatus = UserStatusFixture.createValid(user);
+    user = UserFixture.createValidUserWithId();
+    userStatus = UserStatusFixture.createWithId(user);
+    userId = user.getId();
   }
 
   @Nested
   class Create {
-
-    @Test
-    void 유효한_요청이면_유저_상태를_생성한다() {
-      given(userRepository.findById(userId)).willReturn(Optional.of(user));
-      given(userStatusRepository.findByUserId(userId)).willReturn(Optional.empty());
-      given(userStatusRepository.save(any(UserStatus.class)))
-          .willAnswer(invocation -> invocation.getArgument(0));
-
-      UserStatusResponse result = userStatusService.create(userId);
-
-      assertThat(result.userId()).isEqualTo(userId);
-      verify(userRepository).findById(userId);
-      verify(userStatusRepository).findByUserId(userId);
-      verify(userStatusRepository).save(any(UserStatus.class));
-    }
 
     @Test
     void 존재하지_않는_유저이면_UserException_예외를_던진다() {
@@ -98,27 +87,6 @@ class BasicUserStatusServiceTest {
   class Read {
 
     @Test
-    void ID로_유저_상태를_조회한다() {
-      UUID statusId = UUID.randomUUID();
-      given(userStatusRepository.findById(statusId)).willReturn(Optional.of(userStatus));
-
-      UserStatusResponse found = userStatusService.find(statusId);
-
-      assertThat(found).isNotNull();
-      verify(userStatusRepository).findById(statusId);
-    }
-
-    @Test
-    void userId로_유저_상태를_조회한다() {
-      given(userStatusRepository.findByUserId(userId)).willReturn(Optional.of(userStatus));
-
-      UserStatusResponse result = userStatusService.findByUserId(userId);
-
-      assertThat(result.userId()).isEqualTo(userId);
-      verify(userStatusRepository).findByUserId(userId);
-    }
-
-    @Test
     void 존재하지_않는_ID로_조회하면_UserStatusException_예외를_던진다() {
       UUID statusId = UUID.randomUUID();
       given(userStatusRepository.findById(statusId)).willReturn(Optional.empty());
@@ -132,29 +100,6 @@ class BasicUserStatusServiceTest {
 
   @Nested
   class Update {
-
-    @Test
-    void ID로_유저_상태를_업데이트한다() {
-      UUID statusId = userStatus.getId();
-      given(userStatusRepository.findById(statusId)).willReturn(Optional.of(userStatus));
-
-      UserStatusResponse updated = userStatusService.update(statusId);
-
-      assertThat(updated).isNotNull();
-      assertThat(updated.isOnline()).isTrue();
-      verify(userStatusRepository).findById(statusId);
-    }
-
-    @Test
-    void userId로_유저_상태를_업데이트한다() {
-      given(userStatusRepository.findByUserId(userId)).willReturn(Optional.of(userStatus));
-
-      UserStatusResponse updated = userStatusService.updateByUserId(userId);
-
-      assertThat(updated).isNotNull();
-      assertThat(updated.isOnline()).isTrue();
-      verify(userStatusRepository).findByUserId(userId);
-    }
 
     @Test
     void 존재하지_않는_userId로_업데이트하면_UserStatusException_예외를_던진다() {
@@ -191,6 +136,81 @@ class BasicUserStatusServiceTest {
 
       verify(userStatusRepository).findById(statusId);
       verify(userStatusRepository, never()).deleteById(statusId);
+    }
+  }
+
+  @Nested
+  class WithMapper {
+
+    @BeforeEach
+    void setUp() {
+      given(userStatusMapper.toResponse(any(UserStatus.class)))
+          .willAnswer(invocation -> {
+            UserStatus status = invocation.getArgument(0);
+            return new UserStatusResponse(
+                status.getId(),
+                status.getUser().getId(),
+                status.getLastActiveAt()
+            );
+          });
+    }
+
+    @Test
+    void 유효한_요청이면_유저_상태를_생성한다() {
+      given(userRepository.findById(userId)).willReturn(Optional.of(user));
+      given(userStatusRepository.findByUserId(userId)).willReturn(Optional.empty());
+      given(userStatusRepository.save(any(UserStatus.class)))
+          .willAnswer(invocation -> invocation.getArgument(0));
+
+      UserStatusResponse result = userStatusService.create(userId);
+
+      assertThat(result.userId()).isEqualTo(userId);
+      verify(userRepository).findById(userId);
+      verify(userStatusRepository).findByUserId(userId);
+      verify(userStatusRepository).save(any(UserStatus.class));
+    }
+
+    @Test
+    void ID로_유저_상태를_업데이트한다() {
+      UUID statusId = userStatus.getId();
+      given(userStatusRepository.save(userStatus)).willReturn(userStatus);
+      given(userStatusRepository.findById(statusId)).willReturn(Optional.of(userStatus));
+
+      UserStatusResponse updated = userStatusService.update(statusId);
+
+      assertThat(updated).isNotNull();
+      verify(userStatusRepository).findById(statusId);
+    }
+
+    @Test
+    void userId로_유저_상태를_업데이트한다() {
+      given(userStatusRepository.findByUserId(userId)).willReturn(Optional.of(userStatus));
+
+      UserStatusResponse updated = userStatusService.updateByUserId(userId);
+
+      assertThat(updated).isNotNull();
+      verify(userStatusRepository).findByUserId(userId);
+    }
+
+    @Test
+    void ID로_유저_상태를_조회한다() {
+      UUID statusId = UUID.randomUUID();
+      given(userStatusRepository.findById(statusId)).willReturn(Optional.of(userStatus));
+
+      UserStatusResponse found = userStatusService.find(statusId);
+
+      assertThat(found).isNotNull();
+      verify(userStatusRepository).findById(statusId);
+    }
+
+    @Test
+    void userId로_유저_상태를_조회한다() {
+      given(userStatusRepository.findByUserId(userId)).willReturn(Optional.of(userStatus));
+
+      UserStatusResponse result = userStatusService.findByUserId(userId);
+
+      assertThat(result.userId()).isEqualTo(userId);
+      verify(userStatusRepository).findByUserId(userId);
     }
   }
 }

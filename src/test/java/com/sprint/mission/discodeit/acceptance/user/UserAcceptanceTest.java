@@ -106,8 +106,6 @@ public class UserAcceptanceTest {
         }
     );
 
-    System.out.println("response = " + response);
-
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(response.getBody()).isNotNull();
     assertThat(response.getBody()).isNotEmpty();

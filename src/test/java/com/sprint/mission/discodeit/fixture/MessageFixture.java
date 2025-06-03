@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.entity.User;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 public class MessageFixture {
 
@@ -16,36 +17,35 @@ public class MessageFixture {
   public static Message createValid() {
     User user = UserFixture.createValidUser();
     Channel channel = ChannelFixture.createPublic();
-    Message message = Message.create(
-        DEFAULT_MESSAGE_CONTENT,
-        user,
-        channel
-    );
+    Message message = Message.create(DEFAULT_MESSAGE_CONTENT, user, channel);
     message.assignCreatedAtForTest(Instant.now());
     return message;
   }
 
-  public static Message createCustom(
-      String content,
-      User author,
-      Channel channel
-  ) {
-    Message message = Message.create(
-        content,
-        author,
-        channel
-    );
+  public static Message createCustom(String content, User author, Channel channel) {
+    Message message = Message.create(content, author, channel);
     message.assignCreatedAtForTest(Instant.now());
     return message;
   }
 
-  public static Message createWithAttachments(
+  public static Message createWithAttachments(String content, User author, Channel channel,
+      Set<BinaryContent> attachments) {
+    Message message = Message.create(content, author, channel);
+    attachments.forEach(message::attach);
+    message.assignCreatedAtForTest(Instant.now());
+    return message;
+  }
+
+  public static Message createWithAttachmentsAndId(
+      UUID messageId,
       String content,
       User author,
       Channel channel,
       Set<BinaryContent> attachments
   ) {
     Message message = Message.create(content, author, channel);
+    message.assignIdForTest(messageId);
+    message.assignCreatedAtForTest(Instant.now());
     attachments.forEach(message::attach);
     return message;
   }

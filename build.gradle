@@ -44,8 +44,13 @@ dependencies {
     // p6spy
     implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.10.0'
 
+    // Lombok과 MapStruct를 동시에 사용하는 경우 Lombok이 제대로 동작하지 않는 문제. MapStruct 위에 배치한다.
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    // MapStruct
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
     // 테스트
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

@@ -11,15 +11,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.UserException;
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
+import com.sprint.mission.discodeit.fixture.ChannelFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.fixture.UserStatusFixture;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -28,12 +32,14 @@ import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,8 +54,46 @@ class BasicUserServiceTest {
   @Mock
   private UserStatusRepository userStatusRepository;
 
+  @Mock
+  private UserMapper userMapper;
+
   @InjectMocks
   private BasicUserService basicUserService;
+
+  private User user;
+  private Channel publicChannel;
+  private Channel privateChannel;
+
+  @BeforeEach
+  void setUp() {
+    user = UserFixture.createValidUserWithId();
+    publicChannel = ChannelFixture.createPublic();
+    privateChannel = ChannelFixture.createPrivate();
+
+    Mockito.lenient().when(userMapper.toResponse(any(User.class)))
+        .thenAnswer(invocation -> {
+          User u = invocation.getArgument(0);
+
+          // user의 profile 엔티티를 DTO로 변환하거나 null 처리
+          var profileEntity = u.getProfile();  // BinaryContent or null
+          var profileResponse = (profileEntity == null) ? null :
+              new BinaryContentResponse(
+                  profileEntity.getId(),
+                  profileEntity.getFileName(),
+                  profileEntity.getContentType(),
+                  profileEntity.getSize()
+              );
+
+          return new UserResponse(
+              u.getId(),
+              u.getUsername(),
+              u.getEmail(),
+              profileResponse,
+              false
+          );
+        });
+  }
+
 
   @Nested
   class Create {

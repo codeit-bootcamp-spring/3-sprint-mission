@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -54,6 +55,10 @@ public class Message extends BaseUpdatableEntity {
   public void attach(BinaryContent binaryContent) {
     MessageAttachment attachment = MessageAttachment.attach(this, binaryContent);
     attachments.add(attachment);
+  }
+
+  public void assignIdForTest(UUID id) {
+    this.id = id;
   }
 
   public void assignCreatedAtForTest(Instant createdAt) {

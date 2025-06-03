@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.UserException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -31,6 +32,7 @@ public class BasicUserService implements UserService {
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
+  private final UserMapper userMapper;
 
   @Override
   public UserResponse create(CreateUserCommand command) {
@@ -160,8 +162,17 @@ public class BasicUserService implements UserService {
   }
 
   private UserResponse toUserResponse(User user) {
-    Boolean isOnline = userStatusRepository.findByUserId(user.getId())
-        .map(UserStatus::isOnline).orElse(null);
-    return UserResponse.from(user, isOnline);
+    boolean isOnline = userStatusRepository.findByUserId(user.getId())
+        .map(UserStatus::isOnline)
+        .orElse(false);
+
+    UserResponse base = userMapper.toResponse(user);
+    return new UserResponse(
+        base.id(),
+        base.username(),
+        base.email(),
+        base.profile(),
+        isOnline
+    );
   }
 }

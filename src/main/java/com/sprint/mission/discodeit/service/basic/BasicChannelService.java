@@ -1,13 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.assembler.ChannelAssembler;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
-import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.ChannelException;
 import com.sprint.mission.discodeit.exception.UserException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -16,9 +14,6 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -35,12 +30,13 @@ public class BasicChannelService implements ChannelService {
   private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
+  private final ChannelAssembler channelAssembler;
 
   @Override
   public ChannelResponse create(String name, String description) {
     Channel channel = Channel.createPublic(name, description);
     Channel savedChannel = channelRepository.save(channel);
-    return toResponse(savedChannel);
+    return channelAssembler.toResponse(savedChannel);
   }
 
   @Override
@@ -55,20 +51,20 @@ public class BasicChannelService implements ChannelService {
       readStatusRepository.save(status);
     }
 
-    return toResponse(savedChannel);
+    return channelAssembler.toResponse(savedChannel);
   }
 
   @Override
   public ChannelResponse findById(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> ChannelException.notFound(channelId));
-    return toResponse(channel);
+    return channelAssembler.toResponse(channel);
   }
 
   @Override
   public List<ChannelResponse> findAllByUserId(UUID userId) {
     return channelRepository.findAllByUserId(userId).stream()
-        .map(this::toResponse)
+        .map(channelAssembler::toResponse)
         .toList();
   }
 
@@ -81,16 +77,11 @@ public class BasicChannelService implements ChannelService {
       throw ChannelException.cannotUpdatePrivateChannel(channelId);
     }
 
-    if (newName != null) {
-      channel.updateName(newName);
-    }
-
-    if (newDescription != null) {
-      channel.updateDescription(newDescription);
-    }
+    channel.updateName(newName);
+    channel.updateDescription(newDescription);
 
     Channel updated = channelRepository.save(channel);
-    return toResponse(updated);
+    return channelAssembler.toResponse(updated);
   }
 
 
@@ -111,36 +102,6 @@ public class BasicChannelService implements ChannelService {
     // 채널 삭제
     channelRepository.deleteById(channelId);
 
-    return toResponse(channel);
-  }
-
-  private ChannelResponse toResponse(Channel channel) {
-    Instant lastMessageAt = messageRepository.findAll().stream()
-        .filter(m -> m.getChannel().equals(channel))
-        .map(Message::getCreatedAt)
-        .max(Comparator.naturalOrder())
-        .orElse(null);
-
-    List<UserResponse> participants = new ArrayList<>();
-    if (channel.getType().equals(ChannelType.PRIVATE)) {
-      participants = readStatusRepository.findAllByChannelId(channel.getId()).stream()
-          .map(ReadStatus::getUser)
-          .map(user -> {
-            Boolean isOnline = userStatusRepository.findByUserId(user.getId())
-                .map(UserStatus::isOnline)
-                .orElse(null);
-            return UserResponse.from(user, isOnline);
-          })
-          .toList();
-    }
-
-    return new ChannelResponse(
-        channel.getId(),
-        channel.getType(),
-        channel.getName(),
-        channel.getDescription(),
-        participants,
-        lastMessageAt
-    );
+    return channelAssembler.toResponse(channel);
   }
 }
