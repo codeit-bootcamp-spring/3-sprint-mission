@@ -2,11 +2,13 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.*;
+import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
-import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.mapper.original.UserMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
@@ -43,9 +45,25 @@ public class BasicUserService implements UserService {
     private final BinaryContentStorage binaryContentStorage;
 
 
+    // n+1 문제 있는 버전
+//    @Transactional(readOnly = true)
+//    public List<JpaUserResponse> findAllUsers2() {
+//        List<User> users = userRepository.findAll();
+//
+//        List<JpaUserResponse> responses = new ArrayList<>();
+//        // user fields + online 으로 response 생성
+//        for (User user : users) {
+//            userMapper.toDto(user);
+//            responses.add(userMapper.toDto(user));
+//        }
+//        return responses;
+//    }
+
+    // 1회 조회로 수정
     @Transactional(readOnly = true)
     public List<JpaUserResponse> findAllUsers() {
-        List<User> users = userRepository.findAll();
+        List<User> users = userRepository.findAllWithBinaryContentAndUserStatus();
+        System.out.println(users.size());
 
         List<JpaUserResponse> responses = new ArrayList<>();
         // user fields + online 으로 response 생성
@@ -69,8 +87,6 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("User with email " + userCreateRequest.email() + " already exitsts");
         }
 
-
-
         BinaryContent nullableProfile = profile
                 .map(
                         profileRequest -> {
@@ -90,21 +106,6 @@ public class BasicUserService implements UserService {
             user = new User(userCreateRequest.username(), userCreateRequest.email(), userCreateRequest.password());
             userRepository.save(user);
         } else {
-            // 사진 저장 로직 (BinaryContent 객체 생성 -> 유저 생성 -> 파일 BinaryContent ID로 저장)
-//            String uploadPath = fileUploadUtils.getUploadPath(PROFILE_PATH);
-//
-//            String originalFileName = nullableProfile.getFileName();
-//            String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-//            String newFileName = nullableProfile.getId() + extension;
-//
-//            File profileImage = new File(uploadPath, newFileName);
-//            // 사진 저장
-//            try (FileOutputStream fos = new FileOutputStream(profileImage)) {
-//                fos.write(nullableProfile.getBytes());
-//            } catch (IOException e) {
-//                throw new RuntimeException("image not saved", e);
-//            }
-
             // USER 객체 생성
             user = new User(
                     userCreateRequest.username(),
@@ -160,7 +161,7 @@ public class BasicUserService implements UserService {
         String oldEmail = user.getEmail();
         String newName = request.newUsername();
         String newEmail = request.newEmail();
-//
+
         if (newName == null || newName.isBlank()) {
             newName = oldName;
         }
@@ -193,7 +194,6 @@ public class BasicUserService implements UserService {
                 String directory = fileUploadUtils.getUploadPath(PROFILE_PATH);
                 String extension = user.getProfile().getExtension();
                 String fileName = user.getProfile().getId() + extension;
-                System.out.println("----------------------------"+fileName);
                 File oldFile = new File(directory, fileName);
 
                 if (oldFile.exists()) {
@@ -221,20 +221,6 @@ public class BasicUserService implements UserService {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            // add file
-//            String uploadPath = fileUploadUtils.getUploadPath(PROFILE_PATH);
-//
-//            String originalFileName = binaryContent.getFileName();
-//            String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-//            String newFileName = binaryContent.getId() + extension;
-//
-//            File profileImage = new File(uploadPath, newFileName);
-//
-//            try (FileOutputStream fos = new FileOutputStream(profileImage)) {
-//                fos.write(binaryContent.getBytes());
-//            } catch (IOException e) {
-//                throw new RuntimeException("image not saved", e);
-//            }
             // update user
             user.setProfile(binaryContent);
         }

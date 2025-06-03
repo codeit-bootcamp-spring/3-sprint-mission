@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,8 +20,9 @@ import java.time.Instant;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 @SuperBuilder
+@MappedSuperclass
+@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseUpdatableEntity extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -28,4 +30,5 @@ public abstract class BaseUpdatableEntity extends BaseEntity implements Serializ
     @LastModifiedDate
     @Column(name = "updated_at")
     protected Instant updatedAt;
+
 }

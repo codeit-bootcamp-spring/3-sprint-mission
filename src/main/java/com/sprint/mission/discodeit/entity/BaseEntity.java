@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -37,8 +38,10 @@ public abstract class BaseEntity implements Serializable {
     protected UUID id;
 
     @CreatedDate
+    @Column(name = "created_at")
     protected Instant createdAt;
-
-    @LastModifiedDate
-    protected Instant updatedAt;
+//
+//    @LastModifiedDate
+//    @Column(name = "updated_at")
+//    protected Instant updatedAt;
 }

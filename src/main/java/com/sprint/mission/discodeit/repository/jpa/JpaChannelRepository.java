@@ -16,4 +16,6 @@ import java.util.UUID;
  */
 public interface JpaChannelRepository extends JpaRepository<Channel, UUID> {
     List<Channel> findAllByType(ChannelType type);
+
+//    List<Channel> findAllWith(ChannelType type, Pageable pageable);
 }

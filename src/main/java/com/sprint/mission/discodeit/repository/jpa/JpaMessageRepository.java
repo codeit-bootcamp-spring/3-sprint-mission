@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,7 +25,11 @@ public interface JpaMessageRepository extends JpaRepository<Message, UUID> {
 
     Message findTopByChannelIdOrderByCreatedAtDesc(UUID channelId);
 
-    Page<Message> findAllByChannelIdOrderByCreatedAt(UUID channelId, Pageable pageable);
+    List<Message> findAllByChannelIdOrderByCreatedAt(UUID channelId, Pageable pageable);
+    Page<Message> findAllPageByChannelIdOrderByCreatedAt(UUID channelId, Pageable pageable);
 
+    List<Message> findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(UUID channelId, Instant cursor, Pageable pageable);
+
+    Long countByChannelId(UUID channelId);
 
 }

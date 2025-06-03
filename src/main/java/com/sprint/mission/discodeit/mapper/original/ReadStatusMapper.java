@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.mapper;
+package com.sprint.mission.discodeit.mapper.original;
 
 import com.sprint.mission.discodeit.dto.readStatus.JpaReadStatusResponse;
 import com.sprint.mission.discodeit.entity.ReadStatus;

@@ -1,10 +1,15 @@
 package com.sprint.mission.discodeit.service;
 
 
-import com.sprint.mission.discodeit.dto.message.*;
+import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse;
+import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
+import com.sprint.mission.discodeit.dto.message.response.JpaPageResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,4 +34,6 @@ public interface MessageService {
     JpaMessageResponse updateMessage(UUID messageId, MessageUpdateRequest request);
 
     boolean deleteMessage(UUID messageId);
+
+    AdvancedJpaPageResponse findAllByChannelIdAndCursor(UUID channelId, Instant cursor, Pageable pageable);
 }

@@ -1,9 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.message.*;
+import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse;
+import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
+import com.sprint.mission.discodeit.dto.message.response.JpaPageResponse;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.mapper.MessageMapper;
-import com.sprint.mission.discodeit.mapper.PageResponseMapper;
+import com.sprint.mission.discodeit.mapper.original.MessageMapper;
+import com.sprint.mission.discodeit.mapper.original.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.jpa.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -16,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.*;
 
 /**
@@ -45,27 +50,39 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public JpaPageResponse findAllByChannelId(UUID channelId, Pageable pageable) {
-        Page<Message> messagePage = messageRepository.findAllByChannelIdOrderByCreatedAt(channelId, pageable);
-
-//        long totalMessages = messageRepository.count();
-//        int totalPages = (int) Math.ceil((double) totalMessages / pageable.getPageSize());
-//        boolean hasNext = pageable.getPageNumber() + 1 < totalPages;
-
-//        List<String> contents = messagePage.stream().map(Message::getContent).collect(Collectors.toList());
-
+        Page<Message> messagePage = messageRepository.findAllPageByChannelIdOrderByCreatedAt(channelId, pageable);
         JpaPageResponse response = pageResponseMapper.fromPage(messagePage);
-
-//        PageResponse response = new PageResponse(
-//                contents,
-//                pageable.getPageNumber(),
-//                pageable.getPageSize(),
-//                hasNext,
-//                totalMessages
-//        );
-
         return response;
     }
 
+    @Override
+    public AdvancedJpaPageResponse findAllByChannelIdAndCursor(UUID channelId, Instant cursor, Pageable pageable) {
+
+        List<Message> messages;
+        if(cursor == null) {
+            messages = messageRepository.findAllByChannelIdOrderByCreatedAt(channelId, pageable);
+        }else {
+            messages = messageRepository.findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(channelId, cursor, pageable);
+        }
+        boolean hasNext = messages.size() > pageable.getPageSize();
+        Long totalElements = messageRepository.countByChannelId(channelId);
+        Instant nextCursor = null;
+        if(hasNext) {
+            messages = messages.subList(0, pageable.getPageSize());
+            nextCursor = messages.get(messages.size() - 1).getCreatedAt();
+        }
+
+        List<JpaMessageResponse> messagesDto = messages.stream().map(message -> messageMapper.toDto(message)).toList();
+
+        AdvancedJpaPageResponse response = AdvancedJpaPageResponse.builder()
+                .content(messagesDto)
+                .nextCursor(nextCursor)
+                .size(messages.size())
+                .hasNext(hasNext)
+                .totalElements(totalElements)
+                .build();
+        return response;
+    }
 
     // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
     // public 방일경우 작성을 해도 readstatus가 없음 최소 1회는 등록을 해야 하고 유저가 방에 있는지 확인 가능한 로직이 필요함
@@ -75,17 +92,6 @@ public class BasicMessageService implements MessageService {
 
         Channel channel = channelRepository.findById(request.channelId()).orElseThrow(() -> new NoSuchElementException("channel with id " + request.channelId() + " not found"));
         User user = userRepository.findById(request.authorId()).orElseThrow(() -> new NoSuchElementException("author with id " + request.authorId() + " not found"));
-
-//        boolean isReadStatusExist = readStatusRepository.existsByUserAndChannel(user, channel);
-//        System.out.println("isReadStatusExist = " + isReadStatusExist);
-
-//        if (!isReadStatusExist) {
-//            ReadStatus readStatus = ReadStatus.builder()
-//                    .user(user)
-//                    .channel(channel)
-//                    .build();
-//            readStatusRepository.save(readStatus);
-//        }
 
         // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)
         List<BinaryContent> attachments = new ArrayList<>();
@@ -98,7 +104,6 @@ public class BasicMessageService implements MessageService {
                             .fileName(file.getOriginalFilename())
                             .size((long) file.getBytes().length)
                             .contentType(file.getContentType())
-//                            .bytes(file.getBytes())
                             .extension(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")))
                             .build();
                     attachment = binaryContentRepository.save(binaryContent);
@@ -107,6 +112,7 @@ public class BasicMessageService implements MessageService {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+
                 attachments.add(attachment);
                 try {
                     binaryContentStorage.put(attachment.getId(), file.getBytes());

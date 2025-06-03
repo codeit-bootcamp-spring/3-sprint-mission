@@ -1,7 +1,7 @@
-package com.sprint.mission.discodeit.mapper;
+package com.sprint.mission.discodeit.mapper.original;
 
 import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
-import com.sprint.mission.discodeit.dto.message.JpaMessageResponse;
+import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 import lombok.RequiredArgsConstructor;

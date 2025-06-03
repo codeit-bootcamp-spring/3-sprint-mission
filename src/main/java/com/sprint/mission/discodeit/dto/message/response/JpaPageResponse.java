@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.message;
+package com.sprint.mission.discodeit.dto.message.response;
 
 import lombok.Builder;
 
@@ -18,5 +18,4 @@ public record JpaPageResponse(
         boolean hasNext,
         long totalElements
 ) {
-
 }

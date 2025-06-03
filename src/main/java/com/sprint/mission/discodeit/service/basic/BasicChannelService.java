@@ -1,14 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.channel.JpaChannelResponse;
-import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
-import com.sprint.mission.discodeit.mapper.ChannelMapper;
-import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.mapper.original.ChannelMapper;
+import com.sprint.mission.discodeit.mapper.original.UserMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
@@ -81,6 +80,8 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toDto(channel);
     }
 
+    // quaries: 19개
+    // 4 채널 2 public 2 private
     @Transactional(readOnly = true)
     public List<JpaChannelResponse> findAllByUserId(UUID userId) {
         if(!userRepository.existsById(userId)) {
@@ -104,6 +105,31 @@ public class BasicChannelService implements ChannelService {
         }
         return responses;
     }
+    // quaries: 16개
+    // 4 채널 2 public 2 private(-1 per channel) 전체 로직(-1)
+    @Override
+    public List<JpaChannelResponse> findAllByUserId2(UUID userId) {
+        if(!userRepository.existsById(userId)) {
+            return Collections.emptyList();
+        }
+
+        List<JpaChannelResponse> responses = new ArrayList<>();
+        List<Channel> channels = channelRepository.findAllByType(ChannelType.PUBLIC);
+        for (Channel channel : channels) {
+            responses.add(channelMapper.toDto(channel));
+        }
+
+        // 유저가 참가한 방이 없을 수 있음
+        List<ReadStatus> readStatuses = readStatusRepository.findAllByUserIdWithChannel(userId);
+        // 모든 방 순회
+        for (Channel channel : readStatuses.stream().map(readStatus -> readStatus.getChannel()).toList()) {
+            if (readStatuses.stream().anyMatch(status -> status.getChannel().getId().equals(channel.getId()))) {
+                responses.add(channelMapper.toDto(channel));
+            }
+        }
+        return responses;
+    }
+
 
     @Override
     public JpaChannelResponse update(UUID channelId, ChannelUpdateRequest request) {

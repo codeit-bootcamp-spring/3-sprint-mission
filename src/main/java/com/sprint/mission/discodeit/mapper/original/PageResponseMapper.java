@@ -1,7 +1,7 @@
-package com.sprint.mission.discodeit.mapper;
+package com.sprint.mission.discodeit.mapper.original;
 
-import com.sprint.mission.discodeit.dto.message.JpaMessageResponse;
-import com.sprint.mission.discodeit.dto.message.JpaPageResponse;
+import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
+import com.sprint.mission.discodeit.dto.message.response.JpaPageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -53,4 +53,5 @@ public class PageResponseMapper {
                 .build();
         return response;
     }
+
 }

@@ -1,6 +1,6 @@
-package com.sprint.mission.discodeit.mapper;
+package com.sprint.mission.discodeit.mapper.original;
 
-import com.sprint.mission.discodeit.dto.channel.JpaChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -40,14 +40,14 @@ public class ChannelMapper {
             lastMessageAt = message.getCreatedAt();
         }
 
-        List<ReadStatus> readStatuses = readStatusRepository.findAllByChannel(channel);
+//        List<ReadStatus> readStatuses = readStatusRepository.findAllByChannel(channel);
+        List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelWithUser(channel);
         List<JpaUserResponse> participants = new ArrayList<>();
         if (!readStatuses.isEmpty()) {
             Set<User> users = readStatuses.stream().map(rs -> rs.getUser()).collect(Collectors.toSet());
             users.stream().map(user -> userMapper.toDto(user))
             .forEach(participants::add);
         }
-
         return JpaChannelResponse.builder()
                 .id(channel.getId())
                 .type(channel.getType())

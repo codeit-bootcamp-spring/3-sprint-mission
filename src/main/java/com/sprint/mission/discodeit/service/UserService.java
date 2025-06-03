@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.*;
+import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -15,6 +17,8 @@ import java.util.UUID;
  * ----------------------------------------------------------- 2025. 4. 17.        doungukkim 최초 생성
  */
 public interface UserService {
+
+//    List<JpaUserResponse> findAllUsers2(); n+1 문제
 
     List<JpaUserResponse> findAllUsers();
 
