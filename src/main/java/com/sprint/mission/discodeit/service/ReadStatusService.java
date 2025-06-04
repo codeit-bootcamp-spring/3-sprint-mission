@@ -1,26 +1,20 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.ReadStatus;
-
 import java.util.List;
 import java.util.UUID;
 
 public interface ReadStatusService {
 
-    // 생성
-    ReadStatus create(ReadStatusCreateRequest createRequestDTO);
+    ReadStatusDto create(ReadStatusCreateRequest createRequest);
 
-    // 전체 조회
-    List<ReadStatus> findAllByUserId(UUID userId);
+    List<ReadStatusDto> findAllByUserId(UUID userId);
 
-    // 조회 (id)
-    ReadStatus find(UUID id);
+    ReadStatusDto find(UUID id);
 
-    // 수정
-    ReadStatus update(UUID id, ReadStatusUpdateRequest updateRequestDTO);
+    ReadStatusDto update(UUID id, ReadStatusUpdateRequest updateRequest);
 
-    // 삭제
     void delete(UUID id);
 }

@@ -2,27 +2,24 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.Message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.Message.MessageDto;
 import com.sprint.mission.discodeit.dto.Message.MessageUpdateRequest;
-import com.sprint.mission.discodeit.entity.Message;
-
+import com.sprint.mission.discodeit.dto.response.PageResponse;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 
 public interface MessageService {
 
-    // 생성
-    Message create(MessageCreateRequest createRequestDTO,
-            List<BinaryContentCreateRequest> binaryContentCreateRequestsDTO);
+    MessageDto create(MessageCreateRequest createRequest,
+            List<BinaryContentCreateRequest> binaryContentCreateRequests);
 
-    // 조회 (채널)
-    List<Message> findAllByChannelId(UUID channelId);
+    PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable);
 
-    // 조회 (ID)
-    Message find(UUID messageId);
+    MessageDto find(UUID messageId);
 
-    // 수정
-    Message update(UUID messageId, MessageUpdateRequest updateRequestDTO);
+    MessageDto update(UUID messageId, MessageUpdateRequest updateRequest);
 
-    // 삭제
     void delete(UUID messageId);
 }

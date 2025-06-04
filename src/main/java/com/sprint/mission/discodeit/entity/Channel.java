@@ -1,52 +1,47 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
-
 @Getter
 @ToString
-public class Channel implements Serializable {
+@Entity
+@Table(name = "channels")
+public class Channel extends BaseUpdatableEntity {
 
-    private static final long serialVersionUID = 79529852066494114L;
+    @Column(name = "name")
+    private String name;
 
-    /* 공통 필드 */
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
+    @Column(name = "description")
+    private String description;
 
-    private String name;     // 채널 이름
-    private String description;     // 채널 설명
-    private ChannelType type;       // 채널 타입
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    private ChannelType type;
+
+    protected Channel() {
+    }
 
     @Builder
     public Channel(ChannelType type, String name, String description) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-
         this.type = type;
         this.name = name;
         this.description = description;
     }
 
     public void update(String newChannelName, String newDescription) {
-        boolean isUpdated = false;
-
         if (newChannelName != null && !newChannelName.equals(this.name)) {
             this.name = newChannelName;
-            isUpdated = true;
         }
         if (newDescription != null && !newDescription.equals(this.description)) {
             this.description = newDescription;
-            isUpdated = true;
-        }
-        if (isUpdated) {
-            this.updatedAt = Instant.now();
         }
     }
 }

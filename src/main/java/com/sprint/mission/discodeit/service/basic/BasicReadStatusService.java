@@ -1,21 +1,26 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.annotation.Logging;
 import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Logging
 @RequiredArgsConstructor
 public class BasicReadStatusService implements ReadStatusService {
 
@@ -23,41 +28,40 @@ public class BasicReadStatusService implements ReadStatusService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
 
+    private final ReadStatusMapper readStatusMapper;
+
     /**
      * 주어진 생성 요청 DTO를 기반으로 ReadStatus 생성
      *
-     * @param createRequestDTO ReadStatus 생성 요청 DTO
+     * @param createRequest ReadStatus 생성 요청 DTO
      * @return 생성된 ReadStatus
-     * @throws NoSuchElementException 채널이나 유저가 존재하지 않는 경우
-     * @throws IllegalStateException  같은 Channel,User와 관련된 ReadStatus가 이미 존재하는 경우
      */
     @Override
-    public ReadStatus create(ReadStatusCreateRequest createRequestDTO) {
-        UUID channelId = createRequestDTO.channelId();
-        UUID userId = createRequestDTO.userId();
+    @Transactional
+    public ReadStatusDto create(ReadStatusCreateRequest createRequest) {
 
-        // 관련된 Channel, User가 존재하지 않으면 예외처리
-        if (!channelRepository.existsById(channelId)) {
-            throw new NoSuchElementException("해당 ID의 채널이 존재하지 않습니다.");
-        }
-        if (!userRepository.existsById(userId)) {
-            throw new NoSuchElementException("해당 ID의 유저가 존재하지 않습니다.");
-        }
+        UUID channelId = createRequest.channelId();
+        UUID userId = createRequest.userId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
+
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널입니다."));
+
         // 같은 Channel, User와 관련된 객체가 이미 존재하면 예외처리
-        if (readStatusRepository.existsByChannelIdAndUserId(channelId, userId)) {
+        if (readStatusRepository.existsByChannel_IdAndUser_Id(channelId, userId)) {
             throw new IllegalStateException("이미 존재하는 ReadStatus입니다.");
         }
 
-        Instant lastReadAt = createRequestDTO.lastReadAt();
-
         ReadStatus readStatus = ReadStatus.builder()
-                .channelId(channelId)
-                .userId(userId)
-                .lastReadAt(lastReadAt)
+                .user(user)
+                .channel(channel)
+                .lastReadAt(createRequest.lastReadAt())
                 .build();
 
         readStatusRepository.save(readStatus);
-        return readStatus;
+        return readStatusMapper.toDto(readStatus);
     }
 
     /**
@@ -67,8 +71,12 @@ public class BasicReadStatusService implements ReadStatusService {
      * @return 조회된 유저별 ReadStatus 리스트
      */
     @Override
-    public List<ReadStatus> findAllByUserId(UUID userId) {
-        return readStatusRepository.findByUserId(userId);
+    @Transactional(readOnly = true)
+    public List<ReadStatusDto> findAllByUserId(UUID userId) {
+
+        return readStatusRepository.findAllByUser_Id(userId).stream()
+                .map(readStatusMapper::toDto)
+                .toList();
     }
 
     /**
@@ -76,42 +84,49 @@ public class BasicReadStatusService implements ReadStatusService {
      *
      * @param id 조회할 ReadStatus ID
      * @return 조회된 ReadStatus
-     * @throws NoSuchElementException 해당 ID의 ReadStatus가 존재하지 않는 경우
      */
     @Override
-    public ReadStatus find(UUID id) {
-        return readStatusRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("해당 ID의 ReadStatus가 존재하지 않습니다."));
+    @Transactional(readOnly = true)
+    public ReadStatusDto find(UUID id) {
+
+        ReadStatus readStatus = readStatusRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 ReadStatus입니다."));
+
+        return readStatusMapper.toDto(readStatus);
     }
 
     /**
      * 주어진 ID에 해당하는 ReadStatus 수정
      *
-     * @param id               수정 대상 ReadStatus ID
-     * @param updateRequestDTO 수정 요청 DTO
+     * @param id            수정할 ReadStatus ID
+     * @param updateRequest 수정 요청 DTO
      * @return 수정된 ReadStatus
-     * @throws NoSuchElementException 해당 ID의 ReadStatus가 존재하지 않는 경우
      */
     @Override
-    public ReadStatus update(UUID id, ReadStatusUpdateRequest updateRequestDTO) {
+    @Transactional
+    public ReadStatusDto update(UUID id, ReadStatusUpdateRequest updateRequest) {
+
         ReadStatus readStatus = readStatusRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("해당 ID의 ReadStatus를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 ReadStatus입니다."));
 
-        Instant lastReadAt = updateRequestDTO.newLastReadAt();
-
-        readStatus.update(lastReadAt);
+        readStatus.update(updateRequest.newLastReadAt());
 
         readStatusRepository.save(readStatus);
-        return readStatus;
+        return readStatusMapper.toDto(readStatus);
     }
 
     /**
      * 주어진 ID에 해당하는 ReadStatus 삭제
      *
-     * @param id 삭제 대상 ReadStatus ID
+     * @param id 삭제할 ReadStatus ID
      */
     @Override
+    @Transactional
     public void delete(UUID id) {
-        readStatusRepository.deleteById(id);
+
+        ReadStatus readStatus = readStatusRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 ReadStatus입니다."));
+
+        readStatusRepository.deleteById(readStatus.getId());
     }
 }

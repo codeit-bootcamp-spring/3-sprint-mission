@@ -1,46 +1,50 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
-
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.UUID;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @ToString
-public class UserStatus implements Serializable {
+@Entity
+@Table(name = "user_statuses")
+public class UserStatus extends BaseUpdatableEntity {
 
-    private static final long serialVersionUID = -8208733885105787316L;
+    @Setter
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true, nullable = false)
+    private User user;
 
-    /* 공통 필드 */
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
+    @Column(name = "last_active_at", nullable = false)
+    private Instant lastActiveAt;
 
-    private UUID userId;                // 유저ID
-    private Instant lastActiveAt;     // 마지막으로 확인된 접속시간
+    private static final int TIMEOUT_MINUTES = 5;
+
+    protected UserStatus() {
+    }
 
     @Builder
-    public UserStatus(UUID userId, Instant lastActiveAt) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-
-        this.userId = userId;
-        this.lastActiveAt = lastActiveAt;
+    public UserStatus(User user, Instant lastActiveAt) {
+        this.user = user;
+        this.lastActiveAt = lastActiveAt != null ? lastActiveAt : Instant.now();
     }
 
     public void update(Instant lastActiveAt) {
-        this.updatedAt = Instant.now();
         this.lastActiveAt = lastActiveAt != null ? lastActiveAt : Instant.now();
     }
 
     public boolean isOnline() {
 
-        Instant instantFiveMinuteAgo = Instant.now().minus(Duration.ofMinutes(5));
+        Instant instantFiveMinuteAgo = Instant.now().minus(Duration.ofMinutes(TIMEOUT_MINUTES));
 
         return this.lastActiveAt.isAfter(instantFiveMinuteAgo);
     }

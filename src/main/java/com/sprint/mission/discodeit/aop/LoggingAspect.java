@@ -14,7 +14,7 @@ public class LoggingAspect {
 
     private static final Logger log = LoggerFactory.getLogger(LoggingAspect.class);
 
-    @Around("execution(* com.sprint.mission.discodeit.service..*(..))")
+    @Around("@annotation(com.sprint.mission.discodeit.annotation.Logging)")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         long start = System.currentTimeMillis();
 
