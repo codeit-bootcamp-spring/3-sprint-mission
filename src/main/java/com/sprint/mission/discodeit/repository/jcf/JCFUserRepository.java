@@ -13,8 +13,8 @@ public class JCFUserRepository implements UserRepository {
     private final Map<UUID, User> users = new HashMap<>();
 
     @Override
-    public void save(User user) {
-        users.put(user.getId(), user);
+    public User save(User user) {
+        return users.put(user.getId(), user);
     }
 
     @Override
@@ -27,7 +27,10 @@ public class JCFUserRepository implements UserRepository {
 
     @Override
     public User loadByEmail(String email) {
-        return null;
+        return users.values().stream()
+                .filter(u -> u.getEmail().equals(email))
+                .findFirst()
+                .orElse(null);
     }
 
     @Override

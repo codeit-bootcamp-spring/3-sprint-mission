@@ -11,9 +11,9 @@ import java.util.UUID;
 @Getter
 public class User implements Serializable {
     private final UUID id;
-    private final String name;
-    private final String email;
-    private final String password;
+    private String name;
+    private String email;
+    private String password;
     private final Instant createdAt;
     private Instant updatedAt;
     private UUID profileId;
@@ -32,6 +32,34 @@ public class User implements Serializable {
 
     public static User of(UserCreateRequest userCreateRequest) {
         return new User(userCreateRequest.getName(), userCreateRequest.getEmail(), userCreateRequest.getPassword());
+    }
+
+    public boolean authenticate(String password) {
+        return this.password.equals(password);
+    }
+
+    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.name)) {
+            this.name = newUsername;
+            anyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
+            this.profileId = newProfileId;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
     public User updateProfileId(UUID profileId) {

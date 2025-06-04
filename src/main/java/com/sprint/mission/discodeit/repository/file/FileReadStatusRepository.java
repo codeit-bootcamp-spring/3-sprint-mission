@@ -26,7 +26,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
-    public void save(ReadStatus readStatus) {
+    public ReadStatus save(ReadStatus readStatus) {
         String filename = readStatus.getUserId().toString() + "_" + readStatus.getId() + ".ser";
         Path file = path.resolve(filename);
 
@@ -38,22 +38,19 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        return readStatus;
     }
 
     @Override
-    public ReadStatus loadById(UUID id) {
+    public Optional<ReadStatus> loadById(UUID id) {
         String suffix = "_" + id.toString() + ".ser";
 
         try (Stream<Path> files = Files.list(path)) {
-            Optional<Path> match = files
+            return files
                     .filter(p -> p.getFileName().toString().endsWith(suffix))
-                    .findFirst();
-
-            Path file = match.orElseThrow(() ->
-                    new IllegalArgumentException("[ReadStatus] 유효하지 않은 readStatus 파일 (" + id + ".ser)")
-            );
-
-            return deserialize(file);
+                    .findFirst()               // Optional<Path>
+                    .map(this::deserialize);
         } catch (IOException e) {
             throw new RuntimeException("[ReadStatus] 파일 로드 중 오류 발생", e);
         }
@@ -81,6 +78,22 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
+    public List<ReadStatus> loadAllByChannelId(UUID channelId) {
+        if (Files.notExists(path)) {
+            return Collections.emptyList();
+        }
+
+        try (Stream<Path> files = Files.list(path)) {
+            return files
+                    .map(this::deserialize)
+                    .filter(rs -> channelId.equals(rs.getChannelId()))
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new RuntimeException("[ReadStatus] 채널별 상태 목록 조회 실패", e);
+        }
+    }
+
+    @Override
     public void deleteByUserId(UUID userId) {
         String idString = userId.toString();
         try (Stream<Path> files = Files.list(path)) {
@@ -99,6 +112,12 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         } catch (IOException e) {
             throw new RuntimeException("[ReadStatus] ReadStatus 폴더 접근 실패", e);
         }
+    }
+
+    @Override
+    public void deleteByChannelId(UUID channelId) {
+        this.loadAllByChannelId(channelId)
+                .forEach(readStatus -> this.deleteByUserId(readStatus.getUserId()));
     }
 
     private ReadStatus deserialize(Path file) {

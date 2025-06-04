@@ -16,8 +16,8 @@ public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID, Message> messages = new HashMap<>();
 
     @Override
-    public void save(Message msg) {
-        messages.put(msg.getId(), msg);
+    public Message save(Message message) {
+        return messages.put(message.getId(), message);
     }
 
     @Override
@@ -38,9 +38,10 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void update(UUID id, String content) {
-        Message msg = loadById(id);
-        msg.update(content);
+    public Message update(UUID id, String content) {
+        Message message = loadById(id);
+        message.update(content);
+        return message;
     }
 
     @Override

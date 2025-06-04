@@ -4,12 +4,14 @@ import com.sprint.mission.discodeit.dto.data.UserDTO;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Tag(name = "Users")
+@Tag(name = "User")
 @RestController
 @RequestMapping("/api/users")
 @ResponseBody
@@ -32,8 +34,8 @@ public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
 
-    @Operation(summary = "사용자 생성")
-    @ApiResponse(responseCode = "201", description = "생성 성공")
+    @Operation(summary = "User 등록", operationId = "create")
+    @ApiResponse(responseCode = "201", description = "User가 성공적으로 생성됨")
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<User> create(
             @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
@@ -48,9 +50,12 @@ public class UserController {
                 .body(newUser);
     }
 
-    @Operation(summary = "전체 사용자 조회")
-    @ApiResponse(responseCode = "200", description = "조회 성공")
-    @GetMapping("/findAll")
+    @Operation(summary = "전체 User 목록 조회", operationId = "findAll")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "User 목록 조회 성공"),
+            @ApiResponse(responseCode = "400", description = "같은 email 또는 username를 사용하는 User가 이미 존재함")
+    })
+    @GetMapping
     public ResponseEntity<List<UserDTO>> findAll() {
         List<UserDTO> users = userService.getAll();
         return ResponseEntity
@@ -58,26 +63,52 @@ public class UserController {
                 .body(users);
     }
 
-    @Operation(summary = "사용자 삭제")
-    @ApiResponse(responseCode = "204", description = "삭제 성공")
-    @DeleteMapping("/delete")
-    public ResponseEntity<Void> delete(@RequestParam("userId") UUID userId) {
+    @Operation(summary = "User 온라인 상태 업데이트")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "User 온라인 상태가 성공적으로 업데이트됨"),
+            @ApiResponse(responseCode = "404", description = "해당 User의 UserStatus를 찾을 수 없음")
+    })
+    @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<User> update(
+            @PathVariable("userId") UUID userId,
+            @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
+            @RequestPart(value = "profile", required = false) MultipartFile profile
+    ) {
+        Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
+                .flatMap(this::resolveProfileRequest);
+        User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(updatedUser);
+    }
+
+    @Operation(summary = "User 온라인 상태 업데이트")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "User 온라인 상태가 성공적으로 업데이트됨"),
+            @ApiResponse(responseCode = "404", description = "해당 User의 UserStatus를 찾을 수 없음")
+    })
+    @PatchMapping(path = "/{userId}/userStatus")
+    public ResponseEntity<UserStatus> updateUserStatusByUserId(
+            @PathVariable("userId") UUID userId,
+            @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
+    ) {
+        UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(updatedUserStatus);
+    }
+
+    @Operation(summary = "User 삭제")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "User가 성공적으로 삭제됨"),
+            @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음")
+    })
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> delete(@PathVariable("userId") UUID userId) {
         userService.delete(userId);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .build();
-    }
-
-    @Operation(summary = "사용자의 userState 상태 수정")
-    @ApiResponse(responseCode = "200", description = "수정 성공")
-    @RequestMapping(path = "updateUserStatusByUserId")
-    public ResponseEntity<UserStatus> updateUserStatusByUserId(@RequestParam("userId") UUID userId,
-                                                               @RequestBody UserStatusUpdateRequest request) {
-        System.out.println("[DEBUG] updateUserStatusByUserId == null? " + (userId == null));
-        UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, request);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(updatedUserStatus);
     }
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {

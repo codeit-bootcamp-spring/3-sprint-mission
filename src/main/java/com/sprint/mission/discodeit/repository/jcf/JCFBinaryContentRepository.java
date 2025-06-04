@@ -25,5 +25,10 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
     public List<BinaryContent> loadAll() { return binaryContents.values().stream().toList(); }
 
     @Override
+    public List<BinaryContent> loadAllByIdIn(List<UUID> ids) {
+        return List.of();
+    }
+
+    @Override
     public void delete(UUID id) { binaryContents.remove(id); }
 }

@@ -44,11 +44,8 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     @Override
     public Optional<UserStatus> loadById(UUID userId) {
-//        Path file = path.resolve(id.toString() + ".ser");
-//        return deserialize(file);
-        return loadAll().stream()
-                .filter(userStatus -> userStatus.getUserId().equals(userId))
-                .findFirst();
+        Path file = path.resolve(userId.toString() + ".ser");
+        return Optional.of(deserialize(file));
     }
 
     @Override
