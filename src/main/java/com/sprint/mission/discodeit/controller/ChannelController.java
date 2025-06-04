@@ -52,21 +52,13 @@ public class ChannelController {
           )
   )
   @PostMapping("/public")
-  public ResponseEntity<?> create(@RequestBody PublicChannelCreateRequest request) {
+  public ResponseEntity<ChannelDto> create(@RequestBody PublicChannelCreateRequest request) {
 
-      try {
-          Channel createdChannel = channelService.create(request);
-          return ResponseEntity
-                  .status(HttpStatus.CREATED)
-                  .body(createdChannel);
-      } catch (RuntimeException e) {
-          return ResponseEntity
-                  .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.INTERNAL_ERROR,
-                          ResponseMessage.INTERNAL_SERVER_ERROR
-                  ));
-      }
+      ChannelDto createdChannel = channelService.create(request);
+      return ResponseEntity
+              .status(HttpStatus.CREATED)
+              .body(createdChannel);
+
   }
 
   @Operation(
@@ -82,20 +74,11 @@ public class ChannelController {
           )
   )
   @PostMapping("/private")
-  public ResponseEntity<?> create(@RequestBody PrivateChannelCreateRequest request) {
-      try {
-          Channel createdChannel = channelService.create(request);
-          return ResponseEntity
-                  .status(HttpStatus.CREATED)
-                  .body(createdChannel);
-      } catch (RuntimeException e) {
-          return ResponseEntity
-                  .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.INTERNAL_ERROR,
-                          ResponseMessage.INTERNAL_SERVER_ERROR
-                  ));
-      }
+  public ResponseEntity<ChannelDto> create(@RequestBody PrivateChannelCreateRequest request) {
+      ChannelDto createdChannel = channelService.create(request);
+      return ResponseEntity
+              .status(HttpStatus.CREATED)
+              .body(createdChannel);
   }
 
   @Operation(
@@ -142,28 +125,14 @@ public class ChannelController {
           schema = @Schema(type = "string", format = "uuid")
   )
   @PutMapping("/{channelId}")
-  public ResponseEntity<?> update(@PathVariable("channelId") UUID channelId,
+  public ResponseEntity<ChannelDto> update(@PathVariable("channelId") UUID channelId,
       @RequestBody PublicChannelUpdateRequest request) {
-      try {
-          Channel updatedChannel = channelService.update(channelId, request);
-          return ResponseEntity
-                  .status(HttpStatus.OK)
-                  .body(updatedChannel);
-      } catch (NoSuchElementException e) {
-          return ResponseEntity
-                  .status(HttpStatus.NOT_FOUND)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.CHANNEL_NOT_FOUND,
-                          ResponseMessage.CHANNEL_NOT_FOUND
-                  ));
-      } catch (RuntimeException e) {
-          return ResponseEntity
-                  .status(HttpStatus.BAD_REQUEST)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.REQUEST_FAIL,
-                          ResponseMessage.REQUEST_FAIL
-                  ));
-      }
+
+      ChannelDto updatedChannel = channelService.update(channelId, request);
+      return ResponseEntity
+              .status(HttpStatus.OK)
+              .body(updatedChannel);
+
   }
 
   @Operation(
@@ -192,27 +161,10 @@ public class ChannelController {
   )
   @DeleteMapping("/{channelId}")
   public ResponseEntity<?> delete(@PathVariable("channelId") UUID channelId) {
-      try {
-          channelService.delete(channelId);
-          return ResponseEntity
-                  .status(HttpStatus.NO_CONTENT)
-                  .body("Channel이 성공적으로 삭제됨");
-      } catch (NoSuchElementException e) {
-          return ResponseEntity
-                  .status(HttpStatus.NOT_FOUND)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.CHANNEL_NOT_FOUND,
-                          ResponseMessage.CHANNEL_NOT_FOUND
-                  ));
-      } catch (RuntimeException e) {
-          return ResponseEntity
-                  .status(HttpStatus.BAD_REQUEST)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.REQUEST_FAIL,
-                          ResponseMessage.REQUEST_FAIL
-                  ));
-      }
-
+      channelService.delete(channelId);
+      return ResponseEntity
+              .status(HttpStatus.NO_CONTENT)
+              .body("Channel이 성공적으로 삭제됨");
   }
 
   @Operation(
@@ -237,19 +189,10 @@ public class ChannelController {
           schema = @Schema(type = "string", format = "uuid")
   )
   @GetMapping("")
-  public ResponseEntity<?> findAll(@RequestParam("userId") UUID userId) {
-      try {
-          List<ChannelDto> channels = channelService.findAllByUserId(userId);
-          return ResponseEntity
-                  .status(HttpStatus.OK)
-                  .body(channels);
-      } catch (RuntimeException e) {
-          return ResponseEntity
-                  .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.INTERNAL_ERROR,
-                          ResponseMessage.INTERNAL_SERVER_ERROR
-                  ));
-      }
+  public ResponseEntity<List<ChannelDto>> findAll(@RequestParam("userId") UUID userId) {
+      List<ChannelDto> channels = channelService.findAllByUserId(userId);
+      return ResponseEntity
+              .status(HttpStatus.OK)
+              .body(channels);
   }
 }

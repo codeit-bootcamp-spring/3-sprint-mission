@@ -1,26 +1,27 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.User;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserRepository {
-
-  User save(User user);
-
-  Optional<User> findById(UUID id);
-
-  Optional<User> findByUsername(String username);
-
+@Repository
+public interface UserRepository extends JpaRepository<User, UUID> {
+//  @EntityGraph(attributePaths = {"userStatus", "profile"})
+  @Query("SELECT u FROM User u JOIN FETCH u.userStatus JOIN FETCH u.profile")
+  @Override
   List<User> findAll();
 
-  boolean existsById(UUID id);
+  @Query("SELECT u FROM User u JOIN FETCH u.userStatus JOIN FETCH u.profile")
+  @Override
+  Optional<User> findById(UUID uuid);
 
-  void deleteById(UUID id);
-
-  boolean existsByEmail(String email);
-
-  boolean existsByUsername(String username);
+  public Optional<User> findByUsername(String username);
+  public boolean existsByUsername(String username);
+  public boolean existsByEmail(String email);
 }

@@ -1,47 +1,22 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.*;
 import lombok.Getter;
-
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Schema(
         name = "User",
         description = "사용자 정보를 담고 있는 엔티티"
 )
+@Entity
+@Table(name = "tbl_user")
+@NoArgsConstructor
 @Getter
-public class User implements Serializable {
-
-  private static final long serialVersionUID = 1L;
-
-  @Schema(
-          description = "사용자의 고유 식별자",
-          type = "string",
-          format = "uuid",
-          example = "123e4567-e89b-12d3-a456-426614174000"
-  )
-  private UUID id;
-
-  @Schema(
-          description = "사용자 계정 생성 시간",
-          type = "string",
-          format = "date-time",
-          example = "2024-03-20T09:12:28Z"
-  )
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
-  private Instant createdAt;
-
-  @Schema(
-          description = "사용자 정보 최종 수정 시간",
-          type = "string",
-          format = "date-time",
-          example = "2024-03-20T09:12:28Z"
-  )
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
-  private Instant updatedAt;
+@Setter
+public class User extends BaseUpdatableEntity {
 
   @Schema(
           description = "사용자 이름",
@@ -50,6 +25,7 @@ public class User implements Serializable {
           minLength = 3,
           maxLength = 50
   )
+  @Column(name = "username", nullable = false, unique = true, length = 50)
   private String username;
 
   @Schema(
@@ -58,6 +34,7 @@ public class User implements Serializable {
           format = "email",
           example = "john.doe@example.com"
   )
+  @Column(name = "email", nullable = false, unique = true, length = 100)
   private String email;
 
   @Schema(
@@ -66,49 +43,44 @@ public class User implements Serializable {
           format = "password",
           example = "********"
   )
+  @Column(name = "password", nullable = false, length = 100)
   private String password;
 
-  @Schema(
-          description = "사용자 프로필 이미지의 ID",
-          type = "string",
-          format = "uuid",
-          example = "123e4567-e89b-12d3-a456-426614174000",
-          nullable = true
-  )
-  private UUID profileId;
+  @OneToOne
+  @JoinColumn(name = "profile_id")
+  private BinaryContent profile;
 
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private UserStatus userStatus;
 
-  public User(String username, String email, String password, UUID profileId) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    //
+  public User(String username, String email, String password, BinaryContent profile) {
     this.username = username;
     this.email = email;
     this.password = password;
-    this.profileId = profileId;
+    this.profile = profile;
   }
 
-  public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
-    boolean anyValueUpdated = false;
+  public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
     if (newUsername != null && !newUsername.equals(this.username)) {
       this.username = newUsername;
-      anyValueUpdated = true;
-    }
-    if (newEmail != null && !newEmail.equals(this.email)) {
-      this.email = newEmail;
-      anyValueUpdated = true;
-    }
-    if (newPassword != null && !newPassword.equals(this.password)) {
-      this.password = newPassword;
-      anyValueUpdated = true;
-    }
-    if (newProfileId != null && !newProfileId.equals(this.profileId)) {
-      this.profileId = newProfileId;
-      anyValueUpdated = true;
     }
 
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
+    if (newEmail != null && !newEmail.equals(this.email)) {
+      this.email = newEmail;
     }
+
+    if (newPassword != null && !newPassword.equals(this.password)) {
+      this.password = newPassword;
+    }
+
+    if (newProfile != null && !newProfile.equals(this.profile)) {
+      this.profile = newProfile;
+    }
+  }
+
+  // 양방향 편의 메소드
+  public void setUserStatus(UserStatus userStatus) {
+    this.userStatus = userStatus;
+    userStatus.setUser(this);
   }
 }

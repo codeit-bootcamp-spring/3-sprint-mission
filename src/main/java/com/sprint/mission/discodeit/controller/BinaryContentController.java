@@ -3,8 +3,10 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.CodeMessageResponseDto;
 import com.sprint.mission.discodeit.dto.ResponseCode;
 import com.sprint.mission.discodeit.dto.ResponseMessage;
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -34,6 +36,7 @@ import java.util.UUID;
 public class BinaryContentController {
 
   private final BinaryContentService binaryContentService;
+  private final BinaryContentStorage binaryContentStorage;
 
   @Operation(
           summary = "첨부 파일 조회",
@@ -65,27 +68,11 @@ public class BinaryContentController {
           schema = @Schema(type = "string", format = "uuid")
   )
   @GetMapping("/{binaryContentId}")
-  public ResponseEntity<?> find(@PathVariable UUID binaryContentId) {
-      try {
-          BinaryContent binaryContent = binaryContentService.find(binaryContentId);
-          return ResponseEntity
-                  .status(HttpStatus.OK)
-                  .body(binaryContent);
-      } catch (NoSuchElementException e) {
-          return ResponseEntity
-                  .status(HttpStatus.NOT_FOUND)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.BINARY_NOT_FOUND,
-                          ResponseMessage.BINARY_NOT_FOUND
-                  ));
-      } catch (RuntimeException e) {
-          return ResponseEntity
-                  .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.INTERNAL_ERROR,
-                          ResponseMessage.INTERNAL_SERVER_ERROR
-                  ));
-      }
+  public ResponseEntity<BinaryContentDto> find(@PathVariable UUID binaryContentId) {
+      BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
+      return ResponseEntity
+              .status(HttpStatus.OK)
+              .body(binaryContent);
   }
 
   @Operation(
@@ -110,21 +97,20 @@ public class BinaryContentController {
           array = @ArraySchema(schema = @Schema(type = "string", format = "uuid"))
   )
   @GetMapping("")
-  public ResponseEntity<?> findAllByIdIn(
+  public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
       @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
-      try {
-          List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
-          return ResponseEntity
-                  .status(HttpStatus.OK)
-                  .body(binaryContents);
-      } catch (RuntimeException e) {
-          return ResponseEntity
-                  .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.INTERNAL_ERROR,
-                          ResponseMessage.INTERNAL_SERVER_ERROR
-                  ));
-      }
+      List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+      return ResponseEntity
+              .status(HttpStatus.OK)
+              .body(binaryContents);
 
+  }
+
+  @GetMapping("/{binaryContentId}/download")
+  public ResponseEntity<?> fileDownload(@PathVariable UUID binaryContentId) {
+      BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
+      ResponseEntity<?> response = binaryContentStorage.download(binaryContentDto);
+
+      return response;
   }
 }

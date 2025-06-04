@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.CodeMessageResponseDto;
 import com.sprint.mission.discodeit.dto.ResponseCode;
 import com.sprint.mission.discodeit.dto.ResponseMessage;
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
@@ -79,7 +80,7 @@ public class UserController {
     try {
       Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
               .flatMap(this::resolveProfileRequest);
-      User createdUser = userService.create(userCreateRequest, profileRequest);
+      UserDto createdUser = userService.create(userCreateRequest, profileRequest);
 
       return ResponseEntity
               .status(HttpStatus.CREATED)
@@ -146,41 +147,18 @@ public class UserController {
           )
   )
   @PatchMapping("/{userId}")
-  public ResponseEntity<?> update(
+  public ResponseEntity<UserDto> update(
       @PathVariable("userId") UUID userId,
       @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    try {
+
       Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
               .flatMap(this::resolveProfileRequest);
-      User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
+      UserDto updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
       return ResponseEntity
               .status(HttpStatus.OK)
               .body(updatedUser);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity
-              .status(HttpStatus.BAD_REQUEST)
-              .body(CodeMessageResponseDto.error(
-                      ResponseCode.DUPLICATE_USER,
-                      ResponseMessage.DUPLICATE_USER
-              ));
-
-    } catch (NoSuchElementException e) {
-      return ResponseEntity
-              .status(HttpStatus.NOT_FOUND)
-              .body(CodeMessageResponseDto.error(
-                      ResponseCode.USER_NOT_FOUND,
-                      ResponseMessage.USER_NOT_FOUND
-              ));
-    }catch (Exception e) {
-      return ResponseEntity
-              .status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body(CodeMessageResponseDto.error(
-                      ResponseCode.INTERNAL_ERROR,
-                      ResponseMessage.INTERNAL_SERVER_ERROR
-              ));
-    }
   }
 
   @Operation(
@@ -202,19 +180,10 @@ public class UserController {
   )
   @DeleteMapping("/{userId}")
   public ResponseEntity<?> delete(@PathVariable("userId") UUID userId) {
-    try {
-      userService.delete(userId);
-      return ResponseEntity
-              .status(HttpStatus.NO_CONTENT)
-              .body("User가 성공적으로 삭제됨");
-    } catch (NoSuchElementException e) {
-      return ResponseEntity
-              .status(HttpStatus.NOT_FOUND)
-              .body(CodeMessageResponseDto.error(
-                      ResponseCode.USER_NOT_FOUND,
-                      ResponseMessage.USER_NOT_FOUND
-              ));
-    }
+    userService.delete(userId);
+    return ResponseEntity
+            .status(HttpStatus.NO_CONTENT)
+            .body("User가 성공적으로 삭제됨");
   }
 
   @Operation(
@@ -232,20 +201,12 @@ public class UserController {
           )
   )
   @GetMapping("")
-  public ResponseEntity<?> findAll() {
-    try {
-      List<UserDto> users = userService.findAll();
-      return ResponseEntity
-              .status(HttpStatus.OK)
-              .body(users);
-    } catch (RuntimeException e) {
-      return ResponseEntity
-              .status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body(CodeMessageResponseDto.error(
-                      ResponseCode.INTERNAL_ERROR,
-                      ResponseMessage.INTERNAL_SERVER_ERROR
-              ));
-    }
+  public ResponseEntity<List<UserDto>> findAll() {
+
+    List<UserDto> users = userService.findAll();
+    return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(users);
   }
 
   @Operation(
@@ -277,21 +238,14 @@ public class UserController {
           schema = @Schema(type = "string", format = "uuid")
   )
   @PatchMapping("/{userId}/userStatus")
-  public ResponseEntity<?> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
+  public ResponseEntity<UserStatusDto> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
       @RequestBody UserStatusUpdateRequest request) {
-    try {
-      UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, request);
-      return ResponseEntity
-              .status(HttpStatus.OK)
-              .body(updatedUserStatus);
-    } catch (NoSuchElementException e) {
-      return ResponseEntity
-              .status(HttpStatus.NOT_FOUND)
-              .body(CodeMessageResponseDto.error(
-                      ResponseCode.USER_NOT_FOUND,
-                      ResponseMessage.USER_NOT_FOUND
-              ));
-    }
+
+    UserStatusDto updatedUserStatus = userStatusService.updateByUserId(userId, request);
+    return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(updatedUserStatus);
+
   }
 
   private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {

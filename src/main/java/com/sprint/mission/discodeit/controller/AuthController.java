@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.CodeMessageResponseDto;
 import com.sprint.mission.discodeit.dto.ResponseCode;
 import com.sprint.mission.discodeit.dto.ResponseMessage;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -65,27 +66,10 @@ public class AuthController {
           )
   })
   @PostMapping("/login")
-  public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-      try {
-          User user = authService.login(loginRequest);
-          return ResponseEntity
-                  .status(HttpStatus.OK)
-                  .body(user);
-      } catch (IllegalArgumentException e) {
-          return ResponseEntity
-                  .status(HttpStatus.BAD_REQUEST)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.PASSWORD_VALID,
-                          ResponseMessage.PASSWORD_VALID
-                  ));
-      } catch (NoSuchElementException e) {
-          return ResponseEntity
-                  .status(HttpStatus.NOT_FOUND)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.USER_NOT_FOUND,
-                          ResponseMessage.USER_NOT_FOUND
-                  ));
-      }
-
+  public ResponseEntity<UserDto> login(@RequestBody LoginRequest loginRequest) {
+      UserDto user = authService.login(loginRequest);
+      return ResponseEntity
+              .status(HttpStatus.OK)
+              .body(user);
   }
 }

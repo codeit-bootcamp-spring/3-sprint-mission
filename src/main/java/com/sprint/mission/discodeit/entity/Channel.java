@@ -1,8 +1,15 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -13,41 +20,19 @@ import java.util.UUID;
         description = "채널 정보를 담고 있는 엔티티"
 )
 @Getter
-public class Channel implements Serializable {
-
-  private static final long serialVersionUID = 1L;
-
-  @Schema(
-          description = "채널의 고유 식별자",
-          type = "string",
-          format = "uuid",
-          example = "123e4567-e89b-12d3-a456-426614174000"
-  )
-  private UUID id;
-
-  @Schema(
-          description = "채널 생성 시간",
-          type = "string",
-          format = "date-time",
-          example = "2024-03-20T09:12:28Z"
-  )
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
-  private Instant createdAt;
-
-  @Schema(
-          description = "채널 최종 수정 시간",
-          type = "string",
-          format = "date-time",
-          example = "2024-03-20T09:12:28Z"
-  )
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
-  private Instant updatedAt;
+@NoArgsConstructor
+@Table(name = "tbl_channel")
+@Entity
+public class Channel extends BaseUpdatableEntity {
 
   @Schema(
           description = "채널 타입(PUBLIC/PRIVATE)",
           type = "string",
           example = "PUBLIC"
   )
+  @Enumerated(EnumType.STRING)
+  @Column(name = "type", nullable = false, length = 10, columnDefinition = "discodeit.channel_type")
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   private ChannelType type;
 
   @Schema(
@@ -57,6 +42,7 @@ public class Channel implements Serializable {
           minLength = 1,
           maxLength = 100
   )
+  @Column(name = "name", length = 100)
   private String name;
 
   @Schema(
@@ -64,30 +50,21 @@ public class Channel implements Serializable {
           type = "string",
           example = "일반적인 대화를 나누는 채널입니다"
   )
+  @Column(name = "description", length = 1000)
   private String description;
 
   public Channel(ChannelType type, String name, String description) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    //
     this.type = type;
     this.name = name;
     this.description = description;
   }
 
   public void update(String newName, String newDescription) {
-    boolean anyValueUpdated = false;
     if (newName != null && !newName.equals(this.name)) {
       this.name = newName;
-      anyValueUpdated = true;
     }
     if (newDescription != null && !newDescription.equals(this.description)) {
       this.description = newDescription;
-      anyValueUpdated = true;
-    }
-
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
     }
   }
 }

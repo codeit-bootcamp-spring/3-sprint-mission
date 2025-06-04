@@ -3,9 +3,11 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.CodeMessageResponseDto;
 import com.sprint.mission.discodeit.dto.ResponseCode;
 import com.sprint.mission.discodeit.dto.ResponseMessage;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,6 +22,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.*;
 
 @Tag(
@@ -80,45 +87,29 @@ public class MessageController {
           )
   )
   @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<?> create(
+  public ResponseEntity<MessageDto> create(
       @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
-      try {
-          List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
-                  .map(files -> files.stream()
-                          .map(file -> {
-                              try {
-                                  return new BinaryContentCreateRequest(
-                                          file.getOriginalFilename(),
-                                          file.getContentType(),
-                                          file.getBytes()
-                                  );
-                              } catch (IOException e) {
-                                  throw new RuntimeException(e);
-                              }
-                          })
-                          .toList())
-                  .orElse(new ArrayList<>());
-          Message createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
-          return ResponseEntity
-                  .status(HttpStatus.CREATED)
-                  .body(createdMessage);
-      } catch (NoSuchElementException e) {
-          return ResponseEntity
-                  .status(HttpStatus.NOT_FOUND)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.USER_OR_CHANNEL_NOT_FOUND,
-                          ResponseMessage.USER_OR_CHANNEL_NOT_FOUND
-                  ));
-      } catch (RuntimeException e) {
-          return ResponseEntity
-                  .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.INTERNAL_ERROR,
-                          ResponseMessage.INTERNAL_SERVER_ERROR
-                  ));
-      }
+      List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
+              .map(files -> files.stream()
+                      .map(file -> {
+                          try {
+                              return new BinaryContentCreateRequest(
+                                      file.getOriginalFilename(),
+                                      file.getContentType(),
+                                      file.getBytes()
+                              );
+                          } catch (IOException e) {
+                              throw new RuntimeException(e);
+                          }
+                      })
+                      .toList())
+              .orElse(new ArrayList<>());
+      MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
+      return ResponseEntity
+              .status(HttpStatus.CREATED)
+              .body(createdMessage);
   }
 
   @Operation(
@@ -158,29 +149,13 @@ public class MessageController {
           schema = @Schema(implementation = Message.class)
   )
   @PatchMapping("/{messageId}")
-  public ResponseEntity<?> update(@PathVariable("messageId") UUID messageId,
+  public ResponseEntity<MessageDto> update(@PathVariable("messageId") UUID messageId,
       @RequestBody MessageUpdateRequest request) {
 
-      try {
-          Message updatedMessage = messageService.update(messageId, request);
-          return ResponseEntity
-                  .status(HttpStatus.OK)
-                  .body(updatedMessage);
-      } catch (NoSuchElementException e) {
-          return ResponseEntity
-                  .status(HttpStatus.NOT_FOUND)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.MESSAGE_NOT_FOUND,
-                          ResponseMessage.MESSAGE_NOT_FOUND
-                  ));
-      } catch (RuntimeException e) {
-          return ResponseEntity
-                  .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.INTERNAL_ERROR,
-                          ResponseMessage.INTERNAL_SERVER_ERROR
-                  ));
-      }
+      MessageDto updatedMessage = messageService.update(messageId, request);
+      return ResponseEntity
+              .status(HttpStatus.OK)
+              .body(updatedMessage);
   }
 
   @Operation(
@@ -217,26 +192,10 @@ public class MessageController {
   })
   @DeleteMapping("/{messageId}")
   public ResponseEntity<?> delete(@PathVariable("messageId") UUID messageId) {
-      try {
-          messageService.delete(messageId);
-          return ResponseEntity
-                  .status(HttpStatus.NO_CONTENT)
-                  .body("Message가 성공적으로 삭제됨");
-      } catch (NoSuchElementException e) {
-          return ResponseEntity
-                  .status(HttpStatus.NOT_FOUND)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.MESSAGE_NOT_FOUND,
-                          ResponseMessage.MESSAGE_NOT_FOUND
-                  ));
-      } catch (RuntimeException e) {
-          return ResponseEntity
-                  .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.INTERNAL_ERROR,
-                          ResponseMessage.INTERNAL_SERVER_ERROR
-                  ));
-      }
+      messageService.delete(messageId);
+      return ResponseEntity
+              .status(HttpStatus.NO_CONTENT)
+              .body("Message가 성공적으로 삭제됨");
   }
 
   @Operation(
@@ -262,20 +221,14 @@ public class MessageController {
           schema = @Schema(type = "string", format = "uuid")
   )
   @GetMapping("")
-  public ResponseEntity<?> findAllByChannelId(
-      @RequestParam("channelId") UUID channelId) {
-      try {
-          List<Message> messages = messageService.findAllByChannelId(channelId);
-          return ResponseEntity
-                  .status(HttpStatus.OK)
-                  .body(messages);
-      } catch (RuntimeException e) {
-          return ResponseEntity
-                  .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.INTERNAL_ERROR,
-                          ResponseMessage.INTERNAL_SERVER_ERROR
-                  ));
-      }
+  public ResponseEntity<PageResponse<?>> findAllByChannelId(
+          @RequestParam("channelId") UUID channelId,
+          @RequestParam(name = "cursor", required = false) Instant cursor,
+          @PageableDefault Pageable pageable) {
+
+      PageResponse<?> messages = messageService.findAllByChannelId(channelId, cursor, pageable);
+      return ResponseEntity
+              .status(HttpStatus.OK)
+              .body(messages);
   }
 }

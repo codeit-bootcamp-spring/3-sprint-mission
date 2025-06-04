@@ -16,5 +16,6 @@ public interface ResponseMessage {
     String DUPLICATE_READ_STATUS = "이미 존재하는 읽음 상태임";
     String FILE_PROCESSING_ERROR = "파일 처리 중 오류가 발생했습니다.";
     String INTERNAL_SERVER_ERROR = "서버 내부 오류가 발생했습니다.";
-
+    String DUPLICATE_USER_STATUS = "이미 존재하는 사용자 상태임";
+    String USER_STATUS_NOT_FOUND = "사용자 상태를 찾을 수 없음";
 }

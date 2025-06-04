@@ -2,19 +2,19 @@ package com.sprint.mission.discodeit.dto;
 
 public interface ResponseCode {
 
-    String SUCCESS = "SU";
-    String SUCCESS_USER_UPDATE = "SUU";
-    String REQUEST_FAIL = "RF";
-    String USER_NOT_FOUND = "UNF";
-    String CHANNEL_NOT_FOUND = "CNF";
-    String MESSAGE_NOT_FOUND = "MNT";
-    String READ_STATUS_NOT_FOUND = "RSNF";
-    String BINARY_NOT_FOUND = "BNF";
-    String PASSWORD_VALID = "PV";
-    String USER_OR_CHANNEL_NOT_FOUND = "UCNF";
-    String DUPLICATE_USER = "DU";
-    String DUPLICATE_READ_STATUS = "DRS";
-    String FILE_PROCESSING_ERROR = "FE";
-    String INTERNAL_ERROR = "IE";
-
+    String SUCCESS = "Success";
+    String REQUEST_FAIL = "Request Fail";
+    String USER_NOT_FOUND = "User Not Found";
+    String CHANNEL_NOT_FOUND = "Channel Not Found";
+    String MESSAGE_NOT_FOUND = "Message Not Found";
+    String READ_STATUS_NOT_FOUND = "Read Status Not Found";
+    String BINARY_NOT_FOUND = "Binary Not Found";
+    String PASSWORD_VALID = "Password Not Valid";
+    String USER_OR_CHANNEL_NOT_FOUND = "User Or Channel Not Found";
+    String DUPLICATE_USER = "Duplicated User";
+    String DUPLICATE_READ_STATUS = "Duplicated Read Status";
+    String FILE_PROCESSING_ERROR = "File Processing Error";
+    String INTERNAL_ERROR = "Internal Server Error";
+    String DUPLICATE_USER_STATUS = "Duplicated User Status";
+    String USER_STATUS_NOT_FOUND = "User Status Not Found";
 }

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.CodeMessageResponseDto;
 import com.sprint.mission.discodeit.dto.ResponseCode;
 import com.sprint.mission.discodeit.dto.ResponseMessage;
+import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -75,34 +76,12 @@ public class ReadStatusController {
           schema = @Schema(implementation = ReadStatusCreateRequest.class)
   )
   @PostMapping("")
-  public ResponseEntity<?> create(@RequestBody ReadStatusCreateRequest request) {
-      try {
-          ReadStatus createdReadStatus = readStatusService.create(request);
-          return ResponseEntity
-                  .status(HttpStatus.CREATED)
-                  .body(createdReadStatus);
-      } catch (IllegalArgumentException e) {
-          return ResponseEntity
-                  .status(HttpStatus.BAD_REQUEST)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.DUPLICATE_READ_STATUS,
-                          ResponseMessage.DUPLICATE_READ_STATUS
-                  ));
-      } catch (NoSuchElementException e) {
-          return ResponseEntity
-                  .status(HttpStatus.NOT_FOUND)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.USER_OR_CHANNEL_NOT_FOUND,
-                          ResponseMessage.USER_OR_CHANNEL_NOT_FOUND
-                  ));
-      } catch (RuntimeException e) {
-          return ResponseEntity
-                  .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.INTERNAL_ERROR,
-                          ResponseMessage.INTERNAL_SERVER_ERROR
-                  ));
-      }
+  public ResponseEntity<ReadStatusDto> create(@RequestBody ReadStatusCreateRequest request) {
+
+      ReadStatusDto createdReadStatus = readStatusService.create(request);
+      return ResponseEntity
+              .status(HttpStatus.CREATED)
+              .body(createdReadStatus);
   }
 
   @Operation(
@@ -141,28 +120,13 @@ public class ReadStatusController {
           schema = @Schema(implementation = ReadStatusUpdateRequest.class)
   )
   @PatchMapping("/{readStatusId}")
-  public ResponseEntity<?> update(@PathVariable("readStatusId") UUID readStatusId,
+  public ResponseEntity<ReadStatusDto> update(@PathVariable("readStatusId") UUID readStatusId,
       @RequestBody ReadStatusUpdateRequest request) {
-      try {
-          ReadStatus updatedReadStatus = readStatusService.update(readStatusId, request);
-          return ResponseEntity
-                  .status(HttpStatus.OK)
-                  .body(updatedReadStatus);
-      } catch (NoSuchElementException e) {
-          return ResponseEntity
-                  .status(HttpStatus.NOT_FOUND)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.READ_STATUS_NOT_FOUND,
-                          ResponseMessage.READ_STATUS_NOT_FOUND
-                  ));
-      } catch (RuntimeException e) {
-          return ResponseEntity
-                  .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.INTERNAL_ERROR,
-                          ResponseMessage.INTERNAL_SERVER_ERROR
-                  ));
-      }
+
+      ReadStatusDto updatedReadStatus = readStatusService.update(readStatusId, request);
+      return ResponseEntity
+              .status(HttpStatus.OK)
+              .body(updatedReadStatus);
   }
 
   @Operation(
@@ -187,19 +151,11 @@ public class ReadStatusController {
           schema = @Schema(type = "string", format = "uuid")
   )
   @GetMapping("")
-  public ResponseEntity<?> findAllByUserId(@RequestParam("userId") UUID userId) {
-      try {
-          List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
-          return ResponseEntity
-                  .status(HttpStatus.OK)
-                  .body(readStatuses);
-      } catch (RuntimeException e) {
-          return ResponseEntity
-                  .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                  .body(CodeMessageResponseDto.error(
-                          ResponseCode.INTERNAL_ERROR,
-                          ResponseMessage.INTERNAL_SERVER_ERROR
-                  ));
-      }
+  public ResponseEntity<List<ReadStatusDto>> findAllByUserId(@RequestParam("userId") UUID userId) {
+
+      List<ReadStatusDto> readStatuses = readStatusService.findAllByUserId(userId);
+      return ResponseEntity
+              .status(HttpStatus.OK)
+              .body(readStatuses);
   }
 }

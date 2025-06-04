@@ -1,13 +1,18 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,88 +21,48 @@ import java.util.UUID;
         description = "채널 내 메시지 정보를 담고 있는 엔티티"
 )
 @Getter
-@ToString
-public class Message implements Serializable {
-
-  private static final long serialVersionUID = 1L;
-
-  @Schema(
-          description = "메시지의 고유 식별자",
-          type = "string",
-          format = "uuid",
-          example = "123e4567-e89b-12d3-a456-426614174000"
-  )
-  private UUID id;
-
-  @Schema(
-          description = "메시지 생성 시간",
-          type = "string",
-          format = "date-time",
-          example = "2024-03-20T09:12:28Z"
-  )
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
-  private Instant createdAt;
-
-  @Schema(
-          description = "메시지 최종 수정 시간",
-          type = "string",
-          format = "date-time",
-          example = "2024-03-20T09:12:28Z"
-  )
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
-  private Instant updatedAt;
+@NoArgsConstructor
+@Entity
+@Table(name = "tbl_message")
+public class Message extends BaseUpdatableEntity {
 
   @Schema(
           description = "메시지 내용",
           type = "string",
           example = "안녕하세요! 반갑습니다."
   )
+  @Column(name = "content", nullable = false)
   private String content;
 
-  @Schema(
-          description = "메시지가 속한 채널의 ID",
-          type = "string",
-          format = "uuid",
-          example = "123e4567-e89b-12d3-a456-426614174000"
-  )
-  private UUID channelId;
+  @ManyToOne
+  @JoinColumn(name = "channel_id")
+  private Channel channel;
 
-  @Schema(
-          description = "메시지 작성자의 ID",
-          type = "string",
-          format = "uuid",
-          example = "123e4567-e89b-12d3-a456-426614174000"
-  )
-  private UUID authorId;
+  @ManyToOne
+  @JoinColumn(name = "author_id")
+  private User author;
 
-  @ArraySchema(
-          schema = @Schema(type = "string", format = "uuid"),
-          arraySchema = @Schema(
-                  description = "메시지에 첨부된 파일들의 ID 목록",
-                  example = "[\"123e4567-e89b-12d3-a456-426614174000\", \"987fcdeb-51a2-43d8-9876-543210abcdef\"]"
-          )
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinTable(
+          name = "tbl_message_attachment",
+          joinColumns = @JoinColumn(name = "message_id"),
+          inverseJoinColumns = @JoinColumn(name = "attachment_id")
   )
-  private List<UUID> attachmentIds;
+  private List<BinaryContent> attachments = new ArrayList<>();
 
-  public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    //
+  public Message(String content, Channel channel, User author) {
     this.content = content;
-    this.channelId = channelId;
-    this.authorId = authorId;
-    this.attachmentIds = attachmentIds;
+    this.channel = channel;
+    this.author = author;
   }
 
   public void update(String newContent) {
-    boolean anyValueUpdated = false;
     if (newContent != null && !newContent.equals(this.content)) {
       this.content = newContent;
-      anyValueUpdated = true;
     }
+  }
 
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
-    }
+  public void addAttachment(BinaryContent attachment) {
+    attachments.add(attachment);
   }
 }

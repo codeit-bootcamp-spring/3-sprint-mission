@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.exception;
 
+import com.sprint.mission.discodeit.dto.CodeMessageResponseDto;
+import com.sprint.mission.discodeit.dto.ResponseCode;
+import com.sprint.mission.discodeit.dto.ResponseMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -12,18 +15,10 @@ import java.util.NoSuchElementException;
 @ResponseBody
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<String> handleException(IllegalArgumentException e) {
-    return ResponseEntity
-        .status(HttpStatus.BAD_REQUEST)
-        .body(e.getMessage());
-  }
-
-  @ExceptionHandler(NoSuchElementException.class)
-  public ResponseEntity<String> handleException(NoSuchElementException e) {
-    return ResponseEntity
-        .status(HttpStatus.NOT_FOUND)
-        .body(e.getMessage());
+  @ExceptionHandler(BaseException.class)
+  public ResponseEntity<CodeMessageResponseDto<?>> handleBaseException(BaseException ex) {
+    return ResponseEntity.status(ex.getHttpStatus())
+            .body(CodeMessageResponseDto.error(ex.getCode(), ex.getMessage()));
   }
 
   @ExceptionHandler(Exception.class)

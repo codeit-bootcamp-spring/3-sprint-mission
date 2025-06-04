@@ -25,21 +25,21 @@ public class LoggingAspect {
     public void logBefore(JoinPoint joinPoint) {
         String method = joinPoint.getSignature().toShortString();
         Object[] args = joinPoint.getArgs();
-        log.info("▶▶ Start: {}", method);
-        log.info("▶▶ Args: {}", Arrays.toString(args));
+        log.info(">> Start: {}", method);
+        log.info(">> Args: {}", Arrays.toString(args));
     }
 
     @AfterReturning(pointcut = "serviceMethods()", returning = "result")
     public void logAfter(JoinPoint joinPoint, Object result) {
         String method = joinPoint.getSignature().toShortString();
-        log.info("✅ End: {}", method);
-        log.info("✅ Returned: {}", result);
+        log.info("V End: {}", method);
+        log.info("V Returned: {}", result);
     }
 
     @AfterThrowing(pointcut = "serviceMethods()", throwing = "ex")
     public void logException(JoinPoint joinPoint, Throwable ex) {
         String method = joinPoint.getSignature().toShortString();
-        log.error("🔥 Exception in {}: {}", method, ex.getMessage(), ex);
+        log.error("* Exception in {}: {}", method, ex.getMessage(), ex);
     }
 
 //    @Before("repositoryMethods()")
