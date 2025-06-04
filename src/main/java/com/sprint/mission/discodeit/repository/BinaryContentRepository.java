@@ -9,5 +9,6 @@ public interface BinaryContentRepository {
     BinaryContent save(BinaryContent binaryContent);
     BinaryContent loadById(UUID userId);
     List<BinaryContent> loadAll();
+    List<BinaryContent> loadAllByIdIn(List<UUID> ids);
     void delete(UUID id);
 }

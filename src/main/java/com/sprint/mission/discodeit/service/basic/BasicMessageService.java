@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -20,51 +23,64 @@ public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public Message createMessage(MessageCreateRequest messageCreateRequest) {
-        UUID userId = messageCreateRequest.getUserId();
-        UUID channelId = messageCreateRequest.getChannelId();
+    public Message create(MessageCreateRequest messageCreateRequest, List<BinaryContentCreateRequest> binaryContentCreateRequests) {
+        UUID channelId = messageCreateRequest.channelId();
+        UUID authorId = messageCreateRequest.authorId();
 
-        try {
-            Channel ch = channelRepository.loadById(channelId);
-            if (userRepository.loadById(userId) == null || ch == null) {
-                throw new IllegalArgumentException("[Message] 유효하지 않은 userId 혹은 채널명이 존재합니다. (userId: " + userId + ", channelId: " + channelId);
-            }
-
-            if (!ch.isMember(userId)) {
-                throw new IllegalAccessException("[Message] 먼저 채널에 접속해주세요. (userId: " + userId + ", channelId: " + channelId);
-            }
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-            System.out.println(e.getMessage());
-            return null;
+        if (channelRepository.loadById(channelId) == null) {
+            throw new IllegalArgumentException("[Channel] 유효하지 않은 채널 (channelId=" + channelId + ")");
+        }
+        if (userRepository.loadById(authorId) == null) {
+            throw new IllegalArgumentException("[User] 유효하지 않은 사용자 (userId=" + authorId + ")");
         }
 
-        Message msg = Message.of(userId, channelId, messageCreateRequest.getContent());
-        messageRepository.save(msg);
-        return msg;
+        List<UUID> attachmentIds = binaryContentCreateRequests.stream()
+                .map(attachmentRequest -> {
+                    String fileName = attachmentRequest.fileName();
+                    String contentType = attachmentRequest.contentType();
+                    byte[] bytes = attachmentRequest.bytes();
+
+                    BinaryContent binaryContent = BinaryContent.of(fileName, (long) bytes.length,
+                            contentType, bytes);
+                    BinaryContent createdBinaryContent = binaryContentRepository.save(binaryContent);
+                    return createdBinaryContent.getId();
+                })
+                .toList();
+
+        String content = messageCreateRequest.content();
+        Message message = Message.of(authorId, channelId, content, attachmentIds);
+        return messageRepository.save(message);
     }
 
     @Override
-    public Message getMessage(UUID id) {
+    public Message get(UUID id) {
         return messageRepository.loadById(id);
     }
 
     @Override
-    public List<Message> getMessagesByChannel(UUID channelId) {
+    public List<Message> getByChannel(UUID channelId) {
         return messageRepository.loadByChannelId(channelId);
     }
 
     @Override
-    public List<Message> getAllMessages() { return messageRepository.loadAll(); }
+    public List<Message> getAll() { return messageRepository.loadAll(); }
 
     @Override
-    public void updateMessage(MessageUpdateRequest messageUpdateRequest) {
-        messageRepository.update(messageUpdateRequest.getMessageId(), messageUpdateRequest.getContent());
+    public Message update(UUID messageId, MessageUpdateRequest messageUpdateRequest) {
+        String content = messageUpdateRequest.content();
+        Message message = messageRepository.loadById(messageId);
+        if (message == null) {
+            throw new IllegalArgumentException("[Message] 유효하지 않은 메시지입니다. (messageId=" + messageId + ")");
+        }
+        message.update(content);
+        return messageRepository.save(message);
     }
 
     @Override
-    public void deleteMessage(UUID id) {
+    public void delete(UUID id) {
         messageRepository.deleteById(id);
     }
 }

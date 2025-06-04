@@ -51,12 +51,13 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest userStatusUpdateRequest) {
-        Instant newUpdateaAT = userStatusUpdateRequest.newUpdateaAT();
+        Instant newUpdateAT = userStatusUpdateRequest.newUpdateaAT();
 
         UserStatus userStatus = userStatusRepository.loadById(userId)
                 .orElseThrow(
                         () -> new NoSuchElementException("[UserStatus] 존재하지 않은 사용자입니다. (userId=" + userId + ")"));
-        userStatus.update(newUpdateaAT);
+        System.out.println("UserStatusService:" + userStatus);
+        userStatus.update(newUpdateAT);
 
         return userStatusRepository.save(userStatus);
     }

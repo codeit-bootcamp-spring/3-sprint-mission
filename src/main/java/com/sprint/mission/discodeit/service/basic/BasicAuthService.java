@@ -16,28 +16,23 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository; //이후에 login 로직에서 사용
+    private final UserStatusRepository userStatusRepository;
 
-    // 수정해야될 로직 (user가 직접 password를 판단)
     @Override
-    public UserStatus login(UUID userId, String password) {
-        User user = userRepository.loadById(userId);
+    public User login(String username, String password) {
+        User user = userRepository.loadByName(username);
+
         if (user == null) {
-            throw new IllegalArgumentException("[Auth] 유효하지 않은 사용자입니다. (userID: " + userId + ")");
+            throw new IllegalArgumentException("[Auth] 유효하지 않은 사용자입니다. (username: " + username + ")");
         }
 
-        validatePassword(user, password);
-        UserStatus userStatus =  updateUserStatus(user.getId());
-
-        return userStatus;
-    }
-
-    @Override
-    public void validatePassword(User user, String password) {
-        if (!user.getPassword().equals(password)) {
-            throw new IllegalArgumentException("[Auth] 패스워드가 일치하지 않습니다. (password: " + password + ")");
+        if (!user.authenticate(password)) {
+            throw new IllegalArgumentException("[Auth] 비밀번호가 일치하지 않습니다.");
         }
+
+        return user;
     }
+
 
     @Override
     public UserStatus updateUserStatus(UUID userId) {

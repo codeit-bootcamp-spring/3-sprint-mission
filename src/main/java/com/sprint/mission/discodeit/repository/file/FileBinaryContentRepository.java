@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -62,6 +61,18 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
         }
 
         return binaryContents;
+    }
+
+    @Override
+    public List<BinaryContent> loadAllByIdIn(List<UUID> ids) {
+        List<BinaryContent> contents = new ArrayList<>();
+        for (UUID id : ids) {
+            Path file = path.resolve(id.toString() + ".ser");
+            if (Files.exists(file)) {
+                contents.add(deserialize(file));
+            }
+        }
+        return contents;
     }
 
     @Override

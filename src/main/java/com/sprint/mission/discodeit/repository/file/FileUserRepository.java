@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Repository
@@ -26,7 +27,7 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public void save(User user) {
+    public User save(User user) {
         String filename = user.getId().toString() + ".ser";
         Path file = path.resolve(filename);
 
@@ -38,18 +39,16 @@ public class FileUserRepository implements UserRepository {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return user;
     }
 
     @Override
     public User loadByName(String name) {
-        List<User> users = loadAll();
-
-        for (User user : users) {
-            if (user.getName().equals(name)) {
-                return user;
-            }
-        }
-        return null;
+        System.out.println("[디버그] loadAll 개수 = " + loadAll().size());
+        return loadAll().stream()
+                .filter(user -> Objects.equals(user.getName(), name))
+                .findFirst()
+                .orElse(null);
     }
 
     @Override

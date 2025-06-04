@@ -26,7 +26,7 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public void save(Channel channel) {
+    public Channel save(Channel channel) {
         String filename = channel.getId().toString() + ".ser";
         Path file = path.resolve(filename);
 
@@ -38,6 +38,7 @@ public class FileChannelRepository implements ChannelRepository {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return channel;
     }
 
     @Override
@@ -71,44 +72,6 @@ public class FileChannelRepository implements ChannelRepository {
         }
 
         return channels;
-    }
-
-    @Override
-    public Channel update(UUID id, String name) {
-        Channel channel = loadById(id);
-        if (channel == null) {
-            throw new IllegalArgumentException("[Channel] 유효하지 않은 채널입니다. (" + id + ")");
-        }
-
-        channel.updateName(name);
-        save(channel);
-        return channel;
-    }
-
-    @Override
-    public void join(UUID userId, UUID channelId) {
-        Channel channel = loadById(channelId);
-
-        if (channel == null) {
-            throw new IllegalArgumentException("[Channel] 유효하지 않은 channel 파일 (" + channelId + ".ser)");
-        }
-
-        channel.join(userId);
-        save(channel);
-        System.out.println(channel);
-    }
-
-    @Override
-    public void leave(UUID userId, UUID channelId) {
-        Channel channel = loadById(channelId);
-
-        if (channel == null) {
-            throw new IllegalArgumentException("[Channel] 유효하지 않은 channel 파일 (" + channelId + ".ser)");
-        }
-
-        channel.leave(userId);
-        save(channel);
-        System.out.println(channel);
     }
 
     @Override

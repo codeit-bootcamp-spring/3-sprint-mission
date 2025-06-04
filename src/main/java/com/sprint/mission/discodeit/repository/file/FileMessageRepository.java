@@ -26,7 +26,7 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void save(Message message) {
+    public Message save(Message message) {
         String filename = message.getId().toString() + ".ser";
         Path file = path.resolve(filename);
 
@@ -38,6 +38,7 @@ public class FileMessageRepository implements MessageRepository {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return message;
     }
 
     @Override
@@ -71,14 +72,15 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void update(UUID id, String content) {
-        Message msg = loadById(id);
-        if (msg == null) {
+    public Message update(UUID id, String content) {
+        Message message = loadById(id);
+        if (message== null) {
             throw new IllegalArgumentException("[Message] 유효하지 않은 메시지입니다. (" + id + ")");
         }
 
-        msg.update(content);
-        save(msg);
+        message.update(content);
+        save(message);
+        return message;
     }
 
     @Override

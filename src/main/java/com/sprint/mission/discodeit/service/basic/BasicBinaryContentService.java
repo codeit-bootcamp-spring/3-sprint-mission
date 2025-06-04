@@ -6,9 +6,9 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -33,15 +33,26 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public BinaryContent find(@RequestParam("binaryContentId") UUID id) {
-        return binaryContentRepository.loadById(id);
+    public BinaryContent find(UUID binaryContentId) {
+        BinaryContent binaryContent = binaryContentRepository.loadById(binaryContentId);
+        if (binaryContent == null) {
+            throw new IllegalArgumentException("[BinaryContent] 유효하지 않은 binaryContent. (binaryContentId=" + binaryContentId + ")");
+        }
+
+        return binaryContent;
     }
 
-//    public BinaryContent findByUserId(UUID id) { return binaryContentRepository.loadByUserId(id); }
+    @Override
+    public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
+        return binaryContentRepository.loadAllByIdIn(binaryContentIds).stream()
+                .toList();
+    }
 
     @Override
-    public List<BinaryContent> findAll() { return binaryContentRepository.loadAll(); }
-
-    @Override
-    public void delete(UUID id) { binaryContentRepository.delete(id); }
+    public void delete(UUID binaryContentId) {
+        if (binaryContentRepository.loadById(binaryContentId) == null) {
+            throw new NoSuchElementException("[BinaryContent] 유효하지 않은 binaryContent (binaryContentId=" + binaryContentId + ")");
+        }
+        binaryContentRepository.delete(binaryContentId);
+    }
 }

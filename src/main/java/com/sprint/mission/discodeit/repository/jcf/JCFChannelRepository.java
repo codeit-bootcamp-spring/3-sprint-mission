@@ -13,8 +13,8 @@ public class JCFChannelRepository implements ChannelRepository {
     private final Map<UUID, Channel> channels = new HashMap<>();
 
     @Override
-    public void save(Channel ch) {
-        channels.put(ch.getId(), ch);
+    public Channel save(Channel ch) {
+        return channels.put(ch.getId(), ch);
     }
 
     @Override
@@ -33,43 +33,6 @@ public class JCFChannelRepository implements ChannelRepository {
     @Override
     public List<Channel> loadAll() {
         return channels.values().stream().toList();
-    }
-
-    @Override
-    public Channel update(UUID id, String name) {
-        Channel channel = channels.get(id);
-        if (channel == null) {
-            throw new IllegalArgumentException("[Channel] 유효하지 않은 채널입니다. (channelId: " + id + ")");
-        }
-
-        channel.updateName(name);
-        return channel;
-    }
-
-    @Override
-    public void join(UUID userId, UUID channelId) {
-        Channel ch = loadById(channelId);
-
-        if (ch == null) {
-            throw new IllegalArgumentException("[Channel] 유효하지 않은 채널입니다. (channelId: " + channelId + ")");
-        }
-
-        ch.join(userId);
-        save(ch);
-        System.out.println("[Channel] 채널에 접속했습니다. (userId: " + userId + ", channelId: " + channelId + ")");
-    }
-
-    @Override
-    public void leave(UUID userId, UUID channelId) {
-        Channel ch = loadById(channelId);
-
-        if (ch == null) {
-            throw new IllegalArgumentException("[Channel] 유효하지 않은 채널입니다. (channelId: " + channelId + ")");
-        }
-
-        ch.leave(userId);
-        save(ch);
-        System.out.println("[Channel] 채널에서 탈퇴했습니다. (userId: " + userId + ", channelId: " + channelId + ")");
     }
 
     @Override

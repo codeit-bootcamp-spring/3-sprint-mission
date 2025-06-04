@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserRepository {
-    void save(User user);
+    User save(User user);
     User loadByName(String name);
     User loadByEmail(String email);
     User loadById(UUID id);

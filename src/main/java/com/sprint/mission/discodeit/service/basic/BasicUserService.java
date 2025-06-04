@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.UserDTO;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -33,11 +33,11 @@ public class BasicUserService implements UserService {
     @Override
     public User create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         if (userRepository.loadByName(userCreateRequest.getName()) != null) {
-            throw new IllegalArgumentException("[User] 이미 존재하는 사용자 이름입니다. (" + userCreateRequest.getName() + ")");
+            throw new IllegalArgumentException("[User] 이미 사용중인 이름입니다. (" + userCreateRequest.getName() + ")");
         }
 
         if (userRepository.loadByEmail(userCreateRequest.getEmail()) != null) {
-            throw new IllegalArgumentException("[User] 이미 등록된 이메일입니다: " + userCreateRequest.getEmail());
+            throw new IllegalArgumentException("[User] 이미 사용중인 이메일입니다. (" + userCreateRequest.getEmail() + ")");
         }
 
         UUID nullableProfileId = optionalProfileCreateRequest
@@ -65,15 +65,10 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = userStatusRepository
                 .loadById(userId)
                 .orElseThrow(() ->
-                        new NoSuchElementException("[User] 유효하지 않은 UserStatus. (userId=" + userId + ")")
+                        new NoSuchElementException("[User] 유효하지 않은 UserStatus (userId=" + userId + ")")
                 );
 
         return new UserDTO(user.getId(), user.getCreatedAt(), user.getUpdatedAt(), user.getName(), user.getEmail(), user.getProfileId(), userStatus.isLoggedIn());
-    }
-
-    @Override
-    public User getByName(String name) {
-        return userRepository.loadByName(name);
     }
 
     @Override
@@ -83,7 +78,7 @@ public class BasicUserService implements UserService {
                     UserStatus status = userStatusRepository
                             .loadById(user.getId())
                             .orElseThrow(() ->
-                                    new NoSuchElementException("[User] 유효하지 않은 UserStatus. (userId=" + user.getId() + ")")
+                                    new NoSuchElementException("[User] 유효하지 않은 UserStatus (userId=" + user.getId() + ")")
                             );
 
                     return new UserDTO(
@@ -100,18 +95,42 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
-        Instant newUpdatedAt = request.newUpdateaAT();
+    public User update(
+            UUID userId,
+            UserUpdateRequest userUpdateRequest,
+            Optional<BinaryContentCreateRequest> optionalProfileCreateRequest
+    ) {
+        User user = userRepository.loadById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("[User] 유효하지 않은 사용자 (userId=" + userId + ")");
+        }
 
-        UserStatus userStatus = userStatusRepository
-                .loadById(userId)
-                .orElseThrow(() ->
-                        new NoSuchElementException("[User] 유효하지 않은 UserStatus. (userId=" + userId + ")")
-                );
+        String username = userUpdateRequest.username();
+        String email = userUpdateRequest.email();
+        if (userRepository.loadByName(username) != null) {
+            throw new IllegalArgumentException("[User] 이미 사용중인 이름입니다. (" + username + ")");
+        }
+        if (userRepository.loadByEmail(email) != null) {
+            throw new IllegalArgumentException("[User] 이미 사용중인 이메일입니다. (" + email + ")");
+        }
 
-        userStatus.update(newUpdatedAt);
+        UUID nullableProfileId = optionalProfileCreateRequest
+                .map(profileRequest -> {
+                    Optional.ofNullable(user.getProfileId())
+                            .ifPresent(binaryContentRepository::delete);
 
-        return userStatusRepository.save(userStatus);
+                    String fileName = profileRequest.fileName();
+                    String contentType = profileRequest.contentType();
+                    byte[] bytes = profileRequest.bytes();
+                    BinaryContent binaryContent = BinaryContent.of(fileName, (long) bytes.length, contentType, bytes);
+                    return binaryContentRepository.save(binaryContent).getId();
+                })
+                .orElse(null);
+
+        String password = userUpdateRequest.password();
+        user.update(username, email, password, nullableProfileId);
+
+        return userRepository.save(user);
     }
 
     @Override
@@ -129,10 +148,5 @@ public class BasicUserService implements UserService {
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
         }
-    }
-
-    @Override
-    public boolean existsById(UUID id) {
-        return false;
     }
 }

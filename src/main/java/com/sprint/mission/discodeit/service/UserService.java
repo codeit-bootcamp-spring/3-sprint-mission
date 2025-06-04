@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.data.UserDTO;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 
@@ -15,8 +16,6 @@ public interface UserService {
     User create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest);
     UserDTO get(UUID id);
     List<UserDTO> getAll();
-    User getByName(String name);
-    UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request);
+    User update(UUID userId, UserUpdateRequest userUpdateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest);
     void delete(UUID id);
-    boolean existsById(UUID id); // JavaApplicationd에서 사용됨
 }

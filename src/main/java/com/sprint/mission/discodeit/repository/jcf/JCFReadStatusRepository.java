@@ -5,10 +5,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 @Profile("jcf")
@@ -16,10 +13,10 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
     private static final Map<UUID, ReadStatus> readStatuses = new HashMap<>();
 
     @Override
-    public void save(ReadStatus readStatus) { readStatuses.put(readStatus.getId(), readStatus); }
+    public ReadStatus save(ReadStatus readStatus) { return readStatuses.put(readStatus.getId(), readStatus); }
 
     @Override
-    public ReadStatus loadById(UUID id) { return readStatuses.get(id); }
+    public Optional<ReadStatus> loadById(UUID id) { return Optional.ofNullable(readStatuses.get(id)); }
 
     @Override
     public List<ReadStatus> loadAllByUserId(UUID id) {
@@ -28,6 +25,16 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
+    public List<ReadStatus> loadAllByChannelId(UUID channelId) {
+        return List.of();
+    }
+
+    @Override
     public void deleteByUserId(UUID userId) { readStatuses.remove(userId); }
+
+    @Override
+    public void deleteByChannelId(UUID channelId) {
+
+    }
 
 }
