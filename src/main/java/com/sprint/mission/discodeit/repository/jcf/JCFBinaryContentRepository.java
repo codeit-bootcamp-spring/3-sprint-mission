@@ -2,33 +2,46 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import org.springframework.context.annotation.Profile;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 @Repository
-@Profile("jcf")
 public class JCFBinaryContentRepository implements BinaryContentRepository {
-    private static final Map<UUID, BinaryContent> binaryContents = new HashMap<>();
 
-    @Override
-    public BinaryContent save(BinaryContent userProfileImage) { return binaryContents.put(userProfileImage.getId(), userProfileImage); }
+  private final Map<UUID, BinaryContent> data;
 
-    @Override
-    public BinaryContent loadById(UUID id) { return binaryContents.get(id); }
+  public JCFBinaryContentRepository() {
+    this.data = new HashMap<>();
+  }
 
-    @Override
-    public List<BinaryContent> loadAll() { return binaryContents.values().stream().toList(); }
+  @Override
+  public BinaryContent save(BinaryContent binaryContent) {
+    this.data.put(binaryContent.getId(), binaryContent);
+    return binaryContent;
+  }
 
-    @Override
-    public List<BinaryContent> loadAllByIdIn(List<UUID> ids) {
-        return List.of();
-    }
+  @Override
+  public Optional<BinaryContent> findById(UUID id) {
+    return Optional.ofNullable(this.data.get(id));
+  }
 
-    @Override
-    public void delete(UUID id) { binaryContents.remove(id); }
+  @Override
+  public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
+    return this.data.values().stream()
+        .filter(content -> ids.contains(content.getId()))
+        .toList();
+  }
+
+  @Override
+  public boolean existsById(UUID id) {
+    return this.data.containsKey(id);
+  }
+
+  @Override
+  public void deleteById(UUID id) {
+    this.data.remove(id);
+  }
 }
