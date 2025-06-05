@@ -1,64 +1,43 @@
 package com.sprint.mission.discodeit.controller;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.util.UUID;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.NoSuchElementException;
-
+import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
+import com.sprint.mission.discodeit.dto.mapper.ResponseMapper;
+import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentMetadataDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/binaryContent")
-@Controller
-public class BinaryContentController {
+@RestController
+@RequestMapping("/api/binaryContents")
+public class BinaryContentController implements BinaryContentApi {
 
-    private final BinaryContentService binaryContentService;
+  private final BinaryContentService binaryContentService;
 
-    // 바이너리 파일 조회 (심화 요구사항: BinaryContent 객체 반환)
-    @RequestMapping(
-            path = "/find",
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @ResponseBody
-    public ResponseEntity<BinaryContent> findBinaryContent(@RequestParam("binaryContentId") UUID binaryContentId) {
-        try {
-            BinaryContent binaryContent = binaryContentService.find(binaryContentId);
-            return ResponseEntity.ok(binaryContent);
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
+  @GetMapping(path = "{binaryContentId}")
+  public ResponseEntity<BinaryContentResponse> find(@PathVariable("binaryContentId") UUID binaryContentId) {
+    BinaryContent binaryContent = binaryContentService.find(binaryContentId);
+    BinaryContentResponse response = ResponseMapper.toResponse(binaryContent);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(response);
+  }
 
-    // 여러 바이너리 파일 메타데이터 조회(여러 이미지 파일 ID로 해당되는 이미지 조회)
-    @RequestMapping(
-            path = "/findAllMetadata",
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @ResponseBody
-    public ResponseEntity<List<BinaryContentMetadataDto>> findAllBinaryContentMetadataByIds(@RequestParam("ids") List<UUID> ids) {
-        List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(ids);
-        List<BinaryContentMetadataDto> metadataDtos = binaryContents.stream()
-                .map(content -> new BinaryContentMetadataDto(
-                        content.getId(),
-                        content.getCreatedAt(),
-                        content.getFileName(),
-                        content.getSize(),
-                        content.getContentType()
-                ))
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(metadataDtos);
-    }
+  @GetMapping
+  public ResponseEntity<List<BinaryContentResponse>> findAllByIdIn(
+      @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
+    List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+    List<BinaryContentResponse> responses = binaryContents.stream()
+        .map(ResponseMapper::toResponse)
+        .toList();
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(responses);
+  }
 }

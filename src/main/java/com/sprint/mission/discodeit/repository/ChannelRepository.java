@@ -1,22 +1,20 @@
 package com.sprint.mission.discodeit.repository;
 
+import com.sprint.mission.discodeit.entity.Channel;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.sprint.mission.discodeit.entity.Channel;
-
 public interface ChannelRepository {
 
-    Channel save(Channel channel); // 채널 저장/업데이트
+  Channel save(Channel channel);
 
-    Optional<Channel> findById(UUID channelId); // 채널 조회
+  Optional<Channel> findById(UUID id);
 
-    List<Channel> findAll(); // 전체 채널 목록
+  List<Channel> findAll();
 
-    boolean existsById(UUID channelId); // 채널 존재 여부
+  boolean existsById(UUID id);
 
-    void deleteById(UUID channelId); // 채널 삭제
-
-    List<Channel> findAllById(Iterable<UUID> ids); // ID 목록으로 채널 조회 추가
+  void deleteById(UUID id);
 }

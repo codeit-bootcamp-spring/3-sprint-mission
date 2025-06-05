@@ -1,37 +1,32 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import org.springframework.stereotype.Service;
-
-import com.sprint.mission.discodeit.dto.auth.LoginRequest;
-import com.sprint.mission.discodeit.dto.userStatus.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.CustomException;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
-import com.sprint.mission.discodeit.service.UserStatusService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-
-@Service
 @RequiredArgsConstructor
+@Service
 public class BasicAuthService implements AuthService {
-    private final UserRepository userRepository;
-    private final UserStatusService userStatusService;
 
-    @Override
-    public User login(LoginRequest loginRequest) {
-        User user = userRepository.findByUsername(loginRequest.username())
-                .filter(u -> u.getPassword().equals(loginRequest.password()))
-                .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
+  private final UserRepository userRepository;
 
-        try {
-            UserStatusUpdateRequest statusUpdateRequest = new UserStatusUpdateRequest(Instant.now());
-            userStatusService.updateByUserId(user.getUserId(), statusUpdateRequest);
-        } catch (Exception e) {
-            System.err.println("Failed to update user status for user " + user.getUserId() + ": " + e.getMessage());
-        }
+  @Override
+  public User login(LoginRequest loginRequest) {
+    String username = loginRequest.username();
+    String password = loginRequest.password();
 
-        return user;
+    User user = userRepository.findByUsername(username)
+        .orElseThrow(
+            () -> new CustomException.UserNotFoundException("User with username " + username + " not found"));
+
+    if (!user.getPassword().equals(password)) {
+      throw new CustomException.InvalidPasswordException("Wrong password for user: " + username);
     }
+
+    return user;
+  }
 }
