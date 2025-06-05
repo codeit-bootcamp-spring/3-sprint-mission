@@ -2,10 +2,12 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Repository;
-
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,138 +15,141 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileUserRepository implements UserRepository {
-    private final Path DIRECTORY;
-    private final String EXTENSION = ".ser";
 
-    public FileUserRepository() {
+  private final Path DIRECTORY;
+  private final String EXTENSION = ".ser";
 
-        //  현재디렉토리/data/userDB 디렉토리를 저장할 path로 설정
-        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", User.class.getSimpleName());
-        //  지정한 path에 디렉토리 없으면 생성
-        if (!Files.exists(this.DIRECTORY)) {
-            try {
-                Files.createDirectories(this.DIRECTORY);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
+  public FileUserRepository() {
 
+    //  현재디렉토리/data/userDB 디렉토리를 저장할 path로 설정
+    this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", User.class.getSimpleName());
+    //  지정한 path에 디렉토리 없으면 생성
+    if (!Files.exists(this.DIRECTORY)) {
+      try {
+        Files.createDirectories(this.DIRECTORY);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
     }
 
-    private Path resolvePath(UUID id) {
-        // 객체를 저장할 파일 path 생성
-        return this.DIRECTORY.resolve(id + EXTENSION);
+  }
+
+  private Path resolvePath(UUID id) {
+    // 객체를 저장할 파일 path 생성
+    return this.DIRECTORY.resolve(id + EXTENSION);
+  }
+
+  @Override
+  public User save(User user) {
+    Path filePath = this.resolvePath(user.getId());
+
+    try (
+        // 파일과 연결되는 스트림 생성
+        FileOutputStream fos = new FileOutputStream(filePath.toFile());
+        // 객체를 직렬화할 수 있게 바이트 출력 스트림을 감쌈
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+    ) {
+
+      oos.writeObject(user);
+      return user;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
 
-    @Override
-    public User save(User user) {
-        Path filePath = this.resolvePath(user.getId());
+  }
 
-        try (
-                // 파일과 연결되는 스트림 생성
-                FileOutputStream fos = new FileOutputStream(filePath.toFile());
-                // 객체를 직렬화할 수 있게 바이트 출력 스트림을 감쌈
-                ObjectOutputStream oos = new ObjectOutputStream(fos);
-        ) {
+  @Override
+  public Optional<User> findById(UUID userId) {
+    // 객체가 저장된 파일 path
+    Path filePath = this.resolvePath(userId);
 
-            oos.writeObject(user);
-            return user;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    try (
+        // 파일과 연결되는 스트림 생성
+        FileInputStream fis = new FileInputStream(String.valueOf(filePath));
+        // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
+        ObjectInputStream ois = new ObjectInputStream(fis);
+    ) {
+      User userNullable = (User) ois.readObject();
 
+      return Optional.ofNullable(userNullable);
+    } catch (Exception e) {
+      return Optional.empty();
     }
 
-    @Override
-    public Optional<User> findById(UUID userId) {
-        // 객체가 저장된 파일 path
-        Path filePath = this.resolvePath(userId);
+  }
 
-        try (
-                // 파일과 연결되는 스트림 생성
-                FileInputStream fis = new FileInputStream(String.valueOf(filePath));
+  @Override
+  public Optional<User> findByUsername(String username) {
+    return this.findAll().stream().filter((user) -> user.getUsername().equals(username))
+        .findFirst();
+  }
+
+  @Override
+  public Optional<User> findByEmail(String userEmail) {
+    return this.findAll().stream().filter((user) -> user.getEmail().equals(userEmail)).findFirst();
+  }
+
+  @Override
+  public List<User> findAll() {
+    List<User> users = new ArrayList<>();
+    try {
+      Files.list(this.DIRECTORY).filter(Files::isRegularFile)
+          .forEach((path) -> {
+            try ( // 파일과 연결되는 스트림 생성
+                FileInputStream fis = new FileInputStream(String.valueOf(path));
                 // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
                 ObjectInputStream ois = new ObjectInputStream(fis);
-        ) {
-            User userNullable = (User) ois.readObject();
-
-            return Optional.ofNullable(userNullable);
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-
-    }
-
-    @Override
-    public Optional<User> findByUsername(String username) {
-        return this.findAll().stream().filter((user) -> user.getName().equals(username)).findFirst();
-    }
-
-    @Override
-    public Optional<User> findByEmail(String userEmail) {
-        return this.findAll().stream().filter((user) -> user.getEmail().equals(userEmail)).findFirst();
-    }
-
-    @Override
-    public List<User> findAll() {
-        List<User> users = new ArrayList<>();
-        try {
-            Files.list(this.DIRECTORY).filter(Files::isRegularFile)
-                    .forEach((path) -> {
-                        try ( // 파일과 연결되는 스트림 생성
-                              FileInputStream fis = new FileInputStream(String.valueOf(path));
-                              // 객체를 역직렬화할 수 있게 바이트 입력 스트림을 감쌈
-                              ObjectInputStream ois = new ObjectInputStream(fis);
-                        ) {
-                            User user = (User) ois.readObject();
-                            users.add(user);
-                        } catch (IOException | ClassNotFoundException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                    });
-            return users;
-
-        } catch (IOException e) {
-            return List.of();
-        }
-
-    }
-
-    @Override
-    public boolean existsById(UUID userId) {
-        Path path = resolvePath(userId);
-        return Files.exists(path);
-    }
-
-    @Override
-    public void deleteById(UUID userId) {
-        // 객체가 저장된 파일 path
-        Path filePath = this.resolvePath(userId);
-        try {
-            if (Files.exists(filePath)) {
-                Files.delete(filePath);
-            } else {
-                throw new FileNotFoundException("File does not exist");
+            ) {
+              User user = (User) ois.readObject();
+              users.add(user);
+            } catch (IOException | ClassNotFoundException e) {
+              throw new RuntimeException(e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
+          });
+      return users;
+
+    } catch (IOException e) {
+      return List.of();
+    }
+  }
+
+  @Override
+  public boolean existsById(UUID userId) {
+    Path path = resolvePath(userId);
+    return Files.exists(path);
+  }
+
+  @Override
+  public void deleteById(UUID userId) {
+    // 객체가 저장된 파일 path
+    Path filePath = this.resolvePath(userId);
+    try {
+      if (Files.exists(filePath)) {
+        Files.delete(filePath);
+      } else {
+        throw new FileNotFoundException("File does not exist");
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
 
-    @Override
-    public boolean existsByEmail(String email) {
-        return this.findAll().stream().anyMatch((user) -> user.getEmail().equals(email));
-    }
+  }
 
-    @Override
-    public boolean existsByUsername(String username) {
-        return this.findAll().stream().anyMatch((user) -> user.getName().equals(username));
-    }
+  @Override
+  public boolean existsByEmail(String email) {
+    return this.findAll().stream().anyMatch((user) -> user.getEmail().equals(email));
+  }
+
+  @Override
+  public boolean existsByUsername(String username) {
+    return this.findAll().stream().anyMatch((user) -> user.getUsername().equals(username));
+  }
 
 }

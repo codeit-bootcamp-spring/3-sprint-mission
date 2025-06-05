@@ -1,77 +1,103 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
+import lombok.Getter;
 
 @Getter
 public class UserStatus implements Serializable {
-    private static final Long serialVersionUID = 1L;
-    private final UUID id;
-    private final Instant createdAt;
-    private Instant updatedAt;
+
+  private static final Long serialVersionUID = 1L;
+  private final UUID id;
+  private final Instant createdAt;
+  private Instant updatedAt;
+  //
+  private final UUID userId;
+  //
+  private UserStatusType status;
+  private Instant lastActiveAt;
+
+  public UserStatus(UUID userId) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    this.updatedAt = Instant.now();
+    this.status = UserStatusType.ONLINE;
+    this.lastActiveAt = Instant.now();
     //
-    private final UUID userId;
-    //
-    private UserStatusType status;
-    private Instant lastOnlineAt;
+    this.userId = userId;
+  }
 
-    public UserStatus(UUID userId) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-        this.status = UserStatusType.ONLINE;
-        this.lastOnlineAt = Instant.now();
-        //
-        this.userId = userId;
+//  public void update(UserStatusType newStatus) {
+//    boolean anyValueUpdated = false;
+//    if (newStatus != null && newStatus != this.status) {
+//      // 이전 상태가 온라인이였고 현재가 온라인이 아닐때, 바뀌는 시점에 lastActiveAt를 현재시간으로 업데이트 해줘야함.
+//      if (this.status.equals(UserStatusType.ONLINE)) {
+//        this.lastActiveAt = Instant.now();
+//      }
+//
+//      this.status = newStatus;
+//
+//      anyValueUpdated = true;
+//    }
+//
+//    if (anyValueUpdated) {
+//      this.updatedAt = Instant.now();
+//    }
+//  }
+
+  public void update(Instant newLastActiveAt) {
+    boolean anyValueUpdated = false;
+
+    if (newLastActiveAt != null && this.lastActiveAt != newLastActiveAt) {
+      this.lastActiveAt = newLastActiveAt;
+      anyValueUpdated = true;
     }
 
-    public void update(UserStatusType newStatus) {
-        boolean anyValueUpdated = false;
-        if (newStatus != null && newStatus != this.status) {
-            // 이전 상태가 온라인이였고 현재가 온라인이 아닐때, 바뀌는 시점에 lastOnlineAt를 현재시간으로 업데이트 해줘야함.
-            if (this.status.equals(UserStatusType.ONLINE)) {
-                this.lastOnlineAt = Instant.now();
-            }
+    /*deprecated field (newStatus) */
+//    if (newStatus != null && newStatus != this.status) {
+//      // 이전 상태가 온라인이였고 현재가 온라인이 아닐때, 바뀌는 시점에 lastActiveAt를 현재시간으로 업데이트 해줘야함.
+//      if (this.status.equals(UserStatusType.ONLINE)) {
+//        this.lastActiveAt = Instant.now();
+//      }
+//
+//      this.status = newStatus;
+//
+//      anyValueUpdated = true;
+//    }
 
-            this.status = newStatus;
-
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
-        }
+    if (anyValueUpdated) {
+      this.updatedAt = Instant.now();
     }
+  }
 
-    //lastActiveAt 값이 5분 이내라면 온라인 유저로 간주
-    public boolean isOnline() {
-        Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
 
-        return lastOnlineAt.isAfter(instantFiveMinutesAgo);
-    }
+  //lastActiveAt 값이 5분 이내라면 온라인 유저로 간주
+  public boolean isOnline() {
+    Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
 
-    @Override
-    public String toString() {
+    return lastActiveAt.isAfter(instantFiveMinutesAgo);
+  }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                .withZone(ZoneId.systemDefault());
+  @Override
+  public String toString() {
 
-        String createdAtFormatted = formatter.format(createdAt);
-        String updatedAtFormatted = formatter.format(updatedAt);
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        .withZone(ZoneId.systemDefault());
 
-        return "🙋‍♂️ UserStatus {\n" +
-                "  id         = " + id + "\n" +
-                "  createdAt  = " + createdAtFormatted + "\n" +
-                "  updatedAt  = " + updatedAtFormatted + "\n" +
-                "  userId       = '" + userId + "'\n" +
-                "  status       = '" + status + "'\n" +
-                "  lastOnlineAt       = '" + lastOnlineAt + "'\n" +
-                "}";
-    }
+    String createdAtFormatted = formatter.format(createdAt);
+    String updatedAtFormatted = formatter.format(updatedAt);
+
+    return "🙋‍♂️ UserStatus {\n" +
+        "  id         = " + id + "\n" +
+        "  createdAt  = " + createdAtFormatted + "\n" +
+        "  updatedAt  = " + updatedAtFormatted + "\n" +
+        "  userId       = " + userId + "\n" +
+        "  status       = " + status + "\n" +
+        "  lastActiveAt       = " + lastActiveAt + "\n" +
+        "}";
+  }
 }
