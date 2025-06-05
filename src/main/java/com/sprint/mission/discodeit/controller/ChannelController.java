@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ChannelApi;
-import com.sprint.mission.discodeit.dto.data.ChannelDtoData;
 import com.sprint.mission.discodeit.dto.request.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.channel.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.serviceDto.ChannelDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 import jakarta.validation.Valid;
@@ -74,9 +74,9 @@ public class ChannelController implements ChannelApi {
     }
 
     @GetMapping
-    public ResponseEntity<List<ChannelDtoData>> findAllByUserId(
+    public ResponseEntity<List<ChannelDto>> findAllByUserId(
         @RequestParam("userId") UUID userId) {
-        List<ChannelDtoData> channelList = channelService.findAllByUserId(userId);
+        List<ChannelDto> channelList = channelService.findAllByUserId(userId);
 
         return ResponseEntity
             .status(HttpStatus.OK)

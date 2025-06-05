@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.data.ChannelDtoData;
 import com.sprint.mission.discodeit.dto.request.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.channel.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.serviceDto.ChannelDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,20 +25,20 @@ public interface ChannelApi {
 
     @Operation(summary = "Public Channel 생성")
     @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨",
-        content = @Content(schema = @Schema(implementation = Channel.class)))
+        content = @Content(schema = @Schema(implementation = ChannelDto.class)))
     ResponseEntity<Channel> create(
         @RequestBody PublicChannelCreateRequest publicChannelCreateRequest);
 
     @Operation(summary = "Private Channel 생성")
     @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨",
-        content = @Content(schema = @Schema(implementation = Channel.class)))
+        content = @Content(schema = @Schema(implementation = ChannelDto.class)))
     ResponseEntity<Channel> create(
         @RequestBody PrivateChannelCreateRequest privateChannelCreateRequest);
 
     @Operation(summary = "Channel 정보 수정")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Channel 정보가 성공적으로 수정됨",
-            content = @Content(schema = @Schema(implementation = Channel.class))),
+            content = @Content(schema = @Schema(implementation = ChannelDto.class))),
         @ApiResponse(responseCode = "400", description = "Private Channel은 수정할 수 없음",
             content = @Content(examples = @ExampleObject(value = "Private channel cannot be updated"))),
         @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음",
@@ -60,7 +60,7 @@ public interface ChannelApi {
 
     @Operation(summary = "User가 참여 중인 Channel 목록 조회")
     @ApiResponse(responseCode = "200", description = "Channel 목록 조회 성공",
-        content = @Content(array = @ArraySchema(schema = @Schema(implementation = ChannelDtoData.class))))
-    ResponseEntity<List<ChannelDtoData>> findAllByUserId(
+        content = @Content(array = @ArraySchema(schema = @Schema(implementation = ChannelDto.class))))
+    ResponseEntity<List<ChannelDto>> findAllByUserId(
         @Parameter(description = "조회할 User ID") UUID userId);
 }

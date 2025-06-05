@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.user.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.request.user.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.serviceDto.UserStatusDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -23,6 +25,7 @@ public class BasicUserStatusService implements UserStatusService {
 
     private final UserStatusRepository userStatusRepository;
     private final UserRepository userRepository;
+    private final UserStatusMapper userStatusMapper;
 
     @Override
     @Transactional(
@@ -84,7 +87,7 @@ public class BasicUserStatusService implements UserStatusService {
         rollbackFor = Exception.class,
         propagation = Propagation.REQUIRED,
         isolation = Isolation.READ_COMMITTED)
-    public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
+    public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
         Instant newLastActiveAt = request.newLastActiveAt();
 
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
@@ -92,7 +95,10 @@ public class BasicUserStatusService implements UserStatusService {
                 "UserStatus with userId " + userId + " not found"));
         userStatus.update(newLastActiveAt);
 
-        return userStatusRepository.save(userStatus);
+        UserStatusDto userStatusDto = userStatusMapper.toDto(userStatus);
+        userStatusRepository.save(userStatus);
+
+        return userStatusDto;
     }
 
     @Override

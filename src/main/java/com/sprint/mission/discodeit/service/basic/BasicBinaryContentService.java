@@ -5,6 +5,8 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicBinaryContentService implements BinaryContentService {
 
     private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentStorage binaryContentStorage;
     //
     private final BinaryContentMapper binaryContentMapper;
 
@@ -27,16 +30,17 @@ public class BasicBinaryContentService implements BinaryContentService {
         rollbackFor = Exception.class,
         propagation = Propagation.REQUIRED,
         isolation = Isolation.READ_COMMITTED)
-    public BinaryContent create(BinaryContentCreateRequest request) {
+    public BinaryContent create(BinaryContentCreateRequest request) throws IOException {
         String fileName = request.fileName();
         byte[] bytes = request.bytes();
         String contentType = request.contentType();
         BinaryContent binaryContent = new BinaryContent(
             fileName,
             (long) bytes.length,
-            contentType,
-            bytes
+            contentType
         );
+        binaryContentStorage.put(binaryContent.getId(), request.bytes()); // storage에 저장
+
         return binaryContentRepository.save(binaryContent);
     }
 

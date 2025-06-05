@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
 @Entity(name = "binary_content")
-@Table(name = "tbl_binary_contents")
+@Table(name = "tbl_binary_contents", schema = "discodeit")
 @NoArgsConstructor
 @Getter
 @DynamicUpdate
@@ -26,16 +26,13 @@ public class BinaryContent extends BaseEntity {
     @Column(name = "content_type")
     private String contentType;
 
-    @Column(name = "bytes")
-    private byte[] bytes;
 
-    public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
+    public BinaryContent(String fileName, Long size, String contentType) {
         super.setId(UUID.randomUUID());
         super.setCreatedAt(Instant.now());
         //
         this.fileName = fileName;
         this.size = size;
         this.contentType = contentType;
-        this.bytes = bytes;
     }
 }

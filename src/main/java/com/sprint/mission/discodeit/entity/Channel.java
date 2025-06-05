@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.entity;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
@@ -11,13 +13,14 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
 @Entity(name = "channel")
-@Table(name = "tbl_channels")
+@Table(name = "tbl_channels", schema = "discodeit")
 @NoArgsConstructor
 @Getter
 @DynamicUpdate
 public class Channel extends BaseUpdatableEntity {
-
+    
     @Column(name = "type")
+    @Enumerated(EnumType.STRING)
     private ChannelType type;
 
     @Column(name = "name")

@@ -1,14 +1,15 @@
-package com.sprint.mission.discodeit.dto.request.user;
+package com.sprint.mission.discodeit.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
 public record UserStatusCreateRequest(
-    @NotBlank UUID userId,
-    @NotBlank Instant lastActiveAt
+    @NotNull UUID userId,
+    @NotNull Instant lastActiveAt
 ) {
+
     public UserStatusCreateRequest {
         Objects.requireNonNull(userId, "userId must not be null");
         Objects.requireNonNull(lastActiveAt, "lastActiveAt must not be null");

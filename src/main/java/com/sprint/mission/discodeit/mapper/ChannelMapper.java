@@ -35,7 +35,8 @@ public class ChannelMapper {
             .map(ReadStatus::getUser)
             .map(userMapper::toDto)
             .collect(Collectors.toList());
-        Instant lastMessageAt = messageRepository.findAllByChannelId(id).stream()
+        Instant lastMessageAt = messageRepository.findTop1ByChannelIdOrderByCreatedAtDesc(id)
+            .stream()
             .map(Message::getCreatedAt)
             .max(Comparator.naturalOrder())
             .orElse(null);

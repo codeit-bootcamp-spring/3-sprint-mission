@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -37,5 +38,12 @@ public interface BinaryContentApi {
         @Parameter(description = "조회할 첨부 파일 ID 목록")
         @RequestParam List<UUID> binaryContentIds
     );
+
+    @Operation(summary = "파일 다운로드")
+    @ApiResponse(responseCode = "200", description = "성공적으로 파일 다운로드",
+        content = @Content(schema = @Schema(type = "string", format = "binary")))
+    ResponseEntity<?> download(
+        UUID binaryContentId
+    ) throws IOException;
 }
 

@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
 @Entity(name = "user")
-@Table(name = "tbl_users")
+@Table(name = "tbl_users", schema = "discodeit")
 @Getter
 @NoArgsConstructor
 @DynamicUpdate
@@ -33,12 +33,11 @@ public class User extends BaseUpdatableEntity {
     @JoinColumn(name = "profile_id")
     private BinaryContent profile;
 
-    @OneToOne(mappedBy = "user_status", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserStatus status;
 
 
-    public User(String username, String email, String password, BinaryContent profile,
-        UserStatus status) {
+    public User(String username, String email, String password, BinaryContent profile) {
         super.setId(UUID.randomUUID());
         super.setCreatedAt(Instant.now());
         //
@@ -46,7 +45,6 @@ public class User extends BaseUpdatableEntity {
         this.email = email;
         this.password = password;
         this.profile = profile;
-        this.status = status;
     }
 
     public void update(String newUsername, String newEmail, String newPassword,

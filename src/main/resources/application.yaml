@@ -11,6 +11,8 @@ spring:
     username: discodeit_user
     password: discodeit1234
     driver-class-name: org.postgresql.Driver
+  profiles:
+    active: default
   # JPA 설정
   jpa:
     hibernate:
@@ -23,14 +25,15 @@ spring:
         use_sql_comments: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-discodeit:
-  repository:
-    type: file   # jcf | file
-    file-directory: .discodeit
-
 logging:
   level:
     # 실행되는 SQL 출력
     org.hibernate.SQL: debug
     # 바인딩되는 파라미터 출력
     org.hibernate.orm.jdbc.bind: trace
+
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: ${user.dir}/data/discodeit/storage
