@@ -14,11 +14,9 @@ public interface UserRepository {
     List<User> findAll();
     Optional<User> findById(UUID id);
     Optional<User> findByUsername(String username);
-    List<User> findByName(String name);
     Optional<User> findByEmail(String email);
     boolean existsById(UUID id);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
-    boolean existsByName(String name);
     void deleteById(UUID id);
 }

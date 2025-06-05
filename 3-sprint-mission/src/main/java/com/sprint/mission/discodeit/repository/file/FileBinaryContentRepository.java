@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 
 @Repository
 public class FileBinaryContentRepository implements BinaryContentRepository {
@@ -34,7 +35,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     @Override
     public BinaryContent save(BinaryContent binaryContent) {
-        Path filePath = Paths.get(String.valueOf(DIRECTORY), binaryContent.getId()+".ser");
+        Path filePath = resolvePath(binaryContent.getId());
         try(
                 FileOutputStream fos = new FileOutputStream(filePath.toFile());
                 ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -47,9 +48,9 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
-    public List<BinaryContent> findAll() {
-        try {
-            return Files.list(DIRECTORY)
+    public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
+        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+            return paths
                     .filter(path -> path.toString().endsWith(EXTENSION))
                     .map(path -> {
                         try (
@@ -61,17 +62,11 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
                             throw new RuntimeException(e);
                         }
                     })
+                    .filter(content -> ids.contains(content.getId()))
                     .toList();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
-        return findAll().stream()
-                    .filter(content -> ids.contains(content.getId()))
-                    .toList();
     }
 
     @Override

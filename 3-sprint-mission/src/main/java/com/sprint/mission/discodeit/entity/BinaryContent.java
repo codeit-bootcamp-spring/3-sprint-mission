@@ -12,7 +12,6 @@ import java.util.UUID;
 @ToString
 public class BinaryContent implements Serializable {
     private final UUID id;
-//    private final UUID userId;
     private String fileName;
     private Long size;
     private String contentType;
@@ -20,11 +19,10 @@ public class BinaryContent implements Serializable {
     private final Instant createdAt;
 
     @Builder
-    public BinaryContent(String fileName, String contentType, byte[] content) {
+    public BinaryContent(String fileName, Long size, String contentType, byte[] content) {
         this.id = UUID.randomUUID();
-//        this.userId = userId;
         this.fileName = fileName;
-        this.size = (long) content.length;
+        this.size = size;
         this.contentType = contentType;
         this.content = content;
         this.createdAt = Instant.now();

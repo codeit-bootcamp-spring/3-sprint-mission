@@ -12,26 +12,34 @@ import java.util.UUID;
 public class UserStatus implements Serializable {
     private final UUID id;
     private final UUID userId;
-    private Instant lastActiveTime;
+    private Instant lastActiveAt;
     private final Instant createdAt;
     private Instant updatedAt;
 
     @Builder
-    public UserStatus(UUID userId, Instant lastActiveTime) {
+    public UserStatus(UUID userId, Instant lastActiveAt) {
         this.id = UUID.randomUUID();
         this.userId = userId;
-        this.lastActiveTime = lastActiveTime;
+        this.lastActiveAt = lastActiveAt;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
     }
 
-    public void update(Instant newActiveTime) {
-        this.lastActiveTime = newActiveTime;
+    public void update(Instant lastActiveAt) {
+        boolean anyValueUpdated = false;
+        if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
+            this.lastActiveAt = lastActiveAt;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
     public Boolean online() {
         Boolean online =
-                this.lastActiveTime.isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));
+                this.lastActiveAt.isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));
         return online;
 
     }

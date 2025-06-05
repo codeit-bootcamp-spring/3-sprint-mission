@@ -17,17 +17,18 @@ import java.util.UUID;
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
 
-    public BinaryContent create(BinaryContentCreateRequest binaryContentCreateDTO) {
-//        UUID userId = userDTO.id();
-        String fileName = binaryContentCreateDTO.fileName();
-        byte[] bytes = binaryContentCreateDTO.bytes();
-        String contentType = binaryContentCreateDTO.contentType();
+    public BinaryContent create(BinaryContentCreateRequest request) {
+        String fileName = request.fileName();
+        byte[] bytes = request.bytes();
+        String contentType = request.contentType();
 
-        BinaryContent binaryContent = new BinaryContent(
-                fileName,
-                contentType,
-                bytes
-        );
+        BinaryContent binaryContent =
+                BinaryContent.builder()
+                        .fileName(fileName)
+                        .contentType(contentType)
+                        .content(bytes)
+                        .size((long) bytes.length)
+                        .build();
 
         return binaryContentRepository.save(binaryContent);
 
@@ -36,10 +37,6 @@ public class BasicBinaryContentService implements BinaryContentService {
     public BinaryContent find(UUID id) {
         return binaryContentRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 파일이 존재하지 않습니다."));
-    }
-
-    public List<BinaryContent> findAll() {
-        return binaryContentRepository.findAll();
     }
 
     public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
