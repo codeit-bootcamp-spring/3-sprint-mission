@@ -1,11 +1,8 @@
 package com.sprint.mission.discodeit.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class MemoryUtil {
 
-  private static final Logger log = LogManager.getLogger(MemoryUtil.class);
+//  private static final Logger log = LogManager.getLogger(MemoryUtil.class);
 
   /**
    * JVM 현재 메모리 사용량을 로깅한다.
@@ -16,8 +13,8 @@ public class MemoryUtil {
     long totalMemory = Runtime.getRuntime().totalMemory();
     long freeMemory = Runtime.getRuntime().freeMemory();
     long usedMemory = totalMemory - freeMemory;
-    log.debug("{} Used Memory: {} bytes {}", message, usedMemory,
-        usedMemory / (1024.0 * 1024.0));
+//    log.debug("{} Used Memory: {} bytes {}", message, usedMemory,
+//        usedMemory / (1024.0 * 1024.0));
   }
 
   /**

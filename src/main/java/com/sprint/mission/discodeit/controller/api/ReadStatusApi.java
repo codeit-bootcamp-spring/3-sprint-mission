@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.response.ErrorResponse;
+import com.sprint.mission.discodeit.dto.response.ReadStatusResponse;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -44,7 +45,7 @@ public interface ReadStatusApi {
           )
       )
   })
-  ResponseEntity<ReadStatus> create(ReadStatusCreateRequest request);
+  ResponseEntity<ReadStatusResponse> create(ReadStatusCreateRequest request);
 
   @Operation(summary = "User의 Message 읽음 상태 목록 조회")
   @ApiResponse(
@@ -52,7 +53,7 @@ public interface ReadStatusApi {
       description = "Message 읽음 상태 목록 조회 성공",
       content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReadStatus.class)))
   )
-  ResponseEntity<List<ReadStatus>> findAllByUserId(UUID userId);
+  ResponseEntity<List<ReadStatusResponse>> findAllByUserId(UUID userId);
 
   @Operation(summary = "Message 읽음 상태 수정")
   @ApiResponses(value = {
@@ -70,5 +71,5 @@ public interface ReadStatusApi {
           )
       )
   })
-  ResponseEntity<ReadStatus> update(UUID readStatusId);
+  ResponseEntity<ReadStatusResponse> update(UUID readStatusId);
 }

@@ -3,33 +3,52 @@ package com.sprint.mission.discodeit.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-import com.sprint.mission.discodeit.fixture.UserFixture;
-import java.util.UUID;
+import com.sprint.mission.discodeit.config.JpaAuditingConfig;
+import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
+@DataJpaTest
+@Import(JpaAuditingConfig.class)
 class UserTest {
+
+  @Autowired
+  TestEntityManager em;
 
   @Nested
   class Create {
 
     @Test
-    void 기본_정보로_사용자_생성_시_필수_필드가_설정된다() {
-      User expected = User.create("test@example.com", "홍길동", "password123");
-      User actual = User.create("test@example.com", "홍길동", "password123");
+    void 기본_정보로_사용자_생성_시_ID와_CreatedAt이_자동_설정된다() {
+      User user = User.create("test@example.com", "홍길동", "password123", null);
 
-      assertThat(actual)
-          .usingRecursiveComparison()
-          .ignoringFields("id", "createdAt", "updatedAt")
-          .isEqualTo(expected);
+      em.persist(user);
+      em.flush();
+      em.clear();
+
+      User found = em.find(User.class, user.getId());
+
+      assertThat(found.getId()).isNotNull();
+      assertThat(found.getCreatedAt()).isNotNull();
     }
 
     @Test
     void 프로필_이미지를_포함하여_사용자를_생성할_수_있다() {
-      UUID profileId = UUID.randomUUID();
-      User user = User.create("test@example.com", "tester", "pass123", profileId);
+      User user = User.create("test@example.com", "tester", "pass123",
+          BinaryContentFixture.createValid());
 
-      assertThat(user.getProfileId()).isEqualTo(profileId);
+      em.persist(user);
+      em.flush();
+      em.clear();
+
+      User found = em.find(User.class, user.getId());
+      assertThat(found.getProfile()).isNotNull();
     }
   }
 
@@ -37,54 +56,86 @@ class UserTest {
   class Update {
 
     @Test
-    void 이름을_수정하면_이름과_수정시간이_업데이트된다() {
-      User user = UserFixture.createValidUser();
-      String newName = "새이름";
+    void 이름을_수정하면_업데이트시간도_갱신된다() {
+      User user = User.create("test@example.com", "홍길동", "password123", null);
 
-      user.updateName(newName);
+      em.persist(user);
+      em.flush();
+      em.clear();
+
+      User managedUser = em.find(User.class, user.getId());
+      managedUser.updateName("새이름");
+      em.flush();
+      em.clear();
+
+      User updated = em.find(User.class, user.getId());
 
       assertAll(
-          () -> assertThat(user.getName()).isEqualTo(newName),
-          () -> assertThat(user.getUpdatedAt()).isNotNull()
+          () -> assertThat(updated.getUsername()).isEqualTo("새이름"),
+          () -> assertThat(updated.getUpdatedAt()).isNotNull()
       );
     }
 
     @Test
-    void 이메일을_수정하면_이메일과_수정시간이_업데이트된다() {
-      User user = UserFixture.createValidUser();
-      String newEmail = "updated@test.com";
+    void 이메일을_수정하면_업데이트시간도_갱신된다() {
+      User user = User.create("test@example.com", "홍길동", "password123", null);
 
-      user.updateEmail(newEmail);
+      em.persist(user);
+      em.flush();
+      em.clear();
+
+      User managedUser = em.find(User.class, user.getId());
+      managedUser.updateEmail("updated@example.com");
+      em.flush();
+      em.clear();
+
+      User updated = em.find(User.class, user.getId());
 
       assertAll(
-          () -> assertThat(user.getEmail()).isEqualTo(newEmail),
-          () -> assertThat(user.getUpdatedAt()).isNotNull()
+          () -> assertThat(updated.getEmail()).isEqualTo("updated@example.com"),
+          () -> assertThat(updated.getUpdatedAt()).isNotNull()
       );
     }
 
     @Test
-    void 비밀번호를_수정하면_비밀번호와_수정시간이_업데이트된다() {
-      User user = UserFixture.createValidUser();
-      String newPassword = "newpass123";
+    void 비밀번호_수정시_업데이트시간도_갱신된다() {
+      User user = User.create("test@example.com", "홍길동", "password123", null);
 
-      user.updatePassword(newPassword);
+      em.persist(user);
+      em.flush();
+      em.clear();
+
+      User managedUser = em.find(User.class, user.getId());
+      managedUser.updatePassword("newpass");
+      em.flush();
+      em.clear();
+
+      User updated = em.find(User.class, user.getId());
 
       assertAll(
-          () -> assertThat(user.getPassword()).isEqualTo(newPassword),
-          () -> assertThat(user.getUpdatedAt()).isNotNull()
+          () -> assertThat(updated.getPassword()).isEqualTo("newpass"),
+          () -> assertThat(updated.getUpdatedAt()).isNotNull()
       );
     }
 
     @Test
-    void 프로필_ID를_수정하면_ID와_수정시간이_업데이트된다() {
-      User user = UserFixture.createValidUser();
-      UUID newProfileId = UUID.randomUUID();
+    void 프로필_변경시_업데이트시간도_갱신된다() {
+      User user = User.create("test@example.com", "홍길동", "password123", null);
 
-      user.updateProfileId(newProfileId);
+      em.persist(user);
+      em.flush();
+      em.clear();
+
+      User managedUser = em.find(User.class, user.getId());
+      managedUser.updateProfile(BinaryContentFixture.createValid());
+      em.flush();
+      em.clear();
+
+      User updated = em.find(User.class, user.getId());
 
       assertAll(
-          () -> assertThat(user.getProfileId()).isEqualTo(newProfileId),
-          () -> assertThat(user.getUpdatedAt()).isNotNull()
+          () -> assertThat(updated.getProfile()).isNotNull(),
+          () -> assertThat(updated.getUpdatedAt()).isNotNull()
       );
     }
   }

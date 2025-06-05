@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.ErrorResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -85,7 +86,7 @@ public interface UserApi {
           content = @Content(schema = @Schema(implementation = UserStatus.class))),
       @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음")
   })
-  ResponseEntity<UserStatus> userStatusUpdate(UUID userId);
+  ResponseEntity<UserStatusResponse> userStatusUpdate(UUID userId);
 
   @Operation(summary = "Email로 사용자 조회")
   @ApiResponse(responseCode = "200", description = "User 조회 성공")

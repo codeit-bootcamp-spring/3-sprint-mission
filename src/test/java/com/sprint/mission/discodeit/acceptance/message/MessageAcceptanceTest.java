@@ -4,8 +4,9 @@ import static com.sprint.mission.discodeit.support.TestUtils.jsonHeader;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
 import java.nio.file.Path;
 import java.util.List;
@@ -134,14 +135,14 @@ public class MessageAcceptanceTest {
   @Test
   @Order(5)
   void 메시지_생성() {
-    ResponseEntity<Message> response = AcceptanceFixture.createMessage(
+    ResponseEntity<MessageResponse> response = AcceptanceFixture.createMessage(
         restTemplate,
         userId1,
         publicChannelId
     );
 
     Assertions.assertNotNull(response.getBody());
-    messageId = response.getBody().getId();
+    messageId = response.getBody().id();
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     assertThat(response.getBody()).isNotNull();
@@ -154,22 +155,22 @@ public class MessageAcceptanceTest {
 
     HttpHeaders headers = jsonHeader();
 
-    ResponseEntity<Message> response = restTemplate.exchange(
+    ResponseEntity<MessageResponse> response = restTemplate.exchange(
         "/api/messages/" + messageId,
         HttpMethod.PATCH,
         new HttpEntity<>(updateRequest, headers),
-        Message.class
+        MessageResponse.class
     );
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().getContent()).isEqualTo("수정된 메시지입니다.");
+    assertThat(response.getBody().content()).isEqualTo("수정된 메시지입니다.");
   }
 
   @Test
   @Order(7)
   void 특정_채널_메시지_조회() {
-    ResponseEntity<List<Message>> response = restTemplate.exchange(
+    ResponseEntity<PageResponse<MessageResponse>> response = restTemplate.exchange(
         "/api/messages?channelId=" + publicChannelId,
         HttpMethod.GET,
         null,
@@ -179,11 +180,10 @@ public class MessageAcceptanceTest {
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody()).isNotEmpty();
+    assertThat(response.getBody().content()).isNotEmpty();
 
-    // 메시지 ID 포함 여부 확인 (messageId는 생성 시 저장된 UUID)
-    boolean containsMessage = response.getBody().stream()
-        .map(Message::getId)
+    boolean containsMessage = response.getBody().content().stream()
+        .map(MessageResponse::id)
         .anyMatch(id -> id.equals(messageId));
 
     assertThat(containsMessage).isTrue();

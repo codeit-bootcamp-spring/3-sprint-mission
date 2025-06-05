@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,7 +12,7 @@ public interface UserStatusService {
    * @param userId 사용자 ID
    * @return 생성된 사용자 상태
    */
-  UserStatus create(UUID userId);
+  UserStatusResponse create(UUID userId);
 
   /**
    * ID로 사용자 상태 조회
@@ -20,7 +20,7 @@ public interface UserStatusService {
    * @param userStatusId 사용자 상태 ID
    * @return 조회된 사용자 상태
    */
-  UserStatus find(UUID userStatusId);
+  UserStatusResponse find(UUID userStatusId);
 
   /**
    * userId로 사용자 상태 조회
@@ -28,14 +28,14 @@ public interface UserStatusService {
    * @param userId 사용자 ID
    * @return 조회된 사용자 상태
    */
-  UserStatus findByUserId(UUID userId);
+  UserStatusResponse findByUserId(UUID userId);
 
   /**
    * 전체 사용자 상태 조회
    *
    * @return 사용자 상태 목록
    */
-  List<UserStatus> findAll();
+  List<UserStatusResponse> findAll();
 
   /**
    * 사용자 상태 업데이트
@@ -43,7 +43,7 @@ public interface UserStatusService {
    * @param userId 사용자 ID
    * @return 업데이트된 사용자 상태
    */
-  UserStatus update(UUID userId);
+  UserStatusResponse update(UUID userId);
 
   /**
    * userId로 사용자 상태 업데이트
@@ -51,7 +51,7 @@ public interface UserStatusService {
    * @param userId 사용자 ID
    * @return 업데이트된 사용자 상태
    */
-  UserStatus updateByUserId(UUID userId);
+  UserStatusResponse updateByUserId(UUID userId);
 
   /**
    * 사용자 상태 삭제

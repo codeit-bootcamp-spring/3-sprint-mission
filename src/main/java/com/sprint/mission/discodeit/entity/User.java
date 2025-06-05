@@ -1,40 +1,50 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.UserException;
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.Instant;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.ToString;
+import lombok.NoArgsConstructor;
 
+@Entity
 @Getter
-@ToString
-public class User implements Serializable {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "users")
+public class User extends BaseUpdatableEntity {
 
-  @Serial
-  private static final long serialVersionUID = 8019397210486307690L;
-
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-
+  @Column(name = "email", nullable = false, unique = true)
   private String email;
-  private String name;
+
+  @Column(name = "username", nullable = false, unique = true)
+  private String username;
+
+  @Column(name = "password", nullable = false)
   private String password;
-  private UUID profileId;
 
-  private User(String email, String name, String password, UUID profileId) {
-    validate(email, name, password);
+  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "profile_id")
+  private BinaryContent profile;
 
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private UserStatus userStatus;
+
+  private User(String email, String username, String password, BinaryContent profile) {
+    validate(email, username, password);
+
     this.email = email;
-    this.name = name;
+    this.username = username;
     this.password = password;
-    this.profileId = profileId;
+    this.profile = profile;
   }
 
   private static void validate(String email, String name, String password) {
@@ -49,16 +59,12 @@ public class User implements Serializable {
     }
   }
 
-  public static User create(String email, String name, String password) {
-    return new User(email, name, password, null);
+  public static User create(String email, String name, String password, BinaryContent profile) {
+    return new User(email, name, password, profile);
   }
 
-  public static User create(String email, String name, String password, UUID profileId) {
-    return new User(email, name, password, profileId);
-  }
-
-  public void touch() {
-    this.updatedAt = Instant.now();
+  public void assignIdForTest(UUID id) {
+    this.id = id;
   }
 
   public void updatePassword(String password) {
@@ -66,15 +72,13 @@ public class User implements Serializable {
       throw new UserException(ErrorCode.INVALID_INPUT, "비밀번호는 비어 있을 수 없습니다.");
     }
     this.password = password;
-    touch();
   }
 
   public void updateName(String name) {
     if (name == null || name.isBlank()) {
       throw new UserException(ErrorCode.INVALID_INPUT, "이름은 비어 있을 수 없습니다.");
     }
-    this.name = name;
-    touch();
+    this.username = name;
   }
 
   public void updateEmail(String email) {
@@ -82,12 +86,14 @@ public class User implements Serializable {
       throw new UserException(ErrorCode.INVALID_INPUT, "이메일은 비어 있을 수 없습니다.");
     }
     this.email = email;
-    touch();
   }
 
-  public void updateProfileId(UUID profileId) {
-    this.profileId = profileId;
-    touch();
+  public void updateProfile(BinaryContent profile) {
+    this.profile = profile;
+  }
+
+  public void updateUserStatus(UserStatus userStatus) {
+    this.userStatus = userStatus;
   }
 
   @Override

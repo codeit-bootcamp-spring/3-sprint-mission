@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.response.ReadStatusResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
@@ -57,8 +58,7 @@ public class BasicReadStatusServiceTest {
     channel = ChannelFixture.createPublic();
     userId = user.getId();
     channelId = channel.getId();
-    request = new ReadStatusCreateRequest(userId, channelId);
-    readStatus = ReadStatusFixture.createFromRequest(request);
+    readStatus = ReadStatusFixture.create(user, channel);
   }
 
   @Nested
@@ -70,11 +70,11 @@ public class BasicReadStatusServiceTest {
       when(channelRepository.findById(channelId)).thenReturn(Optional.of(channel));
       when(readStatusRepository.save(any(ReadStatus.class))).thenReturn(readStatus);
 
-      ReadStatus createdStatus = readStatusService.create(userId, channelId);
+      ReadStatusResponse createdStatus = readStatusService.create(userId, channelId);
 
       assertNotNull(createdStatus);
-      assertEquals(userId, createdStatus.getUserId());
-      assertEquals(channelId, createdStatus.getChannelId());
+      assertEquals(userId, createdStatus.userId());
+      assertEquals(channelId, createdStatus.channelId());
     }
 
 
@@ -144,7 +144,7 @@ public class BasicReadStatusServiceTest {
       when(readStatusRepository.findById(readStatus.getId())).thenReturn(Optional.of(readStatus));
       when(readStatusRepository.save(any(ReadStatus.class))).thenReturn(readStatus);
 
-      ReadStatus updatedStatus = readStatusService.update(readStatus.getId());
+      ReadStatusResponse updatedStatus = readStatusService.update(readStatus.getId());
 
       assertNotNull(updatedStatus);
     }

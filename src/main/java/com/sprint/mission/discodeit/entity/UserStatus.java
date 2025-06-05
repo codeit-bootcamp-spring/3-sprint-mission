@@ -1,55 +1,59 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.UserStatusException;
-import java.io.Serial;
-import java.io.Serializable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.ToString;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
+@Entity
 @Getter
-@ToString
-public class UserStatus implements Serializable {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "user_statuses")
+public class UserStatus extends BaseUpdatableEntity {
 
-  @Serial
-  private static final long serialVersionUID = -7917996053260213133L;
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false, unique = true)
+  @JsonIgnore
+  private User user;
+
+  @CreatedDate
+  @Column(name = "last_active_at", nullable = false)
+  private Instant lastActiveAt;
 
   private static final Duration ACTIVE_DURATION = Duration.ofMinutes(5);
 
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-
-  private final UUID userId;
-  private Instant lastActiveAt;
-
-  private UserStatus(UUID userId) {
-    if (userId == null) {
+  private UserStatus(User user) {
+    if (user == null) {
       throw new UserStatusException(ErrorCode.INVALID_INPUT, "userId는 필수입니다.");
     }
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.userId = userId;
+    this.user = user;
     this.lastActiveAt = getCreatedAt();
   }
 
-  public static UserStatus create(UUID userId) {
-    UserStatus userStatus = new UserStatus(userId);
-    userStatus.touch();
-    return userStatus;
+  public static UserStatus create(User userId) {
+    return new UserStatus(userId);
   }
 
-  public void touch() {
-    this.updatedAt = Instant.now();
+  public void assignIdForTest(UUID id) {
+    this.id = id;
   }
 
   public void updateLastActiveAt() {
     this.lastActiveAt = Instant.now();
-    touch();
   }
 
   public void updateLastActiveAt(Instant instant) {

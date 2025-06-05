@@ -1,38 +1,26 @@
 package com.sprint.mission.discodeit.fixture;
 
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * UserStatus 테스트를 위한 Fixture
- */
 public class UserStatusFixture {
 
-  /**
-   * 유효한 UserStatus를 생성한다 (기본 온라인 상태)
-   */
-  public static UserStatus createValidUserStatus(UUID userId) {
-    return UserStatus.create(userId);
+  public static UserStatus createValid(User user) {
+    return UserStatus.create(user);
   }
 
-  /**
-   * 오프라인 상태의 UserStatus를 생성한다.
-   */
-  public static UserStatus createOfflineUserStatus(UUID userId) {
-    UserStatus userStatus = UserStatus.create(userId);
-    userStatus.updateLastActiveAt(Instant.now().minus(Duration.ofMinutes(6)));
+  public static UserStatus createWithId(User user) {
+    UserStatus userStatus = UserStatus.create(user);
+    userStatus.assignIdForTest(UUID.randomUUID());
     return userStatus;
   }
 
-  /**
-   * lastActiveAt을 커스텀하게 설정한다.
-   */
-  public static UserStatus createUserStatusWithCustomLastActiveAt(UUID userId,
-      Duration durationBeforeNow) {
-    UserStatus userStatus = UserStatus.create(userId);
-    userStatus.updateLastActiveAt(Instant.now().minus(durationBeforeNow));
+  public static UserStatus createOffline(User user) {
+    UserStatus userStatus = UserStatus.create(user);
+    userStatus.updateLastActiveAt(Instant.now().minus(Duration.ofMinutes(6)));
     return userStatus;
   }
 }

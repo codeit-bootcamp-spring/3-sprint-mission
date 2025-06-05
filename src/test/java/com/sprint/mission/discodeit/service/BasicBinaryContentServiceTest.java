@@ -2,14 +2,16 @@ package com.sprint.mission.discodeit.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.basic.BasicBinaryContentService;
-import com.sprint.mission.discodeit.vo.BinaryContentData;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,6 +26,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class BasicBinaryContentServiceTest {
 
   @Mock
+  private BinaryContentStorage binaryContentStorage;
+
+  @Mock
   private BinaryContentRepository binaryContentRepository;
 
   @InjectMocks
@@ -34,23 +39,31 @@ class BasicBinaryContentServiceTest {
 
     @Test
     void BinaryContent를_생성한다() {
-      BinaryContent expected = BinaryContentFixture.createValid();
+      // given
+      byte[] mockBytes = BinaryContentFixture.getDefaultData();
+
+      BinaryContent expected = BinaryContent.create(
+          BinaryContentFixture.getDefaultFileName(),
+          (long) mockBytes.length,
+          BinaryContentFixture.getDefaultMimeType()
+      );
+      expected.assignIdForTest(UUID.randomUUID());
 
       when(binaryContentRepository.save(any())).thenReturn(expected);
 
-      var request = new BinaryContentData(
-          expected.getFileName(),
-          expected.getContentType(),
-          expected.getBytes()
-      );
+      var request = BinaryContentFixture.createValidData();
 
-      BinaryContent result = binaryContentService.create(request);
+      // when
+      BinaryContentResponse result = binaryContentService.create(request);
 
+      // then
       assertThat(result).isNotNull();
-      assertThat(result.getFileName()).isEqualTo(expected.getFileName());
-      assertThat(result.getContentType()).isEqualTo(expected.getContentType());
-      assertThat(result.getBytes()).isEqualTo(expected.getBytes());
+      assertThat(result.fileName()).isEqualTo(expected.getFileName());
+      assertThat(result.contentType()).isEqualTo(expected.getContentType());
+      assertThat(result.size()).isEqualTo(expected.getSize());
+
       verify(binaryContentRepository).save(any());
+      verify(binaryContentStorage).put(any(UUID.class), eq(mockBytes));
     }
   }
 
@@ -64,10 +77,10 @@ class BasicBinaryContentServiceTest {
 
       when(binaryContentRepository.findById(id)).thenReturn(Optional.of(content));
 
-      BinaryContent found = binaryContentService.find(id);
+      BinaryContentResponse found = binaryContentService.find(id);
 
       assertThat(found).isNotNull();
-      assertThat(found.getFileName()).isEqualTo(content.getFileName());
+      assertThat(found.fileName()).isEqualTo(content.getFileName());
       verify(binaryContentRepository).findById(id);
     }
   }
@@ -81,7 +94,7 @@ class BasicBinaryContentServiceTest {
 
       binaryContentService.delete(id);
 
-      verify(binaryContentRepository).delete(id);
+      verify(binaryContentRepository).deleteById(id);
     }
   }
 
@@ -99,10 +112,12 @@ class BasicBinaryContentServiceTest {
       when(binaryContentRepository.findById(id1)).thenReturn(Optional.of(content1));
       when(binaryContentRepository.findById(id2)).thenReturn(Optional.of(content2));
 
-      List<BinaryContent> result = binaryContentService.findAllByIdIn(List.of(id1, id2));
+      List<BinaryContentResponse> result = binaryContentService.findAllByIdIn(List.of(id1, id2));
 
       assertThat(result).hasSize(2);
-      assertThat(result).contains(content1, content2);
+      assertThat(result)
+          .extracting(BinaryContentResponse::id)
+          .containsExactlyInAnyOrder(content1.getId(), content2.getId());
       verify(binaryContentRepository).findById(id1);
       verify(binaryContentRepository).findById(id2);
     }

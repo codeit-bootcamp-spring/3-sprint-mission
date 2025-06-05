@@ -1,0 +1,35 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  application:
+    name: discodeit
+  servlet:
+    multipart:
+      maxFileSize: 10MB # 파일 하나의 최대 크기
+      maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
+  datasource:
+    url: jdbc:h2:mem:discodeit_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        generate_statistics: true
+        default_batch_fetch_size: 1000
+        format_sql: false
+        show_sql: false
+  sql:
+    init:
+      mode: never
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+      multiline: true
+      logging: slf4j

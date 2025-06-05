@@ -2,52 +2,23 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import lombok.NonNull;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-public interface ChannelRepository {
+public interface ChannelRepository extends JpaRepository<Channel, UUID> {
 
-  /**
-   * 채널 삽입
-   *
-   * @param channel Channel
-   */
-  void insert(Channel channel);
+  @Query("""
+          SELECT c FROM Channel c
+          WHERE c.type = 'PUBLIC'
+             OR c.id IN (
+               SELECT rs.channel.id FROM ReadStatus rs
+               WHERE rs.user.id = :userId
+             )
+      """)
+  List<Channel> findAllByUserId(@Param("userId") UUID userId);
 
-  /**
-   * 채널 객체의 고유 아이디로 조회
-   *
-   * @param id UUID
-   * @return Optional<Channel>
-   */
-  Optional<Channel> findById(UUID id);
-
-  /**
-   * 모든 채널 조회
-   *
-   * @return List<Channel>
-   */
-  List<Channel> findAll();
-
-  /**
-   * 채널 저장 또는 업데이트
-   *
-   * @param channel Channel
-   * @return Channel
-   */
-  Channel save(Channel channel);
-
-  /**
-   * 채널 업데이트 (존재하지 않으면 예외)
-   *
-   * @param channel Channel
-   */
-  void update(Channel channel);
-
-  /**
-   * 채널 객체의 고유 아이디로 삭제
-   *
-   * @param id UUID
-   */
-  void delete(UUID id);
+  void deleteById(@NonNull UUID channelId);
 }

@@ -1,39 +1,39 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.Instant;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
 import java.util.Objects;
-import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.ToString;
+import lombok.NoArgsConstructor;
 
+@Entity
 @Getter
-@ToString
-public class Channel implements Serializable {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "channels")
+public class Channel extends BaseUpdatableEntity {
 
-  @Serial
-  private static final long serialVersionUID = 4947061877205205272L;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "type", nullable = false)
+  private ChannelType type;
 
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-
-  private final ChannelType type;
+  @Column(name = "name", length = 100)
   private String name;
+
+  @Column(name = "description", length = 500)
   private String description;
 
   private Channel(ChannelType type) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
     this.name = null;
     this.description = null;
     this.type = type != null ? type : ChannelType.PUBLIC;
   }
 
   private Channel(String name, String description, ChannelType type) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
     this.name = Objects.requireNonNull(name);
     this.description = description != null ? description : "";
     this.type = type;
@@ -47,18 +47,12 @@ public class Channel implements Serializable {
     return new Channel(ChannelType.PRIVATE);
   }
 
-  public void touch() {
-    this.updatedAt = Instant.now();
-  }
-
   public void updateName(String name) {
     this.name = name;
-    touch();
   }
 
   public void updateDescription(String description) {
     this.description = description;
-    touch();
   }
 
   public boolean isPublic() {
