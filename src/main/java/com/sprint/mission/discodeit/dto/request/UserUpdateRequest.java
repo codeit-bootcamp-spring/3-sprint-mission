@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import java.util.UUID;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "사용자 수정 요청 DTO")
 public record UserUpdateRequest(
-    String name,
-    String password,
-    UUID profileImageId
+    String newUsername,
+    String newEmail,
+    String newPassword
 ) {
 
 }

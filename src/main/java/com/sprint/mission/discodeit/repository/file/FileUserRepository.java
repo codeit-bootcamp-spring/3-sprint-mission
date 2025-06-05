@@ -18,11 +18,11 @@ import org.springframework.stereotype.Repository;
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file", matchIfMissing = true)
 public class FileUserRepository implements UserRepository {
 
-  private final FileStorage fileStorage;
+  private final FileStorage<User> fileStorage;
 
   public FileUserRepository(
       @Value("${discodeit.repository.file-directory.folder:data}${discodeit.repository.file-directory.user:/user}") String fileDirectory) {
-    this.fileStorage = new FileStorageImpl(fileDirectory);
+    this.fileStorage = new FileStorageImpl<>(fileDirectory);
   }
 
   @Override
@@ -66,11 +66,11 @@ public class FileUserRepository implements UserRepository {
 
   @Override
   public List<User> findAll() {
-    List<Object> allObjects = fileStorage.readAll();
+    List<User> allObjects = fileStorage.readAll();
     List<User> users = new ArrayList<>();
-    for (Object obj : allObjects) {
-      if (obj instanceof User) {
-        users.add((User) obj);
+    for (User obj : allObjects) {
+      if (obj != null) {
+        users.add(obj);
       }
     }
     return users;

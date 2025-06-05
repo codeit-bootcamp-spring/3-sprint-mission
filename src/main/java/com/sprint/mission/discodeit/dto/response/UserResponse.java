@@ -7,10 +7,10 @@ public record UserResponse(
     UUID id,
     Instant createdAt,
     Instant updatedAt,
-    String name,
+    String username,
     String email,
     UUID profileId,
-    boolean isOnline
+    boolean online
 ) {
 
 }

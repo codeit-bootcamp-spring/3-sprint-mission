@@ -22,14 +22,14 @@ public class Message implements Serializable {
   private Instant updatedAt;
 
   private String content;
-  private final UUID userId;
+  private final UUID authorId;
   private final UUID channelId;
   private Instant deletedAt;
   private Set<UUID> attachmentIds;
 
   private Message(
       String content,
-      UUID userId,
+      UUID authorId,
       UUID channelId,
       Instant deletedAt,
       Set<UUID> attachmentIds
@@ -37,7 +37,7 @@ public class Message implements Serializable {
     this.id = UUID.randomUUID();
     this.createdAt = Instant.now();
     this.content = content;
-    this.userId = userId;
+    this.authorId = authorId;
     this.channelId = channelId;
     this.deletedAt = deletedAt;
     this.attachmentIds = attachmentIds != null ? attachmentIds : new HashSet<>();

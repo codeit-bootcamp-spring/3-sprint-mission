@@ -22,14 +22,14 @@ public class MessageFixture {
   }
 
   public static Message createCustom(MessageCreateRequest dto) {
-    return Message.create(dto.content(), dto.userId(), dto.channelId(), DEFAULT_ATTACHMENT_IDS);
+    return Message.create(dto.content(), dto.authorId(), dto.channelId(), DEFAULT_ATTACHMENT_IDS);
   }
 
   public static Message createCustomWithAttachments(MessageCreateRequest messageCreateRequest,
       List<UUID> attachmentIds) {
     return Message.create(
         messageCreateRequest.content(),
-        messageCreateRequest.userId(),
+        messageCreateRequest.authorId(),
         messageCreateRequest.channelId(),
         new HashSet<>(attachmentIds)
     );
