@@ -1,36 +1,25 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import lombok.Getter;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
-
 @Getter
-public class User implements Serializable {
-
-  private static final long serialVersionUID = 1L;
-
-  private UUID id;
-  private Instant createdAt;
-  private Instant updatedAt;
-  //
+public class User extends BaseUpdatableEntity {
   private String username;
   private String email;
   private String password;
-  private UUID profileId;     // BinaryContent
+  private BinaryContent profile;
+  private UserStatus status;
 
-  public User(String username, String email, String password, UUID profileId) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    //
+  public User(String username, String email, String password, BinaryContent profile, UserStatus status) {
     this.username = username;
     this.email = email;
     this.password = password;
-    this.profileId = profileId;
+    this.profile = profile;
+    this.status = status;
   }
 
-  public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
+  public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
     boolean anyValueUpdated = false;
     if (newUsername != null && !newUsername.equals(this.username)) {
       this.username = newUsername;
@@ -44,13 +33,13 @@ public class User implements Serializable {
       this.password = newPassword;
       anyValueUpdated = true;
     }
-    if (newProfileId != null && !newProfileId.equals(this.profileId)) {
-      this.profileId = newProfileId;
+    if (newProfile != null && !newProfile.equals(this.profile)) {
+      this.profile = newProfile;
       anyValueUpdated = true;
     }
 
     if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
+      setUpdatedAt();
     }
   }
 }
