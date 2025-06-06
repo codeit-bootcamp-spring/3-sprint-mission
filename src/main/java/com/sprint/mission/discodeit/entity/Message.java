@@ -30,7 +30,7 @@ public class Message extends BaseUpdatableEntity {
     @JoinColumn(name = "author_id")
     private User author;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
     @JoinTable(name = "message_attachments",
         joinColumns = @JoinColumn(name = "message_id"),
         inverseJoinColumns = @JoinColumn(name = "attachment_id"))
