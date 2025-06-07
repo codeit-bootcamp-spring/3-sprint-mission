@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -29,6 +30,7 @@ public class BasicUserService implements UserService {
   //
   private final BinaryContentRepository binaryContentRepository;
   private final UserStatusRepository userStatusRepository;
+  private final BinaryContentMapper binaryContentMapper;
 
   @Override
   @Transactional
@@ -49,8 +51,8 @@ public class BasicUserService implements UserService {
           String fileName = profileRequest.fileName();
           String contentType = profileRequest.contentType();
           byte[] bytes = profileRequest.bytes();
-          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-              contentType, bytes);
+          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
+          //실제 바이너리 데이터는 별도의 공간에 저장하는 로직
           return binaryContentRepository.save(binaryContent);
         })
         .orElse(null);
@@ -105,9 +107,9 @@ public class BasicUserService implements UserService {
           BinaryContent bc = new BinaryContent(
               profileRequest.fileName(),
               (long) profileRequest.bytes().length,
-              profileRequest.contentType(),
-              profileRequest.bytes()
+              profileRequest.contentType()
           );
+//          실제 바이너리 데이터는 별도의 공간에 저장하는 로직
           return binaryContentRepository.save(bc);
         })
         .orElse(user.getProfile());
@@ -141,11 +143,9 @@ public class BasicUserService implements UserService {
 
     return new UserDto(
         user.getId(),
-        user.getCreatedAt(),
-        user.getUpdatedAt(),
         user.getUsername(),
         user.getEmail(),
-        user.getProfile() != null ? user.getProfile().getId() : null,
+        user.getProfile() != null ? binaryContentMapper.toDto(user.getProfile()) : null,
         online
     );
   }
