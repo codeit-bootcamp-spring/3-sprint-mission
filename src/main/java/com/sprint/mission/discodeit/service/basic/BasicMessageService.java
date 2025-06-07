@@ -47,10 +47,9 @@ public class BasicMessageService implements MessageService {
         .map(req -> new BinaryContent(
             req.fileName(),
             (long) req.bytes().length,
-            req.contentType(),
-            req.bytes()
+            req.contentType()
         ))
-        .map(binaryContentRepository::save)    // 영속 컨텍스트에 저장(persist)
+        .map(binaryContentRepository::save) //실제 바이너리 데이터는 별도의 공간에 저장하는 로직 추가?
         .toList();
 
     String content = messageCreateRequest.content();

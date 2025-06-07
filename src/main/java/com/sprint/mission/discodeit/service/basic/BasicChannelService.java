@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
@@ -8,6 +9,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -26,6 +28,7 @@ public class BasicChannelService implements ChannelService {
 
   private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
+  private final UserMapper userMapper;
 
   @Override
   @Transactional
@@ -99,8 +102,8 @@ public class BasicChannelService implements ChannelService {
         .max(Instant::compareTo)
         .orElse(Instant.MIN);
 
-    List<UUID> participantIds = channel.getReadStatuses().stream()
-        .map(rs -> rs.getUser().getId())
+    List<UserDto> participants = channel.getReadStatuses().stream()
+        .map(readStatus -> userMapper.toDto(readStatus.getUser()))
         .toList();
 
     return new ChannelDto(
@@ -108,7 +111,7 @@ public class BasicChannelService implements ChannelService {
         channel.getType(),
         channel.getName(),
         channel.getDescription(),
-        participantIds,
+        participants,
         lastMessageAt
     );
   }
