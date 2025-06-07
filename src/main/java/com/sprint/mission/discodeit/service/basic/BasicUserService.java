@@ -11,15 +11,16 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class BasicUserService implements UserService {
@@ -30,6 +31,7 @@ public class BasicUserService implements UserService {
   private final UserStatusRepository userStatusRepository;
 
   @Override
+  @Transactional
   public User create(UserCreateRequest userCreateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     String username = userCreateRequest.username();
@@ -80,6 +82,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @Transactional
   public User update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     User user = userRepository.findById(userId)
@@ -94,36 +97,41 @@ public class BasicUserService implements UserService {
       throw new IllegalArgumentException("User with username " + newUsername + " already exists");
     }
 
-    UUID nullableProfileId = optionalProfileCreateRequest
+    BinaryContent newProfile = optionalProfileCreateRequest
         .map(profileRequest -> {
-          Optional.ofNullable(user.getProfileId())
-              .ifPresent(binaryContentRepository::deleteById);
+          Optional.ofNullable(user.getProfile())
+              .ifPresent(binaryContentRepository::delete);
 
-          String fileName = profileRequest.fileName();
-          String contentType = profileRequest.contentType();
-          byte[] bytes = profileRequest.bytes();
-          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-              contentType, bytes);
-          return binaryContentRepository.save(binaryContent).getId();
+          BinaryContent bc = new BinaryContent(
+              profileRequest.fileName(),
+              (long) profileRequest.bytes().length,
+              profileRequest.contentType(),
+              profileRequest.bytes()
+          );
+          return binaryContentRepository.save(bc);
         })
-        .orElse(null);
+        .orElse(user.getProfile());
 
-    String newPassword = userUpdateRequest.newPassword();
-    user.update(newUsername, newEmail, newPassword, nullableProfileId);
-
-    return userRepository.save(user);
+    user.update(
+        userUpdateRequest.newUsername(),
+        userUpdateRequest.newEmail(),
+        userUpdateRequest.newPassword(),
+        newProfile
+    );
+    return user;
   }
 
   @Override
+  @Transactional
   public void delete(UUID userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
-    Optional.ofNullable(user.getProfileId())
-        .ifPresent(binaryContentRepository::deleteById);
-    userStatusRepository.deleteByUserId(userId);
+    Optional.ofNullable(user.getProfile())
+        .ifPresent(binaryContentRepository::delete);
 
-    userRepository.deleteById(userId);
+    userStatusRepository.deleteByUserId(userId);
+    userRepository.delete(user);
   }
 
   private UserDto toDto(User user) {
@@ -137,7 +145,7 @@ public class BasicUserService implements UserService {
         user.getUpdatedAt(),
         user.getUsername(),
         user.getEmail(),
-        user.getProfileId(),
+        user.getProfile() != null ? user.getProfile().getId() : null,
         online
     );
   }

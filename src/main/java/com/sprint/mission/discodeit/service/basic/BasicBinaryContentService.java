@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class BasicBinaryContentService implements BinaryContentService {
@@ -18,6 +20,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
+  @Transactional
   public BinaryContent create(BinaryContentCreateRequest request) {
     String fileName = request.fileName();
     byte[] bytes = request.bytes();
@@ -40,15 +43,15 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Override
   public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
-    return binaryContentRepository.findAllByIdIn(binaryContentIds).stream()
-        .toList();
+    return binaryContentRepository.findAllById(binaryContentIds);
   }
 
   @Override
+  @Transactional
   public void delete(UUID binaryContentId) {
-    if (!binaryContentRepository.existsById(binaryContentId)) {
-      throw new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found");
-    }
-    binaryContentRepository.deleteById(binaryContentId);
+    BinaryContent entity = binaryContentRepository.findById(binaryContentId)
+        .orElseThrow(() -> new NoSuchElementException(
+            "BinaryContent with id " + binaryContentId + " not found"));
+    binaryContentRepository.delete(entity);
   }
 }
