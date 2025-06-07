@@ -7,8 +7,9 @@ import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.NoSuchElementException;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class BasicAuthService implements AuthService {
@@ -20,14 +21,8 @@ public class BasicAuthService implements AuthService {
     String username = loginRequest.username();
     String password = loginRequest.password();
 
-    User user = userRepository.findByUsername(username)
-        .orElseThrow(
-            () -> new NoSuchElementException("User with username " + username + " not found"));
-
-    if (!user.getPassword().equals(password)) {
-      throw new IllegalArgumentException("Wrong password");
-    }
-
-    return user;
+    return userRepository
+        .findByUsernameAndPassword(username, password)
+        .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
   }
 }
