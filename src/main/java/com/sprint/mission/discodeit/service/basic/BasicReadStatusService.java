@@ -37,22 +37,19 @@ public class BasicReadStatusService implements ReadStatusService {
     UUID channelId = request.channelId();
 
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException(
-            "User with id " + userId + " does not exist"));
+        .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " does not exist"));
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new NoSuchElementException(
-            "Channel with id " + channelId + " does not exist"));
-    boolean already = readStatusRepository.findAllByUserId(userId).stream()
-        .anyMatch(rs -> rs.getChannel().getId().equals(channelId));
-    if (already) {
+        .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " does not exist"));
+
+    if (readStatusRepository.findAllByUserId(userId).stream()
+        .anyMatch(
+            readStatus -> readStatus.getChannel().equals(channelRepository.findById(channelId)))) {
       throw new IllegalArgumentException(
-          "ReadStatus with userId " + userId +
-              " and channelId " + channelId + " already exists");
+          "ReadStatus with userId " + userId + " and channelId " + channelId + " already exists");
     }
 
     Instant lastReadAt = request.lastReadAt();
     ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
-    readStatusRepository.save(readStatus);
     return readStatusMapper.toDto(readStatus);
   }
 
