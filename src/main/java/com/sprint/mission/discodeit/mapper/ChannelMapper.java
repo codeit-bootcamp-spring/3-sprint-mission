@@ -25,7 +25,6 @@ public class ChannelMapper {
   public ChannelDto toDto(Channel channel) {
     UUID channelId = channel.getId();
 
-    // 참여자 정보
     List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelId(channelId);
     List<UserDto> participants = readStatuses.stream()
         .map(ReadStatus::getUser)
@@ -33,7 +32,6 @@ public class ChannelMapper {
         .map(userMapper::toDto)
         .toList();
 
-    // 최근 메세지의 생성 시각
     List<Message> messages = messageRepository.findAllByChannelId(channelId);
     Instant lastMessageAt = messages.stream()
         .map(Message::getCreatedAt)

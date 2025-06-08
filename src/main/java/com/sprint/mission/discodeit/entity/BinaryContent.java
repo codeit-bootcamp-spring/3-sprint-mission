@@ -10,7 +10,6 @@ import java.io.Serializable;
 import lombok.NoArgsConstructor;
 
 // 프로필 이미지 & 첨부 파일 표현 도메인 모델 ( 수정 불가 : updated 필드 X )
-// 참조 관계상 User, Message 모델이 BinaryContent를 참조함
 @Getter
 @Entity
 @NoArgsConstructor

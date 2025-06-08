@@ -24,7 +24,6 @@ public class UserController {
   private final UserService userService;
   private final UserStatusService userStatusService;
 
-  // 신규 유저 생성 요청( POST )
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserDto> create(
       @Valid
@@ -32,7 +31,6 @@ public class UserController {
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
 
-    // 선택적 유저 프로필 이미지 처리
     Optional<BinaryContentCreateRequest> profileRequest =
         Optional.ofNullable(profile)
             .flatMap(this::resolveProfileRequest);
@@ -61,9 +59,7 @@ public class UserController {
 
 
   @PatchMapping("/{userId}")
-  // 사용자 정보 수정( PATCH )
   public ResponseEntity<UserDto> update(
-      // 어느 사용자인지 식별
       @PathVariable UUID userId
       , @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest
       , @RequestPart(value = "profile", required = false) MultipartFile profile
@@ -78,14 +74,11 @@ public class UserController {
   }
 
 
-  // 사용자 삭제( DEL )
   @DeleteMapping("/{userId}")
   public ResponseEntity<String> delete(@PathVariable UUID userId) {
     try {
       userService.delete(userId);
-      // HTTP 상태 코드 200( ok ) 반환
       return ResponseEntity.ok("사용자 삭제에 성공했습니다");
-      // 사용자를 찾을 수 없다면 예외 발생 처리
     } catch (NoSuchElementException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body("해당 사용자를 찾을 수 없습니다");
@@ -93,17 +86,14 @@ public class UserController {
   }
 
 
-  // 모든 사용자 조회( GET )
   @GetMapping
   public ResponseEntity<List<UserDto>> findAll() {
-    // 모든 사용자 조회
     List<UserDto> users = userService.findAll();
 
     return ResponseEntity.status(HttpStatus.OK).body(users);
   }
 
 
-  // 사용자 활동 상태 변경
   @PatchMapping("/{userId}/userStatus")
   public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
       @PathVariable UUID userId,

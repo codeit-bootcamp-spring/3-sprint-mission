@@ -12,7 +12,6 @@ public interface BinaryContentService {
 
   BinaryContentDto find(UUID binaryContentId);
 
-  // id 목록으로 조회
   List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds);
 
   void delete(UUID binaryContentId);

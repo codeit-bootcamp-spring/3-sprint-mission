@@ -24,7 +24,6 @@ public class MessageController {
 
   private final MessageService messageService;
 
-  // 메세지 전송( POST )
   @PostMapping
   public ResponseEntity<MessageDto> create(
       @RequestPart("messageCreateRequest") MessageCreateRequest request,
@@ -52,7 +51,6 @@ public class MessageController {
   }
 
 
-  // 메세지 수정( PATCH )
   @PatchMapping("/{messageId}")
   public ResponseEntity<MessageDto> update(
       @PathVariable UUID messageId,
@@ -64,7 +62,6 @@ public class MessageController {
   }
 
 
-  // 메세지 삭제( DEL )
   @DeleteMapping("/{messageId}")
   public ResponseEntity<String> delete(
       @PathVariable UUID messageId

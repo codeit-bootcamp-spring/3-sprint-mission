@@ -116,8 +116,6 @@ public class BasicMessageService implements MessageService {
   @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public PageResponse<MessageDto> getMessages(UUID channelId, Instant before, int size) {
 
-    // 기준 시간 설정
-    // before가 null이면 현재 시각 기준
     Instant cursor = before != null ? before : Instant.now();
 
     Pageable pageable = PageRequest.of(0, size + 1);

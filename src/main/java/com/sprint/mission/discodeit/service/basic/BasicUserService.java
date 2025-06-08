@@ -26,7 +26,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
-// Lombok( 생성자 대체 )
 @RequiredArgsConstructor
 @Service
 @Transactional
@@ -37,8 +36,6 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final BinaryContentMapper binaryContentMapper;
-
-  // 리펙토링
 
   @Override
   public UserDto create(UserCreateRequest userCreateRequest,
@@ -73,7 +70,6 @@ public class BasicUserService implements UserService {
   @Override
   @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public List<UserDto> findAll() {
-    // 리스트로 전체 유저를 조회
     return userRepository.findAll()
         .stream()
         .map(this::toDto)

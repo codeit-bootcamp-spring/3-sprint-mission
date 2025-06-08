@@ -62,7 +62,6 @@ public class ChannelController {
   }
 
 
-  // 채널 삭제( DEL )
   @DeleteMapping("/{channelId}")
   public ResponseEntity<String> delete(
       @PathVariable UUID channelId

@@ -36,7 +36,6 @@ public class BasicReadStatusService implements ReadStatusService {
     UUID channelId = request.channelId();
     Instant lastReadAt = request.lastReadAt();
 
-    // 의존관계 유효성( 존재하지 않는다면 예외 발생 )
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
@@ -50,7 +49,6 @@ public class BasicReadStatusService implements ReadStatusService {
           "ReadStatus with userId " + userId + " and channelId " + channelId + " already exists");
     }
 
-    // Create
     ReadStatus readStatus = new ReadStatus(
         user,
         channel,
@@ -87,7 +85,6 @@ public class BasicReadStatusService implements ReadStatusService {
         .orElseThrow(
             () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
 
-    // Update
     readStatus.update(newLastReadAt);
     return readStatusMapper.toDto(readStatus);
   }

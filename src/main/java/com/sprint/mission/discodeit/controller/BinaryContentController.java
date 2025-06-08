@@ -23,23 +23,19 @@ public class BinaryContentController {
   private final BinaryContentService binaryContentService;
   private final BinaryContentStorage binaryContentStorage;
 
-  // 단건 조회 : 바이너리 파일을 1개 조회( GET )
   @GetMapping("/{binaryContentId}")
   public ResponseEntity<BinaryContentDto> find(
       @PathVariable UUID binaryContentId
   ) {
     BinaryContentDto binary = binaryContentService.find(binaryContentId);
 
-    // 조회한 바이너리 파일이 없을 경우
     if (binary == null) {
       return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    // 파일의 실제 데이터, 설정된 헤더 정보 포함, 상태코드( 200 ) 반환
     return ResponseEntity.status(HttpStatus.OK).body(binary);
   }
 
-  // 다건 조회 : 바이너리 파일 여러 개 조회( GET )
   @GetMapping
   public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
       @RequestParam("binaryContentIds") List<UUID> binaryContentIds
