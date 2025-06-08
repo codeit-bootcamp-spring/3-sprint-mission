@@ -21,6 +21,7 @@ spring:
         highlight_sql: true
         use_sql_comments: true
         show_sql: false
+    open-in-view: false
 
 logging:
   level:

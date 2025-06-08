@@ -56,5 +56,4 @@ public class BinaryContentController implements BinaryContentApi {
 
         return response;
     }
-
 }
