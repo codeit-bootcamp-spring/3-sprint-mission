@@ -1,65 +1,97 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
-public class BinaryContent implements Serializable {
-    private static final Long serialVersionUID = 1L;
-    private final UUID id;
-    private final Instant createdAt;
-    //
-    private String fileName;
-    private Long size;
-    private String contentType;
-    private byte[] bytes;
+@NoArgsConstructor
+@AllArgsConstructor /* @Builder 때문에 넣어줌 */
+@Builder
+@Entity
+@EntityListeners(AuditingEntityListener.class)
+@Table(name = "binary_contents")
+public class BinaryContent extends BaseEntity implements Serializable {
 
+  private static final Long serialVersionUID = 1L;
 
-    public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        //
-        this.fileName = fileName;
-        this.size = size;
-        this.contentType = contentType;
-        this.bytes = bytes;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(name = "id", nullable = false)
+  private UUID id;
+
+  @CreatedDate
+  @Column(name = "created_at", nullable = false)
+  private Instant createdAt;
+  //
+  @Column(name = "file_name", nullable = false)
+  private String fileName;
+
+  @Column(name = "size", nullable = false)
+  private Long size;
+
+  @Column(name = "content_type", nullable = false)
+  private String contentType;
+
+  //
+  @OneToOne(mappedBy = "profile")
+  private User user;
+
+  public BinaryContent(String fileName, Long size, String contentType) {
+    this.fileName = fileName;
+    this.size = size;
+    this.contentType = contentType;
+  }
+
+  @Override
+  public String toString() {
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        .withZone(ZoneId.systemDefault());
+
+    String createdAtFormatted = (createdAt != null) ? formatter.format(createdAt) : null;
+
+    return "️ BinaryContent {\n" +
+        "  id         = " + id + "\n" +
+        "  createdAt  = " + createdAtFormatted + "\n" +
+        "}";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
     }
-
-    @Override
-    public String toString() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                .withZone(ZoneId.systemDefault());
-
-        String createdAtFormatted = formatter.format(createdAt);
-
-        return "️ BinaryContent {\n" +
-                "  id         = " + id + "\n" +
-                "  createdAt  = " + createdAtFormatted + "\n" +
-                "}";
+    if (!(o instanceof BinaryContent)) {
+      return false;
     }
+    BinaryContent other = (BinaryContent) o;
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == this)
-            return true;
-        if (!(o instanceof BinaryContent))
-            return false;
-        BinaryContent other = (BinaryContent) o;
+    return (this.id == null && other.id == null)
+        || (this.id != null && this.id.equals(other.id));
 
-        return (this.id == null && other.id == null)
-                || (this.id != null && this.id.equals(other.id));
+  }
 
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(this.id);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(this.id);
+  }
 
 }

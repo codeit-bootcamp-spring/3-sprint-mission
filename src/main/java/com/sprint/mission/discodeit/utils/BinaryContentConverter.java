@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.utils;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,5 +23,19 @@ public class BinaryContentConverter {
         throw new RuntimeException();
       }
     }
+  }
+
+  public static byte[] toByteArray(InputStream inputStream) throws IOException {
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    byte[] data = new byte[1024]; // 임시버퍼생성, 한번 읽을때 1024 바이트만큼 읽음
+    int nRead;
+    while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+      buffer.write(data, 0, nRead);
+    }
+    return buffer.toByteArray();
+  }
+
+  public static InputStream toInputStream(byte[] bytes) {
+    return new ByteArrayInputStream(bytes);
   }
 }
