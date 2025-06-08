@@ -37,7 +37,7 @@ public class Message extends BaseUpdatableEntity implements Serializable {
     private Channel channel;
 
 
-// 메세지가 첨부파일의 개수만큼의 연관관계가 생긴다.
+
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinTable(
             name = "message_attachments",

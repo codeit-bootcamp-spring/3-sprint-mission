@@ -48,15 +48,7 @@ public class BasicReadStatusService implements ReadStatusService {
         List<JpaReadStatusResponse> responses = new ArrayList<>();
         for (ReadStatus readStatus : readStatusList) {
             responses.add(
-                    // original
-//                    readStatusMapper.toDto(readStatus)
-                    // advanced
                     readStatusMapper.toDto(readStatus)
-//                    new JpaReadStatusResponse(
-//                    readStatus.getId(),
-//                    readStatus.getUser().getId(),
-//                    readStatus.getChannel().getId(),
-//                    readStatus.getLastReadAt()
             );
 
         }
@@ -83,16 +75,7 @@ public class BasicReadStatusService implements ReadStatusService {
                 .build();
         readStatusRepository.save(readStatus);
 
-        // original
-//        JpaReadStatusResponse response = readStatusMapper.toDto(readStatus);
-        // advanced
         JpaReadStatusResponse response = readStatusMapper.toDto(readStatus);
-//                = new JpaReadStatusResponse(
-//                readStatus.getId(),
-//                readStatus.getUser().getId(),
-//                readStatus.getChannel().getId(),
-//                readStatus.getLastReadAt()
-//        );
         return response;
     }
 

@@ -34,7 +34,7 @@ public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
 
-    // n+1 문제
+
     @Operation(summary = "모든 사용자 조회", description = "모든 사용자 정보를 조회합니다.")
     @GetMapping
     public ResponseEntity<?> findAll() {

@@ -1,14 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.advanced.AdvancedUserMapper;
 import com.sprint.mission.discodeit.mapper.original.ChannelMapper;
-//import com.sprint.mission.discodeit.mapper.original.UserMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
