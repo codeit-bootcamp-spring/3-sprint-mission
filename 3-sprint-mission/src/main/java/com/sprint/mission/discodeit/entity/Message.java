@@ -1,53 +1,61 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
 @ToString
-public class Message implements Serializable {
-    private final UUID id;
-    private final UUID authorId;
-    private final UUID channelId;
+@Table(name = "messages")
+@Entity
+@NoArgsConstructor(force = true)
+public class Message extends BaseUpdatableEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id")
+    private final User author;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id")
+    private final Channel channel;
+
+    @Column(name = "content")
     private String content;
-    private List<UUID> attachmentIds;
-    private final Instant createdAt;
-    private Instant updatedAt;
+
+    @OneToMany(mappedBy = "message", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<BinaryContent> attachments;
+
+    @Column
     private boolean updated;
 
     @Builder
-    public Message(UUID currentUserId, UUID currentChannelId, String content, List<UUID> attachmentIds) {
-        this.id = UUID.randomUUID();
-        this.authorId = currentUserId;
-        this.channelId = currentChannelId;
+    public Message(User currentUser, Channel currentChannel, String content, List<BinaryContent> attachments) {
+        this.author = currentUser;
+        this.channel = currentChannel;
         this.content = content;
-        this.attachmentIds = attachmentIds;
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-        this.updated = false;
+        this.attachments = attachments;
     }
 
-    public void updateText(String content) {
-        this.content = content;
-        updateDateTime();
-        updated();
-    }
+    public void update(String newContent) {
+        boolean anyValueUpdated = false;
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            anyValueUpdated = true;
+        }
 
-    public void updateDateTime() {
-        this.updatedAt = Instant.now();
-    }
-
-    public void updated() {
-        this.updated = true;
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
 }

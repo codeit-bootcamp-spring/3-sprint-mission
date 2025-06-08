@@ -1,31 +1,44 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-public class User implements Serializable {
-    private final UUID id;
+@Entity
+@Table(name = "users")
+@NoArgsConstructor(force = true)
+public class User extends BaseUpdatableEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(name = "username", unique = true)
     private String username;
+
+    @Column(name = "email", unique = true)
     private String email;
+
+    @Column(name = "password")
     private String password;
-    private UUID profileId;
-    private final Instant createdAt;
-    private Instant updatedAt;
+
+    @OneToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    private BinaryContent profile;
+
+    @OneToOne(cascade = CascadeType.REMOVE)
+    private UserStatus status;
 
     @Builder
-    public User(String username, String email, String password, UUID profileId) {
-        this.id = UUID.randomUUID();
+    public User(String username, String email, String password, BinaryContent profile) {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.profileId = profileId;
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
+        this.profile = profile;
     }
 
     @Override
@@ -40,7 +53,7 @@ public class User implements Serializable {
                 '}';
     }
 
-    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
+    public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
         boolean anyValueUpdated = false;
         if (newUsername != null && !newUsername.equals(this.username)) {
             this.username = newUsername;
@@ -54,8 +67,8 @@ public class User implements Serializable {
             this.password = newPassword;
             anyValueUpdated = true;
         }
-        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
-            this.profileId = newProfileId;
+        if (newProfile != null && !newProfile.equals(this.profile)) {
+            this.profile = newProfile;
             anyValueUpdated = true;
         }
 

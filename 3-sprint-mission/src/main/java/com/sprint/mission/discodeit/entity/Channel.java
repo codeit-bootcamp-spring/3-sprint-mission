@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.io.Serializable;
@@ -10,37 +13,47 @@ import java.util.UUID;
 
 @Getter
 @ToString
-public class Channel implements Serializable {
-    private final UUID id;
+@Entity
+@Table(name = "channels")
+@NoArgsConstructor(force = true)
+public class Channel extends BaseUpdatableEntity {
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(name = "name")
     private String name;
+
+    @Column(name = "description")
     private String description;
+
+    @Column(name = "type")
+    @Enumerated(EnumType.STRING)
     private final ChannelType type;
-    private final Instant createdAt;
-    private Instant updatedAt;
-    private Instant lastMessageAt;
 
     @Builder
     public Channel(String name, String description, ChannelType type) {
-        this.id = UUID.randomUUID();
         this.name = name;
         this.description = description;
         this.type = type;
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-        this.lastMessageAt = null;
     }
 
-    public void update(String name, String descripton) {
-        this.name = name;
-        this.description = descripton;
-        updateDateTime();
+    public void update(String newName, String newDescripton) {
+        boolean anyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            anyValueUpdated = true;
+        }
+
+        if (newDescripton != null && !newDescripton.equals(this.description)) {
+            this.description = newDescripton;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
-    public void updateDateTime() {
-        this.updatedAt = Instant.now();
-    }
-
-    public void updateMessageAt() {
-        this.lastMessageAt = Instant.now();
-    }
 }

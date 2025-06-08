@@ -12,25 +12,28 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.NoSuchElementException;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class BasicAuthService implements AuthService {
-    private final UserRepository userRepository;
 
-    @Override
-    public User login(LoginRequest loginDTO) {
-        String username = loginDTO.username();
-        String password = loginDTO.password();
+  private final UserRepository userRepository;
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
+  @Override
+  public User login(LoginRequest loginDTO) {
+    String username = loginDTO.username();
+    String password = loginDTO.password();
 
-        if (!user.getPassword().equals(password)) {
-            throw new IllegalArgumentException("비밀번호가 틀립니다.");
-        }
+    User user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
 
-        return user;
+    if (!user.getPassword().equals(password)) {
+      throw new IllegalArgumentException("비밀번호가 틀립니다.");
     }
+
+    return user;
+  }
 
 }

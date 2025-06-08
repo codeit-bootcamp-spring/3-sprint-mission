@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.util.NoSuchElementException;
 
 @RestControllerAdvice
-@ResponseBody
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(NullPointerException.class)
