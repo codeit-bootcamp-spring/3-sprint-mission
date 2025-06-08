@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.ReadStatusAPI;
 import com.sprint.mission.discodeit.dto.data.ReadStatusDTO;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
@@ -16,7 +17,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/readStatuses")
 @RestController
-public class ReadController {
+public class ReadStatusController implements ReadStatusAPI {
     private final ReadStatusService readStatusService;
 
     @PostMapping
@@ -40,7 +41,7 @@ public class ReadController {
         ReadStatus readStatusUpdate = readStatusService.update(readStatusId, readStatusUpdateDTO);
 
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .status(HttpStatus.OK)
                 .body(readStatusUpdate);
     }
 

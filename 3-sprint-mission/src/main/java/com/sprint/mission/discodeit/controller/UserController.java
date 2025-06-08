@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.UserAPI;
 import com.sprint.mission.discodeit.dto.data.UserDTO;
 import com.sprint.mission.discodeit.dto.request.*;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -39,22 +41,26 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 @RestController
-public class UserController {
+public class UserController implements UserAPI {
     private final UserService userService;
     private final UserStatusService userStatusService;
 
     // 신규 유저 생성 요청
+    @PostMapping
     public ResponseEntity<User> create(
             @RequestPart("userCreateRequest") UserCreateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profile
-    ) throws IOException {
-
+    ) {
+        
         Optional<BinaryContentCreateRequest> profileDTO =
                 Optional.ofNullable(profile)
                         .flatMap(this::resolveProfileRequest);
 
+        System.out.println("user create 진행!!");
         User createdUser = userService.create(request, profileDTO);
-
+        System.out.println("user create 진행 완료~~!!");
+        System.out.println("createdUser = " + createdUser);
+        
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(createdUser);
@@ -67,7 +73,7 @@ public class UserController {
     public ResponseEntity<List<UserDTO>> findAll() {
         List<UserDTO> users = userService.findAll();
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .status(HttpStatus.OK)
                 .body(users);
     }
 
@@ -113,7 +119,7 @@ public class UserController {
             value = "/{userId}/userStatus",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<UserStatus> updateStatusByUserId(
+    public ResponseEntity<UserStatus> updateUserStatusByUserId(
             @PathVariable UUID userId,
             @RequestBody UserStatusUpdateRequest request
     ) {

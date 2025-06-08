@@ -13,13 +13,10 @@ import java.util.UUID;
 
 @Getter
 @ToString
-@Table(name = "messages")
+@Table(name = "messages", schema = "discodeit")
 @Entity
 @NoArgsConstructor(force = true)
 public class Message extends BaseUpdatableEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")
@@ -34,9 +31,6 @@ public class Message extends BaseUpdatableEntity {
 
     @OneToMany(mappedBy = "message", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<BinaryContent> attachments;
-
-    @Column
-    private boolean updated;
 
     @Builder
     public Message(User currentUser, Channel currentChannel, String content, List<BinaryContent> attachments) {

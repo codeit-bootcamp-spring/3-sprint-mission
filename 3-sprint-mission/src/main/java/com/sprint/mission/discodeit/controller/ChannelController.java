@@ -1,30 +1,15 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.ChannelAPI;
 import com.sprint.mission.discodeit.dto.data.ChannelDTO;
-import com.sprint.mission.discodeit.dto.data.UserDTO;
 import com.sprint.mission.discodeit.dto.request.*;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/channels")
 @RestController
-public class ChannelController {
+public class ChannelController implements ChannelAPI {
     private final ChannelService channelService;
 
     // 공개 채팅방 개설
@@ -41,7 +26,7 @@ public class ChannelController {
             value = "/public"
             , consumes = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<Channel> createPublicChannel(
+    public ResponseEntity<Channel> create(
             @RequestBody PublicChannelCreateRequest publicChannelCreateDTO
     ) {
 
@@ -56,7 +41,7 @@ public class ChannelController {
     @PostMapping(
             value = "/private"
             , consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Channel> createPrivateChannel(
+    public ResponseEntity<Channel> create(
             @RequestBody PrivateChannelCreateRequest privateChannelCreateDTO
     ) {
 
@@ -101,7 +86,7 @@ public class ChannelController {
 
     // 특정 유저가 볼 수 있는 채널 목록 조회
     @GetMapping()
-    public ResponseEntity<List<ChannelDTO>> findByUserId(
+    public ResponseEntity<List<ChannelDTO>> findAll(
             @RequestParam("userId") UUID userId
     ) {
         List<ChannelDTO> channels = channelService.findAllByUserId(userId);

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller.api;
 
+import com.sprint.mission.discodeit.dto.data.ReadStatusDTO;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -61,7 +62,7 @@ public interface ReadStatusAPI {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReadStatus.class)))
             )
     })
-    ResponseEntity<List<ReadStatus>> findAllByUserId(
+    ResponseEntity<List<ReadStatusDTO>> findAllByUserId(
             @Parameter(description = "조회할 User ID") UUID userId
     );
 }

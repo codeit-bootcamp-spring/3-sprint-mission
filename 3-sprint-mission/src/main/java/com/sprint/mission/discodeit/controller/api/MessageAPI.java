@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller.api;
 
+import com.sprint.mission.discodeit.dto.data.MessageDTO;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
@@ -69,7 +70,7 @@ public interface MessageAPI {
                     content = @Content(examples = @ExampleObject(value = "Message with id {messageId} not found"))
             ),
     })
-    ResponseEntity<Void> delete(
+    ResponseEntity<String> delete(
             @Parameter(description = "삭제할 Message ID") UUID messageId
     );
 
@@ -80,7 +81,7 @@ public interface MessageAPI {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Message.class)))
             )
     })
-    ResponseEntity<List<Message>> findAllByChannelId(
+    ResponseEntity<List<MessageDTO>> findAllByChannelId(
             @Parameter(description = "조회할 Channel ID") UUID channelId
     );
 }

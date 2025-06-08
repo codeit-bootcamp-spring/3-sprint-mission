@@ -73,7 +73,7 @@ public interface ChannelAPI {
                     content = @Content(examples = @ExampleObject(value = "Channel with id {channelId} not found"))
             )
     })
-    ResponseEntity<Void> delete(
+    ResponseEntity<String> delete(
             @Parameter(description = "삭제할 Channel ID") UUID channelId
     );
 

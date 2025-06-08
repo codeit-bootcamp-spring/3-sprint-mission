@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.BinaryContentAPI;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDTO;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -21,7 +20,6 @@ import java.util.UUID;
 public class BinaryController implements BinaryContentAPI {
     private final BinaryContentService binaryContentService;
     private final BinaryContentStorage binaryContentStorage;
-    private final BinaryContentMapper binaryContentMapper;
 
     @GetMapping
     public ResponseEntity<List<BinaryContentDTO>> findAllByIdIn(
@@ -31,7 +29,7 @@ public class BinaryController implements BinaryContentAPI {
         List<BinaryContentDTO> result =
                 binaryContentService.findAllByIdIn(binaryContentIds);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     @GetMapping(
@@ -45,7 +43,7 @@ public class BinaryController implements BinaryContentAPI {
         BinaryContentDTO result =
                 binaryContentService.find(binaryContentId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     @GetMapping(

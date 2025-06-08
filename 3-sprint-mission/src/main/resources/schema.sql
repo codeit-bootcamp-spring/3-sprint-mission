@@ -14,13 +14,17 @@ create database discodeit
 
 \c discodeit
 
-create schema discodeit;
+create schema if not exists discodeit;
 
 alter schema discodeit owner to discodeit_user;
 
-commit;
+ALTER ROLE discodeit_user SET search_path TO discodeit;
 
 SET search_path TO discodeit;
+
+SHOW search_path;
+
+SELECT * FROM discodeit.USERS;
 
 DROP TABLE IF EXISTS user_statuses;
 DROP TABLE IF EXISTS read_statuses;
@@ -30,7 +34,6 @@ DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS channels;
 DROP TABLE IF EXISTS binary_contents;
 DROP TYPE IF EXISTS channel_type;
-
 
 -- 1. create tables
 -- 1) binary_content
@@ -77,14 +80,13 @@ CREATE TABLE IF NOT EXISTS user_statuses (
 
 -- 3) channel
 DROP TABLE IF EXISTS channels;
-CREATE TYPE channel_type AS ENUM('PUBLIC', 'PRIVATE');
 CREATE TABLE IF NOT EXISTS channels (
     id UUID,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE,
     name VARCHAR(100),
     description VARCHAR(500),
-    type channel_type NOT NULL,
+    type VARCHAR(10) NOT NULL,
     CONSTRAINT pk_channel_id PRIMARY KEY (id)
 );
 

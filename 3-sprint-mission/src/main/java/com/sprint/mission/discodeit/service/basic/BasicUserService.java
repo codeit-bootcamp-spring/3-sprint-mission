@@ -74,7 +74,10 @@ public class BasicUserService implements UserService {
             .profile(nullableProfile)
             .build();
 
+    System.out.println("user save 진행!!");
     userRepository.save(user);
+    System.out.println("user save 진행 됐어용~~");
+    System.out.println("user = " + user);
 
     Instant now = Instant.now();
     UserStatus userStatus =

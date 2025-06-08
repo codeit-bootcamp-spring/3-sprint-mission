@@ -7,20 +7,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.io.Serializable;
 import java.time.Instant;
-import java.util.UUID;
 
 @Getter
 @ToString
 @Entity
-@Table(name = "channels")
+@Table(name = "channels", schema = "discodeit")
 @NoArgsConstructor(force = true)
 public class Channel extends BaseUpdatableEntity {
-    @Id
-    @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
 
     @Column(name = "name")
     private String name;

@@ -21,6 +21,7 @@ spring:
           format_sql: true
           highlight_sql: true
           use_sql_comments: true
+          ddl-auto: update
 
     logging:
       level:
@@ -29,6 +30,12 @@ spring:
 
   application:
     name: discodeit
+
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: ./storage
 
 springdoc:
   api-docs:

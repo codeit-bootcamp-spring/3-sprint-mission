@@ -11,12 +11,9 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "users")
+@Table(name = "users", schema = "discodeit")
 @NoArgsConstructor(force = true)
 public class User extends BaseUpdatableEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
 
     @Column(name = "username", unique = true)
     private String username;
@@ -30,8 +27,8 @@ public class User extends BaseUpdatableEntity {
     @OneToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private BinaryContent profile;
 
-    @OneToOne(cascade = CascadeType.REMOVE)
-    private UserStatus status;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY, orphanRemoval = true)
+    private UserStatus userStatus;
 
     @Builder
     public User(String username, String email, String password, BinaryContent profile) {

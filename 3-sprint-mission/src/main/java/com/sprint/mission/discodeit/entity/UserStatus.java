@@ -10,16 +10,13 @@ import java.util.UUID;
 
 @Getter
 @ToString
-@Table(name = "user_statuses")
+@Table(name = "user_statuses", schema = "discodeit")
 @Entity
 @NoArgsConstructor(force = true)
 public class UserStatus extends BaseUpdatableEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn
+    @JoinColumn(name = "user_id", unique = true)
     private User user;
 
     @Column(name = "last_active_at")
