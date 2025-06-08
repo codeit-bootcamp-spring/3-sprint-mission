@@ -2,9 +2,11 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.mapper.EntityDtoMapper;
+import com.sprint.mission.discodeit.dto.mapper.PageMapper;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -17,8 +19,12 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
@@ -35,6 +41,8 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final EntityDtoMapper entityDtoMapper;
+  private final PageMapper pageMapper;
+  private static final Logger log = LoggerFactory.getLogger(BasicMessageService.class);
 
   @Override
   public MessageDto create(MessageCreateRequest messageCreateRequest,
@@ -42,12 +50,16 @@ public class BasicMessageService implements MessageService {
     UUID channelId = messageCreateRequest.channelId();
     UUID authorId = messageCreateRequest.authorId();
 
+    log.info("메시지 생성 요청 - 채널ID: {}, 작성자ID: {}, 내용: {}", channelId, authorId, messageCreateRequest.content());
+
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(
             () -> new CustomException.ChannelNotFoundException("Channel with id " + channelId + " does not exist"));
 
     User author = userRepository.findById(authorId)
         .orElseThrow(() -> new CustomException.UserNotFoundException("Author with id " + authorId + " does not exist"));
+
+    log.info("채널과 사용자 조회 완료 - 채널: {}, 사용자: {}", channel.getName(), author.getUsername());
 
     // 첨부파일이 있는 경우 - BinaryContent 생성 후 Storage에 저장
     List<BinaryContent> attachments = binaryContentCreateRequests.stream()
@@ -71,6 +83,8 @@ public class BasicMessageService implements MessageService {
     Message message = new Message(content, channel, author, attachments);
 
     Message savedMessage = messageRepository.save(message);
+    log.info("메시지 저장 완료 - ID: {}, 내용: {}", savedMessage.getId(), savedMessage.getContent());
+
     return entityDtoMapper.toDto(savedMessage);
   }
 
@@ -79,6 +93,8 @@ public class BasicMessageService implements MessageService {
     UUID channelId = messageCreateRequest.channelId();
     UUID authorId = messageCreateRequest.authorId();
 
+    log.info("메시지 생성 요청 (첨부파일 없음) - 채널ID: {}, 작성자ID: {}, 내용: {}", channelId, authorId, messageCreateRequest.content());
+
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(
             () -> new CustomException.ChannelNotFoundException("Channel with id " + channelId + " does not exist"));
@@ -86,11 +102,15 @@ public class BasicMessageService implements MessageService {
     User author = userRepository.findById(authorId)
         .orElseThrow(() -> new CustomException.UserNotFoundException("Author with id " + authorId + " does not exist"));
 
+    log.info("채널과 사용자 조회 완료 - 채널: {}, 사용자: {}", channel.getName(), author.getUsername());
+
     // 첨부파일이 없는 경우
     String content = messageCreateRequest.content();
     Message message = new Message(content, channel, author);
 
     Message savedMessage = messageRepository.save(message);
+    log.info("메시지 저장 완료 - ID: {}, 내용: {}", savedMessage.getId(), savedMessage.getContent());
+
     return entityDtoMapper.toDto(savedMessage);
   }
 
@@ -106,7 +126,20 @@ public class BasicMessageService implements MessageService {
   @Override
   @Transactional(readOnly = true)
   public List<MessageDto> findAllByChannelId(UUID channelId) {
-    return entityDtoMapper.toMessageDtoList(messageRepository.findAllByChannelId(channelId));
+    log.info("메시지 조회 요청 - 채널ID: {}", channelId);
+    List<Message> messages = messageRepository.findAllByChannelIdOrderByCreatedAtAsc(channelId);
+    log.info("메시지 조회 완료 - 채널ID: {}, 메시지 개수: {}", channelId, messages.size());
+    return entityDtoMapper.toMessageDtoList(messages);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public PageResponse<MessageDto> findAllByChannelIdWithPaging(UUID channelId, Pageable pageable) {
+    log.info("메시지 페이징 조회 요청 - 채널ID: {}, 페이지: {}, 크기: {}", channelId, pageable.getPageNumber(), pageable.getPageSize());
+    Page<Message> messagePage = messageRepository.findAllByChannelId(channelId, pageable);
+    log.info("메시지 페이징 조회 완료 - 채널ID: {}, 총 메시지: {}, 현재 페이지: {}", channelId, messagePage.getTotalElements(),
+        messagePage.getNumber());
+    return pageMapper.toPageResponse(messagePage, entityDtoMapper::toDto);
   }
 
   @Override
