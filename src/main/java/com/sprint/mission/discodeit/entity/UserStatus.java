@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.common.Constants;
 import com.sprint.mission.discodeit.entity.base.BaseUpdateableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -33,7 +34,7 @@ public class UserStatus extends BaseUpdateableEntity {
   }
 
   public Boolean isOnline() {
-    Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
-    return lastActiveAt.isAfter(instantFiveMinutesAgo);
+    Instant thresholdTime = Instant.now().minus(Duration.ofMinutes(Constants.UserStatus.ONLINE_THRESHOLD_MINUTES));
+    return lastActiveAt.isAfter(thresholdTime);
   }
 }
