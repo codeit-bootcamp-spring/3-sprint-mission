@@ -5,36 +5,28 @@ package com.sprint.mission.discodeit.service;
  * */
 
 import com.sprint.mission.discodeit.dto.ChannelDto;
-import com.sprint.mission.discodeit.dto.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
 
-  public Channel create(PublicChannelCreateRequest publicChannelCreateRequest);
+  public ChannelDto create(PublicChannelCreateRequest publicChannelCreateRequest);
 
-  public Channel create(PrivateChannelCreateRequest privateCreateRequest);
+  public ChannelDto create(PrivateChannelCreateRequest privateCreateRequest);
 
   public ChannelDto find(UUID channelId);
 
   public List<ChannelDto> findAllByUserId(UUID userId);
 
-  public Channel update(UUID channelId, PublicChannelUpdateRequest updateRequest);
+  public ChannelDto update(UUID channelId, PublicChannelUpdateRequest updateRequest);
 
   public void delete(UUID channelId);
 
-  public void addMessageToChannel(UUID channelId, UUID messageId);
-
-  // == joinChannel()
-  public void addAttendeeToChannel(UUID channelId, UUID userId);
-
-  // == leaveChannel()
-  public void removeAttendeeToChannel(UUID channelId, UUID userId);
-
-  public List<UUID> findParticipantIdsByChannel(UUID channelId);
+  public List<User> findParticipantsByChannelId(UUID channelId);
 
 
 }
