@@ -14,13 +14,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-import java.util.UUID;
 
 @Tag(name = "Message", description = "Message API")
 public interface MessageApi {
@@ -29,14 +28,14 @@ public interface MessageApi {
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "201", description = "Message가 성공적으로 생성됨",
-          content = @Content(schema = @Schema(implementation = Message.class))
+          content = @Content(schema = @Schema(implementation = MessageDto.class))
       ),
       @ApiResponse(
           responseCode = "404", description = "Channel 또는 User를 찾을 수 없음",
           content = @Content(examples = @ExampleObject(value = "Channel | Author with id {channelId | authorId} not found"))
       ),
   })
-  ResponseEntity<Message> create(
+  ResponseEntity<MessageDto> create(
       @Parameter(
           description = "Message 생성 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
@@ -51,14 +50,14 @@ public interface MessageApi {
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "200", description = "Message가 성공적으로 수정됨",
-          content = @Content(schema = @Schema(implementation = Message.class))
+          content = @Content(schema = @Schema(implementation = MessageDto.class))
       ),
       @ApiResponse(
           responseCode = "404", description = "Message를 찾을 수 없음",
           content = @Content(examples = @ExampleObject(value = "Message with id {messageId} not found"))
       ),
   })
-  ResponseEntity<Message> update(
+  ResponseEntity<MessageDto> update(
       @Parameter(description = "수정할 Message ID") UUID messageId,
       @Parameter(description = "수정할 Message 내용") MessageUpdateRequest request
   );

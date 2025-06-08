@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ public class MessageController implements MessageApi {
   private final MessageService messageService;
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<Message> create(
+  public ResponseEntity<MessageDto> create(
       @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
@@ -59,16 +58,16 @@ public class MessageController implements MessageApi {
             })
             .toList())
         .orElse(new ArrayList<>());
-    Message createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
+    MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(createdMessage);
   }
 
   @PatchMapping(path = "{messageId}")
-  public ResponseEntity<Message> update(@PathVariable("messageId") UUID messageId,
+  public ResponseEntity<MessageDto> update(@PathVariable("messageId") UUID messageId,
       @RequestBody MessageUpdateRequest request) {
-    Message updatedMessage = messageService.update(messageId, request);
+    MessageDto updatedMessage = messageService.update(messageId, request);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(updatedMessage);

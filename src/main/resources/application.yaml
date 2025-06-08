@@ -14,10 +14,11 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
+        default_schema: discodeit
         format_sql: true
         highlight_sql: true
         use_sql_comments: true
