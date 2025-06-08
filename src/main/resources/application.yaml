@@ -14,7 +14,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
@@ -23,7 +23,12 @@ spring:
         use_sql_comments: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-#discodeit:
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: /path/to/storage/root
+
 #  repository:
 #    type: file   # jcf | file
 #    file-directory: .discodeit

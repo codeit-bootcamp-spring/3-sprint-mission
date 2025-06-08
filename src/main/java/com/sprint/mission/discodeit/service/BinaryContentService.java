@@ -21,5 +21,5 @@ public interface BinaryContentService {
 
   InputStream getRawData(UUID binaryContentId);
 
-  <T> ResponseEntity<T> download(BinaryContentDto dto);
+  ResponseEntity<?> download(BinaryContentDto dto);
 }

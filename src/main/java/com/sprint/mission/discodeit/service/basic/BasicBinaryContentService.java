@@ -72,7 +72,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
-  public <T> ResponseEntity<T> download(BinaryContentDto dto) {
+  public ResponseEntity<?> download(BinaryContentDto dto) {
     return binaryContentStorage.download(dto);
   }
 }
