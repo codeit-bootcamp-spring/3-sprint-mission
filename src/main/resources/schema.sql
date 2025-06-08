@@ -70,37 +70,3 @@ CREATE TABLE read_statuses (
     last_read_at TIMESTAMPTZ NOT NULL,
     UNIQUE(user_id, channel_id)
 );
-
--- -- 인덱스 생성 (성능 최적화)
--- CREATE INDEX idx_users_username ON users(username);
--- CREATE INDEX idx_users_email ON users(email);
--- CREATE INDEX idx_messages_channel_id ON messages(channel_id);
--- CREATE INDEX idx_messages_author_id ON messages(author_id);
--- CREATE INDEX idx_messages_created_at ON messages(created_at);
--- CREATE INDEX idx_read_statuses_user_channel ON read_statuses(user_id, channel_id);
--- CREATE INDEX idx_user_statuses_user_id ON user_statuses(user_id);
-
--- -- updated_at 자동 업데이트를 위한 함수
--- CREATE OR REPLACE FUNCTION update_updated_at_column()
--- RETURNS TRIGGER AS $$
--- BEGIN
---     NEW.updated_at = NOW();
---     RETURN NEW;
--- END;
--- $$ LANGUAGE plpgsql;
-
--- -- updated_at 트리거 생성
--- CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
---     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- CREATE TRIGGER update_user_statuses_updated_at BEFORE UPDATE ON user_statuses
---     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- CREATE TRIGGER update_channels_updated_at BEFORE UPDATE ON channels
---     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- CREATE TRIGGER update_messages_updated_at BEFORE UPDATE ON messages
---     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- CREATE TRIGGER update_read_statuses_updated_at BEFORE UPDATE ON read_statuses
---     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
