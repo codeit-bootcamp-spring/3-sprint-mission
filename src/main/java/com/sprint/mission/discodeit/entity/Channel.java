@@ -1,45 +1,58 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.Instant;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
 
+@Entity
+@Table(name = "channels")
 @Getter
-public class Channel implements Serializable {
+public class Channel extends BaseUpdatableEntity {
 
-  @Serial
-  private static final long serialVersionUID = 7955482681221044662L;
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-  private String description;
-  private ChannelType type;
-  private String name;
+    @Id
+    private UUID id;
 
-  public Channel(ChannelType type, String name, String description) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ChannelType type;
 
-    this.type = type;
-    this.name = name;
-    this.description = description;
-  }
+    @Column(nullable = false)
+    private String name;
 
+    private String description;
 
-  public void update(String newName, String newDescription) {
-    boolean anyValueUpdated = false;
-    if (newName != null && !newName.equals(this.name)) {
-      this.name = newName;
-      anyValueUpdated = true;
+    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReadStatus> readStatuses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "channel", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Message> messages;
+
+    public Channel(ChannelType type, String name, String description) {
+        this.id = UUID.randomUUID();
+        this.type = type;
+        this.name = name;
+        this.description = description;
     }
-    if (newDescription != null && !newDescription.equals(this.description)) {
-      this.description = newDescription;
-      anyValueUpdated = true;
+
+    public void update(String newName, String newDescription) {
+        if (newName != null) {
+            this.name = newName;
+        }
+        if (newDescription != null) {
+            this.description = newDescription;
+        }
     }
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
+
+    protected Channel() {
     }
-  }
 }

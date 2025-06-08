@@ -2,35 +2,28 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
 public class BasicAuthService implements AuthService {
 
-  private final UserRepository userRepository;
+    private static final String INVALID_CREDENTIALS = "Invalid username or password";
 
-  @Override
-  public UserResponse login(LoginRequest request) {
-    User user = userRepository.findByUsername(request.username())
-        .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    if (!user.isPasswordMatch(request.password())) {
-      throw new IllegalArgumentException("Invalid username or password");
+    @Transactional(readOnly = true)
+    @Override
+    public UserResponse login(LoginRequest request) {
+        return userRepository.findByUsername(request.username())
+            .filter(user -> user.isPasswordMatch(request.password()))
+            .map(userMapper::toResponse)
+            .orElseThrow(() -> new IllegalArgumentException(INVALID_CREDENTIALS));
     }
-
-    return new UserResponse(
-        user.getId(),
-        user.getCreatedAt(),
-        user.getUpdatedAt(),
-        user.getUsername(),
-        user.getEmail(),
-        user.getProfileId(),
-        false
-    );
-  }
 }

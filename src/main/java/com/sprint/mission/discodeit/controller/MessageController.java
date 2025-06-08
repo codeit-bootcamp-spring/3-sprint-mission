@@ -1,9 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.MessageResponse;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.util.List;
 import java.util.UUID;
@@ -31,32 +30,35 @@ public class MessageController {
   private final MessageService messageService;
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<MessageResponse> createMessage(
+  public ResponseEntity<MessageDto> createMessage(
       @RequestPart("messageCreateRequest") MessageCreateRequest messageRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
-    System.out.println("Message Controller create hit");
-    System.out.println(">> request: " + messageRequest);
-    MessageResponse response = messageService.create(
+    System.out.println("📤 Message Controller create hit");
+    System.out.println("📤 request: " + messageRequest);
+
+    MessageDto response = messageService.create(
         messageRequest,
         attachments != null ? attachments : List.of()
     );
+    System.out.println("📤 response: " + response);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
 
   @GetMapping
-  public ResponseEntity<List<Message>> getMessagesByChannel(@RequestParam UUID channelId) {
-    System.out.println("📥 [GET] /api/messages called with channelId: " + channelId);
-    List<Message> messages = messageService.findAllByChannelId(channelId);
-    System.out.println("📤 Returning messages: " + messages.size() + " items");
+  public ResponseEntity<List<MessageDto>> getMessagesByChannel(
+      @RequestParam UUID channelId,
+      @RequestParam(defaultValue = "0") int page
+  ) {
+    List<MessageDto> messages = messageService.findAllByChannelId(channelId, page);
     return ResponseEntity.ok(messages);
   }
 
 
   @PatchMapping("/{messageId}")
-  public ResponseEntity<MessageResponse> updateMessage(
+  public ResponseEntity<MessageDto> updateMessage(
       @PathVariable UUID messageId,
       @RequestBody MessageUpdateRequest request
   ) {
@@ -64,8 +66,8 @@ public class MessageController {
   }
 
   @DeleteMapping("/{messageId}")
-  public ResponseEntity<MessageResponse> deleteMessage(@PathVariable UUID messageId) {
-    MessageResponse deletedMessage = messageService.delete(messageId);
+  public ResponseEntity<MessageDto> deleteMessage(@PathVariable UUID messageId) {
+    MessageDto deletedMessage = messageService.delete(messageId);
     return ResponseEntity.ok(deletedMessage);
   }
 }
