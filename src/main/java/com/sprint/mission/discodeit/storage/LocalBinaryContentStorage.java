@@ -48,7 +48,6 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     public UUID put(UUID id, byte[] data) {
         Path file = resolvePath(id);
         try {
-            // 파일이 이미 있으면 대체(overwrite)
             Files.write(file, data);
             return id;
         } catch (IOException e) {
