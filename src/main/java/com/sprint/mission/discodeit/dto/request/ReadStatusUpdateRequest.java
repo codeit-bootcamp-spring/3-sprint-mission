@@ -1,17 +1,9 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import java.time.Instant;
 
-import java.util.UUID;
+public record ReadStatusUpdateRequest(
+    Instant newLastReadAt
+) {
 
-@Getter
-@AllArgsConstructor
-public class ReadStatusUpdateRequest {
-    @NotBlank
-    UUID userId;
-
-    @NotBlank
-    UUID channelId;
 }

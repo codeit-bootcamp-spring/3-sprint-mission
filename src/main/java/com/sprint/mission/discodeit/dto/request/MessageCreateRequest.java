@@ -1,22 +1,11 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-import java.util.List;
 import java.util.UUID;
 
-@Getter
-@AllArgsConstructor
-public class MessageCreateRequest {
-    @NotBlank
-    private UUID userId;
+public record MessageCreateRequest(
+    String content,
+    UUID channelId,
+    UUID authorId
+) {
 
-    @NotBlank
-    private UUID channelId;
-
-    private String content;
-
-    private List<BinaryContentCreateRequest> attachments;
 }

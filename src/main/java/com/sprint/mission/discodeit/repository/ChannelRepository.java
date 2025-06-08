@@ -1,17 +1,24 @@
 package com.sprint.mission.discodeit.repository;
 
-import com.sprint.mission.discodeit.dto.entity.Channel;
-
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-public interface ChannelRepository {
-    void save(Channel channel);
-    Channel loadByName(String name);
-    Channel loadById(UUID id);
-    List<Channel> loadAll();
-    Channel update(UUID id, String name);
-    void join(UUID userId, UUID channelId);
-    void leave(UUID userId, UUID channelId);
-    void delete(UUID id);
+public interface ChannelRepository extends JpaRepository<Channel, UUID> {
+
+  @Query("""
+      SELECT DISTINCT c
+        FROM Channel c
+   LEFT JOIN c.readStatuses rs
+       WHERE c.type = :publicType
+          OR rs.user.id = :userId
+      """)
+  List<Channel> findAllAccessible(
+      @Param("publicType") ChannelType publicType,
+      @Param("userId") UUID userId
+  );
 }
