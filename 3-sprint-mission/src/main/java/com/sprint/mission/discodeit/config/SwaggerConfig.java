@@ -4,7 +4,9 @@ import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.servers.Server;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
+@Configuration
 @OpenAPIDefinition(
         info = @Info(title = "Discodeit API 문서"
                 , description = "Discodeit 프로젝트의 Swagger API 문서입니다."
@@ -14,8 +16,6 @@ import org.springframework.context.annotation.Configuration;
                 , description = "로컬 서버"
         )
 )
-
-@Configuration
 public class SwaggerConfig {
 
 }

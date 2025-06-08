@@ -1,28 +1,31 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.*;
 
-import java.io.Serializable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Getter
 @ToString
-public class UserStatus implements Serializable {
-    private final UUID id;
-    private final UUID userId;
+@Table(name = "user_statuses", schema = "discodeit")
+@Entity
+@NoArgsConstructor(force = true)
+public class UserStatus extends BaseUpdatableEntity {
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", unique = true)
+    private User user;
+
+    @Column(name = "last_active_at")
     private Instant lastActiveAt;
-    private final Instant createdAt;
-    private Instant updatedAt;
 
     @Builder
-    public UserStatus(UUID userId, Instant lastActiveAt) {
-        this.id = UUID.randomUUID();
-        this.userId = userId;
+    public UserStatus(User user, Instant lastActiveAt) {
+        this.user = user;
         this.lastActiveAt = lastActiveAt;
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
     }
 
     public void update(Instant lastActiveAt) {
