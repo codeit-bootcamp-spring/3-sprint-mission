@@ -1,24 +1,26 @@
 package com.sprint.mission.discodeit.controller;
 
-import static com.sprint.mission.discodeit.controller.Converter.resolveBinaryContentRequest;
-
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.MessageUpdateRequest;
-import com.sprint.mission.discodeit.entitiy.Message;
+import com.sprint.mission.discodeit.controller.api.MessageApi;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.respond.PageResponse;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,73 +36,67 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-@RestController
-@RequestMapping("/api")
 @RequiredArgsConstructor
-@Tag(name = "Message", description = "MessageAPI")
-public class MessageController {
+@RestController
+@RequestMapping("/api/messages")
+public class MessageController implements MessageApi {
 
   private final MessageService messageService;
+  private final PageResponseMapper pageResponseMapper;
 
-
-  @Operation(summary = "Message 생성")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음", content = @Content(schema = @Schema(example = "Channel | Author with id {channelId | authorId} not found"))),
-      @ApiResponse(responseCode = "201", description = "Message가 성공적으로 생성됨", content = @Content(schema = @Schema(implementation = Message.class)))
-  })
-  @PostMapping(value = "/messages", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<Message> create_2(
-      @RequestPart("messageCreateRequest") MessageCreateRequest request,
-      @RequestPart(value = "attachments", required = false) List<MultipartFile> image) {
-    Message message;
-    if (image != null && !image.isEmpty()) {
-      Optional<List<BinaryContentCreateRequest>> imageRequest = Optional.of(
-          resolveBinaryContentRequest(image));
-      message = messageService.create(request, imageRequest);
-    } else {
-      message = messageService.create(request, Optional.empty());
-    }
-    return ResponseEntity.status(HttpStatus.CREATED).body(message);
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<MessageDto> create(
+      @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
+      @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
+  ) {
+    List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
+        .map(files -> files.stream()
+            .map(file -> {
+              try {
+                return new BinaryContentCreateRequest(
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getBytes()
+                );
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+            })
+            .toList())
+        .orElse(new ArrayList<>());
+    MessageDto createdMessageDto = messageService.create(messageCreateRequest, attachmentRequests);
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(createdMessageDto);
   }
 
-  @Operation(summary = "Channel의 Message 목록 조회")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Message.class))))
-  })
-  @Parameter(name = "channelId", description = "조회할 Channel ID", required = true, schema = @Schema(type = "string", format = "uuid"))
-  @GetMapping("/messages")
-  public ResponseEntity<List<Message>> findAllByChannelId(@RequestParam UUID channelId) {
-    List<Message> allByChannelId = messageService.findAllByChannelId(channelId);
-    return ResponseEntity.status(HttpStatus.OK).body(allByChannelId);
-  }
-
-  @Operation(summary = "Message 내용 수정")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Message가 성공적으로 수정됨", content = @Content(schema = @Schema(implementation = Message.class))),
-      @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음", content = @Content(schema = @Schema(example = "Message with id {messageId} not found"))),
-  })
-  @Parameter(name = "messageId", description = "수정할 messageID", required = true, schema = @Schema(type = "string", format = "uuid"))
-  @PatchMapping(value = "/messages/{messageId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> updateMessage(
-      @PathVariable UUID messageId,
+  @PatchMapping(path = "{messageId}")
+  public ResponseEntity<MessageDto> update(@PathVariable("messageId") UUID messageId,
       @RequestBody MessageUpdateRequest request) {
-
-    messageService.update(messageId, request, Optional.empty());
-    return ResponseEntity.status(HttpStatus.CREATED).body("변경완료!");
+    MessageDto updatedMessageDto = messageService.update(messageId, request);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(updatedMessageDto);
   }
 
-
-  @Operation(summary = "Message 삭제")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "204", description = "Message가 성공적으로 삭제됨"),
-      @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음", content = @Content(schema = @Schema(example = "Message with id {messageId} not found"))),
-  })
-  @Parameter(name = "messageId", description = "삭제할 Message ID", required = true, schema = @Schema(type = "string", format = "uuid"))
-  @DeleteMapping("/messages/{messageId}")
-  public ResponseEntity<String> deleteMessage(@PathVariable UUID messageId) {
+  @DeleteMapping(path = "{messageId}")
+  public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
     messageService.delete(messageId);
-    return ResponseEntity.status(HttpStatus.OK).body("삭제 완료!");
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
   }
 
+  @GetMapping
+  public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
+      @RequestParam("channelId") UUID channelId,
+      @RequestParam(name = "cursor", required = false) Instant cursor,
+      @PageableDefault(page = 0, size = 50, sort = "createdAt", direction = Direction.DESC) Pageable pageable) {
+    PageResponse<MessageDto> pageResponse = messageService.findAllByChannelId(channelId, cursor,
+        pageable);
 
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(pageResponse);
+  }
 }
