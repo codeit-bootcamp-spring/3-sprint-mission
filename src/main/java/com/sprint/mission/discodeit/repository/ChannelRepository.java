@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.repository;
 
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.Channel;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ChannelRepository extends JpaRepository<User, UUID> {
+public interface ChannelRepository extends JpaRepository<Channel, UUID> {
 
 //    /* CrudRepository의 기본 메소드 */
 //  public Channel save(Channel channel);

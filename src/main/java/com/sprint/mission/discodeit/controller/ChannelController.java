@@ -2,10 +2,9 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ChannelApi;
 import com.sprint.mission.discodeit.dto.ChannelDto;
-import com.sprint.mission.discodeit.dto.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.UUID;
@@ -32,40 +31,40 @@ public class ChannelController implements ChannelApi {
   /* 공개 채널 생성 */
   @PostMapping(path = "/public")
   @Override
-  public ResponseEntity<Channel> create(
+  public ResponseEntity<ChannelDto> create(
       @RequestBody PublicChannelCreateRequest publicChannelCreateRequest
   ) {
-    Channel createdChannel = channelService.create(publicChannelCreateRequest);
+    ChannelDto createdChannelDto = channelService.create(publicChannelCreateRequest);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(createdChannel);
+        .body(createdChannelDto);
   }
 
   /* 비공개 채널 생성 */
   @PostMapping(path = "/private")
   @Override
-  public ResponseEntity<Channel> create(
+  public ResponseEntity<ChannelDto> create(
       @RequestBody PrivateChannelCreateRequest privateChannelCreateRequest
   ) {
-    Channel createdChannel = channelService.create(privateChannelCreateRequest);
+    ChannelDto createdChannelDto = channelService.create(privateChannelCreateRequest);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(createdChannel);
+        .body(createdChannelDto);
   }
 
   /* 공개 채널 수정 */
   @PatchMapping(path = "/{channelId}")
   @Override
-  public ResponseEntity<Channel> update(
+  public ResponseEntity<ChannelDto> update(
       @PathVariable("channelId") UUID channelId,
       @RequestBody PublicChannelUpdateRequest publicChannelCreateRequest
 
   ) {
-    Channel updatedChannel = channelService.update(channelId,
+    ChannelDto updatedChannelDto = channelService.update(channelId,
         publicChannelCreateRequest);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(updatedChannel);
+        .body(updatedChannelDto);
   }
 
   /* 채널 삭제 */

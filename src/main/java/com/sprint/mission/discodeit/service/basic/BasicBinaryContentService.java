@@ -1,105 +1,73 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicBinaryContentService implements BinaryContentService {
-    private final BinaryContentRepository binaryContentRepository;
 
-    @Override
-    public BinaryContent create(BinaryContentCreateRequest createRequest) {
-        //TODO : 에러처리
-        BinaryContent binaryContent = new BinaryContent(
-                createRequest.fileName(),
-                (long) createRequest.bytes().length,
-                createRequest.contentType(),
-                createRequest.bytes()
-        );
+  private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
+  private final BinaryContentMapper binaryContentMapper;
 
-        return this.binaryContentRepository.save(binaryContent);
+
+  @Override
+  public BinaryContent create(BinaryContentCreateRequest createRequest) {
+    try {
+      BinaryContent binaryContent = new BinaryContent(
+          createRequest.fileName(),
+          (long) createRequest.bytes().length,
+          createRequest.contentType()
+      );
+
+      BinaryContent createdBinaryContent = this.binaryContentRepository.save(binaryContent);
+      binaryContentStorage.put(binaryContent.getId(), createRequest.bytes());
+
+      return createdBinaryContent;
+
+    } catch (Exception e) {
+      System.err.println("❌ create() 실패: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+      throw e; // 다시 던져야 정상 동작
     }
 
-    //reference : https://www.geeksforgeeks.org/java-program-to-convert-byte-array-to-image/
-    static byte[] imageToByteArray(File imageFile) {
-        System.out.println("imageFile.exists() : " + imageFile.exists());
-        try {
-            BufferedImage image = ImageIO.read(imageFile);
-            try (
-                    // 파일과 연결되는 스트림 생성
-                    ByteArrayOutputStream outStreamObj = new ByteArrayOutputStream();
-            ) {
-                ImageIO.write(image, "png", outStreamObj);
-                //Convert the image into the byte array.
-                byte[] byteArray = outStreamObj.toByteArray();
+  }
 
-                return byteArray;
-            } catch (IOException e) {
-                throw new IOException(e);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+  @Override
+  public BinaryContentDto find(UUID binaryContentId) {
+    return this.binaryContentRepository
+        .findById(binaryContentId)
+        .map(binaryContentMapper::toDto)
+        .orElseThrow(() -> new NoSuchElementException(
+            "binaryContent with id " + binaryContentId + " not found"));
+  }
 
+
+  // Reference : https://www.baeldung.com/java-filter-collection-by-list
+  @Override
+  public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
+    return this.binaryContentRepository.findAllById(binaryContentIds).stream()
+        .map(binaryContentMapper::toDto).toList();
+  }
+
+  @Override
+  public void delete(UUID binaryContentId) {
+    if (!this.binaryContentRepository.existsById(binaryContentId)) {
+      throw new NoSuchElementException("binaryContent with id " + binaryContentId + " not found");
     }
 
-    static Path byteArrayToImage(byte[] byteArray) {
-        try (
-                ByteArrayInputStream inStreambj = new ByteArrayInputStream(byteArray);
-        ) {
-            // read image from byte array
-            BufferedImage newImage = ImageIO.read(inStreambj);
-
-            Path imagePath = Paths.get(System.getProperty("user.dir", "imageOut")).resolve("outputImage" + UUID.randomUUID() + ".jpg");
-            // write output image
-            ImageIO.write(newImage, "jpg", new File(imagePath.toString()));
-
-            return imagePath;
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-
-    }
-
-    @Override
-    public BinaryContent find(UUID binaryContentId) {
-        return this.binaryContentRepository
-                .findById(binaryContentId)
-                .orElseThrow(() -> new NoSuchElementException("binaryContent with id " + binaryContentId + " not found"));
-    }
-
-
-    // Reference : https://www.baeldung.com/java-filter-collection-by-list
-    @Override
-    public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
-        return this.binaryContentRepository.findAllByIdIn(binaryContentIds);
-    }
-
-    @Override
-    public void delete(UUID binaryContentId) {
-        if (!this.binaryContentRepository.existsById(binaryContentId)) {
-            throw new NoSuchElementException("binaryContent with id " + binaryContentId + " not found");
-        }
-        
-        this.binaryContentRepository.deleteById(binaryContentId);
-    }
+    this.binaryContentRepository.deleteById(binaryContentId);
+  }
 }

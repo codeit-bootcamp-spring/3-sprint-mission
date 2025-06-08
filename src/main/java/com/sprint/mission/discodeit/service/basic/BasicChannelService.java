@@ -1,17 +1,20 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.assembler.ChannelAssembler;
 import com.sprint.mission.discodeit.dto.ChannelDto;
-import com.sprint.mission.discodeit.dto.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import java.util.ArrayList;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -20,41 +23,55 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicChannelService implements ChannelService {
 
   private final ChannelRepository channelRepository;
   private final MessageRepository messageRepository;
   private final ReadStatusRepository readStatusRepository;
+  private final UserRepository userRepository;
+
+  private final ChannelAssembler channelAssember;
 
   @Override
-  public Channel create(PublicChannelCreateRequest publicChannelCreateRequest) {
-    Channel channel = new Channel(ChannelType.PUBLIC, publicChannelCreateRequest.ownerId(),
-        publicChannelCreateRequest.name(), publicChannelCreateRequest.description());
-    return this.channelRepository.save(channel);
+  public ChannelDto create(PublicChannelCreateRequest publicChannelCreateRequest) {
+    Channel channel = new Channel(ChannelType.PUBLIC,
+        publicChannelCreateRequest.name(), publicChannelCreateRequest.description(),
+        publicChannelCreateRequest.ownerId());
+    Channel createdChannel = this.channelRepository.save(channel);
+    return channelAssember.toDtoWithParticipants(createdChannel);
   }
 
   /* User 별 ReadStatus 생성 , name과 description 생략 */
-  public Channel create(PrivateChannelCreateRequest privateCreateRequest) {
-    Channel channel = new Channel(ChannelType.PRIVATE, privateCreateRequest.ownerId(), null, null);
+  public ChannelDto create(PrivateChannelCreateRequest privateCreateRequest) {
+    Channel channel = new Channel(ChannelType.PRIVATE, null, null, privateCreateRequest.ownerId());
+
+    Channel createdChannel = this.channelRepository.save(channel);
 
     if (privateCreateRequest.ownerId() != null) {
+      User user = this.userRepository.findById(privateCreateRequest.ownerId()).orElseThrow(
+          () -> new NoSuchElementException(
+              "User with id " + privateCreateRequest.ownerId() + " not found"));
+
       this.readStatusRepository.save(
-          new ReadStatus(privateCreateRequest.ownerId(), channel.getId(), channel.getCreatedAt()));
-    }
-    /* participantIds 에 있는 유저들 ReadStatus 생성 */
-    for (UUID attendeeId : privateCreateRequest.participantIds()) {
-      this.readStatusRepository.save(
-          new ReadStatus(attendeeId, channel.getId(), channel.getCreatedAt()));
+          new ReadStatus(user, createdChannel, createdChannel.getCreatedAt()));
     }
 
-    return this.channelRepository.save(channel);
+    /* participantIds 에 있는 유저들 ReadStatus 생성 */
+    List<User> participants = this.userRepository.findAllById(
+        privateCreateRequest.participantIds());
+    for (User user : participants) {
+      this.readStatusRepository.save(
+          new ReadStatus(user, createdChannel, createdChannel.getCreatedAt()));
+    }
+    return channelAssember.toDtoWithParticipants(createdChannel);
   }
 
   @Override
   public ChannelDto find(UUID channelId) {
     return this.channelRepository
         .findById(channelId)
-        .map(this::toDto)
+        .map(channelAssember::toDtoWithParticipants)
         .orElseThrow(
             () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
   }
@@ -64,24 +81,24 @@ public class BasicChannelService implements ChannelService {
     // get private channel by userId
     List<UUID> mySubscribedChannelIds = this.readStatusRepository.findAllByUserId(userId)
         .stream()
-        .map(ReadStatus::getChannelId)
+        .map(readStatus -> {
+          return readStatus.getChannel().getId();
+        })
         .toList();
-
-    System.out.println("mySubscribedChannelIds = " + mySubscribedChannelIds);
 
     // get public + private channel
     List<ChannelDto> myChannels = this.channelRepository.findAll()
         .stream()
         .filter((channel -> channel.getType().equals(ChannelType.PUBLIC)
             || mySubscribedChannelIds.contains(channel.getId())))
-        .map(this::toDto)
+        .map(channelAssember::toDtoWithParticipants)
         .toList();
 
     return myChannels;
   }
 
   @Override
-  public Channel update(UUID channelId, PublicChannelUpdateRequest updateRequest) {
+  public ChannelDto update(UUID channelId, PublicChannelUpdateRequest updateRequest) {
     Channel channel = this.channelRepository.findById(channelId)
         .orElseThrow(
             () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
@@ -95,11 +112,10 @@ public class BasicChannelService implements ChannelService {
     /* 업데이트 후 다시 DB 저장 */
     this.channelRepository.save(channel);
 
-    Channel updatedChannel = this.channelRepository.findById(channelId)
+    return this.channelRepository.findById(channelId)
+        .map(channelAssember::toDtoWithParticipants)
         .orElseThrow(
             () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
-
-    return updatedChannel;
   }
 
   @Override
@@ -117,51 +133,15 @@ public class BasicChannelService implements ChannelService {
     this.channelRepository.deleteById(channel.getId());
   }
 
-  private ChannelDto toDto(Channel channel) {
-    List<UUID> participantIds = new ArrayList<>();
-    if (channel.getType().equals(ChannelType.PRIVATE)) {
-      participantIds = this.findParticipantIdsByChannel(channel.getId());
-    }
-
-    return new ChannelDto(channel.getId(), channel.getType(), channel.getName(),
-        channel.getDescription(), channel.getOwnerId(), participantIds, channel.getLastMessageAt());
-  }
-
-  //TODO
   @Override
-  public void addMessageToChannel(UUID channelId, UUID messageId) {
-//        Channel channel = this.find(channelId).channel();
-//        channel.addMessage(messageId);
-//        this.create(channel);
-  }
-
-  //TODO
-  @Override
-  public void addAttendeeToChannel(UUID channelId, UUID userId) {
-//        Channel channel = this.find(channelId).channel();
-//        channel.addAttendee(userId);
-//        this.create(channel);
-  }
-
-  //TODO
-  @Override
-  public void removeAttendeeToChannel(UUID channelId, UUID userId) {
-//        Channel channel = this.channelRepository
-//                .findById(channelId)
-//                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
-//        channel.removeAttendee(userId);
-//        this.create(channel);
-  }
-
-  //TODO
-  @Override
-  public List<UUID> findParticipantIdsByChannel(UUID channelId) {
+  public List<User> findParticipantsByChannelId(UUID channelId) {
+    //채널있는지 확인
     Channel channel = this.channelRepository
         .findById(channelId)
         .orElseThrow(
             () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
 
     return this.readStatusRepository.findAllByChannelId(channel.getId()).stream()
-        .map((ReadStatus::getUserId)).toList();
+        .map((ReadStatus::getUser)).toList();
   }
 }

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller.api;
 
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,7 +30,13 @@ public interface BinaryContentApi {
           content = @Content(examples = @ExampleObject(value = "BinaryContent with id {binaryContentId} not found"))
       )
   })
-  ResponseEntity<BinaryContent> find(
+  ResponseEntity<BinaryContentDto> find(
+      @Parameter(description = "조회할 첨부 파일 ID", required = true) UUID binaryContentId
+  );
+
+  /*추가!! 바이너리 파일 한개 다운로드  */
+  @Operation(summary = "첨부 파일 다운로드")
+  public ResponseEntity<?> download(
       @Parameter(description = "조회할 첨부 파일 ID", required = true) UUID binaryContentId
   );
 
@@ -41,7 +48,7 @@ public interface BinaryContentApi {
           content = @Content(array = @ArraySchema(schema = @Schema(implementation = BinaryContent.class)))
       )
   })
-  ResponseEntity<List<BinaryContent>> findAllByIdIn(
+  ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
       @Parameter(description = "조회할 첨부 파일 ID 목록", required = true) List<UUID> binaryContentIds
   );
 }

@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 
 import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
-import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import java.util.List;
 import java.util.UUID;
@@ -38,22 +38,36 @@ public class BinaryContentController implements BinaryContentApi {
   /* 바이너리 파일 한개 다운로드 */
   @GetMapping(path = "/{binaryContentId}")
   @Override
-  public ResponseEntity<BinaryContent> find(
+  public ResponseEntity<BinaryContentDto> find(
       @PathVariable("binaryContentId") UUID binaryContentId
   ) {
-    BinaryContent binaryContent = binaryContentService.find(binaryContentId);
+    BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(binaryContent);
+        .body(binaryContentDto);
   }
+
+  //FIXME. 여기서 storage에서 byte[] 가져와야하지않나?
+  /*추가!! 바이너리 파일 한개 다운로드  */
+  @GetMapping(path = "/{binaryContentId}/download")
+  @Override
+  public ResponseEntity<?> download(
+      @PathVariable("binaryContentId") UUID binaryContentId
+  ) {
+    BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(binaryContentDto);
+  }
+
 
   /* 바이너리 파일 여러개 다운로드 */
   @GetMapping
   @Override
-  public ResponseEntity<List<BinaryContent>> findAllByIdIn(
+  public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
       @RequestParam("binaryContentIds") List<UUID> binaryContentIds
   ) {
-    List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+    List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(binaryContents);

@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.ChannelDto;
-import com.sprint.mission.discodeit.dto.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,7 +29,7 @@ public interface ChannelApi {
           content = @Content(schema = @Schema(implementation = Channel.class))
       )
   })
-  ResponseEntity<Channel> create(
+  ResponseEntity<ChannelDto> create(
       @Parameter(description = "Public Channel 생성 정보", required = true) PublicChannelCreateRequest request
   );
 
@@ -41,7 +41,7 @@ public interface ChannelApi {
           content = @Content(schema = @Schema(implementation = Channel.class))
       )
   })
-  ResponseEntity<Channel> create(
+  ResponseEntity<ChannelDto> create(
       @Parameter(description = "Private Channel 생성 정보", required = true) PrivateChannelCreateRequest request
   );
 
@@ -61,7 +61,7 @@ public interface ChannelApi {
           content = @Content(examples = @ExampleObject(value = "Private channel cannot be updated"))
       )
   })
-  ResponseEntity<Channel> update(
+  ResponseEntity<ChannelDto> update(
       @Parameter(description = "수정할 Channel ID", required = true) UUID channelId,
       @Parameter(description = "수정할 Channel 정보", required = true) PublicChannelUpdateRequest request
   );

@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.MessageDto;
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,7 +35,7 @@ public interface MessageApi {
           content = @Content(examples = @ExampleObject(value = "Channel | Author with id {channelId | authorId} not found"))
       ),
   })
-  ResponseEntity<Message> create(
+  ResponseEntity<MessageDto> create(
       @Parameter(
           description = "Message 생성 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE),
@@ -57,7 +59,7 @@ public interface MessageApi {
           content = @Content(examples = @ExampleObject(value = "Message with id {messageId} not found"))
       ),
   })
-  ResponseEntity<Message> update(
+  ResponseEntity<MessageDto> update(
       @Parameter(description = "수정할 Message ID", required = true) UUID messageId,
       @Parameter(description = "수정할 Message 내용", required = true) MessageUpdateRequest request
   );
@@ -86,7 +88,10 @@ public interface MessageApi {
   })
 
     /* 특정 채널의 메시지 목록을 조회 */
-  ResponseEntity<List<Message>> findAllByChannelId(
-      @Parameter(description = "조회할 Channel ID", required = true) UUID channelId
+  ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
+      @Parameter(description = "조회할 Channel ID", required = true) UUID channelId,
+      @Parameter(description = "조회할 Channel page") int page,
+      @Parameter(description = "조회할 Channel size") int size,
+      @Parameter(description = "조회할 Channel sorts") List<String> sorts
   );
 }

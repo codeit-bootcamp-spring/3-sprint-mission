@@ -2,9 +2,9 @@ package com.sprint.mission.discodeit.controller;
 
 
 import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
-import com.sprint.mission.discodeit.dto.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.dto.ReadStatusDto;
+import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import java.util.List;
 import java.util.UUID;
@@ -30,39 +30,39 @@ public class ReadStatusController implements ReadStatusApi {
   /* 특정 채널의 메세지 수신 정보 생성 */
   @PostMapping
   @Override
-  public ResponseEntity<ReadStatus> create(
+  public ResponseEntity<ReadStatusDto> create(
       @RequestBody ReadStatusCreateRequest readStatusCreateRequest
   ) {
-    ReadStatus createdReadStatus = readStatusService.create(readStatusCreateRequest);
+    ReadStatusDto createdReadStatusDto = readStatusService.create(readStatusCreateRequest);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(createdReadStatus);
+        .body(createdReadStatusDto);
   }
 
 
   /* 특정 채널의 메세지 수신 정보 수정 */
   @PatchMapping(path = "/{readStatusId}")
   @Override
-  public ResponseEntity<ReadStatus> update(
+  public ResponseEntity<ReadStatusDto> update(
       @PathVariable("readStatusId") UUID readStatusId,
       @RequestBody ReadStatusUpdateRequest readStatusUpdateRequest
   ) {
-    ReadStatus updatedReadStatus = readStatusService.update(readStatusId,
+    ReadStatusDto updatedReadStatusDto = readStatusService.update(readStatusId,
         readStatusUpdateRequest);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(updatedReadStatus);
+        .body(updatedReadStatusDto);
   }
 
   /* 특정 사용자의 메세지 수신 정보 조회 */
   @GetMapping
   @Override
-  public ResponseEntity<List<ReadStatus>> findAllByUserId(
+  public ResponseEntity<List<ReadStatusDto>> findAllByUserId(
       @RequestParam("userId") UUID userId
   ) {
-    List<ReadStatus> ReadStatusList = readStatusService.findAllByUserId(userId);
+    List<ReadStatusDto> ReadStatusDtoList = readStatusService.findAllByUserId(userId);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(ReadStatusList);
+        .body(ReadStatusDtoList);
   }
 }
