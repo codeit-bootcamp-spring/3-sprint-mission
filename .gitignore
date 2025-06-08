@@ -16,6 +16,7 @@ build/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+*.yml
 
 ### Eclipse ###
 .apt_generated
@@ -44,3 +45,4 @@ bin/
 
 ### file
 file-data-map/
+**/resources/static/
