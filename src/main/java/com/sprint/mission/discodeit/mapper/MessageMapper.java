@@ -12,16 +12,15 @@ public class MessageMapper {
     private final BinaryContentMapper binaryContentMapper;
     private final UserMapper userMapper;
 
-    public MessageDto toDto(Message msg) {
-        if (msg == null) return null;
+    public MessageDto toDto(Message message) {
         return new MessageDto(
-            msg.getId(),
-            msg.getCreatedAt(),
-            msg.getUpdatedAt(),
-            msg.getContent(),
-            msg.getChannel().getId(),
-            userMapper.toDto(msg.getAuthor()),
-            msg.getAttachments().stream()
+            message.getId(),
+            message.getCreatedAt(),
+            message.getUpdatedAt(),
+            message.getContent(),
+            message.getChannel().getId(),
+            userMapper.toDto(message.getAuthor()),
+            message.getAttachments().stream()
                 .map(binaryContentMapper::toDto)
                 .collect(Collectors.toList())
         );

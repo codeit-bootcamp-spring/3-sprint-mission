@@ -17,12 +17,16 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,10 +90,31 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable) {
-    Slice<Message> slice = messageRepository.findAllByChannelId(channelId, pageable);
-    Slice<MessageDto> dtoSlice = slice.map(messageMapper::toDto);
-    return pageResponseMapper.fromSlice(dtoSlice);
+  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable) {
+    int size = pageable.getPageSize();
+    Pageable cursorPageable = PageRequest.of(0,size + 1, Sort.by("createdAt").descending());
+
+    Slice<Message> slice;
+    if (cursor == null) {
+      slice = messageRepository.findAllByChannelId(channelId, cursorPageable);
+    } else {
+      slice = messageRepository.findAllByChannelId(channelId, cursor, cursorPageable);
+    }
+
+    List<MessageDto> messageDtos = slice
+        .map(messageMapper::toDto)
+        .getContent();
+
+    //hasNext 계산
+    boolean hasNext = messageDtos.size() > size;
+    List<MessageDto> content = hasNext ? messageDtos.subList(0, size) : messageDtos;
+
+    //nextCursor 계산
+    Instant nextCursor = hasNext ? content.get(content.size() - 1).createdAt() : null;
+
+    Slice<MessageDto> dtoSlice = new SliceImpl<>(content, pageable, hasNext);
+
+    return pageResponseMapper.fromSlice(dtoSlice, nextCursor);
   }
 
   @Override

@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PageResponseMapper {
-    public <T> PageResponse<T> fromSlice(Slice<T> slice) {
+    public <T> PageResponse<T> fromSlice(Slice<T> slice, Object nextCursor) {
         return new PageResponse<>(
             slice.getContent(),
-            slice.getNumber(),
+            nextCursor,
             slice.getSize(),
             slice.hasNext(),
             null
@@ -19,7 +19,7 @@ public class PageResponseMapper {
     public <T> PageResponse<T> fromPage(Page<T> page) {
         return new PageResponse<>(
             page.getContent(),
-            page.getNumber(),
+            null,
             page.getSize(),
             page.hasNext(),
             page.getTotalElements()
