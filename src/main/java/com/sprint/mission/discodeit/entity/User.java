@@ -1,124 +1,74 @@
 package com.sprint.mission.discodeit.entity;
 
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.ConstraintMode;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
+import lombok.NoArgsConstructor;
 
-// 사용자 << 공통 필드를 가진 Base 추상화 클래스 상속
-
-// Lombok( 해당 클래스의 필드에만 적용됨 | Getter 메서드를 사용하던 시점에 비해 코드 가독성 증진 )
+@Entity
 @Getter
-@Schema(description = "사용자 정보 도메인 모델")
-public class User implements Serializable {
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "users")
+public class User extends BaseUpdatableEntity implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  // 필드 정의
-  @Schema(
-      description = "사용자 고유 식별 번호",
-      example = "550e8400-e29b-41d4-a716-446655440000",
-      type = "string",
-      format = "uuid"
-  )
-  private final UUID id;
+    // 필드 정의
+    @Column(name = "username", nullable = false, length = 50, unique = true)
+    private String username;
 
-  @Schema(
-      description = "사용자 생성 시각",
-      example = "2025-05-13T00:00:00Z",
-      type = "string",
-      format = "date-time"
-  )
-  private final Instant createdAt;
+    @Column(name = "email", nullable = false, length = 100, unique = true)
+    private String email;
 
-  @Schema(
-      description = "사용자 정보 수정 시각",
-      example = "2025-05-15T01:23:00Z",
-      type = "string",
-      format = "date-time"
-  )
-  private Instant updatedAt;
+    @Column(name = "password", nullable = false, length = 60)
+    private String password;
 
-  @Schema(
-      description = "사용자 이름",
-      example = "홍길동",
-      type = "string"
-  )
-  @NotBlank(message = "사용자 이름은 필수입니다")
-  private String username;
+    // BinaryContent 참조 ID
+    // 단방향 참조
+    @JoinColumn(name = "profile_id",
+        foreignKey = @ForeignKey(name = "fk_user_profile", value = ConstraintMode.CONSTRAINT),
+        nullable = true)
+    @OneToOne(fetch = FetchType.LAZY)
+    private BinaryContent profile;
 
+    // 양방향 참조
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserStatus status;
 
-  @Schema(
-      description = "이메일 주소",
-      example = "test@example.com",
-      type = "string",
-      format = "email"
-  )
-  @NotBlank(message = "이메일은 필수입니다")
-  @Email(message = "올바른 이메일 형식으로 작성하여 주세요")
-  private String email;
-
-  @Schema(
-      description = "비밀번호는 알파벳 대소문자, 숫자, 특수문자를 포함한 8자 이상이어야합니다",
-      example = "Qwerty12!@",
-      type = "string",
-      format = "password"
-  )
-  @NotBlank(message = "비밀번호를 입력해주세요")
-  private String password;
-
-  // BinaryContent 참조 ID
-  @Schema(
-      description = "등록 가능한 프로필 이미지의 고유 식별 번호",
-      example = "0bd1a8d0-643e-43e5-9fcb-65123987ec2a0",
-      type = "string",
-      format = "uuid",
-      nullable = true
-  )
-  private UUID profileId;
-
-  // 생성자
-  public User(String username, String email, String password, UUID profileId) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.username = username;
-    this.email = email;
-    this.password = password;
-    //
-    this.profileId = profileId;
-  }
-
-
-  // Update
-  public void update(String newUserName, String newEmail, String newPassword, UUID newProfileId) {
-    boolean updated = false;
-    if (newUserName != null && !newUserName.equals(this.username)) {
-      this.username = newUserName;
-      updated = true;
+    // 생성자
+    public User(String username, String email, String password, BinaryContent profile) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.profile = profile;
     }
-    if (newEmail != null && !newEmail.equals(this.email)) {
-      this.email = newEmail;
-      updated = true;
+
+    // Update
+    public void update(String newUserName, String newEmail, String newPassword,
+        BinaryContent newProfile) {
+        if (newUserName != null && !newUserName.equals(this.username)) {
+            this.username = newUserName;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+        }
+        this.profile = newProfile;
     }
-    if (newPassword != null && !newPassword.equals(this.password)) {
-      this.password = newPassword;
-      updated = true;
-    }
-    if (newProfileId != null && !newProfileId.equals(this.profileId)) {
-      this.profileId = newProfileId;
-      updated = true;
-    }
-    if (updated) {
-      this.updatedAt = Instant.now();
-    } else {
-      // 예외 처리
-      throw new IllegalArgumentException("No field to update");
-    }
-  }
 
 }
