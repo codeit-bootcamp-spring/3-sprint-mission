@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class MessageController {
      * 메시지 보내기
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Message> create(
+    public ResponseEntity<MessageDto> create(
             @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
@@ -59,7 +59,7 @@ public class MessageController {
                         .toList())
                 .orElse(new ArrayList<>());
 
-        Message createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
+        MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
     }
@@ -68,11 +68,11 @@ public class MessageController {
      * 메시지 수정
      */
     @PatchMapping(path = "{messageId}")
-    public ResponseEntity<Message> update(
+    public ResponseEntity<MessageDto> update(
             @PathVariable("messageId") UUID messageId,
             @RequestBody MessageUpdateRequest request
     ) {
-        Message updatedMessage = messageService.update(messageId, request);
+        MessageDto updatedMessage = messageService.update(messageId, request);
         return ResponseEntity.ok(updatedMessage);
     }
 
@@ -89,8 +89,8 @@ public class MessageController {
      * 특정 채널의 메시지 목록 조회
      */
     @GetMapping
-    public ResponseEntity<List<Message>> findAllByChannelId(@RequestParam("channelId") UUID channelId) {
-        List<Message> messages = messageService.findAllByChannelId(channelId);
+    public ResponseEntity<List<MessageDto>> findAllByChannelId(@RequestParam("channelId") UUID channelId) {
+        List<MessageDto> messages = messageService.findAllByChannelId(channelId);
         return ResponseEntity.ok(messages);
     }
 }

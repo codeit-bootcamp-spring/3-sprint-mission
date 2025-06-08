@@ -8,11 +8,15 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
 @Table(name = "binary_contents")
+@NoArgsConstructor
 public class BinaryContent extends BaseEntity {
     @Column(name = "file_name", nullable = false, length = 255)
     private String fileName;

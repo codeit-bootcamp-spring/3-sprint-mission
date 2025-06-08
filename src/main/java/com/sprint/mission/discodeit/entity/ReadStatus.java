@@ -11,6 +11,7 @@ import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import java.util.Objects;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
@@ -20,6 +21,7 @@ import lombok.Getter;
                 @UniqueConstraint(columnNames = {"user_id", "channel_id"})
         }
 )
+@NoArgsConstructor
 public class ReadStatus extends BaseUpdatableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

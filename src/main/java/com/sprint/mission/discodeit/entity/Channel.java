@@ -10,11 +10,14 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
 @Table(name = "channels")
+@NoArgsConstructor
 public class Channel extends BaseUpdatableEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 10)

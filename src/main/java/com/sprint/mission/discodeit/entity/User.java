@@ -10,10 +10,14 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Objects;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Entity
 @Table(name = "users")
+@NoArgsConstructor
 public class User extends BaseUpdatableEntity {
     @Column(name = "username", unique = true, nullable = false, length = 50)
     private String username;

@@ -10,10 +10,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
 @Table(name = "user_statuses")
+@NoArgsConstructor
 public class UserStatus extends BaseUpdatableEntity {
     @OneToOne
     @JoinColumn(name = "user_id", unique = true, nullable = false)
