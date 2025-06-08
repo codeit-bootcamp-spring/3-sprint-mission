@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -33,10 +34,11 @@ public class BasicUserService implements UserService {
   private final UserStatusRepository userStatusRepository;
   private final BinaryContentMapper binaryContentMapper;
   private final BinaryContentStorage binaryContentStorage;
+  private final UserMapper userMapper;
 
   @Override
   @Transactional
-  public User create(UserCreateRequest userCreateRequest,
+  public UserDto create(UserCreateRequest userCreateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     String username = userCreateRequest.username();
     String email = userCreateRequest.email();
@@ -70,7 +72,7 @@ public class BasicUserService implements UserService {
     UserStatus userStatus = new UserStatus(createdUser, now);
     userStatusRepository.save(userStatus);
 
-    return createdUser;
+    return userMapper.toDto(createdUser);
   }
 
   @Override
@@ -90,7 +92,7 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional
-  public User update(UUID userId, UserUpdateRequest userUpdateRequest,
+  public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
@@ -109,13 +111,13 @@ public class BasicUserService implements UserService {
           Optional.ofNullable(user.getProfile())
               .ifPresent(binaryContentRepository::delete);
 
-          BinaryContent bc = new BinaryContent(
+          BinaryContent binaryContent = new BinaryContent(
               profileRequest.fileName(),
               (long) profileRequest.bytes().length,
               profileRequest.contentType()
           );
-//          실제 바이너리 데이터는 별도의 공간에 저장하는 로직
-          return binaryContentRepository.save(bc);
+          binaryContentStorage.put(binaryContent.getId(), profileRequest.bytes());
+          return binaryContentRepository.save(binaryContent);
         })
         .orElse(user.getProfile());
 
@@ -125,7 +127,7 @@ public class BasicUserService implements UserService {
         userUpdateRequest.newPassword(),
         newProfile
     );
-    return user;
+    return userMapper.toDto(user);
   }
 
   @Override

@@ -1,3 +1,9 @@
+create schema if not exists discodeit authorization discodeit_user;
+GRANT USAGE ON SCHEMA discodeit TO discodeit_user;
+GRANT create ON SCHEMA discodeit TO discodeit_user;
+alter role discodeit_user set search_path to discodeit, public;
+set search_path to discodeit, public;
+
 -- 1. ENUM 타입 생성
 CREATE TYPE channel_type AS ENUM ('PUBLIC', 'PRIVATE');
 
@@ -7,8 +13,7 @@ CREATE TABLE binary_contents (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     file_name VARCHAR(255) NOT NULL,
     size BIGINT NOT NULL,
-    content_type VARCHAR(100) NOT NULL,
-    bytes BYTEA NOT NULL
+    content_type VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE users (

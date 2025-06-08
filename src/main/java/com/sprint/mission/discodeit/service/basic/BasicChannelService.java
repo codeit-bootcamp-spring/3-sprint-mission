@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -28,21 +29,23 @@ public class BasicChannelService implements ChannelService {
 
   private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
+  private final ChannelMapper channelMapper;
   private final UserMapper userMapper;
 
   @Override
   @Transactional
-  public Channel create(PublicChannelCreateRequest request) {
+  public ChannelDto create(PublicChannelCreateRequest request) {
     String name = request.name();
     String description = request.description();
     Channel channel = new Channel(ChannelType.PUBLIC, name, description);
 
-    return channelRepository.save(channel);
+    channelRepository.save(channel);
+    return channelMapper.toDto(channel);
   }
 
   @Override
   @Transactional
-  public Channel create(PrivateChannelCreateRequest request) {
+  public ChannelDto create(PrivateChannelCreateRequest request) {
     Channel channel = new Channel(ChannelType.PRIVATE, null, null);
 
     request.participantIds().stream()
@@ -52,7 +55,8 @@ public class BasicChannelService implements ChannelService {
         .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
         .forEach(channel.getReadStatuses()::add);
 
-    return channelRepository.save(channel);
+    channelRepository.save(channel);
+    return channelMapper.toDto(channel);
   }
 
   @Override
@@ -74,7 +78,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional
-  public Channel update(UUID channelId, PublicChannelUpdateRequest request) {
+  public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
     String newName = request.newName();
     String newDescription = request.newDescription();
     Channel channel = channelRepository.findById(channelId)
@@ -84,7 +88,7 @@ public class BasicChannelService implements ChannelService {
       throw new IllegalArgumentException("Private channel cannot be updated");
     }
     channel.update(newName, newDescription);
-    return channel;
+    return channelMapper.toDto(channel);
   }
 
   @Override

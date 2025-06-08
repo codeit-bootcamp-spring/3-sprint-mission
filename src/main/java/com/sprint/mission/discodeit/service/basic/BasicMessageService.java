@@ -41,7 +41,7 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional
-  public Message create(
+  public MessageDto create(
       MessageCreateRequest messageCreateRequest,
       List<BinaryContentCreateRequest> binaryContentCreateRequests
   ) {
@@ -73,7 +73,9 @@ public class BasicMessageService implements MessageService {
         author,
         attachments
     );
-    return messageRepository.save(message);
+    messageRepository.save(message);
+
+    return messageMapper.toDto(message);
   }
 
   @Override
@@ -92,13 +94,13 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional
-  public Message update(UUID messageId, MessageUpdateRequest request) {
+  public MessageDto update(UUID messageId, MessageUpdateRequest request) {
     String newContent = request.newContent();
     Message message = messageRepository.findById(messageId)
         .orElseThrow(
             () -> new NoSuchElementException("Message with id " + messageId + " not found"));
     message.update(newContent);
-    return message;
+    return messageMapper.toDto(message);
   }
 
   @Override
