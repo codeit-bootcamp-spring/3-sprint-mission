@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +29,7 @@ public class BasicUserStatusService implements UserStatusService {
 
   @Override
   @Transactional
-  public UserStatus create(UserStatusCreateRequest request) {
+  public UserStatusDto create(UserStatusCreateRequest request) {
     UUID userId = request.userId();
 
     User user = userRepository.findById(userId)
@@ -39,24 +40,28 @@ public class BasicUserStatusService implements UserStatusService {
 
     Instant lastActiveAt = request.lastActiveAt();
     UserStatus userStatus = new UserStatus(user, lastActiveAt);
-    return userStatusRepository.save(userStatus);
+    userStatusRepository.save(userStatus);
+    return userStatusMapper.toDto(userStatus);
   }
 
   @Override
-  public UserStatus find(UUID userStatusId) {
-    return userStatusRepository.findById(userStatusId)
-        .orElseThrow(
-            () -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
+  public UserStatusDto find(UUID userStatusId) {
+    UserStatus userStatus =  userStatusRepository.findById(userStatusId)
+        .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
+    return userStatusMapper.toDto(userStatus);
   }
 
   @Override
-  public List<UserStatus> findAll() {
-    return userStatusRepository.findAll();
+  public List<UserStatusDto> findAll() {
+    List<UserStatus> userStatuses = userStatusRepository.findAll();
+    return userStatuses.stream()
+        .map(userStatusMapper::toDto)
+        .collect(Collectors.toList());
   }
 
   @Override
   @Transactional
-  public UserStatus update(UUID userStatusId, UserStatusUpdateRequest request) {
+  public UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request) {
     Instant newLastActiveAt = request.newLastActiveAt();
 
     UserStatus userStatus = userStatusRepository.findById(userStatusId)
@@ -64,7 +69,7 @@ public class BasicUserStatusService implements UserStatusService {
             () -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
     userStatus.update(newLastActiveAt);
 
-    return userStatus;
+    return userStatusMapper.toDto(userStatus);
   }
 
   @Override
