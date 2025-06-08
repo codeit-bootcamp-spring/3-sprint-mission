@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -42,8 +41,14 @@ public class UserController implements UserApi {
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
-    User createdUser = userService.create(userCreateRequest, profileRequest);
-    UserResponse response = ResponseMapper.toResponse(createdUser);
+    UserDto createdUser = userService.create(userCreateRequest, profileRequest);
+    UserResponse response = new UserResponse(
+        createdUser.id(),
+        null, // createdAt는 DTO에서 제거됨
+        null, // updatedAt는 DTO에서 제거됨
+        createdUser.username(),
+        createdUser.email(),
+        createdUser.profile() != null ? createdUser.profile().id() : null);
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(response);
@@ -57,8 +62,14 @@ public class UserController implements UserApi {
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
-    User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
-    UserResponse response = ResponseMapper.toResponse(updatedUser);
+    UserDto updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
+    UserResponse response = new UserResponse(
+        updatedUser.id(),
+        null, // createdAt는 DTO에서 제거됨
+        null, // updatedAt는 DTO에서 제거됨
+        updatedUser.username(),
+        updatedUser.email(),
+        updatedUser.profile() != null ? updatedUser.profile().id() : null);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(response);

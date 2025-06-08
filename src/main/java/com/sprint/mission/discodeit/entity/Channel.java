@@ -1,45 +1,48 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdateableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
+import java.util.List;
 
+@Entity
+@Table(name = "channels")
 @Getter
-public class Channel implements Serializable {
+@NoArgsConstructor
+public class Channel extends BaseUpdateableEntity {
 
-  private static final long serialVersionUID = 1L;
-  private UUID id;
-  private Instant createdAt;
-  private Instant updatedAt;
-  //
+  @Enumerated(EnumType.STRING) // PUBLIC, PRIVATE
+  @Column(name = "type", nullable = false, length = 10)
   private ChannelType type;
+
+  @Column(name = "name", length = 100)
   private String name;
+
+  @Column(name = "description", length = 500)
   private String description;
 
+  // Channel → Message 양방향 관계 (부모 → 자식)
+  @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Message> messages;
+
+  // Channel → ReadStatus 양방향 관계 (부모 → 자식)
+  @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<ReadStatus> readStatuses;
+
   public Channel(ChannelType type, String name, String description) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    //
     this.type = type;
     this.name = name;
     this.description = description;
   }
 
   public void update(String newName, String newDescription) {
-    boolean anyValueUpdated = false;
     if (newName != null && !newName.equals(this.name)) {
       this.name = newName;
-      anyValueUpdated = true;
     }
     if (newDescription != null && !newDescription.equals(this.description)) {
       this.description = newDescription;
-      anyValueUpdated = true;
-    }
-
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
     }
   }
 }

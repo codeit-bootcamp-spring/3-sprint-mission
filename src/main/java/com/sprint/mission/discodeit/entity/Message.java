@@ -1,46 +1,61 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdateableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
+@Entity
+@Table(name = "messages")
 @Getter
-public class Message implements Serializable {
+@NoArgsConstructor
+public class Message extends BaseUpdateableEntity {
 
-  private static final long serialVersionUID = 1L;
-
-  private UUID id;
-  private Instant createdAt;
-  private Instant updatedAt;
-  //
+  @Column(name = "content", columnDefinition = "TEXT")
   private String content;
-  //
-  private UUID channelId;
-  private UUID authorId;
-  private List<UUID> attachmentIds;
 
-  public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    //
+  // Message → Channel (ON DELETE CASCADE이지만 자식이므로 cascade 설정 없음)
+  @ManyToOne // Message-Channel = N:1
+  @JoinColumn(name = "channel_id", nullable = false) // Foreign Key
+  private Channel channel;
+
+  // Message → User (ON DELETE SET NULL, 독립적 관계이므로 cascade 설정 없음)
+  @ManyToOne // Message-User = N:1
+  @JoinColumn(name = "author_id") // Foreign Key
+  private User author;
+
+  // Message → MessageAttachment 양방향 관계 (부모 → 자식)
+  @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<MessageAttachment> messageAttachments = new ArrayList<>();
+
+  public Message(String content, Channel channel, User author) {
     this.content = content;
-    this.channelId = channelId;
-    this.authorId = authorId;
-    this.attachmentIds = attachmentIds;
+    this.channel = channel;
+    this.author = author;
+  }
+
+  // BinaryContent 리스트를 받아 MessageAttachment들을 자동 생성하는 생성자
+  public Message(String content, Channel channel, User author, List<BinaryContent> attachments) {
+    this.content = content;
+    this.channel = channel;
+    this.author = author;
+    this.messageAttachments = new ArrayList<>();
+
+    // BinaryContent들을 MessageAttachment로 변환하여 추가
+    if (attachments != null) {
+      for (BinaryContent attachment : attachments) {
+        MessageAttachment messageAttachment = new MessageAttachment(this, attachment);
+        this.messageAttachments.add(messageAttachment);
+      }
+    }
   }
 
   public void update(String newContent) {
-    boolean anyValueUpdated = false;
     if (newContent != null && !newContent.equals(this.content)) {
       this.content = newContent;
-      anyValueUpdated = true;
-    }
-
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
     }
   }
 }

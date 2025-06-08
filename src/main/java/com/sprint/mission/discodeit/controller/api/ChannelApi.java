@@ -24,16 +24,16 @@ public interface ChannelApi {
 
         @Operation(summary = "Public Channel 생성")
         @ApiResponses(value = {
-                        @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨", content = @Content(schema = @Schema(implementation = ChannelResponse.class)))
+                        @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨", content = @Content(schema = @Schema(implementation = ChannelDto.class)))
         })
-        ResponseEntity<ChannelResponse> create(
+        ResponseEntity<ChannelDto> create(
                         @Parameter(description = "Public Channel 생성 정보") PublicChannelCreateRequest request);
 
         @Operation(summary = "Private Channel 생성")
         @ApiResponses(value = {
-                        @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨", content = @Content(schema = @Schema(implementation = ChannelResponse.class)))
+                        @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨", content = @Content(schema = @Schema(implementation = ChannelDto.class)))
         })
-        ResponseEntity<ChannelResponse> create(
+        ResponseEntity<ChannelDto> create(
                         @Parameter(description = "Private Channel 생성 정보") PrivateChannelCreateRequest request);
 
         @Operation(summary = "Public Channel 정보 수정")
