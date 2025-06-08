@@ -8,6 +8,12 @@ discodeit:
     type: file   # jcf | file
     file-directory: .discodeit
 
+  storage:
+    type: local
+    local:
+      root-path: "./data" # ${user.dir}/data
+
+
 
 # /api-docs endpoint custom path
 springdoc:
