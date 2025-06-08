@@ -1,45 +1,39 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import java.util.List;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
-
-@Getter
-public class Channel implements Serializable {
-
-  private static final long serialVersionUID = 1L;
-  private UUID id;
-  private Instant createdAt;
-  private Instant updatedAt;
-  //
+public class Channel extends BaseUpdatableEntity {
   private ChannelType type;
   private String name;
   private String description;
 
-  public Channel(ChannelType type, String name, String description) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    //
-    this.type = type;
-    this.name = name;
-    this.description = description;
+  private List<User> participants;
+  private List<Message> messages;
+  private List<ReadStatus> readStatuses;
+
+  public Channel(ChannelType channelType, String name, String description) {
+    super();
   }
 
-  public void update(String newName, String newDescription) {
-    boolean anyValueUpdated = false;
-    if (newName != null && !newName.equals(this.name)) {
-      this.name = newName;
-      anyValueUpdated = true;
-    }
-    if (newDescription != null && !newDescription.equals(this.description)) {
-      this.description = newDescription;
-      anyValueUpdated = true;
-    }
+  public ChannelType getType() { return type; }
+  public void setType(ChannelType type) { this.type = type; }
 
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
-    }
+  public String getName() { return name; }
+  public void setName(String name) { this.name = name; }
+
+  public String getDescription() { return description; }
+  public void setDescription(String description) { this.description = description; }
+
+  public List<User> getParticipants() { return participants; }
+  public void setParticipants(List<User> participants) { this.participants = participants; }
+
+  public List<Message> getMessages() { return messages; }
+  public void setMessages(List<Message> messages) { this.messages = messages; }
+
+  public List<ReadStatus> getReadStatuses() { return readStatuses; }
+  public void setReadStatuses(List<ReadStatus> readStatuses) { this.readStatuses = readStatuses; }
+
+  public void update(String newName, String newDescription) {
   }
 }
