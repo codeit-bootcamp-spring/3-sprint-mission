@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.controller.api;
 
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -81,7 +84,8 @@ public interface MessageApi {
           content = @Content(array = @ArraySchema(schema = @Schema(implementation = Message.class)))
       )
   })
-  ResponseEntity<List<Message>> findAllByChannelId(
-      @Parameter(description = "조회할 Channel ID") UUID channelId
+  ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
+      @Parameter(description = "조회할 Channel ID") UUID channelId,
+      @Parameter(description = "페이징 정보") Pageable pageable
   );
 } 
