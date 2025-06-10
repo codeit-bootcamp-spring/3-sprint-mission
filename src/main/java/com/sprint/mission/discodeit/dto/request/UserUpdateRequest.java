@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.dto.request;
 
-public record UserUpdateRequest (
-        String username,
-        String email,
-        String password
-) {}
+public record UserUpdateRequest(
+    String newUsername,
+    String newEmail,
+    String newPassword
+) {
+
+}

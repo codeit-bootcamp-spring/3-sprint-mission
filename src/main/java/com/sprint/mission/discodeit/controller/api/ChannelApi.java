@@ -29,7 +29,7 @@ public interface ChannelApi {
           content = @Content(schema = @Schema(implementation = Channel.class))
       )
   })
-  ResponseEntity<Channel> createPublic(
+  ResponseEntity<Channel> create(
       @Parameter(description = "Public Channel 생성 정보") PublicChannelCreateRequest request
   );
 
@@ -40,7 +40,7 @@ public interface ChannelApi {
           content = @Content(schema = @Schema(implementation = Channel.class))
       )
   })
-  ResponseEntity<Channel> createPrivate(
+  ResponseEntity<Channel> create(
       @Parameter(description = "Private Channel 생성 정보") PrivateChannelCreateRequest request
   );
 
@@ -85,7 +85,7 @@ public interface ChannelApi {
           content = @Content(array = @ArraySchema(schema = @Schema(implementation = ChannelDto.class)))
       )
   })
-  ResponseEntity<List<ChannelDto>> findAllByUser(
+  ResponseEntity<List<ChannelDto>> findAll(
       @Parameter(description = "조회할 User ID") UUID userId
   );
 } 
