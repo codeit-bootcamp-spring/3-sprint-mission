@@ -2,22 +2,18 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface ReadStatusRepository {
+@Repository
+public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
 
-  ReadStatus save(ReadStatus readStatus);
+    List<ReadStatus> findAllByUser_Id(UUID userId);
 
-  Optional<ReadStatus> findById(UUID id);
+    List<ReadStatus> findAllByChannel_Id(UUID channelId);
 
-  List<ReadStatus> findAllByUserId(UUID userId);
+    boolean existsByUser_IdAndChannel_Id(UUID userId, UUID channelId);
 
-  List<ReadStatus> findAllByChannelId(UUID channelId);
-
-  boolean existsById(UUID id);
-
-  void deleteById(UUID id);
-
-  void deleteAllByChannelId(UUID channelId);
+    void deleteAllByChannel_Id(UUID channelId);
 }

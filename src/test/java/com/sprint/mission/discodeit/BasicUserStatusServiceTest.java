@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit;
 
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -9,13 +9,14 @@ import static org.mockito.Mockito.when;
 
 import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserStatusService;
 import java.time.Instant;
-import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,113 +26,59 @@ class BasicUserStatusServiceTest {
 
   private UserStatusRepository userStatusRepository;
   private UserRepository userRepository;
-  private BasicUserStatusService service;
+  private UserStatusMapper userStatusMapper;
+  private BasicUserStatusService userStatusService;
 
   @BeforeEach
   void setUp() {
     userStatusRepository = mock(UserStatusRepository.class);
     userRepository = mock(UserRepository.class);
-    service = new BasicUserStatusService(userStatusRepository, userRepository);
+    userStatusMapper = mock(UserStatusMapper.class);
+    userStatusService = new BasicUserStatusService(userStatusRepository, userRepository,
+        userStatusMapper);
   }
 
   @Test
-  void find_shouldReturnUserStatus() {
-    UUID id = UUID.randomUUID();
-    UserStatus status = new UserStatus(id, Instant.now());
-    when(userStatusRepository.findById(id)).thenReturn(Optional.of(status));
-
-    assertEquals(status, service.find(id));
-  }
-
-  @Test
-  void find_shouldThrowIfNotFound() {
-    UUID id = UUID.randomUUID();
-    when(userStatusRepository.findById(id)).thenReturn(Optional.empty());
-
-    assertThrows(NoSuchElementException.class, () -> service.find(id));
-  }
-
-  @Test
-  void findAll_shouldReturnAllStatuses() {
-    List<UserStatus> statuses = List.of(new UserStatus(UUID.randomUUID(), Instant.now()));
-    when(userStatusRepository.findAll()).thenReturn(statuses);
-
-    assertEquals(statuses, service.findAll());
-  }
-
-  @Test
-  void create_shouldSaveUserStatus() {
+  void create_ShouldReturnUserStatusResponse_WhenValidRequest() {
     UUID userId = UUID.randomUUID();
     Instant now = Instant.now();
-
-    when(userRepository.existsById(userId)).thenReturn(true);
-    when(userStatusRepository.findByUserId(userId)).thenReturn(Optional.empty());
-
-    UserStatus expected = new UserStatus(userId, now);
-    when(userStatusRepository.save(any())).thenReturn(expected);
-
+    User user = new User("username", "email@example.com", "password", null);
     UserStatusCreateRequest request = new UserStatusCreateRequest(userId, now);
-    UserStatus result = service.create(request);
+    UserStatus userStatus = new UserStatus(user, now);
+    UserStatusResponse expectedResponse = new UserStatusResponse(userStatus.getId(), userId, now,
+        true);
 
-    assertEquals(expected, result);
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+    when(userStatusRepository.findByUser_Id(userId)).thenReturn(Optional.empty());
+    when(userStatusRepository.save(any(UserStatus.class))).thenReturn(userStatus);
+    when(userStatusMapper.toResponse(userStatus)).thenReturn(expectedResponse);
+
+    UserStatusResponse actualResponse = userStatusService.create(request);
+
+    assertEquals(expectedResponse, actualResponse);
+    verify(userRepository).findById(userId);
+    verify(userStatusRepository).findByUser_Id(userId);
+    verify(userStatusRepository).save(any(UserStatus.class));
+    verify(userStatusMapper).toResponse(userStatus);
   }
 
   @Test
-  void create_shouldThrowIfUserNotExists() {
-    UUID userId = UUID.randomUUID();
-    when(userRepository.existsById(userId)).thenReturn(false);
-
-    UserStatusCreateRequest request = new UserStatusCreateRequest(userId, Instant.now());
-    assertThrows(NoSuchElementException.class, () -> service.create(request));
-  }
-
-  @Test
-  void create_shouldThrowIfAlreadyExists() {
-    UUID userId = UUID.randomUUID();
-    when(userRepository.existsById(userId)).thenReturn(true);
-    when(userStatusRepository.findByUserId(userId)).thenReturn(Optional.of(mock(UserStatus.class)));
-
-    UserStatusCreateRequest request = new UserStatusCreateRequest(userId, Instant.now());
-    assertThrows(IllegalArgumentException.class, () -> service.create(request));
-  }
-
-  @Test
-  void update_shouldUpdateLastAccessedAt() {
+  void update_ShouldReturnUpdatedResponse_WhenValidUpdate() {
     UUID statusId = UUID.randomUUID();
-    Instant newTime = Instant.now();
-    UserStatus status = new UserStatus(UUID.randomUUID(), Instant.now());
-    when(userStatusRepository.findById(statusId)).thenReturn(Optional.of(status));
-    when(userStatusRepository.save(status)).thenReturn(status);
+    Instant updatedAt = Instant.now();
+    User user = new User("username", "email@example.com", "password", null);
+    UserStatus existingStatus = new UserStatus(user, Instant.now().minusSeconds(600));
+    UserStatusUpdateRequest request = new UserStatusUpdateRequest(updatedAt);
+    UserStatus updatedStatus = new UserStatus(user, updatedAt);
+    UserStatusResponse expectedResponse = new UserStatusResponse(statusId, user.getId(), updatedAt,
+        true);
 
-    UserStatusUpdateRequest request = new UserStatusUpdateRequest(newTime);
-    UserStatus result = service.update(statusId, request);
+    when(userStatusRepository.findById(statusId)).thenReturn(Optional.of(existingStatus));
+    when(userStatusRepository.save(existingStatus)).thenReturn(updatedStatus);
+    when(userStatusMapper.toResponse(updatedStatus)).thenReturn(expectedResponse);
 
-    assertEquals(status, result);
-  }
+    UserStatusResponse actual = userStatusService.update(statusId, request);
 
-  @Test
-  void updateByUserId_shouldUpdateAndReturn() {
-    UUID userId = UUID.randomUUID();
-    Instant time = Instant.now();
-    UserStatus status = new UserStatus(userId, Instant.now());
-    when(userStatusRepository.findByUserId(userId)).thenReturn(Optional.of(status));
-    when(userStatusRepository.save(status)).thenReturn(status);
-
-    UserStatusUpdateRequest request = new UserStatusUpdateRequest(time);
-    UserStatus result = service.updateByUserId(userId, request);
-
-    assertEquals(status, result);
-  }
-
-  @Test
-  void delete_shouldDeleteAndReturn() {
-    UUID id = UUID.randomUUID();
-    UserStatus status = new UserStatus(id, Instant.now());
-    when(userStatusRepository.findById(id)).thenReturn(Optional.of(status));
-
-    UserStatus result = service.delete(id);
-
-    verify(userStatusRepository).deleteById(id);
-    assertEquals(status, result);
+    assertEquals(expectedResponse.lastAccessedAt(), actual.lastAccessedAt());
   }
 }

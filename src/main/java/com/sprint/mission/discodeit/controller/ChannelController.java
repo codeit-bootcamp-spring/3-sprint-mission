@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
@@ -64,7 +63,7 @@ public class ChannelController {
   }
 
   @GetMapping
-  public ResponseEntity<List<ChannelDto>> findAllByUserId(@RequestParam UUID userId) {
+  public ResponseEntity<List<ChannelResponse>> findAllByUserId(@RequestParam UUID userId) {
     return ResponseEntity.ok(channelService.findAllByUserId(userId));
   }
 
