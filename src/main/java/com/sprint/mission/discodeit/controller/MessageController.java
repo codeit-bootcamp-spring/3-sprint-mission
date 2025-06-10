@@ -14,65 +14,67 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/messages")
 @RestController
+@RequestMapping("/api/messages")
 public class MessageController implements MessageApi {
-    private final MessageService messageService;
 
-    // 메시지 송신
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Message> create(
-            @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
-            @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
-    ) {
-        List<BinaryContentCreateRequest> binaryRequests = Optional.ofNullable(attachments)
-                .orElse(Collections.emptyList())
-                .stream()
-                .map(file -> {
-                    try {
-                        return new BinaryContentCreateRequest(
-                                file.getOriginalFilename(),
-                                file.getBytes(),
-                                file.getContentType()
-                        );
-                    } catch (IOException e) {
-                        throw new RuntimeException("파일 처리 중 오류", e);
-                    }
-                })
-                .collect(Collectors.toList());
+  private final MessageService messageService;
 
-        Message message = messageService.create(messageCreateRequest, binaryRequests);
-        return ResponseEntity.status(HttpStatus.CREATED).body(message);
-    }
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<Message> create(
+      @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
+      @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
+  ) {
+    List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
+        .map(files -> files.stream()
+            .map(file -> {
+              try {
+                return new BinaryContentCreateRequest(
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getBytes()
+                );
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+            })
+            .toList())
+        .orElse(new ArrayList<>());
+    Message createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(createdMessage);
+  }
 
-    // 메시지 수정
-    @PatchMapping("/{messageId}")
-    public ResponseEntity<Message> update(
-            @PathVariable("messageId") UUID messageId,
-            @RequestBody MessageUpdateRequest request
-    ) {
-        Message updated = messageService.update(messageId, request);
-        return ResponseEntity.status(HttpStatus.OK).body(updated);
-    }
+  @PatchMapping(path = "{messageId}")
+  public ResponseEntity<Message> update(@PathVariable("messageId") UUID messageId,
+      @RequestBody MessageUpdateRequest request) {
+    Message updatedMessage = messageService.update(messageId, request);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(updatedMessage);
+  }
 
-    // 메시지 삭제
-    @DeleteMapping("/{messageId}")
-    public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
-        messageService.delete(messageId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
+  @DeleteMapping(path = "{messageId}")
+  public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
+    messageService.delete(messageId);
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
+  }
 
-    // 특정 채널 메시지 목록 조회
-    @GetMapping
-    public ResponseEntity<List<Message>> findAllByChannelId(@RequestParam("channelId") UUID channelId) {
-        List<Message> messages = messageService.findAllByChannelId(channelId);
-        return ResponseEntity.status(HttpStatus.OK).body(messages);
-    }
+  @GetMapping
+  public ResponseEntity<List<Message>> findAllByChannelId(
+      @RequestParam("channelId") UUID channelId) {
+    List<Message> messages = messageService.findAllByChannelId(channelId);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(messages);
+  }
 }

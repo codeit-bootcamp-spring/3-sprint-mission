@@ -29,7 +29,7 @@ public interface BinaryContentApi {
           content = @Content(examples = @ExampleObject(value = "BinaryContent with id {binaryContentId} not found"))
       )
   })
-  ResponseEntity<BinaryContent> findBinaryContent(
+  ResponseEntity<BinaryContent> find(
       @Parameter(description = "조회할 첨부 파일 ID") UUID binaryContentId
   );
 
