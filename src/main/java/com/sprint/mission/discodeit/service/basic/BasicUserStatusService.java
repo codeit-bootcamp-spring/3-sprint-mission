@@ -1,79 +1,84 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class BasicUserStatusService implements UserStatusService {
 
-  private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
+    private final UserRepository userRepository;
+    private final UserStatusRepository userStatusRepository;
+    private final UserStatusMapper userStatusMapper;
 
-  public BasicUserStatusService(UserRepository userRepository,
-      UserStatusRepository userStatusRepository) {
-    this.userRepository = userRepository;
-    this.userStatusRepository = userStatusRepository;
-  }
+    @Override
+    @Transactional
+    public UserStatusDto create(UserStatusCreateRequest request) {
+        UUID userId = request.userId();
 
-  @Override
-  public UserStatus create(UserStatusCreateRequest request) {
-    UUID userId = request.userId();
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
 
-    if (userRepository.findById(userId).isEmpty()) {
-      throw new IllegalArgumentException("userStatus가 존재하지 않음");
+        if (userStatusRepository.findByUserId(userId).isPresent()) {
+            throw new IllegalStateException("userStatus가 이미 존재합니다.");
+        }
+
+        UserStatus status = new UserStatus(user, request.lastActiveAt());
+        UserStatus newUserStatus = userStatusRepository.save(status);
+
+        return userStatusMapper.toDto(newUserStatus);
     }
 
-    if (userStatusRepository.findByUserId(userId).isPresent()) {
-      throw new IllegalStateException("userStatus가 존재하지 않음");
+    @Override
+    public UserStatusDto findById(UUID id) {
+        UserStatus userStatus = userStatusRepository.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("userStatus가 존재하지 않음"));
+        return userStatusMapper.toDto(userStatus);
     }
 
-    Instant lastActiveAt = request.lastActiveAt();
-    UserStatus status = new UserStatus(userId, lastActiveAt);
-    return userStatusRepository.save(status);
-  }
+    @Override
+    @Transactional
+    public UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request) {
 
-  @Override
-  public UserStatus findById(UUID id) {
-    return userStatusRepository.find(id)
-        .orElseThrow(() -> new NoSuchElementException("userStatus가 존재하지 않음"));
-  }
+        UserStatus status = userStatusRepository.findById(userStatusId)
+            .orElseThrow(() -> new NoSuchElementException("userStatus가 존재하지 않음"));
 
-  @Override
-  public UserStatus update(UUID userStatusId, UserStatusUpdateRequest request) {
-    Instant newLastActiveAt = request.newLastActiveAt();
-
-    UserStatus status = userStatusRepository.find(userStatusId)
-        .orElseThrow(() -> new NoSuchElementException("userStatus가 존재하지 않음"));
-    status.update(newLastActiveAt);
-    return userStatusRepository.save(status);
-  }
-
-  @Override
-  public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
-    Instant newLastActiveAt = request.newLastActiveAt();
-
-    UserStatus status = userStatusRepository.findByUserId(userId)
-        .orElseThrow(() -> new NoSuchElementException("userStatus가 존재하지 않음"));
-
-    status.update(newLastActiveAt);
-    return userStatusRepository.save(status);
-  }
-
-  @Override
-  public void delete(UUID id) {
-    if (userStatusRepository.find(id).isEmpty()) {
-      throw new NoSuchElementException("userStatus가 존재하지 않음");
+        status.update(request.newLastActiveAt());
+        UserStatus updatedUserStatus = userStatusRepository.save(status);
+        return userStatusMapper.toDto(updatedUserStatus);
     }
-    userStatusRepository.delete(id);
-  }
+
+    @Override
+    @Transactional
+    public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
+
+        UserStatus status = userStatusRepository.findByUserId(userId)
+            .orElseThrow(() -> new NoSuchElementException("userStatus가 존재하지 않음"));
+
+        status.update(request.newLastActiveAt());
+        UserStatus updatedUserStatus = userStatusRepository.save(status);
+        return userStatusMapper.toDto(updatedUserStatus);
+    }
+
+    @Override
+    @Transactional
+    public void delete(UUID id) {
+        if (userStatusRepository.findById(id).isEmpty()) {
+            throw new NoSuchElementException("userStatus가 존재하지 않음");
+        }
+        userStatusRepository.deleteById(id);
+    }
 }
 

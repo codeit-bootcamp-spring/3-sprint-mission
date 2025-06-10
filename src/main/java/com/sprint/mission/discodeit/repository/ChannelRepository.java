@@ -5,29 +5,19 @@ import com.sprint.mission.discodeit.entity.Channel;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface ChannelRepository {
+@Repository
+public interface ChannelRepository extends JpaRepository<Channel, UUID> {
 
-  // 1. 채널 생성
-  Channel save(Channel channel);
+    Channel save(Channel channel);
 
-  // 2. 채널 단건 조회
-  Optional<Channel> findById(UUID channelId);
+    Optional<Channel> findById(UUID channelId);
 
-  // 3. 채널 전체 조회
-  List<Channel> findAll();
+    List<Channel> findAll();
 
-  // 4. 채널 이름 수정
-  void update(Channel channel);
+    void deleteById(UUID channelId);
 
-  // 5. 채널 삭제
-  void delete(UUID channelId);
-
-  // 6. 유저가 만든 채널 삭제
-  void deleteByOwnerId(UUID userId);
-
-  // 7. 유저가 참여 중인 모든 채널에서 삭제
-  void removeUserFromAllChannels(UUID userId);
-
-  boolean existsById(UUID id);
+    boolean existsById(UUID id);
 }

@@ -1,59 +1,51 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-
+@Entity
+@Table(name = "channels")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Channel implements Serializable {
+public class Channel extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ChannelType type;
 
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
+    @Column(length = 100)
+    private String name;
 
-  private String name;
-  private String description;
-  private User channelOwner;
-  private List<User> channelMembers;
-  private ChannelType type;
+    @Column(length = 500)
+    private String description;
 
-  public Channel(String name, String description, User channelOwner, List<User> channelUsers,
-      ChannelType type) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.updatedAt = Instant.now();
-    this.name = name;
-    this.description = description;
-    this.channelOwner = channelOwner;
-    this.channelMembers = channelUsers;
-    this.type = type;
-  }
+    public Channel(ChannelType type, String name, String description) {
+        super();
+        this.type = type;
+        this.name = name;
+        this.description = description;
+    }
 
-  public Channel(ChannelType type, String name, String description) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.type = type;
-    this.name = name;
-    this.description = description;
-  }
+    public void update(String newName, String newDescription) {
+        boolean anyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            anyValueUpdated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            anyValueUpdated = true;
+        }
 
-  public void updateChannelName(String channelName) {
-    this.name = channelName;
-    this.updatedAt = Instant.now();
-  }
-
-  @Override
-  public String toString() {
-    return "[" +
-        "createdAt= " + createdAt +
-        ", updatedAt= " + updatedAt +
-        ", channelName=" + name +
-        ", channelOwner=" + channelOwner.getUsername() +
-        ']';
-  }
+        if (anyValueUpdated) {
+            update();
+        }
+    }
 }

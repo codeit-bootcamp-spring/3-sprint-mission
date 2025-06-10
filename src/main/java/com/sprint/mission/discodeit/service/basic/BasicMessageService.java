@@ -1,190 +1,122 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
 
-  private final MessageRepository messageRepository;
-  private final UserRepository userRepository;
-  private final ChannelRepository channelRepository;
-  private final BinaryContentRepository binaryContentRepository;
+    private final MessageRepository messageRepository;
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
+    private final BinaryContentRepository binaryContentRepository;
+    private final MessageMapper messageMapper;
+    private final BinaryContentStorage binaryContentStorage;
+    private final PageResponseMapper pageResponseMapper;
 
-  private static final DateTimeFormatter DATE_FORMATTER =
-      DateTimeFormatter.ofPattern("MM월 dd일 a hh시 mm분 ss초", Locale.KOREAN)
-          .withZone(ZoneId.of("Asia/Seoul"));
+    @Override
+    @Transactional
+    public MessageDto createMessage(MessageCreateRequest messageCreateRequest,
+        List<BinaryContentCreateRequest> binaryContentCreateRequests) {
 
-  @Override
-  public Message createMessage(MessageCreateRequest messageCreateRequest,
-      List<BinaryContentCreateRequest> binaryContentCreateRequests) {
-    UUID channelId = messageCreateRequest.channelId();
-    UUID authorId = messageCreateRequest.authorId();
+        Channel channel = channelRepository.findById(messageCreateRequest.channelId())
+            .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다."));
 
-    if (!channelRepository.existsById(channelId)) {
-      throw new NoSuchElementException("해당 채널이 존재하지 않습니다.");
-    }
+        User author = userRepository.findById(messageCreateRequest.authorId())
+            .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 ID입니다."));
 
-    if (!userRepository.existsById(authorId)) {
-      throw new NoSuchElementException("존재하지 않는 유저 ID입니다.");
-    }
+        List<BinaryContent> attachmentIds = new ArrayList<>();
 
-    List<UUID> attachmentIds = new ArrayList<>();
-    if (binaryContentCreateRequests != null) {
-      for (BinaryContentCreateRequest fileRequest : binaryContentCreateRequests) {
-        if (!fileRequest.isValid()) {
-          throw new IllegalArgumentException("메세지에 첨부파일을 추가할 수 없습니다. 파일을 확인해주세요.");
+        if (binaryContentCreateRequests != null) {
+            for (BinaryContentCreateRequest fileRequest : binaryContentCreateRequests) {
+                if (!fileRequest.isValid()) {
+                    throw new IllegalArgumentException("메세지에 첨부파일을 추가할 수 없습니다. 파일을 확인해주세요.");
+                }
+                BinaryContent binaryContent = binaryContentRepository.save(
+                    new BinaryContent(fileRequest.fileName(), fileRequest.size(),
+                        fileRequest.contentType()));
+
+                binaryContentStorage.put(binaryContent.getId(), fileRequest.bytes());
+                attachmentIds.add(binaryContent);
+            }
         }
 
-        BinaryContent binaryContent = new BinaryContent(
-            fileRequest.fileName(),
-            authorId,
-            fileRequest.bytes(),
-            fileRequest.contentType()
+        Message message = new Message(
+            messageCreateRequest.content(),
+            channel,
+            author,
+            attachmentIds
         );
-        BinaryContent saved = binaryContentRepository.save(binaryContent);
-        attachmentIds.add(saved.getId());
-      }
-    }
-    /*BinaryContent(첨부파일) 객체가 자신이 속한 Message(메시지)를 참조하도록 설계했지만,
-    첨부파일 기준으로 메시지를 역으로 조회할 필요가 없다고 생각해서
-    단방향 참조로 구조를 변경하였습니다. Message가 첨부파일의 ID만 가지고 있는 구조*/
-    Message message = new Message(
-        messageCreateRequest.content(),
-        channelId,
-        authorId,
-        attachmentIds
-    );
+        Message newMessage = messageRepository.save(message);
 
-    return messageRepository.save(message);
-  }
-
-  @Override
-  public List<Message> findAllByChannelId(UUID channelId) {
-    Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
-
-    return messageRepository.findByChannelId(channelId);
-  }
-
-  @Override
-  public List<Message> getMessagesBySenderInChannel(UUID channelId, UUID senderId) {
-    Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
-    if (channel.getChannelMembers().stream().noneMatch(u -> u.getId().equals(senderId))) {
-      throw new IllegalArgumentException("해당 유저는 이 채널의 멤버가 아닙니다.");
+        return messageMapper.toDto(newMessage);
     }
 
-    return messageRepository.findByChannelId(channelId).stream()
-        .filter(m -> m.getAuthorId().equals(senderId))
-        .toList();
-  }
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable) {
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
 
-  @Override
-  public List<Message> getMessagesByReceiverInChannel(UUID channelId, UUID receiverId) {
-    Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
-    if (channel.getChannelMembers().stream().noneMatch(u -> u.getId().equals(receiverId))) {
-      throw new IllegalArgumentException("해당 유저는 이 채널의 멤버가 아닙니다.");
+        Slice<Message> slice = messageRepository.findByChannelIdOrderByCreatedAtDesc(channelId,
+            pageable);
+
+        Slice<MessageDto> mappedSlice = slice.map(messageMapper::toDto);
+
+        return pageResponseMapper.fromSlice(mappedSlice);
     }
 
-    return messageRepository.findByChannelId(channelId).stream()
-        .filter(m -> !m.getAuthorId().equals(receiverId))
-        .toList();
-  }
+    @Override
+    @Transactional
+    public MessageDto updateMessage(UUID messageId, MessageUpdateRequest request) {
+        Message msg = messageRepository.findById(messageId)
+            .orElseThrow(() -> new IllegalArgumentException("메시지를 찾을 수 없습니다."));
 
-  @Override
-  public List<Message> getAllSentMessages(UUID senderId) {
-    return messageRepository.findBySenderId(senderId);
-  }
+        msg.updateContent(request.newContent());
+        Message updatedMessage = messageRepository.save(msg);
+        return messageMapper.toDto(updatedMessage);
+    }
 
-  @Override
-  public List<Message> getAllReceivedMessages(UUID receiverId) {
-    List<UUID> myChannels = channelRepository.findAll().stream()
-        .filter(ch -> ch.getChannelMembers().stream().anyMatch(u -> u.getId().equals(receiverId)))
-        .map(Channel::getId)
-        .toList();
+    @Override
+    @Transactional
+    public void deleteMessage(UUID messageId, UUID senderId) {
+        Message msg = messageRepository.findById(messageId)
+            .orElseThrow(() -> new IllegalArgumentException("메시지를 찾을 수 없습니다."));
 
-    List<Message> received = new ArrayList<>();
-    for (UUID chId : myChannels) {
-      List<Message> messages = messageRepository.findByChannelId(chId);
-      for (Message msg : messages) {
-        if (!msg.getAuthorId().equals(receiverId)) {
-          received.add(msg);
+        if (!msg.getAuthor().getId().equals(senderId)) {
+            throw new SecurityException("해당 메시지를 삭제할 권한이 없습니다.");
         }
-      }
+
+        List<BinaryContent> attachments = msg.getAttachments();
+        for (BinaryContent attachment : attachments) {
+            binaryContentRepository.deleteById(attachment.getId());
+        }
+
+        messageRepository.deleteById(messageId);
     }
-    return received;
-  }
-
-  @Override
-  public Message updateMessage(UUID messageId, MessageUpdateRequest request) {
-    Message msg = messageRepository.findById(messageId)
-        .orElseThrow(() -> new IllegalArgumentException("메시지를 찾을 수 없습니다."));
-
-    if (!msg.getAuthorId().equals(request.senderId())) {
-      throw new SecurityException("해당 메시지를 수정할 권한이 없습니다.");
-    }
-
-    msg.updateContent(request.newContent());
-    messageRepository.save(msg);
-    return msg;
-  }
-
-  @Override
-  public void deleteMessage(UUID messageId, UUID senderId) {
-    Message msg = messageRepository.findById(messageId)
-        .orElseThrow(() -> new IllegalArgumentException("메시지를 찾을 수 없습니다."));
-    if (!msg.getAuthorId().equals(senderId)) {
-      throw new SecurityException("해당 메시지를 삭제할 권한이 없습니다.");
-    }
-
-    // BinaryContent들도 삭제
-    for (UUID attachmentId : msg.getAttachmentIds()) {
-      binaryContentRepository.delete(attachmentId);
-    }
-
-    messageRepository.delete(messageId);
-  }
-
-
-  public Optional<Message> getMessageById(UUID messageId) {
-    return messageRepository.findById(messageId);
-  }
-
-  public String formatMessage(Message message) {
-    boolean isEdited = !message.getCreatedAt().equals(message.getUpdatedAt());
-    Instant timestamp = isEdited ? message.getUpdatedAt() : message.getCreatedAt();
-
-    String formattedDate = DATE_FORMATTER.format(timestamp);
-
-    Optional<User> senderOpt = userRepository.findById(message.getAuthorId());
-    String senderName = senderOpt.map(User::getUsername).orElse("알 수 없음");
-    String senderEmail = senderOpt.map(User::getEmail).orElse("이메일 없음");
-
-    String channelName = channelRepository.findById(message.getChannelId())
-        .map(Channel::getName)
-        .orElse("알 수 없음");
-
-    return String.format("[%s] %s, 보낸사람: %s(%s), 내용: \"%s\"",
-        channelName, formattedDate, senderName, senderEmail, message.getContent());
-  }
 }

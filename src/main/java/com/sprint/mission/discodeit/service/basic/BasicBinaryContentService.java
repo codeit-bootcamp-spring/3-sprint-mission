@@ -1,60 +1,73 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import org.springframework.stereotype.Service;
-
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class BasicBinaryContentService implements BinaryContentService {
 
-  private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentMapper binaryContentMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
-  public BasicBinaryContentService(BinaryContentRepository binaryContentRepository) {
-    this.binaryContentRepository = binaryContentRepository;
-  }
+    @Override
+    @Transactional
+    public BinaryContentDto create(BinaryContentCreateRequest request, UUID userId,
+        UUID messageId) {
+        if (!request.isValid()) {
+            throw new IllegalArgumentException("유효하지 않은 파일 정보입니다.");
+        }
 
-  @Override
-  public BinaryContent create(BinaryContentCreateRequest request, UUID userId, UUID messageId) {
-    if (!request.isValid()) {
-      throw new IllegalArgumentException("유효하지 않은 파일 정보입니다.");
+        String fileName = request.fileName();
+        Long size = request.size();
+        String contentType = request.contentType();
+
+        BinaryContent newFile = binaryContentRepository.save(
+            new BinaryContent(fileName, size, contentType));
+
+        binaryContentStorage.put(newFile.getId(), request.bytes());
+
+        return binaryContentMapper.toDto(newFile);
     }
 
-    String fileName = request.fileName();
-    byte[] bytes = request.bytes();
-    String contentType = request.contentType();
-
-    BinaryContent file = (messageId != null)
-        ? new BinaryContent(fileName, userId, messageId, bytes, contentType) // 메시지 첨부파일
-        : new BinaryContent(request.fileName(), userId, bytes, contentType); // 사용자 프로필 이미지
-
-    return binaryContentRepository.save(file);
-  }
-
-  @Override
-  public Optional<BinaryContent> findById(UUID id) {
-    return binaryContentRepository.find(id);
-  }
-
-  @Override
-  public List<BinaryContent> findAllByIdIn(List<UUID> ids) { // id목록으로 조회 List<UUID> ids = List.of(id1, id2);
-    if (ids == null || ids.isEmpty()) {
-      throw new IllegalArgumentException("ID 리스트가 비어있거나 null입니다."); // 조회 결과 없음 -> 빈 리스트를 리턴 or exception throw
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<BinaryContentDto> findById(UUID id) {
+        return binaryContentRepository.findById(id)
+            .map(binaryContentMapper::toDto);
     }
 
-    return ids.stream()
-        .map(binaryContentRepository::find) // 각 Id에 대해 Optional<BinaryContent> 반환
-        .flatMap(Optional::stream) // 존재하는 것만 뽑아낸다.
-        .toList(); // List<>로
-  }
+    @Override
+    public List<BinaryContentDto> findAllByIdIn(
+        List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            throw new IllegalArgumentException(
+                "ID 리스트가 비어있거나 null입니다.");
+        }
 
-  @Override
-  public void delete(UUID id) {
-    binaryContentRepository.delete(id);
-  }
+        return ids
+            .stream()
+            .map(binaryContentRepository::findById)
+            .flatMap(Optional::stream)
+            .map(binaryContentMapper::toDto)
+            .toList();
+    }
+
+    @Override
+    @Transactional
+    public void delete(UUID id) {
+        binaryContentRepository.deleteById(id);
+    }
 }
