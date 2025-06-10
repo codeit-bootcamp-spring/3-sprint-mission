@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +20,8 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping(path = "login")
-    public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
-        User user = authService.login(loginRequest);
+    public ResponseEntity<UserDto> login(@RequestBody LoginRequest loginRequest) {
+        UserDto user = authService.login(loginRequest);
         return ResponseEntity.ok(user);
     }
 }

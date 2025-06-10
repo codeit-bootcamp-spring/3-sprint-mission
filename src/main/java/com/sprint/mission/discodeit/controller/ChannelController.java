@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
@@ -34,8 +33,8 @@ public class ChannelController {
      * 공개 채널 생성
      */
     @PostMapping(path = "public")
-    public ResponseEntity<Channel> create(@RequestBody PublicChannelCreateRequest request) {
-        Channel createdChannel = channelService.create(request);
+    public ResponseEntity<ChannelDto> create(@RequestBody PublicChannelCreateRequest request) {
+        ChannelDto createdChannel = channelService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
     }
 
@@ -43,8 +42,8 @@ public class ChannelController {
      * 비공개 채널 생성
      */
     @PostMapping(path = "private")
-    public ResponseEntity<Channel> create(@RequestBody PrivateChannelCreateRequest request) {
-        Channel createdChannel = channelService.create(request);
+    public ResponseEntity<ChannelDto> create(@RequestBody PrivateChannelCreateRequest request) {
+        ChannelDto createdChannel = channelService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
     }
 
@@ -52,11 +51,11 @@ public class ChannelController {
      * 공개 채널 정보 수정
      */
     @PatchMapping(path = "{channelId}")
-    public ResponseEntity<Channel> update(
+    public ResponseEntity<ChannelDto> update(
             @PathVariable("channelId") UUID channelId,
             @RequestBody PublicChannelUpdateRequest request
     ) {
-        Channel udpatedChannel = channelService.update(channelId, request);
+        ChannelDto udpatedChannel = channelService.update(channelId, request);
         return ResponseEntity.ok(udpatedChannel);
     }
 

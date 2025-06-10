@@ -1,29 +1,31 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-public class UserStatus implements Serializable {
-    private static final long serialVersionUID = 1L;
+@Entity
+@Table(name = "user_statuses")
+@NoArgsConstructor
+public class UserStatus extends BaseUpdatableEntity {
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true, nullable = false)
+    private User user;
 
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
-    //
-    private UUID userId;
+    @Column(name = "last_active_at", nullable = false)
     private Instant lastActiveAt;
 
-    public UserStatus(UUID userId, Instant lastActiveAt) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
-        //
-        this.userId = Objects.requireNonNull(userId, "User ID must not be null");
+    public UserStatus(User user, Instant lastActiveAt) {
+        this.user = Objects.requireNonNull(user, "User ID must not be null");
         this.lastActiveAt = Objects.requireNonNull(lastActiveAt, "Last active time must not be null");
     }
 

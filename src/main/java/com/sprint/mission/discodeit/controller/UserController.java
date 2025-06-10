@@ -1,12 +1,11 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,8 +55,8 @@ public class UserController {
      * 신규 유저 생성 요청
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<User> create(
-            @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
+    public ResponseEntity<UserDto> create(
+            @ModelAttribute UserCreateRequest userCreateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
             ) {
 
@@ -64,7 +64,7 @@ public class UserController {
                 Optional.ofNullable(profile)
                         .flatMap(this::resolveProfileRequest);
 
-        User createdUser = userService.create(userCreateRequest, profileRequest);
+        UserDto createdUser = userService.create(userCreateRequest, profileRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
@@ -75,7 +75,7 @@ public class UserController {
             path = "{userId}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    public ResponseEntity<User> update(
+    public ResponseEntity<UserDto> update(
             @PathVariable("userId") UUID userId,
             @RequestPart("userUpdateRequest") UserUpdateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profile
@@ -83,7 +83,7 @@ public class UserController {
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest);
 
-        User updatedUser = userService.update(userId, request, profileRequest);
+        UserDto updatedUser = userService.update(userId, request, profileRequest);
         return ResponseEntity.ok(updatedUser);
     }
 
@@ -108,11 +108,11 @@ public class UserController {
      * 온라인 상태(마지막 활동 시간) 업데이트
      */
     @PatchMapping(path = "{userId}/userStatus")
-    public ResponseEntity<UserStatus> updateStatus(
+    public ResponseEntity<UserStatusDto> updateStatus(
             @PathVariable("userId") UUID userId,
             @RequestBody UserStatusUpdateRequest request
     ) {
-        UserStatus updatedStatus = userStatusService.updateByUserId(userId, request);
+        UserStatusDto updatedStatus = userStatusService.updateByUserId(userId, request);
         return ResponseEntity.ok(updatedStatus);
     }
 
