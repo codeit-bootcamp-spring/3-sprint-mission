@@ -1,8 +1,39 @@
+server:
+  port: ${PORT:8080}
+  address: 0.0.0.0
+
 spring:
   application:
     name: discodeit
+  # DB 접속 정보
+  datasource:
+    url: jdbc:postgresql://localhost:5432/discodeit
+    username: discodeit_user
+    password: discodeit1234
+    driver-class-name: org.postgresql.Driver
+  profiles:
+    active: default
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+logging:
+  level:
+    # 실행되는 SQL 출력
+    org.hibernate.SQL: debug
+    # 바인딩되는 파라미터 출력
+    org.hibernate.orm.jdbc.bind: trace
 
 discodeit:
-  repository:
-    type: file   # jcf | file
-    file-directory: .discodeit
+  storage:
+    type: local
+    local:
+      root-path: ${user.dir}/data/discodeit/storage
