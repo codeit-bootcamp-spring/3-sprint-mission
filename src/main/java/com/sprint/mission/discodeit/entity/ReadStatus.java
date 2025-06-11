@@ -1,46 +1,43 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
+
+import java.time.Instant;
 
 /*사용자가 채널 별 마지막으로 메시지를 읽은 시간을 표현 하는 도메인
  * 사용자별 각 채널에 읽지 않은 메시지 확인하기
  * 메시지를 읽음 -> updatedAt 시간이 현재 시간으로*/
+
+@Entity
+@Table(name = "read_statuses")
 @Getter
-@Setter
-public class ReadStatus implements Serializable {
+public class ReadStatus extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
-  private UUID id;
-  private Instant createdAt;
-  private Instant updatedAt;
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
+    private User user;
 
-  private UUID userId;
-  private UUID channelId;
-  private Instant lastReadAt;
+    @ManyToOne
+    @JoinColumn(name = "channel_id", referencedColumnName = "id", unique = true)
+    private Channel channel;
 
-  public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    //
-    this.userId = userId;
-    this.channelId = channelId;
-    this.lastReadAt = lastReadAt;
-  }
+    @Column(nullable = false)
+    private Instant lastReadAt;
 
-
-  public void update(Instant newLastReadAt) {
-    boolean anyValueUpdated = false;
-    if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
-      this.lastReadAt = newLastReadAt;
-      anyValueUpdated = true;
+    public ReadStatus() {
     }
 
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
+    public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+        this.user = user;
+        this.channel = channel;
+        this.lastReadAt = lastReadAt;
     }
-  }
+
+    public void update(Instant newLastReadAt) {
+        if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
+            this.lastReadAt = newLastReadAt;
+        }
+    }
 }

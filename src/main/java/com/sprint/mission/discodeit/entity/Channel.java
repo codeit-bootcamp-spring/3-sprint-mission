@@ -1,46 +1,43 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 
+@Entity
+@Table(name = "channels")
 @Getter
-@Setter
-public class Channel implements Serializable {
+public class Channel extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
-  private UUID id;
-  private Instant createdAt;
-  private Instant updatedAt;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ChannelType type;
 
-  private ChannelType type;
-  private String name;
-  private String description;
+    @Column(length = 100)
+    private String name;
 
-  public Channel(ChannelType type, String name, String description) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
+    @Column(length = 500)
+    private String description;
 
-    this.type = type;
-    this.name = name;
-    this.description = description;
-  }
-
-  public void update(String newName, String newDescription) {
-    boolean anyValueUpdated = false;
-    if (newName != null && !newName.equals(this.name)) {
-      this.name = newName;
-      anyValueUpdated = true;
-    }
-    if (newDescription != null && !newDescription.equals(this.description)) {
-      this.description = newDescription;
-      anyValueUpdated = true;
+    public Channel() {
     }
 
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
+    public Channel(ChannelType type) {
+        this.type = type;
     }
-  }
+
+    public Channel(ChannelType type, String name, String description) {
+        this.type = type;
+        this.name = name;
+        this.description = description;
+    }
+
+    public void update(String newName, String newDescription) {
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+        }
+    }
 }

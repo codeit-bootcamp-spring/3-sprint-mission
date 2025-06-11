@@ -1,25 +1,24 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface ReadStatusRepository {
+@Repository
+public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
 
-  public ReadStatus save(ReadStatus readStatus);
+    public List<ReadStatus> findAllByUserId(UUID userId);
 
-  public Optional<ReadStatus> find(UUID id);
+    public void deleteAllByChannelId(UUID channelId);
 
-  public List<ReadStatus> findAllByUserId(UUID userId);
+    Optional<Object> findByUserIdAndChannelId(UUID userId, UUID channelId);
 
-  public List<ReadStatus> findAllByChannelId(UUID channelId);
-
-  public boolean existsById(UUID id);
-
-  public void deleteById(UUID id);
-
-  public void deleteAllByChannelId(UUID channelId);
-
-
+    //비공개 채널 참여자 추출
+    @EntityGraph(attributePaths = {"user"})
+    public List<ReadStatus> findAllByChannelId(UUID channelId);
 }
