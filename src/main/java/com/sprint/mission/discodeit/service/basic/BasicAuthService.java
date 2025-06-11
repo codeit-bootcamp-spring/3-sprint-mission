@@ -1,16 +1,20 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.Dto.authService.LoginRequest;
-import com.sprint.mission.discodeit.Dto.authService.LoginResponse;
+import com.sprint.mission.discodeit.dto.authService.LoginRequest;
+import com.sprint.mission.discodeit.dto.authService.LoginResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.NoSuchElementException;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic fileName       : BasicAuthService
@@ -23,41 +27,41 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service("basicAuthService")
 public class BasicAuthService implements AuthService {
-
-    private final UserRepository userRepository;
-
+    private final JpaUserRepository userRepository;
 
     public LoginResponse login(LoginRequest request) {
 
         String username = request.username();
         String password = request.password();
 
-        List<User> users = userRepository.findAllUsers();
-        List<User> selectedUser = users.stream().filter(user -> user.getUsername().equals(username)).toList();
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new NoSuchElementException("User with username " + username + " not found"));
 
-        if (selectedUser.isEmpty()) {
-            throw new RuntimeException("User with username " + username + " not found");
-//            return ResponseEntity.status(404).body("User with username " + username + " not found");
+        BinaryContent profile = user.getProfile();
+        JpaBinaryContentResponse profileDto = null;
+        if(profile != null) {
+            profileDto = new JpaBinaryContentResponse(
+                    profile.getId(),
+                    profile.getFileName(),
+                    profile.getSize(),
+                    profile.getContentType()
+            );
         }
 
-        if ((selectedUser.size() == 1) && (selectedUser.get(0).getPassword().equals(password))) {
-
+        if(user.getPassword().equals(password)) {
             LoginResponse loginResponse = new LoginResponse(
-                    selectedUser.get(0).getId(),
-                    selectedUser.get(0).getCreatedAt(),
-                    selectedUser.get(0).getUpdatedAt(),
-                    selectedUser.get(0).getUsername(),
-                    selectedUser.get(0).getEmail(),
-                    selectedUser.get(0).getPassword(),
-                    selectedUser.get(0).getProfileId()
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    profileDto,
+                    isOnline(user.getStatus())
             );
             return loginResponse;
         }
-        if (selectedUser.size() >= 2) {
-            throw new IllegalArgumentException("USERNAME IS NOT UNIQUE I AM IN TROUBLE!!!");
-        }
         throw new IllegalArgumentException("wrong password");
-
     }
-
+    
+    private static boolean isOnline(UserStatus userStatus) {
+        Instant now = Instant.now();
+        return Duration.between(userStatus.getLastActiveAt(), now).toMinutes() < 5;
+    }
 }

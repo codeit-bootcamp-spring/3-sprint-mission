@@ -17,6 +17,7 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 17.        doungukkim       최초 생성
  */
+// 사용 안함
 public interface MessageRepository {
     Message createMessageWithContent(UUID senderId, UUID channelId, String content);
 

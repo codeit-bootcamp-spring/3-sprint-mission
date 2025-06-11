@@ -17,6 +17,7 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 4. 23.        doungukkim       최초 생성
  */
+// 사용 안함
 // 채널별로 객체 생성
 public interface ReadStatusRepository {
 

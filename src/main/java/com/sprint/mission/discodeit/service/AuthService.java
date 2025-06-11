@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.Dto.authService.LoginRequest;
-import com.sprint.mission.discodeit.Dto.authService.LoginResponse;
-import org.springframework.http.ResponseEntity;
+import com.sprint.mission.discodeit.dto.authService.LoginRequest;
+import com.sprint.mission.discodeit.dto.authService.LoginResponse;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic
@@ -16,8 +15,6 @@ import org.springframework.http.ResponseEntity;
  * 2025. 4. 25.        doungukkim       최초 생성
  */
 public interface AuthService {
-
-//    ResponseEntity<?> login(LoginRequest request);
     LoginResponse login(LoginRequest request);
 
 }

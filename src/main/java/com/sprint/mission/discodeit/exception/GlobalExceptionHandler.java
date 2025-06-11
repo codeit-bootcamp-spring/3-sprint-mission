@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NoSuchElementException.class) // 404
-    public ResponseEntity<?> RuntimeExceptionHandler(RuntimeException e) {
+    public ResponseEntity<?> NoSuchElementExceptionHandler(RuntimeException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 

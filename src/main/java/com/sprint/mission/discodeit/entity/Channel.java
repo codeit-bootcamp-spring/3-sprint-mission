@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -20,10 +23,19 @@ import java.util.UUID;
  */
 @Getter
 @Setter
-public class Channel extends BaseEntity implements Serializable {
+@Entity
+@Table(name = "channels", schema = "discodeit")
+public class Channel extends BaseUpdatableEntity implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final ChannelType type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 10)
+    private ChannelType type;
+
+    @Column(name = "name")
     private String name;
+
+    @Column(name = "description")
     private String description;
 
     public Channel() {
@@ -39,8 +51,4 @@ public class Channel extends BaseEntity implements Serializable {
         this.description = description;
         this.type = ChannelType.PUBLIC;
     }
-
-
-
-
 }

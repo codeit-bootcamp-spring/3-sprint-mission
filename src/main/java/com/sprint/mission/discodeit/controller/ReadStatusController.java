@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.Dto.readStatus.*;
+import com.sprint.mission.discodeit.dto.readStatus.JpaReadStatusResponse;
+import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,20 +32,18 @@ import java.util.UUID;
 public class ReadStatusController {
     private final ReadStatusService readStatusService;
 
-
     @Operation(summary = "사용자의 읽음 상태 목록 조회", description = "사용자의 읽음 상태 목록을 전체 조회 합니다.")
     @GetMapping
     public ResponseEntity<?> find(@RequestParam UUID userId) {
-        List<FindReadStatusesResponse> allByUserId = readStatusService.findAllByUserId(userId);
+        List<JpaReadStatusResponse> allByUserId = readStatusService.findAllByUserId(userId);
         return ResponseEntity.ok(allByUserId);
     }
-
 
     @Operation(summary = "사용자의 읽음 상태 생성", description = "사용자의 읽음 상태 생성 합니다.")
     @PostMapping
     public ResponseEntity<?> create(@RequestBody ReadStatusCreateRequest request) {
-        ReadStatusCreateResponse readStatusCreateResponse = readStatusService.create(request);
-        return ResponseEntity.status(201).body(readStatusCreateResponse);
+        JpaReadStatusResponse response = readStatusService.create(request);
+        return ResponseEntity.status(201).body(response);
     }
 
     @Operation(summary = "사용자의 읽음 상태 수정", description = "사용자의 읽음 상태 시간을 수정 합니다.")
@@ -51,9 +51,7 @@ public class ReadStatusController {
     public ResponseEntity<?> update(
             @PathVariable UUID readStatusId,
             @Valid @RequestBody ReadStatusUpdateRequest request) {
-        UpdateReadStatusResponse update = readStatusService.update(readStatusId, request);
+        JpaReadStatusResponse update = readStatusService.update(readStatusId, request);
         return ResponseEntity.ok(update);
-
-
     }
 }

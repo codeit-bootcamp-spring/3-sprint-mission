@@ -1,7 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -19,48 +20,54 @@ import java.util.*;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Getter
-public class Message extends BaseEntity implements Serializable {
+@Entity
+@SuperBuilder
+@NoArgsConstructor
+@ToString
+@Table(name = "messages", schema = "discodeit")
+public class Message extends BaseUpdatableEntity implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final UUID senderId;
-    private UUID channelId;
-    private List<UUID> attachmentIds;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id")
+    private User author;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id")
+    private Channel channel;
+
+
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+            name = "message_attachments",
+            joinColumns = @JoinColumn(name = "message_id"),
+            inverseJoinColumns = @JoinColumn(name = "attachment_id")
+    )
+    private List<BinaryContent> attachments;
+
+    @Column(name = "content")
     private String content;
 
-
-    public Message(UUID senderId, UUID channelId, String content) {
+    // 이미지 없음
+    public Message(User author, Channel channel, String content) {
         super();
-        this.senderId = senderId;
-        this.channelId = channelId;
-        this.content = content;
-        this.attachmentIds = new ArrayList<>();
-    }
-
-    public Message(UUID senderId, UUID channelId, List<UUID> attachmentIds) {
-        super();
-        this.senderId = senderId;
-        this.channelId = channelId;
-        this.attachmentIds = attachmentIds;
-    }
-
-    public Message(UUID senderId, UUID channelId, List<UUID> attachmentIds, String content) {
-        this.senderId = senderId;
-        this.channelId = channelId;
-        this.attachmentIds = attachmentIds;
+        this.author = author;
+        this.channel = channel;
         this.content = content;
     }
 
-    public void setAttachmentIds(List<UUID> attachmentIds) {
-        this.attachmentIds = attachmentIds;
-        this.updatedAt = Instant.now();
+    // 이미지 있음
+    public Message(User author, Channel channel, String content, List<BinaryContent> attachments) {
+        super();
+        this.author = author;
+        this.channel = channel;
+        this.content = content;
+        this.attachments = attachments;
     }
 
     public void setContent(String content) {
         this.content = content;
-        this.updatedAt = Instant.now();
-    }
-
-    public void setChannelId(UUID channelId) {
-        this.channelId = channelId;
         this.updatedAt = Instant.now();
     }
 }

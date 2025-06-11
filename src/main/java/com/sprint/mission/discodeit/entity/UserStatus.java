@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.entity
@@ -21,16 +22,25 @@ import java.util.UUID;
 // 사용자 별 마지막으로 확인된 접속 시간을 표현하는 도메인 모델입니다. 사용자의 온라인 상태를 확인하기 위해 활용합니다.
 // [ ] 마지막 접속 시간을 기준으로 현재 로그인한 유저로 판단할 수 있는 메소드를 정의하세요.
     // 마지막 접속 시간이 현재 시간으로부터 5분 이내이면 현재 접속 중인 유저로 간주합니다.
-@Getter
+@Entity
+@Table(name = "user_statuses", schema = "discodeit")
 @Setter
-public class UserStatus extends BaseEntity implements Serializable {
+@Getter
+@NoArgsConstructor
+public class UserStatus extends BaseUpdatableEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final UUID userId;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    public UserStatus(UUID userId) {
+    @Column(name = "last_active_at", nullable = false)
+    private Instant lastActiveAt;
+
+    public UserStatus(User user) {
         super();
-        this.userId = userId;
+        this.user = user;
+        this.lastActiveAt = Instant.now();
     }
 
     @Override
@@ -38,13 +48,19 @@ public class UserStatus extends BaseEntity implements Serializable {
         super.setUpdatedAt(updatedAt);
     }
 
+    public void setLastActiveAt() {
+        this.lastActiveAt = Instant.now();
+    }
+
     @Override
     public String toString() {
         return "UserStatus{" +
-                "userId=" + userId +
+                "user=" + user +
+                ", lastActiveAt=" + lastActiveAt +
+                ", updatedAt(updatable)=" + updatedAt +
+                ", id=" + id +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", id=" + id +
-                "} " + super.toString();
+                '}';
     }
 }

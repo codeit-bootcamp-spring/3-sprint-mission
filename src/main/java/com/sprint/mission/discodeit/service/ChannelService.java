@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.Dto.channel.*;
-import org.springframework.http.ResponseEntity;
+import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,15 +21,14 @@ import java.util.UUID;
  */
 public interface ChannelService {
 
-    ChannelCreateResponse createChannel(PrivateChannelCreateRequest request);
+    JpaChannelResponse createChannel(PrivateChannelCreateRequest request);
 
-    ChannelCreateResponse createChannel(PublicChannelCreateRequest request);
+    JpaChannelResponse createChannel(PublicChannelCreateRequest request);
 
-    UpdateChannelResponse update(UUID channelId, ChannelUpdateRequest request);
+    JpaChannelResponse update(UUID channelId, ChannelUpdateRequest request);
 
     boolean deleteChannel(UUID channelId);
 
-    List<ChannelsFindResponse> findAllByUserId(UUID userId);
 
-    //    ChannelFindResponse find(ChannelFindRequest request);
+    List<JpaChannelResponse> findAllByUserId(UUID userId);
 }

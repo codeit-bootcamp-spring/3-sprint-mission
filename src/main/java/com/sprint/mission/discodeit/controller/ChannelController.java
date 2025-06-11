@@ -1,20 +1,18 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.Dto.channel.*;
+import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -30,7 +28,6 @@ import java.util.UUID;
 public class ChannelController {
 
     private final ChannelService channelService;
-    private final UserService userService;
 
     @Operation(summary = "공개 채널 생성", description = "공개 채널을 생성합니다.")
     @PostMapping("/public")
@@ -55,10 +52,10 @@ public class ChannelController {
 
     @Operation(summary = "채널 정보 수정", description = "채널 정보를 수정합니다.")
     @PatchMapping("/{channelId}")
-    public ResponseEntity<?> changeName(
+    public ResponseEntity<?> update(
             @PathVariable UUID channelId,
             @Valid @RequestBody ChannelUpdateRequest request) {
-        return channelService.update(channelId, request);
+        return ResponseEntity.status(200).body(channelService.update(channelId, request));
     }
 
     @Operation(summary = "유저가 참여중인 채널 목록 조회", description = "유저가 참여중인 채널 목록을 전체 조회합니다.")

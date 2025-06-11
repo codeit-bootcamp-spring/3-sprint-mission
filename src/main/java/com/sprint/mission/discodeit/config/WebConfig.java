@@ -26,7 +26,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-//        String osName = System.getProperty("os.name").toLowerCase();
         String uploadPath;
 
         uploadPath = new File(path).getAbsolutePath();

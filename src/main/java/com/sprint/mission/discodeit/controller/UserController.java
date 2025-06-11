@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.Dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.Dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.Dto.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.Dto.userStatus.UserStatusUpdateByUserIdRequest;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.userStatus.UserStatusUpdateByUserIdRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,12 +34,12 @@ public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
 
+
     @Operation(summary = "모든 사용자 조회", description = "모든 사용자 정보를 조회합니다.")
     @GetMapping
     public ResponseEntity<?> findAll() {
         return ResponseEntity.ok(userService.findAllUsers());
     }
-
 
     @Operation(summary = "사용자 생성", description = "사용자를 생성합니다. 이미지는 옵션입니다.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -67,7 +67,6 @@ public class UserController {
         return ResponseEntity.ok(userService.update(userId, request, profileFile));
     }
 
-
     // 🗣 USER STATUS에서 가져온 메서드
     // 관심사 분리를 위해선 userStatus에서 하는게 맞지 않나? 메서드가 하나라 그냥 하는건가?
     @Operation(summary = "사용자 활동상태 수정", description = "사용자의 최근 접속시간을 수정합니다.")
@@ -77,7 +76,6 @@ public class UserController {
             @RequestBody UserStatusUpdateByUserIdRequest request) {
         return ResponseEntity.status(200).body(userStatusService.updateByUserId(userId, request.newLastActiveAt()));
     }
-
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
         if (profileFile.isEmpty()) {
