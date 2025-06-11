@@ -1,0 +1,1756 @@
+From 092549f366eb5785ebf2463785635604adb54e8a Mon Sep 17 00:00:00 2001
+From: "DESKTOP-A9J42N4\\red29" <1234wjdgusdl@gmail.com>
+Date: Thu, 15 May 2025 14:32:23 +0900
+Subject: [PATCH 1/5] =?UTF-8?q?=EB=8D=B0=EC=8A=A4=ED=81=AC=ED=86=B1=20?=
+ =?UTF-8?q?=EA=B3=A0=EC=9E=A5=EC=9C=BC=EB=A1=9C=20=EB=85=B8=ED=8A=B8?=
+ =?UTF-8?q?=EB=B6=81=EC=97=90=EC=84=9C=20=EC=83=88=EB=A1=9C=20=EC=8B=9C?=
+ =?UTF-8?q?=EC=9E=91?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ .idea/.gitignore                              | 10 -------
+ .idea/gradle.xml                              | 11 -------
+ .idea/material_theme_project_new.xml          | 10 -------
+ .idea/misc.xml                                |  4 ---
+ .idea/vcs.xml                                 |  4 +++
+ .idea/workspace.xml                           |  8 +++++
+ .../discodeit/DiscodeitApplication.java       | 29 +------------------
+ 7 files changed, 13 insertions(+), 63 deletions(-)
+ delete mode 100644 .idea/.gitignore
+ delete mode 100644 .idea/gradle.xml
+ delete mode 100644 .idea/material_theme_project_new.xml
+ delete mode 100644 .idea/misc.xml
+ create mode 100644 .idea/vcs.xml
+ create mode 100644 .idea/workspace.xml
+
+diff --git a/.idea/.gitignore b/.idea/.gitignore
+deleted file mode 100644
+index 7bc07ec..0000000
+--- a/.idea/.gitignore
++++ /dev/null
+@@ -1,10 +0,0 @@
+-# Default ignored files
+-/shelf/
+-/workspace.xml
+-# Editor-based HTTP Client requests
+-/httpRequests/
+-# Environment-dependent path to Maven home directory
+-/mavenHomeManager.xml
+-# Datasource local storage ignored files
+-/dataSources/
+-/dataSources.local.xml
+diff --git a/.idea/gradle.xml b/.idea/gradle.xml
+deleted file mode 100644
+index ac77387..0000000
+--- a/.idea/gradle.xml
++++ /dev/null
+@@ -1,11 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="GradleSettings">
+-    <option name="linkedExternalProjectsSettings">
+-      <GradleProjectSettings>
+-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+-        <option name="gradleJvm" value="17" />
+-      </GradleProjectSettings>
+-    </option>
+-  </component>
+-</project>
+\ No newline at end of file
+diff --git a/.idea/material_theme_project_new.xml b/.idea/material_theme_project_new.xml
+deleted file mode 100644
+index 6ac428a..0000000
+--- a/.idea/material_theme_project_new.xml
++++ /dev/null
+@@ -1,10 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="MaterialThemeProjectNewConfig">
+-    <option name="metadata">
+-      <MTProjectMetadataState>
+-        <option name="userId" value="6f3bf7a:196b0c6bcf4:-7ffd" />
+-      </MTProjectMetadataState>
+-    </option>
+-  </component>
+-</project>
+\ No newline at end of file
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+deleted file mode 100644
+index 6ed36dd..0000000
+--- a/.idea/misc.xml
++++ /dev/null
+@@ -1,4 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="ExternalStorageConfigurationManager" enabled="true" />
+-</project>
+\ No newline at end of file
+diff --git a/.idea/vcs.xml b/.idea/vcs.xml
+new file mode 100644
+index 0000000..d843f34
+--- /dev/null
++++ b/.idea/vcs.xml
+@@ -0,0 +1,4 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="VcsDirectoryMappings" defaultProject="true" />
++</project>
+\ No newline at end of file
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+new file mode 100644
+index 0000000..b1ec1ee
+--- /dev/null
++++ b/.idea/workspace.xml
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="PropertiesComponent">{
++  &quot;keyToString&quot;: {
++    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.language.and.region&quot;
++  }
++}</component>
++</project>
+\ No newline at end of file
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/DiscodeitApplication.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/DiscodeitApplication.java
+index ccbdd2f..eefcef9 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/DiscodeitApplication.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/DiscodeitApplication.java
+@@ -28,36 +28,9 @@ import java.util.Optional;
+ 
+ @SpringBootApplication
+ public class DiscodeitApplication {
+-	static User setupUser(UserService userService) {
+-		UserCreateRequest request = new UserCreateRequest("woody", "woody@codeit.com", "woody1234");
+-		User user = userService.create(request, Optional.empty());
+-		return user;
+-	}
+-
+-	static Channel setupChannel(ChannelService channelService) {
+-		PublicChannelCreateRequest request = new PublicChannelCreateRequest("공지", "공지 채널입니다.");
+-		Channel channel = channelService.create(request);
+-		return channel;
+-	}
+-
+-	static void messageCreateTest(MessageService messageService, Channel channel, User author) {
+-		MessageCreateRequest request = new MessageCreateRequest("안녕하세요.", channel.getId(), author.getId());
+-		Message message = messageService.create(request, new ArrayList<>());
+-		System.out.println("메시지 생성: " + message.getId());
+-	}
+ 
+ 	public static void main(String[] args) {
+ 
+-		ConfigurableApplicationContext context = SpringApplication.run(DiscodeitApplication.class, args);
+-		// 서비스 초기화
+-		UserService userService = context.getBean(UserService.class);
+-		ChannelService channelService = context.getBean(ChannelService.class);
+-		MessageService messageService = context.getBean(MessageService.class);
+-
+-		// 셋업
+-		User user = setupUser(userService);
+-		Channel channel = setupChannel(channelService);
+-		// 테스트
+-		messageCreateTest(messageService, channel, user);
++		SpringApplication.run(DiscodeitApplication.class, args);
+ 	}
+ }
+-- 
+2.48.1.windows.1
+
+
+From 31891452d581978f9cbaa8e0587463986e255c37 Mon Sep 17 00:00:00 2001
+From: "DESKTOP-A9J42N4\\red29" <1234wjdgusdl@gmail.com>
+Date: Thu, 15 May 2025 18:51:36 +0900
+Subject: [PATCH 2/5] =?UTF-8?q?5=EC=9B=94=2015=EC=9D=BC=20=EA=B0=95?=
+ =?UTF-8?q?=EC=9D=98=20=EA=B2=B0=EA=B3=BC=EB=AC=BC?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ .idea/3-sprint-mission.iml                    |   9 ++
+ .idea/compiler.xml                            |  14 ++
+ .idea/gradle.xml                              |  24 +++
+ .idea/misc.xml                                |   7 +
+ .idea/modules.xml                             |   8 +
+ .idea/vcs.xml                                 |   4 +-
+ .idea/workspace.xml                           | 132 ++++++++++++++-
+ .../discodeit/controller/AuthController.java  |  37 +++++
+ .../controller/BinaryContentController.java   |  42 +++++
+ .../controller/ChannelController.java         |  80 +++++++++
+ .../controller/MessageController.java         | 116 +++++++++++++
+ .../controller/ReadStatusController.java      |  74 +++++++++
+ .../discodeit/controller/UserController.java  | 153 ++++++++++++++++++
+ .../exception/GlobalExceptionHandler.java     |   7 +
+ 14 files changed, 702 insertions(+), 5 deletions(-)
+ create mode 100644 .idea/3-sprint-mission.iml
+ create mode 100644 .idea/compiler.xml
+ create mode 100644 .idea/gradle.xml
+ create mode 100644 .idea/misc.xml
+ create mode 100644 .idea/modules.xml
+ create mode 100644 sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/AuthController.java
+ create mode 100644 sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java
+ create mode 100644 sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ChannelController.java
+ create mode 100644 sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/MessageController.java
+ create mode 100644 sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java
+ create mode 100644 sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/UserController.java
+ create mode 100644 sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/exception/GlobalExceptionHandler.java
+
+diff --git a/.idea/3-sprint-mission.iml b/.idea/3-sprint-mission.iml
+new file mode 100644
+index 0000000..d6ebd48
+--- /dev/null
++++ b/.idea/3-sprint-mission.iml
+@@ -0,0 +1,9 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<module type="JAVA_MODULE" version="4">
++  <component name="NewModuleRootManager" inherit-compiler-output="true">
++    <exclude-output />
++    <content url="file://$MODULE_DIR$" />
++    <orderEntry type="inheritedJdk" />
++    <orderEntry type="sourceFolder" forTests="false" />
++  </component>
++</module>
+\ No newline at end of file
+diff --git a/.idea/compiler.xml b/.idea/compiler.xml
+new file mode 100644
+index 0000000..45a5655
+--- /dev/null
++++ b/.idea/compiler.xml
+@@ -0,0 +1,14 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="CompilerConfiguration">
++    <annotationProcessing>
++      <profile name="Gradle Imported" enabled="true">
++        <outputRelativeToContentRoot value="true" />
++        <processorPath useClasspath="false">
++          <entry name="$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.36/5a30490a6e14977d97d9c73c924c1f1b5311ea95/lombok-1.18.36.jar" />
++        </processorPath>
++        <module name="discodeit.main" />
++      </profile>
++    </annotationProcessing>
++  </component>
++</project>
+\ No newline at end of file
+diff --git a/.idea/gradle.xml b/.idea/gradle.xml
+new file mode 100644
+index 0000000..3c905d1
+--- /dev/null
++++ b/.idea/gradle.xml
+@@ -0,0 +1,24 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="GradleSettings">
++    <option name="linkedExternalProjectsSettings">
++      <GradleProjectSettings>
++        <option name="externalProjectPath" value="$PROJECT_DIR$/__MACOSX/sprint_mission_4_base" />
++        <option name="gradleJvm" value="17" />
++        <option name="modules">
++          <set>
++            <option value="$PROJECT_DIR$/__MACOSX/sprint_mission_4_base" />
++          </set>
++        </option>
++      </GradleProjectSettings>
++      <GradleProjectSettings>
++        <option name="externalProjectPath" value="$PROJECT_DIR$/sprint_mission_4_base" />
++        <option name="modules">
++          <set>
++            <option value="$PROJECT_DIR$/sprint_mission_4_base" />
++          </set>
++        </option>
++      </GradleProjectSettings>
++    </option>
++  </component>
++</project>
+\ No newline at end of file
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+new file mode 100644
+index 0000000..726dafd
+--- /dev/null
++++ b/.idea/misc.xml
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="ExternalStorageConfigurationManager" enabled="true" />
++  <component name="ProjectRootManager" version="2" project-jdk-name="17" project-jdk-type="JavaSDK">
++    <output url="file://$PROJECT_DIR$/out" />
++  </component>
++</project>
+\ No newline at end of file
+diff --git a/.idea/modules.xml b/.idea/modules.xml
+new file mode 100644
+index 0000000..faed2c4
+--- /dev/null
++++ b/.idea/modules.xml
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="ProjectModuleManager">
++    <modules>
++      <module fileurl="file://$PROJECT_DIR$/.idea/3-sprint-mission.iml" filepath="$PROJECT_DIR$/.idea/3-sprint-mission.iml" />
++    </modules>
++  </component>
++</project>
+\ No newline at end of file
+diff --git a/.idea/vcs.xml b/.idea/vcs.xml
+index d843f34..35eb1dd 100644
+--- a/.idea/vcs.xml
++++ b/.idea/vcs.xml
+@@ -1,4 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+-  <component name="VcsDirectoryMappings" defaultProject="true" />
++  <component name="VcsDirectoryMappings">
++    <mapping directory="" vcs="Git" />
++  </component>
+ </project>
+\ No newline at end of file
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+index b1ec1ee..4d3fa43 100644
+--- a/.idea/workspace.xml
++++ b/.idea/workspace.xml
+@@ -1,8 +1,132 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+-  <component name="PropertiesComponent">{
+-  &quot;keyToString&quot;: {
+-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.language.and.region&quot;
++  <component name="AutoImportSettings">
++    <option name="autoReloadType" value="SELECTIVE" />
++  </component>
++  <component name="ChangeListManager">
++    <list default="true" id="2129b70f-f7a7-429e-a313-315e92ddecf6" name="Changes" comment="">
++      <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/AuthController.java" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ChannelController.java" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/MessageController.java" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/UserController.java" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/exception/ExceptionController.java" afterDir="false" />
++    </list>
++    <option name="SHOW_DIALOG" value="false" />
++    <option name="HIGHLIGHT_CONFLICTS" value="true" />
++    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
++    <option name="LAST_RESOLUTION" value="IGNORE" />
++  </component>
++  <component name="ExternalProjectsData">
++    <projectState path="$PROJECT_DIR$/__MACOSX/sprint_mission_4_base">
++      <ProjectState />
++    </projectState>
++    <projectState path="$PROJECT_DIR$/sprint_mission_4_base">
++      <ProjectState />
++    </projectState>
++  </component>
++  <component name="ExternalProjectsManager">
++    <system id="GRADLE">
++      <state>
++        <task path="$PROJECT_DIR$/__MACOSX/sprint_mission_4_base">
++          <activation />
++        </task>
++        <projects_view>
++          <tree_state>
++            <expand>
++              <path>
++                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
++                <item name="sprint_mission_4_base" type="f1a62948:ProjectNode" />
++              </path>
++              <path>
++                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
++                <item name="sprint_mission_4_base" type="f1a62948:ProjectNode" />
++                <item name="Tasks" type="e4a08cd1:TasksNode" />
++              </path>
++            </expand>
++            <select />
++          </tree_state>
++        </projects_view>
++      </state>
++    </system>
++  </component>
++  <component name="FileTemplateManagerImpl">
++    <option name="RECENT_TEMPLATES">
++      <list>
++        <option value="Class" />
++      </list>
++    </option>
++  </component>
++  <component name="Git.Settings">
++    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
++  </component>
++  <component name="ProjectColorInfo"><![CDATA[{
++  "associatedIndex": 5
++}]]></component>
++  <component name="ProjectId" id="2x7QPrUDrQZmLSy0x6yjR9ts0vE" />
++  <component name="ProjectLevelVcsManager">
++    <ConfirmationsSetting value="2" id="Add" />
++  </component>
++  <component name="ProjectViewState">
++    <option name="hideEmptyMiddlePackages" value="true" />
++    <option name="showLibraryContents" value="true" />
++  </component>
++  <component name="PropertiesComponent"><![CDATA[{
++  "keyToString": {
++    "Gradle.Build sprint_mission_4_base.executor": "Run",
++    "Gradle.Download Sources.executor": "Run",
++    "RequestMappingsPanelOrder0": "0",
++    "RequestMappingsPanelOrder1": "1",
++    "RequestMappingsPanelWidth0": "75",
++    "RequestMappingsPanelWidth1": "75",
++    "RunOnceActivity.ShowReadmeOnStart": "true",
++    "RunOnceActivity.git.unshallow": "true",
++    "Spring Boot.DiscodeitApplication.executor": "Run",
++    "git-widget-placeholder": "임정현-sprint4",
++    "kotlin-language-version-configured": "true",
++    "last_opened_file_path": "C:/Users/red29/IdeaProjects/sprint_mission_4_hint",
++    "node.js.detected.package.eslint": "true",
++    "node.js.detected.package.tslint": "true",
++    "node.js.selected.package.eslint": "(autodetect)",
++    "node.js.selected.package.tslint": "(autodetect)",
++    "nodejs_package_manager_path": "npm",
++    "settings.editor.selected.configurable": "preferences.pluginManager",
++    "vue.rearranger.settings.migration": "true"
+   }
+-}</component>
++}]]></component>
++  <component name="RunManager">
++    <configuration name="DiscodeitApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
++      <module name="discodeit.main" />
++      <option name="SPRING_BOOT_MAIN_CLASS" value="com.sprint.mission.discodeit.DiscodeitApplication" />
++      <method v="2">
++        <option name="Make" enabled="true" />
++      </method>
++    </configuration>
++  </component>
++  <component name="SharedIndexes">
++    <attachedChunks>
++      <set>
++        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.26053.27" />
++        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.26053.27" />
++      </set>
++    </attachedChunks>
++  </component>
++  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
++  <component name="TaskManager">
++    <task active="true" id="Default" summary="Default task">
++      <changelist id="2129b70f-f7a7-429e-a313-315e92ddecf6" name="Changes" comment="" />
++      <created>1747286611266</created>
++      <option name="number" value="Default" />
++      <option name="presentableId" value="Default" />
++      <updated>1747286611266</updated>
++      <workItem from="1747286612509" duration="6039000" />
++    </task>
++    <servers />
++  </component>
++  <component name="TypeScriptGeneratedFilesManager">
++    <option name="version" value="3" />
++  </component>
++  <component name="XSLT-Support.FileAssociations.UIState">
++    <expand />
++    <select />
++  </component>
+ </project>
+\ No newline at end of file
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/AuthController.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/AuthController.java
+new file mode 100644
+index 0000000..4768a3d
+--- /dev/null
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/AuthController.java
+@@ -0,0 +1,37 @@
++package com.sprint.mission.discodeit.controller;
++
++import com.sprint.mission.discodeit.dto.data.UserDto;
++import com.sprint.mission.discodeit.dto.request.LoginRequest;
++import com.sprint.mission.discodeit.entity.User;
++import com.sprint.mission.discodeit.service.AuthService;
++import lombok.RequiredArgsConstructor;
++import org.springframework.http.HttpMethod;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.stereotype.Controller;
++import org.springframework.web.bind.annotation.RequestMapping;
++import org.springframework.web.bind.annotation.RequestMethod;
++import org.springframework.web.bind.annotation.ResponseBody;
++
++@RequiredArgsConstructor
++@RequestMapping("/api/auth")
++@Controller
++public class AuthController {
++
++    private final AuthService authService;
++
++
++    @RequestMapping(
++            value = "/login"
++            , method = RequestMethod.POST
++            , consumes = "application/json"        // 클라이언트가 JSON 보내고
++            , produces = "application/json"        // 서버도 JSON 응답함
++    )
++    @ResponseBody
++    public ResponseEntity<User> login(LoginRequest loginRequest) {
++
++        User loginUser = authService.login(loginRequest);
++
++        return ResponseEntity.status(HttpStatus.OK).body(loginUser);
++    }
++}
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java
+new file mode 100644
+index 0000000..6312637
+--- /dev/null
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java
+@@ -0,0 +1,42 @@
++package com.sprint.mission.discodeit.controller;
++
++import com.sprint.mission.discodeit.entity.BinaryContent;
++import com.sprint.mission.discodeit.service.BinaryContentService;
++import lombok.RequiredArgsConstructor;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.stereotype.Controller;
++import org.springframework.web.bind.annotation.RequestMapping;
++import org.springframework.web.bind.annotation.RequestMethod;
++import org.springframework.web.bind.annotation.RequestParam;
++
++import java.util.*;
++
++@RequiredArgsConstructor
++@RequestMapping("/api/binarycontent")
++@Controller
++public class BinaryContentController {
++
++    private final BinaryContentService binaryContentService;
++
++    @RequestMapping(
++            value = "/find"
++            , method = RequestMethod.GET
++    )
++    public ResponseEntity<BinaryContent> find(
++            @RequestParam UUID binaryContentId
++    ) {
++        BinaryContent binaryContent = binaryContentService.find(binaryContentId);
++        return ResponseEntity.status(HttpStatus.OK).body(binaryContent);
++    }
++
++    @RequestMapping(
++            value = "/findAll"
++            , method = RequestMethod.GET)
++    public ResponseEntity<List<BinaryContent>> findAllByIdIn(
++            @RequestParam List<UUID> binaryContentIds
++    ) {
++        List<BinaryContent> binaryContentList = binaryContentService.findAllByIdIn(binaryContentIds);
++        return ResponseEntity.status(HttpStatus.OK).body(binaryContentList);
++    }
++}
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ChannelController.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ChannelController.java
+new file mode 100644
+index 0000000..ed31c4e
+--- /dev/null
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ChannelController.java
+@@ -0,0 +1,80 @@
++package com.sprint.mission.discodeit.controller;
++
++import com.sprint.mission.discodeit.dto.data.ChannelDto;
++import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
++import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
++import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
++import com.sprint.mission.discodeit.entity.Channel;
++import com.sprint.mission.discodeit.service.ChannelService;
++import lombok.RequiredArgsConstructor;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.stereotype.Controller;
++import org.springframework.web.bind.annotation.RequestBody;
++import org.springframework.web.bind.annotation.RequestMapping;
++import org.springframework.web.bind.annotation.RequestParam;
++import org.springframework.web.bind.annotation.ResponseBody;
++
++import java.util.*;
++
++@RequiredArgsConstructor
++@RequestMapping("/api/channel")
++@Controller
++public class ChannelController {
++
++    private final ChannelService channelService;
++
++    @RequestMapping("/createPublic")
++    @ResponseBody
++    public ResponseEntity<Channel> createPublic(
++            @RequestBody PublicChannelCreateRequest publicChannelCreateRequest) {
++
++        Channel publicChannel = channelService.create(publicChannelCreateRequest);
++
++        return ResponseEntity.status(HttpStatus.CREATED).body(publicChannel);
++    }
++
++    @RequestMapping("/createPrivate")
++    @ResponseBody
++    public ResponseEntity<Channel> createPrivate(
++            @RequestBody PrivateChannelCreateRequest privateChannelCreateRequest) {
++
++        Channel privateChannel = channelService.create(privateChannelCreateRequest);
++
++        return ResponseEntity.status(HttpStatus.CREATED).body(privateChannel);
++    }
++
++    @RequestMapping("/updatePublic")
++    @ResponseBody
++    public ResponseEntity<Channel> updatePublic(
++            @RequestParam UUID channelId,
++            @RequestBody PublicChannelUpdateRequest request
++    ) {
++
++        Channel updatedPublic = channelService.update(channelId, request);
++
++        return ResponseEntity.status(HttpStatus.OK).body(updatedPublic);
++    }
++
++    @RequestMapping("/delete")
++    @ResponseBody
++    public ResponseEntity<String> delete(
++            @RequestParam UUID channelId
++    ) {
++        channelService.delete(channelId);
++
++        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("유저 정보가 삭제되었습니다.");
++    }
++
++    @RequestMapping("/findAllByUserId")
++    @ResponseBody
++    public ResponseEntity<List<ChannelDto>> findAllByUserId(
++            @RequestParam UUID userId
++    ) {
++        List<ChannelDto> channelList = channelService.findAllByUserId(userId);
++
++        return ResponseEntity.status(HttpStatus.OK).body(channelList);
++    }
++
++
++}
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/MessageController.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/MessageController.java
+new file mode 100644
+index 0000000..70d0836
+--- /dev/null
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/MessageController.java
+@@ -0,0 +1,116 @@
++package com.sprint.mission.discodeit.controller;
++
++import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
++import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
++import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
++import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
++import com.sprint.mission.discodeit.entity.Message;
++import com.sprint.mission.discodeit.entity.User;
++import com.sprint.mission.discodeit.service.ChannelService;
++import com.sprint.mission.discodeit.service.MessageService;
++import com.sprint.mission.discodeit.service.ReadStatusService;
++import lombok.RequiredArgsConstructor;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.MediaType;
++import org.springframework.http.ResponseEntity;
++import org.springframework.stereotype.Controller;
++import org.springframework.web.bind.annotation.*;
++import org.springframework.web.multipart.MultipartFile;
++
++import java.io.IOException;
++import java.util.List;
++import java.util.Optional;
++import java.util.UUID;
++
++@RequiredArgsConstructor
++@RequestMapping("/api/message")
++@Controller
++public class MessageController {
++
++    private final MessageService messageService;
++    private final ChannelService channelService;
++
++    // 신규 메시지 생성
++    @RequestMapping(
++            path = "/create"
++//            , method = RequestMethod.POST
++            , consumes = MediaType.MULTIPART_FORM_DATA_VALUE
++    )
++    @ResponseBody
++    public ResponseEntity<Message> create(
++            @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
++            @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
++    ) {
++
++        List<BinaryContentCreateRequest> binaryContents = resolveAttachmentRequest(attachments);
++        Message message = messageService.create(messageCreateRequest, binaryContents);
++
++        return ResponseEntity.status(HttpStatus.CREATED).body(message);
++    }
++
++    // MultipartFile 타입의 요청값을 BinaryContentCreateRequest 타입으로 변환하기 위한 메서드
++    private List<BinaryContentCreateRequest> resolveAttachmentRequest(List<MultipartFile> attachments) {
++        if (attachments == null || attachments.isEmpty()) return List.of();
++
++        return attachments.stream()
++                .filter(file -> !file.isEmpty())
++                .map(file -> {
++                    try {
++                        return new BinaryContentCreateRequest(
++                                file.getOriginalFilename(),
++                                file.getContentType(),
++                                file.getBytes()
++                        );
++                    } catch (IOException e) {
++                        throw new RuntimeException("파일 처리 중 오류 발생", e);
++                    }
++                })
++                .toList();
++    }
++
++    // 메시지 수정
++    @RequestMapping(
++            path = "/update"
++//            , method = RequestMethod.PUT
++    )
++    @ResponseBody
++    public ResponseEntity<Message> update(
++            @RequestParam UUID messageId,
++            @RequestBody MessageUpdateRequest messageUpdateRequest
++    ) {
++        Message updatedMessage = messageService.update(messageId, messageUpdateRequest);
++
++        return ResponseEntity.status(HttpStatus.OK).body(updatedMessage);
++    }
++
++    // 메시지 삭제
++    @RequestMapping(
++            path = "/delete"
++//            , method = RequestMethod.DELETE
++    )
++    @ResponseBody
++    public ResponseEntity<String> delete(
++            @RequestParam UUID messageId
++    ) {
++        messageService.delete(messageId);
++
++        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("메시지가 성공적으로 삭제되었습니다.");
++    }
++
++    // 특정 채널 메시지 목록 조회
++    @RequestMapping(
++            path = "/findAllByChannelId"
++//            , method = RequestMethod.GET
++    )
++    @ResponseBody
++    public ResponseEntity<List<Message>> findAllByChannelId(
++            @RequestParam UUID channelId
++    ) {
++        List<Message> messageList = messageService.findAllByChannelId(channelId);
++
++        return ResponseEntity.status(HttpStatus.OK).body(messageList);
++    }
++
++}
++
++
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java
+new file mode 100644
+index 0000000..8b4e39a
+--- /dev/null
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java
+@@ -0,0 +1,74 @@
++package com.sprint.mission.discodeit.controller;
++
++import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
++import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
++import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
++import com.sprint.mission.discodeit.entity.Message;
++import com.sprint.mission.discodeit.entity.ReadStatus;
++import com.sprint.mission.discodeit.service.ChannelService;
++import com.sprint.mission.discodeit.service.MessageService;
++import com.sprint.mission.discodeit.service.ReadStatusService;
++import com.sprint.mission.discodeit.service.UserService;
++import lombok.RequiredArgsConstructor;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.stereotype.Controller;
++import org.springframework.web.bind.annotation.RequestBody;
++import org.springframework.web.bind.annotation.RequestMapping;
++import org.springframework.web.bind.annotation.RequestMethod;
++import org.springframework.web.bind.annotation.RequestParam;
++import org.springframework.web.bind.annotation.ResponseBody;
++
++import java.util.List;
++import java.util.UUID;
++
++@RequiredArgsConstructor
++@RequestMapping("/api/readstatus")
++@Controller
++public class ReadStatusController {
++
++    private final UserService userService;
++    private final ChannelService channelService;
++    private final MessageService messageService;
++    private final ReadStatusService readStatusService;
++
++    // 특정 채널 메시지 수신 정보 생성
++    @RequestMapping(
++            path = "/create",
++            method = RequestMethod.POST
++    )
++    @ResponseBody
++    public ResponseEntity<ReadStatus> create(
++            @RequestBody ReadStatusCreateRequest readStatusCreateRequest
++    ) {
++        ReadStatus readStatus = readStatusService.create(readStatusCreateRequest);
++        return ResponseEntity.status(HttpStatus.CREATED).body(readStatus);
++    }
++
++    // 특정 채널 메시지 수신 정보 수정
++    @RequestMapping(
++            path = "/update",
++            method = RequestMethod.PUT
++    )
++    @ResponseBody
++    public ResponseEntity<ReadStatus> update(
++            @RequestParam UUID readStatusId,
++            @RequestBody ReadStatusUpdateRequest readStatusUpdateRequest
++    ) {
++        ReadStatus updatedStatus = readStatusService.update(readStatusId, readStatusUpdateRequest);
++        return ResponseEntity.status(HttpStatus.OK).body(updatedStatus);
++    }
++
++    // 특정 사용자의 메시지 수신 정보 조회
++    @RequestMapping(
++            path = "/findAllByUserId",
++            method = RequestMethod.GET
++    )
++    @ResponseBody
++    public ResponseEntity<List<ReadStatus>> getUserReadStatus(
++            @RequestParam UUID userId
++    ) {
++        List<ReadStatus> userReadStatuses = readStatusService.findAllByUserId(userId);
++        return ResponseEntity.status(HttpStatus.OK).body(userReadStatuses);
++    }
++}
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/UserController.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/UserController.java
+new file mode 100644
+index 0000000..3f11665
+--- /dev/null
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/UserController.java
+@@ -0,0 +1,153 @@
++package com.sprint.mission.discodeit.controller;
++
++import com.sprint.mission.discodeit.dto.data.UserDto;
++import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
++import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
++import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
++import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
++import com.sprint.mission.discodeit.entity.User;
++import com.sprint.mission.discodeit.entity.UserStatus;
++import com.sprint.mission.discodeit.service.UserService;
++import com.sprint.mission.discodeit.service.UserStatusService;
++import lombok.RequiredArgsConstructor;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.MediaType;
++import org.springframework.http.ResponseEntity;
++import org.springframework.stereotype.Controller;
++import org.springframework.web.bind.annotation.*;
++import org.springframework.web.multipart.MultipartFile;
++
++import java.io.IOException;
++import java.util.List;
++import java.util.Optional;
++import java.util.UUID;
++
++/* API 구현 절차
++ * 1. 엔드포인트(End-point)
++ *   - 엔드포인트는 URL과 HTTP 메서드로 구성됨.
++ *   - 엔드포인트는 다른 API와 겹치지 않는(중복되지 않는) 유일한 값으로 정의할 것.
++ * 2. 요청(Request)
++ *   - 요청으로부터 어떤 값을 받아야 하는지 정의.
++ *   - 각 값을 HTTP 요청의 Header, Body 등 어느 부분에서 어떻게 받을지 정의.
++ * 3. 응답(Response) - 뷰 기반이 아닌 데이터 기반 응답으로 작성.
++ *   - 응답 상태 코드 정의
++ *   - 응답 데이터 정의
++ *   - (옵션) 응답 헤더 정의
++ * */
++
++
++@RequiredArgsConstructor
++@RequestMapping("/api/user")
++@Controller
++public class UserController {
++
++    private final UserService userService;
++    private final UserStatusService userStatusService;
++
++    // 신규 유저 생성 요청
++    @RequestMapping(
++            path = "/create"
++//            , method = RequestMethod.POST
++            , consumes = MediaType.MULTIPART_FORM_DATA_VALUE
++    )
++    @ResponseBody
++    public ResponseEntity<User> create(
++            @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
++            @RequestPart(value = "profile", required = false) MultipartFile profile
++    ) {
++
++        Optional<BinaryContentCreateRequest> profileRequest =
++                Optional.ofNullable(profile)
++                        .flatMap(this::resolveProfileRequest);
++
++        User createdUser = userService.create(userCreateRequest, profileRequest);
++
++        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
++    }
++
++    // MultipartFile 타입의 요청값을 BinaryContentCreateRequest 타입으로 변환하기 위한 메서드
++    private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profile) {
++
++        if(profile.isEmpty()) {
++            // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 비어있다면:
++            return Optional.empty();
++        } else {
++            // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 존재한다면:
++            try {
++                BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
++                        profile.getOriginalFilename(),
++                        profile.getContentType(),
++                        profile.getBytes()
++                );
++                return Optional.of(binaryContentCreateRequest);
++            } catch (IOException e) {
++                throw new RuntimeException(e);
++            }
++        }
++    }
++
++    // 유저 정보 수정 요청
++    @RequestMapping(
++            path = "/update"
++//            , method = RequestMethod.PUT
++            , consumes = MediaType.MULTIPART_FORM_DATA_VALUE
++    )
++    @ResponseBody
++    public ResponseEntity<User> update(
++            @RequestParam UUID userId,
++            @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
++            @RequestPart(value = "profile", required = false) MultipartFile profile
++    ) {
++        Optional<BinaryContentCreateRequest> profileRequest =
++                Optional.ofNullable(profile)
++                        .flatMap(this::resolveProfileRequest);
++
++        User updateedUser = userService.update(userId, userUpdateRequest, profileRequest);
++
++        return ResponseEntity.status(HttpStatus.OK).body(updateedUser);
++    }
++
++    // 유저 삭제 요청
++    @RequestMapping(
++            path = "/delete"
++//            , method = RequestMethod.DELETE
++    )
++    @ResponseBody
++    public ResponseEntity<String> delete(
++            @RequestParam UUID userId
++    ) {
++        userService.delete(userId); // 이 안에 UserStatus, BinaryContent 삭제 로직 있음
++
++        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("유저 정보가 삭제되었습니다.");
++    }
++
++
++    // 유저 다건 조회 요청
++    @RequestMapping(
++            path = "/findAll"
++//            , method = RequestMethod.DELETE
++    )
++    @ResponseBody
++    public ResponseEntity<List<UserDto>> findAll(
++    ) {
++        List<UserDto> userDtoList = userService.findAll();
++
++        return ResponseEntity.status(HttpStatus.OK).body(userDtoList);
++    }
++
++    // 유저 상태 정보 수정 요청
++    @RequestMapping(
++            path = "/updateUserStatus"
++//            , method = RequestMethod.DELETE
++    )
++    @ResponseBody
++    public ResponseEntity<UserStatus> updateUserStatus(
++            @RequestParam UUID userId,
++            @RequestBody UserStatusUpdateRequest userStatusUpdateReqeust
++    ) {
++
++        UserStatus userStatus = userStatusService.updateByUserId(userId, userStatusUpdateReqeust);
++
++        return ResponseEntity.status(HttpStatus.OK).body(userStatus);
++    }
++}
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/exception/GlobalExceptionHandler.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/exception/GlobalExceptionHandler.java
+new file mode 100644
+index 0000000..b039b1d
+--- /dev/null
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/exception/GlobalExceptionHandler.java
+@@ -0,0 +1,7 @@
++package com.sprint.mission.discodeit.exception;
++
++import org.springframework.web.bind.annotation.ControllerAdvice;
++
++@ControllerAdvice
++public class GlobalExceptionHandler {
++}
+-- 
+2.48.1.windows.1
+
+
+From 6fae2e2fbb6f60f26533dab32fbae7705346aa49 Mon Sep 17 00:00:00 2001
+From: "DESKTOP-A9J42N4\\red29" <1234wjdgusdl@gmail.com>
+Date: Fri, 16 May 2025 10:38:23 +0900
+Subject: [PATCH 3/5] Basic requirements for sprint4
+
+---
+ .idea/gradle.xml                              |  1 +
+ .idea/workspace.xml                           | 25 +++++++++++--------
+ .../controller/BinaryContentController.java   |  2 +-
+ 3 files changed, 17 insertions(+), 11 deletions(-)
+
+diff --git a/.idea/gradle.xml b/.idea/gradle.xml
+index 3c905d1..c39a227 100644
+--- a/.idea/gradle.xml
++++ b/.idea/gradle.xml
+@@ -1,5 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
++  <component name="GradleMigrationSettings" migrationVersion="1" />
+   <component name="GradleSettings">
+     <option name="linkedExternalProjectsSettings">
+       <GradleProjectSettings>
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+index 4d3fa43..71b63df 100644
+--- a/.idea/workspace.xml
++++ b/.idea/workspace.xml
+@@ -5,11 +5,9 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="2129b70f-f7a7-429e-a313-315e92ddecf6" name="Changes" comment="">
+-      <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/AuthController.java" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ChannelController.java" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/MessageController.java" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/UserController.java" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/exception/ExceptionController.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -59,9 +57,9 @@
+   <component name="Git.Settings">
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+   </component>
+-  <component name="ProjectColorInfo"><![CDATA[{
+-  "associatedIndex": 5
+-}]]></component>
++  <component name="ProjectColorInfo">{
++  &quot;associatedIndex&quot;: 5
++}</component>
+   <component name="ProjectId" id="2x7QPrUDrQZmLSy0x6yjR9ts0vE" />
+   <component name="ProjectLevelVcsManager">
+     <ConfirmationsSetting value="2" id="Add" />
+@@ -83,16 +81,21 @@
+     "Spring Boot.DiscodeitApplication.executor": "Run",
+     "git-widget-placeholder": "임정현-sprint4",
+     "kotlin-language-version-configured": "true",
+-    "last_opened_file_path": "C:/Users/red29/IdeaProjects/sprint_mission_4_hint",
++    "last_opened_file_path": "C:/Users/red29/IdeaProjects/chap09-rest-api-lecture-source",
+     "node.js.detected.package.eslint": "true",
+     "node.js.detected.package.tslint": "true",
+     "node.js.selected.package.eslint": "(autodetect)",
+     "node.js.selected.package.tslint": "(autodetect)",
+     "nodejs_package_manager_path": "npm",
+-    "settings.editor.selected.configurable": "preferences.pluginManager",
++    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors.Language Defaults",
+     "vue.rearranger.settings.migration": "true"
+   }
+ }]]></component>
++  <component name="RecentsManager">
++    <key name="MoveFile.RECENT_KEYS">
++      <recent name="C:\Users\red29\3-sprint-mission\sprint_mission_4_base\src\main\resources" />
++    </key>
++  </component>
+   <component name="RunManager">
+     <configuration name="DiscodeitApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+       <module name="discodeit.main" />
+@@ -119,6 +122,8 @@
+       <option name="presentableId" value="Default" />
+       <updated>1747286611266</updated>
+       <workItem from="1747286612509" duration="6039000" />
++      <workItem from="1747294295805" duration="6339000" />
++      <workItem from="1747354011100" duration="2760000" />
+     </task>
+     <servers />
+   </component>
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java
+index 6312637..e017000 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java
+@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
+ import java.util.*;
+ 
+ @RequiredArgsConstructor
+-@RequestMapping("/api/binarycontent")
++@RequestMapping("/api/binaryContent")
+ @Controller
+ public class BinaryContentController {
+ 
+-- 
+2.48.1.windows.1
+
+
+From 33492be2452453799020dabdebc082e0acfc1b35 Mon Sep 17 00:00:00 2001
+From: "DESKTOP-A9J42N4\\red29" <1234wjdgusdl@gmail.com>
+Date: Fri, 16 May 2025 20:15:49 +0900
+Subject: [PATCH 4/5] May 16th lecture complete
+
+---
+ .../discodeit/DiscodeitApplication.java       | 23 -------------------
+ .../discodeit/controller/AuthController.java  |  7 ++++--
+ .../controller/ChannelController.java         |  7 +++---
+ .../controller/MessageController.java         |  9 ++------
+ .../controller/ReadStatusController.java      |  2 --
+ .../discodeit/controller/UserController.java  | 10 ++++----
+ .../PrivateChannelCreateRequest.java          |  2 +-
+ .../PublicChannelCreateRequest.java           |  2 +-
+ .../PublicChannelUpdateRequest.java           |  2 +-
+ .../{ => message}/MessageCreateRequest.java   |  2 +-
+ .../{ => message}/MessageUpdateRequest.java   |  2 +-
+ .../request/{ => user}/UserCreateRequest.java |  2 +-
+ .../{ => user}/UserStatusCreateRequest.java   |  2 +-
+ .../{ => user}/UserStatusUpdateRequest.java   |  2 +-
+ .../request/{ => user}/UserUpdateRequest.java |  2 +-
+ .../discodeit/service/ChannelService.java     |  7 +++---
+ .../discodeit/service/MessageService.java     |  4 ++--
+ .../discodeit/service/UserService.java        |  4 ++--
+ .../discodeit/service/UserStatusService.java  |  4 ++--
+ .../service/basic/BasicAuthService.java       |  3 +++
+ .../service/basic/BasicChannelService.java    |  6 ++---
+ .../service/basic/BasicMessageService.java    |  4 ++--
+ .../service/basic/BasicUserService.java       |  4 ++--
+ .../service/basic/BasicUserStatusService.java |  4 ++--
+ .../src/main/resources/static/error.html      | 10 ++++++++
+ 25 files changed, 55 insertions(+), 71 deletions(-)
+ rename sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/{ => channel}/PrivateChannelCreateRequest.java (69%)
+ rename sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/{ => channel}/PublicChannelCreateRequest.java (62%)
+ rename sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/{ => channel}/PublicChannelUpdateRequest.java (63%)
+ rename sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/{ => message}/MessageCreateRequest.java (70%)
+ rename sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/{ => message}/MessageUpdateRequest.java (54%)
+ rename sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/{ => user}/UserCreateRequest.java (66%)
+ rename sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/{ => user}/UserStatusCreateRequest.java (72%)
+ rename sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/{ => user}/UserStatusUpdateRequest.java (65%)
+ rename sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/{ => user}/UserUpdateRequest.java (68%)
+ create mode 100644 sprint_mission_4_base/src/main/resources/static/error.html
+
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/DiscodeitApplication.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/DiscodeitApplication.java
+index eefcef9..04dfd1f 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/DiscodeitApplication.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/DiscodeitApplication.java
+@@ -1,30 +1,7 @@
+ package com.sprint.mission.discodeit;
+ 
+-import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+-import com.sprint.mission.discodeit.entity.Channel;
+-import com.sprint.mission.discodeit.entity.ChannelType;
+-import com.sprint.mission.discodeit.entity.Message;
+-import com.sprint.mission.discodeit.entity.User;
+-import com.sprint.mission.discodeit.repository.ChannelRepository;
+-import com.sprint.mission.discodeit.repository.MessageRepository;
+-import com.sprint.mission.discodeit.repository.UserRepository;
+-import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+-import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+-import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+-import com.sprint.mission.discodeit.service.ChannelService;
+-import com.sprint.mission.discodeit.service.MessageService;
+-import com.sprint.mission.discodeit.service.UserService;
+-import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+-import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+-import com.sprint.mission.discodeit.service.basic.BasicUserService;
+ import org.springframework.boot.SpringApplication;
+ import org.springframework.boot.autoconfigure.SpringBootApplication;
+-import org.springframework.context.ConfigurableApplicationContext;
+-
+-import java.util.ArrayList;
+-import java.util.Optional;
+ 
+ @SpringBootApplication
+ public class DiscodeitApplication {
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/AuthController.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/AuthController.java
+index 4768a3d..cb61ae6 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/AuthController.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/AuthController.java
+@@ -4,11 +4,13 @@ import com.sprint.mission.discodeit.dto.data.UserDto;
+ import com.sprint.mission.discodeit.dto.request.LoginRequest;
+ import com.sprint.mission.discodeit.entity.User;
+ import com.sprint.mission.discodeit.service.AuthService;
++import com.sprint.mission.discodeit.service.UserStatusService;
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.http.HttpMethod;
+ import org.springframework.http.HttpStatus;
+ import org.springframework.http.ResponseEntity;
+ import org.springframework.stereotype.Controller;
++import org.springframework.web.bind.annotation.RequestBody;
+ import org.springframework.web.bind.annotation.RequestMapping;
+ import org.springframework.web.bind.annotation.RequestMethod;
+ import org.springframework.web.bind.annotation.ResponseBody;
+@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
+ public class AuthController {
+ 
+     private final AuthService authService;
++    private final UserStatusService userStatusService;
+ 
+ 
+     @RequestMapping(
+@@ -28,10 +31,10 @@ public class AuthController {
+             , produces = "application/json"        // 서버도 JSON 응답함
+     )
+     @ResponseBody
+-    public ResponseEntity<User> login(LoginRequest loginRequest) {
++    public ResponseEntity<User> login(
++            @RequestBody LoginRequest loginRequest) {
+ 
+         User loginUser = authService.login(loginRequest);
+-
+         return ResponseEntity.status(HttpStatus.OK).body(loginUser);
+     }
+ }
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ChannelController.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ChannelController.java
+index ed31c4e..a537621 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ChannelController.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ChannelController.java
+@@ -1,9 +1,9 @@
+ package com.sprint.mission.discodeit.controller;
+ 
+ import com.sprint.mission.discodeit.dto.data.ChannelDto;
+-import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
++import com.sprint.mission.discodeit.dto.request.channel.PrivateChannelCreateRequest;
++import com.sprint.mission.discodeit.dto.request.channel.PublicChannelCreateRequest;
++import com.sprint.mission.discodeit.dto.request.channel.PublicChannelUpdateRequest;
+ import com.sprint.mission.discodeit.entity.Channel;
+ import com.sprint.mission.discodeit.service.ChannelService;
+ import lombok.RequiredArgsConstructor;
+@@ -50,7 +50,6 @@ public class ChannelController {
+             @RequestParam UUID channelId,
+             @RequestBody PublicChannelUpdateRequest request
+     ) {
+-
+         Channel updatedPublic = channelService.update(channelId, request);
+ 
+         return ResponseEntity.status(HttpStatus.OK).body(updatedPublic);
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/MessageController.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/MessageController.java
+index 70d0836..13da2db 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/MessageController.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/MessageController.java
+@@ -1,14 +1,11 @@
+ package com.sprint.mission.discodeit.controller;
+ 
+ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+-import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
++import com.sprint.mission.discodeit.dto.request.message.MessageCreateRequest;
++import com.sprint.mission.discodeit.dto.request.message.MessageUpdateRequest;
+ import com.sprint.mission.discodeit.entity.Message;
+-import com.sprint.mission.discodeit.entity.User;
+ import com.sprint.mission.discodeit.service.ChannelService;
+ import com.sprint.mission.discodeit.service.MessageService;
+-import com.sprint.mission.discodeit.service.ReadStatusService;
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.http.HttpStatus;
+ import org.springframework.http.MediaType;
+@@ -19,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
+ 
+ import java.io.IOException;
+ import java.util.List;
+-import java.util.Optional;
+ import java.util.UUID;
+ 
+ @RequiredArgsConstructor
+@@ -28,7 +24,6 @@ import java.util.UUID;
+ public class MessageController {
+ 
+     private final MessageService messageService;
+-    private final ChannelService channelService;
+ 
+     // 신규 메시지 생성
+     @RequestMapping(
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java
+index 8b4e39a..84dd88b 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java
+@@ -1,9 +1,7 @@
+ package com.sprint.mission.discodeit.controller;
+ 
+-import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+ import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
+ import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
+-import com.sprint.mission.discodeit.entity.Message;
+ import com.sprint.mission.discodeit.entity.ReadStatus;
+ import com.sprint.mission.discodeit.service.ChannelService;
+ import com.sprint.mission.discodeit.service.MessageService;
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/UserController.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/UserController.java
+index 3f11665..e6937e4 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/UserController.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/UserController.java
+@@ -2,9 +2,9 @@ package com.sprint.mission.discodeit.controller;
+ 
+ import com.sprint.mission.discodeit.dto.data.UserDto;
+ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+-import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
++import com.sprint.mission.discodeit.dto.request.user.UserCreateRequest;
++import com.sprint.mission.discodeit.dto.request.user.UserStatusUpdateRequest;
++import com.sprint.mission.discodeit.dto.request.user.UserUpdateRequest;
+ import com.sprint.mission.discodeit.entity.User;
+ import com.sprint.mission.discodeit.entity.UserStatus;
+ import com.sprint.mission.discodeit.service.UserService;
+@@ -47,7 +47,7 @@ public class UserController {
+     // 신규 유저 생성 요청
+     @RequestMapping(
+             path = "/create"
+-//            , method = RequestMethod.POST
++            , method = RequestMethod.POST
+             , consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+     )
+     @ResponseBody
+@@ -138,7 +138,7 @@ public class UserController {
+     // 유저 상태 정보 수정 요청
+     @RequestMapping(
+             path = "/updateUserStatus"
+-//            , method = RequestMethod.DELETE
++//            , method = RequestMethod.PUT
+     )
+     @ResponseBody
+     public ResponseEntity<UserStatus> updateUserStatus(
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/PrivateChannelCreateRequest.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/channel/PrivateChannelCreateRequest.java
+similarity index 69%
+rename from sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/PrivateChannelCreateRequest.java
+rename to sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/channel/PrivateChannelCreateRequest.java
+index 6b203ba..f0172be 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/PrivateChannelCreateRequest.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/channel/PrivateChannelCreateRequest.java
+@@ -1,4 +1,4 @@
+-package com.sprint.mission.discodeit.dto.request;
++package com.sprint.mission.discodeit.dto.request.channel;
+ 
+ import java.util.List;
+ import java.util.UUID;
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/PublicChannelCreateRequest.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/channel/PublicChannelCreateRequest.java
+similarity index 62%
+rename from sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/PublicChannelCreateRequest.java
+rename to sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/channel/PublicChannelCreateRequest.java
+index c5b15cc..64640f4 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/PublicChannelCreateRequest.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/channel/PublicChannelCreateRequest.java
+@@ -1,4 +1,4 @@
+-package com.sprint.mission.discodeit.dto.request;
++package com.sprint.mission.discodeit.dto.request.channel;
+ 
+ public record PublicChannelCreateRequest(
+         String name,
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/PublicChannelUpdateRequest.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/channel/PublicChannelUpdateRequest.java
+similarity index 63%
+rename from sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/PublicChannelUpdateRequest.java
+rename to sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/channel/PublicChannelUpdateRequest.java
+index 6c02341..b39e73c 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/PublicChannelUpdateRequest.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/channel/PublicChannelUpdateRequest.java
+@@ -1,4 +1,4 @@
+-package com.sprint.mission.discodeit.dto.request;
++package com.sprint.mission.discodeit.dto.request.channel;
+ 
+ public record PublicChannelUpdateRequest(
+         String newName,
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/MessageCreateRequest.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/message/MessageCreateRequest.java
+similarity index 70%
+rename from sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/MessageCreateRequest.java
+rename to sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/message/MessageCreateRequest.java
+index dd8c3d2..4386faa 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/MessageCreateRequest.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/message/MessageCreateRequest.java
+@@ -1,4 +1,4 @@
+-package com.sprint.mission.discodeit.dto.request;
++package com.sprint.mission.discodeit.dto.request.message;
+ 
+ import java.util.UUID;
+ 
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/MessageUpdateRequest.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/message/MessageUpdateRequest.java
+similarity index 54%
+rename from sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/MessageUpdateRequest.java
+rename to sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/message/MessageUpdateRequest.java
+index d1830fb..3111998 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/MessageUpdateRequest.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/message/MessageUpdateRequest.java
+@@ -1,4 +1,4 @@
+-package com.sprint.mission.discodeit.dto.request;
++package com.sprint.mission.discodeit.dto.request.message;
+ 
+ public record MessageUpdateRequest(
+         String newContent
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/UserCreateRequest.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/user/UserCreateRequest.java
+similarity index 66%
+rename from sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/UserCreateRequest.java
+rename to sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/user/UserCreateRequest.java
+index e1daa62..ffc505b 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/UserCreateRequest.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/user/UserCreateRequest.java
+@@ -1,4 +1,4 @@
+-package com.sprint.mission.discodeit.dto.request;
++package com.sprint.mission.discodeit.dto.request.user;
+ 
+ public record UserCreateRequest(
+         String username,
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/UserStatusCreateRequest.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/user/UserStatusCreateRequest.java
+similarity index 72%
+rename from sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/UserStatusCreateRequest.java
+rename to sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/user/UserStatusCreateRequest.java
+index 272a0d4..c868f59 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/UserStatusCreateRequest.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/user/UserStatusCreateRequest.java
+@@ -1,4 +1,4 @@
+-package com.sprint.mission.discodeit.dto.request;
++package com.sprint.mission.discodeit.dto.request.user;
+ 
+ import java.time.Instant;
+ import java.util.UUID;
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/UserStatusUpdateRequest.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/user/UserStatusUpdateRequest.java
+similarity index 65%
+rename from sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/UserStatusUpdateRequest.java
+rename to sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/user/UserStatusUpdateRequest.java
+index 9a00193..b080c95 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/UserStatusUpdateRequest.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/user/UserStatusUpdateRequest.java
+@@ -1,4 +1,4 @@
+-package com.sprint.mission.discodeit.dto.request;
++package com.sprint.mission.discodeit.dto.request.user;
+ 
+ import java.time.Instant;
+ 
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/UserUpdateRequest.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/user/UserUpdateRequest.java
+similarity index 68%
+rename from sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/UserUpdateRequest.java
+rename to sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/user/UserUpdateRequest.java
+index d1da4c7..cc697c3 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/UserUpdateRequest.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/dto/request/user/UserUpdateRequest.java
+@@ -1,4 +1,4 @@
+-package com.sprint.mission.discodeit.dto.request;
++package com.sprint.mission.discodeit.dto.request.user;
+ 
+ public record UserUpdateRequest(
+         String newUsername,
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/ChannelService.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/ChannelService.java
+index e64bda7..47687d6 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/ChannelService.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/ChannelService.java
+@@ -1,11 +1,10 @@
+ package com.sprint.mission.discodeit.service;
+ 
+ import com.sprint.mission.discodeit.dto.data.ChannelDto;
+-import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
++import com.sprint.mission.discodeit.dto.request.channel.PrivateChannelCreateRequest;
++import com.sprint.mission.discodeit.dto.request.channel.PublicChannelCreateRequest;
++import com.sprint.mission.discodeit.dto.request.channel.PublicChannelUpdateRequest;
+ import com.sprint.mission.discodeit.entity.Channel;
+-import com.sprint.mission.discodeit.entity.ChannelType;
+ 
+ import java.util.List;
+ import java.util.UUID;
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/MessageService.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/MessageService.java
+index fa517ef..f64f46c 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/MessageService.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/MessageService.java
+@@ -1,8 +1,8 @@
+ package com.sprint.mission.discodeit.service;
+ 
+ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
++import com.sprint.mission.discodeit.dto.request.message.MessageCreateRequest;
++import com.sprint.mission.discodeit.dto.request.message.MessageUpdateRequest;
+ import com.sprint.mission.discodeit.entity.Message;
+ 
+ import java.util.List;
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/UserService.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/UserService.java
+index d824a78..b702aec 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/UserService.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/UserService.java
+@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.service;
+ 
+ import com.sprint.mission.discodeit.dto.data.UserDto;
+ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
++import com.sprint.mission.discodeit.dto.request.user.UserCreateRequest;
++import com.sprint.mission.discodeit.dto.request.user.UserUpdateRequest;
+ import com.sprint.mission.discodeit.entity.User;
+ 
+ import java.util.List;
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/UserStatusService.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/UserStatusService.java
+index 4705827..73f439c 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/UserStatusService.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/UserStatusService.java
+@@ -1,7 +1,7 @@
+ package com.sprint.mission.discodeit.service;
+ 
+-import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
++import com.sprint.mission.discodeit.dto.request.user.UserStatusCreateRequest;
++import com.sprint.mission.discodeit.dto.request.user.UserStatusUpdateRequest;
+ import com.sprint.mission.discodeit.entity.UserStatus;
+ 
+ import java.util.List;
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicAuthService.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicAuthService.java
+index 38f67f1..fd4c2af 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicAuthService.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicAuthService.java
+@@ -3,7 +3,9 @@ package com.sprint.mission.discodeit.service.basic;
+ import com.sprint.mission.discodeit.dto.request.LoginRequest;
+ import com.sprint.mission.discodeit.entity.User;
+ import com.sprint.mission.discodeit.repository.UserRepository;
++import com.sprint.mission.discodeit.repository.UserStatusRepository;
+ import com.sprint.mission.discodeit.service.AuthService;
++import com.sprint.mission.discodeit.service.UserStatusService;
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.stereotype.Service;
+ 
+@@ -13,6 +15,7 @@ import java.util.NoSuchElementException;
+ @Service
+ public class BasicAuthService implements AuthService {
+     private final UserRepository userRepository;
++    private final UserStatusRepository userStatusRepository;
+ 
+     @Override
+     public User login(LoginRequest loginRequest) {
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicChannelService.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicChannelService.java
+index 6a7d1a6..bcee755 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicChannelService.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicChannelService.java
+@@ -1,9 +1,9 @@
+ package com.sprint.mission.discodeit.service.basic;
+ 
+ import com.sprint.mission.discodeit.dto.data.ChannelDto;
+-import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
++import com.sprint.mission.discodeit.dto.request.channel.PrivateChannelCreateRequest;
++import com.sprint.mission.discodeit.dto.request.channel.PublicChannelCreateRequest;
++import com.sprint.mission.discodeit.dto.request.channel.PublicChannelUpdateRequest;
+ import com.sprint.mission.discodeit.entity.Channel;
+ import com.sprint.mission.discodeit.entity.ChannelType;
+ import com.sprint.mission.discodeit.entity.Message;
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicMessageService.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicMessageService.java
+index 4ecca5b..a73a872 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicMessageService.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicMessageService.java
+@@ -1,8 +1,8 @@
+ package com.sprint.mission.discodeit.service.basic;
+ 
+ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
++import com.sprint.mission.discodeit.dto.request.message.MessageCreateRequest;
++import com.sprint.mission.discodeit.dto.request.message.MessageUpdateRequest;
+ import com.sprint.mission.discodeit.entity.BinaryContent;
+ import com.sprint.mission.discodeit.entity.Message;
+ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicUserService.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicUserService.java
+index e8515ce..1ab8725 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicUserService.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicUserService.java
+@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
+ 
+ import com.sprint.mission.discodeit.dto.data.UserDto;
+ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
++import com.sprint.mission.discodeit.dto.request.user.UserCreateRequest;
++import com.sprint.mission.discodeit.dto.request.user.UserUpdateRequest;
+ import com.sprint.mission.discodeit.entity.BinaryContent;
+ import com.sprint.mission.discodeit.entity.User;
+ import com.sprint.mission.discodeit.entity.UserStatus;
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicUserStatusService.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicUserStatusService.java
+index ee14451..3ee8b32 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicUserStatusService.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/service/basic/BasicUserStatusService.java
+@@ -1,7 +1,7 @@
+ package com.sprint.mission.discodeit.service.basic;
+ 
+-import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
+-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
++import com.sprint.mission.discodeit.dto.request.user.UserStatusCreateRequest;
++import com.sprint.mission.discodeit.dto.request.user.UserStatusUpdateRequest;
+ import com.sprint.mission.discodeit.entity.UserStatus;
+ import com.sprint.mission.discodeit.repository.UserRepository;
+ import com.sprint.mission.discodeit.repository.UserStatusRepository;
+diff --git a/sprint_mission_4_base/src/main/resources/static/error.html b/sprint_mission_4_base/src/main/resources/static/error.html
+new file mode 100644
+index 0000000..566549b
+--- /dev/null
++++ b/sprint_mission_4_base/src/main/resources/static/error.html
+@@ -0,0 +1,10 @@
++<!DOCTYPE html>
++<html lang="en">
++<head>
++    <meta charset="UTF-8">
++    <title>Title</title>
++</head>
++<body>
++
++</body>
++</html>
+\ No newline at end of file
+-- 
+2.48.1.windows.1
+
+
+From 989f80a817dfdc9ab4c1d721ee23d751b800674f Mon Sep 17 00:00:00 2001
+From: "DESKTOP-A9J42N4\\red29" <1234wjdgusdl@gmail.com>
+Date: Sun, 18 May 2025 00:11:23 +0900
+Subject: [PATCH 5/5] Sprint mission 4 requirements completed
+
+---
+ .idea/workspace.xml                           | 36 ++++++++++++++++---
+ .../controller/BinaryContentController.java   |  5 +--
+ .../controller/ReadStatusController.java      |  3 +-
+ 3 files changed, 37 insertions(+), 7 deletions(-)
+
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+index 71b63df..faddc14 100644
+--- a/.idea/workspace.xml
++++ b/.idea/workspace.xml
+@@ -4,10 +4,10 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="2129b70f-f7a7-429e-a313-315e92ddecf6" name="Changes" comment="">
+-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
++    <list default="true" id="2129b70f-f7a7-429e-a313-315e92ddecf6" name="Changes" comment="May 16th lecture complete">
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java" beforeDir="false" afterPath="$PROJECT_DIR$/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -51,6 +51,7 @@
+     <option name="RECENT_TEMPLATES">
+       <list>
+         <option value="Class" />
++        <option value="HTML File" />
+       </list>
+     </option>
+   </component>
+@@ -70,6 +71,7 @@
+   </component>
+   <component name="PropertiesComponent"><![CDATA[{
+   "keyToString": {
++    "DefaultHtmlFileTemplate": "HTML File",
+     "Gradle.Build sprint_mission_4_base.executor": "Run",
+     "Gradle.Download Sources.executor": "Run",
+     "RequestMappingsPanelOrder0": "0",
+@@ -81,12 +83,15 @@
+     "Spring Boot.DiscodeitApplication.executor": "Run",
+     "git-widget-placeholder": "임정현-sprint4",
+     "kotlin-language-version-configured": "true",
+-    "last_opened_file_path": "C:/Users/red29/IdeaProjects/chap09-rest-api-lecture-source",
++    "last_opened_file_path": "C:/Users/red29/3-sprint-mission",
+     "node.js.detected.package.eslint": "true",
+     "node.js.detected.package.tslint": "true",
+     "node.js.selected.package.eslint": "(autodetect)",
+     "node.js.selected.package.tslint": "(autodetect)",
+     "nodejs_package_manager_path": "npm",
++    "project.structure.last.edited": "Modules",
++    "project.structure.proportion": "0.0",
++    "project.structure.side.proportion": "0.0",
+     "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors.Language Defaults",
+     "vue.rearranger.settings.migration": "true"
+   }
+@@ -123,13 +128,36 @@
+       <updated>1747286611266</updated>
+       <workItem from="1747286612509" duration="6039000" />
+       <workItem from="1747294295805" duration="6339000" />
+-      <workItem from="1747354011100" duration="2760000" />
++      <workItem from="1747354011100" duration="18427000" />
++      <workItem from="1747489455217" duration="5158000" />
+     </task>
++    <task id="LOCAL-00001" summary="Basic requirements for sprint4">
++      <option name="closed" value="true" />
++      <created>1747359518348</created>
++      <option name="number" value="00001" />
++      <option name="presentableId" value="LOCAL-00001" />
++      <option name="project" value="LOCAL" />
++      <updated>1747359518348</updated>
++    </task>
++    <task id="LOCAL-00002" summary="May 16th lecture complete">
++      <option name="closed" value="true" />
++      <created>1747394159909</created>
++      <option name="number" value="00002" />
++      <option name="presentableId" value="LOCAL-00002" />
++      <option name="project" value="LOCAL" />
++      <updated>1747394159909</updated>
++    </task>
++    <option name="localTasksCounter" value="3" />
+     <servers />
+   </component>
+   <component name="TypeScriptGeneratedFilesManager">
+     <option name="version" value="3" />
+   </component>
++  <component name="VcsManagerConfiguration">
++    <MESSAGE value="Basic requirements for sprint4" />
++    <MESSAGE value="May 16th lecture complete" />
++    <option name="LAST_COMMIT_MESSAGE" value="May 16th lecture complete" />
++  </component>
+   <component name="XSLT-Support.FileAssociations.UIState">
+     <expand />
+     <select />
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java
+index e017000..2a0f135 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/BinaryContentController.java
+@@ -31,8 +31,9 @@ public class BinaryContentController {
+     }
+ 
+     @RequestMapping(
+-            value = "/findAll"
+-            , method = RequestMethod.GET)
++            value = "/findAllByIdIn"
++            , method = RequestMethod.GET
++    )
+     public ResponseEntity<List<BinaryContent>> findAllByIdIn(
+             @RequestParam List<UUID> binaryContentIds
+     ) {
+diff --git a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java
+index 84dd88b..45e9867 100644
+--- a/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java
++++ b/sprint_mission_4_base/src/main/java/com/sprint/mission/discodeit/controller/ReadStatusController.java
+@@ -63,9 +63,10 @@ public class ReadStatusController {
+             method = RequestMethod.GET
+     )
+     @ResponseBody
+-    public ResponseEntity<List<ReadStatus>> getUserReadStatus(
++    public ResponseEntity<List<ReadStatus>> findAllByUserId(
+             @RequestParam UUID userId
+     ) {
++        // ReadStatus가 없을 시 Error 메시지(or 페이지)
+         List<ReadStatus> userReadStatuses = readStatusService.findAllByUserId(userId);
+         return ResponseEntity.status(HttpStatus.OK).body(userReadStatuses);
+     }
+-- 
+2.48.1.windows.1
+
