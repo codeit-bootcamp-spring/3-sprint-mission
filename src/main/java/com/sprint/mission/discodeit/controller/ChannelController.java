@@ -1,10 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.Channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.Channel.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.Channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.Channel.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.UUID;
@@ -29,20 +28,20 @@ public class ChannelController {
     private final ChannelService channelService;
 
     @PostMapping(path = "/public")
-    public ResponseEntity<Channel> createPublic(@RequestBody PublicChannelCreateRequest request) {
-        Channel createdChannel = channelService.create(request);
+    public ResponseEntity<ChannelDto> createPublic(@RequestBody PublicChannelCreateRequest request) {
+        ChannelDto createdChannel = channelService.create(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(createdChannel);
     }
 
     @PostMapping(path = "/private")
-    public ResponseEntity<Channel> createPrivate(@RequestBody PrivateChannelCreateRequest request) {
+    public ResponseEntity<ChannelDto> createPrivate(@RequestBody PrivateChannelCreateRequest request) {
         return ResponseEntity.ok(channelService.create(request));
     }
 
     @PatchMapping(path = "/{channelId}")
-    public ResponseEntity<Channel> update(
+    public ResponseEntity<ChannelDto> update(
             @PathVariable("channelId") UUID id,
             @RequestBody ChannelUpdateRequest request) {
         return ResponseEntity.ok(channelService.update(id, request));

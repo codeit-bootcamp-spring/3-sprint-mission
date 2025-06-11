@@ -1,22 +1,20 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Message;
+import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MessageRepository {
-    Message save(Message message);
+public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-    Optional<Message> findById(UUID id);
+    List<Message> findAllByChannelIdOrderByCreatedAtDesc(UUID channelId, Pageable pageable);
 
-    List<Message> findAll();
-
-    List<Message> findAllByChannelId(UUID channelId);
+    List<Message> findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(UUID channelId, Instant createdAt,
+                                                                        Pageable pageable);
 
     void deleteAllByChannelId(UUID channelId);
 
-    boolean existsById(UUID id);
-
-    void deleteById(UUID id);
+    long countByChannelId(UUID channelId);
 }
