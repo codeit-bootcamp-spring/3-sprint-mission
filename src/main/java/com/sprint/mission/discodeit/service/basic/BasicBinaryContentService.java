@@ -41,7 +41,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     );
 
     BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
-    binaryContentStorage.put(savedBinaryContent.getId(), binaryContentCreateRequest.bytes());
+    binaryContentStorage.put(savedBinaryContent.getId(), bytes);
 
     return savedBinaryContent;
   }
