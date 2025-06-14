@@ -13,7 +13,7 @@ import org.mapstruct.factory.Mappers;
  */
 @Mapper(componentModel = "spring")
 public interface AdvancedBinaryContentMapper {
-    AdvancedBinaryContentMapper INSTANCE = Mappers.getMapper(AdvancedBinaryContentMapper.class);
+//    AdvancedBinaryContentMapper INSTANCE = Mappers.getMapper(AdvancedBinaryContentMapper.class);
 
     JpaBinaryContentResponse toDto(BinaryContent binaryContent);
 }

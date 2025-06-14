@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 //@Component
 @Mapper(componentModel = "spring")
 public interface AdvancedReadStatusMapper {
-    AdvancedReadStatusMapper INSTANCE = Mappers.getMapper(AdvancedReadStatusMapper.class);
+//    AdvancedReadStatusMapper INSTANCE = Mappers.getMapper(AdvancedReadStatusMapper.class);
 
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "channel.id", target = "channelId")
