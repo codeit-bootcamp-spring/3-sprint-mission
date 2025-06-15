@@ -1,28 +1,32 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.entity.User;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.LoginRequest;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Service
 public class BasicAuthService implements AuthService {
-    private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository; //이후에 login 로직에서 사용
 
-    @Override
-    public User authenticate(String name, String password) {
-        User user = userRepository.loadByName(name);
-        if (user == null) {
-            throw new IllegalArgumentException("[Auth] 유효하지 않은 사용자입니다. (" + name + ")");
-        }
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
 
-        if (user.getPassword().equals(password)) {
-            System.out.println(user);
-            return user;
-        } else {
-            throw new IllegalArgumentException("[Auth] 패스워드가 일치하지 않습니다. (" + name + ")");
-        }
-    }
+  @Override
+  public UserDto login(LoginRequest loginRequest) {
+    String username = loginRequest.username();
+    String password = loginRequest.password();
+
+    User user = userRepository
+        .findByUsernameAndPassword(username, password)
+        .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
+
+    return userMapper.toDto(user);
+  }
 }

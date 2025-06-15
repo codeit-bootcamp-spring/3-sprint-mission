@@ -1,13 +1,9 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+public record UserCreateRequest(
+    String username,
+    String email,
+    String password
+) {
 
-@Getter
-@AllArgsConstructor
-public class UserCreateRequest {
-    private String name;
-    private String email;
-    private String password;
 }

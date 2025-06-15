@@ -1,13 +1,9 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+public record UserUpdateRequest(
+    String newUsername,
+    String newEmail,
+    String newPassword
+) {
 
-import java.util.UUID;
-
-@Getter
-@AllArgsConstructor
-public class UserUpdateRequest {
-    private UUID userId;
-    private BinaryContentCreateRequest binaryContentCreateRequest;
 }

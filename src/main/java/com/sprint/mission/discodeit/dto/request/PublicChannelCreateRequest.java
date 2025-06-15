@@ -1,15 +1,8 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import com.sprint.mission.discodeit.dto.entity.ChannelType;
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+public record PublicChannelCreateRequest(
+    String name,
+    String description
+) {
 
-@Getter
-@AllArgsConstructor
-public class PublicChannelCreateRequest {
-    @NotBlank
-    private String name;
-
-    private String description;
 }
