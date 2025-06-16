@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration xmlns="https://logging.apache.org/xml/ns"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="https://logging.apache.org/xml/ns https://logging.apache.org/xml/ns/log4j-config-2.xsd">
+
+  <!-- 공통 속성 정의 -->
+  <Properties>
+    <Property name="logDir">logs</Property>
+    <Property name="maxFileSize">50 MB</Property>
+
+    <!-- 콘솔 색상 로그 -->
+    <Property name="CONSOLE_LOG_PATTERN">
+      <![CDATA[%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %highlight{%-5level} %style{[%equals{%X{traceId}}{}{startup}]}{cyan} %style{%logger{36}}{yellow} - %msg%n]]></Property>
+
+    <!-- 파일 로그 -->
+    <Property name="FILE_LOG_PATTERN">
+      <![CDATA[%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%equals{%X{traceId}}{}{startup}] [%X{method}{}{-}] [%X{requestURI}{}{-}] [%X{remoteAddr}{}{-}] %logger{36} - %msg%n]]></Property>
+  </Properties>
+
+  <!-- 로그 출력 위치 설정 -->
+  <Appenders>
+    <!-- 콘솔 로그 -->
+    <Console name="CONSOLE">
+      <PatternLayout pattern="${CONSOLE_LOG_PATTERN}"/>
+    </Console>
+
+    <!-- JSON 로그 -->
+    <RollingFile name="JSON_FILE_LOG"
+      fileName="${logDir}/main.log"
+      filePattern="${logDir}/main-%d{yyyy-MM-dd}-%i.log.gz">
+      <JsonTemplateLayout/>
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1"/>
+        <SizeBasedTriggeringPolicy size="${maxFileSize}"/>
+      </Policies>
+    </RollingFile>
+
+    <!-- 디버그 로그 -->
+    <RollingFile name="DEBUG_FILE_LOG"
+      fileName="${logDir}/debug.log"
+      filePattern="${logDir}/debug-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout pattern="${FILE_LOG_PATTERN}"/>
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1"/>
+        <SizeBasedTriggeringPolicy size="${maxFileSize}"/>
+      </Policies>
+    </RollingFile>
+  </Appenders>
+
+
+  <!-- 로그 레벨 및 Logger 설정 -->
+  <Loggers>
+    <Root level="INFO">
+      <AppenderRef ref="CONSOLE" level="DEBUG"/>
+      <AppenderRef ref="JSON_FILE_LOG"/>
+    </Root>
+
+    <Logger name="com.sprint" level="DEBUG">
+      <AppenderRef ref="DEBUG_FILE_LOG"/>
+    </Logger>
+
+    <Logger name="org.hibernate" level="WARN"/>
+
+    <Logger name="p6spy" level="DEBUG" additivity="false">
+      <AppenderRef ref="CONSOLE"/>
+      <AppenderRef ref="DEBUG_FILE_LOG"/>
+    </Logger>
+  </Loggers>
+
+</Configuration>

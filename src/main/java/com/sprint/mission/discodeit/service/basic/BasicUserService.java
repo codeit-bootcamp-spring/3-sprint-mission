@@ -18,17 +18,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class BasicUserService implements UserService {
-
-  private static final Logger log = LogManager.getLogger(BasicUserService.class);
 
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;

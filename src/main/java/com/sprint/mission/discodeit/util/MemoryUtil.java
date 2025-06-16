@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.util;
 
+// @Slf4j
 public class MemoryUtil {
 
 //  private static final Logger log = LogManager.getLogger(MemoryUtil.class);
