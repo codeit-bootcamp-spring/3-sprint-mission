@@ -15,8 +15,6 @@ import org.springframework.stereotype.Component;
  */
 @Mapper(componentModel = "spring")
 public interface AdvancedUserStatusMapper {
-//    AdvancedUserStatusMapper INSTANCE = Mappers.getMapper(AdvancedUserStatusMapper.class);
-
     @Mapping(source = "user.id", target = "userId")
     JpaUserStatusResponse toDto(UserStatus userStatus);
 }

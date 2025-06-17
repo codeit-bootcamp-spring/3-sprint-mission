@@ -48,7 +48,7 @@ public class BasicUserService implements UserService {
     @Transactional(readOnly = true)
     public List<JpaUserResponse> findAllUsers() {
         List<User> users = userRepository.findAllWithBinaryContentAndUserStatus();
-        System.out.println(users.size());
+
 
         List<JpaUserResponse> responses = new ArrayList<>();
         // user fields + online 으로 response 생성
