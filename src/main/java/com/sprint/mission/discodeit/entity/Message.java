@@ -21,8 +21,9 @@ import java.util.*;
  */
 @Getter
 @Entity
-@SuperBuilder
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @ToString
 @Table(name = "messages", schema = "discodeit")
 public class Message extends BaseUpdatableEntity implements Serializable {

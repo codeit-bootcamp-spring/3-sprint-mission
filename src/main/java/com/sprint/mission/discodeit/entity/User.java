@@ -1,10 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.apache.logging.log4j.util.Lazy;
 
@@ -28,6 +25,8 @@ import java.util.UUID;
 @Entity
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "users", schema = "discodeit")
 public class User extends BaseUpdatableEntity implements Serializable {
     private static final long serialVersionUID = 1L;

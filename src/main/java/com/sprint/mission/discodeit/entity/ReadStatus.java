@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -20,7 +22,8 @@ import java.util.UUID;
 @Table(name = "read_statuses", schema = "discodeit")
 @Getter
 @NoArgsConstructor
-@SuperBuilder
+@AllArgsConstructor
+@Builder
 public class ReadStatus extends BaseUpdatableEntity {
 
     @Column(name = "last_read_at")

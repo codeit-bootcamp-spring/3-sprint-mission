@@ -1,10 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
@@ -24,6 +21,7 @@ import java.util.UUID;
 @Getter
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Table(name = "binary_contents", schema = "discodeit")
 public class BinaryContent extends BaseEntity implements Serializable {
@@ -40,12 +38,4 @@ public class BinaryContent extends BaseEntity implements Serializable {
 
     @Column(name = "extensions", nullable = false, length = 20)
     private String extension;
-
-    public BinaryContent(String fileName, Long size, String contentType, String extension) {
-        super();
-        this.fileName = fileName;
-        this.size = size;
-        this.contentType = contentType;
-        this.extension = extension;
-    }
 }
