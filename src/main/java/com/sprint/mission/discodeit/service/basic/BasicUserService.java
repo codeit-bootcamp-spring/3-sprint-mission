@@ -1,14 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.user.*;
+import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
-//import com.sprint.mission.discodeit.mapper.original.UserMapper;
 import com.sprint.mission.discodeit.mapper.advanced.AdvancedUserMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
@@ -66,7 +65,7 @@ public class BasicUserService implements UserService {
             UserCreateRequest userCreateRequest,
             Optional<BinaryContentCreateRequest> profile
     ) {
-        boolean usernameNotUnique =userRepository.existsByUsername(userCreateRequest.username());
+        boolean usernameNotUnique = userRepository.existsByUsername(userCreateRequest.username());
         boolean emailNotUnique = userRepository.existsByEmail(userCreateRequest.email());
 
         if (usernameNotUnique || emailNotUnique) {
@@ -93,11 +92,12 @@ public class BasicUserService implements UserService {
             userRepository.save(user);
         } else {
             // USER 객체 생성
-            user = new User(
-                    userCreateRequest.username(),
-                    userCreateRequest.email(),
-                    userCreateRequest.password(),
-                    nullableProfile);
+            user = User.builder()
+                .username(userCreateRequest.username())
+                .email(userCreateRequest.email())
+                .password(userCreateRequest.password())
+                .profile(nullableProfile)
+                .build();
             userRepository.save(user);
         }
         // USER STATUS

@@ -24,6 +24,7 @@ import java.time.Instant;
 @Table(name = "user_statuses", schema = "discodeit")
 @Setter
 @Getter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -52,15 +53,4 @@ public class UserStatus extends BaseUpdatableEntity implements Serializable {
         this.lastActiveAt = Instant.now();
     }
 
-    @Override
-    public String toString() {
-        return "UserStatus{" +
-                "user=" + user +
-                ", lastActiveAt=" + lastActiveAt +
-                ", updatedAt(updatable)=" + updatedAt +
-                ", id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
-    }
 }
