@@ -10,12 +10,12 @@ public record ErrorResponse(
     LocalDateTime timestamp
 ) {
 
-  public static ErrorResponse of(HttpStatus status, String message) {
-    return new ErrorResponse(
-        status.getReasonPhrase(),
-        message,
-        status.value(),
-        LocalDateTime.now()
-    );
-  }
+    public static ErrorResponse of(HttpStatus status, String message) {
+        return new ErrorResponse(
+            status.getReasonPhrase(),
+            message,
+            status.value(),
+            LocalDateTime.now()
+        );
+    }
 }
