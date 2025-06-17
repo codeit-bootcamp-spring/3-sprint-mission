@@ -90,13 +90,10 @@ public class BasicMessageService implements MessageService {
             cursor,
             pageable
         );
-    List<MessageResponse> dtoList = messageMapper.fromEntityList(messages.getContent());
+    List<MessageResponse> responses = messageMapper.fromEntityList(messages.getContent());
 
-    Instant newNextCursor = dtoList.isEmpty() ? null : dtoList.get(dtoList.size() - 1).createdAt();
-
-    List<MessageResponse> responses = messages.stream()
-        .map(messageAssembler::toResponse)
-        .toList();
+    Instant newNextCursor =
+        responses.isEmpty() ? null : responses.get(responses.size() - 1).createdAt();
 
     return new PageResponse<>(
         responses,

@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service;
+package com.sprint.mission.discodeit.service.binarycontent;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -103,14 +103,14 @@ class BasicBinaryContentServiceTest {
 
     @Test
     void 여러_ID로_BinaryContent_목록을_조회한다() {
-      UUID id1 = UUID.randomUUID();
-      UUID id2 = UUID.randomUUID();
+      BinaryContent content1 = BinaryContentFixture.createValidWithId();
+      BinaryContent content2 = BinaryContentFixture.createValidWithId();
 
-      BinaryContent content1 = BinaryContentFixture.createValid();
-      BinaryContent content2 = BinaryContentFixture.createValid();
+      UUID id1 = content1.getId();
+      UUID id2 = content2.getId();
 
-      when(binaryContentRepository.findById(id1)).thenReturn(Optional.of(content1));
-      when(binaryContentRepository.findById(id2)).thenReturn(Optional.of(content2));
+      when(binaryContentRepository.findAllById(List.of(id1, id2)))
+          .thenReturn(List.of(content1, content2));
 
       List<BinaryContentResponse> result = binaryContentService.findAllByIdIn(List.of(id1, id2));
 
@@ -118,8 +118,8 @@ class BasicBinaryContentServiceTest {
       assertThat(result)
           .extracting(BinaryContentResponse::id)
           .containsExactlyInAnyOrder(content1.getId(), content2.getId());
-      verify(binaryContentRepository).findById(id1);
-      verify(binaryContentRepository).findById(id2);
+
+      verify(binaryContentRepository).findAllById(List.of(id1, id2));
     }
   }
 }

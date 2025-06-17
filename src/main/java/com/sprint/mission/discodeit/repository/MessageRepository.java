@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
@@ -20,6 +21,9 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
   @EntityGraph(attributePaths = {"author", "channel", "attachments"})
   List<Message> findAllByChannelId(UUID channelId);
+
+  @Query("SELECT m.id FROM Message m WHERE m.channel.id = :channelId")
+  List<UUID> findMessageIdsByChannelId(@Param("channelId") UUID channelId);
 
   @Query("""
       SELECT MAX(m.createdAt)
@@ -32,4 +36,6 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
       Instant createdAt, Pageable pageable);
 
   void deleteById(@NonNull UUID messageId);
+
+  void deleteByChannelId(@NonNull UUID channelId);
 }

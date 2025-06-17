@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service;
+package com.sprint.mission.discodeit.service.channel;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -14,14 +14,12 @@ import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.ChannelException;
 import com.sprint.mission.discodeit.fixture.ChannelFixture;
-import com.sprint.mission.discodeit.fixture.MessageFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageAttachmentRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -50,6 +48,8 @@ class BasicChannelServiceTest {
   ChannelRepository channelRepository;
   @Mock
   MessageRepository messageRepository;
+  @Mock
+  MessageAttachmentRepository messageAttachmentRepository;
   @Mock
   ReadStatusRepository readStatusRepository;
   @Mock
@@ -80,8 +80,7 @@ class BasicChannelServiceTest {
   }
 
   @Nested
-  @DisplayName("Create 테스트")
-  class CreateTests {
+  class Create {
 
     @Test
     @DisplayName("공개 채널 생성")
@@ -110,8 +109,7 @@ class BasicChannelServiceTest {
   }
 
   @Nested
-  @DisplayName("Read 테스트")
-  class ReadTests {
+  class Read {
 
     @Test
     @DisplayName("유저별 채널 조회 및 응답 검증")
@@ -146,12 +144,10 @@ class BasicChannelServiceTest {
   }
 
   @Nested
-  @DisplayName("Update 테스트")
-  class UpdateTests {
+  class Update {
 
     @Test
-    @DisplayName("비공개 채널 이름 변경 시 예외")
-    void updatePrivateChannelNameThrowsException() {
+    void 비공개_채널_이름_변경_시_예외() {
       UUID channelId = UUID.randomUUID();
       Channel privateCh = Channel.createPrivate();
       when(channelRepository.findById(channelId)).thenReturn(Optional.of(privateCh));
@@ -163,8 +159,7 @@ class BasicChannelServiceTest {
     }
 
     @Test
-    @DisplayName("공개 채널 이름 및 설명 변경 성공")
-    void updatePublicChannelName_success() {
+    void 공개_채널_이름_및_설명_변경_성공() {
       UUID channelId = UUID.randomUUID();
       Channel publicCh = Channel.createPublic("old-name", "old-desc");
       when(channelRepository.findById(channelId)).thenReturn(Optional.of(publicCh));
@@ -186,21 +181,19 @@ class BasicChannelServiceTest {
   class DeleteTests {
 
     @Test
-    @DisplayName("채널 삭제 시 관련 메시지, ReadStatus, 채널 삭제 확인")
-    void deleteChannelAlsoDeletesRelatedData() {
+    void 채널_삭제_시_관련_데이터_삭제_확인() {
+      // Given
       UUID channelId = UUID.randomUUID();
       Channel channel = Channel.createPublic("general", "desc");
-      Message message = MessageFixture.createCustom("msg", user, channel);
-      ReadStatus status = ReadStatus.create(user, channel);
 
       when(channelRepository.findById(channelId)).thenReturn(Optional.of(channel));
-      when(messageRepository.findAll()).thenReturn(List.of(message));
-      when(readStatusRepository.findAllByChannelId(channelId)).thenReturn(List.of(status));
 
+      // When
       channelService.delete(channelId);
 
-      verify(messageRepository).deleteById(message.getId());
-      verify(readStatusRepository).deleteById(status.getId());
+      // Then
+      verify(messageRepository).deleteByChannelId(channelId);
+      verify(readStatusRepository).deleteByChannelId(channelId);
       verify(channelRepository).deleteById(channelId);
     }
   }

@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.ChannelException;
 import com.sprint.mission.discodeit.exception.UserException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageAttachmentRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -28,6 +29,7 @@ public class BasicChannelService implements ChannelService {
   private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
+  private final MessageAttachmentRepository messageAttachmentRepository;
   private final ChannelAssembler channelAssembler;
 
   @Override
@@ -82,20 +84,22 @@ public class BasicChannelService implements ChannelService {
     return channelAssembler.toResponse(updated);
   }
 
-
   @Override
   public ChannelResponse delete(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> ChannelException.notFound(channelId));
 
-    // 연관된 메시지 삭제
-    messageRepository.findAll().stream()
-        .filter(m -> m.getChannel().equals(channel))
-        .forEach(m -> messageRepository.deleteById(m.getId()));
+    // 해당 채널의 메시지 ID 목록 조회
+    List<UUID> messageIds = messageRepository.findMessageIdsByChannelId(channelId);
 
-    // 연관된 읽음 상태 삭제
-    readStatusRepository.findAllByChannelId(channelId)
-        .forEach(rs -> readStatusRepository.deleteById(rs.getId()));
+    // 첨부파일 먼저 삭제
+    messageAttachmentRepository.deleteByMessageIds(messageIds);
+
+    // 메시지 삭제
+    messageRepository.deleteByChannelId(channelId);
+
+    // 읽음 상태 삭제
+    readStatusRepository.deleteByChannelId(channelId);
 
     // 채널 삭제
     channelRepository.deleteById(channelId);

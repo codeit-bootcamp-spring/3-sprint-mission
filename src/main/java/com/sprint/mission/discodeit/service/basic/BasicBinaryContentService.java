@@ -52,8 +52,14 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Override
   public List<BinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds) {
-    return binaryContentIds.stream()
-        .map(this::find)
+    List<BinaryContent> contents = binaryContentRepository.findAllById(binaryContentIds);
+
+    if (contents.size() != binaryContentIds.size()) {
+      throw BinaryContentException.notFound(); // 일부 ID 누락 검증
+    }
+
+    return contents.stream()
+        .map(BinaryContentResponse::from)
         .toList();
   }
 

@@ -16,6 +16,8 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -51,10 +53,23 @@ public class ChannelAssembler {
 
     List<UserResponse> participants = List.of();
     if (channel.getType() == ChannelType.PRIVATE) {
-      participants = readStatusRepository.findAllByChannelId(channel.getId()).stream()
+      // 참여자 조회
+      List<User> users = readStatusRepository.findAllByChannelId(channel.getId()).stream()
           .map(ReadStatus::getUser)
-          .map(this::toUserResponseWithStatus)
-          .collect(Collectors.toList());
+          .toList();
+
+      // userId 리스트 추출
+      List<UUID> userIds = users.stream()
+          .map(User::getId)
+          .toList();
+
+      // 온라인 상태 일괄 조회 및 Map 캐싱
+      Map<UUID, UserStatus> userStatusMap = userStatusRepository.findByUserIdIn(userIds).stream()
+          .collect(Collectors.toMap(us -> us.getUser().getId(), us -> us));
+
+      participants = users.stream()
+          .map(user -> toUserResponseWithStatus(user, userStatusMap.get(user.getId())))
+          .toList();
     }
 
     return new ChannelResponse(
@@ -67,10 +82,8 @@ public class ChannelAssembler {
     );
   }
 
-  private UserResponse toUserResponseWithStatus(User user) {
-    boolean isOnline = userStatusRepository.findByUserId(user.getId())
-        .map(UserStatus::isOnline)
-        .orElse(false);
+  private UserResponse toUserResponseWithStatus(User user, UserStatus userStatus) {
+    boolean isOnline = userStatus != null && userStatus.isOnline();
 
     UserResponse base = userMapper.toResponse(user);
     return new UserResponse(

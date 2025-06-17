@@ -13,6 +13,12 @@ public class BinaryContentException extends BusinessException {
     super(errorCode, message);
   }
 
+  public static BinaryContentException notFound() {
+    return new BinaryContentException(ErrorCode.NOT_FOUND,
+        "BinaryContent를 찾을 수 없습니다."
+    );
+  }
+
   public static BinaryContentException notFound(UUID id) {
     return new BinaryContentException(ErrorCode.NOT_FOUND,
         MessageFormat.format("BinaryContent를 찾을 수 없습니다. [id: {0}]", id)
