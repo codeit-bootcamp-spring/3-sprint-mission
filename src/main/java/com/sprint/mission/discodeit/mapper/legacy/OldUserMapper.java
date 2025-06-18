@@ -1,9 +1,9 @@
-package com.sprint.mission.discodeit.mapper.original;
+package com.sprint.mission.discodeit.mapper.legacy;
 
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.mapper.advanced.AdvancedBinaryContentMapper;
+import com.sprint.mission.discodeit.mapper.advanced.BinaryContentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,9 +19,9 @@ import java.time.Instant;
 
 @RequiredArgsConstructor
 @Component
-public class UserMapper {
+public class OldUserMapper {
 //    private final BinaryContentMapper binaryContentMapper;
-    private final AdvancedBinaryContentMapper binaryContentMapper;
+    private final BinaryContentMapper binaryContentMapper;
 
     public JpaUserResponse toDto(User user) {
         if(user == null) return null;

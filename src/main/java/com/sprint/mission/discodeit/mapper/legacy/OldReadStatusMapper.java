@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.mapper.original;
+package com.sprint.mission.discodeit.mapper.legacy;
 
 import com.sprint.mission.discodeit.dto.readStatus.JpaReadStatusResponse;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * Date         : 2025. 5. 30.
  */
 @Component
-public class ReadStatusMapper {
+public class OldReadStatusMapper {
     public JpaReadStatusResponse toDto(ReadStatus readStatus) {
         if(readStatus == null) return null;
 

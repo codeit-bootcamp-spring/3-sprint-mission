@@ -6,8 +6,8 @@ import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateReque
 import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.mapper.advanced.AdvancedUserMapper;
-import com.sprint.mission.discodeit.mapper.original.ChannelMapper;
+import com.sprint.mission.discodeit.mapper.advanced.UserMapper;
+import com.sprint.mission.discodeit.mapper.advanced.ChannelMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
@@ -42,7 +42,7 @@ public class BasicChannelService implements ChannelService {
     private final JpaUserRepository userRepository;
     private final JpaMessageRepository messageRepository;
     private final ChannelMapper channelMapper;
-    private final AdvancedUserMapper userMapper;
+    private final UserMapper userMapper;
 
     @Override
     public JpaChannelResponse createChannel(PublicChannelCreateRequest request) {

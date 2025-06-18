@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS channels;
 CREATE TABLE IF NOT EXISTS binary_contents
 (
     id           UUID,
-    created_at   TIMESTAMPTZ  NOT NULL,
+    created_at timestamp with time zone NOT NULL,
     file_name    VARCHAR(255) NOT NULL,
     size         BIGINT       NOT NULL,
     content_type VARCHAR(100) NOT NULL,
@@ -24,8 +24,8 @@ CREATE TABLE IF NOT EXISTS binary_contents
 CREATE TABLE IF NOT EXISTS users
 (
     id         UUID,
-    created_at TIMESTAMPTZ  NOT NULL,
-    updated_at TIMESTAMPTZ,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
     username   VARCHAR(50)  NOT NULL,
     email      VARCHAR(100) NOT NULL,
     password   VARCHAR(60)  NOT NULL,
@@ -38,8 +38,8 @@ CREATE TABLE IF NOT EXISTS users
 CREATE TABLE IF NOT EXISTS user_statuses
 (
     id             UUID,
-    created_at     TIMESTAMPTZ NOT NULL,
-    updated_at     TIMESTAMPTZ,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
     user_id        UUID UNIQUE NOT NULL,
     last_active_at TIMESTAMPTZ NOT NULL,
 
@@ -50,8 +50,8 @@ CREATE TABLE IF NOT EXISTS user_statuses
 CREATE TABLE IF NOT EXISTS channels
 (
     id          UUID,
-    created_at  timestamptz NOT NULL,
-    updated_at  timestamptz,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
     name        varchar(100),
     description varchar(500),
     type        varchar(10) NOT NULL check ( type IN ('PUBLIC', 'PRIVATE')),
@@ -62,8 +62,8 @@ CREATE TABLE IF NOT EXISTS channels
 CREATE TABLE IF NOT EXISTS read_statuses
 (
     id           UUID,
-    created_at   TIMESTAMPTZ NOT NULL,
-    updated_at   TIMESTAMPTZ,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
     user_id      UUID,
     channel_id   UUID,
     last_read_at TIMESTAMPTZ,
@@ -77,8 +77,8 @@ CREATE TABLE IF NOT EXISTS read_statuses
 CREATE TABLE IF NOT EXISTS messages
 (
     id         UUID,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
     content    TEXT,
     channel_id UUID        NOT NULL,
     author_id  UUID,

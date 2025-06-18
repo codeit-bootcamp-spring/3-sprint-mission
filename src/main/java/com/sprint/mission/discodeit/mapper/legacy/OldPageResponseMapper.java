@@ -1,13 +1,12 @@
-package com.sprint.mission.discodeit.mapper.original;
+package com.sprint.mission.discodeit.mapper.legacy;
 
 import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
 import com.sprint.mission.discodeit.dto.message.response.JpaPageResponse;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.mapper.advanced.AdvancedMessageMapper;
+import com.sprint.mission.discodeit.mapper.advanced.MessageMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Set;
@@ -21,10 +20,10 @@ import java.util.stream.Collectors;
  */
 @RequiredArgsConstructor
 //@Component
-public class PageResponseMapper {
+public class OldPageResponseMapper {
 
     //    private final MessageMapper messageMapper;
-    private final AdvancedMessageMapper messageMapper;
+    private final MessageMapper messageMapper;
 
     public JpaPageResponse fromSlice(Slice<Message> slice) {
         Set<JpaMessageResponse> pageResponses = slice.getContent().stream()

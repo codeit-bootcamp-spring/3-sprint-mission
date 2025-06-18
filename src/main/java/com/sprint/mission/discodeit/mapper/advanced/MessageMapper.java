@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * PackageName  : com.sprint.mission.discodeit.mapper.advanced
@@ -13,8 +12,8 @@ import org.mapstruct.factory.Mappers;
  * Date         : 2025. 6. 3.
  */
 
-@Mapper(componentModel = "spring", uses = {AdvancedUserMapper.class})
-public interface AdvancedMessageMapper {
+@Mapper(componentModel = "spring", uses = {UserMapper.class})
+public interface MessageMapper {
 
     @Mapping(source = "channel.id", target = "channelId")
     JpaMessageResponse toDto(Message message);

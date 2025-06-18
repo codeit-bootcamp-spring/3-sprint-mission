@@ -8,7 +8,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
-import com.sprint.mission.discodeit.mapper.advanced.AdvancedUserMapper;
+import com.sprint.mission.discodeit.mapper.advanced.UserMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
@@ -41,14 +41,13 @@ public class BasicUserService implements UserService {
     private final JpaBinaryContentRepository binaryContentRepository;
     private final JpaUserStatusRepository userStatusRepository;
     private final FileUploadUtils fileUploadUtils;
-    private final AdvancedUserMapper userMapper;
+    private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
 
 
     @Transactional(readOnly = true)
     public List<JpaUserResponse> findAllUsers() {
         List<User> users = userRepository.findAllWithBinaryContentAndUserStatus();
-
 
         List<JpaUserResponse> responses = new ArrayList<>();
         // user fields + online 으로 response 생성
@@ -69,7 +68,11 @@ public class BasicUserService implements UserService {
         boolean emailNotUnique = userRepository.existsByEmail(userCreateRequest.email());
 
         if (usernameNotUnique || emailNotUnique) {
-            throw new IllegalArgumentException("User with email " + userCreateRequest.email() + " already exists");
+            if (usernameNotUnique) {
+                throw new IllegalArgumentException("User with username " + userCreateRequest.username() + " already exists");
+            } else {
+                throw new IllegalArgumentException("User with email " + userCreateRequest.email() + " already exists");
+            }
         }
 
         BinaryContent nullableProfile = profile
@@ -79,6 +82,7 @@ public class BasicUserService implements UserService {
                     String contentType = profileRequest.contentType();
                     byte[] bytes = profileRequest.bytes();
                     String extension = profileRequest.fileName().substring(filename.lastIndexOf("."));
+
                     BinaryContent binaryContent = new BinaryContent(filename, (long) bytes.length, contentType, extension);
                     binaryContentRepository.save(binaryContent);
                     binaryContentStorage.put(binaryContent.getId(), bytes);

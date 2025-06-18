@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.mapper.original;
+package com.sprint.mission.discodeit.mapper.legacy;
 
 import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * Date         : 2025. 5. 30.
  */
 @Component
-public class BinaryContentMapper {
+public class OldBinaryContentMapper {
 
     public JpaBinaryContentResponse toDto(BinaryContent binaryContent) {
         if(binaryContent == null) return null;

@@ -1,11 +1,11 @@
-package com.sprint.mission.discodeit.mapper.original;
+package com.sprint.mission.discodeit.mapper.legacy;
 
 import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.mapper.advanced.AdvancedBinaryContentMapper;
-import com.sprint.mission.discodeit.mapper.advanced.AdvancedUserMapper;
+import com.sprint.mission.discodeit.mapper.advanced.BinaryContentMapper;
+import com.sprint.mission.discodeit.mapper.advanced.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,11 +20,11 @@ import java.util.List;
  */
 @Component
 @RequiredArgsConstructor
-public class MessageMapper {
+public class OldMessageMapper {
 //    private final UserMapper userMapper;
-    private final AdvancedUserMapper userMapper;
+    private final UserMapper userMapper;
 //    private final BinaryContentMapper binaryContentMapper;
-    private final AdvancedBinaryContentMapper binaryContentMapper;
+    private final BinaryContentMapper binaryContentMapper;
 
     public JpaMessageResponse toDto(Message message) {
         if(message == null) return null;

@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.mapper.original;
+package com.sprint.mission.discodeit.mapper.legacy;
 
 import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * Date         : 2025. 5. 30.
  */
 @Component
-public class UserStatusMapper {
+public class OldUserStatusMapper {
     public JpaUserStatusResponse toDto(UserStatus userStatus) {
         if(userStatus == null) return null;
 

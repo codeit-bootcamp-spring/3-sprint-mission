@@ -3,12 +3,8 @@ package com.sprint.mission.discodeit.mapper.advanced;
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Qualifier;
-import org.mapstruct.factory.Mappers;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -19,8 +15,8 @@ import java.time.Instant;
  * Author       : dounguk
  * Date         : 2025. 6. 3.
  */
-@Mapper(uses = {AdvancedBinaryContentMapper.class}, componentModel = "spring")
-public interface AdvancedUserMapper {
+@Mapper(uses = {BinaryContentMapper.class}, componentModel = "spring")
+public interface UserMapper {
 
     @Mapping(source = "profile", target = "profile")
     @Mapping(target = "online", expression = "java(isOnline(user.getStatus()))")

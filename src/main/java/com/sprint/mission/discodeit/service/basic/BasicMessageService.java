@@ -4,16 +4,13 @@ import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse;
 import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
-import com.sprint.mission.discodeit.dto.message.response.JpaPageResponse;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.mapper.advanced.AdvancedMessageMapper;
-import com.sprint.mission.discodeit.mapper.original.PageResponseMapper;
+import com.sprint.mission.discodeit.mapper.advanced.MessageMapper;
 import com.sprint.mission.discodeit.repository.jpa.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +42,7 @@ public class BasicMessageService implements MessageService {
     private final JpaBinaryContentRepository binaryContentRepository;
 //    private final JpaReadStatusRepository readStatusRepository;
 //    private final MessageMapper messageMapper;
-    private final AdvancedMessageMapper messageMapper;
+    private final MessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
 //    private final PageResponseMapper pageResponseMapper;
 

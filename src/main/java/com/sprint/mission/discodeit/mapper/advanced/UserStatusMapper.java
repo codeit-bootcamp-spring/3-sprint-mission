@@ -4,8 +4,6 @@ import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
-import org.springframework.stereotype.Component;
 
 /**
  * PackageName  : com.sprint.mission.discodeit.mapper
@@ -14,7 +12,7 @@ import org.springframework.stereotype.Component;
  * Date         : 2025. 6. 3.
  */
 @Mapper(componentModel = "spring")
-public interface AdvancedUserStatusMapper {
+public interface UserStatusMapper {
     @Mapping(source = "user.id", target = "userId")
     JpaUserStatusResponse toDto(UserStatus userStatus);
 }

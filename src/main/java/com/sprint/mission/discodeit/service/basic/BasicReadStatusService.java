@@ -6,7 +6,7 @@ import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusUpdateReque
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.mapper.advanced.AdvancedReadStatusMapper;
+import com.sprint.mission.discodeit.mapper.advanced.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
@@ -36,7 +36,7 @@ public class BasicReadStatusService implements ReadStatusService {
     private final JpaReadStatusRepository readStatusRepository;
     private final JpaUserRepository userRepository;
     private final JpaChannelRepository channelRepository;
-    private final AdvancedReadStatusMapper readStatusMapper;
+    private final ReadStatusMapper readStatusMapper;
 
 
     @Override

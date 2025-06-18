@@ -4,8 +4,6 @@ import com.sprint.mission.discodeit.dto.readStatus.JpaReadStatusResponse;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
-import org.springframework.stereotype.Component;
 
 /**
  * PackageName  : com.sprint.mission.discodeit.mapper.advanced
@@ -15,7 +13,7 @@ import org.springframework.stereotype.Component;
  */
 //@Component
 @Mapper(componentModel = "spring")
-public interface AdvancedReadStatusMapper {
+public interface ReadStatusMapper {
 
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "channel.id", target = "channelId")

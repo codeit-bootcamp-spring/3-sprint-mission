@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.mapper.advanced.AdvancedUserStatusMapper;
+import com.sprint.mission.discodeit.mapper.advanced.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,7 +24,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class BasicUserStatusService implements UserStatusService {
   private final JpaUserRepository userRepository;
-  private final AdvancedUserStatusMapper userStatusMapper;
+  private final UserStatusMapper userStatusMapper;
 
   @Transactional
   @Override

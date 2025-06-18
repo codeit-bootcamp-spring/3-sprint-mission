@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.mapper.original;
+package com.sprint.mission.discodeit.mapper.advanced;
 
 import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.mapper.advanced.AdvancedUserMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,7 @@ import java.util.stream.Collectors;
 public class ChannelMapper {
     private final JpaMessageRepository messageRepository;
     private final JpaReadStatusRepository readStatusRepository;
-    private final AdvancedUserMapper userMapper;
+    private final UserMapper userMapper;
 
     public JpaChannelResponse toDto(Channel channel) {
         if(channel == null) return null;
