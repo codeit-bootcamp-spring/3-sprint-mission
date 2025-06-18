@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface BinaryContentMapper {
 
-  @Mapping(target = "bytes", expression = "java(null)")
-  BinaryContentDto toDto(BinaryContent binaryContent);
+    @Mapping(target = "bytes", expression = "java(null)")
+    BinaryContentDto toDto(BinaryContent binaryContent);
 
 }

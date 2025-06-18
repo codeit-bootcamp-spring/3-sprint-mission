@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 public interface MessageMapper {
 
 
-  @Mapping(source = "channel.id", target = "channelId")
-  MessageDto toDto(Message message);
+    @Mapping(source = "channel.id", target = "channelId")
+    MessageDto toDto(Message message);
 
 }

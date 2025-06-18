@@ -18,35 +18,35 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ChannelMapper {
 
-  private final MessageRepository messageRepository;
-  private final ReadStatusRepository readStatusRepository;
-  private final UserMapper userMapper;
+    private final MessageRepository messageRepository;
+    private final ReadStatusRepository readStatusRepository;
+    private final UserMapper userMapper;
 
-  public ChannelDto toDto(Channel channel) {
-    UUID channelId = channel.getId();
+    public ChannelDto toDto(Channel channel) {
+        UUID channelId = channel.getId();
 
-    List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelId(channelId);
-    List<UserDto> participants = readStatuses.stream()
-        .map(ReadStatus::getUser)
-        .distinct()
-        .map(userMapper::toDto)
-        .toList();
+        List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelId(channelId);
+        List<UserDto> participants = readStatuses.stream()
+            .map(ReadStatus::getUser)
+            .distinct()
+            .map(userMapper::toDto)
+            .toList();
 
-    List<Message> messages = messageRepository.findAllByChannelId(channelId);
-    Instant lastMessageAt = messages.stream()
-        .map(Message::getCreatedAt)
-        .max(Comparator.naturalOrder())
-        .orElse(null);
+        List<Message> messages = messageRepository.findAllByChannelId(channelId);
+        Instant lastMessageAt = messages.stream()
+            .map(Message::getCreatedAt)
+            .max(Comparator.naturalOrder())
+            .orElse(null);
 
-    return new ChannelDto(
-        channelId,
-        channel.getType(),
-        channel.getName(),
-        channel.getDescription(),
-        participants,
-        lastMessageAt
-    );
+        return new ChannelDto(
+            channelId,
+            channel.getType(),
+            channel.getName(),
+            channel.getDescription(),
+            participants,
+            lastMessageAt
+        );
 
-  }
+    }
 
 }
