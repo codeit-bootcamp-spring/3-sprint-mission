@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,7 +71,7 @@ public class BasicMessageService implements MessageService {
                 .build();
 
         message.updateAttachments(binaryContents);
-        
+
         messageRepository.save(message);
 
         return messageMapper.toDto(message);
@@ -86,16 +87,27 @@ public class BasicMessageService implements MessageService {
     @Override
     public PageResponse<MessageResponseDto> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable) {
         int size = pageable.getPageSize();
+
+        Pageable extendedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                size + 1,
+                pageable.getSort()
+        );
+
         List<Message> messages;
 
         if (cursor == null) {
-            messages = messageRepository.findPageByChannelId(channelId, pageable);
+            messages = messageRepository.findPageByChannelId(channelId, extendedPageable);
         } else {
-            messages = messageRepository.findPageByChannelIdAndCursor(channelId, cursor, pageable);
+            messages = messageRepository.findByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(
+                    channelId, cursor, extendedPageable);
         }
 
-        boolean hasNext = messages.size() == size;
-        Instant nextCursor = hasNext ? messages.get(messages.size() - 1).getCreatedAt() : null;
+        boolean hasNext = messages.size() > size;
+
+        List<Message> contentMessages = hasNext ? messages.subList(0, size) : messages;
+
+        Instant nextCursor = hasNext ? contentMessages.get(contentMessages.size() - 1).getCreatedAt() : null;
 
         List<MessageResponseDto> content = messages.stream()
                 .map(messageMapper::toDto)
