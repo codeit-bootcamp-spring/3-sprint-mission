@@ -127,9 +127,22 @@ public class BasicMessageService implements MessageService {
   @Transactional(readOnly = true)
   public List<MessageDto> findAllByChannelId(UUID channelId) {
     log.info("메시지 조회 요청 - 채널ID: {}", channelId);
-    // N+1 문제 해결: Fetch Join으로 작성자 정보를 한 번에 조회
-    List<Message> messages = messageRepository.findAllByChannelIdWithAuthorOrderByCreatedAtAsc(channelId);
+    // N+1 문제 해결: Fetch Join으로 작성자와 첨부파일 정보를 한 번에 조회
+    List<Message> messages = messageRepository.findAllByChannelIdWithAuthorAndAttachmentsOrderByCreatedAtAsc(channelId);
     log.info("메시지 조회 완료 - 채널ID: {}, 메시지 개수: {}", channelId, messages.size());
+    return entityDtoMapper.toMessageDtoList(messages);
+  }
+
+  /**
+   * 성능 최적화를 위한 선택적 조회 메서드
+   * 첨부파일이 필요 없는 경우 작성자 정보만 조회
+   */
+  @Transactional(readOnly = true)
+  public List<MessageDto> findAllByChannelIdWithAuthorOnly(UUID channelId) {
+    log.info("메시지 조회 요청 (작성자만) - 채널ID: {}", channelId);
+    // 작성자 정보만 필요한 경우 가벼운 쿼리 사용
+    List<Message> messages = messageRepository.findAllByChannelIdWithAuthorOrderByCreatedAtAsc(channelId);
+    log.info("메시지 조회 완료 (작성자만) - 채널ID: {}, 메시지 개수: {}", channelId, messages.size());
     return entityDtoMapper.toMessageDtoList(messages);
   }
 
@@ -137,9 +150,24 @@ public class BasicMessageService implements MessageService {
   @Transactional(readOnly = true)
   public PageResponse<MessageDto> findAllByChannelIdWithPaging(UUID channelId, Pageable pageable) {
     log.info("메시지 페이징 조회 요청 - 채널ID: {}, 페이지: {}, 크기: {}", channelId, pageable.getPageNumber(), pageable.getPageSize());
-    // N+1 문제 해결: Fetch Join으로 작성자 정보를 한 번에 조회
-    Page<Message> messagePage = messageRepository.findAllByChannelIdWithAuthor(channelId, pageable);
+    // N+1 문제 해결: Fetch Join으로 작성자와 첨부파일 정보를 한 번에 조회
+    Page<Message> messagePage = messageRepository.findAllByChannelIdWithAuthorAndAttachments(channelId, pageable);
     log.info("메시지 페이징 조회 완료 - 채널ID: {}, 총 메시지: {}, 현재 페이지: {}", channelId, messagePage.getTotalElements(),
+        messagePage.getNumber());
+    return pageMapper.toPageResponse(messagePage, entityDtoMapper::toDto);
+  }
+
+  /**
+   * 성능 최적화를 위한 선택적 페이징 조회 메서드
+   * 첨부파일이 필요 없는 경우 작성자 정보만 조회
+   */
+  @Transactional(readOnly = true)
+  public PageResponse<MessageDto> findAllByChannelIdWithPagingAuthorOnly(UUID channelId, Pageable pageable) {
+    log.info("메시지 페이징 조회 요청 (작성자만) - 채널ID: {}, 페이지: {}, 크기: {}", channelId, pageable.getPageNumber(),
+        pageable.getPageSize());
+    // 작성자 정보만 필요한 경우 가벼운 쿼리 사용
+    Page<Message> messagePage = messageRepository.findAllByChannelIdWithAuthor(channelId, pageable);
+    log.info("메시지 페이징 조회 완료 (작성자만) - 채널ID: {}, 총 메시지: {}, 현재 페이지: {}", channelId, messagePage.getTotalElements(),
         messagePage.getNumber());
     return pageMapper.toPageResponse(messagePage, entityDtoMapper::toDto);
   }
