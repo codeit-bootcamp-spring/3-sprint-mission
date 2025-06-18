@@ -9,6 +9,8 @@ import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -26,12 +28,17 @@ public class BasicUserStatusService implements UserStatusService {
   private final JpaUserRepository userRepository;
   private final UserStatusMapper userStatusMapper;
 
+  private static final Logger log = LoggerFactory.getLogger(BasicUserStatusService.class);
+
   @Transactional
   @Override
   public JpaUserStatusResponse updateByUserId(UUID userId, Instant newLastActiveAt) {
     Objects.requireNonNull(userId, "no userId in param");
     Objects.requireNonNull(newLastActiveAt, "no userId in param");
 
+    if (userRepository.count() < 1) {
+      log.warn("any user exists");
+    }
     User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("UserStatus with userId " + userId + " not found"));
     UserStatus userStatus = user.getStatus();
     userStatus.setLastActiveAt(newLastActiveAt);

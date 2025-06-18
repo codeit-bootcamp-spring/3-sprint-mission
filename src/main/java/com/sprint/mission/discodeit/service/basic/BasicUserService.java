@@ -15,6 +15,8 @@ import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,8 @@ public class BasicUserService implements UserService {
     private final FileUploadUtils fileUploadUtils;
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
+
+    private static final Logger log= LoggerFactory.getLogger(BasicUserService.class);
 
 
     @Transactional(readOnly = true)
@@ -74,6 +78,8 @@ public class BasicUserService implements UserService {
                 throw new IllegalArgumentException("User with email " + userCreateRequest.email() + " already exists");
             }
         }
+
+        log.info("profile image is " + profile.map(p -> p.fileName()).stream().findFirst().orElse(null));
 
         BinaryContent nullableProfile = profile
             .map(

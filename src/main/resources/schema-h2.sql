@@ -33,37 +33,37 @@ CREATE TABLE IF NOT EXISTS users (
     );
 
 CREATE TABLE IF NOT EXISTS user_statuses (
-                                    id             UUID PRIMARY KEY,
-                                    created_at timestamp with time zone NOT NULL,
-                                    updated_at timestamp with time zone,
-                                             user_id        UUID        NOT NULL UNIQUE,
-                                             last_active_at TIMESTAMP       NOT NULL,
-                                             CONSTRAINT fk_user
-                                             FOREIGN KEY (user_id)
+    id             UUID PRIMARY KEY,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
+     user_id        UUID        NOT NULL UNIQUE,
+     last_active_at TIMESTAMP       NOT NULL,
+     CONSTRAINT fk_user
+     FOREIGN KEY (user_id)
     REFERENCES users(id)
     ON DELETE CASCADE
     );
 
 
 CREATE TABLE IF NOT EXISTS channels (
-                                        id           UUID PRIMARY KEY,
-                                        created_at timestamp with time zone NOT NULL,
-                                        updated_at timestamp with time zone,
-                                        name         VARCHAR(100),
+    id           UUID PRIMARY KEY,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
+    name         VARCHAR(100),
     description  VARCHAR(500),
     type         VARCHAR(10) NOT NULL
     CHECK (type IN ('PUBLIC','PRIVATE'))
     );
 
 CREATE TABLE IF NOT EXISTS read_statuses (
-                                             id           UUID PRIMARY KEY,
-                                             created_at timestamp with time zone NOT NULL,
-                                             updated_at timestamp with time zone,
-                                             user_id      UUID,
-                                             channel_id   UUID,
-                                             last_read_at TIMESTAMP,
-                                             CONSTRAINT fk_rs_user
-                                             FOREIGN KEY (user_id)
+     id           UUID PRIMARY KEY,
+     created_at timestamp with time zone NOT NULL,
+     updated_at timestamp with time zone,
+     user_id      UUID,
+     channel_id   UUID,
+     last_read_at TIMESTAMP,
+     CONSTRAINT fk_rs_user
+     FOREIGN KEY (user_id)
     REFERENCES users(id)
     ON DELETE CASCADE,
     CONSTRAINT fk_rs_channel
@@ -93,12 +93,6 @@ CREATE TABLE IF NOT EXISTS messages (
 CREATE TABLE IF NOT EXISTS message_attachments (
        message_id    UUID,
        attachment_id UUID,
-       CONSTRAINT fk_ma_msg
-       FOREIGN KEY (message_id)
-    REFERENCES messages(id)
-    ON DELETE CASCADE,
-    CONSTRAINT fk_ma_attach
-    FOREIGN KEY (attachment_id)
-    REFERENCES binary_contents(id)
-    ON DELETE CASCADE
+       CONSTRAINT fk_ma_msg FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE,
+    CONSTRAINT fk_ma_attach FOREIGN KEY (attachment_id) REFERENCES binary_contents(id) ON DELETE CASCADE
     );

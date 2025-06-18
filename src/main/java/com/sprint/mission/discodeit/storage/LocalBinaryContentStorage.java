@@ -6,6 +6,9 @@ import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +29,7 @@ import java.util.UUID;
  * Author       : dounguk
  * Date         : 2025. 5. 30.
  */
+
 @Transactional
 @Service
 @ConditionalOnProperty(
@@ -36,8 +40,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class LocalBinaryContentStorage implements BinaryContentStorage {
     private static final String PROFILE_PATH = "img";
+    private static final Logger log = LoggerFactory.getLogger(LocalBinaryContentStorage.class);
+
     private final JpaBinaryContentRepository binaryContentRepository;
-//    private final FileUploadUtils fileUploadUtils;
+
+
 
     private Path root;
 
@@ -59,12 +66,8 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
     @Override
     public UUID put(UUID binaryContentId, byte[] bytes) {
-//        String uploadPath = fileUploadUtils.getUploadPath(PROFILE_PATH);
+        log.info("upload profile image is {}",binaryContentId);
         BinaryContent attachment = binaryContentRepository.findById(binaryContentId).orElseThrow(() -> new IllegalStateException("image information is not saved"));
-
-//        String filename = attachment.getFileName();
-//        String extension = filename.substring(filename.lastIndexOf(".") + 1);
-
         Path path = resolvePath(binaryContentId, attachment.getExtension());
 
         // 사진 저장
@@ -96,6 +99,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
     @Override
     public ResponseEntity<?> download(JpaBinaryContentResponse response) {
+        log.info("downloading image {}", response.fileName());
         try {
             byte[] bytes = get(response.id()).readAllBytes();
             return ResponseEntity.ok()
