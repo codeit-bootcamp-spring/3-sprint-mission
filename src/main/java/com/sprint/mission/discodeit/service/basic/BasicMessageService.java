@@ -127,7 +127,8 @@ public class BasicMessageService implements MessageService {
   @Transactional(readOnly = true)
   public List<MessageDto> findAllByChannelId(UUID channelId) {
     log.info("메시지 조회 요청 - 채널ID: {}", channelId);
-    List<Message> messages = messageRepository.findAllByChannelIdOrderByCreatedAtAsc(channelId);
+    // N+1 문제 해결: Fetch Join으로 작성자 정보를 한 번에 조회
+    List<Message> messages = messageRepository.findAllByChannelIdWithAuthorOrderByCreatedAtAsc(channelId);
     log.info("메시지 조회 완료 - 채널ID: {}, 메시지 개수: {}", channelId, messages.size());
     return entityDtoMapper.toMessageDtoList(messages);
   }
@@ -136,7 +137,8 @@ public class BasicMessageService implements MessageService {
   @Transactional(readOnly = true)
   public PageResponse<MessageDto> findAllByChannelIdWithPaging(UUID channelId, Pageable pageable) {
     log.info("메시지 페이징 조회 요청 - 채널ID: {}, 페이지: {}, 크기: {}", channelId, pageable.getPageNumber(), pageable.getPageSize());
-    Page<Message> messagePage = messageRepository.findAllByChannelId(channelId, pageable);
+    // N+1 문제 해결: Fetch Join으로 작성자 정보를 한 번에 조회
+    Page<Message> messagePage = messageRepository.findAllByChannelIdWithAuthor(channelId, pageable);
     log.info("메시지 페이징 조회 완료 - 채널ID: {}, 총 메시지: {}, 현재 페이지: {}", channelId, messagePage.getTotalElements(),
         messagePage.getNumber());
     return pageMapper.toPageResponse(messagePage, entityDtoMapper::toDto);
