@@ -1,83 +1,81 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDTO;
-import lombok.Getter;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
-import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import org.hibernate.annotations.DynamicUpdate;
 
 /**
  * 사용자 별 마지막으로 확인된 접속 시간을 표현하는 도메인 모델 사용자의 온라인 상태를 확인하기 위해 활용
  */
 @Getter
-public class UserStatus implements Serializable {
+@Entity
+@Builder
+@AllArgsConstructor
+@DynamicUpdate
+@Table(name = "user_statuses", schema = "discodeit")
+public class UserStatus extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
-  private UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-  private final UUID userId;
-  private Instant lastActiveAt;
-  private static final long LOGIN_TIMEOUT_MINUTES = 5L;
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-  public UserStatus(UUID userId, Instant lastActiveAt) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.userId = userId;
-    this.lastActiveAt = lastActiveAt;
-  }
+    @Column(name = "last_active_at", nullable = false)
+    private Instant lastActiveAt;
 
-  public void updatelastActiveAt(Instant lastActiveAt) {
-    this.updatedAt = Instant.now();
-    this.lastActiveAt = lastActiveAt;
-  }
+    private static final long LOGIN_TIMEOUT_MINUTES = 5L;
 
-  /**
-   * 마지막 접속 시간을 기준으로 현재 로그인한 유저로 판단할 수 있는 메소드
-   *
-   * @return 마지막 접속 시간이 현재 시간으로부터 5분 이내인지
-   */
-  public boolean isLogin() {
-    if (lastActiveAt == null) {
-      return false;
+    public UserStatus() {
     }
 
-    Instant now = Instant.now();
-
-    // lastActiveAt이 현재 시간보다 미래일 수는 없기 때문에 false 반환
-    if (lastActiveAt.isAfter(now)) {
-      return false;
+    public void updatelastActiveAt(Instant lastActiveAt) {
+        this.lastActiveAt = lastActiveAt;
     }
 
-    Duration timeDiff = Duration.between(this.lastActiveAt, now);
+    /**
+     * 마지막 접속 시간을 기준으로 현재 로그인한 유저로 판단할 수 있는 메소드
+     *
+     * @return 마지막 접속 시간이 현재 시간으로부터 5분 이내인지
+     */
+    public boolean isLogin() {
+        if (lastActiveAt == null) {
+            return false;
+        }
 
-    return timeDiff.toMinutes() <= LOGIN_TIMEOUT_MINUTES;
-  }
+        Instant now = Instant.now();
 
-  public static UserStatusResponseDTO toDTO(UserStatus userStatus) {
-    UserStatusResponseDTO userStatusResponseDTO = new UserStatusResponseDTO(userStatus.getId(),
-        userStatus.getCreatedAt(),
-        userStatus.getUpdatedAt(),
-        userStatus.getUserId(),
-        userStatus.getLastActiveAt());
+        // lastActiveAt이 현재 시간보다 미래일 수는 없기 때문에 false 반환
+        if (lastActiveAt.isAfter(now)) {
+            return false;
+        }
 
-    return userStatusResponseDTO;
-  }
+        Duration timeDiff = Duration.between(this.lastActiveAt, now);
 
-  @Override
-  public boolean equals(Object o) {
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+        return timeDiff.toMinutes() <= LOGIN_TIMEOUT_MINUTES;
     }
-    UserStatus that = (UserStatus) o;
-    return Objects.equals(userId, that.userId);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(userId);
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        UserStatus that = (UserStatus) o;
+        return Objects.equals(user, that.user);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(user);
+    }
 }

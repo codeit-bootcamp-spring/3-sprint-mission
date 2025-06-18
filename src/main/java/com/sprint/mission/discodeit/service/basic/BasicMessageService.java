@@ -1,8 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDTO;
-import com.sprint.mission.discodeit.dto.message.MessageRequestDTO;
-import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.message.MessageRequestDto;
+import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -10,195 +11,153 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundChannelException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundMessageException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
-import com.sprint.mission.discodeit.exception.UserNotInChannelException;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.struct.BinaryContentStructMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Service("basicMessageService")
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BasicMessageService implements MessageService {
 
-  private final MessageRepository messageRepository;
-  private final ChannelRepository channelRepository;
-  private final UserRepository userRepository;
-  private final BinaryContentRepository binaryContentRepository;
+    private final MessageRepository messageRepository;
+    private final ChannelRepository channelRepository;
+    private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentStorage binaryContentStorage;
+    private final MessageMapper messageMapper;
+    private final BinaryContentStructMapper binaryContentMapper;
 
-  @Override
-  public Message create(MessageRequestDTO messageRequestDTO,
-      List<BinaryContentDTO> binaryContentDTOS) {
-    User user = findUser(messageRequestDTO.authorId());
-    Channel channel = findChannel(messageRequestDTO.channelId());
+    @Override
+    @Transactional
+    public MessageResponseDto create(MessageRequestDto messageRequestDto,
+                                     List<BinaryContentDto> binaryContentDtos) {
+        User author = findUser(messageRequestDto.authorId());
+        Channel channel = findChannel(messageRequestDto.channelId());
 
-    // Repository 저장용 데이터
-    List<BinaryContent> binaryContents = convertBinaryContentDTOS(binaryContentDTOS);
-    // BinaryContent -> UUID
-    List<UUID> attachmentIds = binaryContents.stream()
-        .map(BinaryContent::getId)
-        .toList();
+        // Dto -> Entity
+        List<BinaryContent> binaryContents = convertBinaryContentDtos(binaryContentDtos);
 
-    Message message = MessageRequestDTO.toEntity(messageRequestDTO);
-    message.updateAttachmentIds(attachmentIds);
+        binaryContentRepository.saveAll(binaryContents);
 
-    // 메시지를 보낸 user의 mesagesList에 해당 메시지 추가
-    /* 스프린트 미션5 프론트엔드 테스트를 위해 주석 처리 */
-//    if (!user.getChannels().contains(channel.getId())) {
-//      throw new UserNotInChannelException();
-//    } else {
-//      user.getMessages().add(message.getId());
-//      userRepository.save(user);
-//    }
-    user.getMessages().add(message.getId());
-    userRepository.save(user);
-    
-    // 메시지를 보낸 channel의 mesagesList에 해당 메시지 추가
-    channel.getMessages().add(message.getId());
-    channelRepository.save(channel);
+        for (int i = 0; i < binaryContents.size(); i++) {
+            UUID id = binaryContents.get(i).getId();
+            byte[] bytes = binaryContentDtos.get(i).bytes();
+            binaryContentStorage.put(id, bytes);
+        }
 
-    for (BinaryContent binaryContent : binaryContents) {
-      binaryContentRepository.save(binaryContent);
-    }
-    messageRepository.save(message);
+        String content = messageRequestDto.content();
 
-    return message;
-  }
+        Message message = Message.builder()
+                .content(content)
+                .author(author)
+                .channel(channel)
+                .attachments(new ArrayList<>())
+                .build();
 
-  @Override
-  public MessageResponseDTO findById(UUID messageId) {
-    Message message = findMessage(messageId);
+        message.updateAttachments(binaryContents);
 
-    return Message.toDTO(message);
-  }
+        messageRepository.save(message);
 
-  @Override
-  public List<MessageResponseDTO> findAllByChannelId(UUID channelId) {
-    Channel channel = findChannel(channelId);
-
-    List<MessageResponseDTO> channelMessages = channel.getMessages().stream()
-        .map(messageId -> {
-          Message message = findMessage(messageId);
-          return Message.toDTO(message);
-        })
-        .toList();
-
-    return channelMessages;
-  }
-
-  @Override
-  public List<MessageResponseDTO> findAll() {
-    return messageRepository.findAll().stream()
-        .map(Message::toDTO)
-        .toList();
-  }
-
-  @Override
-  public List<MessageResponseDTO> findAllByUserId(UUID userId) {
-    User user = findUser(userId);
-
-    List<MessageResponseDTO> userMessages = user.getMessages().stream()
-        .map(messageId -> {
-          Message message = findMessage(messageId);
-          return Message.toDTO(message);
-        })
-        .toList();
-
-    return userMessages;
-  }
-
-  @Override
-  public List<MessageResponseDTO> findAllByContainingWord(String word) {
-    return messageRepository.findMessageByContainingWord(word).stream()
-        .map(Message::toDTO)
-        .toList();
-  }
-
-  @Override
-  public MessageResponseDTO updateBinaryContent(UUID messageId,
-      List<BinaryContentDTO> binaryContentDTOS) {
-    Message message = findMessage(messageId);
-    // 기존 BinaryContent 제거
-    List<UUID> originAttachmentsIds = message.getAttachmentIds();
-    for (UUID id : originAttachmentsIds) {
-      binaryContentRepository.deleteById(id);
+        return messageMapper.toDto(message);
     }
 
-    // Repository 저장용 데이터
-    List<BinaryContent> binaryContents = convertBinaryContentDTOS(binaryContentDTOS);
-    // BinaryContent -> UUID
-    List<UUID> attachmentIds = binaryContents.stream()
-        .map(BinaryContent::getId)
-        .toList();
+    @Override
+    public MessageResponseDto findById(UUID messageId) {
+        Message message = findMessage(messageId);
 
-    message.updateAttachmentIds(attachmentIds);
-
-    for (BinaryContent binaryContent : binaryContents) {
-      binaryContentRepository.save(binaryContent);
+        return messageMapper.toDto(message);
     }
-    messageRepository.save(message);
 
-    return Message.toDTO(message);
-  }
+    @Override
+    public PageResponse<MessageResponseDto> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable) {
+        int size = pageable.getPageSize();
 
-  @Override
-  public MessageResponseDTO updateContent(UUID messageId, String content) {
-    Message message = findMessage(messageId);
+        Pageable extendedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                size + 1,
+                pageable.getSort()
+        );
 
-    message.updateContent(content);
+        List<Message> messages;
 
-    messageRepository.save(message);
+        if (cursor == null) {
+            messages = messageRepository.findPageByChannelId(channelId, extendedPageable);
+        } else {
+            messages = messageRepository.findByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(
+                    channelId, cursor, extendedPageable);
+        }
 
-    return Message.toDTO(message);
-  }
+        boolean hasNext = messages.size() > size;
 
-  @Override
-  public void deleteById(UUID messageId) {
-    Message message = findMessage(messageId);
+        List<Message> contentMessages = hasNext ? messages.subList(0, size) : messages;
 
-    // User의 메시지 목록에서 삭제
-    userRepository.findAll().forEach(user -> {
-      if (user.getMessages().removeIf(id -> id.equals(messageId))) {
-        userRepository.save(user);
-      }
-    });
+        Instant nextCursor = hasNext ? contentMessages.get(contentMessages.size() - 1).getCreatedAt() : null;
 
-    // Channel의 메시지 목록에서 삭제
-    channelRepository.findAll().forEach(channel -> {
-      if (channel.getMessages().removeIf(id -> id.equals(messageId))) {
-        channelRepository.save(channel);
-      }
-    });
+        List<MessageResponseDto> content = messages.stream()
+                .map(messageMapper::toDto)
+                .toList();
 
-    for (UUID binaryContentId : message.getAttachmentIds()) {
-      binaryContentRepository.deleteById(binaryContentId);
+        return new PageResponse<>(content, nextCursor, size, hasNext, null);
     }
-    messageRepository.deleteById(messageId);
-  }
 
-  private List<BinaryContent> convertBinaryContentDTOS(List<BinaryContentDTO> binaryContentDTOS) {
-    return binaryContentDTOS.stream()
-        .map(BinaryContentDTO::toEntity)
-        .toList();
-  }
+    @Override
+    @Transactional
+    public MessageResponseDto updateContent(UUID messageId, String content) {
+        Message message = findMessage(messageId);
 
-  private Message findMessage(UUID id) {
-    return messageRepository.findById(id)
-        .orElseThrow(NotFoundMessageException::new);
-  }
+        message.updateContent(content);
 
-  private Channel findChannel(UUID id) {
-    return channelRepository.findById(id)
-        .orElseThrow(NotFoundChannelException::new);
-  }
+        messageRepository.save(message);
 
-  private User findUser(UUID id) {
-    return userRepository.findById(id)
-        .orElseThrow(NotFoundUserException::new);
-  }
+        return messageMapper.toDto(message);
+    }
+
+    @Override
+    @Transactional
+    public void deleteById(UUID messageId) {
+        Message message = findMessage(messageId);
+
+        for (BinaryContent binaryContent : message.getAttachments()) {
+            binaryContentRepository.deleteById(binaryContent.getId());
+        }
+
+        messageRepository.deleteById(messageId);
+    }
+
+    private List<BinaryContent> convertBinaryContentDtos(List<BinaryContentDto> binaryContentDtos) {
+        return binaryContentDtos.stream()
+                .map(binaryContentMapper::toEntity)
+                .toList();
+    }
+
+    private Message findMessage(UUID id) {
+        return messageRepository.findById(id)
+                .orElseThrow(NotFoundMessageException::new);
+    }
+
+    private Channel findChannel(UUID id) {
+        return channelRepository.findById(id)
+                .orElseThrow(NotFoundChannelException::new);
+    }
+
+    private User findUser(UUID id) {
+        return userRepository.findById(id)
+                .orElseThrow(NotFoundUserException::new);
+    }
 }

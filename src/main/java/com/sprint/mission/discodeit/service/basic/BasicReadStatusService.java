@@ -1,93 +1,118 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusRequestDTO;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDTO;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateDTO;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusRequestDto;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDto;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateDto;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.alreadyexist.ReadStatusAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundChannelException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundReadStatusException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
-import com.sprint.mission.discodeit.exception.alreadyexist.ReadStatusAlreadyExistsException;
+import com.sprint.mission.discodeit.mapper.struct.ReadStatusStructMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 @Service("basicReadStatusService")
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BasicReadStatusService implements ReadStatusService {
 
-  private final ReadStatusRepository readStatusRepository;
-  private final UserRepository userRepository;
-  private final ChannelRepository channelRepository;
+    private final ReadStatusRepository readStatusRepository;
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
+    private final ReadStatusStructMapper readStatusMapper;
 
-  @Override
-  public ReadStatus create(ReadStatusRequestDTO readStatusRequestDTO) {
-    if (userRepository.findById(readStatusRequestDTO.userId()).isEmpty()) {
-      throw new NotFoundUserException();
+    @Override
+    @Transactional
+    public ReadStatusResponseDto create(ReadStatusRequestDto readStatusRequestDTO) {
+        UUID userId = readStatusRequestDTO.userId();
+        UUID channelId = readStatusRequestDTO.channelId();
+
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundUserException();
+        }
+
+        if (!channelRepository.existsById(channelId)) {
+            throw new NotFoundChannelException();
+        }
+
+        if (readStatusRepository.existsByUserIdAndChannelId(userId, channelId)) {
+            throw new ReadStatusAlreadyExistsException();
+        }
+
+        User user = findUser(userId);
+        Channel channel = findChannel(channelId);
+        Instant lastReadAt = readStatusRequestDTO.lastReadAt();
+
+        ReadStatus readStatus = ReadStatus.builder()
+                .user(user)
+                .channel(channel)
+                .lastReadAt(lastReadAt)
+                .build();
+
+        readStatusRepository.save(readStatus);
+
+        return readStatusMapper.toDto(readStatus);
     }
 
-    if (channelRepository.findById(readStatusRequestDTO.channelId()).isEmpty()) {
-      throw new NotFoundChannelException();
+    @Override
+    public ReadStatusResponseDto findById(UUID id) {
+        ReadStatus readStatus = findReadStatus(id);
+
+        return readStatusMapper.toDto(readStatus);
     }
 
-    UUID channelId = readStatusRequestDTO.channelId();
-    UUID userId = readStatusRequestDTO.userId();
-
-    if (readStatusRepository.findByChannelIdAndUserId(channelId, userId).isPresent()) {
-      throw new ReadStatusAlreadyExistsException();
+    @Override
+    public List<ReadStatusResponseDto> findAllByUserId(UUID userId) {
+        return readStatusRepository.findAllByUserId(userId).stream()
+                .map(readStatusMapper::toDto)
+                .toList();
     }
 
-    ReadStatus readStatus = ReadStatusRequestDTO.toEntity(readStatusRequestDTO);
+    @Override
+    @Transactional
+    public ReadStatusResponseDto update(UUID id, ReadStatusUpdateDto readStatusUpdateDTO) {
+        ReadStatus readStatus = findReadStatus(id);
 
-    readStatusRepository.save(readStatus);
+        Instant updateTime = readStatusUpdateDTO.newLastReadAt() != null
+                ? readStatusUpdateDTO.newLastReadAt()
+                : Instant.now();
 
-    return readStatus;
-  }
+        readStatus.updateLastReadAt(updateTime);
+        readStatusRepository.save(readStatus);
 
-  @Override
-  public ReadStatusResponseDTO findById(UUID id) {
-    ReadStatus readStatus = findReadStatus(id);
+        return readStatusMapper.toDto(readStatus);
+    }
 
-    return ReadStatus.toDTO(readStatus);
-  }
+    @Override
+    @Transactional
+    public void deleteById(UUID id) {
+        readStatusRepository.deleteById(id);
+    }
 
-  @Override
-  public List<ReadStatusResponseDTO> findAll() {
-    return readStatusRepository.findAll().stream()
-        .map(ReadStatus::toDTO)
-        .toList();
-  }
+    private ReadStatus findReadStatus(UUID id) {
+        return readStatusRepository.findById(id)
+                .orElseThrow(NotFoundReadStatusException::new);
+    }
 
-  @Override
-  public List<ReadStatusResponseDTO> findAllByUserId(UUID userId) {
-    return readStatusRepository.findAllByUserId(userId).stream()
-        .map(ReadStatus::toDTO)
-        .toList();
-  }
+    private User findUser(UUID id) {
+        return userRepository.findById(id)
+                .orElseThrow(NotFoundUserException::new);
+    }
 
-  @Override
-  public ReadStatusResponseDTO update(UUID id, ReadStatusUpdateDTO readStatusUpdateDTO) {
-    ReadStatus readStatus = findReadStatus(id);
-
-    readStatus.updateLastReadAt(readStatusUpdateDTO.newLastAt());
-    readStatusRepository.save(readStatus);
-
-    return ReadStatus.toDTO(readStatus);
-  }
-
-  @Override
-  public void deleteById(UUID id) {
-    readStatusRepository.deleteById(id);
-  }
-
-  private ReadStatus findReadStatus(UUID id) {
-    return readStatusRepository.findById(id)
-        .orElseThrow(NotFoundReadStatusException::new);
-  }
+    private Channel findChannel(UUID id) {
+        return channelRepository.findById(id)
+                .orElseThrow(NotFoundChannelException::new);
+    }
 }

@@ -1,64 +1,59 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDTO;
-import lombok.Getter;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import org.hibernate.annotations.DynamicUpdate;
 
 /**
  * 사용자가 채널 별 마지막으로 메시지를 읽은 시간을 표현하는 도메인 모델 사용자별 각 채널에 읽지 않은 메시지를 확인하기 위해 활용
  */
 @Getter
-public class ReadStatus implements Serializable {
+@Entity
+@Builder
+@AllArgsConstructor
+@DynamicUpdate
+@Table(name = "read_statuses", schema = "discodeit", indexes = @Index(
+        name = "idx_read_statuses_user_channel", columnList = "user_id, channel_id"
+))
+public class ReadStatus extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-  private final UUID userId;
-  private final UUID channelId;
-  private Instant lastReadAt;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-  public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.userId = userId;
-    this.channelId = channelId;
-    this.lastReadAt = lastReadAt;
-  }
+    @ManyToOne
+    @JoinColumn(name = "channel_id", nullable = false)
+    private Channel channel;
 
-  public void updateLastReadAt(Instant lastReadAt) {
-    this.updatedAt = Instant.now();
-    this.lastReadAt = lastReadAt;
-  }
+    @Column(name = "last_read_at", nullable = false)
+    private Instant lastReadAt;
 
-  public static ReadStatusResponseDTO toDTO(ReadStatus readStatus) {
-    ReadStatusResponseDTO readStatusResponseDTO = new ReadStatusResponseDTO(readStatus.getId(),
-        readStatus.getCreatedAt(),
-        readStatus.getUpdatedAt(),
-        readStatus.getUserId(),
-        readStatus.getChannelId(),
-        readStatus.getLastReadAt());
+    public ReadStatus() {
+    }
 
-    return readStatusResponseDTO;
-  }
+    public void updateLastReadAt(Instant lastReadAt) {
+        this.lastReadAt = lastReadAt;
+    }
 
-  @Override
-  public boolean equals(Object o) {
-      if (o == null || getClass() != o.getClass()) {
-          return false;
-      }
-    ReadStatus that = (ReadStatus) o;
-    return Objects.equals(id, that.id) && Objects.equals(createdAt, that.createdAt)
-        && Objects.equals(updatedAt, that.updatedAt) && Objects.equals(userId, that.userId)
-        && Objects.equals(channelId, that.channelId) && Objects.equals(lastReadAt, that.lastReadAt);
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ReadStatus that = (ReadStatus) o;
+        return Objects.equals(user, that.user) && Objects.equals(channel,
+                that.channel);
+    }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(userId, channelId);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(user, channel);
+    }
 }

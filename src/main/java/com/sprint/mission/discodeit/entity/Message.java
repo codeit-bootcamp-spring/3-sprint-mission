@@ -1,80 +1,74 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.DynamicUpdate;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 @Getter
-public class Message implements Serializable {
+@Entity
+@Builder
+@AllArgsConstructor
+@DynamicUpdate
+@Table(name = "messages", schema = "discodeit", indexes = {
+        @Index(name = "idx_message_channel_id", columnList = "channel_id"),
+        @Index(name = "idx_message_channel_created_at", columnList = "channel_id, created_at DESC")
+})
+public class Message extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-  private String content;
-  private final UUID authorId;
-  private final UUID channelId;
-  private List<UUID> attachmentIds;
+    @Column(name = "content")
+    private String content;
 
-  public Message(UUID authorId, UUID channelId, String content) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.content = content;
-    this.authorId = authorId;
-    this.channelId = channelId;
-    this.attachmentIds = new ArrayList<>();
-  }
+    @ManyToOne
+    @JoinColumn(name = "channel_id", nullable = false)
+    private Channel channel;
 
-  public void updateContent(String content) {
-    this.content = content;
-    this.updatedAt = Instant.now();
-  }
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    private User author;
 
-  public void updateAttachmentIds(List<UUID> attachmentIds) {
-    this.attachmentIds = attachmentIds;
-  }
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 50)
+    @JoinTable(name = "message_attachments",
+            joinColumns = @JoinColumn(name = "message_id"),
+            inverseJoinColumns = @JoinColumn(name = "attachment_id"))
+    private List<BinaryContent> attachments;
 
-  public static MessageResponseDTO toDTO(Message message) {
-    MessageResponseDTO messageResponseDTO = new MessageResponseDTO(message.getId(),
-        message.getCreatedAt(),
-        message.getUpdatedAt(),
-        message.getContent(),
-        message.getAuthorId(),
-        message.getChannelId(),
-        message.getAttachmentIds());
-
-    return messageResponseDTO;
-  }
-
-  @Override
-  public String toString() {
-    return "Message {\n" +
-        "  id=" + id + ",\n" +
-        "  createdAt=" + createdAt + ",\n" +
-        "  updatedAt=" + updatedAt + ",\n" +
-        "  content='" + content + "',\n" +
-        "  authorId=" + authorId + ",\n" +
-        "  channelId=" + channelId + "\n" +
-        '}';
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+    public Message() {
     }
-    Message message = (Message) o;
-    return Objects.equals(id, message.id);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(id);
-  }
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    public void updateAttachments(List<BinaryContent> attachments) {
+        this.attachments = attachments;
+    }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "content='" + content + '\'' +
+                "} " + super.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Message message = (Message) o;
+        return Objects.equals(getId(), message.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getId());
+    }
 }

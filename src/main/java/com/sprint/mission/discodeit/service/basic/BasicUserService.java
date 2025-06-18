@@ -1,218 +1,192 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDTO;
-import com.sprint.mission.discodeit.dto.user.FriendReqeustDTO;
-import com.sprint.mission.discodeit.dto.user.UserRequestDTO;
-import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
-import com.sprint.mission.discodeit.dto.user.UserUpdateDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.user.UserRequestDto;
+import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.*;
 import com.sprint.mission.discodeit.exception.duplicate.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.duplicate.DuplicateNameException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
 import com.sprint.mission.discodeit.exception.notfound.NotFoundUserStatusException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.mapper.struct.BinaryContentStructMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import java.util.Optional;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service("basicUserService")
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BasicUserService implements UserService {
 
-  private final UserRepository userRepository;
-  private final BinaryContentRepository binaryContentRepository;
-  private final UserStatusRepository userStatusRepository;
+    private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
+    private final UserStatusRepository userStatusRepository;
+    private final BinaryContentStorage binaryContentStorage;
+    private final UserMapper userMapper;
+    private final BinaryContentStructMapper binaryContentMapper;
 
-  @Override
-  public User create(UserRequestDTO userRequestDTO, BinaryContentDTO binaryContentDTO) {
-    userRepository.findByName(userRequestDTO.username())
-        .ifPresent(user -> {
-          throw new DuplicateNameException(userRequestDTO.username());
-        });
+    @Override
+    @Transactional
+    public UserResponseDto create(UserRequestDto userRequestDto, BinaryContentDto binaryContentDto) {
+        String username = userRequestDto.username();
+        String email = userRequestDto.email();
 
-    userRepository.findByEmail(userRequestDTO.email())
-        .ifPresent(user -> {
-          throw new DuplicateEmailException(userRequestDTO.email());
-        });
+        if (userRepository.existsByUsername(username)) {
+            throw new DuplicateNameException(username);
+        }
 
-    User user = UserRequestDTO.toEntity(userRequestDTO);
+        if (userRepository.existsByEmail(email)) {
+            throw new DuplicateEmailException(email);
+        }
 
-    // 프로필 이미지를 등록한 경우
-    if (binaryContentDTO != null) {
-      BinaryContent profileImage = BinaryContentDTO.toEntity(binaryContentDTO);
-      user.updateProfileID(profileImage.getId());
-      binaryContentRepository.save(profileImage);
+        String password = userRequestDto.password();
+        User user = User.builder()
+                .username(username)
+                .email(email)
+                .password(password)
+                .profile(null)
+                .status(null)
+                .build();
+
+        // 프로필 이미지를 등록한 경우
+        if (binaryContentDto != null) {
+            byte[] bytes = binaryContentDto.bytes();
+
+            BinaryContent profileImage = binaryContentMapper.toEntity(binaryContentDto);
+
+            user.updateProfile(profileImage);
+
+            binaryContentRepository.save(profileImage);
+            binaryContentStorage.put(profileImage.getId(), bytes);
+        }
+
+        UserStatus userStatus = UserStatus.builder()
+                .user(user)
+                .lastActiveAt(Instant.now())
+                .build();
+
+        user.updateStatus(userStatus);
+
+        userRepository.save(user);
+        userStatusRepository.save(userStatus);
+
+        return userMapper.toDto(user);
     }
 
-    UserStatus userStatus = new UserStatus(user.getId(), Instant.now());
+    @Override
+    public UserResponseDto findById(UUID id) {
+        User user = findUser(id);
 
-    userStatusRepository.save(userStatus);
-    userRepository.save(user);
+        UserStatus userStatus = findUserStatus(id);
 
-    return user;
-  }
+        // 마지막 접속 시간 확인
+        user.updateStatus(userStatus);
 
-  @Override
-  public UserResponseDTO findById(UUID id) {
-    User user = findUser(id);
-
-    UserStatus userStatus = findUserStatus(id);
-
-    // 마지막 접속 시간 확인
-    user.updateOnline(userStatus.isLogin());
-
-    return User.toDTO(user);
-  }
-
-  @Override
-  public UserResponseDTO findByEmail(String email) {
-    User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new NotFoundUserException(email + "을 사용하는 유저를 찾을 수 없습니다."));
-
-    UserStatus userStatus = findUserStatus(user.getId());
-
-    user.updateOnline(userStatus.isLogin());
-
-    return User.toDTO(user);
-  }
-
-  @Override
-  public List<UserResponseDTO> findByNameContaining(String name) {
-    return userRepository.findByNameContaining(name).stream()
-        .map(user -> {
-          UserStatus userStatus = findUserStatus(user.getId());
-          user.updateOnline(userStatus.isLogin());
-          return User.toDTO(user);
-        })
-        .toList();
-  }
-
-  @Override
-  public List<UserResponseDTO> findAll() {
-    List<UserResponseDTO> users = userRepository.findAll().stream()
-        .map(user -> {
-          UserStatus userStatus = findUserStatus(user.getId());
-          user.updateOnline(userStatus.isLogin());
-          return User.toDTO(user);
-        })
-        .toList();
-
-    return users;
-  }
-
-
-  @Override
-  public UserResponseDTO update(UUID id, UserUpdateDTO userUpdateDTO,
-      BinaryContentDTO binaryContentDTO) {
-    User user = findUser(id);
-
-    String newUsername = userUpdateDTO.newUsername();
-    String newEmail = userUpdateDTO.newEmail();
-
-    if (newUsername != null) {
-      userRepository.findByName(newUsername)
-          .filter(u -> !u.getId().equals(user.getId()))
-          .ifPresent(u -> {
-            throw new DuplicateNameException(newUsername);
-          });
-      user.updateName(newUsername);
+        return userMapper.toDto(user);
     }
 
-    if (newEmail != null) {
-      userRepository.findByEmail(newEmail)
-          .filter(u -> !u.getId().equals(user.getId()))
-          .ifPresent(u -> {
-            throw new DuplicateEmailException(newEmail);
-          });
-      user.updateEmail(newEmail);
+    @Override
+    public List<UserResponseDto> findAll() {
+        List<UserResponseDto> users = userRepository.findAll().stream()
+                .map(user -> {
+                    UserStatus userStatus = findUserStatus(user.getId());
+                    user.updateStatus(userStatus);
+                    return userMapper.toDto(user);
+                })
+                .toList();
+
+        return users;
     }
 
-    // 프로필 이미지 처리
-    UUID profileId = user.getProfileId();
-    if (binaryContentDTO != null) {
-      BinaryContent profileImage = BinaryContentDTO.toEntity(binaryContentDTO);
-      if (profileId != null) {
-        binaryContentRepository.deleteById(profileId);
-      }
-      user.updateProfileID(profileImage.getId());
-      binaryContentRepository.save(profileImage);
-    } else if (profileId != null) {
-      binaryContentRepository.deleteById(profileId);
-      user.updateProfileID(null);
+    @Override
+    @Transactional
+    public UserResponseDto update(UUID id, UserUpdateDto userUpdateDto,
+                                  BinaryContentDto binaryContentDto) {
+        User user = findUser(id);
+
+        String newUsername = userUpdateDto.newUsername();
+        String newEmail = userUpdateDto.newEmail();
+
+        if (newUsername != null) {
+            userRepository.findByUsername(newUsername)
+                    .filter(u -> !u.getId().equals(user.getId()))
+                    .ifPresent(u -> {
+                        throw new DuplicateNameException(newUsername);
+                    });
+            user.updateName(newUsername);
+        }
+
+        if (newEmail != null) {
+            userRepository.findByEmail(newEmail)
+                    .filter(u -> !u.getId().equals(user.getId()))
+                    .ifPresent(u -> {
+                        throw new DuplicateEmailException(newEmail);
+                    });
+            user.updateEmail(newEmail);
+        }
+
+        // 프로필 이미지 처리
+        BinaryContent profile = user.getProfile();
+        if (binaryContentDto != null) {
+            byte[] bytes = binaryContentDto.bytes();
+
+            BinaryContent profileImage = binaryContentMapper.toEntity(binaryContentDto);
+
+            // 기존 프로필 이미지 제거
+            if (profile != null) {
+                binaryContentRepository.deleteById(profile.getId());
+            }
+
+            user.updateProfile(profileImage);
+
+            binaryContentRepository.save(profileImage);
+            binaryContentStorage.put(profileImage.getId(), bytes);
+        } else if (profile != null) {
+            binaryContentRepository.deleteById(profile.getId());
+            user.updateProfile(null);
+        }
+
+        Optional.ofNullable(userUpdateDto.newPassword()).ifPresent(user::updatePassword);
+
+        userRepository.save(user);
+
+        return userMapper.toDto(user);
     }
 
-    Optional.ofNullable(userUpdateDTO.newPassword()).ifPresent(user::updatePassword);
-    Optional.ofNullable(userUpdateDTO.newIntroduction()).ifPresent(user::updateIntroduction);
+    @Override
+    @Transactional
+    public void deleteById(UUID id) {
+        User user = findUser(id);
 
-    userRepository.save(user);
-    return User.toDTO(user);
-  }
+        userRepository.deleteById(id);
+        userStatusRepository.deleteByUserId(id);
 
-  @Override
-  public void deleteById(UUID id) {
-    User user = findUser(id);
-
-    userRepository.deleteById(id);
-    userStatusRepository.deleteByUserId(id);
-    if (user.getProfileId() != null) {
-      binaryContentRepository.deleteById(user.getProfileId());
-    }
-  }
-
-  // 친구 추가 기능
-  @Override
-  public void addFriend(FriendReqeustDTO friendReqeustDTO) {
-    User user1 = findUser(friendReqeustDTO.user1());
-    User user2 = findUser(friendReqeustDTO.user2());
-
-    // 두 User 각각의 friendList에 추가
-    if (!user1.getFriends().contains(user2.getId())) {
-      user1.getFriends().add(user2.getId());
-      user2.getFriends().add(user1.getId());
+        if (user.getProfile() != null) {
+            binaryContentRepository.deleteById(user.getProfile().getId());
+        }
     }
 
-    // 변경사항 적용
-    userRepository.save(user1);
-    userRepository.save(user2);
-  }
-
-  // 친구 삭제 기능
-  @Override
-  public void deleteFriend(FriendReqeustDTO friendReqeustDTO) {
-    User user1 = findUser(friendReqeustDTO.user1());
-    User user2 = findUser(friendReqeustDTO.user2());
-
-    if (!user1.getFriends().contains(user2.getId())) {
-      throw new NotFriendsException(
-          user1.getUsername() + "와(과) " + user2.getUsername() + "은 친구가 아닙니다.");
+    private User findUser(UUID id) {
+        return userRepository.findById(id)
+                .orElseThrow(NotFoundUserException::new);
     }
 
-    // 두 User 각각의 friendList에서 제거
-    user1.getFriends().remove(user2.getId());
-    user2.getFriends().remove(user1.getId());
-
-    // 변경사항 적용
-    userRepository.save(user1);
-    userRepository.save(user2);
-  }
-
-  private User findUser(UUID id) {
-    return userRepository.findById(id)
-        .orElseThrow(NotFoundUserException::new);
-  }
-
-  private UserStatus findUserStatus(UUID id) {
-    return userStatusRepository.findByUserId(id)
-        .orElseThrow(NotFoundUserStatusException::new);
-  }
+    private UserStatus findUserStatus(UUID id) {
+        return userStatusRepository.findByUserId(id)
+                .orElseThrow(NotFoundUserStatusException::new);
+    }
 }
