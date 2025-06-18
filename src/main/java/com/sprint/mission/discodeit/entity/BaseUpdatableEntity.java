@@ -20,7 +20,6 @@ import java.time.Instant;
  */
 @Getter
 @Setter
-@SuperBuilder
 @MappedSuperclass
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)

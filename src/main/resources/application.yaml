@@ -62,3 +62,35 @@ file:
     all:
       # 윈도우 OS용 파일 업로드 기본 경로
       path: ./files
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"        # 모든 엔드포인트 노출 (개발 환경용)
+      base-path: /actuator  # Actuator 엔드포인트 기본 경로
+  endpoint:
+    health:
+      show-details: always      # 건강 상태 상세 정보 표시
+      show-components: always   # 컴포넌트별 상태 정보 표시
+    info:
+      enabled: true             # info 엔드포인트 명시적 활성화
+    loggers:
+      access: unrestricted  # loggers 엔드포인트를 인증 없이 누구나 접근 가능하도록 설정
+      # access: read_only   # loggers 엔드포인트를 읽기 전용으로 허용 (로그 레벨 변경 불가)
+      # access: none        # loggers 엔드포인트 접근 완전 차단
+  # Actuator info 엔드포인트 설정(아래 info 설정 참조)
+  info:
+    env:
+      enabled: true             # 환경 변수 정보 포함
+    java:
+      enabled: true             # Java 정보 포함
+    os:
+      enabled: true             # OS 정보 포함
+  prometheus:
+    metrics:
+      export:
+        enabled: true  # 프로메테우스 메트릭 활성화
+  metrics:
+    tags:
+      application: library-system  # 메트릭 태그 추가

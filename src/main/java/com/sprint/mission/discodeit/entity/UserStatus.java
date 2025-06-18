@@ -1,10 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import lombok.*;
 import java.io.Serializable;
 import java.time.Instant;
 
@@ -26,7 +23,10 @@ import java.time.Instant;
 @Table(name = "user_statuses", schema = "discodeit")
 @Setter
 @Getter
+@AllArgsConstructor
 @NoArgsConstructor
+@Builder
+
 public class UserStatus extends BaseUpdatableEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 

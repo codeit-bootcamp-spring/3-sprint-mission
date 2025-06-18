@@ -45,7 +45,8 @@ public class BasicUserService implements UserService {
     private final AdvancedUserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
 
-    // 1회 조회로 수정
+
+
     @Transactional(readOnly = true)
     public List<JpaUserResponse> findAllUsers() {
         List<User> users = userRepository.findAllWithBinaryContentAndUserStatus();
@@ -70,22 +71,22 @@ public class BasicUserService implements UserService {
         boolean emailNotUnique = userRepository.existsByEmail(userCreateRequest.email());
 
         if (usernameNotUnique || emailNotUnique) {
-            throw new IllegalArgumentException("User with email " + userCreateRequest.email() + " already exitsts");
+            throw new IllegalArgumentException("User with email " + userCreateRequest.email() + " already exists");
         }
 
         BinaryContent nullableProfile = profile
-                .map(
-                        profileRequest -> {
-                            String filename = profileRequest.fileName();
-                            String contentType = profileRequest.contentType();
-                            byte[] bytes = profileRequest.bytes();
-                            String extension = profileRequest.fileName().substring(filename.lastIndexOf("."));
-                            BinaryContent binaryContent = new BinaryContent(filename, (long)bytes.length, contentType, extension);
-                            binaryContentRepository.save(binaryContent);
-                            binaryContentStorage.put(binaryContent.getId(), bytes);
-                            return binaryContent;
-                        }
-                ).orElse(null);
+            .map(
+                profileRequest -> {
+                    String filename = profileRequest.fileName();
+                    String contentType = profileRequest.contentType();
+                    byte[] bytes = profileRequest.bytes();
+                    String extension = profileRequest.fileName().substring(filename.lastIndexOf("."));
+                    BinaryContent binaryContent = new BinaryContent(filename, (long) bytes.length, contentType, extension);
+                    binaryContentRepository.save(binaryContent);
+                    binaryContentStorage.put(binaryContent.getId(), bytes);
+                    return binaryContent;
+                }
+            ).orElse(null);
 
         User user;
         if (nullableProfile == null) {

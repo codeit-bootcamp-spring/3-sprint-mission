@@ -37,13 +37,6 @@ import java.util.UUID;
 public class MessageController {
     private final MessageService messageService;
 
-    // page 방식
-//    @Operation(summary = "채널 메세지 목록 조회", description = "채널의 메세지 목록을 전체 조회 합니다.")
-//    @GetMapping
-//    public ResponseEntity<?> findChannelMessages(@RequestParam UUID channelId, Pageable pageable) {
-//        JpaPageResponse allByChannelId = messageService.findAllByChannelId(channelId, pageable);
-//        return ResponseEntity.ok(allByChannelId);
-//    }
 
     @Operation(summary = "심화 채널 메세지 목록 조회", description = "메세지를 수정 합니다.")
     @GetMapping

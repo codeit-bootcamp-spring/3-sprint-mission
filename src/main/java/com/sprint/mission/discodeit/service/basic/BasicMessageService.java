@@ -49,13 +49,6 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentStorage binaryContentStorage;
 //    private final PageResponseMapper pageResponseMapper;
 
-    // page 방식
-//    @Override
-//    public JpaPageResponse findAllByChannelId(UUID channelId, Pageable pageable) {
-//        Page<Message> messagePage = messageRepository.findAllPageByChannelIdOrderByCreatedAt(channelId, pageable);
-//        JpaPageResponse response = pageResponseMapper.fromPage(messagePage);
-//        return response;
-//    }
 
     @Override
     public AdvancedJpaPageResponse findAllByChannelIdAndCursor(UUID channelId, Instant cursor, Pageable pageable) {
