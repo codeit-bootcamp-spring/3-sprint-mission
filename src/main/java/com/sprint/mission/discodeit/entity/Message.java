@@ -16,7 +16,10 @@ import java.util.Objects;
 @Builder
 @AllArgsConstructor
 @DynamicUpdate
-@Table(name = "messages", schema = "discodeit")
+@Table(name = "messages", schema = "discodeit", indexes = {
+        @Index(name = "idx_message_channel_id", columnList = "channel_id"),
+        @Index(name = "idx_message_channel_created_at", columnList = "channel_id, created_at DESC")
+})
 public class Message extends BaseUpdatableEntity {
 
     @Column(name = "content")

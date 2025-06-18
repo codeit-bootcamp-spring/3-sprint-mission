@@ -1,11 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -23,7 +19,9 @@ import org.hibernate.annotations.DynamicUpdate;
 @Builder
 @AllArgsConstructor
 @DynamicUpdate
-@Table(name = "read_statuses", schema = "discodeit")
+@Table(name = "read_statuses", schema = "discodeit", indexes = @Index(
+        name = "idx_read_statuses_user_channel", columnList = "user_id, channel_id"
+))
 public class ReadStatus extends BaseUpdatableEntity {
 
     @ManyToOne
