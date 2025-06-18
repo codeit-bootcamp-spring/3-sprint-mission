@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/discodeit # 추후 변경
+    username: ${USER_NAME}
+    password: ${USER_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+server:
+  port: 80
+
+logging:
+  level:
+    root: info
+    com.sprint.mission: info
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: false

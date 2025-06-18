@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class BasicUserStatusService implements UserStatusService {
 
-  //  private static final Logger log = LogManager.getLogger(BasicUserStatusService.class);
   private final UserStatusRepository userStatusRepository;
   private final UserRepository userRepository;
   private final UserStatusMapper userStatusMapper;

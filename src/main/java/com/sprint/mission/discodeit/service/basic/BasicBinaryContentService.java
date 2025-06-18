@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
@@ -65,6 +67,8 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Override
   public ResponseEntity<Resource> download(UUID binaryContentId) {
+    log.info("파일 다운로드 요청: {}", binaryContentId);
+
     BinaryContent entity = binaryContentRepository.findById(binaryContentId)
         .orElseThrow(() -> BinaryContentException.notFound(binaryContentId));
 

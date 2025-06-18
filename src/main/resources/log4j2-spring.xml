@@ -33,6 +33,7 @@
         <TimeBasedTriggeringPolicy interval="1"/>
         <SizeBasedTriggeringPolicy size="${maxFileSize}"/>
       </Policies>
+      <DefaultRolloverStrategy max="30"/>
     </RollingFile>
 
     <!-- 디버그 로그 -->
@@ -44,6 +45,7 @@
         <TimeBasedTriggeringPolicy interval="1"/>
         <SizeBasedTriggeringPolicy size="${maxFileSize}"/>
       </Policies>
+      <DefaultRolloverStrategy max="30"/>
     </RollingFile>
   </Appenders>
 
