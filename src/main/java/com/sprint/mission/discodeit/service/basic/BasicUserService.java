@@ -46,6 +46,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentStorage binaryContentStorage;
 
 
+
     @Transactional(readOnly = true)
     public List<JpaUserResponse> findAllUsers() {
         List<User> users = userRepository.findAllWithBinaryContentAndUserStatus();

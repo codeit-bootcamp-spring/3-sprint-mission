@@ -21,7 +21,7 @@ import java.time.Instant;
  */
 @Mapper(uses = {AdvancedBinaryContentMapper.class}, componentModel = "spring")
 public interface AdvancedUserMapper {
-//    AdvancedUserMapper INSTANCE = Mappers.getMapper(AdvancedUserMapper.class);
+    AdvancedUserMapper INSTANCE = Mappers.getMapper(AdvancedUserMapper.class);
 
     @Mapping(source = "profile", target = "profile")
     @Mapping(target = "online", expression = "java(isOnline(user.getStatus()))")

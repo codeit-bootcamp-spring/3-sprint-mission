@@ -15,7 +15,7 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring",uses ={AdvancedUserMapper.class, AdvancedMessageMapper.class})
 public interface AdvancedMessageMapper {
-//    AdvancedMessageMapper INSTANCE = Mappers.getMapper(AdvancedMessageMapper.class);
+    AdvancedMessageMapper INSTANCE = Mappers.getMapper(AdvancedMessageMapper.class);
 
     @Mapping(source = "channel.id", target = "channelId")
     JpaMessageResponse toDto(Message message);

@@ -76,6 +76,7 @@ public class BasicReadStatusService implements ReadStatusService {
         readStatusRepository.save(readStatus);
 
         JpaReadStatusResponse response = readStatusMapper.toDto(readStatus);
+        JpaReadStatusResponse response = readStatusMapper.toDto(readStatus);
         return response;
     }
 

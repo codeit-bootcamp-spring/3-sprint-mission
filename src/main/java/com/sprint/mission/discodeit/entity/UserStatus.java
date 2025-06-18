@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.io.Serializable;
 import java.time.Instant;
 
@@ -27,6 +26,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+
 public class UserStatus extends BaseUpdatableEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 

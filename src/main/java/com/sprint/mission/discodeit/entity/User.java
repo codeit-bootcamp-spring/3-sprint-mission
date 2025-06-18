@@ -25,6 +25,7 @@ import java.util.UUID;
 @Entity
 @Setter
 @NoArgsConstructor
+
 @AllArgsConstructor
 @Builder
 @Table(name = "users", schema = "discodeit")

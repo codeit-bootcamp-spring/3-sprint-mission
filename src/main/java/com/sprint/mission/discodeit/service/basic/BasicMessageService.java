@@ -50,7 +50,6 @@ public class BasicMessageService implements MessageService {
 //    private final PageResponseMapper pageResponseMapper;
 
 
-
     @Override
     public AdvancedJpaPageResponse findAllByChannelIdAndCursor(UUID channelId, Instant cursor, Pageable pageable) {
 
