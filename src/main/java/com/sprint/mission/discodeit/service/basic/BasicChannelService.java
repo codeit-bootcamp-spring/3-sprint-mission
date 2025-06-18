@@ -47,9 +47,9 @@ public class BasicChannelService implements ChannelService {
                 .type(ChannelType.PUBLIC)
                 .build();
 
-        channelRepository.save(channel);
+        Channel savedChannel = channelRepository.save(channel);
 
-        return channelMapper.toDto(channel);
+        return channelMapper.toDto(savedChannel);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class BasicChannelService implements ChannelService {
 
         readStatusRepository.saveAll(readStatuses);
 
-        return channelMapper.toDto(channel);
+        return channelMapper.toDto(createdChannel);
     }
 
     @Override
