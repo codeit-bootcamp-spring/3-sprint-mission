@@ -2,7 +2,7 @@ spring:
   application:
     name: discodeit
   profiles:
-    active: prod
+    active: dev
 
   servlet:
     multipart:

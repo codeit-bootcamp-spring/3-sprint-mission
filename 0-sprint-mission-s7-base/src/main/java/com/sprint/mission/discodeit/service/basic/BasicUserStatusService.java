@@ -15,11 +15,13 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicUserStatusService implements UserStatusService {
 
   private final UserStatusRepository userStatusRepository;
@@ -40,12 +42,18 @@ public class BasicUserStatusService implements UserStatusService {
 
     Instant lastActiveAt = request.lastActiveAt();
     UserStatus userStatus = new UserStatus(user, lastActiveAt);
+    log.info("[유저 상태 정보 생성] 유저 상태 정보 ID : {}", userStatus.getId());
+
     userStatusRepository.save(userStatus);
+    log.info("[유저 상태 정보 생성 성공] 유저 상태 정보 ID : {}", userStatus.getId());
+
     return userStatusMapper.toDto(userStatus);
   }
 
   @Override
   public UserStatusDto find(UUID userStatusId) {
+    log.info("[유저 상태 정보 조회 시도] 유저 상태 정보 ID : {}", userStatusId);
+
     return userStatusRepository.findById(userStatusId)
         .map(userStatusMapper::toDto)
         .orElseThrow(
@@ -54,6 +62,8 @@ public class BasicUserStatusService implements UserStatusService {
 
   @Override
   public List<UserStatusDto> findAll() {
+    log.info("[모든 유저 상태 정보 조회 시도]");
+
     return userStatusRepository.findAll().stream()
         .map(userStatusMapper::toDto)
         .toList();
@@ -63,11 +73,13 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request) {
     Instant newLastActiveAt = request.newLastActiveAt();
+    log.info("[유저 상태 정보 수정 시도] 유저 상태 정보 ID : {}", userStatusId);
 
     UserStatus userStatus = userStatusRepository.findById(userStatusId)
         .orElseThrow(
             () -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
     userStatus.update(newLastActiveAt);
+    log.info("[유저 상태 정보 수정 성공] 유저 상태 정보 ID : {}", userStatusId);
 
     return userStatusMapper.toDto(userStatus);
   }
@@ -76,11 +88,13 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
     Instant newLastActiveAt = request.newLastActiveAt();
+    log.info("[유저 ID로 유저 상태 정보 수정 시도] 유저 ID : {}", userId);
 
     UserStatus userStatus = userStatusRepository.findByUserId(userId)
         .orElseThrow(
             () -> new NoSuchElementException("UserStatus with userId " + userId + " not found"));
     userStatus.update(newLastActiveAt);
+    log.info("[유저 ID로 유저 상태 정보 수정 성공] 유저 ID : {}", userId);
 
     return userStatusMapper.toDto(userStatus);
   }
@@ -88,9 +102,12 @@ public class BasicUserStatusService implements UserStatusService {
   @Transactional
   @Override
   public void delete(UUID userStatusId) {
+    log.info("[유저 상태 정보 삭제 시도] 유저 상태 정보 ID : {}", userStatusId);
+
     if (!userStatusRepository.existsById(userStatusId)) {
       throw new NoSuchElementException("UserStatus with id " + userStatusId + " not found");
     }
     userStatusRepository.deleteById(userStatusId);
+    log.info("[유저 상태 정보 삭제 성공] 유저 상태 정보 ID : {}", userStatusId);
   }
 }

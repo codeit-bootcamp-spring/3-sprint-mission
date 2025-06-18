@@ -19,11 +19,13 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
@@ -40,10 +42,12 @@ public class BasicUserService implements UserService {
     String email = userCreateRequest.email();
 
     if (userRepository.existsByEmail(email)) {
-      throw new IllegalArgumentException("User with email " + email + " already exists");
+      log.error("[유저 등록 실패] 해당 email은 이미 등록되어 있습니다. email : {}", email);
+      throw new IllegalArgumentException();
     }
     if (userRepository.existsByUsername(username)) {
-      throw new IllegalArgumentException("User with username " + username + " already exists");
+      log.error("[유저 등록 실패] 해당 유저 이름은 이미 등록되어 있습니다. username : {}", username);
+      throw new IllegalArgumentException();
     }
 
     BinaryContent nullableProfile = optionalProfileCreateRequest
@@ -58,25 +62,37 @@ public class BasicUserService implements UserService {
           return binaryContent;
         })
         .orElse(null);
+    log.info("[유저 등록] 유저 프로필이 생성되었습니다.");
     String password = userCreateRequest.password();
 
     User user = new User(username, email, password, nullableProfile);
+    log.info("[유저 등록] 유저 ID: {}", user.getId());
+
     Instant now = Instant.now();
     UserStatus userStatus = new UserStatus(user, now);
+    log.info("[유저 상태 등록] 유저 상태 ID : {}", userStatus.getId());
 
     userRepository.save(user);
+    log.info("[유저 등록 성공] 유저 상태 ID : {}", userStatus.getId());
     return userMapper.toDto(user);
   }
 
   @Override
   public UserDto find(UUID userId) {
+     log.info("[유저 조회 시도] 유저 ID : {}", userId);
+
     return userRepository.findById(userId)
         .map(userMapper::toDto)
-        .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+        .orElseThrow(() -> {
+            log.error("[유저 조회 실패] 해당 유저를 찾을 수 없습니다. 유저 ID : {}", userId);
+        return new NoSuchElementException();
+        });
   }
 
   @Override
   public List<UserDto> findAll() {
+      log.info("[모든 유저 조회 시도]");
+
     return userRepository.findAllWithProfileAndStatus()
         .stream()
         .map(userMapper::toDto)
@@ -87,6 +103,8 @@ public class BasicUserService implements UserService {
   @Override
   public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+      log.info("[유저 수정 시도]");
+
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
@@ -112,9 +130,11 @@ public class BasicUserService implements UserService {
           return binaryContent;
         })
         .orElse(null);
+      log.info("[유저 수정] 유저 프로필이 수정되었습니다. 유저 ID : {}", userId);
 
     String newPassword = userUpdateRequest.newPassword();
     user.update(newUsername, newEmail, newPassword, nullableProfile);
+      log.info("[유저 수정 성공] 유저 ID : {}", userId);
 
     return userMapper.toDto(user);
   }
@@ -122,10 +142,13 @@ public class BasicUserService implements UserService {
   @Transactional
   @Override
   public void delete(UUID userId) {
+      log.info("[유저 삭제 시도] 유저 ID : {}", userId);
+
     if (userRepository.existsById(userId)) {
       throw new NoSuchElementException("User with id " + userId + " not found");
     }
 
     userRepository.deleteById(userId);
+      log.info("[유저 삭제 성공] 유저 ID: {}", userId);
   }
 }

@@ -23,6 +23,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -30,10 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicMessageService implements MessageService {
 
   private final MessageRepository messageRepository;
-  //
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
   private final MessageMapper messageMapper;
@@ -69,6 +70,7 @@ public class BasicMessageService implements MessageService {
           return binaryContent;
         })
         .toList();
+    log.info("[메세지 첨부파일 생성 성공] 첨부파일 개수 : {}", attachments.size());
 
     String content = messageCreateRequest.content();
     Message message = new Message(
@@ -77,14 +79,19 @@ public class BasicMessageService implements MessageService {
         author,
         attachments
     );
+    log.info("[메세지 생성 시도] 메세지 ID : {}", message.getId());
 
     messageRepository.save(message);
+    log.info("[메세지 생성 성공] 메세지 ID : {}", message.getId());
+
     return messageMapper.toDto(message);
   }
 
   @Transactional(readOnly = true)
   @Override
   public MessageDto find(UUID messageId) {
+    log.info("[메세지 조회 시도] 메세지 ID : {}", messageId);
+
     return messageRepository.findById(messageId)
         .map(messageMapper::toDto)
         .orElseThrow(
@@ -95,6 +102,8 @@ public class BasicMessageService implements MessageService {
   @Override
   public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createAt,
       Pageable pageable) {
+    log.info("[채널의 메세지 조회 시도] 채널 ID : {}", channelId);
+
     Slice<MessageDto> slice = messageRepository.findAllByChannelIdWithAuthor(channelId,
             Optional.ofNullable(createAt).orElse(Instant.now()),
             pageable)
@@ -106,6 +115,7 @@ public class BasicMessageService implements MessageService {
           .createdAt();
     }
 
+    log.info("[채널의 메시지 조회 성공] 채널 ID : {} ", channelId);
     return pageResponseMapper.fromSlice(slice, nextCursor);
   }
 
@@ -113,20 +123,27 @@ public class BasicMessageService implements MessageService {
   @Override
   public MessageDto update(UUID messageId, MessageUpdateRequest request) {
     String newContent = request.newContent();
+    log.info("[메시지 수정 시도] 메시지 ID : {} ", messageId);
+
     Message message = messageRepository.findById(messageId)
         .orElseThrow(
             () -> new NoSuchElementException("Message with id " + messageId + " not found"));
     message.update(newContent);
+    log.info("[메시지 수정 성공] 메시지 ID : {} ", messageId);
+
     return messageMapper.toDto(message);
   }
 
   @Transactional
   @Override
   public void delete(UUID messageId) {
+    log.info("[메시지 삭제 시도] 메시지 ID : {} ", messageId);
+
     if (!messageRepository.existsById(messageId)) {
       throw new NoSuchElementException("Message with id " + messageId + " not found");
     }
 
     messageRepository.deleteById(messageId);
+    log.info("[메시지 삭제 성공] 메시지 ID : {} ", messageId);
   }
 }
