@@ -3,23 +3,17 @@ package com.sprint.mission.discodeit.entity.base;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import java.time.Instant;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.LastModifiedDate;
 
-@MappedSuperclass
 @Getter
-@Setter
-public class BaseUpdatableEntity extends BaseEntity {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@MappedSuperclass
+public abstract class BaseUpdatableEntity extends BaseEntity {
 
-    @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt = Instant.now();
-
-    @Override
-    public String toString() {
-        return "BaseUpdatableEntity{" +
-                "updatedAt=" + updatedAt +
-                '}';
-    }
+  @LastModifiedDate
+  @Column(columnDefinition = "timestamp with time zone")
+  private Instant updatedAt;
 }
