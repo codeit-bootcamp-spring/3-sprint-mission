@@ -71,7 +71,8 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional(readOnly = true)
   public ChannelDto find(UUID channelId) {
-    return channelRepository.findById(channelId)
+    // N+1 문제 해결: 참가자 정보를 Fetch Join으로 한 번에 조회
+    return channelRepository.findByIdWithParticipants(channelId)
         .map(entityDtoMapper::toDto)
         .orElseThrow(() -> new CustomException.ChannelNotFoundException(
             "Channel with id " + channelId + " not found"));
@@ -198,7 +199,8 @@ public class BasicChannelService implements ChannelService {
    * @return 구독한 채널 ID 집합
    */
   private Set<UUID> getSubscribedChannelIds(UUID userId) {
-    return readStatusRepository.findAllByUserId(userId).stream()
+    // N+1 문제 해결: 사용자 정보를 Fetch Join으로 한 번에 조회
+    return readStatusRepository.findAllByUserIdWithUser(userId).stream()
         .map(readStatus -> readStatus.getChannel().getId())
         .collect(Collectors.toSet());
   }
@@ -211,7 +213,8 @@ public class BasicChannelService implements ChannelService {
    * @return 접근 가능한 채널 목록
    */
   private List<Channel> getAccessibleChannels(Set<UUID> subscribedChannelIds) {
-    return channelRepository.findAll().stream()
+    // N+1 문제 해결: 참가자 정보를 Fetch Join으로 한 번에 조회
+    return channelRepository.findAllWithParticipants().stream()
         .filter(channel -> isAccessibleChannel(channel, subscribedChannelIds))
         .collect(Collectors.toList());
   }
@@ -251,7 +254,8 @@ public class BasicChannelService implements ChannelService {
    * @return 매핑된 ChannelDto
    */
   private ChannelDto mapPrivateChannelToDto(Channel channel) {
-    List<ReadStatus> channelReadStatuses = readStatusRepository.findAllByChannelId(channel.getId());
+    // N+1 문제 해결: 사용자 정보를 Fetch Join으로 한 번에 조회
+    List<ReadStatus> channelReadStatuses = readStatusRepository.findAllByChannelIdWithUser(channel.getId());
     List<UserDto> participants = channelReadStatuses.stream()
         .map(readStatus -> entityDtoMapper.toDto(readStatus.getUser()))
         .collect(Collectors.toList());

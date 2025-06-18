@@ -67,11 +67,8 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   @Transactional(readOnly = true)
   public List<ReadStatus> findAllByUserId(UUID userId) {
-    // User 엔티티를 통한 연관관계 활용 (지연 로딩)
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new CustomException.UserNotFoundException("User with id " + userId + " not found"));
-
-    return user.getReadStatuses().stream().toList();
+    // N+1 문제 해결: 사용자 정보를 Fetch Join으로 한 번에 조회
+    return readStatusRepository.findAllByUserIdWithUser(userId);
   }
 
   @Override
