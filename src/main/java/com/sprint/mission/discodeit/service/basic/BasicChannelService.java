@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -33,6 +34,7 @@ public class BasicChannelService implements ChannelService {
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
   private final ReadStatusRepository readStatusRepository;
+  private final MessageRepository messageRepository;
   private final EntityDtoMapper entityDtoMapper;
 
   @Override
@@ -91,8 +93,15 @@ public class BasicChannelService implements ChannelService {
     log.info("접근 가능한 채널 수: {}, 구독 비공개 채널 수: {}",
         accessibleChannels.size(), subscribedChannelIds.size());
 
+    // N+1 문제 해결: 모든 채널의 마지막 메시지 시간을 한 번에 조회
+    List<UUID> channelIds = accessibleChannels.stream()
+        .map(Channel::getId)
+        .collect(Collectors.toList());
+
+    Map<UUID, Instant> lastMessageTimes = getLastMessageTimesForChannels(channelIds);
+
     return accessibleChannels.stream()
-        .map(this::mapToChannelDto)
+        .map(channel -> mapToChannelDtoWithLastMessageTime(channel, lastMessageTimes))
         .collect(Collectors.toList());
   }
 
@@ -213,8 +222,8 @@ public class BasicChannelService implements ChannelService {
    * @return 접근 가능한 채널 목록
    */
   private List<Channel> getAccessibleChannels(Set<UUID> subscribedChannelIds) {
-    // N+1 문제 해결: 참가자 정보를 Fetch Join으로 한 번에 조회
-    return channelRepository.findAllWithParticipants().stream()
+    // N+1 문제 해결: 참가자 정보를 Fetch Join으로 한 번에 조회 (메시지는 제외)
+    return channelRepository.findAllWithParticipantsOnly().stream()
         .filter(channel -> isAccessibleChannel(channel, subscribedChannelIds))
         .collect(Collectors.toList());
   }
@@ -280,16 +289,85 @@ public class BasicChannelService implements ChannelService {
    */
   private Instant getLastMessageTime(Channel channel) {
     try {
-      if (channel.getMessages() != null && !channel.getMessages().isEmpty()) {
-        return channel.getMessages().stream()
-            .max(Comparator.comparing(message -> message.getCreatedAt()))
-            .map(message -> message.getCreatedAt())
-            .orElse(channel.getCreatedAt());
-      }
+      // N+1 문제 해결: 효율적인 쿼리로 마지막 메시지 시간만 조회
+      return messageRepository.findLastMessageTimeByChannelId(channel.getId())
+          .orElse(channel.getCreatedAt());
     } catch (Exception e) {
       log.warn("메시지 조회 실패, 채널 생성 시간 사용 - 채널 ID: {}, 오류: {}",
           channel.getId(), e.getMessage());
+      return channel.getCreatedAt();
     }
-    return channel.getCreatedAt();
+  }
+
+  /**
+   * 여러 채널의 마지막 메시지 시간을 한 번에 조회합니다.
+   * N+1 문제를 해결하기 위해 배치 쿼리를 사용합니다.
+   * 
+   * @param channelIds 조회할 채널 ID 목록
+   * @return 채널 ID별 마지막 메시지 시간 맵
+   */
+  private Map<UUID, Instant> getLastMessageTimesForChannels(List<UUID> channelIds) {
+    if (channelIds.isEmpty()) {
+      return Collections.emptyMap();
+    }
+
+    try {
+      List<Object[]> results = messageRepository.findLastMessageTimesByChannelIds(channelIds);
+      return results.stream()
+          .collect(Collectors.toMap(
+              result -> (UUID) result[0],
+              result -> (Instant) result[1]));
+    } catch (Exception e) {
+      log.warn("마지막 메시지 시간 배치 조회 실패 - 채널 수: {}, 오류: {}", channelIds.size(), e.getMessage());
+      return Collections.emptyMap();
+    }
+  }
+
+  /**
+   * 채널을 ChannelDto로 매핑하되, 미리 조회한 마지막 메시지 시간을 사용합니다.
+   * N+1 문제를 해결하기 위해 배치로 조회한 데이터를 활용합니다.
+   * 
+   * @param channel          매핑할 채널
+   * @param lastMessageTimes 미리 조회한 마지막 메시지 시간 맵
+   * @return 매핑된 ChannelDto
+   */
+  private ChannelDto mapToChannelDtoWithLastMessageTime(Channel channel, Map<UUID, Instant> lastMessageTimes) {
+    if (channel.getType().isPrivate()) {
+      return mapPrivateChannelToDtoWithLastMessageTime(channel, lastMessageTimes);
+    } else {
+      // 공개 채널의 경우
+      Instant lastMessageAt = lastMessageTimes.getOrDefault(channel.getId(), channel.getCreatedAt());
+      return new ChannelDto(
+          channel.getId(),
+          channel.getType(),
+          channel.getName(),
+          channel.getDescription(),
+          Collections.emptyList(), // 공개 채널은 참가자 목록이 없음
+          lastMessageAt);
+    }
+  }
+
+  /**
+   * 비공개 채널을 ChannelDto로 매핑하되, 미리 조회한 마지막 메시지 시간을 사용합니다.
+   * 
+   * @param channel          매핑할 비공개 채널
+   * @param lastMessageTimes 미리 조회한 마지막 메시지 시간 맵
+   * @return 매핑된 ChannelDto
+   */
+  private ChannelDto mapPrivateChannelToDtoWithLastMessageTime(Channel channel, Map<UUID, Instant> lastMessageTimes) {
+    // 이미 Fetch Join으로 로딩된 ReadStatus와 User 정보 사용
+    List<UserDto> participants = channel.getReadStatuses().stream()
+        .map(readStatus -> entityDtoMapper.toDto(readStatus.getUser()))
+        .collect(Collectors.toList());
+
+    Instant lastMessageAt = lastMessageTimes.getOrDefault(channel.getId(), channel.getCreatedAt());
+
+    return new ChannelDto(
+        channel.getId(),
+        channel.getType(),
+        channel.getName(),
+        channel.getDescription(),
+        participants,
+        lastMessageAt);
   }
 }

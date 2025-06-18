@@ -8,7 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -41,6 +43,14 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
       "LEFT JOIN FETCH ma.attachment " +
       "WHERE m.channel.id = :channelId", countQuery = "SELECT COUNT(m) FROM Message m WHERE m.channel.id = :channelId")
   Page<Message> findAllByChannelIdWithAuthorAndAttachments(@Param("channelId") UUID channelId, Pageable pageable);
+
+  // N+1 문제 해결: 채널의 마지막 메시지 시간만 효율적으로 조회
+  @Query("SELECT MAX(m.createdAt) FROM Message m WHERE m.channel.id = :channelId")
+  Optional<Instant> findLastMessageTimeByChannelId(@Param("channelId") UUID channelId);
+
+  // N+1 문제 해결: 여러 채널의 마지막 메시지 시간을 한 번에 조회
+  @Query("SELECT m.channel.id, MAX(m.createdAt) FROM Message m WHERE m.channel.id IN :channelIds GROUP BY m.channel.id")
+  List<Object[]> findLastMessageTimesByChannelIds(@Param("channelIds") List<UUID> channelIds);
 
   void deleteAllByChannelId(UUID channelId);
 }

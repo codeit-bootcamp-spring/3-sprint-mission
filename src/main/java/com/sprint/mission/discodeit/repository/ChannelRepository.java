@@ -32,4 +32,10 @@ public interface ChannelRepository extends JpaRepository<Channel, UUID> {
       "LEFT JOIN FETCH rs.user " +
       "WHERE c.id IN :channelIds")
   List<Channel> findAllByIdInWithParticipants(@Param("channelIds") List<UUID> channelIds);
+
+  // N+1 문제 해결: 모든 채널과 참가자 정보를 조회하되, 메시지는 제외 (마지막 메시지 시간은 별도 조회)
+  @Query("SELECT DISTINCT c FROM Channel c " +
+      "LEFT JOIN FETCH c.readStatuses rs " +
+      "LEFT JOIN FETCH rs.user")
+  List<Channel> findAllWithParticipantsOnly();
 }
