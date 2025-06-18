@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
@@ -8,14 +7,11 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import java.io.IOException;
-import java.io.InputStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,10 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
+    private final UserMapper userMapper;
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
-    private final BinaryContentMapper binaryContentMapper;
 
     @Override
     public UserDto create(UserCreateRequest userCreateRequest,
@@ -48,22 +43,33 @@ public class BasicUserService implements UserService {
         // 유효성 검사( Unique Key )
         validateUniqueUsernameAndEmail(username, email);
 
-        BinaryContent profile = profileCreateRequest.map(this::saveProfile).orElse(null);
+        BinaryContent profile = profileCreateRequest
+            .map(profileRequest -> {
+                String fileName = profileRequest.fileName();
+                String contentType = profileRequest.contentType();
+                byte[] bytes = profileRequest.bytes();
+                BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+                    contentType);
+                binaryContentRepository.save(binaryContent);
+                binaryContentStorage.put(binaryContent.getId(), bytes);
+                return binaryContent;
+            })
+            .orElse(null);
 
         User user = new User(username, email, password, profile);
-        User createdUser = userRepository.save(user);
-
         Instant now = Instant.now();
-        userStatusRepository.save(new UserStatus(createdUser, now));
 
-        return toDto(createdUser);
+        UserStatus userStatus = new UserStatus(user, now);
+        userRepository.save(user);
+
+        return userMapper.toDto(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserDto find(UUID userId) {
         return userRepository.findById(userId)
-            .map(this::toDto)
+            .map(userMapper::toDto)
             .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
     }
 
@@ -72,7 +78,7 @@ public class BasicUserService implements UserService {
     public List<UserDto> findAll() {
         return userRepository.findAll()
             .stream()
-            .map(this::toDto)
+            .map(userMapper::toDto)
             .toList();
     }
 
@@ -90,65 +96,33 @@ public class BasicUserService implements UserService {
         // 유효성 검사( Unique Key + Primary Key )
         validateUniqueUsernameAndEmail(newUsername, newEmail, user);
 
-        BinaryContent newProfile = optionalProfileCreateRequest.map(request -> {
+        BinaryContent profile = optionalProfileCreateRequest
+            .map(profileRequest -> {
 
-            if (request.bytes() == null) {
-                return user.getProfile();
-            }
+                String fileName = profileRequest.fileName();
+                String contentType = profileRequest.contentType();
+                byte[] bytes = profileRequest.bytes();
+                BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+                    contentType);
+                binaryContentRepository.save(binaryContent);
+                binaryContentStorage.put(binaryContent.getId(), bytes);
+                return binaryContent;
+            })
+            .orElse(null);
 
-            Optional.ofNullable(user.getProfile()).ifPresent(binaryContentRepository::delete);
-            return saveProfile(request);
-        }).orElse(null);
+        user.update(newUsername, newEmail, newPassword, profile);
 
-        user.update(newUsername, newEmail, newPassword, newProfile);
-
-        return toDto(user);
+        return userMapper.toDto(user);
     }
 
 
     @Override
     public void delete(UUID userId) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-
-        Optional.ofNullable(user.getProfile())
-            .ifPresent(binaryContentRepository::delete);
-        userStatusRepository.deleteByUserId(userId);
-
-        userRepository.deleteById(userId);
-    }
-
-    private UserDto toDto(User user) {
-        Boolean online = userStatusRepository.findByUserId(user.getId())
-            .map(UserStatus::isOnline)
-            .orElse(null);
-
-        BinaryContent profile = user.getProfile();
-        BinaryContentDto profileDto = null;
-
-        if (profile != null) {
-            try (InputStream is = binaryContentStorage.get(profile.getId())) {
-                byte[] bytes = is.readAllBytes();
-
-                profileDto = new BinaryContentDto(
-                    profile.getId(),
-                    profile.getFileName(),
-                    profile.getSize(),
-                    profile.getContentType(),
-                    bytes
-                );
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to load profile image bytes", e);
-            }
+        if (userRepository.existsById(userId)) {
+            throw new NoSuchElementException("User with id " + userId + " not found");
         }
 
-        return new UserDto(
-            user.getId(),
-            user.getUsername(),
-            user.getEmail(),
-            profileDto,
-            online
-        );
+        userRepository.deleteById(userId);
     }
 
 
