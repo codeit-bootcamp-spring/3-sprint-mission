@@ -10,28 +10,29 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
-@org.springframework.transaction.annotation.Transactional(readOnly = true)
+@Transactional(readOnly = true)
 public class BasicAuthService implements AuthService {
 
-  private final UserRepository userRepository;
-  private final UserMapper userMapper;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-  @Override
-  public UserDto login(LoginRequest loginRequest) {
-    String username = loginRequest.username();
-    String password = loginRequest.password();
+    @Override
+    public UserDto login(LoginRequest loginRequest) {
+        String username = loginRequest.username();
+        String password = loginRequest.password();
 
-    User user = userRepository.findByUsername(username)
-        .orElseThrow(
-            () -> new NoSuchElementException("User with username " + username + " not found"));
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(
+                () -> new NoSuchElementException("User with username " + username + " not found"));
 
-    if (!user.getPassword().equals(password)) {
-      throw new IllegalArgumentException("Wrong password");
+        if (!user.getPassword().equals(password)) {
+            throw new IllegalArgumentException("Wrong password");
+        }
+
+        return userMapper.toDto(user);
     }
-
-    return userMapper.toDto(user);
-  }
 }

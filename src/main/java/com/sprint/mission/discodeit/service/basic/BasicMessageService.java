@@ -16,7 +16,6 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -76,7 +76,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public MessageDto find(UUID messageId) {
         Message message = messageRepository.findById(messageId)
             .orElseThrow(
@@ -84,7 +84,7 @@ public class BasicMessageService implements MessageService {
         return messageMapper.toDto(message);
     }
 
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createAt,
         Pageable pageable) {
