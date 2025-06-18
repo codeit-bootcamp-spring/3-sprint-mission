@@ -1,29 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-  <!-- 콘솔 로그 출력 설정 -->
-  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+  <property name="LOG_PATH" value=".logs" />
+  <property name="LOG_PATTERN"
+    value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %-36logger - %msg%n" />
+
+  <!-- 콘솔 로그 -->
+  <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %5level %logger{36} - %msg%n</pattern>
+      <pattern>${LOG_PATTERN}</pattern>
     </encoder>
   </appender>
 
-  <!-- 파일 로그 출력 설정 (선택사항: 필요 시만 사용) -->
-  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>logs/discodeit.log</file>
+  <!-- 파일 로그 -->
+  <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/discodeit.log</file>
+
+    <!-- 롤링 정책: 날짜별로 파일 나누기 -->
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>logs/discodeit.%d{yyyy-MM-dd}.log</fileNamePattern>
-      <maxHistory>14</maxHistory>
+      <!-- 파일명 형식 -->
+      <fileNamePattern>${LOG_PATH}/discodeit.%d{yyyy-MM-dd}.log</fileNamePattern>
+
+      <!-- 로그 보관 기간: 30일 -->
+      <maxHistory>30</maxHistory>
     </rollingPolicy>
+
     <encoder>
-      <pattern>%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %5level %logger{36} - %msg%n</pattern>
+      <pattern>${LOG_PATTERN}</pattern>
     </encoder>
   </appender>
 
-  <!-- 루트 로거 설정 -->
+  <!-- 루트 로거: 콘솔 + 파일 모두 출력 -->
   <root level="DEBUG">
-    <appender-ref ref="CONSOLE"/>
-    <appender-ref ref="FILE"/>
+    <appender-ref ref="Console" />
+    <appender-ref ref="RollingFile" />
   </root>
 
 </configuration>
+
