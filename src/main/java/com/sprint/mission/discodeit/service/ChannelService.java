@@ -10,15 +10,15 @@ import java.util.*;
 
 public interface ChannelService {
 
-  ChannelResponseDto createPublicChannel(PublicChannelDto publicChannelDto);
+    ChannelResponseDto createPublicChannel(PublicChannelDto publicChannelDto);
 
-  ChannelResponseDto createPrivateChannel(PrivateChannelDto privateChannelDto);
+    ChannelResponseDto createPrivateChannel(PrivateChannelDto privateChannelDto);
 
-  ChannelResponseDto findById(UUID channelId);
+    ChannelResponseDto findById(UUID channelId);
 
-  List<ChannelResponseDto> findAllByUserId(UUID userId);
+    List<ChannelResponseDto> findAllByUserId(UUID userId);
 
-  ChannelResponseDto update(UUID channelId, PublicChannelUpdateDto publicChannelUpdateDto);
+    ChannelResponseDto update(UUID channelId, PublicChannelUpdateDto publicChannelUpdateDto);
 
-  void deleteById(UUID channelId);
+    void deleteById(UUID channelId);
 }

@@ -68,7 +68,7 @@ public class BasicChannelService implements ChannelService {
                             .channel(channel)
                             .lastReadAt(createdChannel.getCreatedAt())
                             .build();
-                    
+
                     return readStatus;
                 })
                 .toList();

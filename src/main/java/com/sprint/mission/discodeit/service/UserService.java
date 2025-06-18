@@ -10,13 +10,13 @@ import java.util.*;
 
 public interface UserService {
 
-  UserResponseDto create(UserRequestDto userRequestDTO, BinaryContentDto binaryContentDto);
+    UserResponseDto create(UserRequestDto userRequestDTO, BinaryContentDto binaryContentDto);
 
-  UserResponseDto findById(UUID id);
+    UserResponseDto findById(UUID id);
 
-  List<UserResponseDto> findAll();
+    List<UserResponseDto> findAll();
 
-  UserResponseDto update(UUID id, UserUpdateDto userUpdateDTO, BinaryContentDto binaryContentDto);
+    UserResponseDto update(UUID id, UserUpdateDto userUpdateDTO, BinaryContentDto binaryContentDto);
 
-  void deleteById(UUID id);
+    void deleteById(UUID id);
 }

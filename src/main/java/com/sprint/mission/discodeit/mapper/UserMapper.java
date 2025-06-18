@@ -10,17 +10,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserMapper {
 
-  private final BinaryContentMapper binaryContentMapper;
+    private final BinaryContentMapper binaryContentMapper;
 
-  public UserResponseDto toDto(User user) {
-    BinaryContentResponseDto profileDto = null;
-    if (user.getProfile() != null) {
-      profileDto = binaryContentMapper.toDto(user.getProfile());
+    public UserResponseDto toDto(User user) {
+        BinaryContentResponseDto profileDto = null;
+        if (user.getProfile() != null) {
+            profileDto = binaryContentMapper.toDto(user.getProfile());
+        }
+
+        Boolean online = user.getStatus().isLogin();
+
+        return new UserResponseDto(user.getId(), user.getUsername(), user.getEmail(),
+                profileDto, online);
     }
-
-    Boolean online = user.getStatus().isLogin();
-
-    return new UserResponseDto(user.getId(), user.getUsername(), user.getEmail(),
-        profileDto, online);
-  }
 }

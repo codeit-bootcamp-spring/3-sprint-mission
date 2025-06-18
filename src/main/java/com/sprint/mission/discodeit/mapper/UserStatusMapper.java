@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserStatusMapper {
 
-  public UserStatusResponseDto toDto(UserStatus userStatus) {
-    return new UserStatusResponseDto(userStatus.getId(), userStatus.getUser().getId(),
-        userStatus.getLastActiveAt());
-  }
+    public UserStatusResponseDto toDto(UserStatus userStatus) {
+        return new UserStatusResponseDto(userStatus.getId(), userStatus.getUser().getId(),
+                userStatus.getLastActiveAt());
+    }
 }
