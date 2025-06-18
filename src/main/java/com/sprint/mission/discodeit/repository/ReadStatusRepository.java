@@ -21,6 +21,13 @@ public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
       "WHERE rs.user.id = :userId")
   List<ReadStatus> findAllByUserIdWithUser(@Param("userId") UUID userId);
 
+  // N+1 문제 해결: ReadStatus 조회 시 사용자와 채널 정보를 모두 함께 조회
+  @Query("SELECT rs FROM ReadStatus rs " +
+      "JOIN FETCH rs.user " +
+      "JOIN FETCH rs.channel " +
+      "WHERE rs.user.id = :userId")
+  List<ReadStatus> findAllByUserIdWithUserAndChannel(@Param("userId") UUID userId);
+
   // N+1 문제 해결: 단일 ReadStatus 조회 시 연관 엔티티를 함께 조회
   @Query("SELECT rs FROM ReadStatus rs " +
       "JOIN FETCH rs.user " +
@@ -39,6 +46,10 @@ public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
   // N+1 문제 해결: 중복 체크를 위한 존재 여부 확인 쿼리
   @Query("SELECT COUNT(rs) > 0 FROM ReadStatus rs WHERE rs.user.id = :userId AND rs.channel.id = :channelId")
   boolean existsByUserIdAndChannelId(@Param("userId") UUID userId, @Param("channelId") UUID channelId);
+
+  // N+1 문제 해결: 사용자가 구독한 채널 ID만 효율적으로 조회
+  @Query("SELECT rs.channel.id FROM ReadStatus rs WHERE rs.user.id = :userId")
+  List<UUID> findChannelIdsByUserId(@Param("userId") UUID userId);
 
   // N+1 문제 해결: 사용자별 채널별 ReadStatus 조회
   @Query("SELECT rs FROM ReadStatus rs " +

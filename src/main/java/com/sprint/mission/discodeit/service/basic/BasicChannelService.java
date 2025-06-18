@@ -208,10 +208,8 @@ public class BasicChannelService implements ChannelService {
    * @return 구독한 채널 ID 집합
    */
   private Set<UUID> getSubscribedChannelIds(UUID userId) {
-    // N+1 문제 해결: 사용자 정보를 Fetch Join으로 한 번에 조회
-    return readStatusRepository.findAllByUserIdWithUser(userId).stream()
-        .map(readStatus -> readStatus.getChannel().getId())
-        .collect(Collectors.toSet());
+    // N+1 문제 해결: 채널 ID만 효율적으로 조회 (엔티티 로딩 없이 ID만 조회)
+    return new HashSet<>(readStatusRepository.findChannelIdsByUserId(userId));
   }
 
   /**

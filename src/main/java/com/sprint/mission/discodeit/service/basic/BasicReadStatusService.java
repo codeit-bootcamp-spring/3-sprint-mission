@@ -66,8 +66,8 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   @Transactional(readOnly = true)
   public List<ReadStatus> findAllByUserId(UUID userId) {
-    // N+1 문제 해결: 사용자 정보를 Fetch Join으로 한 번에 조회
-    return readStatusRepository.findAllByUserIdWithUser(userId);
+    // N+1 문제 해결: 사용자와 채널 정보를 모두 Fetch Join으로 한 번에 조회
+    return readStatusRepository.findAllByUserIdWithUserAndChannel(userId);
   }
 
   @Override
