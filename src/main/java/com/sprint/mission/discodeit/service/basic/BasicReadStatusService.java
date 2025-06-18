@@ -32,6 +32,13 @@ public class BasicReadStatusService implements ReadStatusService {
     UUID userId = request.userId();
     UUID channelId = request.channelId();
 
+    // N+1 문제 해결: 효율적인 쿼리로 중복 체크
+    boolean alreadyExists = readStatusRepository.existsByUserIdAndChannelId(userId, channelId);
+    if (alreadyExists) {
+      throw new CustomException.DuplicateReadStatusException(
+          "ReadStatus with userId " + userId + " and channelId " + channelId + " already exists");
+    }
+
     // 연관 엔티티들을 로드
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new CustomException.UserNotFoundException("User with id " + userId + " does not exist"));
@@ -39,15 +46,6 @@ public class BasicReadStatusService implements ReadStatusService {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(
             () -> new CustomException.ChannelNotFoundException("Channel with id " + channelId + " does not exist"));
-
-    // User의 ReadStatus 컬렉션을 통한 중복 체크 (지연 로딩 활용)
-    boolean alreadyExists = user.getReadStatuses().stream()
-        .anyMatch(readStatus -> readStatus.getChannel().getId().equals(channelId));
-
-    if (alreadyExists) {
-      throw new CustomException.DuplicateReadStatusException(
-          "ReadStatus with userId " + userId + " and channelId " + channelId + " already exists");
-    }
 
     Instant lastReadAt = request.lastReadAt();
     // 엔티티 연관관계를 활용한 ReadStatus 생성
@@ -59,7 +57,8 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   @Transactional(readOnly = true)
   public ReadStatus find(UUID readStatusId) {
-    return readStatusRepository.findById(readStatusId)
+    // N+1 문제 해결: 연관 엔티티를 Fetch Join으로 한 번에 조회
+    return readStatusRepository.findByIdWithUserAndChannel(readStatusId)
         .orElseThrow(
             () -> new CustomException.ReadStatusNotFoundException("ReadStatus with id " + readStatusId + " not found"));
   }
@@ -75,7 +74,8 @@ public class BasicReadStatusService implements ReadStatusService {
   public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
     Instant newLastReadAt = request.newLastReadAt();
 
-    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+    // N+1 문제 해결: 연관 엔티티를 Fetch Join으로 한 번에 조회
+    ReadStatus readStatus = readStatusRepository.findByIdWithUserAndChannel(readStatusId)
         .orElseThrow(
             () -> new CustomException.ReadStatusNotFoundException("ReadStatus with id " + readStatusId + " not found"));
 
@@ -87,7 +87,8 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   public void delete(UUID readStatusId) {
-    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+    // N+1 문제 해결: 연관 엔티티를 Fetch Join으로 한 번에 조회
+    ReadStatus readStatus = readStatusRepository.findByIdWithUserAndChannel(readStatusId)
         .orElseThrow(
             () -> new CustomException.ReadStatusNotFoundException("ReadStatus with id " + readStatusId + " not found"));
 
