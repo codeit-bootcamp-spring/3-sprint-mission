@@ -7,8 +7,6 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import java.io.IOException;
@@ -46,10 +44,10 @@ public class UserController implements UserApi {
   ) {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
-    UserDto createdUserDto = userService.create(userCreateRequest, profileRequest);
+    UserDto createdUser = userService.create(userCreateRequest, profileRequest);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(createdUserDto);
+        .body(createdUser);
   }
 
   @PatchMapping(
@@ -64,10 +62,10 @@ public class UserController implements UserApi {
   ) {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
-    UserDto updatedUserDto = userService.update(userId, userUpdateRequest, profileRequest);
+    UserDto updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(updatedUserDto);
+        .body(updatedUser);
   }
 
   @DeleteMapping(path = "{userId}")
@@ -92,10 +90,10 @@ public class UserController implements UserApi {
   @Override
   public ResponseEntity<UserStatusDto> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
       @RequestBody UserStatusUpdateRequest request) {
-    UserStatusDto updatedUserStatusDto = userStatusService.updateByUserId(userId, request);
+    UserStatusDto updatedUserStatus = userStatusService.updateByUserId(userId, request);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(updatedUserStatusDto);
+        .body(updatedUserStatus);
   }
 
   private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {

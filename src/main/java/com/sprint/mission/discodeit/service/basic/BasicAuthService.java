@@ -18,7 +18,7 @@ public class BasicAuthService implements AuthService {
   private final UserRepository userRepository;
   private final UserMapper userMapper;
 
-  @Transactional
+  @Transactional(readOnly = true)
   @Override
   public UserDto login(LoginRequest loginRequest) {
     String username = loginRequest.username();
