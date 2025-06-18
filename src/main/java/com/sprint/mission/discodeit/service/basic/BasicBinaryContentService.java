@@ -41,21 +41,20 @@ public class BasicBinaryContentService implements BinaryContentService {
             contentType
         );
 
-        BinaryContent saved = binaryContentRepository.save(binaryContent);
+        binaryContentRepository.save(binaryContent);
 
-        binaryContentStorage.put(saved.getId(), bytes);
+        binaryContentStorage.put(binaryContent.getId(), bytes);
 
-        return binaryContentMapper.toDto(saved);
+        return binaryContentMapper.toDto(binaryContent);
     }
 
     @Override
     @Transactional(readOnly = true)
     public BinaryContentDto find(UUID binaryContentId) {
-        BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
-            .orElseThrow(
-                () -> new NoSuchElementException(
-                    "BinaryContent with id " + binaryContentId + " not found"));
-        return binaryContentMapper.toDto(binaryContent);
+        return binaryContentRepository.findById(binaryContentId)
+            .map(binaryContentMapper::toDto)
+            .orElseThrow(() -> new NoSuchElementException(
+                "BinaryContent with id " + binaryContentId + " not found"));
     }
 
     @Override
