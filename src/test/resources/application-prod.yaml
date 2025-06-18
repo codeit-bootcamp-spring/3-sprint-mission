@@ -1,0 +1,33 @@
+# 테스트 환경 설정
+spring:
+  datasource:
+    # DB_CLOSE_DELAY: 테스트 종료 후 데이터베이스 연결 유지 시간 (음수 값은 연결 유지)
+    # DB_CLOSE_ON_EXIT: 프로그램 종료 시 데이터베이스 연결 닫기 여부
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+    show-sql: true
+
+  h2:
+    console:
+      enabled: true
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    org.springframework.test: debug
+    com.ohgiraffers.springintegrationtdd: debug
+
+server:
+  port: 0
