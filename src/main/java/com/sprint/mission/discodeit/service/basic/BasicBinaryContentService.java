@@ -11,55 +11,74 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicBinaryContentService implements BinaryContentService {
 
-  private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentMapper binaryContentMapper;
-  private final BinaryContentStorage binaryContentStorage;
+    private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentMapper binaryContentMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
-  @Transactional
-  @Override
-  public BinaryContentDto create(BinaryContentCreateRequest request) {
-    String fileName = request.fileName();
-    byte[] bytes = request.bytes();
-    String contentType = request.contentType();
-    BinaryContent binaryContent = new BinaryContent(
-        fileName,
-        (long) bytes.length,
-        contentType
-    );
-    binaryContentRepository.save(binaryContent);
-    binaryContentStorage.put(binaryContent.getId(), bytes);
+    @Transactional
+    @Override
+    public BinaryContentDto create(BinaryContentCreateRequest request) {
+        log.info("파일 업로드 요청: fileName={}, contentType={}, size={} bytes",
+            request.fileName(), request.contentType(), request.bytes().length);
 
-    return binaryContentMapper.toDto(binaryContent);
-  }
+        String fileName = request.fileName();
+        byte[] bytes = request.bytes();
+        String contentType = request.contentType();
+        BinaryContent binaryContent = new BinaryContent(
+            fileName,
+            (long) bytes.length,
+            contentType
+        );
+        binaryContentRepository.save(binaryContent);
+        binaryContentStorage.put(binaryContent.getId(), bytes);
 
-  @Override
-  public BinaryContentDto find(UUID binaryContentId) {
-    return binaryContentRepository.findById(binaryContentId)
-        .map(binaryContentMapper::toDto)
-        .orElseThrow(() -> new NoSuchElementException(
-            "BinaryContent with id " + binaryContentId + " not found"));
-  }
-
-  @Override
-  public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
-    return binaryContentRepository.findAllById(binaryContentIds).stream()
-        .map(binaryContentMapper::toDto)
-        .toList();
-  }
-
-  @Transactional
-  @Override
-  public void delete(UUID binaryContentId) {
-    if (!binaryContentRepository.existsById(binaryContentId)) {
-      throw new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found");
+        log.info("파일 저장 완료: id={}", binaryContent.getId());
+        return binaryContentMapper.toDto(binaryContent);
     }
-    binaryContentRepository.deleteById(binaryContentId);
-  }
+
+    @Override
+    public BinaryContentDto find(UUID binaryContentId) {
+        log.debug("파일 조회 요청: id={}", binaryContentId);
+
+        return binaryContentRepository.findById(binaryContentId)
+            .map(binaryContentMapper::toDto)
+            .orElseThrow(() -> {
+                log.warn("파일 조회 실패: 존재하지 않는 ID={}", binaryContentId);
+                return new NoSuchElementException(
+                    "BinaryContent with id " + binaryContentId + " not found");
+            });
+    }
+
+    @Override
+    public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
+        log.debug("다중 파일 조회 요청: {}개 ID", binaryContentIds.size());
+
+        return binaryContentRepository.findAllById(binaryContentIds).stream()
+            .map(binaryContentMapper::toDto)
+            .toList();
+    }
+
+    @Transactional
+    @Override
+    public void delete(UUID binaryContentId) {
+        log.info("파일 삭제 요청: id={}", binaryContentId);
+
+        if (!binaryContentRepository.existsById(binaryContentId)) {
+            log.error("삭제 실패: 존재하지 않는 파일 id={}", binaryContentId);
+            throw new NoSuchElementException(
+                "BinaryContent with id " + binaryContentId + " not found");
+        }
+
+        binaryContentRepository.deleteById(binaryContentId);
+        log.info("파일 삭제 완료: id={}", binaryContentId);
+    }
 }
