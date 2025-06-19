@@ -15,6 +15,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
   boolean existsByUsername(String username);
 
+  boolean existsByUsernameOrEmail(String username, String userEmail);
+
 //  /* CrudRepository의 기본 메소드 */
 //  public User save(User user);
 //

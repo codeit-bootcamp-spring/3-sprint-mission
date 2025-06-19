@@ -4,10 +4,12 @@ import com.sprint.mission.discodeit.entity.Message;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
+  @EntityGraph(attributePaths = {"channel"})
   public Page<Message> findAllByChannelId(UUID channelId, Pageable pageable
   );
 
