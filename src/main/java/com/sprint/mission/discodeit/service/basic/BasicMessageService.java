@@ -8,9 +8,9 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundChannelException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundMessageException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
+import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
+import com.sprint.mission.discodeit.exception.message.NotFoundMessageException;
+import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.struct.BinaryContentStructMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -155,7 +155,7 @@ public class BasicMessageService implements MessageService {
         }
 
         messageRepository.deleteById(messageId);
-        
+
         log.info("[BasicMessageService] 메시지 삭제 성공: id: {}", messageId);
     }
 
@@ -167,16 +167,16 @@ public class BasicMessageService implements MessageService {
 
     private Message findMessage(UUID id) {
         return messageRepository.findById(id)
-                .orElseThrow(NotFoundMessageException::new);
+                .orElseThrow(() -> new NotFoundMessageException(id));
     }
 
     private Channel findChannel(UUID id) {
         return channelRepository.findById(id)
-                .orElseThrow(NotFoundChannelException::new);
+                .orElseThrow(() -> new NotFoundChannelException(id));
     }
 
     private User findUser(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(NotFoundUserException::new);
+                .orElseThrow(() -> new NotFoundUserException(id));
     }
 }

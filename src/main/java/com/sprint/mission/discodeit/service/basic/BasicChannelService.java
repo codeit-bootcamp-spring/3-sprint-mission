@@ -8,9 +8,9 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.PrivateChannelModificationException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundChannelException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
+import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -124,7 +123,7 @@ public class BasicChannelService implements ChannelService {
 
         // PRIVATE 채널은 수정 불가
         if (channel.getType().equals(ChannelType.PRIVATE)) {
-            throw new PrivateChannelModificationException();
+            throw new PrivateChannelUpdateException(channelId);
         }
 
         // 변경 사항 적용
@@ -156,11 +155,11 @@ public class BasicChannelService implements ChannelService {
 
     private Channel findChannel(UUID id) {
         return channelRepository.findById(id)
-                .orElseThrow(NotFoundChannelException::new);
+                .orElseThrow(() -> new NotFoundChannelException(id));
     }
 
     private User findUser(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(NotFoundUserException::new);
+                .orElseThrow(() -> new NotFoundUserException(id));
     }
 }

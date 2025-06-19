@@ -7,10 +7,10 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.duplicate.DuplicateEmailException;
-import com.sprint.mission.discodeit.exception.duplicate.DuplicateNameException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundUserStatusException;
+import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
+import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
+import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
+import com.sprint.mission.discodeit.exception.userstatus.NotFoundUserStatusException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.mapper.struct.BinaryContentStructMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -202,11 +202,11 @@ public class BasicUserService implements UserService {
 
     private User findUser(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(NotFoundUserException::new);
+                .orElseThrow(() -> new NotFoundUserException(id));
     }
 
     private UserStatus findUserStatus(UUID id) {
         return userStatusRepository.findByUserId(id)
-                .orElseThrow(NotFoundUserStatusException::new);
+                .orElseThrow(() -> new NotFoundUserStatusException(id));
     }
 }
