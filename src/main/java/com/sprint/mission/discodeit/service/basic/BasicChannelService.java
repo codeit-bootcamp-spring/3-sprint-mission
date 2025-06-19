@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.advanced.UserMapper;
 import com.sprint.mission.discodeit.mapper.advanced.ChannelMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
@@ -60,8 +61,12 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public JpaChannelResponse createChannel(PrivateChannelCreateRequest request) {
-        List<UUID> userIds = request.participantIds().stream().map(UUID::fromString).toList();
+        Set<UUID> userIds = request.participantIds();
         List<User> users = userRepository.findAllById(userIds);
+
+        if (users.size() < 2) {
+            throw new UserNotFoundException(Map.of("users", "not enough your in private channel"));
+        }
 
         // channel 생성
         Channel channel = new Channel();
@@ -70,42 +75,45 @@ public class BasicChannelService implements ChannelService {
         // readStatus 생성 -> participants dto 생성
         List<JpaUserResponse> participants=new ArrayList<>();
         List<ReadStatus> readStatuses = new ArrayList<>();
+
+        //0테스트코드 작성 끝나면 리팩토링: readStatusRepository.saveAll(readStatuses);
         for (User user : users) {
             ReadStatus readStatus = new ReadStatus(user, channel);
             readStatusRepository.save(readStatus);
             readStatuses.add(readStatus);
         }
+
         List<User> userList = readStatuses.stream().map(r -> r.getUser()).toList();
         for (User user : userList) {
             participants.add(userMapper.toDto(user));
         }
         return channelMapper.toDto(channel);
     }
-    // quaries: 16개
-    // 4 채널 2 public 2 private(-1 per channel) 전체 로직(-1)
+
     @Override
     public List<JpaChannelResponse> findAllByUserId(UUID userId) {
+        //0+유저 정보가 없을경우 exception을 반환하는게 더 적합할 수 있음
         if(!userRepository.existsById(userId)) {
             return Collections.emptyList();
         }
 
         List<JpaChannelResponse> responses = new ArrayList<>();
-        List<UUID> channelIds = new ArrayList<>();
+        Set<UUID> channelIds = new HashSet<>();
 
-        List<Channel> channels = channelRepository.findAllByType(ChannelType.PUBLIC);
-        for (Channel channel : channels) {
+        List<Channel> publicChannels = channelRepository.findAllByType(ChannelType.PUBLIC);
+        for (Channel channel : publicChannels) {
             responses.add(channelMapper.toDto(channel));
             channelIds.add(channel.getId());
         }
 
         // 유저가 참가한 방이 없을 수 있음
         List<ReadStatus> readStatuses = readStatusRepository.findAllByUserIdWithChannel(userId);
+        List<Channel> privateChannels = readStatuses.stream().map(readStatus -> readStatus.getChannel()).toList();
+
         // 모든 방 순회
-        for (Channel channel : readStatuses.stream().map(readStatus -> readStatus.getChannel()).toList()) {
-            if (readStatuses.stream().anyMatch(status -> status.getChannel().getId().equals(channel.getId()))) {
-                if(!channelIds.contains(channel.getId())) {
-                    responses.add(channelMapper.toDto(channel));
-                }
+        for (Channel channel : privateChannels) {
+            if(!channelIds.contains(channel.getId())) {
+                responses.add(channelMapper.toDto(channel));
             }
         }
         return responses;
@@ -115,7 +123,6 @@ public class BasicChannelService implements ChannelService {
     public JpaChannelResponse update(UUID channelId, ChannelUpdateRequest request) {
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", channelId.toString())));
-
 
         // channel update
         if (channel.getType().equals(ChannelType.PUBLIC)) {

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.dto.channel.request;
 import jakarta.validation.constraints.NotEmpty;
 
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.user
@@ -17,7 +18,7 @@ import java.util.Set;
  */
 
 public record PrivateChannelCreateRequest(
-    @NotEmpty (message = "request must need one or more ids") Set<String> participantIds
+    @NotEmpty (message = "request must need one or more ids") Set<UUID> participantIds
 ) { }
 
 
