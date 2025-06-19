@@ -1,20 +1,24 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.UserException;
-import com.sprint.mission.discodeit.exception.UserStatusException;
+import com.sprint.mission.discodeit.exception.user.DuplicateUserStatusException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,10 +32,10 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public UserStatusResponse create(UUID userId) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> UserException.notFound(userId));
+        .orElseThrow(() -> new UserNotFoundException(userId.toString()));
 
     if (userStatusRepository.findByUserId(userId).isPresent()) {
-      throw UserStatusException.duplicate(userId);
+      throw new DuplicateUserStatusException(userId.toString());
     }
 
     UserStatus saved = userStatusRepository.save(UserStatus.create(user));
@@ -42,14 +46,14 @@ public class BasicUserStatusService implements UserStatusService {
   public UserStatusResponse find(UUID userStatusId) {
     return userStatusRepository.findById(userStatusId)
         .map(userStatusMapper::toResponse)
-        .orElseThrow(() -> UserStatusException.notFound(userStatusId));
+        .orElseThrow(() -> new UserStatusNotFoundException(userStatusId.toString()));
   }
 
   @Override
   public UserStatusResponse findByUserId(UUID userId) {
     return userStatusRepository.findByUserId(userId)
         .map(userStatusMapper::toResponse)
-        .orElseThrow(() -> UserStatusException.notFound(userId));
+        .orElseThrow(() -> new UserStatusNotFoundException(userId.toString(), true));
   }
 
   @Override
@@ -62,7 +66,7 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public UserStatusResponse update(UUID userStatusId) {
     UserStatus userStatus = userStatusRepository.findById(userStatusId)
-        .orElseThrow(() -> UserStatusException.notFound(userStatusId));
+        .orElseThrow(() -> new UserStatusNotFoundException(userStatusId.toString()));
 
     userStatus.updateLastActiveAt();
     return userStatusMapper.toResponse(userStatusRepository.save(userStatus));
@@ -71,7 +75,7 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public UserStatusResponse updateByUserId(UUID userId) {
     UserStatus userStatus = userStatusRepository.findByUserId(userId)
-        .orElseThrow(() -> UserStatusException.notFoundByUserId(userId));
+        .orElseThrow(() -> new UserStatusNotFoundException(userId.toString(), true));
 
     userStatus.updateLastActiveAt();
     return userStatusMapper.toResponse(userStatus);
@@ -80,7 +84,7 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public void delete(UUID userStatusId) {
     userStatusRepository.findById(userStatusId)
-        .orElseThrow(() -> UserStatusException.notFound(userStatusId));
+        .orElseThrow(() -> new UserStatusNotFoundException(userStatusId.toString()));
 
     userStatusRepository.deleteById(userStatusId);
   }

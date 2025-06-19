@@ -5,7 +5,7 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
-import com.sprint.mission.discodeit.exception.BinaryContentException;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentProcessingException;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
@@ -40,23 +40,18 @@ public class UserController implements UserApi {
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserResponse> create(
       @RequestPart UserCreateRequest userCreateRequest,
-      @RequestPart(value = "profile", required = false) MultipartFile profile
-  ) {
+      @RequestPart(value = "profile", required = false) MultipartFile profile) {
     CreateUserCommand command = toCreateCommand(userCreateRequest, profile);
 
     UserResponse response = userService.create(command);
     return ResponseEntity.created(URI.create("/api/users/" + response.id())).body(response);
   }
 
-  @PatchMapping(
-      value = "/{userId}",
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-  )
+  @PatchMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserResponse> update(
       @PathVariable UUID userId,
       @RequestPart UserUpdateRequest userUpdateRequest,
-      @RequestPart(value = "profile", required = false) MultipartFile profile
-  ) {
+      @RequestPart(value = "profile", required = false) MultipartFile profile) {
     UpdateUserCommand command = toUpdateCommand(userId, userUpdateRequest, profile);
 
     UserResponse updated = userService.update(command);
@@ -96,10 +91,9 @@ public class UserController implements UserApi {
       return new BinaryContentData(
           profile.getOriginalFilename(),
           profile.getContentType(),
-          profile.getBytes()
-      );
+          profile.getBytes());
     } catch (IOException e) {
-      throw BinaryContentException.processingError();
+      throw new BinaryContentProcessingException();
     }
   }
 
@@ -109,8 +103,7 @@ public class UserController implements UserApi {
         request.email(),
         request.username(),
         request.password(),
-        profileData
-    );
+        profileData);
   }
 
   private UpdateUserCommand toUpdateCommand(UUID userId, UserUpdateRequest request,
@@ -121,7 +114,6 @@ public class UserController implements UserApi {
         request.newUsername(),
         request.newEmail(),
         request.newPassword(),
-        profileData
-    );
+        profileData);
   }
 }

@@ -1,12 +1,15 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.Objects;
+import java.util.UUID;
+
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -57,6 +60,10 @@ public class Channel extends BaseUpdatableEntity {
 
   public boolean isPublic() {
     return this.type == ChannelType.PUBLIC;
+  }
+
+  public void assignIdForTest(UUID id) {
+    this.id = id;
   }
 
   @Override

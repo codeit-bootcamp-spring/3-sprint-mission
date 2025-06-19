@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.exception;
 
-import com.sprint.mission.discodeit.dto.response.ErrorResponse;
 import java.time.Instant;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,22 +12,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(BusinessException.class)
-  public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
+  @ExceptionHandler(DiscodeitException.class)
+  public ResponseEntity<ErrorResponse> handleBusinessException(DiscodeitException e) {
+    log.error("[서비스 오류] code: {}, exceptionType: {}", e.getErrorCode().name(),
+        e.getClass().getSimpleName(), e);
 
-    log.error("[서비스 오류] code: {}, messageKey: {}", e.getErrorCode().getMessage(),
-        e.getErrorCode().getMessageKey(), e);
-
-    ErrorCode errorCode = e.getErrorCode();
-
-    ErrorResponse response = new ErrorResponse(
-        errorCode.getMessage(),
-        errorCode.getMessageKey(),
-        errorCode.getStatus(),
-        Instant.now()
-    );
-
-    return ResponseEntity.status(errorCode.getStatus()).body(response);
+    return ResponseEntity
+        .status(e.getErrorCode().getStatus())
+        .body(ErrorResponse.from(e));
   }
 
   @ExceptionHandler(Exception.class)
@@ -44,9 +36,12 @@ public class GlobalExceptionHandler {
     ErrorResponse response = new ErrorResponse(
         "INTERNAL_SERVER_ERROR",
         "알 수 없는 서버 에러가 발생했습니다.",
+        e.getClass().getSimpleName(),
         HttpStatus.INTERNAL_SERVER_ERROR.value(),
-        Instant.now()
+        Instant.now(),
+        Map.of("cause", e.getMessage())
     );
+
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
   }
 }

@@ -14,7 +14,7 @@ import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.AuthException;
+import com.sprint.mission.discodeit.exception.user.UserException;
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -106,7 +106,7 @@ class BasicAuthServiceTest {
         Optional.empty());
 
     // When & Then
-    assertThrows(AuthException.class,
+    assertThrows(UserException.class,
         () -> authService.login(nonExistingRequest.username(), nonExistingRequest.password()),
         "예외 메시지 검증");
 

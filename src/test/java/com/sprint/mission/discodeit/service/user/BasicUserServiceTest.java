@@ -1,14 +1,21 @@
 package com.sprint.mission.discodeit.service.user;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
@@ -17,7 +24,9 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.ErrorCode;
-import com.sprint.mission.discodeit.exception.UserException;
+import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
+import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.fixture.UserStatusFixture;
@@ -29,17 +38,6 @@ import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.vo.BinaryContentData;
-import java.util.Optional;
-import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class BasicUserServiceTest {
@@ -69,25 +67,22 @@ class BasicUserServiceTest {
           User u = invocation.getArgument(0);
 
           // user의 profile 엔티티를 DTO로 변환하거나 null 처리
-          var profileEntity = u.getProfile();  // BinaryContent or null
-          var profileResponse = (profileEntity == null) ? null :
-              new BinaryContentResponse(
+          var profileEntity = u.getProfile(); // BinaryContent or null
+          var profileResponse = (profileEntity == null) ? null
+              : new BinaryContentResponse(
                   profileEntity.getId(),
                   profileEntity.getFileName(),
                   profileEntity.getContentType(),
-                  profileEntity.getSize()
-              );
+                  profileEntity.getSize());
 
           return new UserResponse(
               u.getId(),
               u.getUsername(),
               u.getEmail(),
               profileResponse,
-              false
-          );
+              false);
         });
   }
-
 
   @Nested
   class Create {
@@ -132,8 +127,7 @@ class BasicUserServiceTest {
       BinaryContentData profile = new BinaryContentData(
           binaryContent.getFileName(),
           binaryContent.getContentType(),
-          mockBytes
-      );
+          mockBytes);
       binaryContent.assignIdForTest(binaryContent.getId());
       CreateUserCommand command = new CreateUserCommand(email, name, password, profile);
 
@@ -174,9 +168,9 @@ class BasicUserServiceTest {
 
       when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(existingUser));
 
-      UserException exception = assertThrows(UserException.class,
+      DuplicateEmailException exception = assertThrows(DuplicateEmailException.class,
           () -> basicUserService.create(command));
-      assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
+      assertEquals(ErrorCode.USER_ALREADY_EXISTS, exception.getErrorCode());
 
       verify(userRepository).findByEmail(request.email());
       verify(userRepository, never()).findByUsername(anyString());
@@ -196,9 +190,9 @@ class BasicUserServiceTest {
       when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
       when(userRepository.findByUsername(request.username())).thenReturn(Optional.of(existingUser));
 
-      UserException exception = assertThrows(UserException.class,
+      DuplicateNameException exception = assertThrows(DuplicateNameException.class,
           () -> basicUserService.create(command));
-      assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
+      assertEquals(ErrorCode.USER_ALREADY_EXISTS, exception.getErrorCode());
 
       verify(userRepository).findByEmail(request.email());
       verify(userRepository).findByUsername(request.username());
@@ -250,7 +244,7 @@ class BasicUserServiceTest {
       UUID userId = UUID.randomUUID();
       when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-      assertThrows(UserException.class, () -> basicUserService.delete(userId));
+      assertThrows(UserNotFoundException.class, () -> basicUserService.delete(userId));
 
       verify(userRepository, never()).deleteById(any());
       verify(binaryContentRepository, never()).deleteById(any());
