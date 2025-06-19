@@ -19,6 +19,7 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service("basicUserService")
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -44,6 +46,8 @@ public class BasicUserService implements UserService {
     public UserResponseDto create(UserRequestDto userRequestDto, BinaryContentDto binaryContentDto) {
         String username = userRequestDto.username();
         String email = userRequestDto.email();
+
+        log.info("[BasicUserService] 사용자 등록 요청 - username: {}, email: {}", username, email);
 
         if (userRepository.existsByUsername(username)) {
             throw new DuplicateNameException(username);
@@ -81,10 +85,13 @@ public class BasicUserService implements UserService {
 
         user.updateStatus(userStatus);
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
         userStatusRepository.save(userStatus);
 
-        return userMapper.toDto(user);
+        log.info("[BasicUserService] 사용자 등록 성공 - id: {}, username: {}, email: {}",
+                savedUser.getId(), username, email);
+
+        return userMapper.toDto(savedUser);
     }
 
     @Override
@@ -120,6 +127,9 @@ public class BasicUserService implements UserService {
 
         String newUsername = userUpdateDto.newUsername();
         String newEmail = userUpdateDto.newEmail();
+
+        log.info("[BasicUserService] 사용자 수정 요청: id: {}, newUsername: {}, newEmail: {}",
+                id, newUsername, newEmail);
 
         if (newUsername != null) {
             userRepository.findByUsername(newUsername)
@@ -162,22 +172,32 @@ public class BasicUserService implements UserService {
 
         Optional.ofNullable(userUpdateDto.newPassword()).ifPresent(user::updatePassword);
 
-        userRepository.save(user);
+        User updatedUser = userRepository.save(user);
 
-        return userMapper.toDto(user);
+        log.info("[BasicUserService] 사용자 수정 성공! id: {}, username: {}, email: {}",
+                updatedUser.getId(), updatedUser.getUsername(), updatedUser.getEmail());
+
+        return userMapper.toDto(updatedUser);
     }
 
     @Override
     @Transactional
     public void deleteById(UUID id) {
+        log.info("[BasicUserService] 사용자 삭제 요청: id: {}", id);
+
         User user = findUser(id);
+        log.debug("[BasicUserService] 사용자 조회 완료- id: {}, username: {}", user.getId(), user.getUsername());
 
         userRepository.deleteById(id);
+        log.debug("[BasicUserService] userRepository 삭제 완료 - userId: {}", id);
+
         userStatusRepository.deleteByUserId(id);
 
         if (user.getProfile() != null) {
             binaryContentRepository.deleteById(user.getProfile().getId());
         }
+
+        log.info("[BasicUserService] 사용자 삭제 완료 - userId: {}", id);
     }
 
     private User findUser(UUID id) {
