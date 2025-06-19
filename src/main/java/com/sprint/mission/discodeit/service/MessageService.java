@@ -19,7 +19,7 @@ public interface MessageService {
 
     MessageDto find(UUID messageId);
 
-    PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable);
+    PageResponse<MessageDto> findAllByChannelIdWithAuthor(UUID channelId, Pageable pageable);
 
     MessageDto update(UUID messageId, MessageUpdateRequest request);
 

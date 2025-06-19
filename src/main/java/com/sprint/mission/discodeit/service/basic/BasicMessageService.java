@@ -86,6 +86,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public MessageDto find(UUID messageId) {
         Message message = messageRepository.findById(messageId)
             .orElseThrow(
@@ -95,8 +96,9 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable) {
-        Slice<MessageDto> slice = messageRepository.findAllByChannelId(channelId, pageable)
+    @Transactional(readOnly = true)
+    public PageResponse<MessageDto> findAllByChannelIdWithAuthor(UUID channelId, Pageable pageable) {
+        Slice<MessageDto> slice = messageRepository.findAllByChannelIdWithAuthor(channelId, pageable)
                 .map(messageMapper::toDto);
 
         return pageResponseMapper.fromSlice(slice);
