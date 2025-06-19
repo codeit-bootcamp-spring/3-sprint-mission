@@ -65,18 +65,15 @@ public class BasicMessageService implements MessageService {
     Message message = new Message(user, channel, createRequest.content());
 
     /* 첨부 파일 생성, 선택적으로 여러개의 첨부파일 같이 등록 가능 */
-    System.out.println("11111111 binaryContentCreateRequests = " + binaryContentCreateRequests);
     if (binaryContentCreateRequests != null) {
       binaryContentCreateRequests
           .forEach((binaryContentCreateRequest -> {
             /* 첨부 파일 생성 */
             BinaryContent binaryContent = binaryContentService.create(binaryContentCreateRequest);
-            System.out.println("1111111binaryContent = " + binaryContent);
             /* message_attachments 테이블에 데이터 insert */
             message.getAttachments().add(binaryContent);
           }));
     }
-    System.out.println("111111message.getAttachments() = " + message.getAttachments());
     Message createdMessage = this.messageRepository.save(message);
 
     /* 채널 lastMessageAt 업데이트 */

@@ -27,14 +27,11 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
 
   public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") Path root) {
-    System.out.println(root);
-    System.out.println(" root.getClass()  = " + root.getClass());
     this.root = root;
   }
 
   @PostConstruct
   public void init() {
-    System.out.println("calling PostConsturct : " + this.root);
     if (!Files.exists(this.root)) {
       try {
         Files.createDirectories(this.root);
@@ -51,8 +48,6 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   @Override
   public UUID put(UUID id, byte[] bytes) {
-    System.out.println("calling `LocalBinaryContentStorage` put : uuid( " + id + " ) ");
-
     // 객체를 저장할 파일 path 생성
     Path filePath = this.resolvePath(id);
 
@@ -69,15 +64,10 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   @Override
   public InputStream get(UUID id) {
-    System.out.println("calling `LocalBinaryContentStorage` get : uuid( " + id + " ) ");
-
     Path filePath = this.resolvePath(id);
-
-    try (
-        // 파일과 연결되는 스트림 생성
-        FileInputStream fis = new FileInputStream(String.valueOf(filePath));
-    ) {
-      return fis;
+    try {
+      // 파일과 연결되는 스트림 생성
+      return new FileInputStream(String.valueOf(filePath));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

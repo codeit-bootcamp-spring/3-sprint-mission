@@ -46,7 +46,6 @@ public class MessageController implements MessageApi {
       @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
-    System.out.println("111111 attachments = " + attachments);
     List<BinaryContentCreateRequest> binaryContentCreateRequests =
         Optional.ofNullable(attachments).map(
             p -> p.stream().map(BinaryContentConverter::resolveProfileRequest)
@@ -54,9 +53,6 @@ public class MessageController implements MessageApi {
                 .map(Optional::get)
                 .toList()
         ).orElse(null);
-
-    System.out.println(
-        "111111 binaryContentCreateRequests = " + binaryContentCreateRequests.toString());
 
     try {
       MessageDto createdMessageDto = messageService.create(messageCreateRequest,
