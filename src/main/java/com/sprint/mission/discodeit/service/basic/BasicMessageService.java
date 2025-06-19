@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -170,6 +171,53 @@ public class BasicMessageService implements MessageService {
     log.info("메시지 페이징 조회 완료 (작성자만) - 채널ID: {}, 총 메시지: {}, 현재 페이지: {}", channelId, messagePage.getTotalElements(),
         messagePage.getNumber());
     return pageMapper.toPageResponse(messagePage, entityDtoMapper::toDto);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public PageResponse<MessageDto> findAllByChannelIdWithCursorPaging(UUID channelId, String cursor, Pageable pageable) {
+    log.info("메시지 커서 페이징 조회 요청 - 채널ID: {}, 커서: {}, 페이지 크기: {}", channelId, cursor, pageable.getPageSize());
+
+    // 실제로 size + 1개를 조회하여 다음 페이지 존재 여부 확인
+    int size = pageable.getPageSize();
+    Pageable queryPageable = Pageable.ofSize(size + 1);
+    List<Message> messages;
+
+    if (cursor == null || cursor.isEmpty()) {
+      // 첫 페이지 조회
+      messages = messageRepository.findFirstPageByChannelIdWithAuthorAndAttachments(channelId, queryPageable);
+    } else {
+      // 커서 이후 메시지 조회 (createdAt 기준)
+      try {
+        Instant cursorTime = Instant.parse(cursor);
+        messages = messageRepository.findAllByChannelIdAfterCursorTimeWithAuthorAndAttachments(channelId, cursorTime,
+            queryPageable);
+      } catch (Exception e) {
+        log.warn("잘못된 커서 형식: {}, 첫 페이지로 조회", cursor);
+        messages = messageRepository.findFirstPageByChannelIdWithAuthorAndAttachments(channelId, queryPageable);
+      }
+    }
+
+    // 다음 페이지 존재 여부 확인
+    boolean hasNext = messages.size() > size;
+    if (hasNext) {
+      // 실제 반환할 데이터는 size만큼만
+      messages = messages.subList(0, size);
+    }
+
+    // 다음 커서 계산 (마지막 메시지의 createdAt)
+    String nextCursor = null;
+    if (hasNext && !messages.isEmpty()) {
+      nextCursor = messages.get(messages.size() - 1).getCreatedAt().toString();
+    }
+
+    // DTO 변환
+    List<MessageDto> messageDtos = entityDtoMapper.toMessageDtoList(messages);
+
+    log.info("메시지 커서 페이징 조회 완료 - 채널ID: {}, 조회된 메시지: {}, 다음 페이지 존재: {}",
+        channelId, messageDtos.size(), hasNext);
+
+    return pageMapper.toCursorPageResponse(messageDtos, nextCursor, size, hasNext, null);
   }
 
   @Override

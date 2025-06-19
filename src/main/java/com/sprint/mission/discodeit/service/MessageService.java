@@ -23,6 +23,8 @@ public interface MessageService {
 
   PageResponse<MessageDto> findAllByChannelIdWithPaging(UUID channelId, Pageable pageable);
 
+  PageResponse<MessageDto> findAllByChannelIdWithCursorPaging(UUID channelId, String cursor, Pageable pageable);
+
   MessageDto update(UUID messageId, MessageUpdateRequest request);
 
   void delete(UUID messageId);

@@ -76,8 +76,9 @@ public class MessageController implements MessageApi {
   @GetMapping
   public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
       @RequestParam("channelId") UUID channelId,
+      @RequestParam(value = "cursor", required = false) String cursor,
       @PageableDefault(size = Constants.Pagination.DEFAULT_PAGE_SIZE, sort = Constants.Pagination.DEFAULT_SORT_FIELD) Pageable pageable) {
-    PageResponse<MessageDto> messages = messageService.findAllByChannelIdWithPaging(channelId, pageable);
+    PageResponse<MessageDto> messages = messageService.findAllByChannelIdWithCursorPaging(channelId, cursor, pageable);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(messages);
