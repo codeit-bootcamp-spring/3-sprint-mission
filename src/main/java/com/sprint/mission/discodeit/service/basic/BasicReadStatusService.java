@@ -40,21 +40,16 @@ public class BasicReadStatusService implements ReadStatusService {
             "Channel with id " + createRequest.channelId() + " not found"));
 
     //2. 같은`Channel`과`User`와 관련된 객체가 이미 존재하면 예외를 발생
-    boolean isAlreadyExist = this.readStatusRepository.findAllByChannelId(channel.getId())
-        .stream().anyMatch((status) -> status.getUser().getId().equals(createRequest.userId()));
-    if (isAlreadyExist) {
+    if (readStatusRepository.existsByUserIdAndChannelId(createRequest.userId(), channel.getId())) {
       throw new ReadStatusAlreadyExistsException();
     }
 
     // 3. ReadStatus 생성
-    System.out.println("11111READSTATUS 생성 : " + user + " " + channel + " " +
-        channel.getCreatedAt());
     ReadStatus readStatus = new ReadStatus(user, channel,
         channel.getCreatedAt());
 
     //4. DB저장
     ReadStatus createdReadStatus = this.readStatusRepository.save(readStatus);
-    System.out.println("11111 CREATED READSTATUS :   " + createdReadStatus);
     return readStatusMapper.toDto(createdReadStatus);
   }
 
@@ -69,11 +64,6 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   public List<ReadStatusDto> findAllByUserId(UUID userId) {
-    System.out.println(userId + "userId!!!!");
-
-    System.out.println("!!!!!!! without Mapper " + this.readStatusRepository.findAllByUserId(userId)
-        .stream().toList()
-    );
 
     return this.readStatusRepository.findAllByUserId(userId)
         .stream()

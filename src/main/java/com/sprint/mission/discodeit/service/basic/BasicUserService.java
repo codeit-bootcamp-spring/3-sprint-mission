@@ -98,16 +98,10 @@ public class BasicUserService implements UserService {
         orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
     // 1. 프로필 이미지 업데이트
-    profileCreateRequest.map(binaryContentCreateRequest -> {
-      BinaryContent profileBinaryContent = this.binaryContentService.create(
-          binaryContentCreateRequest);
-      user.update(updateRequest.newUsername(), updateRequest.newEmail(),
-          updateRequest.newPassword(), profileBinaryContent);
-      return null;
-    });
-
+    BinaryContent profile = profileCreateRequest.map(binaryContentService::create)
+        .orElse(user.getProfile());
     user.update(updateRequest.newUsername(), updateRequest.newEmail(), updateRequest.newPassword(),
-        null);
+        profile);
 
     /* 업데이트 후 다시 DB 저장 */
     this.userRepository.save(user);
@@ -141,13 +135,8 @@ public class BasicUserService implements UserService {
 
 
   @Override
-  public boolean hasSameEmailOrName(String username, String email) {
-    List<User> users = this.userRepository.findAll();
-
-    return users.stream()
-        .anyMatch((user) -> {
-          return user.getEmail().equals(email) && user.getUsername().equals(username);
-        });
+  public boolean hasSameEmailOrName(String username, String userEmail) {
+    return userRepository.existsByUsernameOrEmail(username, userEmail);
   }
 
 }
