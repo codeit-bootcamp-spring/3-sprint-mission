@@ -1,13 +1,11 @@
 package com.sprint.mission.discodeit.acceptance.user;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
-import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
+
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -24,6 +22,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
 
 /**
  * User API에 대한 인수 테스트
@@ -31,17 +34,18 @@ import org.springframework.test.context.DynamicPropertySource;
  * `test` 프로필로 실행됩니다.
  *
  * <ol>
- *   <li>사용자_생성</li>
- *   <li>사용자_수정</li>
- *   <li>사용자_상태_변경</li>
- *   <li>사용자_전체_조회</li>
- *   <li>사용자_삭제</li>
+ * <li>사용자_생성</li>
+ * <li>사용자_수정</li>
+ * <li>사용자_상태_변경</li>
+ * <li>사용자_전체_조회</li>
+ * <li>사용자_삭제</li>
  * </ol>
  */
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @EnableJpaAuditing
+@Transactional
 public class UserAcceptanceTest {
 
   @Autowired
@@ -65,8 +69,7 @@ public class UserAcceptanceTest {
         restTemplate,
         "길동쓰",
         "test@test.com",
-        "images/img_01.png"
-    );
+        "images/img_01.png");
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     assertThat(response.getBody()).isNotNull();
@@ -81,8 +84,7 @@ public class UserAcceptanceTest {
         userId,
         "updatedName",
         "updated@test.com",
-        "images/img_02.png"
-    );
+        "images/img_02.png");
 
     assertThat(response.getBody()).isNotNull();
     assertThat(response.getBody().username()).isEqualTo("updatedName");
@@ -92,8 +94,7 @@ public class UserAcceptanceTest {
   @Order(3)
   void 사용자_상태_변경() {
     ResponseEntity<UserStatus> response = restTemplate.exchange(
-        "/api/users/" + userId + "/userStatus", HttpMethod.PATCH, null, UserStatus.class
-    );
+        "/api/users/" + userId + "/userStatus", HttpMethod.PATCH, null, UserStatus.class);
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
   }
 
@@ -102,8 +103,7 @@ public class UserAcceptanceTest {
   void 사용자_전체_조회() {
     ResponseEntity<List<UserResponse>> response = restTemplate.exchange(
         "/api/users", HttpMethod.GET, null, new ParameterizedTypeReference<>() {
-        }
-    );
+        });
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(response.getBody()).isNotNull();
@@ -114,8 +114,7 @@ public class UserAcceptanceTest {
   @Order(5)
   void 사용자_삭제() {
     ResponseEntity<Void> response = restTemplate.exchange(
-        "/api/users/" + userId, HttpMethod.DELETE, null, Void.class
-    );
+        "/api/users/" + userId, HttpMethod.DELETE, null, Void.class);
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
   }
 }

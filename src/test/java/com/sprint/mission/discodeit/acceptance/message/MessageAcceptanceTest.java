@@ -1,17 +1,13 @@
 package com.sprint.mission.discodeit.acceptance.message;
 
-import static com.sprint.mission.discodeit.support.TestUtils.jsonHeader;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.sprint.mission.discodeit.support.TestUtils.*;
+import static org.assertj.core.api.Assertions.*;
 
-import com.sprint.mission.discodeit.dto.response.ChannelResponse;
-import com.sprint.mission.discodeit.dto.response.MessageResponse;
-import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -31,6 +27,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sprint.mission.discodeit.dto.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
 
 /**
  * Message API에 대한 인수 테스트
@@ -38,20 +41,21 @@ import org.springframework.test.context.DynamicPropertySource;
  * `test` 프로필로 실행됩니다.
  *
  * <ol>
- *  <li>사용자_1_생성</li>
- *  <li>사용자_2_생성</li>
- *  <li>공개_채널_생성</li>
- *  <li>비공개_채널_생성</li>
- *  <li>메시지_생성</li>
- *  <li>메시지_수정</li>
- *  <li>특정_채널_메시지_조회</li>
- *  <li>메시지_삭제</li>
+ * <li>사용자_1_생성</li>
+ * <li>사용자_2_생성</li>
+ * <li>공개_채널_생성</li>
+ * <li>비공개_채널_생성</li>
+ * <li>메시지_생성</li>
+ * <li>메시지_수정</li>
+ * <li>특정_채널_메시지_조회</li>
+ * <li>메시지_삭제</li>
  * </ol>
  */
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @EnableJpaAuditing
+@Transactional
 public class MessageAcceptanceTest {
 
   @Autowired
@@ -79,8 +83,7 @@ public class MessageAcceptanceTest {
         restTemplate,
         "길동쓰",
         "test@test.com",
-        "images/img_01.png"
-    );
+        "images/img_01.png");
 
     Assertions.assertNotNull(response.getBody());
     userId1 = response.getBody().id();
@@ -93,8 +96,7 @@ public class MessageAcceptanceTest {
         restTemplate,
         "길동쓰2",
         "test2@test.com",
-        "images/img_02.png"
-    );
+        "images/img_02.png");
 
     Assertions.assertNotNull(response.getBody());
     userId2 = response.getBody().id();
@@ -109,8 +111,7 @@ public class MessageAcceptanceTest {
     var response = restTemplate.postForEntity(
         "/api/channels/public",
         new HttpEntity<>(request, headers),
-        ChannelResponse.class
-    );
+        ChannelResponse.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     Assertions.assertNotNull(response.getBody());
@@ -126,8 +127,7 @@ public class MessageAcceptanceTest {
     var response = restTemplate.postForEntity(
         "/api/channels/private",
         new HttpEntity<>(request, headers),
-        ChannelResponse.class
-    );
+        ChannelResponse.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     Assertions.assertNotNull(response.getBody());
@@ -140,8 +140,7 @@ public class MessageAcceptanceTest {
     ResponseEntity<MessageResponse> response = AcceptanceFixture.createMessage(
         restTemplate,
         userId1,
-        publicChannelId
-    );
+        publicChannelId);
 
     Assertions.assertNotNull(response.getBody());
     messageId = response.getBody().id();
@@ -161,8 +160,7 @@ public class MessageAcceptanceTest {
         "/api/messages/" + messageId,
         HttpMethod.PATCH,
         new HttpEntity<>(updateRequest, headers),
-        MessageResponse.class
-    );
+        MessageResponse.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(response.getBody()).isNotNull();
@@ -177,8 +175,7 @@ public class MessageAcceptanceTest {
         HttpMethod.GET,
         null,
         new ParameterizedTypeReference<>() {
-        }
-    );
+        });
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(response.getBody()).isNotNull();
@@ -198,8 +195,7 @@ public class MessageAcceptanceTest {
         "/api/messages/" + messageId,
         HttpMethod.DELETE,
         null,
-        Void.class
-    );
+        Void.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
   }
