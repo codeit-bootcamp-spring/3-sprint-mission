@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import jakarta.validation.Valid;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -106,9 +107,10 @@ public class MessageController implements MessageApi {
     @GetMapping
     public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
         @RequestParam("channelId") UUID channelId,
+        @RequestParam(value = "cursor", required = false) Instant cursor,
         @PageableDefault(size = 50, page = 0, sort = "createdAt", direction = Direction.DESC) Pageable pageable
     ) {
-        PageResponse<MessageDto> messages = messageService.findAllByChannelIdWithAuthor(channelId, pageable);
+        PageResponse<MessageDto> messages = messageService.findAllByChannelIdWithAuthor(channelId, cursor, pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(messages);
     }

@@ -18,8 +18,10 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -97,11 +99,22 @@ public class BasicMessageService implements MessageService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<MessageDto> findAllByChannelIdWithAuthor(UUID channelId, Pageable pageable) {
-        Slice<MessageDto> slice = messageRepository.findAllByChannelIdWithAuthor(channelId, pageable)
+    public PageResponse<MessageDto> findAllByChannelIdWithAuthor(UUID channelId, Instant createdAt, Pageable pageable) {
+        Slice<MessageDto> slice = messageRepository.findAllByChannelIdWithAuthor(
+                channelId,
+                Optional.ofNullable(createdAt)
+                        .orElse(Instant.now()),
+                pageable
+                )
                 .map(messageMapper::toDto);
 
-        return pageResponseMapper.fromSlice(slice);
+        Instant nextCursor = null;
+        if (!slice.getContent().isEmpty()) {
+            nextCursor = slice.getContent().get(slice.getContent().size() - 1)
+                    .createdAt();
+        }
+
+        return pageResponseMapper.fromSlice(slice, nextCursor);
     }
 
     @Override

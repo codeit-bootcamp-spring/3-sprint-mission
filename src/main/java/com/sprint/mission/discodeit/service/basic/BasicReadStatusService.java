@@ -14,7 +14,6 @@ import com.sprint.mission.discodeit.service.ReadStatusService;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,28 +37,27 @@ public class BasicReadStatusService implements ReadStatusService {
         UUID channelId = request.channelId();
 
         User user = userRepository.findById(userId)
-            .orElseThrow(
-                () -> new NoSuchElementException("User with id " + userId + " does not exist"));
+                .orElseThrow(NoSuchElementException::new);
         Channel channel = channelRepository.findById(channelId)
-            .orElseThrow(
-                () -> new NoSuchElementException("Channel with id " + channelId + " does not exist")
-            );
+                .orElseThrow(NoSuchElementException::new);
 
-        if (readStatusRepository.existsByUserIdAndChannelId(user.getId(), channel.getId())) {
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("User with id " + userId + " does not exist");
+        }
+        if (!channelRepository.existsById(channelId)) {
+            throw new NoSuchElementException("Channel with id " + channelId + " does not exist");
+        }
+        if (readStatusRepository.findAllByUserId(userId).stream()
+            .anyMatch(readStatus -> readStatus.getChannel().getId().equals(channelId))) {
             throw new IllegalArgumentException(
-                "ReadStatus with userId " + userId + " and channelId " + channelId + " already exists");
+                "ReadStatus with userId " + userId + " and channelId " + channelId
+                    + " already exists");
         }
 
         Instant lastReadAt = request.lastReadAt();
-        
-        // 잘못된 timestamp 값 검증 및 수정
-        if (lastReadAt == null || lastReadAt.getEpochSecond() < 0 || lastReadAt.getEpochSecond() > 253402300799L) {
-            lastReadAt = Instant.now();
-        }
-        
         ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
-        readStatusRepository.save(readStatus);
 
+        readStatusRepository.save(readStatus);
         return readStatusMapper.toDto(readStatus);
     }
 

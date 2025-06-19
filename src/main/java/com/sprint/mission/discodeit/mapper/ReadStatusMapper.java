@@ -6,33 +6,14 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.springframework.stereotype.Component;
 
-@Component
-@RequiredArgsConstructor
-@Getter
-public class ReadStatusMapper {
+@Mapper(componentModel = "spring")
+public interface ReadStatusMapper {
 
-    public ReadStatusDto toDto(ReadStatus readStatus) {
-        UUID id = readStatus.getId();
-        
-        // 프록시 객체 안전 접근
-        UUID userId = null;
-        try {
-            userId = readStatus.getUser().getId();
-        } catch (Exception e) {
-            // 프록시 객체 접근 실패 시 null 처리
-        }
-        
-        UUID channelId = null;
-        try {
-            channelId = readStatus.getChannel().getId();
-        } catch (Exception e) {
-            // 프록시 객체 접근 실패 시 null 처리
-        }
-        
-        Instant lastReadAt = readStatus.getLastReadAt();
-
-        return new ReadStatusDto(id, userId, channelId, lastReadAt);
-    }
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "channelId", source = "channel.id")
+    ReadStatusDto toDto(ReadStatus readStatus);
 }

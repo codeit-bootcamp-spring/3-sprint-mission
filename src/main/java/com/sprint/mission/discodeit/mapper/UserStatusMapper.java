@@ -2,30 +2,24 @@ package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import java.time.Instant;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import com.sprint.mission.discodeit.entity.User;
 import java.util.UUID;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-@Component
-@RequiredArgsConstructor
-@Getter
-public class UserStatusMapper {
+@Mapper(componentModel = "spring")
+public interface UserStatusMapper {
 
-    public UserStatusDto toDto(UserStatus userStatus) {
-        UUID id = userStatus.getId();
-        
-        // 프록시 객체 안전 접근
-        UUID userId = null;
+    @Mapping(target = "userId", source = "user", qualifiedByName = "safeGetUserId")
+    UserStatusDto toDto(UserStatus userStatus);
+
+    @Named("safeGetUserId")
+    default UUID safeGetUserId(User user) {
         try {
-            userId = userStatus.getUser().getId();
+            return user != null ? user.getId() : null;
         } catch (Exception e) {
-            // 프록시 객체 접근 실패 시 null 처리
+            return null; // 프록시 초기화 실패 시 null 반환
         }
-        
-        Instant lastActiveAt = userStatus.getLastActiveAt();
-
-        return new UserStatusDto(id, userId, lastActiveAt);
     }
 }

@@ -23,9 +23,7 @@ public class BasicAuthService implements AuthService {
     private final UserMapper userMapper;
 
     @Override
-    @Transactional(rollbackFor = Exception.class,
-        propagation = Propagation.REQUIRES_NEW,
-        isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public UserDto login(LoginRequest loginRequest) {
         String username = loginRequest.username();
         String password = loginRequest.password();
@@ -38,8 +36,6 @@ public class BasicAuthService implements AuthService {
             throw new IllegalArgumentException("Wrong password");
         }
 
-        UserDto userDto = userMapper.toDto(user);
-
-        return userDto;
+        return userMapper.toDto(user);
     }
 }
