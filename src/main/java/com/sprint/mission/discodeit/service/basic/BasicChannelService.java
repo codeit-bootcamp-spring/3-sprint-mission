@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.mapper.EntityDtoMapper;
+import com.sprint.mission.discodeit.dto.mapper.mapstruct.MapperFacade;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
@@ -35,7 +35,7 @@ public class BasicChannelService implements ChannelService {
   private final UserRepository userRepository;
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
-  private final EntityDtoMapper entityDtoMapper;
+  private final MapperFacade mapperFacade;
 
   @Override
   public Channel create(PublicChannelCreateRequest request) {
@@ -75,7 +75,7 @@ public class BasicChannelService implements ChannelService {
   public ChannelDto find(UUID channelId) {
     // N+1 문제 해결: 참가자 정보를 Fetch Join으로 한 번에 조회
     return channelRepository.findByIdWithParticipants(channelId)
-        .map(entityDtoMapper::toDto)
+        .map(mapperFacade::toDto)
         .orElseThrow(() -> new CustomException.ChannelNotFoundException(
             "Channel with id " + channelId + " not found"));
   }
@@ -216,26 +216,22 @@ public class BasicChannelService implements ChannelService {
    * 사용자가 접근 가능한 채널 목록을 조회합니다.
    * 공개 채널과 구독한 비공개 채널이 포함됩니다.
    * 
+   * 성능 최적화: DB 레벨에서 필터링하여 메모리 사용량을 대폭 절약
+   * 
    * @param subscribedChannelIds 구독한 채널 ID 집합
    * @return 접근 가능한 채널 목록
    */
   private List<Channel> getAccessibleChannels(Set<UUID> subscribedChannelIds) {
-    // N+1 문제 해결: 참가자 정보를 Fetch Join으로 한 번에 조회 (메시지는 제외)
-    return channelRepository.findAllWithParticipantsOnly().stream()
-        .filter(channel -> isAccessibleChannel(channel, subscribedChannelIds))
-        .collect(Collectors.toList());
-  }
-
-  /**
-   * 채널이 사용자에게 접근 가능한지 확인합니다.
-   * 
-   * @param channel              확인할 채널
-   * @param subscribedChannelIds 구독한 채널 ID 집합
-   * @return 접근 가능 여부
-   */
-  private boolean isAccessibleChannel(Channel channel, Set<UUID> subscribedChannelIds) {
-    return channel.getType().isPublic()
-        || subscribedChannelIds.contains(channel.getId());
+    if (subscribedChannelIds.isEmpty()) {
+      // 구독한 비공개 채널이 없는 경우 공개 채널만 조회
+      log.debug("구독한 비공개 채널이 없음, 공개 채널만 조회");
+      return channelRepository.findPublicChannelsWithParticipants();
+    } else {
+      // 공개 채널 + 구독한 비공개 채널을 DB에서 필터링하여 조회
+      List<UUID> subscribedChannelIdsList = new ArrayList<>(subscribedChannelIds);
+      log.debug("DB에서 필터링 조회 - 구독한 비공개 채널 수: {}", subscribedChannelIdsList.size());
+      return channelRepository.findAccessibleChannelsWithParticipants(subscribedChannelIdsList);
+    }
   }
 
   /**
@@ -249,7 +245,7 @@ public class BasicChannelService implements ChannelService {
     if (channel.getType().isPrivate()) {
       return mapPrivateChannelToDto(channel);
     } else {
-      return entityDtoMapper.toDto(channel);
+      return mapperFacade.toDto(channel);
     }
   }
 
@@ -264,7 +260,7 @@ public class BasicChannelService implements ChannelService {
     // N+1 문제 해결: 사용자 정보를 Fetch Join으로 한 번에 조회
     List<ReadStatus> channelReadStatuses = readStatusRepository.findAllByChannelIdWithUser(channel.getId());
     List<UserDto> participants = channelReadStatuses.stream()
-        .map(readStatus -> entityDtoMapper.toDto(readStatus.getUser()))
+        .map(readStatus -> mapperFacade.toDto(readStatus.getUser()))
         .collect(Collectors.toList());
 
     Instant lastMessageAt = getLastMessageTime(channel);
@@ -355,7 +351,7 @@ public class BasicChannelService implements ChannelService {
   private ChannelDto mapPrivateChannelToDtoWithLastMessageTime(Channel channel, Map<UUID, Instant> lastMessageTimes) {
     // 이미 Fetch Join으로 로딩된 ReadStatus와 User 정보 사용
     List<UserDto> participants = channel.getReadStatuses().stream()
-        .map(readStatus -> entityDtoMapper.toDto(readStatus.getUser()))
+        .map(readStatus -> mapperFacade.toDto(readStatus.getUser()))
         .collect(Collectors.toList());
 
     Instant lastMessageAt = lastMessageTimes.getOrDefault(channel.getId(), channel.getCreatedAt());
