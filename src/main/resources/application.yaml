@@ -3,6 +3,7 @@ server:
   address: 0.0.0.0
 
 spring:
+  sql.init.mode: always
   application:
     name: discodeit
   # DB 접속 정보
@@ -24,7 +25,8 @@ spring:
         highlight_sql: true
         use_sql_comments: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-  sql.init.mode: always
+        default_batch_fetch_size: 100
+
 
 logging:
   level:

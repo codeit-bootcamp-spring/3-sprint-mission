@@ -114,10 +114,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    @Transactional(
-        rollbackFor = Exception.class,
-        propagation = Propagation.REQUIRED,
-        isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public void delete(UUID channelId) {
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(

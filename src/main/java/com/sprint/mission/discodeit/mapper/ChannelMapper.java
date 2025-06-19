@@ -35,7 +35,7 @@ public class ChannelMapper {
         // 프록시 객체 안전 접근
         List<UserDto> participants = null;
         try {
-            participants = readStatusRepository.findAllByChannelId(id).stream()
+            participants = readStatusRepository.findAllByChannelIdWithUser(id).stream()
                 .map(readStatus -> {
                     try {
                         return readStatus.getUser();
