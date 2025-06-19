@@ -7,14 +7,12 @@ import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -30,30 +28,32 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
-
     private final ChannelMapper channelMapper;
 
     @Transactional
     @Override
     public ChannelResponse createPublicChannel(PublicChannelCreateRequest request) {
-        Channel channel = new Channel(ChannelType.PUBLIC, request.name(), request.description());
-        return channelMapper.toResponse(channelRepository.save(channel));
+        String name = request.name();
+        String description = request.description();
+        Channel channel = new Channel(ChannelType.PUBLIC, name, description);
+
+        channelRepository.save(channel);
+        return channelMapper.toResponse(channel);
     }
 
     @Transactional
     @Override
     public ChannelResponse createPrivateChannel(PrivateChannelCreateRequest request) {
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
+        channelRepository.save(channel);
 
-        for (UUID userId : request.participantIds()) {
-            User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User not found: " + userId));
-            ReadStatus readStatus = new ReadStatus(user, channel, Instant.MIN);
-            channel.getReadStatuses().add(readStatus);
-        }
+        List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds())
+            .stream()
+            .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
+            .toList();
+        readStatusRepository.saveAll(readStatuses);
 
-        Channel saved = channelRepository.save(channel);
-        return channelMapper.toResponse(saved);
+        return channelMapper.toResponse(channel);
     }
 
     @Transactional(readOnly = true)
@@ -61,24 +61,23 @@ public class BasicChannelService implements ChannelService {
     public ChannelResponse find(UUID channelId) {
         return channelRepository.findById(channelId)
             .map(channelMapper::toResponse)
-            .orElseThrow(() ->
-                new NoSuchElementException("Channel with id " + channelId + " not found"));
+            .orElseThrow(
+                () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<ChannelResponse> findAllByUserId(UUID userId) {
-        List<UUID> subscribedChannelIds = readStatusRepository.findAllByUser_Id(userId).stream()
-            .map(readStatus -> readStatus.getChannel().getId())
+        List<UUID> subscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
+            .map(ReadStatus::getChannel)
+            .map(Channel::getId)
             .toList();
 
-        return channelRepository.findAll().stream()
-            .filter(channel -> channel.getType() == ChannelType.PUBLIC
-                || subscribedChannelIds.contains(channel.getId()))
+        return channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC, subscribedChannelIds)
+            .stream()
             .map(channelMapper::toResponse)
             .toList();
     }
-
 
     @Transactional
     @Override
@@ -95,14 +94,18 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toResponse(channel);
     }
 
-
     @Transactional
     @Override
     public ChannelResponse delete(UUID channelId) {
-        Channel channel = channelRepository.findById(channelId)
-            .orElseThrow(() -> new NoSuchElementException("Channel not found"));
+        if (!channelRepository.existsById(channelId)) {
+            throw new NoSuchElementException("Channel with id " + channelId + " not found");
+        }
 
-        channelRepository.delete(channel);
+        messageRepository.deleteAllByChannelId(channelId);
+        readStatusRepository.deleteAllByChannelId(channelId);
+        Channel channel = channelRepository.findById(channelId).get();
+        channelRepository.deleteById(channelId);
+
         return channelMapper.toResponse(channel);
     }
 }
