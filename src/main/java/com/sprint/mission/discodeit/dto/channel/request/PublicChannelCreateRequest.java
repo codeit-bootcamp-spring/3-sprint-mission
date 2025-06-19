@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.dto.channel.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.user fileName       :

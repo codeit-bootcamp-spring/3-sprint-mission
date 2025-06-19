@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.dto.user.request;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.user fileName       :

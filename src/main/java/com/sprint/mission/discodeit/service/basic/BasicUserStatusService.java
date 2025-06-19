@@ -14,7 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic fileName       :
@@ -36,9 +37,8 @@ public class BasicUserStatusService implements UserStatusService {
     Objects.requireNonNull(userId, "no userId in param");
     Objects.requireNonNull(newLastActiveAt, "no userId in param");
 
-    if (userRepository.count() < 1) {
-      log.warn("any user exists");
-    }
+    if (userRepository.count() < 1) log.warn("any user exists");
+
     User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("UserStatus with userId " + userId + " not found"));
     UserStatus userStatus = user.getStatus();
     userStatus.setLastActiveAt(newLastActiveAt);
