@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.dto.userStatus;
 
+import jakarta.validation.constraints.NotNull;
+
 import java.time.Instant;
 
 /**
@@ -9,5 +11,6 @@ import java.time.Instant;
  *    NOTE ----------------------------------------------------------- 2025. 5. 9. doungukkim
  * 최초 생성
  */
-public record UserStatusUpdateByUserIdRequest(Instant newLastActiveAt) {
+public record UserStatusUpdateByUserIdRequest(
+     @NotNull Instant newLastActiveAt) {
 }

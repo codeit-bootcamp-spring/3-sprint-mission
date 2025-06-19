@@ -1,5 +1,9 @@
 package com.sprint.mission.discodeit.dto.channel.request;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.*;
 
 /**
@@ -14,13 +18,9 @@ import java.util.*;
  * 2025. 4. 25.        doungukkim       최초 생성
  */
 
-public record PrivateChannelCreateRequest(Set<String> participantIds) {
-    public PrivateChannelCreateRequest {
-        if ((participantIds == null) || (participantIds.isEmpty())) {
-            throw new RuntimeException("request must need one or more ids");
-        }
-    }
-}
+public record PrivateChannelCreateRequest(
+    @NotEmpty (message = "request must need one or more ids") Set<String> participantIds
+) { }
 
 
 

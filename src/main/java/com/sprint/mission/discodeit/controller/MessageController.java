@@ -50,7 +50,7 @@ public class MessageController {
     @Operation(summary = "메세지 생성", description = "메세지를 생성 합니다.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> creatMessage(
-            @RequestPart("messageCreateRequest") MessageCreateRequest request,
+            @Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachmentFiles
     ) {
         JpaMessageResponse message = messageService.createMessage(request, attachmentFiles);

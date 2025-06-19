@@ -17,7 +17,7 @@ import java.util.UUID;
  */
 
 public record MessageCreateRequest(
-        @NotNull String content,
+        String content,
         @NotNull UUID channelId,
         @NotNull UUID authorId
 ) { }

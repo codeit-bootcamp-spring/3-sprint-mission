@@ -44,7 +44,7 @@ public class UserController {
     @Operation(summary = "사용자 생성", description = "사용자를 생성합니다. 이미지는 옵션입니다.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> create(
-            @Valid @RequestPart("userCreateRequest") UserCreateRequest request,
+            @RequestPart("userCreateRequest") UserCreateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profileFile) {
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profileFile)
                 .flatMap(this::resolveProfileRequest);
@@ -62,18 +62,18 @@ public class UserController {
     @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     private ResponseEntity<?> update(
             @PathVariable UUID userId,
-            @RequestPart("userUpdateRequest") UserUpdateRequest request,
+            @Valid @RequestPart("userUpdateRequest") UserUpdateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profileFile) {
         return ResponseEntity.ok(userService.update(userId, request, profileFile));
     }
 
-    // 🗣 USER STATUS에서 가져온 메서드
+    //0 USER STATUS 에서 가져온 메서드
     // 관심사 분리를 위해선 userStatus에서 하는게 맞지 않나? 메서드가 하나라 그냥 하는건가?
     @Operation(summary = "사용자 활동상태 수정", description = "사용자의 최근 접속시간을 수정합니다.")
     @PatchMapping("/{userId}/userStatus")
     public ResponseEntity<?> updateTime(
             @PathVariable UUID userId,
-            @RequestBody UserStatusUpdateByUserIdRequest request) {
+            @Valid @RequestBody UserStatusUpdateByUserIdRequest request) {
         return ResponseEntity.status(200).body(userStatusService.updateByUserId(userId, request.newLastActiveAt()));
     }
 

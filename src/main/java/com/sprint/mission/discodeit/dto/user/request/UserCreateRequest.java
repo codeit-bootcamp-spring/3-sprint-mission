@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.dto.user.request;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto
@@ -16,8 +19,9 @@ import jakarta.validation.constraints.NotNull;
 
 
 public record UserCreateRequest(
-        @NotNull String username,
-        @NotNull String email,
-        @NotNull String password
+        @NotBlank String username,
+        @Email String email,
+//        @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+{}\\[\\]:;<>,.?~\\\\/-]).{8,}$\n")
+        @NotBlank String password
 ) { }
 

@@ -41,7 +41,7 @@ public class ReadStatusController {
 
     @Operation(summary = "사용자의 읽음 상태 생성", description = "사용자의 읽음 상태 생성 합니다.")
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody ReadStatusCreateRequest request) {
+    public ResponseEntity<?> create(@Valid @RequestBody ReadStatusCreateRequest request) {
         JpaReadStatusResponse response = readStatusService.create(request);
         return ResponseEntity.status(201).body(response);
     }

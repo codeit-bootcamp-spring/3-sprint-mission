@@ -3,13 +3,14 @@ package com.sprint.mission.discodeit.exception;
 import com.sprint.mission.discodeit.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 /**
  * packageName    : com.sprint.mission.discodeit.exception
@@ -43,23 +44,38 @@ public class GlobalExceptionHandler {
     //0 여기 아래로는 바뀐 요구사항
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> userNotFoundExceptionHandler(UserNotFoundException e) {
-        return createDiscodeitException(e);
+        return buildDiscodeitException(e);
     }
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> userAlreadyExistsExceptionHandler(UserAlreadyExistsException e) {
-        return createDiscodeitException(e);
+        return buildDiscodeitException(e);
     }
     @ExceptionHandler(ChannelNotFoundException.class)
     public ResponseEntity<ErrorResponse> channelNotFoundExceptionHandler(ChannelNotFoundException e) {
-        return createDiscodeitException(e);
+        return buildDiscodeitException(e);
     }
     @ExceptionHandler(PrivateChannelUpdateException.class)
     public ResponseEntity<ErrorResponse> privateChannelUpdateExceptionHandler(PrivateChannelUpdateException e) {
-        return createDiscodeitException(e);
+        return buildDiscodeitException(e);
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
+        Map<String,Object> details = new HashMap<>();
+        details.put(e.getFieldError().getField(),e.getFieldError().getDefaultMessage());
+
+
+        ErrorResponse response = ErrorResponse.builder()
+            .timestamp(Instant.now())
+            .code(ErrorCode.VALIDATION_FAILED.toString())
+            .message(e.getMessage())
+            .details(details) // nullable
+            .exceptionType(e.getClass().getSimpleName())
+            .status(ErrorCode.VALIDATION_FAILED.getStatus().value())
+            .build();
+        return ResponseEntity.status(ErrorCode.VALIDATION_FAILED.getStatus()).body(response);
     }
 
-
-    private ResponseEntity<ErrorResponse> createDiscodeitException(DiscodeitException e) {
+    private ResponseEntity<ErrorResponse> buildDiscodeitException(DiscodeitException e) {
         ErrorCode errorCode = e.getErrorCode();
         ErrorResponse response = ErrorResponse.builder()
             .timestamp(Instant.now())
