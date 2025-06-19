@@ -5,6 +5,8 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    
+
     @ExceptionHandler(DiscodeitException.class)
     public ResponseEntity<ErrorResponse> handleDiscodeitException(DiscodeitException ex) {
         ErrorCode errorCode = ex.getErrorCode();
@@ -44,4 +46,30 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(
+        MethodArgumentNotValidException ex) {
+        log.warn("[ValidationException] 유효성 검증 실패", ex);
+
+        Map<String, Object> details = ex.getBindingResult().getFieldErrors().stream()
+            .collect(
+                java.util.stream.Collectors.toMap(
+                    FieldError::getField,
+                    FieldError::getDefaultMessage,
+                    (msg1, msg2) -> msg1
+                )
+            );
+
+        ErrorResponse errorResponse = ErrorResponse.of(
+            "VALIDATION_FAILED",
+            "입력값이 유효하지 않습니다.",
+            details,
+            ex.getClass().getSimpleName(),
+            HttpStatus.BAD_REQUEST.value()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
 }
