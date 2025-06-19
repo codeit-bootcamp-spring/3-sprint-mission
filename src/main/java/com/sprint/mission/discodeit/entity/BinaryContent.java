@@ -17,20 +17,17 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicUpdate
 public class BinaryContent extends BaseEntity {
 
-    @Column(name = "file_name")
+    @Column(name = "file_name", nullable = false)
     private String fileName;
 
-    @Column(name = "size")
+    @Column(name = "size", nullable = false)
     private Long size;
 
-    @Column(name = "content_type")
+    @Column(name = "content_type", nullable = false)
     private String contentType;
 
 
     public BinaryContent(String fileName, Long size, String contentType) {
-        super.setId(UUID.randomUUID());
-        super.setCreatedAt(Instant.now());
-        //
         this.fileName = fileName;
         this.size = size;
         this.contentType = contentType;

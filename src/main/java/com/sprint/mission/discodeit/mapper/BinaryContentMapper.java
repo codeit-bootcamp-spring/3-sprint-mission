@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.serviceDto.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
@@ -18,7 +18,7 @@ public class BinaryContentMapper {
 
     private final BinaryContentStorage binaryContentStorage;
 
-    public BinaryContentDto toDto(BinaryContent binaryContent) throws IOException {
+    public BinaryContentDto toDto(BinaryContent binaryContent) {
         if (binaryContent == null) {
             return null;
         }

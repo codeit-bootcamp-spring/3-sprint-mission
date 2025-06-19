@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
-import com.sprint.mission.discodeit.dto.serviceDto.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -29,10 +29,10 @@ public class BinaryContentController implements BinaryContentApi {
     private final BinaryContentMapper binaryContentMapper;
 
     @GetMapping("/{binaryContentId}")
-    public ResponseEntity<BinaryContent> find(
+    public ResponseEntity<BinaryContentDto> find(
         @PathVariable UUID binaryContentId
     ) {
-        BinaryContent binaryContent = binaryContentService.find(binaryContentId);
+        BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
 
         return ResponseEntity
             .status(HttpStatus.OK)
@@ -52,12 +52,10 @@ public class BinaryContentController implements BinaryContentApi {
     }
 
     @GetMapping(path = "/{binaryContentId}/download")
-    public ResponseEntity<?> download(@PathVariable UUID binaryContentId)
-        throws IOException {
-        BinaryContent binaryContent = binaryContentService.find(binaryContentId);
-        BinaryContentDto dto = binaryContentMapper.toDto(binaryContent);
+    public ResponseEntity<?> download(@PathVariable UUID binaryContentId) {
+        BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
 
-        return binaryContentStorage.download(dto);
+        return binaryContentStorage.download(binaryContent);
     }
 
 }

@@ -24,6 +24,7 @@ spring:
         highlight_sql: true
         use_sql_comments: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  sql.init.mode: always
 
 logging:
   level:

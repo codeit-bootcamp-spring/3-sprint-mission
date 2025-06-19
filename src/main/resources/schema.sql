@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS tbl_binary_contents
     bytes        BYTEA        NOT NULL
 );
 
+-- 실제로 파일 다운로드하기 전까지는 메타 정보만 알고 있으면 되기 때문에 상대적인 성능 향상 위해 DROP
 ALTER TABLE tbl_binary_contents
     DROP COLUMN bytes;
 
@@ -41,6 +42,13 @@ CREATE TABLE IF NOT EXISTS tbl_users
     CONSTRAINT fk_profile_id FOREIGN KEY (profile_id) REFERENCES tbl_binary_contents (id) ON DELETE SET NULL
 );
 
+-- -- User (1) -> BinaryContent (1)
+-- ALTER TABLE tbl_users
+--     ADD CONSTRAINT fk_profile_id
+--         FOREIGN KEY (profile_id)
+--             REFERENCES tbl_binary_contents (id)
+--             ON DELETE SET NULL;
+
 CREATE TABLE IF NOT EXISTS tbl_user_statuses
 (
     id             UUID PRIMARY KEY,
@@ -50,6 +58,13 @@ CREATE TABLE IF NOT EXISTS tbl_user_statuses
     last_active_at TIMESTAMPTZ,
     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES tbl_users (id) ON DELETE CASCADE
 );
+
+-- -- UserStatus (1) -> User (1)
+-- ALTER TABLE tbl_user_statuses
+--     ADD CONSTRAINT fk_user_id
+--         FOREIGN KEY (user_id)
+--             REFERENCES tbl_users (id)
+--             ON DELETE CASCADE;
 
 CREATE TABLE IF NOT EXISTS tbl_channels
 (
@@ -68,10 +83,24 @@ CREATE TABLE IF NOT EXISTS tbl_read_statuses
     updated_at   TIMESTAMPTZ,
     user_id      UUID UNIQUE NOT NULL,
     channel_id   UUID UNIQUE NOT NULL,
-    last_read_at TIMESTAMPTZ,
+    last_read_at TIMESTAMPTZ NOT NULL,
     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES tbl_users (id) ON DELETE CASCADE,
     CONSTRAINT fk_channel_id FOREIGN KEY (channel_id) REFERENCES tbl_channels (id) ON DELETE CASCADE
 );
+
+-- -- ReadStatus (N) -> User (1)
+-- ALTER TABLE tbl_read_statuses
+--     ADD CONSTRAINT fk_user_id
+--         FOREIGN KEY (user_id)
+--             REFERENCES tbl_users (id)
+--             ON DELETE CASCADE;
+
+-- -- ReadStatus (N) -> Channel (1)
+-- ALTER TABLE tbl_read_statuses
+--     ADD CONSTRAINT fk_channel_id
+--         FOREIGN KEY (channel_id)
+--             REFERENCES tbl_channels (id)
+--             ON DELETE CASCADE;
 
 /*CREATE TYPE channel_type AS ENUM ('PUBLIC', 'PRIVATE');*/
 
@@ -81,16 +110,38 @@ CREATE TABLE IF NOT EXISTS tbl_messages
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ,
     content    TEXT,
-    channel_id UUID UNIQUE NOT NULL,
+    channel_id UUID NOT NULL,
     author_id  UUID,
     CONSTRAINT fk_author_id FOREIGN KEY (author_id) REFERENCES tbl_users (id) ON DELETE SET NULL,
     CONSTRAINT fk_channel_id FOREIGN KEY (channel_id) REFERENCES tbl_channels (id) ON DELETE CASCADE
 );
 
+-- -- Message (N) -> Channel (1)
+-- ALTER TABLE tbl_messages
+--     ADD CONSTRAINT fk_channel_id
+--         FOREIGN KEY (channel_id)
+--             REFERENCES tbl_channels (id)
+--             ON DELETE CASCADE;
+
+-- -- Message (N) -> Author (1)
+-- ALTER TABLE tbl_messages
+--     ADD CONSTRAINT fK_author_id
+--         FOREIGN KEY (author_id)
+--             REFERENCES tbl_users (id)
+--             ON DELETE SET NULL;
+
 CREATE TABLE IF NOT EXISTS tbl_message_attachments
 (
     message_id    UUID,
     attachment_id UUID,
-    CONSTRAINT fk_message_id FOREIGN KEY (message_id) REFERENCES tbl_messages ON DELETE CASCADE,
-    CONSTRAINT fk_attachment_id FOREIGN KEY (attachment_id) REFERENCES tbl_binary_contents ON DELETE CASCADE
+    PRIMARY KEY (message_id, attachment_id)
+--     CONSTRAINT fk_message_id FOREIGN KEY (message_id) REFERENCES tbl_messages ON DELETE CASCADE,
+--     CONSTRAINT fk_attachment_id FOREIGN KEY (attachment_id) REFERENCES tbl_binary_contents ON DELETE CASCADE
 )
+
+-- -- MessageAttachment (1) -> BinaryContent (1)
+-- ALTER TABLE tbl_message_attachments
+--     ADD CONSTRAINT fk_attachment_id
+--         FOREIGN KEY (attachment_id)
+--             REFERENCES tbl_binary_contents (id)
+--             ON DELETE CASCADE;

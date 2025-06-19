@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.serviceDto.BinaryContentDto;
-import com.sprint.mission.discodeit.dto.serviceDto.MessageDto;
-import com.sprint.mission.discodeit.dto.serviceDto.UserDto;
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.Message;
 import java.io.IOException;
 import java.time.Instant;
@@ -29,15 +29,16 @@ public class MessageMapper {
         UUID channelId = message.getChannel().getId();
         UserDto author = userMapper.toDto(message.getAuthor());
         List<BinaryContentDto> attachments = message.getAttachments().stream()
-            .map(bc -> {
-                try {
-                    return binaryContentMapper.toDto(bc);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            })
+            .map(binaryContentMapper::toDto)
             .collect(Collectors.toList());
 
-        return new MessageDto(id, createdAt, updatedAt, content, channelId, author, attachments);
+        return new MessageDto(
+                id,
+                createdAt,
+                updatedAt,
+                content,
+                channelId,
+                author,
+                attachments);
     }
 }

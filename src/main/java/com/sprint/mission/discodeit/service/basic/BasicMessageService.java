@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.message.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.serviceDto.MessageDto;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -68,11 +68,7 @@ public class BasicMessageService implements MessageService {
 
                 BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
                     contentType);
-                try {
-                    binaryContentStorage.put(binaryContent.getId(), attachmentRequest.bytes());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                binaryContentStorage.put(binaryContent.getId(), attachmentRequest.bytes());
                 return binaryContentRepository.save(binaryContent);
             })
             .toList();

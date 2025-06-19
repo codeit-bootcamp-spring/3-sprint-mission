@@ -19,20 +19,17 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicUpdate
 public class Channel extends BaseUpdatableEntity {
     
-    @Column(name = "type")
+    @Column(name = "type", nullable = false)
     @Enumerated(EnumType.STRING)
     private ChannelType type;
 
-    @Column(name = "name")
+    @Column(name = "name", length = 100)
     private String name;
 
-    @Column(name = "description")
+    @Column(name = "description", length = 500)
     private String description;
 
     public Channel(ChannelType type, String name, String description) {
-        super.setId(UUID.randomUUID());
-        super.setCreatedAt(Instant.now());
-        //
         this.type = type;
         this.name = name;
         this.description = description;
