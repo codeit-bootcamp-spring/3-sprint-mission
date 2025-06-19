@@ -13,7 +13,6 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.exception.userstatus.UserStatusAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import java.time.Instant;
-import java.util.NoSuchElementException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
