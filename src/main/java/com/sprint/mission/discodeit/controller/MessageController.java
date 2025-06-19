@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -35,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/messages")
+@Slf4j
 public class MessageController implements MessageApi {
 
     private final MessageService messageService;
@@ -44,6 +46,9 @@ public class MessageController implements MessageApi {
         @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
         @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
+        log.info("[MessageController] Create message request received. [channelId={}]",
+            messageCreateRequest.channelId());
+
         List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
             .map(files -> files.stream()
                 .map(file -> {
@@ -54,6 +59,7 @@ public class MessageController implements MessageApi {
                             file.getBytes()
                         );
                     } catch (IOException e) {
+                        log.error("[MessageController] Failed to read attachment file.", e);
                         throw new RuntimeException(e);
                     }
                 })
@@ -62,6 +68,8 @@ public class MessageController implements MessageApi {
 
         MessageResponse createdMessage = messageService.create(messageCreateRequest,
             attachmentRequests);
+
+        log.debug("[MessageController] Message created. [id={}]", createdMessage.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
     }
 
@@ -70,29 +78,43 @@ public class MessageController implements MessageApi {
         @PathVariable("messageId") UUID messageId,
         @RequestBody MessageUpdateRequest request
     ) {
+        log.info("[MessageController] Update message request received. [id={}]", messageId);
+
         MessageResponse updatedMessage = messageService.update(messageId, request);
+
+        log.debug("[MessageController] Message updated. [id={}]", updatedMessage.id());
         return ResponseEntity.ok(updatedMessage);
     }
 
     @DeleteMapping(path = "{messageId}")
     public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
-        messageService.delete(messageId);
-        return ResponseEntity.noContent().build();
+        log.info("[MessageController] Delete message request received. [id={}]", messageId);
+
+        try {
+            messageService.delete(messageId);
+            log.debug("[MessageController] Message deleted. [id={}]", messageId);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("[MessageController] Error occurred while deleting message. [id={}]",
+                messageId, e);
+            throw e;
+        }
     }
 
     @GetMapping
     public ResponseEntity<PageResponse<MessageResponse>> findAllByChannelId(
         @RequestParam("channelId") UUID channelId,
         @RequestParam(value = "cursor", required = false) Instant cursor,
-        @PageableDefault(
-            size = 50,
-            page = 0,
-            sort = "createdAt",
-            direction = Direction.DESC
-        ) Pageable pageable
+        @PageableDefault(size = 50, page = 0, sort = "createdAt", direction = Direction.DESC) Pageable pageable
     ) {
+        log.info("[MessageController] Fetch messages request received. [channelId={}] [cursor={}]",
+            channelId, cursor);
+
         PageResponse<MessageResponse> messages = messageService.findAllByChannelId(channelId,
             cursor, pageable);
+
+        log.debug("[MessageController] Messages retrieved. [count={}] [channelId={}]",
+            messages.content().size(), channelId);
         return ResponseEntity.ok(messages);
     }
 }

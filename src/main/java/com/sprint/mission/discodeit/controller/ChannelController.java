@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,45 +24,80 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/channels")
+@Slf4j
 public class ChannelController {
 
     private final ChannelService channelService;
 
-
     @PostMapping(path = "public")
     public ResponseEntity<ChannelResponse> create(@RequestBody PublicChannelCreateRequest request) {
+        log.info("[ChannelController] Received request to create public channel. [name={}]",
+            request.name());
+
         ChannelResponse createdChannel = channelService.createPublicChannel(request);
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(createdChannel);
+
+        log.debug("[ChannelController] Public channel created. [id={}]", createdChannel.id());
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
     }
 
     @PostMapping(path = "private")
     public ResponseEntity<ChannelResponse> create(
         @RequestBody PrivateChannelCreateRequest request) {
+        log.info(
+            "[ChannelController] Received request to create private channel. [participants={}]",
+            request.participantIds());
+
         ChannelResponse createdChannel = channelService.createPrivateChannel(request);
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(createdChannel);
+
+        log.debug("[ChannelController] Private channel created. [id={}]", createdChannel.id());
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
     }
 
     @PatchMapping("/{channelId}")
     public ResponseEntity<ChannelResponse> update(
         @PathVariable UUID channelId,
         @RequestBody PublicChannelUpdateRequest request) {
-        return ResponseEntity.ok(channelService.update(channelId, request));
+
+        log.info("[ChannelController] Received request to update channel. [id={}] [newName={}]",
+            channelId, request);
+
+        try {
+            ChannelResponse updatedChannel = channelService.update(channelId, request);
+            log.debug("[ChannelController] Channel updated. [id={}]", updatedChannel.id());
+            return ResponseEntity.ok(updatedChannel);
+        } catch (IllegalArgumentException e) {
+            log.warn("[ChannelController] Update failed - invalid request. [id={}]", channelId, e);
+            throw e;
+        } catch (Exception e) {
+            log.error("[ChannelController] Unexpected error while updating channel. [id={}]",
+                channelId, e);
+            throw e;
+        }
     }
 
     @DeleteMapping("/{channelId}")
     public ResponseEntity<ChannelResponse> delete(@PathVariable UUID channelId) {
-        ChannelResponse deletedChannel = channelService.delete(channelId);
-        return ResponseEntity.ok(deletedChannel);
+        log.info("[ChannelController] Received request to delete channel. [id={}]", channelId);
+
+        try {
+            ChannelResponse deletedChannel = channelService.delete(channelId);
+            log.debug("[ChannelController] Channel deleted. [id={}]", deletedChannel.id());
+            return ResponseEntity.ok(deletedChannel);
+        } catch (Exception e) {
+            log.error("[ChannelController] Error while deleting channel. [id={}]", channelId, e);
+            throw e;
+        }
     }
 
     @GetMapping
     public ResponseEntity<List<ChannelResponse>> findAllByUserId(@RequestParam UUID userId) {
-        return ResponseEntity.ok(channelService.findAllByUserId(userId));
+        log.info("[ChannelController] Received request to find channels by user. [userId={}]",
+            userId);
+
+        List<ChannelResponse> channels = channelService.findAllByUserId(userId);
+
+        log.debug("[ChannelController] Channels found. [count={}] [userId={}]", channels.size(),
+            userId);
+        return ResponseEntity.ok(channels);
     }
-
-
 }
