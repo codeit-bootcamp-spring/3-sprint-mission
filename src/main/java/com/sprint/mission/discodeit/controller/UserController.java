@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 import com.sprint.mission.discodeit.exception.user.ProfileImageProcessingException;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +41,7 @@ public class UserController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserResponse> createUser(
-        @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
+        @Valid @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
         @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         log.info("[UserController] Create user request received. [username={}]",
@@ -68,7 +69,7 @@ public class UserController {
     @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserResponse> updateUser(
         @PathVariable UUID userId,
-        @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
+        @Valid @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
         @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         log.info("[UserController] Update user request received. [id={}]", userId);
