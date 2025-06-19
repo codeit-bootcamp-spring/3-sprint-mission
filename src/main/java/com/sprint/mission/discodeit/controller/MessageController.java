@@ -1,20 +1,11 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.controller.api.MessageApi;
-import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.MessageResponse;
-import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentProcessingException;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
-import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -32,6 +23,19 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sprint.mission.discodeit.controller.api.MessageApi;
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentProcessingException;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
+import com.sprint.mission.discodeit.vo.BinaryContentData;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/messages")
@@ -41,7 +45,7 @@ public class MessageController implements MessageApi {
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<MessageResponse> create(
-      @RequestPart("messageCreateRequest") MessageCreateRequest request,
+      @RequestPart("messageCreateRequest") @Valid MessageCreateRequest request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) {
 
     List<BinaryContentData> binaryContentDataList = resolveAttachmentRequest(attachments);
