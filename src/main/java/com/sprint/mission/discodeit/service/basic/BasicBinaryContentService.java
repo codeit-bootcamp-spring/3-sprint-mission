@@ -3,12 +3,14 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,16 +32,13 @@ public class BasicBinaryContentService implements BinaryContentService {
         log.info("파일 업로드 요청: fileName={}, contentType={}, size={} bytes",
             request.fileName(), request.contentType(), request.bytes().length);
 
-        String fileName = request.fileName();
-        byte[] bytes = request.bytes();
-        String contentType = request.contentType();
         BinaryContent binaryContent = new BinaryContent(
-            fileName,
-            (long) bytes.length,
-            contentType
+            request.fileName(),
+            (long) request.bytes().length,
+            request.contentType()
         );
         binaryContentRepository.save(binaryContent);
-        binaryContentStorage.put(binaryContent.getId(), bytes);
+        binaryContentStorage.put(binaryContent.getId(), request.bytes());
 
         log.info("파일 저장 완료: id={}", binaryContent.getId());
         return binaryContentMapper.toDto(binaryContent);
@@ -53,8 +52,10 @@ public class BasicBinaryContentService implements BinaryContentService {
             .map(binaryContentMapper::toDto)
             .orElseThrow(() -> {
                 log.warn("파일 조회 실패: 존재하지 않는 ID={}", binaryContentId);
-                return new NoSuchElementException(
-                    "BinaryContent with id " + binaryContentId + " not found");
+                return new BinaryContentException(
+                    ErrorCode.BINARY_CONTENT_NOT_FOUND,
+                    Map.of("binaryContentId", binaryContentId)
+                );
             });
     }
 
@@ -74,8 +75,10 @@ public class BasicBinaryContentService implements BinaryContentService {
 
         if (!binaryContentRepository.existsById(binaryContentId)) {
             log.error("삭제 실패: 존재하지 않는 파일 id={}", binaryContentId);
-            throw new NoSuchElementException(
-                "BinaryContent with id " + binaryContentId + " not found");
+            throw new BinaryContentException(
+                ErrorCode.BINARY_CONTENT_NOT_FOUND,
+                Map.of("binaryContentId", binaryContentId)
+            );
         }
 
         binaryContentRepository.deleteById(binaryContentId);

@@ -7,6 +7,8 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -14,7 +16,6 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,9 +38,7 @@ public class BasicChannelService implements ChannelService {
     public ChannelDto create(PublicChannelCreateRequest request) {
         log.info("공개 채널 생성 요청: name={}, description={}", request.name(), request.description());
 
-        String name = request.name();
-        String description = request.description();
-        Channel channel = new Channel(ChannelType.PUBLIC, name, description);
+        Channel channel = new Channel(ChannelType.PUBLIC, request.name(), request.description());
         channelRepository.save(channel);
 
         log.info("공개 채널 생성 완료: id={}", channel.getId());
@@ -73,7 +72,7 @@ public class BasicChannelService implements ChannelService {
             .map(channelMapper::toDto)
             .orElseThrow(() -> {
                 log.warn("채널 조회 실패: 존재하지 않는 ID={}", channelId);
-                return new NoSuchElementException("Channel with id " + channelId + " not found");
+                return new ChannelNotFoundException(channelId);
             });
     }
 
@@ -102,12 +101,12 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> {
                 log.warn("채널 수정 실패: 존재하지 않는 ID={}", channelId);
-                return new NoSuchElementException("Channel with id " + channelId + " not found");
+                return new ChannelNotFoundException(channelId);
             });
 
         if (channel.getType().equals(ChannelType.PRIVATE)) {
             log.warn("비공개 채널 수정 시도 차단: id={}", channelId);
-            throw new IllegalArgumentException("Private channel cannot be updated");
+            throw new PrivateChannelUpdateException(channelId);
         }
 
         channel.update(request.newName(), request.newDescription());
@@ -122,7 +121,7 @@ public class BasicChannelService implements ChannelService {
 
         if (!channelRepository.existsById(channelId)) {
             log.error("삭제 실패: 존재하지 않는 채널 id={}", channelId);
-            throw new NoSuchElementException("Channel with id " + channelId + " not found");
+            throw new ChannelNotFoundException(channelId);
         }
 
         messageRepository.deleteAllByChannelId(channelId);
