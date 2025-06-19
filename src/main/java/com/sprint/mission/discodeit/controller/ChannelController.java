@@ -58,21 +58,12 @@ public class ChannelController {
         @PathVariable UUID channelId,
         @RequestBody PublicChannelUpdateRequest request) {
 
-        log.info("[ChannelController] Received request to update channel. [id={}] [newName={}]",
-            channelId, request);
+        log.info("[ChannelController] Received request to update channel. [id={}]", channelId);
 
-        try {
-            ChannelResponse updatedChannel = channelService.update(channelId, request);
-            log.debug("[ChannelController] Channel updated. [id={}]", updatedChannel.id());
-            return ResponseEntity.ok(updatedChannel);
-        } catch (IllegalArgumentException e) {
-            log.warn("[ChannelController] Update failed - invalid request. [id={}]", channelId, e);
-            throw e;
-        } catch (Exception e) {
-            log.error("[ChannelController] Unexpected error while updating channel. [id={}]",
-                channelId, e);
-            throw e;
-        }
+        ChannelResponse updatedChannel = channelService.update(channelId, request);
+
+        log.debug("[ChannelController] Channel updated. [id={}]", updatedChannel.id());
+        return ResponseEntity.ok(updatedChannel);
     }
 
     @DeleteMapping("/{channelId}")
