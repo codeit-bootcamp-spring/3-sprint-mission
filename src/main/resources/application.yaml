@@ -18,7 +18,7 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-    open-in-view: true
+    open-in-view: false  # 프로덕션 환경 설정 (OSIV 비활성화)
 
 # SQL 로깅 설정
 logging:
