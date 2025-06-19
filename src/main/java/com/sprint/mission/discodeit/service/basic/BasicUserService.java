@@ -7,6 +7,8 @@ import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.UserAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.mapper.advanced.UserMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
@@ -73,13 +75,13 @@ public class BasicUserService implements UserService {
 
         if (usernameNotUnique || emailNotUnique) {
             if (usernameNotUnique) {
-                throw new IllegalArgumentException("User with username " + userCreateRequest.username() + " already exists");
+                throw new UserAlreadyExistsException(Map.of("username", userCreateRequest.username()));
             } else {
-                throw new IllegalArgumentException("User with email " + userCreateRequest.email() + " already exists");
+                throw new UserAlreadyExistsException(Map.of("email", userCreateRequest.email()));
             }
         }
 
-        log.info("profile image is " + profile.map(p -> p.fileName()).stream().findFirst().orElse(null));
+        log.info("profile image is " + profile.map(BinaryContentCreateRequest::fileName).stream().findFirst().orElse(null));
 
         BinaryContent nullableProfile = profile
             .map(
@@ -125,7 +127,7 @@ public class BasicUserService implements UserService {
     public void deleteUser(UUID userId) {
         Objects.requireNonNull(userId, "no user Id: BasicUserService.deleteUser");
 
-        User user = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException(userId + " not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(Map.of("id ", userId)));
 
         if (user.getProfile() != null) { // 프로필 있으면
             BinaryContent profile = user.getProfile();
@@ -151,7 +153,7 @@ public class BasicUserService implements UserService {
     @Override
     public JpaUserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file) {
 
-        User user = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("user with id " + userId + " not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(Map.of("id ", userId)));
 
         String oldName = user.getUsername();
         String oldEmail = user.getEmail();
@@ -168,13 +170,13 @@ public class BasicUserService implements UserService {
 
         // name : 있으면 400
         if (userRepository.existsByUsername(newName) && (!oldName.equals(newName))) { // 있고 내 이름도 아닌경우
-            throw new IllegalArgumentException("user with name" + request.newUsername() + " already exists");
+            throw new  UserAlreadyExistsException(Map.of("username", newName));
         }
         user.setUsername(newName);
 
         // email: 있으면 400
         if (userRepository.existsByEmail(newEmail) && (!oldEmail.equals(newEmail))) { // 있고 내 이메일이 아닌경우
-            throw new IllegalArgumentException("user with email " + request.newPassword() + " already exists");
+            throw new  UserAlreadyExistsException(Map.of("email", newEmail));
         }
         user.setEmail(newEmail);
 
@@ -231,7 +233,4 @@ public class BasicUserService implements UserService {
     private boolean hasValue(MultipartFile attachmentFiles) {
         return (attachmentFiles != null) && (!attachmentFiles.isEmpty());
     }
-
-
-
 }

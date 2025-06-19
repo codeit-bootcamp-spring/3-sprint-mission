@@ -6,6 +6,8 @@ import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateReque
 import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.mapper.advanced.UserMapper;
 import com.sprint.mission.discodeit.mapper.advanced.ChannelMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
@@ -112,14 +114,15 @@ public class BasicChannelService implements ChannelService {
     @Override
     public JpaChannelResponse update(UUID channelId, ChannelUpdateRequest request) {
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(()-> new IllegalArgumentException("channel with id " + channelId + "not found"));
+            .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", channelId.toString())));
+
 
         // channel update
         if (channel.getType().equals(ChannelType.PUBLIC)) {
             channel.setName(request.newName());
             channel.setDescription(request.newDescription());
         } else {
-            throw new NoSuchElementException("private channel cannot be updated");
+            throw new PrivateChannelUpdateException(Map.of("channelId", channelId));
         }
         return channelMapper.toDto(channel);
     }

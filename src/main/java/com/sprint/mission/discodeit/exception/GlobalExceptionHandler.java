@@ -1,13 +1,15 @@
 package com.sprint.mission.discodeit.exception;
 
+import com.sprint.mission.discodeit.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * packageName    : com.sprint.mission.discodeit.exception
@@ -20,7 +22,7 @@ import java.util.NoSuchElementException;
  * -----------------------------------------------------------
  * 2025. 5. 12.        doungukkim       최초 생성
  */
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class) // 400
@@ -36,5 +38,37 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class) // 500
     public ResponseEntity<?> ExceptionHandler(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    }
+
+    //0 여기 아래로는 바뀐 요구사항
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> userNotFoundExceptionHandler(UserNotFoundException e) {
+        return createDiscodeitException(e);
+    }
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> userAlreadyExistsExceptionHandler(UserAlreadyExistsException e) {
+        return createDiscodeitException(e);
+    }
+    @ExceptionHandler(ChannelNotFoundException.class)
+    public ResponseEntity<ErrorResponse> channelNotFoundExceptionHandler(ChannelNotFoundException e) {
+        return createDiscodeitException(e);
+    }
+    @ExceptionHandler(PrivateChannelUpdateException.class)
+    public ResponseEntity<ErrorResponse> privateChannelUpdateExceptionHandler(PrivateChannelUpdateException e) {
+        return createDiscodeitException(e);
+    }
+
+
+    private ResponseEntity<ErrorResponse> createDiscodeitException(DiscodeitException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        ErrorResponse response = ErrorResponse.builder()
+            .timestamp(Instant.now())
+            .code(e.getErrorCode().toString())
+            .message(e.getMessage())
+            .details(e.getDetails()) // nullable
+            .exceptionType(e.getClass().getSimpleName())
+            .status(errorCode.getStatus().value())
+            .build();
+        return ResponseEntity.status(e.getErrorCode().getStatus()).body(response);
     }
 }
