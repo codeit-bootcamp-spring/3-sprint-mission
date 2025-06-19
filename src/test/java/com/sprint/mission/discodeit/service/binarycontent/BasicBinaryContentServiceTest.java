@@ -3,8 +3,8 @@ package com.sprint.mission.discodeit.service.binarycontent;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -45,11 +45,10 @@ class BasicBinaryContentServiceTest {
       BinaryContent expected = BinaryContent.create(
           BinaryContentFixture.getDefaultFileName(),
           (long) mockBytes.length,
-          BinaryContentFixture.getDefaultMimeType()
-      );
+          BinaryContentFixture.getDefaultMimeType());
       expected.assignIdForTest(UUID.randomUUID());
 
-      when(binaryContentRepository.save(any())).thenReturn(expected);
+      given(binaryContentRepository.save(any())).willReturn(expected);
 
       var request = BinaryContentFixture.createValidData();
 
@@ -62,8 +61,8 @@ class BasicBinaryContentServiceTest {
       assertThat(result.contentType()).isEqualTo(expected.getContentType());
       assertThat(result.size()).isEqualTo(expected.getSize());
 
-      verify(binaryContentRepository).save(any());
-      verify(binaryContentStorage).put(any(UUID.class), eq(mockBytes));
+      then(binaryContentRepository).should().save(any());
+      then(binaryContentStorage).should().put(any(UUID.class), eq(mockBytes));
     }
   }
 
@@ -75,13 +74,13 @@ class BasicBinaryContentServiceTest {
       UUID id = UUID.randomUUID();
       BinaryContent content = BinaryContentFixture.createValid();
 
-      when(binaryContentRepository.findById(id)).thenReturn(Optional.of(content));
+      given(binaryContentRepository.findById(id)).willReturn(Optional.of(content));
 
       BinaryContentResponse found = binaryContentService.find(id);
 
       assertThat(found).isNotNull();
       assertThat(found.fileName()).isEqualTo(content.getFileName());
-      verify(binaryContentRepository).findById(id);
+      then(binaryContentRepository).should().findById(id);
     }
   }
 
@@ -94,7 +93,7 @@ class BasicBinaryContentServiceTest {
 
       binaryContentService.delete(id);
 
-      verify(binaryContentRepository).deleteById(id);
+      then(binaryContentRepository).should().deleteById(id);
     }
   }
 
@@ -109,8 +108,8 @@ class BasicBinaryContentServiceTest {
       UUID id1 = content1.getId();
       UUID id2 = content2.getId();
 
-      when(binaryContentRepository.findAllById(List.of(id1, id2)))
-          .thenReturn(List.of(content1, content2));
+      given(binaryContentRepository.findAllById(List.of(id1, id2)))
+          .willReturn(List.of(content1, content2));
 
       List<BinaryContentResponse> result = binaryContentService.findAllByIdIn(List.of(id1, id2));
 
@@ -119,7 +118,7 @@ class BasicBinaryContentServiceTest {
           .extracting(BinaryContentResponse::id)
           .containsExactlyInAnyOrder(content1.getId(), content2.getId());
 
-      verify(binaryContentRepository).findAllById(List.of(id1, id2));
+      then(binaryContentRepository).should().findAllById(List.of(id1, id2));
     }
   }
 }

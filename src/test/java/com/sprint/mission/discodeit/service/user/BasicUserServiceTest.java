@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.user;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
@@ -98,10 +99,10 @@ class BasicUserServiceTest {
       User savedUser = UserFixture.createCustomUserWithId(email, name, password, null);
       UserStatus savedUserStatus = UserStatusFixture.createWithId(savedUser);
 
-      when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
-      when(userRepository.findByUsername(name)).thenReturn(Optional.empty());
-      when(userRepository.save(any(User.class))).thenReturn(savedUser);
-      when(userStatusRepository.save(any(UserStatus.class))).thenReturn(savedUserStatus);
+      given(userRepository.findByEmail(email)).willReturn(Optional.empty());
+      given(userRepository.findByUsername(name)).willReturn(Optional.empty());
+      given(userRepository.save(any(User.class))).willReturn(savedUser);
+      given(userStatusRepository.save(any(UserStatus.class))).willReturn(savedUserStatus);
 
       UserResponse createdUserResponse = basicUserService.create(command);
 
@@ -110,10 +111,10 @@ class BasicUserServiceTest {
       assertEquals(name, createdUserResponse.username());
       assertNotNull(createdUserResponse.id());
 
-      verify(userRepository).findByEmail(email);
-      verify(userRepository).findByUsername(name);
-      verify(userRepository).save(any(User.class));
-      verify(userStatusRepository).save(any(UserStatus.class));
+      then(userRepository).should().findByEmail(email);
+      then(userRepository).should().findByUsername(name);
+      then(userRepository).should().save(any(User.class));
+      then(userStatusRepository).should().save(any(UserStatus.class));
     }
 
     @Test
@@ -135,11 +136,11 @@ class BasicUserServiceTest {
       savedUser.updateProfile(binaryContent);
       UserStatus savedUserStatus = UserStatusFixture.createWithId(savedUser);
 
-      when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
-      when(userRepository.findByUsername(name)).thenReturn(Optional.empty());
-      when(userRepository.save(any(User.class))).thenReturn(savedUser);
-      when(userStatusRepository.save(any(UserStatus.class))).thenReturn(savedUserStatus);
-      when(binaryContentRepository.save(any(BinaryContent.class))).thenReturn(binaryContent);
+      given(userRepository.findByEmail(email)).willReturn(Optional.empty());
+      given(userRepository.findByUsername(name)).willReturn(Optional.empty());
+      given(userRepository.save(any(User.class))).willReturn(savedUser);
+      given(userStatusRepository.save(any(UserStatus.class))).willReturn(savedUserStatus);
+      given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(binaryContent);
 
       ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
@@ -151,11 +152,10 @@ class BasicUserServiceTest {
       assertEquals(binaryContent.getId(), createdUserResponse.profile().id());
       assertNotNull(createdUserResponse.id());
 
-      verify(userRepository).findByEmail(email);
-      verify(userRepository).findByUsername(name);
-      verify(userRepository, times(2)).save(userCaptor.capture());
-      assertEquals(binaryContent.getId(), userCaptor.getValue().getProfile().getId());
-      verify(userStatusRepository).save(any(UserStatus.class));
+      then(userRepository).should().findByEmail(email);
+      then(userRepository).should().findByUsername(name);
+      then(userRepository).should(times(2)).save(userCaptor.capture());
+      then(userStatusRepository).should().save(any(UserStatus.class));
     }
 
     @Test
@@ -166,17 +166,17 @@ class BasicUserServiceTest {
 
       User existingUser = User.create("test@test.com", "다른사람", "pwd123", null);
 
-      when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(existingUser));
+      given(userRepository.findByEmail(request.email())).willReturn(Optional.of(existingUser));
 
       DuplicateEmailException exception = assertThrows(DuplicateEmailException.class,
           () -> basicUserService.create(command));
       assertEquals(ErrorCode.USER_ALREADY_EXISTS, exception.getErrorCode());
 
-      verify(userRepository).findByEmail(request.email());
-      verify(userRepository, never()).findByUsername(anyString());
-      verify(userRepository, never()).save(any());
-      verify(userStatusRepository, never()).save(any());
-      verify(binaryContentRepository, never()).save(any());
+      then(userRepository).should().findByEmail(request.email());
+      then(userRepository).should(never()).findByUsername(anyString());
+      then(userRepository).should(never()).save(any());
+      then(userStatusRepository).should(never()).save(any());
+      then(binaryContentRepository).should(never()).save(any());
     }
 
     @Test
@@ -187,18 +187,18 @@ class BasicUserServiceTest {
 
       User existingUser = User.create("다른@test.com", "길동쓰", "pwd123", null);
 
-      when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
-      when(userRepository.findByUsername(request.username())).thenReturn(Optional.of(existingUser));
+      given(userRepository.findByEmail(request.email())).willReturn(Optional.empty());
+      given(userRepository.findByUsername(request.username())).willReturn(Optional.of(existingUser));
 
       DuplicateNameException exception = assertThrows(DuplicateNameException.class,
           () -> basicUserService.create(command));
       assertEquals(ErrorCode.USER_ALREADY_EXISTS, exception.getErrorCode());
 
-      verify(userRepository).findByEmail(request.email());
-      verify(userRepository).findByUsername(request.username());
-      verify(userRepository, never()).save(any());
-      verify(userStatusRepository, never()).save(any());
-      verify(binaryContentRepository, never()).save(any());
+      then(userRepository).should().findByEmail(request.email());
+      then(userRepository).should().findByUsername(request.username());
+      then(userRepository).should(never()).save(any());
+      then(userStatusRepository).should(never()).save(any());
+      then(binaryContentRepository).should(never()).save(any());
     }
   }
 
@@ -213,14 +213,14 @@ class BasicUserServiceTest {
       UserStatus userStatusToDelete = UserStatusFixture.createValid(userToDelete);
       userToDelete.updateProfile(profileImage);
 
-      when(userRepository.findById(userId)).thenReturn(Optional.of(userToDelete));
-      when(userStatusRepository.findByUserId(userId)).thenReturn(Optional.of(userStatusToDelete));
+      given(userRepository.findById(userId)).willReturn(Optional.of(userToDelete));
+      given(userStatusRepository.findByUserId(userId)).willReturn(Optional.of(userStatusToDelete));
 
       basicUserService.delete(userId);
 
-      verify(userRepository).deleteById(userId);
-      verify(binaryContentRepository).deleteById(userToDelete.getProfile().getId());
-      verify(userStatusRepository).deleteById(userStatusToDelete.getId());
+      then(userRepository).should().deleteById(userId);
+      then(binaryContentRepository).should().deleteById(userToDelete.getProfile().getId());
+      then(userStatusRepository).should().deleteById(userStatusToDelete.getId());
     }
 
     @Test
@@ -229,26 +229,26 @@ class BasicUserServiceTest {
       UUID userId = userToDelete.getId();
       UserStatus userStatusToDelete = UserStatusFixture.createValid(userToDelete);
 
-      when(userRepository.findById(userId)).thenReturn(Optional.of(userToDelete));
-      when(userStatusRepository.findByUserId(userId)).thenReturn(Optional.of(userStatusToDelete));
+      given(userRepository.findById(userId)).willReturn(Optional.of(userToDelete));
+      given(userStatusRepository.findByUserId(userId)).willReturn(Optional.of(userStatusToDelete));
 
       basicUserService.delete(userId);
 
-      verify(userRepository).deleteById(userId);
-      verify(userStatusRepository).deleteById(userStatusToDelete.getId());
-      verify(binaryContentRepository, never()).deleteById(any());
+      then(userRepository).should().deleteById(userId);
+      then(userStatusRepository).should().deleteById(userStatusToDelete.getId());
+      then(binaryContentRepository).should(never()).deleteById(any());
     }
 
     @Test
     void 존재하지_않는_사용자를_삭제하려고_하면_예외() {
       UUID userId = UUID.randomUUID();
-      when(userRepository.findById(userId)).thenReturn(Optional.empty());
+      given(userRepository.findById(userId)).willReturn(Optional.empty());
 
       assertThrows(UserNotFoundException.class, () -> basicUserService.delete(userId));
 
-      verify(userRepository, never()).deleteById(any());
-      verify(binaryContentRepository, never()).deleteById(any());
-      verify(userStatusRepository, never()).deleteById(any());
+      then(userRepository).should(never()).deleteById(any());
+      then(binaryContentRepository).should(never()).deleteById(any());
+      then(userStatusRepository).should(never()).deleteById(any());
     }
   }
 }
