@@ -77,7 +77,7 @@ public class MessageController implements MessageAPI {
       @RequestParam UUID channelId,
       @RequestParam(value = "cursor", required = false) Instant cursor,
       @PageableDefault(
-          size = 20,
+          size = 50,
           page = 0,
           sort = "createdAt",
           direction = Direction.DESC
