@@ -6,6 +6,10 @@ import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -37,16 +41,19 @@ public class BasicReadStatusService implements ReadStatusService {
     UUID channelId = request.channelId();
 
     User user = userRepository.findById(userId)
-        .orElseThrow(
-            () -> new NoSuchElementException("User with id " + userId + " does not exist"));
+        .orElseThrow(() -> {
+          log.error("[유저 조회 실패] 해당 유저를 찾을 수 없습니다. 유저 ID : {}", userId);
+          return new UserNotFoundException();
+        });
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(
-            () -> new NoSuchElementException("Channel with id " + channelId + " does not exist")
-        );
+        .orElseThrow(() -> {
+          log.error("[채널 조회 실패] 해당 채널을 찾을 수 없습니다. 채널 ID : {}", channelId);
+          return new ChannelNotFoundException();
+        });
 
     if (readStatusRepository.existsByUserIdAndChannelId(user.getId(), channel.getId())) {
-      throw new IllegalArgumentException(
-          "ReadStatus with userId " + userId + " and channelId " + channelId + " already exists");
+      log.error("[읽음 상태 생성 실패] 이미 존재하는 읽음 상태입니다. userId : {} , channelId : {} ", userId, channelId);
+      throw new ReadStatusAlreadyExistsException();
     }
 
     Instant lastReadAt = request.lastReadAt();
@@ -65,8 +72,10 @@ public class BasicReadStatusService implements ReadStatusService {
 
     return readStatusRepository.findById(readStatusId)
         .map(readStatusMapper::toDto)
-        .orElseThrow(
-            () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
+        .orElseThrow(() -> {
+          log.error("[읽음 상태 조회 실패] 해당 읽음 상태를 찾을 수 없습니다. 읽음 상태 ID : {}", readStatusId);
+          return new ReadStatusNotFoundException();
+        });
   }
 
   @Override
@@ -85,8 +94,10 @@ public class BasicReadStatusService implements ReadStatusService {
 
     Instant newLastReadAt = request.newLastReadAt();
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-        .orElseThrow(
-            () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
+        .orElseThrow(() -> {
+          log.error("[읽음 상태 수정 실패] 해당하는 읽음 상태를 찾을 수 없습니다. 읽음 상태 ID : {}", readStatusId);
+          throw new ReadStatusNotFoundException();
+        });
     readStatus.update(newLastReadAt);
     log.info("[읽음 정보 수정 성공] 읽음 정보 ID : {}", readStatusId);
 
@@ -99,7 +110,8 @@ public class BasicReadStatusService implements ReadStatusService {
     log.info("[읽음 정보 삭제 시도] 읽음 정보 ID : {}", readStatusId);
 
     if (!readStatusRepository.existsById(readStatusId)) {
-      throw new NoSuchElementException("ReadStatus with id " + readStatusId + " not found");
+      log.error("[읽음 상태 삭제 실패] 해당하는 읽음 상태가 없습니다. 읽음 상태 ID : {}", readStatusId);
+      throw new ReadStatusNotFoundException();
     }
     readStatusRepository.deleteById(readStatusId);
     log.info("[읽음 정보 삭제 성공] 읽음 정보 ID : {}", readStatusId);
