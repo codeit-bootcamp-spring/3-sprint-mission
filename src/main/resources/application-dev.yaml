@@ -1,0 +1,35 @@
+# 테스트 환경 설정
+spring:
+  # 테스트용 H2 인메모리 데이터베이스 설정
+  datasource:
+    # DB_CLOSE_DELAY: 테스트 종료 후 데이터베이스 연결 유지 시간 (음수 값은 연결 유지)
+    # DB_CLOSE_ON_EXIT: 프로그램 종료 시 데이터베이스 연결 닫기 여부
+    url: jdbc:h2:mem:discodeit;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: discodeit_user
+    password: discodeit1234
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    #        default_batch_fetch_size: 100
+    open-in-view: false
+
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    com.sprint.mission.discodeit: debug
+
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: .discodeit/storage
+
+
+server:
+  port: 8080
