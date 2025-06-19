@@ -17,10 +17,15 @@ import com.sprint.mission.discodeit.exception.userstatus.NotFoundUserStatusExcep
 import com.sprint.mission.discodeit.exception.userstatus.UserStatusAlreadyExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -71,6 +76,28 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
+    // @Valid 검증 실패 시 예외 처리
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
+        List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
+
+        Map<String, Object> details = new HashMap<>();
+        for (FieldError fieldError : fieldErrors) {
+            details.put(fieldError.getField(), fieldError.getDefaultMessage());
+        }
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                Instant.now(),
+                "VALIDATION_FAILED",
+                "유효성 검사 실패",
+                details,
+                e.getClass().getTypeName(),
+                HttpStatus.BAD_REQUEST.value()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
     /* 정의되지 않은 예외 처리 */
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleUnhandledException(Exception e) {
@@ -84,6 +111,5 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-
     }
 }
