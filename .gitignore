@@ -47,3 +47,6 @@ bin/
 
 ## config
 **/db.yaml
+
+##
+**/generated/*
