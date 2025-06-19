@@ -33,6 +33,7 @@ public class UserController implements UserApi {
 
   private final UserService userService;
   private final UserStatusService userStatusService;
+  private final ResponseMapper responseMapper;
 
   @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
   @Override
@@ -42,13 +43,7 @@ public class UserController implements UserApi {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
     UserDto createdUser = userService.create(userCreateRequest, profileRequest);
-    UserResponse response = new UserResponse(
-        createdUser.id(),
-        null, // createdAt는 DTO에서 제거됨
-        null, // updatedAt는 DTO에서 제거됨
-        createdUser.username(),
-        createdUser.email(),
-        createdUser.profile() != null ? createdUser.profile().id() : null);
+    UserResponse response = ResponseMapper.toResponse(createdUser);
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(response);
@@ -63,13 +58,7 @@ public class UserController implements UserApi {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
     UserDto updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
-    UserResponse response = new UserResponse(
-        updatedUser.id(),
-        null, // createdAt는 DTO에서 제거됨
-        null, // updatedAt는 DTO에서 제거됨
-        updatedUser.username(),
-        updatedUser.email(),
-        updatedUser.profile() != null ? updatedUser.profile().id() : null);
+    UserResponse response = responseMapper.toResponse(updatedUser);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(response);
@@ -98,7 +87,7 @@ public class UserController implements UserApi {
   public ResponseEntity<UserStatusResponse> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
       @RequestBody UserStatusUpdateRequest request) {
     UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, request);
-    UserStatusResponse response = ResponseMapper.toResponse(updatedUserStatus);
+    UserStatusResponse response = responseMapper.toResponse(updatedUserStatus);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(response);

@@ -19,6 +19,8 @@ public class EntityDtoMapper {
   public UserDto toDto(User user) {
     return new UserDto(
         user.getId(),
+        user.getCreatedAt(),
+        user.getUpdatedAt(),
         user.getUsername(),
         user.getEmail(),
         Optional.ofNullable(user.getProfile()).map(this::toDto).orElse(null),

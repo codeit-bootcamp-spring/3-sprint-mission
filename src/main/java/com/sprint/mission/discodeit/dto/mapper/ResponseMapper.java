@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto.mapper;
 
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.response.*;
 import com.sprint.mission.discodeit.entity.*;
 
@@ -16,6 +17,18 @@ public class ResponseMapper {
         user.getUsername(),
         user.getEmail(),
         Optional.ofNullable(user.getProfile()).map(BinaryContent::getId).orElse(null)
+    // password 제외 - 보안상 노출 안함
+    );
+  }
+
+  public static UserResponse toResponse(UserDto userDto) {
+    return new UserResponse(
+        userDto.id(),
+        userDto.createdAt(),
+        userDto.updatedAt(),
+        userDto.username(),
+        userDto.email(),
+        Optional.ofNullable(userDto.profile()).map(profile -> profile.id()).orElse(null)
     // password 제외 - 보안상 노출 안함
     );
   }
