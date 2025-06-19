@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.MessageDto;
-import com.sprint.mission.discodeit.dto.mapper.EntityDtoMapper;
+import com.sprint.mission.discodeit.dto.mapper.mapstruct.MapperFacade;
 import com.sprint.mission.discodeit.dto.mapper.PageMapper;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
@@ -11,12 +11,11 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -39,9 +37,8 @@ public class BasicMessageService implements MessageService {
   private final MessageRepository messageRepository;
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
-  private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
-  private final EntityDtoMapper entityDtoMapper;
+  private final BinaryContentService binaryContentService;
+  private final MapperFacade mapperFacade;
   private final PageMapper pageMapper;
   private static final Logger log = LoggerFactory.getLogger(BasicMessageService.class);
 
@@ -62,23 +59,8 @@ public class BasicMessageService implements MessageService {
 
     log.info("채널과 사용자 조회 완료 - 채널: {}, 사용자: {}", channel.getName(), author.getUsername());
 
-    // 첨부파일이 있는 경우 - BinaryContent 생성 후 Storage에 저장
-    List<BinaryContent> attachments = binaryContentCreateRequests.stream()
-        .map(attachmentRequest -> {
-          String fileName = attachmentRequest.fileName();
-          String contentType = attachmentRequest.contentType();
-          byte[] bytes = attachmentRequest.bytes();
-
-          // 1. 메타정보만으로 BinaryContent 생성 및 저장
-          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
-          BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
-
-          // 2. 실제 바이너리 데이터는 Storage에 저장
-          binaryContentStorage.put(savedBinaryContent.getId(), bytes);
-
-          return savedBinaryContent;
-        })
-        .collect(Collectors.toList());
+    // 🚀 개선: BinaryContentService에 위임하여 중복 제거
+    List<BinaryContent> attachments = binaryContentService.createAll(binaryContentCreateRequests);
 
     String content = messageCreateRequest.content();
     Message message = new Message(content, channel, author, attachments);
@@ -86,7 +68,7 @@ public class BasicMessageService implements MessageService {
     Message savedMessage = messageRepository.save(message);
     log.info("메시지 저장 완료 - ID: {}, 내용: {}", savedMessage.getId(), savedMessage.getContent());
 
-    return entityDtoMapper.toDto(savedMessage);
+    return mapperFacade.toDto(savedMessage);
   }
 
   @Override
@@ -112,14 +94,14 @@ public class BasicMessageService implements MessageService {
     Message savedMessage = messageRepository.save(message);
     log.info("메시지 저장 완료 - ID: {}, 내용: {}", savedMessage.getId(), savedMessage.getContent());
 
-    return entityDtoMapper.toDto(savedMessage);
+    return mapperFacade.toDto(savedMessage);
   }
 
   @Override
   @Transactional(readOnly = true)
   public MessageDto find(UUID messageId) {
     return messageRepository.findById(messageId)
-        .map(entityDtoMapper::toDto)
+        .map(mapperFacade::toDto)
         .orElseThrow(
             () -> new CustomException.MessageNotFoundException("Message with id " + messageId + " not found"));
   }
@@ -131,7 +113,7 @@ public class BasicMessageService implements MessageService {
     // N+1 문제 해결: Fetch Join으로 작성자와 첨부파일 정보를 한 번에 조회
     List<Message> messages = messageRepository.findAllByChannelIdWithAuthorAndAttachmentsOrderByCreatedAtAsc(channelId);
     log.info("메시지 조회 완료 - 채널ID: {}, 메시지 개수: {}", channelId, messages.size());
-    return entityDtoMapper.toMessageDtoList(messages);
+    return mapperFacade.toMessageDtoList(messages);
   }
 
   /**
@@ -144,7 +126,7 @@ public class BasicMessageService implements MessageService {
     // 작성자 정보만 필요한 경우 가벼운 쿼리 사용
     List<Message> messages = messageRepository.findAllByChannelIdWithAuthorOrderByCreatedAtAsc(channelId);
     log.info("메시지 조회 완료 (작성자만) - 채널ID: {}, 메시지 개수: {}", channelId, messages.size());
-    return entityDtoMapper.toMessageDtoList(messages);
+    return mapperFacade.toMessageDtoList(messages);
   }
 
   @Override
@@ -155,7 +137,7 @@ public class BasicMessageService implements MessageService {
     Page<Message> messagePage = messageRepository.findAllByChannelIdWithAuthorAndAttachments(channelId, pageable);
     log.info("메시지 페이징 조회 완료 - 채널ID: {}, 총 메시지: {}, 현재 페이지: {}", channelId, messagePage.getTotalElements(),
         messagePage.getNumber());
-    return pageMapper.toPageResponse(messagePage, entityDtoMapper::toDto);
+    return pageMapper.toPageResponse(messagePage, mapperFacade::toDto);
   }
 
   /**
@@ -170,7 +152,7 @@ public class BasicMessageService implements MessageService {
     Page<Message> messagePage = messageRepository.findAllByChannelIdWithAuthor(channelId, pageable);
     log.info("메시지 페이징 조회 완료 (작성자만) - 채널ID: {}, 총 메시지: {}, 현재 페이지: {}", channelId, messagePage.getTotalElements(),
         messagePage.getNumber());
-    return pageMapper.toPageResponse(messagePage, entityDtoMapper::toDto);
+    return pageMapper.toPageResponse(messagePage, mapperFacade::toDto);
   }
 
   @Override
@@ -212,7 +194,7 @@ public class BasicMessageService implements MessageService {
     }
 
     // DTO 변환
-    List<MessageDto> messageDtos = entityDtoMapper.toMessageDtoList(messages);
+    List<MessageDto> messageDtos = mapperFacade.toMessageDtoList(messages);
 
     log.info("메시지 커서 페이징 조회 완료 - 채널ID: {}, 조회된 메시지: {}, 다음 페이지 존재: {}",
         channelId, messageDtos.size(), hasNext);
@@ -230,7 +212,7 @@ public class BasicMessageService implements MessageService {
 
     message.update(newContent);
 
-    return entityDtoMapper.toDto(message);
+    return mapperFacade.toDto(message);
   }
 
   @Override

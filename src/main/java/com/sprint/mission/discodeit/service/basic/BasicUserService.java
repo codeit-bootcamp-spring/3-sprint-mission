@@ -1,18 +1,17 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.mapper.EntityDtoMapper;
+import com.sprint.mission.discodeit.dto.mapper.mapstruct.MapperFacade;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,9 +29,8 @@ public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
-  private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
-  private final EntityDtoMapper entityDtoMapper;
+  private final BinaryContentService binaryContentService;
+  private final MapperFacade mapperFacade;
 
   @Override
   public UserDto create(UserCreateRequest userCreateRequest,
@@ -47,22 +45,8 @@ public class BasicUserService implements UserService {
       throw new CustomException.DuplicateUserException("User with username " + username + " already exists");
     }
 
-    BinaryContent profile = optionalProfileCreateRequest
-        .map(profileRequest -> {
-          String fileName = profileRequest.fileName();
-          String contentType = profileRequest.contentType();
-          byte[] bytes = profileRequest.bytes();
-
-          // 1. 메타정보만으로 BinaryContent 생성 및 저장
-          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
-          BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
-
-          // 2. 실제 바이너리 데이터는 Storage에 저장
-          binaryContentStorage.put(savedBinaryContent.getId(), bytes);
-
-          return savedBinaryContent;
-        })
-        .orElse(null);
+    // 🚀 개선: BinaryContentService에 위임하여 중복 제거
+    BinaryContent profile = binaryContentService.createFromOptional(optionalProfileCreateRequest);
 
     String password = userCreateRequest.password();
     User user = new User(username, email, password, profile);
@@ -73,21 +57,21 @@ public class BasicUserService implements UserService {
     UserStatus userStatus = new UserStatus(savedUser, now);
     userStatusRepository.save(userStatus);
 
-    return entityDtoMapper.toDto(savedUser);
+    return mapperFacade.toDto(savedUser);
   }
 
   @Override
   @Transactional(readOnly = true)
   public UserDto find(UUID userId) {
     return userRepository.findById(userId)
-        .map(entityDtoMapper::toDto)
+        .map(mapperFacade::toDto)
         .orElseThrow(() -> new CustomException.UserNotFoundException("User with id " + userId + " not found"));
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<UserDto> findAll() {
-    return entityDtoMapper.toUserDtoList(userRepository.findAll());
+    return mapperFacade.toUserDtoList(userRepository.findAll());
   }
 
   @Override
@@ -107,28 +91,16 @@ public class BasicUserService implements UserService {
       throw new CustomException.DuplicateUserException("User with username " + newUsername + " already exists");
     }
 
+    // 🚀 개선: BinaryContentService에 위임하여 중복 제거
     BinaryContent newProfile = optionalProfileCreateRequest
-        .map(profileRequest -> {
-          String fileName = profileRequest.fileName();
-          String contentType = profileRequest.contentType();
-          byte[] bytes = profileRequest.bytes();
-
-          // 1. 메타정보만으로 BinaryContent 생성 및 저장
-          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
-          BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
-
-          // 2. 실제 바이너리 데이터는 Storage에 저장
-          binaryContentStorage.put(savedBinaryContent.getId(), bytes);
-
-          return savedBinaryContent;
-        })
+        .map(binaryContentService::create)
         .orElse(user.getProfile());
 
     String newPassword = userUpdateRequest.newPassword();
 
     user.update(newUsername, newEmail, newPassword, newProfile);
 
-    return entityDtoMapper.toDto(user);
+    return mapperFacade.toDto(user);
   }
 
   @Override
