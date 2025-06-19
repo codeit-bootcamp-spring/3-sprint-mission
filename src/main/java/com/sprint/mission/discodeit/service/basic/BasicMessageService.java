@@ -23,6 +23,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicMessageService implements MessageService {
 
     private final MessageRepository messageRepository;
@@ -46,53 +48,65 @@ public class BasicMessageService implements MessageService {
         MessageCreateRequest request,
         List<BinaryContentCreateRequest> attachments
     ) {
+        log.info("[BasicMessageService] Creating message. [channelId={}] [authorId={}]",
+            request.channelId(), request.authorId());
+
         Channel channel = channelRepository.findById(request.channelId())
-            .orElseThrow(() ->
-                new NoSuchElementException(
-                    "Channel with id %s does not exist".formatted(request.channelId()))
-            );
+            .orElseThrow(() -> {
+                log.warn("[BasicMessageService] Channel not found. [channelId={}]",
+                    request.channelId());
+                return new NoSuchElementException(
+                    "Channel with id %s does not exist".formatted(request.channelId()));
+            });
 
         User author = userRepository.findById(request.authorId())
-            .orElseThrow(() ->
-                new NoSuchElementException(
-                    "User with id %s does not exist".formatted(request.authorId()))
-            );
+            .orElseThrow(() -> {
+                log.warn("[BasicMessageService] Author not found. [authorId={}]",
+                    request.authorId());
+                return new NoSuchElementException(
+                    "User with id %s does not exist".formatted(request.authorId()));
+            });
 
         List<BinaryContent> attachmentEntities = attachments.stream()
             .map(file -> {
-                BinaryContent content = new BinaryContent(
-                    file.fileName(),
-                    (long) file.bytes().length,
-                    file.contentType()
-                );
+                BinaryContent content = new BinaryContent(file.fileName(),
+                    (long) file.bytes().length, file.contentType());
                 BinaryContent saved = binaryContentRepository.save(content);
                 binaryContentStorage.put(saved.getId(), file.bytes());
                 return saved;
-            })
-            .toList();
+            }).toList();
 
         Message saved = messageRepository.save(
             new Message(request.content(), channel, author, attachmentEntities));
+
+        log.debug("[BasicMessageService] Message created. [id={}]", saved.getId());
         return messageMapper.toResponse(saved);
     }
 
     @Transactional(readOnly = true)
     @Override
     public MessageResponse find(UUID messageId) {
+        log.info("[BasicMessageService] Finding message. [id={}]", messageId);
+
         return messageRepository.findById(messageId)
-            .map(messageMapper::toResponse)
-            .orElseThrow(() ->
-                new NoSuchElementException("Message with id %s not found".formatted(messageId))
-            );
+            .map(message -> {
+                log.debug("[BasicMessageService] Message found. [id={}]", messageId);
+                return messageMapper.toResponse(message);
+            })
+            .orElseThrow(() -> {
+                log.warn("[BasicMessageService] Message not found. [id={}]", messageId);
+                return new NoSuchElementException(
+                    "Message with id %s not found".formatted(messageId));
+            });
     }
 
     @Transactional(readOnly = true)
     @Override
-    public PageResponse<MessageResponse> findAllByChannelId(
-        UUID channelId,
-        Instant createdAt,
-        Pageable pageable
-    ) {
+    public PageResponse<MessageResponse> findAllByChannelId(UUID channelId, Instant createdAt,
+        Pageable pageable) {
+        log.info("[BasicMessageService] Finding messages by channel. [channelId={}] [cursor={}]",
+            channelId, createdAt);
+
         Instant cursor = Optional.ofNullable(createdAt).orElse(Instant.now());
 
         Slice<MessageResponse> responseSlice = messageRepository
@@ -103,30 +117,45 @@ public class BasicMessageService implements MessageService {
             ? null
             : responseSlice.getContent().get(responseSlice.getContent().size() - 1).createdAt();
 
+        log.debug("[BasicMessageService] Messages found. [count={}] [channelId={}]",
+            responseSlice.getContent().size(), channelId);
         return pageResponseMapper.fromSlice(responseSlice, nextCursor);
     }
 
     @Transactional
     @Override
     public MessageResponse update(UUID messageId, MessageUpdateRequest request) {
+        log.info("[BasicMessageService] Updating message. [id={}]", messageId);
+
         Message message = messageRepository.findById(messageId)
-            .orElseThrow(() ->
-                new NoSuchElementException("Message with id %s not found".formatted(messageId))
-            );
+            .orElseThrow(() -> {
+                log.warn("[BasicMessageService] Message not found for update. [id={}]", messageId);
+                return new NoSuchElementException(
+                    "Message with id %s not found".formatted(messageId));
+            });
 
         message.update(request.newContent());
+
+        log.debug("[BasicMessageService] Message updated. [id={}]", messageId);
         return messageMapper.toResponse(message);
     }
 
     @Transactional
     @Override
     public MessageResponse delete(UUID messageId) {
+        log.info("[BasicMessageService] Deleting message. [id={}]", messageId);
+
         Message message = messageRepository.findById(messageId)
-            .orElseThrow(() ->
-                new NoSuchElementException("Message with id %s not found".formatted(messageId))
-            );
+            .orElseThrow(() -> {
+                log.warn("[BasicMessageService] Message not found for deletion. [id={}]",
+                    messageId);
+                return new NoSuchElementException(
+                    "Message with id %s not found".formatted(messageId));
+            });
 
         messageRepository.delete(message);
+
+        log.debug("[BasicMessageService] Message deleted. [id={}]", messageId);
         return messageMapper.toResponse(message);
     }
 }

@@ -15,11 +15,13 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicUserStatusService implements UserStatusService {
 
     private final UserStatusRepository userStatusRepository;
@@ -29,71 +31,110 @@ public class BasicUserStatusService implements UserStatusService {
     @Transactional(readOnly = true)
     @Override
     public UserStatusResponse find(UUID id) {
-        UserStatus userStatus = userStatusRepository.findById(id)
-            .orElseThrow(
-                () -> new NoSuchElementException("UserStatus with id " + id + " not found"));
-        return userStatusMapper.toResponse(userStatus);
+        log.info("[BasicUserStatusService] Finding user status. [id={}]", id);
+
+        return userStatusRepository.findById(id)
+            .map(status -> {
+                log.debug("[BasicUserStatusService] User status found. [id={}]", id);
+                return userStatusMapper.toResponse(status);
+            })
+            .orElseThrow(() -> {
+                log.warn("[BasicUserStatusService] User status not found. [id={}]", id);
+                return new NoSuchElementException("UserStatus with id " + id + " not found");
+            });
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<UserStatusResponse> findAll() {
-        return userStatusRepository.findAll().stream()
+        log.info("[BasicUserStatusService] Finding all user statuses.");
+        List<UserStatusResponse> result = userStatusRepository.findAll().stream()
             .map(userStatusMapper::toResponse)
             .collect(Collectors.toList());
+        log.debug("[BasicUserStatusService] User statuses found. [count={}]", result.size());
+        return result;
     }
 
     @Transactional
     @Override
     public UserStatusResponse create(UserStatusCreateRequest request) {
         UUID userId = request.userId();
+        log.info("[BasicUserStatusService] Creating user status. [userId={}]", userId);
+
         User user = userRepository.findById(userId)
-            .orElseThrow(
-                () -> new NoSuchElementException("User with id " + userId + " does not exist"));
+            .orElseThrow(() -> {
+                log.warn("[BasicUserStatusService] User not found. [userId={}]", userId);
+                return new NoSuchElementException("User with id " + userId + " does not exist");
+            });
 
         if (userStatusRepository.findByUserId(userId).isPresent()) {
+            log.warn("[BasicUserStatusService] User status already exists. [userId={}]", userId);
             throw new IllegalArgumentException(
                 "UserStatus for userId " + userId + " already exists");
         }
 
         UserStatus userStatus = new UserStatus(user, request.lastActiveAt());
-        return userStatusMapper.toResponse(userStatus);
+        userStatusRepository.save(userStatus);
 
+        log.debug("[BasicUserStatusService] User status created. [id={}]", userStatus.getId());
+        return userStatusMapper.toResponse(userStatus);
     }
 
     @Transactional
     @Override
     public UserStatusResponse update(UUID userStatusId, UserStatusUpdateRequest request) {
+        log.info("[BasicUserStatusService] Updating user status. [id={}]", userStatusId);
+
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
-            .orElseThrow(() -> new NoSuchElementException(
-                "UserStatus with id " + userStatusId + " not found"));
+            .orElseThrow(() -> {
+                log.warn("[BasicUserStatusService] User status not found for update. [id={}]",
+                    userStatusId);
+                return new NoSuchElementException(
+                    "UserStatus with id " + userStatusId + " not found");
+            });
 
         userStatus.update(request.newLastActiveAt());
+
+        log.debug("[BasicUserStatusService] User status updated. [id={}]", userStatusId);
         return userStatusMapper.toResponse(userStatus);
     }
 
     @Transactional
     @Override
     public UserStatusResponse updateByUserId(UUID userId, UserStatusUpdateRequest request) {
+        log.info("[BasicUserStatusService] Updating user status by userId. [userId={}]", userId);
+
         Instant newLastAccessedAt = request.newLastActiveAt();
 
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
-            .orElseThrow(
-                () -> new NoSuchElementException(
-                    "UserStatus with userId " + userId + " not found"));
+            .orElseThrow(() -> {
+                log.warn("[BasicUserStatusService] User status not found for userId. [userId={}]",
+                    userId);
+                return new NoSuchElementException(
+                    "UserStatus with userId " + userId + " not found");
+            });
+
         userStatus.update(newLastAccessedAt);
 
+        log.debug("[BasicUserStatusService] User status updated by userId. [userId={}]", userId);
         return userStatusMapper.toResponse(userStatus);
     }
 
     @Transactional
     @Override
     public UserStatusResponse delete(UUID id) {
+        log.info("[BasicUserStatusService] Deleting user status. [id={}]", id);
+
         UserStatus userStatus = userStatusRepository.findById(id)
-            .orElseThrow(
-                () -> new NoSuchElementException("UserStatus with id " + id + " not found"));
+            .orElseThrow(() -> {
+                log.warn("[BasicUserStatusService] User status not found for deletion. [id={}]",
+                    id);
+                return new NoSuchElementException("UserStatus with id " + id + " not found");
+            });
 
         userStatusRepository.deleteById(id);
+
+        log.debug("[BasicUserStatusService] User status deleted. [id={}]", id);
         return userStatusMapper.toResponse(userStatus);
     }
 }

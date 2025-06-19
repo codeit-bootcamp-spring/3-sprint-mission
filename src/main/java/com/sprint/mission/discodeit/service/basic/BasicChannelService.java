@@ -17,11 +17,13 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicChannelService implements ChannelService {
 
     private final ChannelRepository channelRepository;
@@ -33,17 +35,21 @@ public class BasicChannelService implements ChannelService {
     @Transactional
     @Override
     public ChannelResponse createPublicChannel(PublicChannelCreateRequest request) {
-        String name = request.name();
-        String description = request.description();
-        Channel channel = new Channel(ChannelType.PUBLIC, name, description);
+        log.info("[BasicChannelService] Creating public channel. [name={}]", request.name());
 
+        Channel channel = new Channel(ChannelType.PUBLIC, request.name(), request.description());
         channelRepository.save(channel);
+
+        log.debug("[BasicChannelService] Public channel created. [id={}]", channel.getId());
         return channelMapper.toResponse(channel);
     }
 
     @Transactional
     @Override
     public ChannelResponse createPrivateChannel(PrivateChannelCreateRequest request) {
+        log.info("[BasicChannelService] Creating private channel. [participants={}]",
+            request.participantIds());
+
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         channelRepository.save(channel);
 
@@ -53,51 +59,77 @@ public class BasicChannelService implements ChannelService {
             .toList();
         readStatusRepository.saveAll(readStatuses);
 
+        log.debug("[BasicChannelService] Private channel created. [id={}]", channel.getId());
         return channelMapper.toResponse(channel);
     }
 
     @Transactional(readOnly = true)
     @Override
     public ChannelResponse find(UUID channelId) {
+        log.info("[BasicChannelService] Finding channel. [id={}]", channelId);
+
         return channelRepository.findById(channelId)
-            .map(channelMapper::toResponse)
-            .orElseThrow(
-                () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+            .map(channel -> {
+                log.debug("[BasicChannelService] Channel found. [id={}]", channelId);
+                return channelMapper.toResponse(channel);
+            })
+            .orElseThrow(() -> {
+                log.warn("[BasicChannelService] Channel not found. [id={}]", channelId);
+                return new NoSuchElementException("Channel with id " + channelId + " not found");
+            });
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<ChannelResponse> findAllByUserId(UUID userId) {
+        log.info("[BasicChannelService] Finding all channels for user. [userId={}]", userId);
+
         List<UUID> subscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
             .map(ReadStatus::getChannel)
             .map(Channel::getId)
             .toList();
 
-        return channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC, subscribedChannelIds)
+        List<ChannelResponse> result = channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC,
+                subscribedChannelIds)
             .stream()
             .map(channelMapper::toResponse)
             .toList();
+
+        log.debug("[BasicChannelService] Channels found. [count={}] [userId={}]", result.size(),
+            userId);
+        return result;
     }
 
     @Transactional
     @Override
     public ChannelResponse update(UUID channelId, PublicChannelUpdateRequest request) {
+        log.info("[BasicChannelService] Updating channel. [id={}] [newName={}]", channelId,
+            request.newName());
+
         Channel channel = channelRepository.findById(channelId)
-            .orElseThrow(
-                () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+            .orElseThrow(() -> {
+                log.warn("[BasicChannelService] Channel not found for update. [id={}]", channelId);
+                return new NoSuchElementException("Channel with id " + channelId + " not found");
+            });
 
         if (channel.getType() == ChannelType.PRIVATE) {
+            log.warn("[BasicChannelService] Cannot update private channel. [id={}]", channelId);
             throw new IllegalArgumentException("Private channel cannot be updated");
         }
 
         channel.update(request.newName(), request.newDescription());
+
+        log.debug("[BasicChannelService] Channel updated. [id={}]", channelId);
         return channelMapper.toResponse(channel);
     }
 
     @Transactional
     @Override
     public ChannelResponse delete(UUID channelId) {
+        log.info("[BasicChannelService] Deleting channel. [id={}]", channelId);
+
         if (!channelRepository.existsById(channelId)) {
+            log.warn("[BasicChannelService] Channel not found for deletion. [id={}]", channelId);
             throw new NoSuchElementException("Channel with id " + channelId + " not found");
         }
 
@@ -106,6 +138,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.findById(channelId).get();
         channelRepository.deleteById(channelId);
 
+        log.debug("[BasicChannelService] Channel deleted. [id={}]", channelId);
         return channelMapper.toResponse(channel);
     }
 }

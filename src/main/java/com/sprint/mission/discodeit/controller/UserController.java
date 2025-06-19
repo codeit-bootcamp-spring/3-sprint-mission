@@ -6,7 +6,7 @@ import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
-import com.sprint.mission.discodeit.global.exception.ProfileImageProcessingException;
+import com.sprint.mission.discodeit.exception.ProfileImageProcessingException;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import java.io.IOException;
@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users")
+@Slf4j
 public class UserController {
 
     private final UserService userService;
@@ -41,29 +43,42 @@ public class UserController {
         @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
         @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
+        log.info("[UserController] Create user request received. [username={}]",
+            userCreateRequest.username());
+
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
             .flatMap(this::resolveProfileRequest);
+
         UserResponse createdUser = userService.create(userCreateRequest, profileRequest);
+
+        log.debug("[UserController] User created. [id={}]", createdUser.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
     @GetMapping
     public ResponseEntity<List<UserResponse>> findAllUsers() {
-        return ResponseEntity.ok(userService.findAll());
+        log.info("[UserController] Find all users request received.");
+
+        List<UserResponse> users = userService.findAll();
+
+        log.debug("[UserController] Total users found: [count={}]", users.size());
+        return ResponseEntity.ok(users);
     }
 
-    @PatchMapping(
-        path = "/{userId}",
-        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
+    @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserResponse> updateUser(
         @PathVariable UUID userId,
         @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
         @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
+        log.info("[UserController] Update user request received. [id={}]", userId);
+
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
             .flatMap(this::resolveProfileRequest);
+
         UserResponse updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
+
+        log.debug("[UserController] User updated. [id={}]", updatedUser.id());
         return ResponseEntity.ok(updatedUser);
     }
 
@@ -72,13 +87,21 @@ public class UserController {
         @PathVariable UUID userId,
         @RequestBody UserStatusUpdateRequest request
     ) {
+        log.info("[UserController] Update user status request received. [userId={}]", userId);
+
         UserStatusResponse updatedUserStatus = userStatusService.updateByUserId(userId, request);
+
+        log.debug("[UserController] User status updated. [userId={}]", userId);
         return ResponseEntity.ok(updatedUserStatus);
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
+        log.info("[UserController] Delete user request received. [id={}]", userId);
+
         userService.delete(userId);
+
+        log.debug("[UserController] User deleted. [id={}]", userId);
         return ResponseEntity.noContent().build();
     }
 
@@ -93,6 +116,8 @@ public class UserController {
                 profile.getBytes()
             ));
         } catch (IOException e) {
+            log.error("[UserController] Failed to process profile image. [filename={}]",
+                profile.getOriginalFilename(), e);
             throw new ProfileImageProcessingException(profile.getOriginalFilename());
         }
     }
