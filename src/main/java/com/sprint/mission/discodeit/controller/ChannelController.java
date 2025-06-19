@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ChannelApi;
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
-import com.sprint.mission.discodeit.dto.mapper.EntityDtoMapper;
+import com.sprint.mission.discodeit.dto.mapper.mapstruct.MapperFacade;
 import com.sprint.mission.discodeit.dto.mapper.ResponseMapper;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
@@ -28,13 +28,13 @@ import java.util.UUID;
 public class ChannelController implements ChannelApi {
 
   private final ChannelService channelService;
-  private final EntityDtoMapper entityDtoMapper;
+  private final MapperFacade mapperFacade;
 
   @PostMapping(path = "public")
   @Transactional
   public ResponseEntity<ChannelDto> create(@Valid @RequestBody PublicChannelCreateRequest request) {
     Channel createdChannel = channelService.create(request);
-    ChannelDto response = entityDtoMapper.toDto(createdChannel);
+    ChannelDto response = mapperFacade.toDto(createdChannel);
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -45,7 +45,7 @@ public class ChannelController implements ChannelApi {
   @Transactional
   public ResponseEntity<ChannelDto> create(@Valid @RequestBody PrivateChannelCreateRequest request) {
     Channel createdChannel = channelService.create(request);
-    ChannelDto response = entityDtoMapper.toDto(createdChannel);
+    ChannelDto response = mapperFacade.toDto(createdChannel);
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
