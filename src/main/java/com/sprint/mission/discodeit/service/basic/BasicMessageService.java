@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -95,9 +96,9 @@ public class BasicMessageService implements MessageService {
             })
             .orElseThrow(() -> {
                 log.warn("[BasicMessageService] Message not found. [id={}]", messageId);
-                return new NoSuchElementException(
-                    "Message with id %s not found".formatted(messageId));
+                return new MessageNotFoundException(messageId);
             });
+
     }
 
     @Transactional(readOnly = true)
@@ -130,8 +131,7 @@ public class BasicMessageService implements MessageService {
         Message message = messageRepository.findById(messageId)
             .orElseThrow(() -> {
                 log.warn("[BasicMessageService] Message not found for update. [id={}]", messageId);
-                return new NoSuchElementException(
-                    "Message with id %s not found".formatted(messageId));
+                return new MessageNotFoundException(messageId);
             });
 
         message.update(request.newContent());
@@ -149,8 +149,7 @@ public class BasicMessageService implements MessageService {
             .orElseThrow(() -> {
                 log.warn("[BasicMessageService] Message not found for deletion. [id={}]",
                     messageId);
-                return new NoSuchElementException(
-                    "Message with id %s not found".formatted(messageId));
+                return new MessageNotFoundException(messageId);
             });
 
         messageRepository.delete(message);

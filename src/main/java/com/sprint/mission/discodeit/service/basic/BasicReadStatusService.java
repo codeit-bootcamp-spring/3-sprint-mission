@@ -6,6 +6,10 @@ import com.sprint.mission.discodeit.dto.response.ReadStatusResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -41,23 +45,20 @@ public class BasicReadStatusService implements ReadStatusService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> {
                 log.warn("[BasicReadStatusService] User not found. [userId={}]", userId);
-                return new NoSuchElementException("User with id " + userId + " does not exist");
+                return new UserNotFoundException(userId.toString());
             });
 
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> {
                 log.warn("[BasicReadStatusService] Channel not found. [channelId={}]", channelId);
-                return new NoSuchElementException(
-                    "Channel with id " + channelId + " does not exist");
+                return new ChannelNotFoundException(channelId);
             });
 
         if (readStatusRepository.existsByUserIdAndChannelId(userId, channelId)) {
             log.warn(
                 "[BasicReadStatusService] ReadStatus already exists. [userId={}] [channelId={}]",
                 userId, channelId);
-            throw new IllegalArgumentException(
-                "ReadStatus with userId " + userId + " and channelId " + channelId
-                    + " already exists");
+            throw new ReadStatusAlreadyExistsException(userId, channelId);
         }
 
         ReadStatus readStatus = new ReadStatus(user, channel, request.lastReadAt());
@@ -79,8 +80,7 @@ public class BasicReadStatusService implements ReadStatusService {
             })
             .orElseThrow(() -> {
                 log.warn("[BasicReadStatusService] ReadStatus not found. [id={}]", readStatusId);
-                return new NoSuchElementException(
-                    "ReadStatus with id " + readStatusId + " not found");
+                return new ReadStatusNotFoundException(readStatusId);
             });
     }
 
@@ -107,8 +107,7 @@ public class BasicReadStatusService implements ReadStatusService {
             .orElseThrow(() -> {
                 log.warn("[BasicReadStatusService] ReadStatus not found for update. [id={}]",
                     readStatusId);
-                return new NoSuchElementException(
-                    "ReadStatus with id " + readStatusId + " not found");
+                return new ReadStatusNotFoundException(readStatusId);
             });
 
         readStatus.update(request.newLastReadAt());

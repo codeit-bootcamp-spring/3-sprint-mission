@@ -5,13 +5,14 @@ import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -34,13 +35,10 @@ public class BasicUserStatusService implements UserStatusService {
         log.info("[BasicUserStatusService] Finding user status. [id={}]", id);
 
         return userStatusRepository.findById(id)
-            .map(status -> {
-                log.debug("[BasicUserStatusService] User status found. [id={}]", id);
-                return userStatusMapper.toResponse(status);
-            })
+            .map(userStatusMapper::toResponse)
             .orElseThrow(() -> {
                 log.warn("[BasicUserStatusService] User status not found. [id={}]", id);
-                return new NoSuchElementException("UserStatus with id " + id + " not found");
+                return new UserStatusNotFoundException(id);
             });
     }
 
@@ -48,9 +46,11 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public List<UserStatusResponse> findAll() {
         log.info("[BasicUserStatusService] Finding all user statuses.");
+
         List<UserStatusResponse> result = userStatusRepository.findAll().stream()
             .map(userStatusMapper::toResponse)
             .collect(Collectors.toList());
+
         log.debug("[BasicUserStatusService] User statuses found. [count={}]", result.size());
         return result;
     }
@@ -64,13 +64,12 @@ public class BasicUserStatusService implements UserStatusService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> {
                 log.warn("[BasicUserStatusService] User not found. [userId={}]", userId);
-                return new NoSuchElementException("User with id " + userId + " does not exist");
+                return new UserNotFoundException(userId.toString());
             });
 
         if (userStatusRepository.findByUserId(userId).isPresent()) {
             log.warn("[BasicUserStatusService] User status already exists. [userId={}]", userId);
-            throw new IllegalArgumentException(
-                "UserStatus for userId " + userId + " already exists");
+            throw new UserStatusAlreadyExistsException(userId);
         }
 
         UserStatus userStatus = new UserStatus(user, request.lastActiveAt());
@@ -89,8 +88,7 @@ public class BasicUserStatusService implements UserStatusService {
             .orElseThrow(() -> {
                 log.warn("[BasicUserStatusService] User status not found for update. [id={}]",
                     userStatusId);
-                return new NoSuchElementException(
-                    "UserStatus with id " + userStatusId + " not found");
+                return new UserStatusNotFoundException(userStatusId);
             });
 
         userStatus.update(request.newLastActiveAt());
@@ -104,17 +102,14 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusResponse updateByUserId(UUID userId, UserStatusUpdateRequest request) {
         log.info("[BasicUserStatusService] Updating user status by userId. [userId={}]", userId);
 
-        Instant newLastAccessedAt = request.newLastActiveAt();
-
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
             .orElseThrow(() -> {
                 log.warn("[BasicUserStatusService] User status not found for userId. [userId={}]",
                     userId);
-                return new NoSuchElementException(
-                    "UserStatus with userId " + userId + " not found");
+                return new UserStatusNotFoundException(userId);
             });
 
-        userStatus.update(newLastAccessedAt);
+        userStatus.update(request.newLastActiveAt());
 
         log.debug("[BasicUserStatusService] User status updated by userId. [userId={}]", userId);
         return userStatusMapper.toResponse(userStatus);
@@ -129,7 +124,7 @@ public class BasicUserStatusService implements UserStatusService {
             .orElseThrow(() -> {
                 log.warn("[BasicUserStatusService] User status not found for deletion. [id={}]",
                     id);
-                return new NoSuchElementException("UserStatus with id " + id + " not found");
+                return new UserStatusNotFoundException(id);
             });
 
         userStatusRepository.deleteById(id);

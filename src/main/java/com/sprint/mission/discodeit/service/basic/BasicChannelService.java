@@ -7,6 +7,8 @@ import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -14,7 +16,6 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -75,7 +76,7 @@ public class BasicChannelService implements ChannelService {
             })
             .orElseThrow(() -> {
                 log.warn("[BasicChannelService] Channel not found. [id={}]", channelId);
-                return new NoSuchElementException("Channel with id " + channelId + " not found");
+                return new ChannelNotFoundException(channelId);
             });
     }
 
@@ -109,12 +110,12 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> {
                 log.warn("[BasicChannelService] Channel not found for update. [id={}]", channelId);
-                return new NoSuchElementException("Channel with id " + channelId + " not found");
+                return new ChannelNotFoundException(channelId);
             });
 
         if (channel.getType() == ChannelType.PRIVATE) {
             log.warn("[BasicChannelService] Cannot update private channel. [id={}]", channelId);
-            throw new IllegalArgumentException("Private channel cannot be updated");
+            throw new PrivateChannelUpdateException(channelId);
         }
 
         channel.update(request.newName(), request.newDescription());
@@ -130,7 +131,7 @@ public class BasicChannelService implements ChannelService {
 
         if (!channelRepository.existsById(channelId)) {
             log.warn("[BasicChannelService] Channel not found for deletion. [id={}]", channelId);
-            throw new NoSuchElementException("Channel with id " + channelId + " not found");
+            throw new ChannelNotFoundException(channelId);
         }
 
         messageRepository.deleteAllByChannelId(channelId);
