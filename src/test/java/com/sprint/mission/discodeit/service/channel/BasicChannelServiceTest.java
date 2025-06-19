@@ -1,23 +1,12 @@
 package com.sprint.mission.discodeit.service.channel;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 
 import com.sprint.mission.discodeit.assembler.ChannelAssembler;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
@@ -35,9 +24,20 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("BasicChannelService 단위 테스트")
 class BasicChannelServiceTest {
 
   @Mock
@@ -81,7 +81,6 @@ class BasicChannelServiceTest {
   class Create {
 
     @Test
-    @DisplayName("공개 채널 생성")
     void 공개채널_생성() {
       given(channelRepository.save(any(Channel.class))).willReturn(publicChannel);
 
@@ -93,7 +92,6 @@ class BasicChannelServiceTest {
     }
 
     @Test
-    @DisplayName("비공개 채널 생성 및 ReadStatus 생성")
     void 비공개채널_및_ReadStatus_생성() {
       given(readStatusRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
       given(channelRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
@@ -110,8 +108,7 @@ class BasicChannelServiceTest {
   class Read {
 
     @Test
-    @DisplayName("유저별 채널 조회 및 응답 검증")
-    void findAllByUserIdReturnsProperResponses() {
+    void 유저별_채널_조회_및_응답_검증() {
       given(channelRepository.findAllByUserId(user.getId())).willReturn(
           List.of(privateChannel, publicChannel));
 
@@ -175,7 +172,6 @@ class BasicChannelServiceTest {
   }
 
   @Nested
-  @DisplayName("Delete 테스트")
   class DeleteTests {
 
     @Test
