@@ -1,0 +1,19 @@
+# 개발 환경 전용 설정
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # DB Config
+  datasource:
+    url: jdbc:h2:mem:devdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+server:
+  port: 8080
