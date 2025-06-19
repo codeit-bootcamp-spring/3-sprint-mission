@@ -72,9 +72,8 @@ public interface MessageApi {
         @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음",
             content = @Content(examples = @ExampleObject(value = "Channel not found")))
     })
-    PageResponse<MessageDto> findAllByChannelId(
+    ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
         @Parameter(name = "channelId", description = "조회할 Channel ID", required = true) UUID channelId,
         @PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
-
     );
 }

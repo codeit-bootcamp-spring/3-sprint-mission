@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -30,16 +31,19 @@ public class Message extends BaseUpdatableEntity {
     @Column(name = "content", nullable = false)
     private String content;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "channel_id", columnDefinition = "uuid")
     @OnDelete(action = OnDeleteAction.CASCADE) // ON DELETE CASCADE
     private Channel channel;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "author_id", columnDefinition = "uuid")
     @OnDelete(action = OnDeleteAction.SET_NULL) // ON DELETE SET NULL
     private User author;
 
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
     @JoinTable(
         name = "tbl_message_attachments",

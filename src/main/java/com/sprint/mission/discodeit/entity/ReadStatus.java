@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 
@@ -16,10 +17,12 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicUpdate
 public class ReadStatus extends BaseUpdatableEntity {
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
     private User user;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "channel_id")
     private Channel channel;
@@ -30,7 +33,13 @@ public class ReadStatus extends BaseUpdatableEntity {
     public ReadStatus(User user, Channel channel, Instant lastReadAt) {
         this.user = user;
         this.channel = channel;
-        this.lastReadAt = lastReadAt;
+        
+        // 안전한 timestamp 설정
+        if (lastReadAt == null || lastReadAt.getEpochSecond() < 0 || lastReadAt.getEpochSecond() > 253402300799L) {
+            this.lastReadAt = Instant.now();
+        } else {
+            this.lastReadAt = lastReadAt;
+        }
     }
 
     public void update(Instant newLastReadAt) {

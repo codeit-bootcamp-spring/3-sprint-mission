@@ -9,9 +9,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-@Getter
-@Setter
 public class PageResponseMapper {
 
     public <T> PageResponse<T> fromSlice(Slice<T> slice) {

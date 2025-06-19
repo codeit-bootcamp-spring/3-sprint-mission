@@ -104,13 +104,13 @@ public class MessageController implements MessageApi {
 
     // 특정 채널 메시지 목록 조회
     @GetMapping
-    public PageResponse<MessageDto> findAllByChannelId(
-        @RequestParam UUID channelId,
-        @PageableDefault(size = 50, sort = "createdAt", direction = Direction.DESC) Pageable pageable
+    public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
+        @RequestParam("channelId") UUID channelId,
+        @PageableDefault(size = 50, page = 0, sort = "createdAt", direction = Direction.DESC) Pageable pageable
     ) {
-        Slice<MessageDto> slice = messageService.findAllByChannelId(channelId, pageable);
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, pageable);
 
-        return pageResponseMapper.fromSlice(slice);
+        return ResponseEntity.status(HttpStatus.OK).body(messages);
     }
 }
 

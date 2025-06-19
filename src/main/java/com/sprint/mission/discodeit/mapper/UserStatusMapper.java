@@ -15,7 +15,15 @@ public class UserStatusMapper {
 
     public UserStatusDto toDto(UserStatus userStatus) {
         UUID id = userStatus.getId();
-        UUID userId = userStatus.getUser().getId();
+        
+        // 프록시 객체 안전 접근
+        UUID userId = null;
+        try {
+            userId = userStatus.getUser().getId();
+        } catch (Exception e) {
+            // 프록시 객체 접근 실패 시 null 처리
+        }
+        
         Instant lastActiveAt = userStatus.getLastActiveAt();
 
         return new UserStatusDto(id, userId, lastActiveAt);

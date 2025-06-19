@@ -138,14 +138,33 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new NoSuchElementException(SERVICE_NAME + " User with id " + userId + " not found"));
 
+        // 부분 업데이트: null이 아닌 필드만 업데이트
         String newUsername = userUpdateRequest.newUsername();
         String newEmail = userUpdateRequest.newEmail();
-        if (userRepository.existsByEmail(newEmail)) {
-            throw new IllegalArgumentException(SERVICE_NAME + " User with email " + newEmail + " already exists");
-        }
-        if (userRepository.existsByUsername(newUsername)) {
-            throw new IllegalArgumentException(
+        String newPassword = userUpdateRequest.newPassword();
+        
+        // username 업데이트 (null이 아닌 경우에만)
+        if (newUsername != null && !newUsername.trim().isEmpty()) {
+            if (userRepository.existsByUsername(newUsername) && !newUsername.equals(user.getUsername())) {
+                throw new IllegalArgumentException(
                     SERVICE_NAME + " User with username " + newUsername + " already exists");
+            }
+        } else {
+            newUsername = user.getUsername(); // 현재 값 유지
+        }
+        
+        // email 업데이트 (null이 아닌 경우에만)
+        if (newEmail != null && !newEmail.trim().isEmpty()) {
+            if (userRepository.existsByEmail(newEmail) && !newEmail.equals(user.getEmail())) {
+                throw new IllegalArgumentException(SERVICE_NAME + " User with email " + newEmail + " already exists");
+            }
+        } else {
+            newEmail = user.getEmail(); // 현재 값 유지
+        }
+        
+        // password 업데이트 (null이 아닌 경우에만)
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            newPassword = user.getPassword(); // 현재 값 유지
         }
 
         BinaryContent nullableProfile = optionalProfileCreateRequest
@@ -165,14 +184,12 @@ public class BasicUserService implements UserService {
                 binaryContentStorage.put(binaryContent.getId(), bytes); // profile bytes 정보 저장
                 return binaryContent;
             })
-            .orElse(null);
+            .orElse(user.getProfile()); // 현재 profile 유지
 
-        String newPassword = userUpdateRequest.newPassword();
         // 새로운 user 기본 정보와, profile 정보로 갱신
         user.update(newUsername, newEmail, newPassword, nullableProfile);
 
         // 변경 감지를 통해 트랜잭션 종료 시 자동으로 flush 됨 (dirty checking)
-//        userRepository.save(user);
         return userMapper.toDto(user); // save 호출 없이도 변경된 필드 자동 업데이트
     }
 

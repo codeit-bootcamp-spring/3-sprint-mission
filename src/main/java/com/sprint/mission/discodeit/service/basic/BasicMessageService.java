@@ -4,11 +4,13 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.data.MessageDto;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -40,12 +42,10 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final MessageMapper messageMapper;
+    private final PageResponseMapper pageResponseMapper;
 
     @Override
-    @Transactional(
-        rollbackFor = Exception.class,
-        propagation = Propagation.REQUIRED,
-        isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public MessageDto create(MessageCreateRequest messageCreateRequest,
         List<BinaryContentCreateRequest> binaryContentCreateRequests) {
         UUID channelId = messageCreateRequest.channelId();
@@ -86,11 +86,6 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    @Transactional(
-        readOnly = true,
-        rollbackFor = Exception.class,
-        propagation = Propagation.REQUIRED,
-        isolation = Isolation.READ_COMMITTED)
     public MessageDto find(UUID messageId) {
         Message message = messageRepository.findById(messageId)
             .orElseThrow(
@@ -100,21 +95,15 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Slice<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable) {
-        pageable = PageRequest.of(pageable.getPageNumber() <= 0 ? 0 : pageable.getPageNumber() - 1,
-            pageable.getPageSize(),
-            Sort.by("updatedAt").descending());
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable) {
+        Slice<MessageDto> slice = messageRepository.findAllByChannelId(channelId, pageable)
+                .map(messageMapper::toDto);
 
-        Slice<Message> messagePage = messageRepository.findAllByChannelId(channelId, pageable);
-
-        return messagePage.map(messageMapper::toDto);
+        return pageResponseMapper.fromSlice(slice);
     }
 
     @Override
-    @Transactional(
-        rollbackFor = Exception.class,
-        propagation = Propagation.REQUIRED,
-        isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public MessageDto update(UUID messageId, MessageUpdateRequest request) {
         String newContent = request.newContent();
         Message message = messageRepository.findById(messageId)
@@ -127,10 +116,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    @Transactional(
-        rollbackFor = Exception.class,
-        propagation = Propagation.REQUIRED,
-        isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public void delete(UUID messageId) {
         Message message = messageRepository.findById(messageId)
             .orElseThrow(

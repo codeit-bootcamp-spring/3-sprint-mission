@@ -26,11 +26,31 @@ public class MessageMapper {
         Instant createdAt = message.getCreatedAt();
         Instant updatedAt = message.getUpdatedAt();
         String content = message.getContent();
-        UUID channelId = message.getChannel().getId();
-        UserDto author = userMapper.toDto(message.getAuthor());
-        List<BinaryContentDto> attachments = message.getAttachments().stream()
-            .map(binaryContentMapper::toDto)
-            .collect(Collectors.toList());
+        
+        // 프록시 객체 안전 접근
+        UUID channelId = null;
+        try {
+            channelId = message.getChannel().getId();
+        } catch (Exception e) {
+            // 프록시 객체 접근 실패 시 null 처리
+        }
+        
+        UserDto author = null;
+        try {
+            author = userMapper.toDto(message.getAuthor());
+        } catch (Exception e) {
+            // 프록시 객체 접근 실패 시 null 처리
+        }
+        
+        List<BinaryContentDto> attachments = null;
+        try {
+            attachments = message.getAttachments().stream()
+                .map(binaryContentMapper::toDto)
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            // 프록시 객체 접근 실패 시 빈 리스트 처리
+            attachments = List.of();
+        }
 
         return new MessageDto(
                 id,

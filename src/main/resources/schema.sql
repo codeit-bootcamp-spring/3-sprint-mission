@@ -81,11 +81,12 @@ CREATE TABLE IF NOT EXISTS tbl_read_statuses
     id           UUID PRIMARY KEY,
     created_at   TIMESTAMPTZ NOT NULL,
     updated_at   TIMESTAMPTZ,
-    user_id      UUID UNIQUE NOT NULL,
-    channel_id   UUID UNIQUE NOT NULL,
+    user_id      UUID NOT NULL,
+    channel_id   UUID NOT NULL,
     last_read_at TIMESTAMPTZ NOT NULL,
     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES tbl_users (id) ON DELETE CASCADE,
-    CONSTRAINT fk_channel_id FOREIGN KEY (channel_id) REFERENCES tbl_channels (id) ON DELETE CASCADE
+    CONSTRAINT fk_channel_id FOREIGN KEY (channel_id) REFERENCES tbl_channels (id) ON DELETE CASCADE,
+    CONSTRAINT uk_user_channel UNIQUE (user_id, channel_id)
 );
 
 -- -- ReadStatus (N) -> User (1)

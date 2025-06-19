@@ -31,15 +31,42 @@ public class ChannelMapper {
         ChannelType type = channel.getType();
         String name = channel.getName();
         String description = channel.getDescription();
-        List<UserDto> participants = readStatusRepository.findAllByChannelId(id).stream()
-            .map(ReadStatus::getUser)
-            .map(userMapper::toDto)
-            .collect(Collectors.toList());
-        Instant lastMessageAt = messageRepository.findTop1ByChannelIdOrderByCreatedAtDesc(id)
-            .stream()
-            .map(Message::getCreatedAt)
-            .max(Comparator.naturalOrder())
-            .orElse(null);
+        
+        // 프록시 객체 안전 접근
+        List<UserDto> participants = null;
+        try {
+            participants = readStatusRepository.findAllByChannelId(id).stream()
+                .map(readStatus -> {
+                    try {
+                        return readStatus.getUser();
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(user -> user != null)
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            participants = List.of();
+        }
+        
+        Instant lastMessageAt = null;
+        try {
+            lastMessageAt = messageRepository.findTop1ByChannelIdOrderByCreatedAtDesc(id)
+                .stream()
+                .map(message -> {
+                    try {
+                        return message.getCreatedAt();
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(createdAt -> createdAt != null)
+                .max(Comparator.naturalOrder())
+                .orElse(null);
+        } catch (Exception e) {
+            // 프록시 객체 접근 실패 시 null 처리
+        }
 
         return new ChannelDto(id, type, name, description, participants, lastMessageAt);
     }

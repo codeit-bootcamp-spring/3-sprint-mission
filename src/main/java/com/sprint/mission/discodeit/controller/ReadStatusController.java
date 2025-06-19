@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
+import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -49,10 +50,10 @@ public class ReadStatusController implements ReadStatusApi {
 
     // 특정 채널 메시지 수신 정보 생성
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ReadStatus> create(
+    public ResponseEntity<ReadStatusDto> create(
         @Valid @RequestBody ReadStatusCreateRequest readStatusCreateRequest
     ) {
-        ReadStatus readStatus = readStatusService.create(readStatusCreateRequest);
+        ReadStatusDto readStatus = readStatusService.create(readStatusCreateRequest);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -61,11 +62,11 @@ public class ReadStatusController implements ReadStatusApi {
 
     // 특정 채널 메시지 수신 정보 수정
     @PatchMapping("/{readStatusId}")
-    public ResponseEntity<ReadStatus> update(
+    public ResponseEntity<ReadStatusDto> update(
         @PathVariable UUID readStatusId,
         @Valid @RequestBody ReadStatusUpdateRequest readStatusUpdateRequest
     ) {
-        ReadStatus updatedStatus = readStatusService.update(readStatusId, readStatusUpdateRequest);
+        ReadStatusDto updatedStatus = readStatusService.update(readStatusId, readStatusUpdateRequest);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -74,11 +75,11 @@ public class ReadStatusController implements ReadStatusApi {
 
     // 특정 사용자의 메시지 수신 정보 조회
     @GetMapping
-    public ResponseEntity<List<ReadStatus>> findAllByUserId(
+    public ResponseEntity<List<ReadStatusDto>> findAllByUserId(
         @RequestParam UUID userId
     ) {
         // ReadStatus가 없을 시 Error 메시지(or 페이지)
-        List<ReadStatus> userReadStatuses = readStatusService.findAllByUserId(userId);
+        List<ReadStatusDto> userReadStatuses = readStatusService.findAllByUserId(userId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

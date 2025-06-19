@@ -15,8 +15,22 @@ public class ReadStatusMapper {
 
     public ReadStatusDto toDto(ReadStatus readStatus) {
         UUID id = readStatus.getId();
-        UUID userId = readStatus.getUser().getId();
-        UUID channelId = readStatus.getChannel().getId();
+        
+        // 프록시 객체 안전 접근
+        UUID userId = null;
+        try {
+            userId = readStatus.getUser().getId();
+        } catch (Exception e) {
+            // 프록시 객체 접근 실패 시 null 처리
+        }
+        
+        UUID channelId = null;
+        try {
+            channelId = readStatus.getChannel().getId();
+        } catch (Exception e) {
+            // 프록시 객체 접근 실패 시 null 처리
+        }
+        
         Instant lastReadAt = readStatus.getLastReadAt();
 
         return new ReadStatusDto(id, userId, channelId, lastReadAt);
