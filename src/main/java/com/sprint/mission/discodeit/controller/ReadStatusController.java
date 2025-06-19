@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
+import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
 import com.sprint.mission.discodeit.dto.readStatus.JpaReadStatusResponse;
 import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusUpdateRequest;
@@ -25,28 +27,24 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 5. 11.        doungukkim       최초 생성
  */
-@Tag(name = "Read Status 컨트롤러", description = "스프린트 미션5 유저 상태 컨트롤러 엔트포인트들 입니다.")
 @RestController
 @RequestMapping("api/readStatuses")
 @RequiredArgsConstructor
-public class ReadStatusController {
+public class ReadStatusController implements ReadStatusApi {
     private final ReadStatusService readStatusService;
 
-    @Operation(summary = "사용자의 읽음 상태 목록 조회", description = "사용자의 읽음 상태 목록을 전체 조회 합니다.")
     @GetMapping
     public ResponseEntity<?> find(@RequestParam UUID userId) {
         List<JpaReadStatusResponse> allByUserId = readStatusService.findAllByUserId(userId);
         return ResponseEntity.ok(allByUserId);
     }
 
-    @Operation(summary = "사용자의 읽음 상태 생성", description = "사용자의 읽음 상태 생성 합니다.")
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody ReadStatusCreateRequest request) {
         JpaReadStatusResponse response = readStatusService.create(request);
         return ResponseEntity.status(201).body(response);
     }
 
-    @Operation(summary = "사용자의 읽음 상태 수정", description = "사용자의 읽음 상태 시간을 수정 합니다.")
     @PatchMapping("/{readStatusId}")
     public ResponseEntity<?> update(
             @PathVariable UUID readStatusId,

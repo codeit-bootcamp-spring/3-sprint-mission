@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.MessageApi;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse;
@@ -30,15 +31,13 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 5. 11.        doungukkim       최초 생성
  */
-@Tag(name = "Message 컨트롤러", description = "스프린트 미션5 메세지 컨트롤러 엔트포인트들 입니다.")
 @RestController
 @RequestMapping("api/messages")
 @RequiredArgsConstructor
-public class MessageController {
+public class MessageController implements MessageApi {
     private final MessageService messageService;
 
 
-    @Operation(summary = "심화 채널 메세지 목록 조회", description = "메세지를 수정 합니다.")
     @GetMapping
     public ResponseEntity<?> findMessagesInChannel(@RequestParam UUID channelId,
                                                    @RequestParam(required = false) Instant cursor,
@@ -47,7 +46,6 @@ public class MessageController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "메세지 생성", description = "메세지를 생성 합니다.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> creatMessage(
             @Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
@@ -57,7 +55,6 @@ public class MessageController {
         return ResponseEntity.status(201).body(message);
     }
 
-    @Operation(summary = "메세지 삭제", description = "메세지를 삭제 합니다.")
     @DeleteMapping(path = "/{messageId}")
     public ResponseEntity<?> deleteMessage(@PathVariable UUID messageId) {
         boolean deleted = messageService.deleteMessage(messageId);
@@ -67,7 +64,6 @@ public class MessageController {
         return ResponseEntity.status(500).body("unexpected error");
     }
 
-    @Operation(summary = "메세지 수정", description = "메세지를 수정 합니다.")
     @PatchMapping(path = "/{messageId}")
     public ResponseEntity<?> updateMessage(
             @PathVariable UUID messageId,

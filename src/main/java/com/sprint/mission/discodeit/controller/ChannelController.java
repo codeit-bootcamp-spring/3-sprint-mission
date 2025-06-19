@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.ChannelApi;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
@@ -21,27 +22,23 @@ import java.util.UUID;
  * =========================================================== DATE              AUTHOR NOTE
  * ----------------------------------------------------------- 2025. 5. 10.        doungukkim최초 생성
  */
-@Tag(name = "Channel 컨트롤러", description = "스프린트 미션5 채널 컨트롤러 엔트포인트들 입니다.")
 @RestController
 @RequestMapping("api/channels")
 @RequiredArgsConstructor
-public class ChannelController {
+public class ChannelController implements ChannelApi {
 
     private final ChannelService channelService;
 
-    @Operation(summary = "공개 채널 생성", description = "공개 채널을 생성합니다.")
     @PostMapping("/public")
     public ResponseEntity<?> create(@Valid @RequestBody PublicChannelCreateRequest request) {
         return ResponseEntity.status(201).body(channelService.createChannel(request));
     }
 
-    @Operation(summary = "비공개 채널 생성", description = "비공개 채널을 생성합니다.")
     @PostMapping("/private")
     public ResponseEntity<?> create(@Valid @RequestBody PrivateChannelCreateRequest request) {
         return ResponseEntity.status(201).body(channelService.createChannel(request));
     }
 
-    @Operation(summary = "채널 삭제", description = "채널을 삭제합니다.")
     @DeleteMapping("/{channelId}")
     public ResponseEntity<?> removeChannel(@PathVariable UUID channelId) {
         if (channelService.deleteChannel(channelId)) {
@@ -50,7 +47,6 @@ public class ChannelController {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "not found");
     }
 
-    @Operation(summary = "채널 정보 수정", description = "채널 정보를 수정합니다.")
     @PatchMapping("/{channelId}")
     public ResponseEntity<?> update(
             @PathVariable UUID channelId,
@@ -58,7 +54,6 @@ public class ChannelController {
         return ResponseEntity.status(200).body(channelService.update(channelId, request));
     }
 
-    @Operation(summary = "유저가 참여중인 채널 목록 조회", description = "유저가 참여중인 채널 목록을 전체 조회합니다.")
     @GetMapping
     public ResponseEntity<?> findChannels(@RequestParam UUID userId) {
         return ResponseEntity.status(200).body(channelService.findAllByUserId(userId));
