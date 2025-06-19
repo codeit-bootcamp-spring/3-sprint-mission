@@ -9,13 +9,13 @@ import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
@@ -28,15 +28,23 @@ public class BasicUserStatusService implements UserStatusService {
   private final UserStatusMapper userStatusMapper;
 
   @Override
-  public UserStatus create(UserStatusCreateRequest request) {
-    User user = request.user();
+  public UserStatusDTO create(UserStatusCreateRequest request) {
+    UUID userId = request.userId();
 
-    if (!userRepository.existsById(user.getId())) {
-      throw new NoSuchElementException("User with id " + user.getId() + " does not exist");
+    if (!userRepository.existsById(userId)) {
+      throw new NoSuchElementException("User with id " + userId + " does not exist");
     }
-    if (userStatusRepository.findByUserId(user.getId()).isPresent()) {
-      throw new IllegalArgumentException("UserStatus with id " + user.getId() + " already exists");
+    if (userStatusRepository.findByUserId(userId).isPresent()) {
+      throw new IllegalArgumentException("UserStatus with id " + userId + " already exists");
     }
+
+    User user = userRepository.findById(userId)
+        .orElseThrow(
+            () -> new NoSuchElementException("User with id " + userId + " does not exist"));
+    Optional.ofNullable(user.getUserStatus())
+        .ifPresent(userStatus -> {
+          throw new IllegalArgumentException("UserStatus already exists");
+        });
 
     Instant lastActiveAt = request.lastLoginTime();
     UserStatus userStatus =
@@ -45,14 +53,15 @@ public class BasicUserStatusService implements UserStatusService {
             .user(user)
             .lastActiveAt(lastActiveAt)
             .build();
-    return userStatusRepository.save(userStatus);
+    userStatusRepository.save(userStatus);
+    return userStatusMapper.toDTO(userStatus);
   }
 
   @Override
   @Transactional(readOnly = true)
   public UserStatusDTO find(UUID id) {
     return userStatusRepository.findById(id)
-            .map(userStatusMapper::toDTO)
+        .map(userStatusMapper::toDTO)
         .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + id + " not found"));
   }
 
@@ -60,23 +69,23 @@ public class BasicUserStatusService implements UserStatusService {
   @Transactional(readOnly = true)
   public List<UserStatusDTO> findAll() {
     return userStatusRepository.findAll().stream()
-            .map(userStatusMapper::toDTO)
+        .map(userStatusMapper::toDTO)
         .toList();
   }
 
   @Override
-  public UserStatus update(UUID id, UserStatusUpdateRequest request) {
+  public UserStatusDTO update(UUID id, UserStatusUpdateRequest request) {
     Instant newLastActiveAt = request.newLastActiveAt();
 
     UserStatus userStatus = userStatusRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + id + " not found"));
     userStatus.update(newLastActiveAt);
 
-    return userStatus;
+    return userStatusMapper.toDTO(userStatus);
   }
 
   @Override
-  public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest userStatusUpdateDTO) {
+  public UserStatusDTO updateByUserId(UUID userId, UserStatusUpdateRequest userStatusUpdateDTO) {
     Instant newLastActiveAt = userStatusUpdateDTO.newLastActiveAt();
 
     UserStatus userStatus = userStatusRepository.findByUserId(userId)
@@ -85,7 +94,7 @@ public class BasicUserStatusService implements UserStatusService {
 
     userStatus.update(newLastActiveAt);
 
-    return userStatus;
+    return userStatusMapper.toDTO(userStatus);
   }
 
   @Override

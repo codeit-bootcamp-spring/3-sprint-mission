@@ -4,25 +4,28 @@ import com.sprint.mission.discodeit.dto.data.ChannelDTO;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.util.*;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
 @Transactional
 public class BasicChannelService implements ChannelService {
 
+  private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
@@ -31,10 +34,8 @@ public class BasicChannelService implements ChannelService {
 
   // Private 채널 생성
   @Override
-  public Channel create(PrivateChannelCreateRequest channelCreateDTO) {
-    List<User> participants = channelCreateDTO.participants();
-
-    System.out.println("participantIds = " + participants);
+  public ChannelDTO create(PrivateChannelCreateRequest channelCreateDTO) {
+    List<UUID> participantIds = channelCreateDTO.participantIds();
 
     Channel channel =
         Channel.builder()
@@ -46,21 +47,22 @@ public class BasicChannelService implements ChannelService {
     channelRepository.save(channel);
 
     // 참여자들의 메시지 수신 정보 생성
-    participants.stream()
-        .map(user ->
-            ReadStatus.builder()
-                .user(user)
-                .channel(channel)
-                .lastReadAt(channel.getCreatedAt())
-                .build())
-        .forEach(readStatusRepository::save);
+    List<ReadStatus> readStatuses = userRepository.findAllById(participantIds)
+        .stream()
+        .map(user -> ReadStatus.builder()
+            .user(user)
+            .channel(channel)
+            .lastReadAt(channel.getCreatedAt())
+            .build())
+        .toList();
+    readStatusRepository.saveAll(readStatuses);
 
-    return channel;
+    return channelMapper.toDTO(channel);
   }
 
   // Public 채널 생성
   @Override
-  public Channel create(PublicChannelCreateRequest channelCreateDTO) {
+  public ChannelDTO create(PublicChannelCreateRequest channelCreateDTO) {
     String name = channelCreateDTO.name();
     String description = channelCreateDTO.description();
 
@@ -73,7 +75,7 @@ public class BasicChannelService implements ChannelService {
 
     channelRepository.save(channel);
 
-    return channel;
+    return channelMapper.toDTO(channel);
   }
 
   @Override
@@ -106,22 +108,20 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional(readOnly = true)
   public List<ChannelDTO> findAllByUserId(UUID userId) {
-    List<Channel> mySubscribedChannels =
+    List<UUID> mySubscribedChannelIds =
         readStatusRepository.findAllByUserId(userId).stream()
             .map(ReadStatus::getChannel)
+            .map(Channel::getId)
             .toList();
 
-    return channelRepository.findAll().stream()
-        .filter(channel ->
-            channel.getType().equals(ChannelType.PUBLIC)
-                || mySubscribedChannels.contains(channel)
-        )
+    return channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC, mySubscribedChannelIds)
+        .stream()
         .map(channelMapper::toDTO)
         .toList();
   }
 
   @Override
-  public Channel update(UUID id, PublicChannelUpdateRequest request) {
+  public ChannelDTO update(UUID id, PublicChannelUpdateRequest request) {
     String newName = request.newName();
     String newDescription = request.newDescription();
 
@@ -134,7 +134,7 @@ public class BasicChannelService implements ChannelService {
 
     channel.update(newName, newDescription);
 
-    return channel;
+    return channelMapper.toDTO(channel);
   }
 
   @Override

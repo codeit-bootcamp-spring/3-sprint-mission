@@ -1,13 +1,16 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import org.springframework.data.jpa.repository.JpaRepository;
-
+import com.sprint.mission.discodeit.entity.ChannelType;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ChannelRepository extends JpaRepository<Channel, UUID> {
 
-    List<Channel> findByName(String name);
-    boolean existsByName(String name);
+  List<Channel> findByName(String name);
+
+  List<Channel> findAllByTypeOrIdIn(ChannelType type, List<UUID> ids);
+
+  boolean existsByName(String name);
 }

@@ -2,69 +2,87 @@ package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDTO;
 import jakarta.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
-
+@ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "local")
 @Component
-public class LocalBinaryContentStorage implements BinaryContentStorage{
+public class LocalBinaryContentStorage implements BinaryContentStorage {
 
-    private final Path root;
+  private final Path root;
 
-    public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") Path root) {
-        this.root = root;
+  public LocalBinaryContentStorage(
+      @Value("${discodeit.storage.local.root-path}") Path root
+  ) {
+    this.root = root;
+  }
+
+  @PostConstruct
+  public void init() {
+    try {
+      Files.createDirectories(root);
+    } catch (IOException e) {
+      throw new RuntimeException("Could not create directory: " + root, e);
     }
+  }
 
-    @PostConstruct
-    public void init() {
-        try {
-            Files.createDirectories(root);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not create directory: " + root, e);
-        }
-    }
+  private Path resolvePath(UUID id) {
+    return root.resolve(id.toString());
+  }
 
-    private Path resolvePath(UUID id) {
-        return root.resolve(id.toString());
+  @Override
+  public UUID put(UUID id, byte[] bytes) {
+    Path path = resolvePath(id);
+    if (Files.exists(path)) {
+      throw new IllegalArgumentException("File with key " + id + " already exists");
     }
+    try (OutputStream outputStream = Files.newOutputStream(path)) {
+      outputStream.write(bytes);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return id;
+  }
 
-    @Override
-    public UUID put(UUID id, byte[] bytes) {
-        Path path = resolvePath(id);
-        try {
-            Files.write(path, bytes);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to store file", e);
-        }
-        return id;
+  @Override
+  public InputStream get(UUID id) {
+    Path path = resolvePath(id);
+    if (Files.notExists(path)) {
+      throw new NoSuchElementException("File with key " + id + " does not exist");
     }
+    try {
+      return Files.newInputStream(path);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to read file", e);
+    }
+  }
 
-    @Override
-    public InputStream get(UUID id) {
-        Path path = resolvePath(id);
-        try {
-            return Files.newInputStream(path);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read file", e);
-        }
-    }
+  @Override
+  public ResponseEntity<Resource> download(BinaryContentDTO binaryContentDTO) {
+    try {
+      InputStream inputStream = get(binaryContentDTO.id());
+      InputStreamResource resource = new InputStreamResource(inputStream);
 
-    @Override
-    public ResponseEntity<?> download(BinaryContentDTO dto) {
-        ByteArrayResource resource = new ByteArrayResource(dto.bytes());
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + dto.fileName() + "\"")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(resource);
+      return ResponseEntity.ok()
+          .header(HttpHeaders.CONTENT_DISPOSITION,
+              "attachment; filename=\"" + binaryContentDTO.fileName() + "\"")
+          .header(HttpHeaders.CONTENT_TYPE, binaryContentDTO.contentType())
+          .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(binaryContentDTO.size()))
+          .body(resource);
+    } catch (Exception e) {
+      return ResponseEntity.notFound().build();
     }
+  }
 }

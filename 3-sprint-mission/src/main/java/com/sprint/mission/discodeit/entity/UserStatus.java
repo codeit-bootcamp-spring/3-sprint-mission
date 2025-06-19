@@ -1,50 +1,58 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.*;
-import lombok.*;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Getter
 @ToString
 @Table(name = "user_statuses", schema = "discodeit")
 @Entity
-@NoArgsConstructor(force = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserStatus extends BaseUpdatableEntity {
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", unique = true)
-    private User user;
+  @JsonBackReference
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "user_id", nullable = false, unique = true)
+  private User user;
 
-    @Column(name = "last_active_at")
-    private Instant lastActiveAt;
+  @Column(name = "last_active_at", columnDefinition = "timestamp with time zone", nullable = false)
+  private Instant lastActiveAt;
 
-    @Builder
-    public UserStatus(User user, Instant lastActiveAt) {
-        this.user = user;
-        this.lastActiveAt = lastActiveAt;
+  @Builder
+  public UserStatus(User user, Instant lastActiveAt) {
+    setUser(user);
+    this.lastActiveAt = lastActiveAt;
+  }
+
+  public void update(Instant lastActiveAt) {
+    if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
+      this.lastActiveAt = lastActiveAt;
     }
+  }
 
-    public void update(Instant lastActiveAt) {
-        boolean anyValueUpdated = false;
-        if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
-            this.lastActiveAt = lastActiveAt;
-            anyValueUpdated = true;
-        }
+  public Boolean online() {
+    Boolean online =
+        this.lastActiveAt.isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));
+    return online;
 
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
-        }
-    }
+  }
 
-    public Boolean online() {
-        Boolean online =
-                this.lastActiveAt.isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));
-        return online;
-
-    }
+  protected void setUser(User user) {
+    this.user = user;
+    user.setUserStatus(this);
+  }
 
 }

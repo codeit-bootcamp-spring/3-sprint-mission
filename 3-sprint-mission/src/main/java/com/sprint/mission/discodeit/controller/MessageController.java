@@ -2,99 +2,122 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.MessageAPI;
 import com.sprint.mission.discodeit.dto.data.MessageDTO;
-import com.sprint.mission.discodeit.dto.request.*;
-import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/messages")
 @RestController
 public class MessageController implements MessageAPI {
-    private final MessageService messageService;
 
-    @PostMapping(
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Message> create(
-            @RequestPart(value = "messageCreateRequest") MessageCreateRequest messageCreateRequest,
-            @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
-    ) {
+  private final MessageService messageService;
 
-        List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
-                .map(files -> files.stream()
-                        .map(file -> {
-                            try {
-                                return new BinaryContentCreateRequest(
-                                        file.getOriginalFilename(),
-                                        file.getContentType(),
-                                        file.getBytes()
-                                );
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        })
-                        .toList())
-                .orElse(new ArrayList<>());
+  @PostMapping(
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<MessageDTO> create(
+      @RequestPart(value = "messageCreateRequest") MessageCreateRequest messageCreateRequest,
+      @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
+  ) {
 
-        Message createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
+    List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
+        .map(files -> files.stream()
+            .map(file -> {
+              try {
+                return new BinaryContentCreateRequest(
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getBytes()
+                );
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+            })
+            .toList())
+        .orElse(new ArrayList<>());
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(createdMessage);
-    }
+    MessageDTO createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
 
-    // 메시지 다건 조회
-    @GetMapping(
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<List<MessageDTO>> findAllByChannelId(
-            @RequestParam UUID channelId
-    ) {
-        List<MessageDTO> messages = messageService.findAllByChannelId(channelId);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(messages);
-    }
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(createdMessage);
+  }
 
-    // 메시지 수정
-    @PatchMapping(
-            value = "/{messageId}",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<Message> update(
-            @PathVariable("messageId") UUID messageId
-            , @RequestBody MessageUpdateRequest messageUpdateDTO
-    ) {
+  // 메시지 다건 조회
+  @GetMapping(
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public ResponseEntity<PageResponse<MessageDTO>> findAllByChannelId(
+      @RequestParam UUID channelId,
+      @RequestParam(value = "cursor", required = false) Instant cursor,
+      @PageableDefault(
+          size = 20,
+          page = 0,
+          sort = "createdAt",
+          direction = Direction.DESC
+      ) Pageable pageable
+  ) {
+    PageResponse<MessageDTO> messages = messageService.findAllByChannelId(channelId, cursor,
+        pageable);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(messages);
+  }
 
-        Message createdMessage = messageService.update(messageId, messageUpdateDTO);
+  // 메시지 수정
+  @PatchMapping(
+      value = "/{messageId}",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public ResponseEntity<MessageDTO> update(
+      @PathVariable("messageId") UUID messageId
+      , @RequestBody MessageUpdateRequest messageUpdateDTO
+  ) {
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(createdMessage);
-    }
+    MessageDTO createdMessage = messageService.update(messageId, messageUpdateDTO);
 
-    // 메시지 삭제
-    @DeleteMapping(
-            value = "/{messageId}"
-    )
-    public ResponseEntity<String> delete(
-            @PathVariable("messageId") UUID messageId
-    ) {
-        messageService.delete(messageId);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(createdMessage);
+  }
 
-        return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .body("메시지를 삭제했습니다.");
-    }
+  // 메시지 삭제
+  @DeleteMapping(
+      value = "/{messageId}"
+  )
+  public ResponseEntity<String> delete(
+      @PathVariable("messageId") UUID messageId
+  ) {
+    messageService.delete(messageId);
+
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .body("메시지를 삭제했습니다.");
+  }
 }

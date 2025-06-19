@@ -7,16 +7,21 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.time.Instant;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.*;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
@@ -27,10 +32,14 @@ public class BasicUserService implements UserService {
   private final UserMapper userMapper;
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
+  private final BinaryContentService binaryContentService;
+  private final BinaryContentStorage binaryContentStorage;
   private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentMapper binaryContentMapper;
 
   @Override
-  public User create(
+  @Transactional
+  public UserDTO create(
       UserCreateRequest userCreateRequest,
       Optional<BinaryContentCreateRequest> profileCreateRequest
   ) {
@@ -48,19 +57,16 @@ public class BasicUserService implements UserService {
 
     BinaryContent nullableProfile = profileCreateRequest
         .map(profileRequest -> {
-          String fileName = profileRequest.fileName();
-          String contentType = profileRequest.contentType();
-          byte[] bytes = profileRequest.bytes();
-
           BinaryContent binaryContent =
               BinaryContent.builder()
-                  .fileName(fileName)
-                  .size((long) bytes.length)
-                  .bytes(bytes)
-                  .contentType(contentType)
+                  .fileName(profileRequest.fileName())
+                  .contentType(profileRequest.contentType())
+                  .size((long) profileRequest.bytes().length)
                   .build();
-
-          return binaryContentRepository.save(binaryContent);
+//          binaryContentService.create(profileRequest);
+          binaryContentRepository.save(binaryContent);
+          binaryContentStorage.put(binaryContent.getId(), profileRequest.bytes());
+          return binaryContent;
         })
         .orElse(null);
 
@@ -74,11 +80,6 @@ public class BasicUserService implements UserService {
             .profile(nullableProfile)
             .build();
 
-    System.out.println("user save 진행!!");
-    userRepository.save(user);
-    System.out.println("user save 진행 됐어용~~");
-    System.out.println("user = " + user);
-
     Instant now = Instant.now();
     UserStatus userStatus =
         UserStatus.builder()
@@ -86,9 +87,9 @@ public class BasicUserService implements UserService {
             .lastActiveAt(now)
             .build();
 
+    userRepository.save(user);
     userStatusRepository.save(userStatus);
-
-    return user;
+    return userMapper.toDTO(user);
   }
 
   @Override
@@ -120,20 +121,21 @@ public class BasicUserService implements UserService {
   @Override
   @Transactional(readOnly = true)
   public List<UserDTO> findAll() {
-    return userRepository.findAll()
+    return userRepository.findAllWithProfileAndUserStatus()
         .stream()
         .map(userMapper::toDTO)
         .toList();
   }
 
   @Override
-  public User update(UUID userId, UserUpdateRequest userUpdateDTO,
+  public UserDTO update(UUID userId, UserUpdateRequest userUpdateDTO,
       Optional<BinaryContentCreateRequest> optionalProfileCreateDTO) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
 
     String newUsername = userUpdateDTO.newUsername();
     String newEmail = userUpdateDTO.newEmail();
+    BinaryContent nullableProfile;
 
     if (userRepository.existsByUsername(newUsername)) {
       throw new IllegalArgumentException("이미 존재하는 유저 아이디입니다.");
@@ -143,30 +145,31 @@ public class BasicUserService implements UserService {
       throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
     }
 
-    BinaryContent nullableProfile = optionalProfileCreateDTO
-        .map(profileRequest -> {
-          Optional.ofNullable(user.getProfile().getId())
-              .ifPresent(binaryContentRepository::deleteById);
+    if (optionalProfileCreateDTO.isPresent()) {
+      binaryContentService.delete(user.getProfile().getId());
 
-          String fileName = profileRequest.fileName();
-          String contentType = profileRequest.contentType();
-          byte[] bytes = profileRequest.bytes();
-
-          BinaryContent binaryContent =
-              BinaryContent.builder()
-                  .fileName(fileName)
-                  .bytes(bytes)
-                  .contentType(contentType)
-                  .build();
-
-          return binaryContentRepository.save(binaryContent);
-        })
-        .orElse(null);
+      nullableProfile = optionalProfileCreateDTO
+          .map(profileRequest -> {
+            BinaryContent binaryContent =
+                BinaryContent.builder()
+                    .fileName(profileRequest.fileName())
+                    .contentType(profileRequest.contentType())
+                    .size((long) profileRequest.bytes().length)
+                    .build();
+//          binaryContentService.create(profileRequest);
+            binaryContentRepository.save(binaryContent);
+            binaryContentStorage.put(binaryContent.getId(), profileRequest.bytes());
+            return binaryContent;
+          })
+          .orElse(null);
+    } else {
+      nullableProfile = user.getProfile();
+    }
 
     String newPassword = userUpdateDTO.newPassword();
     user.update(newUsername, newEmail, newPassword, nullableProfile);
 
-    return user;
+    return userMapper.toDTO(userRepository.save(user));
   }
 
 
@@ -176,7 +179,7 @@ public class BasicUserService implements UserService {
         .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
 
     Optional.ofNullable(user.getProfile().getId())
-        .ifPresent(binaryContentRepository::deleteById);
+        .ifPresent(binaryContentService::delete);
     userStatusRepository.deleteByUserId(id);
     userRepository.deleteById(id);
   }

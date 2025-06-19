@@ -7,12 +7,11 @@ import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
@@ -25,7 +24,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final BinaryContentMapper binaryContentMapper;
 
   @Override
-  public BinaryContent create(BinaryContentCreateRequest request) {
+  public BinaryContentDTO create(BinaryContentCreateRequest request) {
     String fileName = request.fileName();
     byte[] bytes = request.bytes();
     String contentType = request.contentType();
@@ -37,9 +36,10 @@ public class BasicBinaryContentService implements BinaryContentService {
             .size((long) bytes.length)
             .build();
 
+    binaryContentRepository.save(binaryContent);
     binaryContentStorage.put(binaryContent.getId(), bytes);
 
-    return binaryContentRepository.save(binaryContent);
+    return binaryContentMapper.toDTO(binaryContent);
 
   }
 
@@ -47,16 +47,16 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Transactional(readOnly = true)
   public BinaryContentDTO find(UUID id) {
     return binaryContentRepository.findById(id)
-            .map(binaryContentMapper::toDTO)
-            .orElseThrow(() -> new NoSuchElementException("해당 파일이 존재하지 않습니다."));
+        .map(binaryContentMapper::toDTO)
+        .orElseThrow(() -> new NoSuchElementException("해당 파일이 존재하지 않습니다."));
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<BinaryContentDTO> findAllByIdIn(List<UUID> ids) {
-    return binaryContentRepository.findAllByIdIn(ids).stream()
-            .map(binaryContentMapper::toDTO)
-            .toList();
+    return binaryContentRepository.findAllById(ids).stream()
+        .map(binaryContentMapper::toDTO)
+        .toList();
   }
 
   @Override
