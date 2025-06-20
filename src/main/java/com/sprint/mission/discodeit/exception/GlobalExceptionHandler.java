@@ -4,8 +4,12 @@ import com.sprint.mission.discodeit.dto.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.Map;
+import java.util.stream.Collectors;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -52,5 +56,31 @@ public class GlobalExceptionHandler {
 
             default -> HttpStatus.BAD_REQUEST;
         };
+    }
+
+    // @Valid 검증 실패 처리
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(
+        MethodArgumentNotValidException e) {
+        Map<String, Object> details = e.getBindingResult()
+            .getFieldErrors() // @Vaild에 실패한 필드 리스트 가져옴
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    FieldError::getField,
+                    DefaultMessageSourceResolvable::getDefaultMessage,
+                    (msg1, msg2) -> msg1  // 필드 중복되면 첫 번째 메시지 유지
+                )
+            );
+
+        ErrorResponse response = new ErrorResponse(
+            Instant.now(),
+            "INVALID_REQUEST",
+            "요청 데이터가 유효하지 않습니다.",
+            details,
+            e.getClass().getSimpleName(),
+            HttpStatus.BAD_REQUEST.value()
+        );
+        return ResponseEntity.badRequest().body(response);
     }
 }
