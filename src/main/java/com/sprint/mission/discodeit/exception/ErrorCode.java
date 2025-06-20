@@ -41,8 +41,10 @@ public enum ErrorCode {
     USER_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_STATUS_001", "유저 상태을 찾을 수 없습니다."),
     USER_STATUS_ALREADY_EXISTS(HttpStatus.CONFLICT, "USER_STATUS_002", "이미 존재하는 유저 상태입니다."),
     USER_STATUS_UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "USER_STATUS_999",
-        "유저 상태 처리 중 알 수 없는 오류가 발생했습니다.");
+        "유저 상태 처리 중 알 수 없는 오류가 발생했습니다."),
 
+    //Validation 관련 에러
+    VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "VALIDATION_001", "조건에 맞지 않는 입력값입니다.");
 
     private final HttpStatus httpStatus;
     private final String code;
