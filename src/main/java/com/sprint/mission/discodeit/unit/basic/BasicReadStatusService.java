@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.basic;
+package com.sprint.mission.discodeit.unit.basic;
 
 import com.sprint.mission.discodeit.dto.readStatus.*;
 import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusCreateRequest;
@@ -10,7 +10,7 @@ import com.sprint.mission.discodeit.mapper.advanced.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
-import com.sprint.mission.discodeit.service.ReadStatusService;
+import com.sprint.mission.discodeit.unit.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

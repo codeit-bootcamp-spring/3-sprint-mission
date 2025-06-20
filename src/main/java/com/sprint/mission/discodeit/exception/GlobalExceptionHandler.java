@@ -58,6 +58,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> privateChannelUpdateExceptionHandler(PrivateChannelUpdateException e) {
         return buildDiscodeitException(e);
     }
+    @ExceptionHandler(MessageNotFoundException.class)
+    public ResponseEntity<ErrorResponse> messageNotFoundExceptionHandler(MessageNotFoundException e) {
+        return buildDiscodeitException(e);
+    }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
         Map<String,Object> details = new HashMap<>();

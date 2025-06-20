@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service;
+package com.sprint.mission.discodeit.unit;
 
 import com.sprint.mission.discodeit.dto.readStatus.*;
 import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusCreateRequest;

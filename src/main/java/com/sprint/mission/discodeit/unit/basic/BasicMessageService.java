@@ -1,13 +1,16 @@
-package com.sprint.mission.discodeit.service.basic;
+package com.sprint.mission.discodeit.unit.basic;
 
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse;
 import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.advanced.MessageMapper;
 import com.sprint.mission.discodeit.repository.jpa.*;
-import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.unit.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
@@ -40,11 +43,8 @@ public class BasicMessageService implements MessageService {
     private final JpaChannelRepository channelRepository;
     private final JpaUserRepository userRepository;
     private final JpaBinaryContentRepository binaryContentRepository;
-//    private final JpaReadStatusRepository readStatusRepository;
-//    private final MessageMapper messageMapper;
     private final MessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
-//    private final PageResponseMapper pageResponseMapper;
 
 
 
@@ -53,7 +53,6 @@ public class BasicMessageService implements MessageService {
 
         List<Message> messages;
         if(cursor == null) {
-//            messages = messageRepository.findAllByChannelIdOrderByCreatedAt(channelId, pageable);
             messages = messageRepository.findAllByChannelId(channelId, pageable);
         }else {
             messages = messageRepository.findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(channelId, cursor, pageable);
@@ -78,14 +77,18 @@ public class BasicMessageService implements MessageService {
         return response;
     }
 
-    // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
-    // public 방일경우 작성을 해도 readstatus가 없음 최소 1회는 등록을 해야 하고 유저가 방에 있는지 확인 가능한 로직이 필요함
-    // binary content
+    /**
+     * for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
+     * public 방일경우 작성을 해도 readstatus가 없음 최소 1회는 등록을 해야 하고 유저가 방에 있는지 확인 가능한 로직이 필요함
+     * binary content
+     * @param request
+     * @param fileList
+     * @return
+     */
     @Override
     public JpaMessageResponse createMessage(MessageCreateRequest request, List<MultipartFile> fileList) {
-
-        Channel channel = channelRepository.findById(request.channelId()).orElseThrow(() -> new NoSuchElementException("channel with id " + request.channelId() + " not found"));
-        User user = userRepository.findById(request.authorId()).orElseThrow(() -> new NoSuchElementException("author with id " + request.authorId() + " not found"));
+        Channel channel = channelRepository.findById(request.channelId()).orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId",request.channelId())));
+        User user = userRepository.findById(request.authorId()).orElseThrow(() -> new UserNotFoundException(Map.of("userId",request.authorId())));
 
         // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)
         List<BinaryContent> attachments = new ArrayList<>();
@@ -108,11 +111,6 @@ public class BasicMessageService implements MessageService {
                 }
 
                 attachments.add(attachment);
-                try {
-                    binaryContentStorage.put(attachment.getId(), file.getBytes());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
             }
         }
 
@@ -140,7 +138,7 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public JpaMessageResponse updateMessage(UUID messageId, MessageUpdateRequest request) {
-        Message message = messageRepository.findById(messageId).orElseThrow(() -> new NoSuchElementException("message with id " + messageId + " not found"));
+        Message message = messageRepository.findById(messageId).orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
         message.setContent(request.newContent());
 
         JpaMessageResponse response = messageMapper.toDto(message);

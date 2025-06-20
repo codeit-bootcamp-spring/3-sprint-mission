@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service;
+package com.sprint.mission.discodeit.unit;
 
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
@@ -14,7 +14,7 @@ import com.sprint.mission.discodeit.mapper.advanced.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
-import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.unit.basic.BasicUserService;
 import com.sprint.mission.discodeit.storage.LocalBinaryContentStorage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -87,7 +87,7 @@ public class UserServiceTest {
         // when
         userService.create(request, profile);
 
-        // then - BinaryContent 생성 관련만 검증
+        // then
         verify(binaryContentRepository, times(1)).save(argThat(bc ->
             bc.getFileName().equals("profile.jpg") && bc.getContentType().equals("image/jpeg")
         ));

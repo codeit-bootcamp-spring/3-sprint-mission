@@ -1,11 +1,10 @@
-package com.sprint.mission.discodeit.service;
+package com.sprint.mission.discodeit.unit;
 
 
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse;
 import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
-import com.sprint.mission.discodeit.dto.message.response.JpaPageResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 

@@ -1,13 +1,10 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
 import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
 import com.sprint.mission.discodeit.dto.readStatus.JpaReadStatusResponse;
 import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.service.ReadStatusService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.sprint.mission.discodeit.unit.ReadStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

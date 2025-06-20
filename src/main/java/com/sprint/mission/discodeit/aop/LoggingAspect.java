@@ -31,24 +31,24 @@ public class LoggingAspect {
 
     // 0채널, 메세지, 유저의 CUD만 info로 로깅
     @Pointcut(
-        "execution(* com.sprint.mission.discodeit.service.basic.BasicChannelService.createChannel(..)) || "+
-            "execution(* com.sprint.mission.discodeit.service.basic.BasicChannelService.update(..)) || "+
-            "execution(* com.sprint.mission.discodeit.service.basic.BasicChannelService.deleteChannel(..))"
+        "execution(* com.sprint.mission.discodeit.unit.basic.BasicChannelService.createChannel(..)) || "+
+            "execution(* com.sprint.mission.discodeit.unit.basic.BasicChannelService.update(..)) || "+
+            "execution(* com.sprint.mission.discodeit.unit.basic.BasicChannelService.deleteChannel(..))"
     )
     public void createUpdateDeleteChannelMethods() {}
 
 
     @Pointcut(
-        "execution(* com.sprint.mission.discodeit.service.basic.BasicMessageService.createMessage(..)) || "+
-            "execution(* com.sprint.mission.discodeit.service.basic.BasicMessageService.updateMessage(..)) || "+
-            "execution(* com.sprint.mission.discodeit.service.basic.BasicMessageService.deleteMessage(..))"
+        "execution(* com.sprint.mission.discodeit.unit.basic.BasicMessageService.createMessage(..)) || "+
+            "execution(* com.sprint.mission.discodeit.unit.basic.BasicMessageService.updateMessage(..)) || "+
+            "execution(* com.sprint.mission.discodeit.unit.basic.BasicMessageService.deleteMessage(..))"
         )
     public void createUpdateDeleteMessageMethods() {}
 
     @Pointcut(
-        "execution(* com.sprint.mission.discodeit.service.basic.BasicUserService.create(..)) || "+
-            "execution(* com.sprint.mission.discodeit.service.basic.BasicUserService.deleteUser(..)) || "+
-            "execution(* com.sprint.mission.discodeit.service.basic.BasicUserService.update(..))"
+        "execution(* com.sprint.mission.discodeit.unit.basic.BasicUserService.create(..)) || "+
+            "execution(* com.sprint.mission.discodeit.unit.basic.BasicUserService.deleteUser(..)) || "+
+            "execution(* com.sprint.mission.discodeit.unit.basic.BasicUserService.update(..))"
     )
     public void createUpdateDeleteUserMethods() {}
 
