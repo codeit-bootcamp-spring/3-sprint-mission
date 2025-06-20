@@ -9,11 +9,10 @@ import org.mapstruct.Named;
 @Mapper(componentModel = "spring", uses = {BinaryContentMapper.class, UserStatusMapper.class})
 public interface UserMapper {
 
-  @Mapping(target = "online", qualifiedByName = "getIsOnline")
-  public abstract UserDto toDto(User user);
+  @Mapping(target = "online", source = "user", qualifiedByName = "getIsOnline")
+  UserDto toDto(User user);
 
-  //  @Mapping(target = "online", ignore = true)
-  public abstract User toEntity(UserDto userDto);
+  User toEntity(UserDto userDto);
 
   @Named("getIsOnline")
   default boolean getIsOnline(User user) {

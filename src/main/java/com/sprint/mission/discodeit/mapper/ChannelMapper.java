@@ -26,8 +26,8 @@ public abstract class ChannelMapper {
   @Autowired
   private UserMapper userMapper;
 
-  @Mapping(target = "participants", qualifiedByName = "getParticipants")
-  @Mapping(target = "lastMessageAt", qualifiedByName = "getLastMessageAt")
+  @Mapping(target = "participants", source = "channel", qualifiedByName = "getParticipants")
+  @Mapping(target = "lastMessageAt", source = "channel", qualifiedByName = "getLastMessageAt")
   public abstract ChannelDto toDto(Channel channel);
 
   public abstract Channel toEntity(ChannelDto channelDto);
