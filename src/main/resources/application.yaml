@@ -38,9 +38,9 @@ logging:
   level:
     root: info
     # 실행되는 SQL 출력
-    org.hibernate.SQL: debug
+    org.hibernate.SQL: info
     # 바인딩되는 파라미터 출력
-    org.hibernate.orm.jdbc.bind: trace
+    org.hibernate.orm.jdbc.bind: info
 
 discodeit:
   storage:

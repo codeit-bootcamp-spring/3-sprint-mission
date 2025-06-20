@@ -7,7 +7,7 @@
 
     <!-- 콘솔 출력 패턴 설정 -->
     <property name="CONSOLE_LOG_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %yellow(%logger{36}) - %highlight(%msg)%n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %yellow(%logger{36}) - %highlight(%msg%n)"/>
 
     <!-- 파일 출력 패턴 설정 -->
     <property name="FILE_LOG_PATTERN"

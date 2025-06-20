@@ -74,7 +74,7 @@ public class BasicBinaryContentService implements BinaryContentService {
      * @return 조회된 바이너리 콘텐츠 DTO
      */
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public BinaryContentDto find(UUID binaryContentId) {
         log.info(SERVICE_NAME + "바이너리 콘텐츠 조회 시도: id={}", binaryContentId);
 
@@ -97,10 +97,7 @@ public class BasicBinaryContentService implements BinaryContentService {
      * @return 조회된 바이너리 콘텐츠 목록
      */
     @Override
-    @Transactional(readOnly = true,
-            rollbackFor = Exception.class,
-            propagation = Propagation.REQUIRED,
-            isolation = Isolation.READ_COMMITTED)
+    @Transactional(readOnly = true)
     public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
         log.info(SERVICE_NAME + "다중 바이너리 콘텐츠 조회 시도: ids={}", binaryContentIds);
 
@@ -117,10 +114,7 @@ public class BasicBinaryContentService implements BinaryContentService {
      * @param binaryContentId 삭제할 바이너리 콘텐츠 ID
      */
     @Override
-    @Transactional(
-            rollbackFor = Exception.class,
-            propagation = Propagation.REQUIRED,
-            isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public void delete(UUID binaryContentId) {
         log.info(SERVICE_NAME + "바이너리 콘텐츠 삭제 시도: id={}", binaryContentId);
 
