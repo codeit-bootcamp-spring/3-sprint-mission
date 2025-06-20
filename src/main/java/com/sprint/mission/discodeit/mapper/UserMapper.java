@@ -1,21 +1,23 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.mapstruct.Mapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
-@Mapper(componentModel = "spring", uses = BinaryContentMapper.class)
-public abstract class UserMapper {
+@Mapper(componentModel = "spring", uses = {BinaryContentMapper.class, UserStatusMapper.class})
+public interface UserMapper {
 
-  @Autowired
-  UserStatusRepository userStatusRepository;
-
-
+  @Mapping(target = "online", qualifiedByName = "getIsOnline")
   public abstract UserDto toDto(User user);
 
   //  @Mapping(target = "online", ignore = true)
-  public abstract User userDtoToUser(UserDto userDto);
+  public abstract User toEntity(UserDto userDto);
+
+  @Named("getIsOnline")
+  default boolean getIsOnline(User user) {
+    return user.getStatus().isOnline();
+  }
 
 }
