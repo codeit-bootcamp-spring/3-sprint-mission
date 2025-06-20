@@ -76,6 +76,7 @@ public class BasicUserService implements UserService {
     log.info("[유저 상태 등록] 유저 상태 ID : {}", userStatus.getId());
 
     userRepository.save(user);
+    userStatusRepository.save(userStatus);
     log.info("[유저 등록 성공] 유저 상태 ID : {}", userStatus.getId());
     return userMapper.toDto(user);
   }
@@ -152,12 +153,12 @@ public class BasicUserService implements UserService {
   public void delete(UUID userId) {
       log.info("[유저 삭제 시도] 유저 ID : {}", userId);
 
-    if (userRepository.existsById(userId)) {
+    if (!userRepository.existsById(userId)) {
       log.error("[유저 삭제 실패] 해당 유저를 찾을 수 없습니다. 유저 ID : {} ", userId);
       throw new UserNotFoundException();
     }
 
     userRepository.deleteById(userId);
-      log.info("[유저 삭제 성공] 유저 ID: {}", userId);
+    log.info("[유저 삭제 성공] 유저 ID: {}", userId);
   }
 }
