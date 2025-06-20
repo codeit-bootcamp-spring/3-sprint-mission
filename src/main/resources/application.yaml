@@ -2,17 +2,14 @@
 server:
   port: 8080
 
-  # application.yaml
-  #discodeit:
-  #  repository:
-  #    type: file   # jcf | file
-  #    file-directory: .discodeit
-
+discodeit:
   storage:
     type: local
     local:
       root-path: "./data" # ${user.dir}/data
-
+  #  repository:
+  #    type: file   # jcf | file
+  #    file-directory: .discodeit
 
 
 # /api-docs endpoint custom path
