@@ -31,5 +31,49 @@ discodeit:
     type: local
     local:
       root-path: .discodeit/storage
+
+
+# Actuator 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+    info:
+      enabled: true
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+
+# 애플리케이션 정보
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+    description: Spring Boot Application with Actuator
+  java:
+    version: 17
+  spring:
+    boot:
+      version: 3.4.0
+  database:
+    url: ${spring.datasource.url}
+    driver: ${spring.datasource.driver-class-name}
+  jpa:
+    ddl-auto: ${spring.jpa.hibernate.ddl-auto}
+  storage:
+    type: ${storage.type}
+    path: ${storage.path}
+  multipart:
+    max-file-size: ${spring.servlet.multipart.max-file-size}
+    max-request-size: ${spring.servlet.multipart.max-request-size}
 server:
   port: 80
