@@ -82,7 +82,7 @@ public class ChannelController implements ChannelApi {
   /* 특정 사용자가 볼 수 있는 모든 채널 목록 조회 */
   @GetMapping
   @Override
-  public ResponseEntity<List<ChannelDto>> findAllByUserId(
+  public ResponseEntity<List<ChannelDto>> findAll(
       @RequestParam("userId") UUID userId
   ) {
     List<ChannelDto> ChannelDtoList = channelService.findAllByUserId(userId);

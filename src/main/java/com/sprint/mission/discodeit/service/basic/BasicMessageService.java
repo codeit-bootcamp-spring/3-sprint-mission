@@ -48,7 +48,7 @@ public class BasicMessageService implements MessageService {
   @Transactional
   @Override
   public MessageDto create(MessageCreateRequest createRequest,
-      List<BinaryContentCreateRequest> binaryContentCreateRequests) throws IllegalAccessException {
+      List<BinaryContentCreateRequest> binaryContentCreateRequests) {
     User user = userRepository.findById(createRequest.authorId())
         .orElseThrow(() -> new NoSuchElementException(
             "Author with id " + createRequest.authorId() + " does not exist"));
@@ -58,10 +58,10 @@ public class BasicMessageService implements MessageService {
             "Channel with id " + createRequest.channelId() + " does not exist"));
 
     /* 유저가 해당 채널에 있는지 validation check */
-    this.readStatusRepository.findByUserIdAndChannelId(createRequest.authorId(),
-            createRequest.channelId())
-        .orElseThrow(() -> new IllegalAccessException("유저가 참여하지 않은 채팅방에는 메세지를 보낼수 없습니다."));
-
+    if (!this.readStatusRepository.existsByUserIdAndChannelId(createRequest.authorId(),
+        createRequest.channelId())) {
+      throw new NoSuchElementException("유저가 참여하지 않은 채팅방에는 메세지를 보낼수 없습니다.");
+    }
 
     /* 첨부 파일 생성, 선택적으로 여러개의 첨부파일 같이 등록 가능 */
     List<BinaryContent> attachments = binaryContentCreateRequests.stream()

@@ -11,8 +11,8 @@ import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.utils.BinaryContentConverter;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -55,18 +55,14 @@ public class MessageController implements MessageApi {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList()
-        ).orElse(null);
+        ).orElse(new ArrayList<>());
 
-    try {
-      MessageDto createdMessageDto = messageService.create(messageCreateRequest,
-          binaryContentCreateRequests);
+    MessageDto createdMessageDto = messageService.create(messageCreateRequest,
+        binaryContentCreateRequests);
 
-      return ResponseEntity
-          .status(HttpStatus.CREATED)
-          .body(createdMessageDto);
-    } catch (NoSuchElementException | IllegalAccessException E) {
-      return ResponseEntity.unprocessableEntity().build();
-    }
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(createdMessageDto);
   }
 
   /* 메세지 수정 */
