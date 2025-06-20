@@ -14,7 +14,6 @@ CREATE TABLE IF NOT EXISTS binary_contents
     file_name    varchar(255) NOT NULL,
     size         bigint       NOT NULL,
     content_type varchar(100) NOT NULL,
-    bytes        bytea        NULL
 );
 
 
@@ -85,10 +84,11 @@ CREATE TABLE IF NOT EXISTS message_attachments
 (
     message_id    UUID,
     attachment_id UUID,
+    PRIMARY KEY (message_id,attachment_id),
 
     CONSTRAINT fk_message_id FOREIGN KEY (message_id) REFERENCES messages (id) ON DELETE CASCADE,
     CONSTRAINT fk_attachment_id FOREIGN KEY (attachment_id) REFERENCES binary_contents (id) ON DELETE CASCADE,
-    CONSTRAINT uk_message_id_attachment_id UNIQUE (message_id, attachment_id)
+--     CONSTRAINT uk_message_id_attachment_id UNIQUE (message_id, attachment_id)
 );
 
 
