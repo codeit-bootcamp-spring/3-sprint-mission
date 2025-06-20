@@ -1,4 +1,9 @@
 spring:
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+
   datasource:
     url: jdbc:postgresql://localhost:5432/discodeit # 추후 변경
     driver-class-name: org.postgresql.Driver

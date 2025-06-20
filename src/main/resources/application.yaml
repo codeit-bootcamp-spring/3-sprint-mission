@@ -5,7 +5,8 @@ spring:
   boot:
     admin:
       client:
-        enabled: false
+        instance:
+          name: discodeit
 
   servlet:
     multipart:
