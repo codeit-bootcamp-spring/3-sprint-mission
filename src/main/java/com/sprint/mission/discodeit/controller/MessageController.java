@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 
 import com.sprint.mission.discodeit.controller.api.MessageApi;
-import com.sprint.mission.discodeit.dto.MessageDto;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
@@ -10,12 +10,15 @@ import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.utils.BinaryContentConverter;
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -97,15 +100,19 @@ public class MessageController implements MessageApi {
   @Override
   public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
       @RequestParam("channelId") UUID channelId,
-      @RequestParam("page") int page,
-      @RequestParam("size") int size,
-      @RequestParam("sort") List<String> sorts
+      @RequestParam(value = "cursor", required = false) Instant cursor,
+      @PageableDefault(
+          size = 50,
+          page = 0,
+          sort = "createdAt",
+          direction = Direction.DESC
+      ) Pageable pageable
   ) {
-    Page<MessageDto> MessageDtoPage = messageService.findAllByChannelId(channelId, page, size,
-        sorts);
+    PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor,
+        pageable);
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(pageResponseMapper.fromPage(MessageDtoPage));
+        .body(messages);
   }
 
 }

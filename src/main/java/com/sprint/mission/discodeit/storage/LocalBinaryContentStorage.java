@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.storage;
 
-import com.sprint.mission.discodeit.dto.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import jakarta.annotation.PostConstruct;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -13,7 +13,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +27,6 @@ import org.springframework.stereotype.Component;
 public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   private final Path root;
-
 
   public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") Path root) {
     this.root = root;
@@ -42,29 +44,31 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     }
   }
 
-  private Path resolvePath(UUID id) {
-    return this.root.resolve(String.valueOf(id) + ".ser");
-  }
 
   @Override
-  public UUID put(UUID id, byte[] bytes) {
+  public UUID put(UUID binaryContentId, byte[] bytes) {
     // 객체를 저장할 파일 path 생성
-    Path filePath = this.resolvePath(id);
-
+    Path filePath = this.resolvePath(binaryContentId);
+    if (Files.exists(filePath)) {
+      throw new IllegalArgumentException("File with key " + binaryContentId + " already exists");
+    }
     try (
         // 파일과 연결되는 스트림 생성
         FileOutputStream fos = new FileOutputStream(filePath.toFile());
     ) {
       fos.write(bytes);
-      return id;
+      return binaryContentId;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public InputStream get(UUID id) {
-    Path filePath = this.resolvePath(id);
+  public InputStream get(UUID binaryContentId) {
+    Path filePath = this.resolvePath(binaryContentId);
+    if (Files.exists(filePath)) {
+      throw new IllegalArgumentException("File with key " + binaryContentId + " already exists");
+    }
     try {
       // 파일과 연결되는 스트림 생성
       return new FileInputStream(String.valueOf(filePath));
@@ -74,7 +78,21 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   }
 
   @Override
-  public ResponseEntity<Resource> download(BinaryContentDto binaryContentDto) {
-    return null;
+  public ResponseEntity<Resource> download(BinaryContentDto metaData) {
+    InputStream inputStream = get(metaData.id());
+    Resource resource = new InputStreamResource(inputStream);
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .header(HttpHeaders.CONTENT_DISPOSITION,
+            "attchment; filename=\"" + metaData.fileName() + "\"")
+        .header(HttpHeaders.CONTENT_TYPE, metaData.contentType())
+        .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(metaData.size()))
+        .body(resource);
   }
+
+  private Path resolvePath(UUID id) {
+    return this.root.resolve(String.valueOf(id) + ".ser");
+  }
+
 }

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.UserStatusDto;
+import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
@@ -10,22 +10,24 @@ import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import jakarta.transaction.Transactional;
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class BasicUserStatusService implements UserStatusService {
 
   private final UserStatusRepository userStatusRepository;
   private final UserRepository userRepository;
   private final UserStatusMapper userStatusMapper;
 
+  @Transactional
   @Override
   public UserStatusDto create(UserStatusCreateRequest createRequest) {
     //1.  `User`가 존재하지 않으면 예외 발생
@@ -38,12 +40,12 @@ public class BasicUserStatusService implements UserStatusService {
     });
 
     // 3. ReadStatus 생성
-    UserStatus userStatus = new UserStatus(user);
+    UserStatus userStatus = new UserStatus(user, Instant.now());
 
     //4. DB저장
-    UserStatus createdUserStatus = this.userStatusRepository.save(userStatus);
+    this.userStatusRepository.save(userStatus);
 
-    return userStatusMapper.toDto(createdUserStatus);
+    return userStatusMapper.toDto(userStatus);
   }
 
   @Override
@@ -61,6 +63,7 @@ public class BasicUserStatusService implements UserStatusService {
         .map(userStatusMapper::toDto).toList();
   }
 
+  @Transactional
   @Override
   public UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest updateRequest) {
     UserStatus userStatus = this.userStatusRepository
@@ -70,16 +73,10 @@ public class BasicUserStatusService implements UserStatusService {
 
     userStatus.update(updateRequest.newLastActiveAt());
 
-    /* 업데이트 후 다시 DB 저장 */
-    this.userStatusRepository.save(userStatus);
-
-    return this.userStatusRepository
-        .findById(userStatusId)
-        .map(userStatusMapper::toDto)
-        .orElseThrow(
-            () -> new NoSuchElementException("userStatus with id " + userStatusId + " not found"));
+    return userStatusMapper.toDto(userStatus);
   }
 
+  @Transactional
   @Override
   public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest updateRequest) {
     UserStatus userStatus = this.userStatusRepository
@@ -89,16 +86,10 @@ public class BasicUserStatusService implements UserStatusService {
 
     userStatus.update(updateRequest.newLastActiveAt());
 
-    /* 업데이트 후 다시 DB 저장 */
-    this.userStatusRepository.save(userStatus);
-
-    return this.userStatusRepository
-        .findByUserId(userId)
-        .map(userStatusMapper::toDto)
-        .orElseThrow(
-            () -> new NoSuchElementException("userStatus with userId " + userId + " not found"));
+    return userStatusMapper.toDto(userStatus);
   }
 
+  @Transactional
   @Override
   public void delete(UUID userStatusId) {
     if (!this.userStatusRepository.existsById(userStatusId)) {

@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.UserDto;
-import com.sprint.mission.discodeit.dto.UserStatusDto;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
@@ -18,13 +18,11 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "User", description = "User API")
 public interface UserApi {
 
-  /* 유저 생성 */
   @Operation(summary = "User 등록")
   @ApiResponses(value = {
       @ApiResponse(
@@ -36,11 +34,10 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject(value = "User with email {email} already exists"))
       ),
   })
-  public ResponseEntity<UserDto> create(
+  ResponseEntity<UserDto> create(
       @Parameter(
           description = "User 생성 정보",
-          content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE),
-          required = true
+          content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
       ) UserCreateRequest userCreateRequest,
       @Parameter(
           description = "User 프로필 이미지",
@@ -48,7 +45,6 @@ public interface UserApi {
       ) MultipartFile profile
   );
 
-  /* 유저 수정 */
   @Operation(summary = "User 정보 수정")
   @ApiResponses(value = {
       @ApiResponse(
@@ -64,13 +60,12 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject("user with email {newEmail} already exists"))
       )
   })
-  public ResponseEntity<UserDto> update(
-      @Parameter(description = "수정할 User ID", required = true) UUID userId,
-      @Parameter(description = "수정할 User 정보", required = true) UserUpdateRequest userUpdateRequest,
+  ResponseEntity<UserDto> update(
+      @Parameter(description = "수정할 User ID") UUID userId,
+      @Parameter(description = "수정할 User 정보") UserUpdateRequest userUpdateRequest,
       @Parameter(description = "수정할 User 프로필 이미지") MultipartFile profile
   );
 
-  /* 유저 삭제 */
   @Operation(summary = "User 삭제")
   @ApiResponses(value = {
       @ApiResponse(
@@ -83,12 +78,10 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject(value = "User with id {id} not found"))
       )
   })
-  @DeleteMapping(path = "/{userId}")
-  public ResponseEntity<Void> delete(
-      @Parameter(description = "삭제할 User ID", required = true) UUID userId
+  ResponseEntity<Void> delete(
+      @Parameter(description = "삭제할 User ID") UUID userId
   );
 
-  /* 유저 조회 All */
   @Operation(summary = "전체 User 목록 조회")
   @ApiResponses(value = {
       @ApiResponse(
@@ -96,9 +89,8 @@ public interface UserApi {
           content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDto.class)))
       )
   })
-  public ResponseEntity<List<UserDto>> findAll();
+  ResponseEntity<List<UserDto>> findAll();
 
-  /* 유저 상태 업데이트 */
   @Operation(summary = "User 온라인 상태 업데이트")
   @ApiResponses(value = {
       @ApiResponse(
@@ -110,7 +102,7 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject(value = "UserStatus with userId {userId} not found"))
       )
   })
-  public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
+  ResponseEntity<UserStatusDto> updateUserStatusByUserId(
       @Parameter(description = "상태를 변경할 User ID") UUID userId,
       @Parameter(description = "변경할 User 온라인 상태 정보") UserStatusUpdateRequest request
   );

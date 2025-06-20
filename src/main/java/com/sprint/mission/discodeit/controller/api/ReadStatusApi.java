@@ -1,9 +1,8 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.ReadStatusDto;
+import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -20,12 +19,11 @@ import org.springframework.http.ResponseEntity;
 @Tag(name = "ReadStatus", description = "Message 읽음 상태 API")
 public interface ReadStatusApi {
 
-  /* 특정 채널의 메세지 수신 정보 생성 */
   @Operation(summary = "Message 읽음 상태 생성")
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "201", description = "Message 읽음 상태가 성공적으로 생성됨",
-          content = @Content(schema = @Schema(implementation = ReadStatus.class))
+          content = @Content(schema = @Schema(implementation = ReadStatusDto.class))
       ),
       @ApiResponse(
           responseCode = "404", description = "Channel 또는 User를 찾을 수 없음",
@@ -37,15 +35,14 @@ public interface ReadStatusApi {
       )
   })
   ResponseEntity<ReadStatusDto> create(
-      @Parameter(description = "Message 읽음 상태 생성 정보", required = true) ReadStatusCreateRequest request
+      @Parameter(description = "Message 읽음 상태 생성 정보") ReadStatusCreateRequest request
   );
 
-  /* 특정 채널의 메세지 수신 정보 수정 */
   @Operation(summary = "Message 읽음 상태 수정")
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "200", description = "Message 읽음 상태가 성공적으로 수정됨",
-          content = @Content(schema = @Schema(implementation = ReadStatus.class))
+          content = @Content(schema = @Schema(implementation = ReadStatusDto.class))
       ),
       @ApiResponse(
           responseCode = "404", description = "Message 읽음 상태를 찾을 수 없음",
@@ -53,19 +50,18 @@ public interface ReadStatusApi {
       )
   })
   ResponseEntity<ReadStatusDto> update(
-      @Parameter(description = "수정할 읽음 상태 ID", required = true) UUID readStatusId,
-      @Parameter(description = "수정할 읽음 상태 정보", required = true) ReadStatusUpdateRequest request
+      @Parameter(description = "수정할 읽음 상태 ID") UUID readStatusId,
+      @Parameter(description = "수정할 읽음 상태 정보") ReadStatusUpdateRequest request
   );
 
-  /* 특정 사용자의 메세지 수신 정보 조회 */
   @Operation(summary = "User의 Message 읽음 상태 목록 조회")
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "200", description = "Message 읽음 상태 목록 조회 성공",
-          content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReadStatus.class)))
+          content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReadStatusDto.class)))
       )
   })
   ResponseEntity<List<ReadStatusDto>> findAllByUserId(
-      @Parameter(description = "조회할 User ID", required = true) UUID userId
+      @Parameter(description = "조회할 User ID") UUID userId
   );
 }
