@@ -1,13 +1,17 @@
 package com.sprint.mission.discodeit.acceptance.message;
 
-import static com.sprint.mission.discodeit.support.TestUtils.*;
-import static org.assertj.core.api.Assertions.*;
+import static com.sprint.mission.discodeit.support.TestUtils.jsonHeader;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.sprint.mission.discodeit.dto.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -18,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -28,12 +31,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.sprint.mission.discodeit.dto.response.ChannelResponse;
-import com.sprint.mission.discodeit.dto.response.MessageResponse;
-import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
 
 /**
  * Message API에 대한 인수 테스트
@@ -54,7 +51,7 @@ import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@EnableJpaAuditing
+
 @Transactional
 public class MessageAcceptanceTest {
 
