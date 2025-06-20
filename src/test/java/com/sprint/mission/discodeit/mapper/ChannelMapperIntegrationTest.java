@@ -2,16 +2,14 @@ package com.sprint.mission.discodeit.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.when;
 
-import com.sprint.mission.discodeit.dto.ChannelDto;
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -41,9 +39,9 @@ public class ChannelMapperIntegrationTest {
         new User("test", "test@gmail.com", "1234", testBinaryContent),
         new User("test2", "test2@gmail.com", "1234", null));
 
-    when(channelService.findParticipantsByChannelId(
-        UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))).thenReturn(
-        dummyParticipants);
+//    when(channelService.findParticipantsByChannelId(
+//        UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))).thenReturn(
+//        dummyParticipants);
 
     /* 2. when (행동실행) */
 

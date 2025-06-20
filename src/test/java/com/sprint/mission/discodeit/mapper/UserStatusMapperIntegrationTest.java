@@ -3,10 +3,11 @@ package com.sprint.mission.discodeit.mapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.sprint.mission.discodeit.dto.UserStatusDto;
+import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,7 +29,7 @@ public class UserStatusMapperIntegrationTest {
     );
     User user = new User("test", "test@gmail.com", "1234", testBinaryContent);
 
-    UserStatus userStatus = new UserStatus(user);
+    UserStatus userStatus = new UserStatus(user, Instant.now());
 
 
     /* 2. when (행동실행) */
