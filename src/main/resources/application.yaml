@@ -2,11 +2,11 @@
 server:
   port: 8080
 
-# application.yaml
-discodeit:
-  repository:
-    type: file   # jcf | file
-    file-directory: .discodeit
+  # application.yaml
+  #discodeit:
+  #  repository:
+  #    type: file   # jcf | file
+  #    file-directory: .discodeit
 
   storage:
     type: local
