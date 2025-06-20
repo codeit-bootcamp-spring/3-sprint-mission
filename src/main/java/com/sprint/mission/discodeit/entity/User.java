@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@ToString(doNotUseGetters = true, callSuper = true)
+@ToString(onlyExplicitlyIncluded = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor /* @Builder 때문에 넣어줌 */
