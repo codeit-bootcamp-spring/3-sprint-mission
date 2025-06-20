@@ -1,55 +1,34 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.ToString;
 
+@ToString(doNotUseGetters = true, callSuper = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor /* @Builder 때문에 넣어줌 */
 @Builder
 @Entity
-@EntityListeners(AuditingEntityListener.class)
 @Table(name = "user_statuses")
-public class UserStatus extends BaseUpdatableEntity implements Serializable {
+public class UserStatus extends BaseUpdatableEntity {
 
-  private static final Long serialVersionUID = 1L;
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "id", nullable = false)
-  private UUID id;
-
-  @CreatedDate
-  @Column(name = "created_at", nullable = false)
-  private Instant createdAt;
-
-  @LastModifiedDate
-  @Column(name = "updated_at")
-  private Instant updatedAt;
-  //
-  @OneToOne
-  @JoinColumn(name = "user_id", nullable = false)
+  @JsonBackReference
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "user_id", nullable = false, unique = true)
   private User user;
 
   @Column(name = "last_active_at", nullable = false)
@@ -59,80 +38,25 @@ public class UserStatus extends BaseUpdatableEntity implements Serializable {
   @Transient
   private UserStatusType status;
 
-  public UserStatus(User user) {
+  public UserStatus(User user, Instant lastActiveAt) {
     this.status = UserStatusType.ONLINE;
-    this.lastActiveAt = Instant.now();
+    this.lastActiveAt = lastActiveAt;
     //
     this.user = user;
+    // user 엔티티에도 연관관계 추가(userStatus가 FK를 가지고 있으므로 관계 설정도 이곳에서 함)
+    user.setStatus(this);
   }
 
-//  public void update(UserStatusType newStatus) {
-//    boolean anyValueUpdated = false;
-//    if (newStatus != null && newStatus != this.status) {
-//      // 이전 상태가 온라인이였고 현재가 온라인이 아닐때, 바뀌는 시점에 lastActiveAt를 현재시간으로 업데이트 해줘야함.
-//      if (this.status.equals(UserStatusType.ONLINE)) {
-//        this.lastActiveAt = Instant.now();
-//      }
-//
-//      this.status = newStatus;
-//
-//      anyValueUpdated = true;
-//    }
-//
-//    if (anyValueUpdated) {
-//      this.updatedAt = Instant.now();
-//    }
-//  }
-
-  public void update(Instant newLastActiveAt) {
-    boolean anyValueUpdated = false;
-
-    if (newLastActiveAt != null && this.lastActiveAt != newLastActiveAt) {
-      this.lastActiveAt = newLastActiveAt;
-      anyValueUpdated = true;
-    }
-
-    /*deprecated field (newStatus) */
-//    if (newStatus != null && newStatus != this.status) {
-//      // 이전 상태가 온라인이였고 현재가 온라인이 아닐때, 바뀌는 시점에 lastActiveAt를 현재시간으로 업데이트 해줘야함.
-//      if (this.status.equals(UserStatusType.ONLINE)) {
-//        this.lastActiveAt = Instant.now();
-//      }
-//
-//      this.status = newStatus;
-//
-//      anyValueUpdated = true;
-//    }
-
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
+  public void update(Instant lastActiveAt) {
+    if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
+      this.lastActiveAt = lastActiveAt;
     }
   }
 
-
-  //lastActiveAt 값이 5분 이내라면 온라인 유저로 간주
   public boolean isOnline() {
     Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
 
     return lastActiveAt.isAfter(instantFiveMinutesAgo);
   }
 
-  @Override
-  public String toString() {
-
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        .withZone(ZoneId.systemDefault());
-
-    String createdAtFormatted = (createdAt != null) ? formatter.format(createdAt) : null;
-    String updatedAtFormatted = (updatedAt != null) ? formatter.format(updatedAt) : null;
-
-    return "🙋‍♂️ UserStatus {\n" +
-        "  id         = " + id + "\n" +
-        "  createdAt  = " + createdAtFormatted + "\n" +
-        "  updatedAt  = " + updatedAtFormatted + "\n" +
-        "  user       = " + user + "\n" +
-        "  status       = " + status + "\n" +
-        "  lastActiveAt       = " + lastActiveAt + "\n" +
-        "}";
-  }
 }
