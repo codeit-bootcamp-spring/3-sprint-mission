@@ -1,181 +1,123 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.data.ChannelDTO;
-import com.sprint.mission.discodeit.dto.data.UserDTO;
-import com.sprint.mission.discodeit.dto.request.*;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.controller.api.MessageAPI;
+import com.sprint.mission.discodeit.dto.data.MessageDTO;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/messages")
 @RestController
-@Tag(
-        name = "Message"
-        , description = "Message API"
-)
-public class MessageController {
-    private final MessageService messageService;
+public class MessageController implements MessageAPI {
 
-    @Operation(
-            summary = "Message 생성"
-            , operationId = "create_2"
-    )
-    @ApiResponses(
-            value = {
-                    @ApiResponse(responseCode = "201", description = "Message가 성공적으로 생성됨", content = @Content(schema = @Schema(implementation = Message.class)))
-                    , @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음", content = @Content(schema = @Schema(example = "Channel | Author with id {channelId | authorId} not found")))
-            }
-    )
+  private final MessageService messageService;
 
-    @PostMapping(
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Message> create(
-            @RequestPart(value = "messageCreateRequest") MessageCreateRequest messageCreateRequest,
-            @Parameter(
-                    name = "attachments"
-                    , description = "Message 첨부 파일들"
-                    , content = @Content(
-                            array = @ArraySchema(
-                                    schema = @Schema(type="array", format="binary")
-                            )
-                    )
-            )
-            @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
-    ) {
+  @PostMapping(
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<MessageDTO> create(
+      @RequestPart(value = "messageCreateRequest") MessageCreateRequest messageCreateRequest,
+      @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
+  ) {
 
-        List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
-                .map(files -> files.stream()
-                        .map(file -> {
-                            try {
-                                return new BinaryContentCreateRequest(
-                                        file.getOriginalFilename(),
-                                        file.getContentType(),
-                                        file.getBytes()
-                                );
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        })
-                        .toList())
-                .orElse(new ArrayList<>());
+    List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
+        .map(files -> files.stream()
+            .map(file -> {
+              try {
+                return new BinaryContentCreateRequest(
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getBytes()
+                );
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+            })
+            .toList())
+        .orElse(new ArrayList<>());
 
-        Message createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
+    MessageDTO createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
-    }
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(createdMessage);
+  }
 
-    // 메시지 다건 조회
-    @Operation(
-            summary = "Channel의 Message 목록 조회"
-            , operationId = "findAllByChannelId"
-    )
-    @ApiResponses(
-            value = {
-                    @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공"
-                            , content = @Content(array = @ArraySchema(schema = @Schema(implementation = Message.class))))
-            }
-    )
-    @Parameter(
-            name = "channelId"
-            , in = ParameterIn.QUERY
-            , description = "조회할 Channel ID"
-            , required = true
-            , schema = @Schema(type = "string", format = "uuid")
-    )
-    @GetMapping(
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<List<Message>> findAll(
-            @RequestParam UUID channelId
-    ) {
-        List<Message> messages = messageService.findAllByChannelId(channelId);
-        return ResponseEntity.ok(messages);
-    }
+  // 메시지 다건 조회
+  @GetMapping(
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public ResponseEntity<PageResponse<MessageDTO>> findAllByChannelId(
+      @RequestParam UUID channelId,
+      @RequestParam(value = "cursor", required = false) Instant cursor,
+      @PageableDefault(
+          size = 50,
+          page = 0,
+          sort = "createdAt",
+          direction = Direction.DESC
+      ) Pageable pageable
+  ) {
+    PageResponse<MessageDTO> messages = messageService.findAllByChannelId(channelId, cursor,
+        pageable);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(messages);
+  }
 
-    // 메시지 수정
-    @Operation(
-            summary = "Message 내용 수정"
-            , operationId = "update_2"
-    )
-    @ApiResponses(
-            value = {
-                    @ApiResponse(responseCode = "200", description = "Message가 성공적으로 수정됨", content = @Content(schema = @Schema(implementation = Message.class)))
-                    , @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음", content = @Content(schema = @Schema(example = "Message with id {messageId} not found")))
-            }
-    )
-    @Parameter(
-            name = "messageId"
-            , in = ParameterIn.PATH
-            , description = "수정할 Message ID"
-            , required = true
-            , schema = @Schema(type = "string", format = "uuid")
-    )
-    @PatchMapping(
-            value = "/{messageId}",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<Message> update(
-            @PathVariable("messageId") UUID messageId
-            , @RequestBody MessageUpdateRequest messageUpdateDTO
-    ) {
+  // 메시지 수정
+  @PatchMapping(
+      value = "/{messageId}",
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public ResponseEntity<MessageDTO> update(
+      @PathVariable("messageId") UUID messageId
+      , @RequestBody MessageUpdateRequest messageUpdateDTO
+  ) {
 
-        Message createdMessage = messageService.update(messageId, messageUpdateDTO);
+    MessageDTO createdMessage = messageService.update(messageId, messageUpdateDTO);
 
-        return ResponseEntity.ok(createdMessage);
-    }
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(createdMessage);
+  }
 
-    // 메시지 삭제
-    @Operation(
-            summary = "Message 삭제"
-            , operationId = "delete_1"
-    )
-    @ApiResponses(
-            value = {
-                    @ApiResponse(responseCode = "204", description = "Message가 성공적으로 삭제됨")
-                    , @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음", content = @Content(schema = @Schema(example = "Message with id {messageId} not found")))
-            }
-    )
-    @Parameter(
-            name = "messageId"
-            , in = ParameterIn.PATH
-            , description = "삭제할 Message ID"
-            , required = true
-            , schema = @Schema(type = "string", format = "uuid")
-    )
-    @DeleteMapping(
-            value = "/{messageId}"
-    )
-    public ResponseEntity<String> delete(
-            @PathVariable("messageId") UUID messageId
-    ) {
-        messageService.delete(messageId);
+  // 메시지 삭제
+  @DeleteMapping(
+      value = "/{messageId}"
+  )
+  public ResponseEntity<String> delete(
+      @PathVariable("messageId") UUID messageId
+  ) {
+    messageService.delete(messageId);
 
-        return ResponseEntity.ok("메시지를 삭제했습니다.");
-    }
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .body("메시지를 삭제했습니다.");
+  }
 }

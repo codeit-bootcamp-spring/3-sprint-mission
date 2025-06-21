@@ -1,46 +1,55 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import java.time.Instant;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
-
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
 
 @Getter
 @ToString
-public class Channel implements Serializable {
-    private final UUID id;
-    private String name;
-    private String description;
-    private final ChannelType type;
-    private final Instant createdAt;
-    private Instant updatedAt;
-    private Instant lastMessageAt;
+@Entity
+@Table(name = "channels", schema = "discodeit")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Channel extends BaseUpdatableEntity {
 
-    @Builder
-    public Channel(String name, String description, ChannelType type) {
-        this.id = UUID.randomUUID();
-        this.name = name;
-        this.description = description;
-        this.type = type;
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-        this.lastMessageAt = null;
+  @Column(name = "type")
+  @Enumerated(EnumType.STRING)
+  private ChannelType type;
+  @Column(name = "name")
+  private String name;
+  @Column(name = "description")
+  private String description;
+
+  @Builder
+  public Channel(String name, String description, ChannelType type) {
+    this.name = name;
+    this.description = description;
+    this.type = type;
+  }
+
+  public void update(String newName, String newDescripton) {
+    boolean anyValueUpdated = false;
+    if (newName != null && !newName.equals(this.name)) {
+      this.name = newName;
+      anyValueUpdated = true;
     }
 
-    public void update(String name, String descripton) {
-        this.name = name;
-        this.description = descripton;
-        updateDateTime();
+    if (newDescripton != null && !newDescripton.equals(this.description)) {
+      this.description = newDescripton;
+      anyValueUpdated = true;
     }
 
-    public void updateDateTime() {
-        this.updatedAt = Instant.now();
+    if (anyValueUpdated) {
+      this.updatedAt = Instant.now();
     }
+  }
 
-    public void updateMessageAt() {
-        this.lastMessageAt = Instant.now();
-    }
 }
