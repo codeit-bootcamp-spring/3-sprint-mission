@@ -255,7 +255,7 @@ public class MessageServiceTest {
         }
 
         Pageable pageable = PageRequest.of(0, pageSize, Sort.by("createdAt").descending());
-        given(messageRepository.findAllByChannelId(channelId, pageable)).willReturn(messages.subList(0, pageSize + 1));
+        given(messageRepository.findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(channelId,null, pageable)).willReturn(messages.subList(0, pageSize + 1));
 
         given(messageMapper.toDto(any(Message.class)))
             .willAnswer(inv -> {
@@ -297,7 +297,7 @@ public class MessageServiceTest {
         }
 
         Pageable pageable = PageRequest.of(0, pageSize, Sort.by("createdAt").descending());
-        given(messageRepository.findAllByChannelId(channelId, pageable)).willReturn(messages.subList(0, pageSize + 1));
+        given(messageRepository.findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(channelId, null, pageable)).willReturn(messages.subList(0, pageSize + 1));
 
         given(messageMapper.toDto(any(Message.class)))
             .willAnswer(inv -> {

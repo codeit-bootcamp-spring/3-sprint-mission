@@ -12,5 +12,4 @@ import java.util.UUID;
  * Date         : 2025. 5. 28.
  */
 public interface JpaUserStatusRepository extends JpaRepository<UserStatus, UUID> {
-    UserStatus findByUserId(UUID userId);
 }

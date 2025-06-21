@@ -18,9 +18,12 @@ import java.util.UUID;
  */
 public interface JpaUserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByUsername(String username);
+
     boolean existsByUsername(String username);
+
     boolean existsByEmail(String email);
 
-    @Query("SELECT m from User m LEFT JOIN FETCH m.profile LEFT JOIN FETCH m.status")
+//    @Query("SELECT m from User m LEFT JOIN FETCH m.profile LEFT JOIN FETCH m.status")
+    @Query(" SELECT u FROM User u LEFT JOIN UserStatus s ON s.user = u LEFT JOIN FETCH u.profile")
     List<User> findAllWithBinaryContentAndUserStatus();
 }

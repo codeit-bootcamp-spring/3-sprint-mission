@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.time.Instant;
 import java.util.List;
@@ -17,20 +18,13 @@ import java.util.UUID;
  */
 public interface JpaMessageRepository extends JpaRepository<Message, UUID> {
     List<Message> findAllByChannelId(UUID channelId);
-    List<Message> findAllById(UUID messageId);
 
     boolean existsById(UUID messageId);
 
-//    List<Message> findAllByChannelIdOrderByCreatedAt(UUID channelId, Pageable pageable);
-
     Message findTopByChannelIdOrderByCreatedAtDesc(UUID channelId);
 
-//    List<Message> findAllByChannelIdOrderByCreatedAt(UUID channelId, Pageable pageable);
-    List<Message> findAllByChannelId(UUID channelId, Pageable pageable);
-    Page<Message> findAllPageByChannelIdOrderByCreatedAt(UUID channelId, Pageable pageable);
-
+    @Query("SELECT m FROM Message m WHERE m.channel.id = :channelId AND (:cursor IS NULL OR m.createdAt < :cursor) ORDER BY m.createdAt DESC")
     List<Message> findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(UUID channelId, Instant cursor, Pageable pageable);
 
     Long countByChannelId(UUID channelId);
-
 }

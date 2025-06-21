@@ -51,12 +51,16 @@ public class BasicMessageService implements MessageService {
     @Override
     public AdvancedJpaPageResponse findAllByChannelIdAndCursor(UUID channelId, Instant cursor, Pageable pageable) {
 
-        List<Message> messages;
-        if(cursor == null) {
-            messages = messageRepository.findAllByChannelId(channelId, pageable);
-        }else {
-            messages = messageRepository.findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(channelId, cursor, pageable);
-        }
+        List<Message> messages = messages = messageRepository.findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(channelId, cursor, pageable);
+
+//        List<Message> messages;
+//        if(cursor == null) {
+//            messages = messageRepository.findAllByChannelId(channelId, pageable);
+//        }
+//        else {
+//            messages = messageRepository.findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(channelId, cursor, pageable);
+//        }
+
         boolean hasNext = messages.size() > pageable.getPageSize();
         Long totalElements = messageRepository.countByChannelId(channelId);
         Instant nextCursor = null;

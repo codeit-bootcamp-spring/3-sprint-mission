@@ -62,15 +62,8 @@ CREATE TABLE IF NOT EXISTS read_statuses (
     user_id      UUID,
     channel_id   UUID,
     last_read_at TIMESTAMP with time zone ,
-    CONSTRAINT fk_rs_user
-    FOREIGN KEY (user_id)
-    REFERENCES users(id)
-    ON DELETE CASCADE,
-    CONSTRAINT fk_rs_channel
-    FOREIGN KEY (channel_id)
-    REFERENCES channels(id)
-    ON DELETE CASCADE,
-    CONSTRAINT uq_user_channel UNIQUE(user_id, channel_id)
+    CONSTRAINT fk_rs_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_rs_channel FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE, CONSTRAINT uq_user_channel UNIQUE(user_id, channel_id)
     );
 
 CREATE TABLE IF NOT EXISTS messages (
@@ -80,14 +73,8 @@ CREATE TABLE IF NOT EXISTS messages (
     content      TEXT,
     channel_id   UUID             NOT NULL,
     author_id    UUID,
-    CONSTRAINT fk_msg_channel
-    FOREIGN KEY (channel_id)
-    REFERENCES channels(id)
-    ON DELETE CASCADE,
-    CONSTRAINT fk_msg_author
-    FOREIGN KEY (author_id)
-    REFERENCES users(id)
-    ON DELETE SET NULL
+    CONSTRAINT fk_msg_channel FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE,
+    CONSTRAINT fk_msg_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
     );
 
 CREATE TABLE IF NOT EXISTS message_attachments (
