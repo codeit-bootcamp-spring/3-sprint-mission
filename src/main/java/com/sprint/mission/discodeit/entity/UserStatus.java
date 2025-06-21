@@ -2,8 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import com.sprint.mission.discodeit.exception.ErrorCode;
-import com.sprint.mission.discodeit.exception.UserStatusException;
+import com.sprint.mission.discodeit.exception.InvalidInputException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -38,7 +37,7 @@ public class UserStatus extends BaseUpdatableEntity {
 
   private UserStatus(User user) {
     if (user == null) {
-      throw new UserStatusException(ErrorCode.INVALID_INPUT, "userId는 필수입니다.");
+      throw new InvalidInputException("userId는 필수입니다.");
     }
     this.user = user;
     this.lastActiveAt = getCreatedAt();
@@ -58,7 +57,7 @@ public class UserStatus extends BaseUpdatableEntity {
 
   public void updateLastActiveAt(Instant instant) {
     if (instant == null) {
-      throw new UserStatusException(ErrorCode.INVALID_INPUT, "lastActiveAt는 필수입니다.");
+      throw new InvalidInputException("lastActiveAt는 필수입니다.");
     }
     this.lastActiveAt = instant;
     this.updatedAt = Instant.now();
@@ -66,8 +65,7 @@ public class UserStatus extends BaseUpdatableEntity {
 
   public boolean isOnline() {
     if (lastActiveAt == null) {
-      throw new UserStatusException(ErrorCode.INVALID_INPUT,
-          "lastActiveAt 값이 null이므로 isOnline을 판단할 수 없습니다.");
+      throw new InvalidInputException("lastActiveAt 값이 null이므로 isOnline을 판단할 수 없습니다.");
     }
     return this.lastActiveAt.isAfter(Instant.now().minus(ACTIVE_DURATION));
   }

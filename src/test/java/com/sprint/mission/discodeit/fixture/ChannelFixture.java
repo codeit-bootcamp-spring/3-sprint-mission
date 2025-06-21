@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.fixture;
 
+import java.util.UUID;
+
 import com.sprint.mission.discodeit.entity.Channel;
 
 public class ChannelFixture {
@@ -18,5 +20,15 @@ public class ChannelFixture {
 
   public static Channel createPrivate() {
     return Channel.createPrivate();
+  }
+
+  public static Channel createValidChannel() {
+    return Channel.createPublic(DEFAULT_CHANNEL_NAME, DEFAULT_CHANNEL_DESCRIPTION);
+  }
+
+  public static Channel createValidChannelWithId() {
+    Channel channel = createValidChannel();
+    channel.assignIdForTest(UUID.randomUUID());
+    return channel;
   }
 }

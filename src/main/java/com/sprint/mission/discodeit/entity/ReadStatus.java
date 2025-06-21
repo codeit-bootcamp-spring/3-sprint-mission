@@ -1,6 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.time.Instant;
+import java.util.Objects;
+import java.util.UUID;
+
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -8,8 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.time.Instant;
-import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,10 +20,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(
-    name = "read_statuses",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "channel_id"})
-)
+@Table(name = "read_statuses", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "channel_id" }))
 public class ReadStatus extends BaseUpdatableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -46,6 +46,10 @@ public class ReadStatus extends BaseUpdatableEntity {
 
   public void updateLastReadAt() {
     this.lastReadAt = Instant.now();
+  }
+
+  public void assignIdForTest(UUID id) {
+    this.id = id;
   }
 
   @Override

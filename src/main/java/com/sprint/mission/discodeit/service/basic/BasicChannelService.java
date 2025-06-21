@@ -6,8 +6,9 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.ChannelException;
-import com.sprint.mission.discodeit.exception.UserException;
+import com.sprint.mission.discodeit.exception.channel.CannotUpdatePrivateChannelException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageAttachmentRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -46,7 +47,7 @@ public class BasicChannelService implements ChannelService {
 
     for (UUID participantId : participantIds) {
       User participant = userRepository.findById(participantId)
-          .orElseThrow(() -> UserException.notFound(participantId));
+          .orElseThrow(() -> new UserNotFoundException(participantId.toString()));
       ReadStatus status = ReadStatus.create(participant, savedChannel);
       readStatusRepository.save(status);
     }
@@ -57,7 +58,7 @@ public class BasicChannelService implements ChannelService {
   @Override
   public ChannelResponse findById(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> ChannelException.notFound(channelId));
+        .orElseThrow(() -> new ChannelNotFoundException(channelId.toString()));
     return channelAssembler.toResponse(channel);
   }
 
@@ -71,10 +72,10 @@ public class BasicChannelService implements ChannelService {
   @Override
   public ChannelResponse update(UUID channelId, String newName, String newDescription) {
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> ChannelException.notFound(channelId));
+        .orElseThrow(() -> new ChannelNotFoundException(channelId.toString()));
 
     if (channel.getType() == ChannelType.PRIVATE) {
-      throw ChannelException.cannotUpdatePrivateChannel(channelId);
+      throw new CannotUpdatePrivateChannelException(channelId.toString());
     }
 
     channel.updateName(newName);
@@ -87,7 +88,7 @@ public class BasicChannelService implements ChannelService {
   @Override
   public ChannelResponse delete(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> ChannelException.notFound(channelId));
+        .orElseThrow(() -> new ChannelNotFoundException(channelId.toString()));
 
     // 해당 채널의 메시지 ID 목록 조회
     List<UUID> messageIds = messageRepository.findMessageIdsByChannelId(channelId);
