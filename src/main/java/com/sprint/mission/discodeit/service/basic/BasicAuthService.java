@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.user.InvalidPasswordException;
 
 /**
  * 사용자 인증(로그인) 기능을 제공하는 서비스 구현체입니다.
@@ -57,12 +59,11 @@ public class BasicAuthService implements AuthService {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> {
                     log.warn(SERVICE_NAME + "로그인 실패 - 사용자 없음: username={}", username);
-                    return new NoSuchElementException("User with username " + username + " not found");
+                    return new UserNotFoundException("해당 사용자를 찾을 수 없습니다.");
                 });
         if (!user.getPassword().equals(password)) {
             log.warn(SERVICE_NAME + "로그인 실패 - 비밀번호 불일치: username={}", username);
-
-            throw new IllegalArgumentException("Wrong password");
+            throw new InvalidPasswordException("비밀번호가 일치하지 않습니다.");
         }
 
         UserDto userDto = userMapper.toDto(user);
