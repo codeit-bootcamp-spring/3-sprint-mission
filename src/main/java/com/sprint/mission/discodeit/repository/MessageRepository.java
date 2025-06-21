@@ -1,24 +1,52 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Message;
-
-import java.util.List;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-public interface MessageRepository {
+public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-    public Message save(Message message);
+  @EntityGraph(attributePaths = {"channel"})
+  public Page<Message> findAllByChannelId(UUID channelId, Pageable pageable
+  );
 
-    public Optional<Message> findById(UUID messageId);
+  void deleteAllByChannelId(UUID channelId);
 
-    public List<Message> findAll();
+  @Query("SELECT m.createdAt "
+      + "FROM Message m "
+      + "WHERE m.channel.id = :channelId "
+      + "ORDER BY m.createdAt DESC LIMIT 1")
+  Optional<Instant> findLastMessageAtByChannelId(@Param("channelId") UUID channelId);
 
-    public List<Message> findAllByChannelId(UUID channelId);
+  @Query("SELECT m FROM Message m "
+      + "LEFT JOIN FETCH m.author a "
+      + "JOIN FETCH a.status "
+      + "LEFT JOIN FETCH a.profile "
+      + "WHERE m.channel.id=:channelId AND m.createdAt < :createdAt")
+  Slice<Message> findAllByChannelIdWithAuthor(@Param("channelId") UUID channelId,
+      @Param("createdAt") Instant createdAt,
+      Pageable pageable);
 
-    public boolean existsById(UUID messageId);
-
-    public void deleteById(UUID messageId);
-
-    public void deleteAllByChannelId(UUID channelId);
+//      /* CrudRepository의 기본 메소드 */
+//    public Message save(Message message);
+//
+//      /* CrudRepository의 기본 메소드 */
+//    public Optional<Message> findById(UUID messageId);
+//
+//      /* JpaRepository의 기본 메소드 */
+//    public List<Message> findAll();
+//
+//      /* CrudRepository의 기본 메소드 */
+//    public boolean existsById(UUID messageId);
+//
+//      /* CrudRepository의 기본 메소드 */
+//    public void deleteById(UUID messageId);
 }

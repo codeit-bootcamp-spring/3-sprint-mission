@@ -1,65 +1,33 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Objects;
-import java.util.UUID;
-
+@ToString(doNotUseGetters = true, callSuper = true)
 @Getter
-public class BinaryContent implements Serializable {
-    private static final Long serialVersionUID = 1L;
-    private final UUID id;
-    private final Instant createdAt;
-    //
-    private String fileName;
-    private Long size;
-    private String contentType;
-    private byte[] bytes;
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor /* @Builder 때문에 넣어줌 */
+@Builder
+@Entity
+@Table(name = "binary_contents")
+public class BinaryContent extends BaseEntity {
 
+  //
+  @Column(name = "file_name", nullable = false)
+  private String fileName;
 
-    public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        //
-        this.fileName = fileName;
-        this.size = size;
-        this.contentType = contentType;
-        this.bytes = bytes;
-    }
+  @Column(name = "size", nullable = false)
+  private Long size;
 
-    @Override
-    public String toString() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                .withZone(ZoneId.systemDefault());
-
-        String createdAtFormatted = formatter.format(createdAt);
-
-        return "️ BinaryContent {\n" +
-                "  id         = " + id + "\n" +
-                "  createdAt  = " + createdAtFormatted + "\n" +
-                "}";
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == this)
-            return true;
-        if (!(o instanceof BinaryContent))
-            return false;
-        BinaryContent other = (BinaryContent) o;
-
-        return (this.id == null && other.id == null)
-                || (this.id != null && this.id.equals(other.id));
-
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(this.id);
-    }
+  @Column(name = "content_type", nullable = false)
+  private String contentType;
 
 }

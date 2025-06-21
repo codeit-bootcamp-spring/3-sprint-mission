@@ -1,68 +1,73 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.UserDto;
-import com.sprint.mission.discodeit.dto.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.DuplicateUserException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-
+@Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
-  private final BinaryContentRepository binaryContentRepository;
-  //Q. 만약 binaryContentService를 쓰지 않는다면 binaryContentService의 코드가 여기서도 반복되는데
-  // 이때는 그냥 의존하는것이 낫나? vs 중복된 코드를 써도 분리가 좋나?
+  //만약 binaryContentService를 쓰지 않는다면 binaryContentService의 코드가 여기서도 반복되는데
+  // 이때는 그냥 의존하는것이 낫나? vs 중복된 코드를 써도 분리가 좋나? -> binaryContentService를 사용할것.
   private final BinaryContentService binaryContentService;
 
+  private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
+
+  private final UserMapper userMapper;
+
+  @Transactional
   @Override
-  public User create(UserCreateRequest userCreateRequest,
-      Optional<BinaryContentCreateRequest> profileCreateRequest) {
+  public UserDto create(UserCreateRequest userCreateRequest,
+      Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     // 1. validation (name, email이 유니크 해야함)
-    if (this.hasSameEmailOrName(userCreateRequest.username(), userCreateRequest.email())) {
+    if (userRepository.existsByUsernameOrEmail(userCreateRequest.username(),
+        userCreateRequest.email())) {
       throw new DuplicateUserException();
     }
-    System.out.println("userCreateRequest = " + userCreateRequest);
-    System.out.println(
-        "profileCreateRequest = --" + profileCreateRequest + "-- " + Optional.ofNullable(
-            profileCreateRequest).isPresent());
 
     // 2. 프로필 이미지 id 생성( 없으면 null 반환)
-    UUID nullableProfileId = profileCreateRequest.map(binaryContentCreateRequest -> {
-      return this.binaryContentService.create(binaryContentCreateRequest).getId();
-    }).orElse(null);
+    BinaryContent nullableProfile = optionalProfileCreateRequest.map(
+        profileRequest -> {
+          BinaryContent binaryContent = new BinaryContent(profileRequest.fileName(),
+              (long) profileRequest.bytes().length,
+              profileRequest.contentType());
+          binaryContentRepository.save(binaryContent);
+          binaryContentStorage.put(binaryContent.getId(), profileRequest.bytes());
+          return binaryContent;
+        }).orElse(null);
 
     User user = new User(userCreateRequest.username(), userCreateRequest.email(),
-        userCreateRequest.password(), nullableProfileId);
+        userCreateRequest.password(), nullableProfile);
+
+    UserStatus userStatus = new UserStatus(user, Instant.now());
 
     // 3. DB저장
-    this.userRepository.save(user);
-    System.out.println("user --" + user);
+    User createdUser = this.userRepository.save(user);
 
-    // 4. UserStatus 인스턴스 생성 및 DB 저장
-    UserStatus userStatus = new UserStatus(user.getId());
-    System.out.println("userStatus --" + userStatus);
-    
-    this.userStatusRepository.save(userStatus);
-
-    return user;
+    return userMapper.toDto(createdUser);
   }
 
   @Override
@@ -71,96 +76,67 @@ public class BasicUserService implements UserService {
         .findById(userId)
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
-    return this.toDto(user);
+    return userMapper.toDto(user);
   }
 
 
+  //TODO : 구현할것
   @Override
-  public List<User> find(String username) {
+  public List<UserDto> find(String username) {
     return List.of();
   }
 
   @Override
   public List<UserDto> findAll() {
-    List<UserDto> users = this.userRepository.findAll()
+    return this.userRepository.findAllWithProfileAndStatus()
         .stream()
-        .map(this::toDto)
+        .map(userMapper::toDto)
         .toList();
-
-    return users;
   }
 
+
+  @Transactional
   @Override
-  public User update(UUID userId, UserUpdateRequest updateRequest,
-      Optional<BinaryContentCreateRequest> profileCreateRequest) {
+  public UserDto update(UUID userId, UserUpdateRequest updateRequest,
+      Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     // 0. validation (username, email이 유니크 해야함)
-    if (this.hasSameEmailOrName(updateRequest.newUsername(), updateRequest.newEmail())) {
+    if (userRepository.existsByUsernameOrEmail(updateRequest.newUsername(),
+        updateRequest.newEmail())) {
       throw new DuplicateUserException();
     }
 
     User user = this.userRepository.findById(userId).
         orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
-    // 1. 프로필 이미지 업데이트
-    profileCreateRequest.map(binaryContentCreateRequest -> {
-      BinaryContent profileBinaryContent = this.binaryContentService.create(
-          binaryContentCreateRequest);
-      user.update(updateRequest.newUsername(), updateRequest.newEmail(),
-          updateRequest.newPassword(), profileBinaryContent.getId());
-      return null;
-    });
+    // 1. 프로필 이미지 id 생성( 없으면 null 반환)
+    BinaryContent nullableProfile = optionalProfileCreateRequest.map(
+        profileRequest -> {
+          BinaryContent binaryContent = new BinaryContent(profileRequest.fileName(),
+              (long) profileRequest.bytes().length,
+              profileRequest.contentType());
+          binaryContentRepository.save(binaryContent);
+          binaryContentStorage.put(binaryContent.getId(), profileRequest.bytes());
+          return binaryContent;
+        }).orElse(null);
 
+    // 2. user 업데이트
     user.update(updateRequest.newUsername(), updateRequest.newEmail(), updateRequest.newPassword(),
-        null);
+        nullableProfile);
 
-    /* 업데이트 후 다시 DB 저장 */
-    this.userRepository.save(user);
-
-    User updatedUser = this.userRepository.findById(userId).
-        orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-
-    return updatedUser;
+    return userMapper.toDto(user);
   }
 
 
-  //관련된 도메인도 같이 삭제( BinaryContent, UserStatus )
+  //관련된 도메인도 같이 삭제( BinaryContent, UserStatus) -> CascadeType.ALL로 알아서 삭제
+  @Transactional
   @Override
   public void delete(UUID userId) {
-    User user = this.userRepository.findById(userId).
-        orElseThrow(() -> new NoSuchElementException("User with userId " + userId + " not found"));
-
-    /* BinaryContentRepository에서 프로필사진 삭제 */
-    this.binaryContentRepository.findById(user.getProfileId()).ifPresent(profile -> {
-      this.binaryContentRepository.deleteById(profile.getId());
-    });
-
-    /* UserStatusRepository에서 해당 객체 삭제 */
-    UserStatus userStatus = this.userStatusRepository.findByUserId(user.getId()).
-        orElseThrow(() -> new NoSuchElementException(
-            "UserStatus with userId " + user.getId() + " not found"));
-    this.userStatusRepository.deleteById(userStatus.getId());
+    if (this.userRepository.existsById(userId)) {
+      throw new NoSuchElementException("User with userId " + userId + " not found");
+    }
 
     /* UserRepository에서 해당 객체 삭제 */
     this.userRepository.deleteById(userId);
   }
 
-
-  @Override
-  public boolean hasSameEmailOrName(String username, String email) {
-    List<User> users = this.userRepository.findAll();
-
-    return users.stream()
-        .anyMatch((user) -> {
-          return user.getEmail().equals(email) && user.getUsername().equals(username);
-        });
-  }
-
-  //Q. 왜 프라이빗이지?
-  private UserDto toDto(User user) {
-    Boolean online = userStatusRepository.findByUserId(user.getId())
-        .map(UserStatus::isOnline)
-        .orElse(null);
-    return new UserDto(user.getId(), user.getUsername(), user.getEmail(), user.getProfileId(),
-        online, user.getCreatedAt(), user.getUpdatedAt());
-  }
 }

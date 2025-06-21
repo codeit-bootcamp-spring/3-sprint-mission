@@ -1,75 +1,65 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import org.hibernate.annotations.BatchSize;
 
+@ToString(doNotUseGetters = true, callSuper = true)
 @Getter
-public class Message implements Serializable {
+@NoArgsConstructor
+@AllArgsConstructor /* @Builder 때문에 넣어줌 */
+@Builder
+@Entity
+@Table(name = "messages")
+public class Message extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
   //
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-  //
+  @Column(name = "content")
   private String content;
-  //
-  private final UUID authorId;
-  private final UUID channelId;
-  private List<UUID> attachmentIds;  // BinaryContent의 id
 
-  public Message(String content, UUID authorId, UUID channelId, List<UUID> attachmentIds) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.updatedAt = Instant.now();
-    //
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "author_id", nullable = false)
+  private User author;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "channel_id", nullable = false)
+  private Channel channel;
+
+  // message_attachments 테이블 생성
+  @BatchSize(size = 100) // N+1 문제해결
+  @OneToMany(fetch = FetchType.LAZY)
+  @JoinTable(name = "message_attachments",
+      joinColumns = @JoinColumn(name = "message_id"),
+      inverseJoinColumns = @JoinColumn(name = "attachment_id"),
+      uniqueConstraints = {@UniqueConstraint(columnNames = {"message_id", "attachment_id"})}
+  )
+  private List<BinaryContent> attachments = new ArrayList<>(); // BinaryContent
+
+  public Message(User author, Channel channel, String content, List<BinaryContent> attachments) {
+    this.author = author;
+    this.channel = channel;
     this.content = content;
-    this.authorId = authorId;
-    this.channelId = channelId;
-    this.attachmentIds = attachmentIds;
+    this.attachments = attachments;
   }
 
-  //QUESTION. updateRequest도 안에 id를 포함할께 아니라 id, 변화될 필드 이렇게 나누는게 나을까?
-  // FIXME. attachmentIds optional로 설정한거 전체적으로 수정하기
-  public void update(String content, Optional<List<UUID>> attachmentIds) {
-    boolean anyValueUpdated = false;
-    if (content != null && !content.equals(this.content)) {
-      this.content = content;
-      anyValueUpdated = true;
+  public void update(String newContent) {
+    if (newContent != null && !newContent.equals(this.content)) {
+      this.content = newContent;
     }
-
-//    if (attachmentIds != null && !attachmentIds.equals(this.attachmentIds)) {
-//      this.attachmentIds = attachmentIds;
-//      anyValueUpdated = true;
-//    }
-
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
-    }
-  }
-
-  @Override
-  public String toString() {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        .withZone(ZoneId.systemDefault());
-
-    String createdAtFormatted = formatter.format(createdAt);
-    String updatedAtFormatted = formatter.format(updatedAt);
-
-    return "💬 Message {\n" +
-        " id         = " + id + "\n" +
-        " createdAt  = " + createdAtFormatted + "\n" +
-        " updatedAt  = " + updatedAtFormatted + "\n" +
-        " content       = '" + content + "'\n" +
-        " authorId     = " + authorId + "\n" +
-        " channelId     = " + channelId + "\n" +
-        " attachmentIds     = " + attachmentIds + "\n" +
-        "}";
   }
 }

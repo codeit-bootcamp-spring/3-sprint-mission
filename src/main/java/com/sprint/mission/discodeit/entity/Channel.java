@@ -1,74 +1,78 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-import lombok.Setter;
-
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
+@ToString(doNotUseGetters = true, callSuper = true)
 @Getter
-public class Channel implements Serializable {
-    private static final Long serialVersionUID = 1L;
-    //
-    private final UUID id;
-    private final Instant createdAt;
-    private Instant updatedAt;
-    //
-    private String name;
-    private ChannelType type;
-    private String description;
-    private UUID ownerId;
-    @Setter
-    private Instant lastMessageAt;
+@NoArgsConstructor
+@AllArgsConstructor /* @Builder 때문에 넣어줌 */
+@Builder
+@Entity
+@Table(name = "channels")
+public class Channel extends BaseUpdatableEntity {
 
-    public Channel(ChannelType type, UUID ownerId, String name, String description) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-        //
-        this.name = name;
-        this.type = type;
-        this.description = description;
-        this.ownerId = ownerId;
-        //
+  //
+  @Column(name = "name")
+  private String name;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "type", nullable = false)
+  private ChannelType type;
+
+  @Column(name = "description")
+  private String description;
+
+//  // 채널 삭제될때 readStatus 모두 삭제 Q.이게 필요할까?
+//  @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+//  private List<ReadStatus> readStatuses;
+//
+//  // 채널 삭제될때 Message 모두 삭제 Q.이게 필요할까?
+//  @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+//  private List<Message> messages;
+
+  /* FIXME: lastMessageAt는 DB에 없음, entity에서 값을 가지고 있고 message insert 될때마다 값 업데이트한다면? */
+  @Transient
+  @Setter
+  private Instant lastMessageAt;
+
+  /* XXX: ownerId는 DB에 없음 */
+  @Transient
+  private UUID ownerId;
+
+  public Channel(ChannelType type, String name, String description) {
+    this.name = name;
+    this.type = type;
+    this.description = description;
+  }
+
+
+  public Channel(ChannelType type, String name, String description, UUID ownerId) {
+    this.name = name;
+    this.type = type;
+    this.description = description;
+    this.ownerId = ownerId;
+  }
+
+  public void update(String newName, String newDescription) {
+    if (newName != null && !newName.equals(this.name)) {
+      this.name = newName;
     }
-
-
-    public void update(String name, String description) {
-        boolean anyValueUpdated = false;
-        if (name != null && !name.equals(this.name)) {
-            this.name = name;
-            anyValueUpdated = true;
-        }
-        if (description != null && !description.equals(this.description)) {
-            this.description = description;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
-        }
+    if (newDescription != null && !newDescription.equals(this.description)) {
+      this.description = newDescription;
     }
-
-    @Override
-    public String toString() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                .withZone(ZoneId.systemDefault());
-
-        String createdAtFormatted = formatter.format(createdAt);
-        String updatedAtFormatted = formatter.format(updatedAt);
-
-        return "📦 Channel {\n" +
-                "  id         = " + id + "\n" +
-                "  createdAt  = " + createdAtFormatted + "\n" +
-                "  updatedAt  = " + updatedAtFormatted + "\n" +
-                "  name       = '" + name + "'\n" +
-                "  type       = '" + type + "'\n" +
-                "  description = '" + description + "'\n" +
-                "  ownerId     = '" + ownerId + "'\n" +
-                "}";
-    }
+  }
 }

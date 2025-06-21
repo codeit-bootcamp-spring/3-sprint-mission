@@ -42,5 +42,8 @@ bin/
 ### Mac OS ###
 .DS_Store
 
-### data
-**/data/*
+## config
+**/db.yaml
+
+##
+**/generated/*

@@ -2,11 +2,14 @@
 server:
   port: 8080
 
-# application.yaml
 discodeit:
-  repository:
-    type: file   # jcf | file
-    file-directory: .discodeit
+  storage:
+    type: local
+    local:
+      root-path: "./data" # ${user.dir}/data
+  #  repository:
+  #    type: file   # jcf | file
+  #    file-directory: .discodeit
 
 
 # /api-docs endpoint custom path
@@ -17,3 +20,9 @@ springdoc:
     version: openapi_3_0
   swagger-ui:
     operations-sorter: alpha
+
+
+# DB config
+spring:
+  config:
+    import: "classpath:db.yaml"

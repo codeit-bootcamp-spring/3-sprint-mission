@@ -1,28 +1,15 @@
 package com.sprint.mission.discodeit.controller;
 
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
+import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
+import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.ReadStatusService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import java.io.IOException;
-import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -31,106 +18,51 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @RestController
-@ResponseBody
 @RequestMapping("/api/readStatuses")
-@Tag(name = "ReadStatus", description = "Message 읽음 상태 API")
-public class ReadStatusController {
+public class ReadStatusController implements ReadStatusApi {
 
   private final ReadStatusService readStatusService;
 
   /* 특정 채널의 메세지 수신 정보 생성 */
-  @Operation(summary = "Message 읽음 상태 생성")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "201", description = "Message 읽음 상태가 성공적으로 생성됨", content = @Content(schema = @Schema(implementation = ReadStatus.class))),
-      @ApiResponse(responseCode = "400", description = "이미 읽음 상태가 존재함", content = @Content(examples = {
-          @ExampleObject(value = "ReadStatus with userId {userId} and channelId {channelId} already exists")})),
-      @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음", content = @Content(examples = {
-          @ExampleObject(value = "Channel | User with id {channelId | userId} not found")})),
-  })
-  @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      required = true,
-      content = @Content(schema = @Schema(implementation = ReadStatusCreateRequest.class))
-  )
-  @PostMapping()
-  public ResponseEntity<ReadStatus> createReadStatus(
+  @PostMapping
+  @Override
+  public ResponseEntity<ReadStatusDto> create(
       @RequestBody ReadStatusCreateRequest readStatusCreateRequest
   ) {
-    ReadStatus createdReadStatus = readStatusService.create(readStatusCreateRequest);
-    return ResponseEntity.created(URI.create(createdReadStatus.getId().toString()))
-        .body(createdReadStatus);
+    ReadStatusDto createdReadStatusDto = readStatusService.create(readStatusCreateRequest);
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(createdReadStatusDto);
   }
 
 
   /* 특정 채널의 메세지 수신 정보 수정 */
-  @Operation(summary = "Message 읽음 상태 수정")
-  @Parameters({
-      @Parameter(name = "readStatusId", description = "수정할 읽음 상태 ID", required = true, in = ParameterIn.PATH, schema = @Schema(type = "string", format = "uuid"))
-  })
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Message 읽음 상태가 성공적으로 수정됨", content = @Content(schema = @Schema(implementation = ReadStatus.class))),
-      @ApiResponse(responseCode = "404", description = "Message 읽음 상태를 찾을 수 없음", content = @Content(examples = {
-          @ExampleObject(value = "ReadStatus with id {readStatusId} not found")})),
-  })
-  @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      required = true,
-      content = @Content(schema = @Schema(implementation = ReadStatusUpdateRequest.class))
-  )
-  @PatchMapping(path = "{readStatusId}")
-  public ResponseEntity<ReadStatus> update(
-      @PathVariable String readStatusId,
+  @PatchMapping(path = "/{readStatusId}")
+  @Override
+  public ResponseEntity<ReadStatusDto> update(
+      @PathVariable("readStatusId") UUID readStatusId,
       @RequestBody ReadStatusUpdateRequest readStatusUpdateRequest
   ) {
-    ReadStatus updatedReadStatus = readStatusService.update(parseStringToUuid(readStatusId),
+    ReadStatusDto updatedReadStatusDto = readStatusService.update(readStatusId,
         readStatusUpdateRequest);
-    return ResponseEntity.ok().body(updatedReadStatus);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(updatedReadStatusDto);
   }
 
   /* 특정 사용자의 메세지 수신 정보 조회 */
-  @Operation(summary = "User의 Message 읽음 상태 목록 조회")
-  @Parameters({
-      @Parameter(name = "userId", description = "조회할 User ID", required = true, in = ParameterIn.QUERY, schema = @Schema(type = "string", format = "uuid"))
-  })
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Message 읽음 상태 목록 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReadStatus.class)))),
-  })
-  @GetMapping()
-  public ResponseEntity<List<ReadStatus>> findAllByUserId(
-      @RequestParam String userId
+  @GetMapping
+  @Override
+  public ResponseEntity<List<ReadStatusDto>> findAllByUserId(
+      @RequestParam("userId") UUID userId
   ) {
-    List<ReadStatus> ReadStatusList = readStatusService.findAllByUserId(parseStringToUuid(userId));
-    return ResponseEntity.ok().body(ReadStatusList);
+    List<ReadStatusDto> ReadStatusDtoList = readStatusService.findAllByUserId(userId);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(ReadStatusDtoList);
   }
-
-  //FIXME : util로 빼기 (모든 컨트롤러에서 중복됨)
-  /* MultipartFile 타입 -> BinaryContentCreateRequest 타입으로 변경 */
-  private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profile) {
-    if (profile.isEmpty()) {
-      return Optional.empty();
-    } else {
-      try {
-        BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
-            profile.getOriginalFilename(), profile.getContentType(), profile.getBytes());
-        return Optional.of(binaryContentCreateRequest);
-      } catch (IOException e) {
-        throw new RuntimeException();
-      }
-    }
-  }
-
-  //FIXME : util로 빼기 (모든 컨트롤러에서 중복됨)
-  /* String 타입 -> UUID 타입으로 변경 */
-  private UUID parseStringToUuid(String id) {
-    try {
-      return UUID.fromString(id);
-    } catch (IllegalArgumentException e) {
-      throw new RuntimeException("올바른 파라미터 형식이 아닙니다.");
-    }
-  }
-
 }

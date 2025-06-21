@@ -1,107 +1,71 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Objects;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
+@ToString(onlyExplicitlyIncluded = true)
 @Getter
-public class User implements Serializable {
+@NoArgsConstructor
+@AllArgsConstructor /* @Builder 때문에 넣어줌 */
+@Builder
+@Entity
+@Table(name = "users")
+public class User extends BaseUpdatableEntity {
 
-  private static final Long serialVersionUID = 1L;
-  //
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-  //
+  @Column(name = "username", nullable = false, unique = true)
   private String username;
-  private String email;
-  private String password;
-  //
-  private UUID profileId; // BinaryContent의 id
 
-  public User(String username, String email, String password, UUID profileId) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.updatedAt = Instant.now();
-    //
+  @Column(name = "email", nullable = false, unique = true)
+  private String email;
+
+  @Column(name = "password", nullable = false)
+  private String password;
+
+  // 유저 삭제될때 profile 삭제
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(name = "profile_id")
+  private BinaryContent profile;
+
+  @JsonManagedReference
+  @Setter(AccessLevel.PROTECTED)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private UserStatus status;
+
+  public User(String username, String email, String password, BinaryContent profile) {
     this.username = username;
     this.email = email;
     this.password = password;
-    //
-    this.profileId = profileId;
+    this.profile = profile;
   }
 
-  public void update(String username, String email, String password, UUID profileId) {
-    boolean anyValueUpdated = false;
-    if (username != null && !username.equals(this.username)) {
-      this.username = username;
-      anyValueUpdated = true;
+  public void update(String newUsername, String newEmail, String newPassword,
+      BinaryContent newProfile) {
+    if (newUsername != null && !newUsername.equals(this.username)) {
+      this.username = newUsername;
     }
-    if (email != null && !email.equals(this.email)) {
-      this.email = email;
-      anyValueUpdated = true;
+    if (newEmail != null && !newEmail.equals(this.email)) {
+      this.email = newEmail;
     }
-    if (password != null && !password.equals(this.password)) {
-      this.password = password;
-      anyValueUpdated = true;
+    if (newPassword != null && !newPassword.equals(this.password)) {
+      this.password = newPassword;
     }
-    if (profileId != null && !profileId.equals(this.profileId)) {
-      this.profileId = profileId;
-      anyValueUpdated = true;
-    }
-
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
-
+    if (newProfile != null) {
+      this.profile = newProfile;
     }
   }
 
-
-  @Override
-  public String toString() {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        .withZone(ZoneId.systemDefault());
-
-    String createdAtFormatted = formatter.format(createdAt);
-    String updatedAtFormatted = formatter.format(updatedAt);
-
-    return "🙋‍♂️ User {\n" +
-        "  id         = " + id + "\n" +
-        "  createdAt  = " + createdAtFormatted + "\n" +
-        "  updatedAt  = " + updatedAtFormatted + "\n" +
-        "  username       = '" + username + "'\n" +
-        "  email       = '" + email + "'\n" +
-        "  password       = '" + password + "'\n" +
-        "  profileId       = '" + profileId + "'\n" +
-        "}";
-  }
-
-  // REF : https://www.baeldung.com/java-equals-hashcode-contracts
-  @Override
-  public boolean equals(Object o) {
-    if (o == this) {
-      return true;
-    }
-    if (!(o instanceof User)) {
-      return false;
-    }
-    User other = (User) o;
-    boolean idEquals = (this.id == null && other.id == null)
-        || (this.id != null && this.id.equals(other.id));
-    boolean usernameEquals = (this.username == null && other.username == null)
-        || (this.username != null && this.username.equals(other.username));
-    boolean emailEquals = (this.email == null && other.email == null)
-        || (this.email != null && this.email.equals(other.email));
-
-    return idEquals && usernameEquals && emailEquals;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(this.id, this.email, this.username);
-  }
 }
