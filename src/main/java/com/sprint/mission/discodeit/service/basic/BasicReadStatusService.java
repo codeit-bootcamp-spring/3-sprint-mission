@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.response.ReadStatusResponse;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.ReadStatusException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -10,9 +13,11 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicReadStatusService implements ReadStatusService {
 
   private final ReadStatusRepository readStatusRepository;
@@ -20,12 +25,12 @@ public class BasicReadStatusService implements ReadStatusService {
   private final ChannelRepository channelRepository;
 
   @Override
-  public ReadStatus create(UUID userId, UUID channelId) {
-    userRepository.findById(userId)
+  public ReadStatusResponse create(UUID userId, UUID channelId) {
+    User user = userRepository.findById(userId)
         .orElseThrow(
             () -> ReadStatusException.invalidUserOrChannel(userId, channelId));
 
-    channelRepository.findById(channelId)
+    Channel channel = channelRepository.findById(channelId)
         .orElseThrow(
             () -> ReadStatusException.invalidUserOrChannel(userId, channelId));
 
@@ -34,30 +39,32 @@ public class BasicReadStatusService implements ReadStatusService {
           throw ReadStatusException.duplicate(userId, channelId);
         });
 
-    ReadStatus readStatus = ReadStatus.create(userId, channelId);
+    ReadStatus readStatus = ReadStatus.create(user, channel);
 
-    return readStatusRepository.save(readStatus);
+    return ReadStatusResponse.from(readStatusRepository.save(readStatus));
   }
 
 
   @Override
-  public ReadStatus find(UUID readStatusId) {
+  public ReadStatusResponse find(UUID readStatusId) {
     return readStatusRepository.findById(readStatusId)
+        .map(ReadStatusResponse::from)
         .orElseThrow(() -> ReadStatusException.notFound(readStatusId));
   }
 
   @Override
-  public List<ReadStatus> findAllByUserId(UUID userId) {
-    return readStatusRepository.findAllByUserId(userId);
+  public List<ReadStatusResponse> findAllByUserId(UUID userId) {
+    return readStatusRepository.findAllByUserId(userId).stream()
+        .map(ReadStatusResponse::from).toList();
   }
 
   @Override
-  public ReadStatus update(UUID readStatusId) {
+  public ReadStatusResponse update(UUID readStatusId) {
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> ReadStatusException.notFound(readStatusId));
 
     readStatus.updateLastReadAt();
-    return readStatusRepository.save(readStatus);
+    return ReadStatusResponse.from(readStatusRepository.save(readStatus));
   }
 
   @Override
@@ -65,6 +72,6 @@ public class BasicReadStatusService implements ReadStatusService {
     if (readStatusRepository.findById(reaStatusId).isEmpty()) {
       throw ReadStatusException.notFound(reaStatusId);
     }
-    readStatusRepository.delete(reaStatusId);
+    readStatusRepository.deleteById(reaStatusId);
   }
 }

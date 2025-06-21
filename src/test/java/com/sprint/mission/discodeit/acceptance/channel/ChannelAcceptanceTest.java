@@ -4,6 +4,7 @@ import static com.sprint.mission.discodeit.support.TestUtils.json;
 import static com.sprint.mission.discodeit.support.TestUtils.jsonHeader;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.sprint.mission.discodeit.config.JpaAuditingConfig;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import java.nio.file.Path;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
@@ -51,6 +53,7 @@ import org.springframework.util.MultiValueMap;
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Import(JpaAuditingConfig.class)
 class ChannelAcceptanceTest {
 
   @Autowired

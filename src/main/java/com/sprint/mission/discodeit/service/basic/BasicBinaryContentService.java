@@ -1,23 +1,30 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.exception.BinaryContentException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
 
   @Override
-  public BinaryContent create(BinaryContentData binaryContentData) {
+  public BinaryContentResponse create(BinaryContentData binaryContentData) {
     if (binaryContentData.bytes() == null || binaryContentData.fileName() == null
         || binaryContentData.contentType() == null) {
       throw BinaryContentException.invalidRequest();
@@ -26,29 +33,46 @@ public class BasicBinaryContentService implements BinaryContentService {
     BinaryContent binaryContent = BinaryContent.create(
         binaryContentData.fileName(),
         (long) binaryContentData.bytes().length,
-        binaryContentData.contentType(),
-        binaryContentData.bytes()
+        binaryContentData.contentType()
     );
 
-    return binaryContentRepository.save(binaryContent);
+    BinaryContent saved = binaryContentRepository.save(binaryContent);
+
+    binaryContentStorage.put(saved.getId(), binaryContentData.bytes());
+
+    return BinaryContentResponse.from(saved);
   }
 
   @Override
-  public BinaryContent find(UUID binaryContentId) {
+  public BinaryContentResponse find(UUID binaryContentId) {
     return binaryContentRepository.findById(binaryContentId)
-        .orElseThrow(
-            () -> BinaryContentException.notFound(binaryContentId));
+        .map(BinaryContentResponse::from)
+        .orElseThrow(() -> BinaryContentException.notFound(binaryContentId));
   }
 
   @Override
-  public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
-    return binaryContentIds.stream()
-        .map(this::find)
+  public List<BinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds) {
+    List<BinaryContent> contents = binaryContentRepository.findAllById(binaryContentIds);
+
+    if (contents.size() != binaryContentIds.size()) {
+      throw BinaryContentException.notFound(); // 일부 ID 누락 검증
+    }
+
+    return contents.stream()
+        .map(BinaryContentResponse::from)
         .toList();
   }
 
   @Override
+  public ResponseEntity<Resource> download(UUID binaryContentId) {
+    BinaryContent entity = binaryContentRepository.findById(binaryContentId)
+        .orElseThrow(() -> BinaryContentException.notFound(binaryContentId));
+
+    return binaryContentStorage.download(entity);
+  }
+
+  @Override
   public void delete(UUID id) {
-    binaryContentRepository.delete(id);
+    binaryContentRepository.deleteById(id);
   }
 }

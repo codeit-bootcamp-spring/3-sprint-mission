@@ -1,14 +1,10 @@
 package com.sprint.mission.discodeit.fixture;
 
-import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.Random;
 import java.util.UUID;
 
-/**
- * User 테스트를 위한 Fixture
- */
 public class UserFixture {
 
   private static final String EMAIL_DOMAIN = "test.com";
@@ -18,16 +14,10 @@ public class UserFixture {
   public static final int MIN_PASSWORD_LENGTH = 8;
   public static final int MAX_PASSWORD_LENGTH = 20;
 
-  /**
-   * 랜덤 이메일을 생성한다.
-   */
   private static String generateRandomEmail() {
     return UUID.randomUUID() + "@" + EMAIL_DOMAIN;
   }
 
-  /**
-   * 랜덤 문자열을 생성한다.
-   */
   private static String generateRandomString(int length) {
     Random random = new Random();
     StringBuilder builder = new StringBuilder(length);
@@ -37,9 +27,6 @@ public class UserFixture {
     return builder.toString();
   }
 
-  /**
-   * 기본 유효한 User를 생성한다.
-   */
   public static User createValidUser() {
     Random random = new Random();
     int nameLength = MIN_NAME_LENGTH + random.nextInt(MAX_NAME_LENGTH - MIN_NAME_LENGTH + 1);
@@ -49,43 +36,30 @@ public class UserFixture {
     String randomName = generateRandomString(nameLength);
     String randomPassword = generateRandomString(passwordLength);
 
-    return User.create(generateRandomEmail(), randomName, randomPassword);
+    return User.create(generateRandomEmail(), randomName, randomPassword, null);
   }
 
-  /**
-   * 프로필 이미지를 포함하는 User를 생성한다.
-   */
-  public static User createValidUserWithProfileImage() {
+  public static User createValidUser(BinaryContent profile) {
     User user = createValidUser();
-    BinaryContent profileImage = BinaryContentFixture.createValid();
-    user.updateProfileId(profileImage.getId());
+    user.updateProfile(profile);
     return user;
   }
 
-  /**
-   * 커스텀 User를 생성한다.
-   */
-  public static User createCustomUser(String email, String name, String password) {
-    return User.create(email, name, password);
+  public static User createValidUserWithId() {
+    User user = createValidUser();
+    user.assignIdForTest(UUID.randomUUID());
+    return user;
   }
 
-  /**
-   * UserCreateRequest를 기반으로 User를 생성한다.
-   */
-  public static User createCustomUser(UserCreateRequest dto, BinaryContent profileImage) {
-    UUID profileImageId = null;
+  public static User createCustomUser(String email, String name, String password,
+      BinaryContent profile) {
+    return User.create(email, name, password, profile);
+  }
 
-    if (profileImage != null) {
-      String fileName = profileImage.getFileName();
-      String contentType = profileImage.getContentType();
-      byte[] bytes = profileImage.getBytes();
-
-      BinaryContent savedProfileImage = BinaryContent.create(fileName, (long) fileName.length(),
-          contentType, bytes);
-
-      profileImageId = savedProfileImage.getId();
-    }
-
-    return User.create(dto.email(), dto.username(), dto.password(), profileImageId);
+  public static User createCustomUserWithId(String email, String name, String password,
+      BinaryContent profile) {
+    User user = User.create(email, name, password, profile);
+    user.assignIdForTest(UUID.randomUUID());
+    return user;
   }
 }

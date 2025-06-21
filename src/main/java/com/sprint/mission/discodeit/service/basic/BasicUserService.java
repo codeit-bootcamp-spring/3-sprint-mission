@@ -5,30 +5,34 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.UserException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicUserService implements UserService {
-
-  private static final Logger log = LogManager.getLogger(BasicUserService.class);
 
   private final UserRepository userRepository;
   private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
+  private final UserMapper userMapper;
 
   @Override
   public UserResponse create(CreateUserCommand command) {
@@ -45,16 +49,16 @@ public class BasicUserService implements UserService {
     User savedUser = userRepository.save(newUser);
 
     // 유저 상태 초기화
-    userStatusRepository.save(UserStatus.create(savedUser.getId()));
+    userStatusRepository.save(UserStatus.create(savedUser));
 
-    UUID savedProfileImageId = null;
-    if (command.profile() != null && command.profile().bytes() != null) {
+    BinaryContent savedProfile = null;
+    if (command.profile() != null) {
       // 프로필 이미지 첨부 시 저장 및 유저 업데이트
-      savedProfileImageId = saveProfileImage(command.profile());
+      savedProfile = saveProfileImage(command.profile());
     }
 
-    if (savedProfileImageId != null) {
-      savedUser.updateProfileId(savedProfileImageId);
+    if (savedProfile != null) {
+      savedUser.updateProfile(savedProfile);
       userRepository.save(savedUser); // 프로필 반영 후 다시 저장
     }
 
@@ -68,7 +72,7 @@ public class BasicUserService implements UserService {
   }
 
   private void validateUserName(String name) {
-    userRepository.findByName(name).ifPresent(user -> {
+    userRepository.findByUsername(name).ifPresent(user -> {
       throw UserException.duplicateName();
     });
   }
@@ -81,7 +85,7 @@ public class BasicUserService implements UserService {
 
   @Override
   public UserResponse findByName(String name) {
-    return userRepository.findByName(name).map(this::toUserResponse)
+    return userRepository.findByUsername(name).map(this::toUserResponse)
         .orElseThrow(UserException::notFound);
   }
 
@@ -100,7 +104,7 @@ public class BasicUserService implements UserService {
   public UserResponse update(UpdateUserCommand command) {
     return userRepository.findById(command.userId())
         .map(user -> {
-          if (command.newName() != null && !command.newName().equals(user.getName())) {
+          if (command.newName() != null && !command.newName().equals(user.getUsername())) {
             validateUserName(command.newName());
             user.updateName(command.newName());
           }
@@ -112,12 +116,13 @@ public class BasicUserService implements UserService {
             user.updatePassword(command.newPassword());
           }
 
-          UUID savedProfileImageId = null;
+          BinaryContent savedProfile = null;
           if (command.profile() != null && command.profile().bytes() != null) {
-            Optional.ofNullable(user.getProfileId()).ifPresent(binaryContentRepository::delete);
+            Optional.ofNullable(user.getProfile())
+                .ifPresent(profile -> binaryContentRepository.deleteById(profile.getId()));
 
-            savedProfileImageId = saveProfileImage(command.profile());
-            user.updateProfileId(savedProfileImageId);
+            savedProfile = saveProfileImage(command.profile());
+            user.updateProfile(savedProfile);
           }
 
           User savedUser = userRepository.save(user);
@@ -128,28 +133,31 @@ public class BasicUserService implements UserService {
   @Override
   public void delete(UUID userId) {
     userRepository.findById(userId).ifPresentOrElse(user -> {
-      userRepository.delete(userId);
+      userRepository.deleteById(userId);
 
-      Optional.ofNullable(user.getProfileId())
-          .ifPresent(binaryContentRepository::delete);
+      Optional.ofNullable(user.getProfile())
+          .ifPresent(profile -> binaryContentRepository.deleteById(profile.getId()));
 
       userStatusRepository.findByUserId(userId)
-          .ifPresent(status -> userStatusRepository.delete(status.getId()));
+          .ifPresent(status -> userStatusRepository.deleteById(status.getId()));
     }, () -> {
       throw UserException.notFound(userId);
     });
   }
 
-  private UUID saveProfileImage(BinaryContentData profile) {
+  private BinaryContent saveProfileImage(BinaryContentData profile) {
     try {
       BinaryContent binaryContent = BinaryContent.create(
           profile.fileName(),
           (long) profile.bytes().length,
-          profile.contentType(),
-          profile.bytes()
+          profile.contentType()
       );
 
-      return binaryContentRepository.save(binaryContent).getId();
+      BinaryContent saved = binaryContentRepository.save(binaryContent);
+
+      binaryContentStorage.put(saved.getId(), profile.bytes());
+
+      return saved;
     } catch (Exception e) {
       log.warn("프로필 이미지 등록 실패: 기본 이미지 사용", e);
       return null;
@@ -157,16 +165,17 @@ public class BasicUserService implements UserService {
   }
 
   private UserResponse toUserResponse(User user) {
-    Boolean isOnline = userStatusRepository.findByUserId(user.getId())
-        .map(UserStatus::isOnline).orElse(null);
+    boolean isOnline = userStatusRepository.findByUserId(user.getId())
+        .map(UserStatus::isOnline)
+        .orElse(false);
+
+    UserResponse base = userMapper.toResponse(user);
     return new UserResponse(
-        user.getId(),
-        user.getCreatedAt(),
-        user.getUpdatedAt(),
-        user.getName(),
-        user.getEmail(),
-        user.getProfileId(),
-        Boolean.TRUE.equals(isOnline)
+        base.id(),
+        base.username(),
+        base.email(),
+        base.profile(),
+        isOnline
     );
   }
 }
