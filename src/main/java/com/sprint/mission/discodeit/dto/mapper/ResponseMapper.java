@@ -1,7 +1,11 @@
 package com.sprint.mission.discodeit.dto.mapper;
 
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.response.*;
 import com.sprint.mission.discodeit.entity.*;
+
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ResponseMapper {
 
@@ -12,7 +16,19 @@ public class ResponseMapper {
         user.getUpdatedAt(),
         user.getUsername(),
         user.getEmail(),
-        user.getProfileId()
+        Optional.ofNullable(user.getProfile()).map(BinaryContent::getId).orElse(null)
+    // password 제외 - 보안상 노출 안함
+    );
+  }
+
+  public static UserResponse toResponse(UserDto userDto) {
+    return new UserResponse(
+        userDto.id(),
+        userDto.createdAt(),
+        userDto.updatedAt(),
+        userDto.username(),
+        userDto.email(),
+        Optional.ofNullable(userDto.profile()).map(profile -> profile.id()).orElse(null)
     // password 제외 - 보안상 노출 안함
     );
   }
@@ -33,9 +49,11 @@ public class ResponseMapper {
         message.getCreatedAt(),
         message.getUpdatedAt(),
         message.getContent(),
-        message.getChannelId(),
-        message.getAuthorId(),
-        message.getAttachmentIds());
+        message.getChannel().getId(),
+        Optional.ofNullable(message.getAuthor()).map(User::getId).orElse(null),
+        message.getMessageAttachments().stream()
+            .map(messageAttachment -> messageAttachment.getAttachment().getId())
+            .collect(Collectors.toList()));
   }
 
   public static ReadStatusResponse toResponse(ReadStatus readStatus) {
@@ -43,8 +61,8 @@ public class ResponseMapper {
         readStatus.getId(),
         readStatus.getCreatedAt(),
         readStatus.getUpdatedAt(),
-        readStatus.getUserId(),
-        readStatus.getChannelId(),
+        readStatus.getUser().getId(),
+        readStatus.getChannel().getId(),
         readStatus.getLastReadAt());
   }
 
@@ -53,7 +71,7 @@ public class ResponseMapper {
         userStatus.getId(),
         userStatus.getCreatedAt(),
         userStatus.getUpdatedAt(),
-        userStatus.getUserId(),
+        userStatus.getUser().getId(),
         userStatus.getLastActiveAt(),
         userStatus.isOnline());
   }
@@ -64,7 +82,6 @@ public class ResponseMapper {
         binaryContent.getCreatedAt(),
         binaryContent.getFileName(),
         binaryContent.getSize(),
-        binaryContent.getContentType(),
-        binaryContent.getBytes());
+        binaryContent.getContentType());
   }
 }

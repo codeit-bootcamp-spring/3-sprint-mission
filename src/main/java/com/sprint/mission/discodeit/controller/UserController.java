@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -34,6 +33,7 @@ public class UserController implements UserApi {
 
   private final UserService userService;
   private final UserStatusService userStatusService;
+  private final ResponseMapper responseMapper;
 
   @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
   @Override
@@ -42,7 +42,7 @@ public class UserController implements UserApi {
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
-    User createdUser = userService.create(userCreateRequest, profileRequest);
+    UserDto createdUser = userService.create(userCreateRequest, profileRequest);
     UserResponse response = ResponseMapper.toResponse(createdUser);
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -57,8 +57,8 @@ public class UserController implements UserApi {
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
     Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
         .flatMap(this::resolveProfileRequest);
-    User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
-    UserResponse response = ResponseMapper.toResponse(updatedUser);
+    UserDto updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
+    UserResponse response = responseMapper.toResponse(updatedUser);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(response);
@@ -87,7 +87,7 @@ public class UserController implements UserApi {
   public ResponseEntity<UserStatusResponse> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
       @RequestBody UserStatusUpdateRequest request) {
     UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, request);
-    UserStatusResponse response = ResponseMapper.toResponse(updatedUserStatus);
+    UserStatusResponse response = responseMapper.toResponse(updatedUserStatus);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(response);
