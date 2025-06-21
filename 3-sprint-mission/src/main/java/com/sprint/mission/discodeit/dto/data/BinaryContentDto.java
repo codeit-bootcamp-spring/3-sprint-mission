@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.dto.data;
 
 import java.util.UUID;
 
-public record BinaryContentDTO(
+public record BinaryContentDto(
 
     UUID id,
     String fileName,

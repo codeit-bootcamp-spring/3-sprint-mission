@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.data.ChannelDTO;
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
-@Transactional
 public class BasicChannelService implements ChannelService {
 
   private final UserRepository userRepository;
@@ -34,8 +33,9 @@ public class BasicChannelService implements ChannelService {
 
   // Private 채널 생성
   @Override
-  public ChannelDTO create(PrivateChannelCreateRequest channelCreateDTO) {
-    List<UUID> participantIds = channelCreateDTO.participantIds();
+  @Transactional
+  public ChannelDto create(PrivateChannelCreateRequest channelCreateDto) {
+    List<UUID> participantIds = channelCreateDto.participantIds();
 
     Channel channel =
         Channel.builder()
@@ -57,14 +57,15 @@ public class BasicChannelService implements ChannelService {
         .toList();
     readStatusRepository.saveAll(readStatuses);
 
-    return channelMapper.toDTO(channel);
+    return channelMapper.toDto(channel);
   }
 
   // Public 채널 생성
   @Override
-  public ChannelDTO create(PublicChannelCreateRequest channelCreateDTO) {
-    String name = channelCreateDTO.name();
-    String description = channelCreateDTO.description();
+  @Transactional
+  public ChannelDto create(PublicChannelCreateRequest channelCreateDto) {
+    String name = channelCreateDto.name();
+    String description = channelCreateDto.description();
 
     Channel channel =
         Channel.builder()
@@ -75,39 +76,39 @@ public class BasicChannelService implements ChannelService {
 
     channelRepository.save(channel);
 
-    return channelMapper.toDTO(channel);
+    return channelMapper.toDto(channel);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public ChannelDTO find(UUID id) {
+  public ChannelDto find(UUID id) {
 
     return channelRepository.findById(id)
-        .map(channelMapper::toDTO)
+        .map(channelMapper::toDto)
         .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다."));
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<ChannelDTO> findByName(String name) {
+  public List<ChannelDto> findByName(String name) {
 
     return channelRepository.findByName(name).stream()
-        .map(channelMapper::toDTO)
+        .map(channelMapper::toDto)
         .toList();
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<ChannelDTO> findAll() {
+  public List<ChannelDto> findAll() {
 
     return channelRepository.findAll().stream()
-        .map(channelMapper::toDTO)
+        .map(channelMapper::toDto)
         .toList();
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<ChannelDTO> findAllByUserId(UUID userId) {
+  public List<ChannelDto> findAllByUserId(UUID userId) {
     List<UUID> mySubscribedChannelIds =
         readStatusRepository.findAllByUserId(userId).stream()
             .map(ReadStatus::getChannel)
@@ -116,12 +117,13 @@ public class BasicChannelService implements ChannelService {
 
     return channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC, mySubscribedChannelIds)
         .stream()
-        .map(channelMapper::toDTO)
+        .map(channelMapper::toDto)
         .toList();
   }
 
   @Override
-  public ChannelDTO update(UUID id, PublicChannelUpdateRequest request) {
+  @Transactional
+  public ChannelDto update(UUID id, PublicChannelUpdateRequest request) {
     String newName = request.newName();
     String newDescription = request.newDescription();
 
@@ -134,10 +136,11 @@ public class BasicChannelService implements ChannelService {
 
     channel.update(newName, newDescription);
 
-    return channelMapper.toDTO(channel);
+    return channelMapper.toDto(channel);
   }
 
   @Override
+  @Transactional
   public void delete(UUID id) {
     Channel channel = channelRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("해당 채팅방이 존재하지 않습니다."));

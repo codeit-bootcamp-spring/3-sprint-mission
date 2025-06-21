@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.data.MessageDTO;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
-@Transactional
 public class BasicMessageService implements MessageService {
 
   private final UserRepository userRepository;
@@ -42,7 +41,8 @@ public class BasicMessageService implements MessageService {
   private final PageResponseMapper pageResponseMapper;
 
   @Override
-  public MessageDTO create(MessageCreateRequest messageCreateRequest,
+  @Transactional
+  public MessageDto create(MessageCreateRequest messageCreateRequest,
       List<BinaryContentCreateRequest> binaryContentCreateRequests) {
     UUID userId = messageCreateRequest.authorId();
     UUID channelId = messageCreateRequest.channelId();
@@ -83,21 +83,21 @@ public class BasicMessageService implements MessageService {
             .build();
 
     messageRepository.save(message);
-    return messageMapper.toDTO(message);
+    return messageMapper.toDto(message);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public PageResponse<MessageDTO> findAllByChannelId(
+  public PageResponse<MessageDto> findAllByChannelId(
       UUID channelId,
       Instant createdAt,
       Pageable pageable
   ) {
-    Slice<MessageDTO> slice = messageRepository.findAllByChannelId(
+    Slice<MessageDto> slice = messageRepository.findAllByChannelId(
         channelId,
         Optional.ofNullable(createdAt).orElse(Instant.now()),
         pageable
-    ).map(messageMapper::toDTO);
+    ).map(messageMapper::toDto);
 
     Instant nextCursor = null;
     if (!slice.getContent().isEmpty()) {
@@ -109,28 +109,28 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional(readOnly = true)
-  public MessageDTO find(UUID id) {
+  public MessageDto find(UUID id) {
 
     return messageRepository.findById(id)
-        .map(messageMapper::toDTO)
+        .map(messageMapper::toDto)
         .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다."));
   }
 
 
   @Override
   @Transactional(readOnly = true)
-  public PageResponse<MessageDTO> findAllByChannelIdAndContent(
+  public PageResponse<MessageDto> findAllByChannelIdAndContent(
       UUID channelId,
       String content,
       Instant createdAt,
       Pageable pageable
   ) {
-    Slice<MessageDTO> slice = messageRepository.findAllByChannelIdAndContent(
+    Slice<MessageDto> slice = messageRepository.findAllByChannelIdAndContent(
         channelId,
         content,
         Optional.ofNullable(createdAt).orElse(Instant.now()),
         pageable
-    ).map(messageMapper::toDTO);
+    ).map(messageMapper::toDto);
 
     Instant nextCursor = null;
     if (!slice.getContent().isEmpty()) {
@@ -141,16 +141,18 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public MessageDTO update(UUID id, MessageUpdateRequest messageUpdateDTO) {
-    String newContent = messageUpdateDTO.newContent();
+  @Transactional
+  public MessageDto update(UUID id, MessageUpdateRequest messageUpdateDto) {
+    String newContent = messageUpdateDto.newContent();
     Message message = messageRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다."));
     message.update(newContent);
 
-    return messageMapper.toDTO(message);
+    return messageMapper.toDto(message);
   }
 
   @Override
+  @Transactional
   public void delete(UUID id) {
     Message message = messageRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다."));

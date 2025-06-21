@@ -5,12 +5,12 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-public record ChannelDTO(
+public record ChannelDto(
 
     UUID id,
     String name,
     String description,
-    List<UserDTO> participants,
+    List<UserDto> participants,
     ChannelType type,
     Instant lastMessageAt
 ) {

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.data.BinaryContentDTO;
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
-@Transactional
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
@@ -24,7 +23,8 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final BinaryContentMapper binaryContentMapper;
 
   @Override
-  public BinaryContentDTO create(BinaryContentCreateRequest request) {
+  @Transactional
+  public BinaryContentDto create(BinaryContentCreateRequest request) {
     String fileName = request.fileName();
     byte[] bytes = request.bytes();
     String contentType = request.contentType();
@@ -39,27 +39,28 @@ public class BasicBinaryContentService implements BinaryContentService {
     binaryContentRepository.save(binaryContent);
     binaryContentStorage.put(binaryContent.getId(), bytes);
 
-    return binaryContentMapper.toDTO(binaryContent);
+    return binaryContentMapper.toDto(binaryContent);
 
   }
 
   @Override
   @Transactional(readOnly = true)
-  public BinaryContentDTO find(UUID id) {
-    return binaryContentRepository.findById(id)
-        .map(binaryContentMapper::toDTO)
+  public BinaryContentDto find(UUID binaryContentId) {
+    return binaryContentRepository.findById(binaryContentId)
+        .map(binaryContentMapper::toDto)
         .orElseThrow(() -> new NoSuchElementException("해당 파일이 존재하지 않습니다."));
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<BinaryContentDTO> findAllByIdIn(List<UUID> ids) {
+  public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
     return binaryContentRepository.findAllById(ids).stream()
-        .map(binaryContentMapper::toDTO)
+        .map(binaryContentMapper::toDto)
         .toList();
   }
 
   @Override
+  @Transactional
   public void delete(UUID id) {
     if (!binaryContentRepository.existsById(id)) {
       throw new NoSuchElementException("해당 파일이 존재하지 않습니다.");

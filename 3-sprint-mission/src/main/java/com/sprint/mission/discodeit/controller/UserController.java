@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.UserAPI;
-import com.sprint.mission.discodeit.dto.data.UserDTO;
-import com.sprint.mission.discodeit.dto.data.UserStatusDTO;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
@@ -57,16 +57,16 @@ public class UserController implements UserAPI {
   // 신규 유저 생성 요청
   @Override
   @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-  public ResponseEntity<UserDTO> create(
-      @RequestPart("userCreateRequest") UserCreateRequest request,
+  public ResponseEntity<UserDto> create(
+      @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
 
-    Optional<BinaryContentCreateRequest> profileDTO =
+    Optional<BinaryContentCreateRequest> profileRequest =
         Optional.ofNullable(profile)
             .flatMap(this::resolveProfileRequest);
 
-    UserDTO createdUser = userService.create(request, profileDTO);
+    UserDto createdUser = userService.create(userCreateRequest, profileRequest);
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -75,8 +75,9 @@ public class UserController implements UserAPI {
 
   // 유저 다건 조회
   @GetMapping
-  public ResponseEntity<List<UserDTO>> findAll() {
-    List<UserDTO> users = userService.findAll();
+  @Override
+  public ResponseEntity<List<UserDto>> findAll() {
+    List<UserDto> users = userService.findAll();
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(users);
@@ -84,19 +85,19 @@ public class UserController implements UserAPI {
 
   // 유저 정보 수정
   @PatchMapping(
-      value = "/{userId}",
-      produces = MediaType.MULTIPART_FORM_DATA_VALUE
+      path = "{userId}",
+      consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
   )
-  public ResponseEntity<UserDTO> update(
+  public ResponseEntity<UserDto> update(
       @PathVariable("userId") UUID userId,
-      @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateDTO,
+      @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    Optional<BinaryContentCreateRequest> profileDTO =
+    Optional<BinaryContentCreateRequest> profileRequest =
         Optional.ofNullable(profile)
             .flatMap(this::resolveProfileRequest);
 
-    UserDTO user = userService.update(userId, userUpdateDTO, profileDTO);
+    UserDto user = userService.update(userId, userUpdateRequest, profileRequest);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(user);
@@ -109,7 +110,7 @@ public class UserController implements UserAPI {
   public ResponseEntity<String> delete(
       @PathVariable("userId") UUID userId
   ) {
-    UserDTO user = userService.find(userId);
+    UserDto user = userService.find(userId);
     String username = user.username();
 
     userService.delete(userId);
@@ -121,41 +122,35 @@ public class UserController implements UserAPI {
 
   // 유저 상태 업데이트
   @PatchMapping(
-      value = "/{userId}/userStatus",
-      produces = MediaType.APPLICATION_JSON_VALUE
+      path = "{userId}/userStatus"
   )
-  public ResponseEntity<UserStatusDTO> updateUserStatusByUserId(
-      @PathVariable UUID userId,
+  public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
+      @PathVariable("userId") UUID userId,
       @RequestBody UserStatusUpdateRequest request
   ) {
-
-    System.out.println("userId = " + userId);
-    System.out.println("request = " + request);
-
-    UserStatusDTO userStatus = userStatusService.updateByUserId(userId, request);
-    System.out.println(userStatus.toString());
+    UserStatusDto userStatus = userStatusService.updateByUserId(userId, request);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(userStatus);
   }
 
   // MultipartFile 타입의 요청값을 BinaryContentCreateRequest 타입으로 변환하기 위한 메서드
-  private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profile) {
+  private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
 
-    if (profile.isEmpty()) {
+    if (profileFile.isEmpty()) {
       // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 비어있다면:
       return Optional.empty();
 
     } else {
       // 컨트롤러가 요청받은 파라미터 중 MultipartFile 타입의 데이터가 존재한다면:
-      BinaryContentCreateRequest binaryContentCreateDTO = null;
       try {
-        binaryContentCreateDTO = new BinaryContentCreateRequest(
-            profile.getOriginalFilename(),
-            profile.getContentType(),
-            profile.getBytes()
-        );
-        return Optional.of(binaryContentCreateDTO);
+        BinaryContentCreateRequest binaryContentCreateRequest =
+            new BinaryContentCreateRequest(
+                profileFile.getOriginalFilename(),
+                profileFile.getContentType(),
+                profileFile.getBytes()
+            );
+        return Optional.of(binaryContentCreateRequest);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

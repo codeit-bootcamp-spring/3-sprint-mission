@@ -22,7 +22,7 @@ spring:
           highlight_sql: true
           use_sql_comments: true
           ddl-auto: update
-      open-in-view: false
+      open-in-view: true
 
     logging:
       level:
@@ -31,6 +31,9 @@ spring:
 
   application:
     name: discodeit
+
+jdbc:
+  time_zone: UTC
 
 discodeit:
   storage:

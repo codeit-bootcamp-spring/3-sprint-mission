@@ -14,10 +14,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Getter
-@ToString
 @Table(name = "user_statuses", schema = "discodeit")
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -43,10 +41,10 @@ public class UserStatus extends BaseUpdatableEntity {
     }
   }
 
-  public Boolean online() {
-    Boolean online =
+  public Boolean isOnline() {
+    Boolean isOnline =
         this.lastActiveAt.isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));
-    return online;
+    return isOnline;
 
   }
 

@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.MessageAPI;
-import com.sprint.mission.discodeit.dto.data.MessageDTO;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
@@ -41,7 +41,7 @@ public class MessageController implements MessageAPI {
 
   @PostMapping(
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<MessageDTO> create(
+  public ResponseEntity<MessageDto> create(
       @RequestPart(value = "messageCreateRequest") MessageCreateRequest messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
@@ -62,7 +62,7 @@ public class MessageController implements MessageAPI {
             .toList())
         .orElse(new ArrayList<>());
 
-    MessageDTO createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
+    MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -73,7 +73,7 @@ public class MessageController implements MessageAPI {
   @GetMapping(
       produces = MediaType.APPLICATION_JSON_VALUE
   )
-  public ResponseEntity<PageResponse<MessageDTO>> findAllByChannelId(
+  public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
       @RequestParam UUID channelId,
       @RequestParam(value = "cursor", required = false) Instant cursor,
       @PageableDefault(
@@ -83,7 +83,7 @@ public class MessageController implements MessageAPI {
           direction = Direction.DESC
       ) Pageable pageable
   ) {
-    PageResponse<MessageDTO> messages = messageService.findAllByChannelId(channelId, cursor,
+    PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor,
         pageable);
     return ResponseEntity
         .status(HttpStatus.OK)
@@ -95,12 +95,12 @@ public class MessageController implements MessageAPI {
       value = "/{messageId}",
       produces = MediaType.APPLICATION_JSON_VALUE
   )
-  public ResponseEntity<MessageDTO> update(
+  public ResponseEntity<MessageDto> update(
       @PathVariable("messageId") UUID messageId
-      , @RequestBody MessageUpdateRequest messageUpdateDTO
+      , @RequestBody MessageUpdateRequest messageUpdateDto
   ) {
 
-    MessageDTO createdMessage = messageService.update(messageId, messageUpdateDTO);
+    MessageDto createdMessage = messageService.update(messageId, messageUpdateDto);
 
     return ResponseEntity
         .status(HttpStatus.OK)

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.data.UserStatusDTO;
+import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
-@Transactional
 public class BasicUserStatusService implements UserStatusService {
 
   private final UserStatusRepository userStatusRepository;
@@ -28,7 +27,8 @@ public class BasicUserStatusService implements UserStatusService {
   private final UserStatusMapper userStatusMapper;
 
   @Override
-  public UserStatusDTO create(UserStatusCreateRequest request) {
+  @Transactional
+  public UserStatusDto create(UserStatusCreateRequest request) {
     UUID userId = request.userId();
 
     if (!userRepository.existsById(userId)) {
@@ -54,39 +54,41 @@ public class BasicUserStatusService implements UserStatusService {
             .lastActiveAt(lastActiveAt)
             .build();
     userStatusRepository.save(userStatus);
-    return userStatusMapper.toDTO(userStatus);
+    return userStatusMapper.toDto(userStatus);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public UserStatusDTO find(UUID id) {
+  public UserStatusDto find(UUID id) {
     return userStatusRepository.findById(id)
-        .map(userStatusMapper::toDTO)
+        .map(userStatusMapper::toDto)
         .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + id + " not found"));
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<UserStatusDTO> findAll() {
+  public List<UserStatusDto> findAll() {
     return userStatusRepository.findAll().stream()
-        .map(userStatusMapper::toDTO)
+        .map(userStatusMapper::toDto)
         .toList();
   }
 
   @Override
-  public UserStatusDTO update(UUID id, UserStatusUpdateRequest request) {
+  @Transactional
+  public UserStatusDto update(UUID id, UserStatusUpdateRequest request) {
     Instant newLastActiveAt = request.newLastActiveAt();
 
     UserStatus userStatus = userStatusRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + id + " not found"));
     userStatus.update(newLastActiveAt);
 
-    return userStatusMapper.toDTO(userStatus);
+    return userStatusMapper.toDto(userStatus);
   }
 
   @Override
-  public UserStatusDTO updateByUserId(UUID userId, UserStatusUpdateRequest userStatusUpdateDTO) {
-    Instant newLastActiveAt = userStatusUpdateDTO.newLastActiveAt();
+  @Transactional
+  public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest userStatusUpdateDto) {
+    Instant newLastActiveAt = userStatusUpdateDto.newLastActiveAt();
 
     UserStatus userStatus = userStatusRepository.findByUserId(userId)
         .orElseThrow(
@@ -94,10 +96,11 @@ public class BasicUserStatusService implements UserStatusService {
 
     userStatus.update(newLastActiveAt);
 
-    return userStatusMapper.toDTO(userStatus);
+    return userStatusMapper.toDto(userStatus);
   }
 
   @Override
+  @Transactional
   public void delete(UUID id) {
     if (!userStatusRepository.existsById(id)) {
       throw new NoSuchElementException("UserStatus with id " + id + " not found");

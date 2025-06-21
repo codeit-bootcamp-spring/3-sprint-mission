@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ReadStatusAPI;
-import com.sprint.mission.discodeit.dto.data.ReadStatusDTO;
+import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.ReadStatusService;
@@ -27,10 +27,10 @@ public class ReadStatusController implements ReadStatusAPI {
   private final ReadStatusService readStatusService;
 
   @PostMapping
-  public ResponseEntity<ReadStatusDTO> create(
+  public ResponseEntity<ReadStatusDto> create(
       @RequestBody ReadStatusCreateRequest request
   ) {
-    ReadStatusDTO readStatus = readStatusService.create(request);
+    ReadStatusDto readStatus = readStatusService.create(request);
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -40,11 +40,11 @@ public class ReadStatusController implements ReadStatusAPI {
   @PatchMapping(
       value = "/{readStatusId}"
   )
-  public ResponseEntity<ReadStatusDTO> update(
+  public ResponseEntity<ReadStatusDto> update(
       @PathVariable UUID readStatusId,
-      @RequestBody ReadStatusUpdateRequest readStatusUpdateDTO
+      @RequestBody ReadStatusUpdateRequest readStatusUpdateDto
   ) {
-    ReadStatusDTO readStatusUpdate = readStatusService.update(readStatusId, readStatusUpdateDTO);
+    ReadStatusDto readStatusUpdate = readStatusService.update(readStatusId, readStatusUpdateDto);
 
     return ResponseEntity
         .status(HttpStatus.OK)
@@ -52,14 +52,14 @@ public class ReadStatusController implements ReadStatusAPI {
   }
 
   @GetMapping
-  public ResponseEntity<List<ReadStatusDTO>> findAllByUserId(
+  public ResponseEntity<List<ReadStatusDto>> findAllByUserId(
       @RequestParam("userId") UUID userId
   ) {
 //        List<ReadStatus> readStatus = readStatusService.findAll();
-    List<ReadStatusDTO> readStatusDTO = readStatusService.findAllByUserId(userId);
+    List<ReadStatusDto> readStatusDto = readStatusService.findAllByUserId(userId);
 
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(readStatusDTO);
+        .body(readStatusDto);
   }
 }

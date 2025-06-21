@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ChannelAPI;
-import com.sprint.mission.discodeit.dto.data.ChannelDTO;
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
@@ -34,11 +34,11 @@ public class ChannelController implements ChannelAPI {
       value = "/public"
       , consumes = MediaType.APPLICATION_JSON_VALUE
   )
-  public ResponseEntity<ChannelDTO> create(
-      @RequestBody PublicChannelCreateRequest publicChannelCreateDTO
+  public ResponseEntity<ChannelDto> create(
+      @RequestBody PublicChannelCreateRequest publicChannelCreateDto
   ) {
 
-    ChannelDTO createdChannel = channelService.create(publicChannelCreateDTO);
+    ChannelDto createdChannel = channelService.create(publicChannelCreateDto);
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -49,11 +49,11 @@ public class ChannelController implements ChannelAPI {
   @PostMapping(
       value = "/private"
       , consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<ChannelDTO> create(
-      @RequestBody PrivateChannelCreateRequest privateChannelCreateDTO
+  public ResponseEntity<ChannelDto> create(
+      @RequestBody PrivateChannelCreateRequest privateChannelCreateDto
   ) {
 
-    ChannelDTO createdChannel = channelService.create(privateChannelCreateDTO);
+    ChannelDto createdChannel = channelService.create(privateChannelCreateDto);
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -65,11 +65,11 @@ public class ChannelController implements ChannelAPI {
       value = "/{channelId}",
       produces = MediaType.APPLICATION_JSON_VALUE
   )
-  public ResponseEntity<ChannelDTO> update(
+  public ResponseEntity<ChannelDto> update(
       @PathVariable UUID channelId,
-      @RequestBody PublicChannelUpdateRequest publicChannelUpdateDTO
+      @RequestBody PublicChannelUpdateRequest publicChannelUpdateDto
   ) {
-    ChannelDTO channel = channelService.update(channelId, publicChannelUpdateDTO);
+    ChannelDto channel = channelService.update(channelId, publicChannelUpdateDto);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(channel);
@@ -82,7 +82,7 @@ public class ChannelController implements ChannelAPI {
   public ResponseEntity<String> delete(
       @PathVariable UUID channelId
   ) {
-    ChannelDTO channel = channelService.find(channelId);
+    ChannelDto channel = channelService.find(channelId);
     String channelName = channel.name();
 
     channelService.delete(channelId);
@@ -94,10 +94,10 @@ public class ChannelController implements ChannelAPI {
 
   // 특정 유저가 볼 수 있는 채널 목록 조회
   @GetMapping()
-  public ResponseEntity<List<ChannelDTO>> findAll(
+  public ResponseEntity<List<ChannelDto>> findAll(
       @RequestParam("userId") UUID userId
   ) {
-    List<ChannelDTO> channels = channelService.findAllByUserId(userId);
+    List<ChannelDto> channels = channelService.findAllByUserId(userId);
 
     return ResponseEntity
         .status(HttpStatus.OK)
