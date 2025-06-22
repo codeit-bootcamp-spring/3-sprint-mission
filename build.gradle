@@ -50,6 +50,8 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 
     implementation 'org.springframework.boot:spring-boot-starter-validation:3.5.0'
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator:3.5.0'
 }
 
 tasks.withType(JavaCompile) {
