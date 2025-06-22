@@ -1,0 +1,13 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/discodeit_dev
+    username: dev_user
+    password: dev_1234
+
+    logging:
+      level:
+        org.hibernate.sql: DEBUG
+        org.hibernate.orm.jdbc.bind: trace

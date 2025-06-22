@@ -15,11 +15,13 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicUserStatusService implements UserStatusService {
 
   private final UserStatusRepository userStatusRepository;
@@ -32,10 +34,10 @@ public class BasicUserStatusService implements UserStatusService {
     UUID userId = request.userId();
 
     if (!userRepository.existsById(userId)) {
-      throw new NoSuchElementException("User with id " + userId + " does not exist");
+      log.warn("존재하지 않는 사용자입니다. userId={}", userId);
     }
     if (userStatusRepository.findByUserId(userId).isPresent()) {
-      throw new IllegalArgumentException("UserStatus with id " + userId + " already exists");
+      log.warn("이미 존재하는 사용자 상태입니다. userId={}", userId);
     }
 
     User user = userRepository.findById(userId)
@@ -47,13 +49,20 @@ public class BasicUserStatusService implements UserStatusService {
         });
 
     Instant lastActiveAt = request.lastLoginTime();
+
+    log.debug("UserStatus 객체 생성 시작 request={}", request);
     UserStatus userStatus =
         UserStatus
             .builder()
             .user(user)
             .lastActiveAt(lastActiveAt)
             .build();
+    log.debug("UserStatus 객체 생성 완료 userId={}", userStatus.getUser().getId());
+
+    log.debug("[userStatusRepository] 데이터 저장 시작 userStatusId={}", userStatus.getId());
     userStatusRepository.save(userStatus);
+    log.debug("[userStatusRepository] 데이터 저장 완료 userStatusId={}", userStatus.getId());
+
     return userStatusMapper.toDto(userStatus);
   }
 
@@ -79,8 +88,14 @@ public class BasicUserStatusService implements UserStatusService {
     Instant newLastActiveAt = request.newLastActiveAt();
 
     UserStatus userStatus = userStatusRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + id + " not found"));
+        .orElseThrow(() -> {
+          log.warn("존재하지 않는 사용자 상태입니다. userStatusId={}", id);
+          return new NoSuchElementException("UserStatus with id " + id + " not found");
+        });
+
+    log.debug("UserStatus 업데이트 시작 userStatusId={}", userStatus.getId());
     userStatus.update(newLastActiveAt);
+    log.debug("UserStatus 업데이트 완료 userStatusId={}", userStatus.getId());
 
     return userStatusMapper.toDto(userStatus);
   }
@@ -92,9 +107,14 @@ public class BasicUserStatusService implements UserStatusService {
 
     UserStatus userStatus = userStatusRepository.findByUserId(userId)
         .orElseThrow(
-            () -> new NoSuchElementException("UserStatus with userId " + userId + " not found"));
+            () -> {
+              log.warn("존재하지 않는 사용자 상태입니다. userId={}", userId);
+              return new NoSuchElementException("UserStatus with userId " + userId + " not found");
+            });
 
+    log.debug("UserStatus 업데이트 시작 userId={}", userStatus.getUser().getId());
     userStatus.update(newLastActiveAt);
+    log.debug("UserStatus 업데이트 완료 userId={}", userStatus.getUser().getId());
 
     return userStatusMapper.toDto(userStatus);
   }
@@ -103,9 +123,12 @@ public class BasicUserStatusService implements UserStatusService {
   @Transactional
   public void delete(UUID id) {
     if (!userStatusRepository.existsById(id)) {
-      throw new NoSuchElementException("UserStatus with id " + id + " not found");
+      log.warn("존재하지 않는 사용자 상태입니다. userStatusId={}", id);
     }
+
+    log.debug("[userStatusRepository] 데이터 삭제 시작 userStatusId={}", id);
     userStatusRepository.deleteById(id);
+    log.debug("[userStatusRepository] 데이터 삭제 완료 userStatusId={}", id);
   }
 
 }

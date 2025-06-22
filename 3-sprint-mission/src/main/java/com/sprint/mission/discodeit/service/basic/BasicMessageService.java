@@ -22,7 +22,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicMessageService implements MessageService {
 
   private final UserRepository userRepository;
@@ -48,32 +51,50 @@ public class BasicMessageService implements MessageService {
     UUID channelId = messageCreateRequest.channelId();
 
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다."));
+        .orElseThrow(() -> {
+          log.warn("해당 채널이 존재하지 않습니다. channelId={}", channelId);
+          return new NoSuchElementException("해당 채널이 존재하지 않습니다.");
+        });
 
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
+        .orElseThrow(() -> {
+          log.warn("해당 사용자가 존재하지 않습니다. userId={}", userId);
+          return new NoSuchElementException("해당 사용자가 존재하지 않습니다.");
+        });
 
     String content = messageCreateRequest.content();
-    List<BinaryContent> attachments = binaryContentCreateRequests.stream()
-        .map(contents -> {
+
+    log.debug("메시지 첨부 파일 객체 생성 시작 request={}", binaryContentCreateRequests);
+    int total = binaryContentCreateRequests.size();
+    List<BinaryContent> attachments = IntStream.range(0, total)
+        .mapToObj(i -> {
+          BinaryContentCreateRequest contents = binaryContentCreateRequests.get(i);
           String fileName = contents.fileName();
           byte[] bytes = contents.bytes();
           String contentType = contents.contentType();
 
+          log.debug("[{} / {}] 메시지 첨부 파일 객체 생성 시작", i + 1, total);
           BinaryContent binaryContent =
               BinaryContent.builder()
                   .fileName(fileName)
                   .size((long) bytes.length)
                   .contentType(contentType)
                   .build();
+          log.debug("[{} / {}] 메시지 첨부 파일 생성 완료 binaryContents={}", i + 1, total, binaryContent);
 
           binaryContentRepository.save(binaryContent);
-          binaryContentStorage.put(binaryContent.getId(), bytes);
-          return binaryContent;
+          log.debug("[{} / {}][binaryContentRepository] 메시지 첨부 파일 저장 완료 {}", i + 1, total,
+              binaryContent);
 
+          binaryContentStorage.put(binaryContent.getId(), bytes);
+          log.debug("[{} / {}][binaryContentStorage] 메시지 첨부 파일 저장 완료 {}", i + 1, total,
+              binaryContent);
+
+          return binaryContent;
         })
         .toList();
 
+    log.debug("메시지 객체 생성 시작 request={}", messageCreateRequest);
     Message message =
         Message.builder()
             .currentChannel(channel)
@@ -81,8 +102,12 @@ public class BasicMessageService implements MessageService {
             .content(content)
             .attachments(attachments)
             .build();
+    log.debug("메시지 객체 생성 완료 messageId={}", message.getId());
 
+    log.debug("[messageRepository] 메시지 저장 시작 messageId={}", message.getId());
     messageRepository.save(message);
+    log.debug("[messageRepository] 메시지 저장 완료 messageId={}", message.getId());
+
     return messageMapper.toDto(message);
   }
 
@@ -145,8 +170,14 @@ public class BasicMessageService implements MessageService {
   public MessageDto update(UUID id, MessageUpdateRequest messageUpdateDto) {
     String newContent = messageUpdateDto.newContent();
     Message message = messageRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다."));
+        .orElseThrow(() -> {
+          log.warn("해당 메시지가 존재하지 않습니다. messageId={}", id);
+          return new NoSuchElementException("해당 메시지가 존재하지 않습니다.");
+        });
+
+    log.debug("[messageRepository] 메시지 업데이트 시작 messageId={}", id);
     message.update(newContent);
+    log.debug("[messageRepository] 메시지 업데이트 완료 messageId={}", id);
 
     return messageMapper.toDto(message);
   }
@@ -155,12 +186,20 @@ public class BasicMessageService implements MessageService {
   @Transactional
   public void delete(UUID id) {
     Message message = messageRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다."));
+        .orElseThrow(() -> {
+          log.warn("해당 메시지가 존재하지 않습니다. messageId={}", id);
+          return new NoSuchElementException("해당 메시지가 존재하지 않습니다.");
+        });
+
+    log.debug("[binaryContentRepository] 메시지 첨부 파일 삭제 시작 messageId={}", message.getId());
     message.getAttachments().stream()
         .map(BinaryContent::getId)
         .forEach(binaryContentRepository::deleteById);
+    log.debug("[binaryContentRepository] 메시지 첨부 파일 삭제 완료 messageId={}", message.getId());
 
+    log.debug("[messageRepository] 메시지 삭제 시작 messageId={}", message.getId());
     messageRepository.deleteById(id);
+    log.debug("[messageRepository] 메시지 삭제 완료 messageId={}", message.getId());
 
   }
 }

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -35,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RequestMapping("/api/messages")
 @RestController
+@Slf4j
 public class MessageController implements MessageAPI {
 
   private final MessageService messageService;
@@ -45,6 +47,7 @@ public class MessageController implements MessageAPI {
       @RequestPart(value = "messageCreateRequest") MessageCreateRequest messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
+    log.info("메시지 생성 요청 request={}", messageCreateRequest);
 
     List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
         .map(files -> files.stream()
@@ -56,13 +59,16 @@ public class MessageController implements MessageAPI {
                     file.getBytes()
                 );
               } catch (IOException e) {
+                log.error("파일 업로드 실패 {}", e.getMessage(), e);
                 throw new RuntimeException(e);
               }
             })
             .toList())
         .orElse(new ArrayList<>());
+    log.info("메시지 첨부 파일 생성 요청 attachmentRequests={}", attachmentRequests);
 
     MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
+    log.info("메시지 생성 완료 createdMessageId={}", createdMessage.id());
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -99,8 +105,10 @@ public class MessageController implements MessageAPI {
       @PathVariable("messageId") UUID messageId
       , @RequestBody MessageUpdateRequest messageUpdateDto
   ) {
+    log.info("메시지 수정 요청 messageId={}, request={}", messageId, messageUpdateDto);
 
     MessageDto createdMessage = messageService.update(messageId, messageUpdateDto);
+    log.info("메시지 수정 완료 messageId={}", messageId);
 
     return ResponseEntity
         .status(HttpStatus.OK)
@@ -114,7 +122,10 @@ public class MessageController implements MessageAPI {
   public ResponseEntity<String> delete(
       @PathVariable("messageId") UUID messageId
   ) {
+    log.info("메시지 삭제 요청 messageId={}", messageId);
+
     messageService.delete(messageId);
+    log.info("메시지 삭제 완료 messageId={}", messageId);
 
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 @RestController
+@Slf4j
 public class UserController implements UserAPI {
 
   private final UserService userService;
@@ -61,12 +63,16 @@ public class UserController implements UserAPI {
       @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
+    log.info("사용자 생성 요청 request={}", userCreateRequest);
 
     Optional<BinaryContentCreateRequest> profileRequest =
         Optional.ofNullable(profile)
             .flatMap(this::resolveProfileRequest);
+    log.info("사용자 프로필 업로드 요청 profileRequest={}", profileRequest);
 
     UserDto createdUser = userService.create(userCreateRequest, profileRequest);
+    log.info("사용자 생성 완료 createdUserId={}, profileId={}", createdUser.id(),
+        createdUser.profile().id());
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -78,6 +84,7 @@ public class UserController implements UserAPI {
   @Override
   public ResponseEntity<List<UserDto>> findAll() {
     List<UserDto> users = userService.findAll();
+
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(users);
@@ -93,11 +100,16 @@ public class UserController implements UserAPI {
       @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
+    log.info("사용자 정보 수정 요청 userId={}, request={}", userId, userUpdateRequest);
+
     Optional<BinaryContentCreateRequest> profileRequest =
         Optional.ofNullable(profile)
             .flatMap(this::resolveProfileRequest);
+    log.info("사용자 프로필 업로드 요청 profileRequest={}", profileRequest);
 
     UserDto user = userService.update(userId, userUpdateRequest, profileRequest);
+    log.info("사용자 정보 수정 완료 userId={}, profileId={}", userId, user.profile().id());
+
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(user);
@@ -110,10 +122,13 @@ public class UserController implements UserAPI {
   public ResponseEntity<String> delete(
       @PathVariable("userId") UUID userId
   ) {
+    log.info("사용자 삭제 요청 userId={}", userId);
+
     UserDto user = userService.find(userId);
     String username = user.username();
 
     userService.delete(userId);
+    log.info("사용자 삭제 완료 userId={}", userId);
 
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
@@ -128,7 +143,11 @@ public class UserController implements UserAPI {
       @PathVariable("userId") UUID userId,
       @RequestBody UserStatusUpdateRequest request
   ) {
+    log.info("사용자 상태 업데이트 요청 userId={}, request={}", userId, request);
+
     UserStatusDto userStatus = userStatusService.updateByUserId(userId, request);
+    log.info("사용자 상태 업데이트 완료 userId={}, lastActiveAt={}", userId, userStatus.lastActiveAt());
+
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(userStatus);

@@ -8,11 +8,13 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicAuthService implements AuthService {
 
   private final UserRepository userRepository;
@@ -25,10 +27,13 @@ public class BasicAuthService implements AuthService {
     String password = loginRequest.password();
 
     User user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
+        .orElseThrow(() -> {
+          log.warn("해당 사용자가 존재하지 않습니다. username={}", username);
+          return new NoSuchElementException("해당 사용자가 존재하지 않습니다.");
+        });
 
     if (!user.getPassword().equals(password)) {
-      throw new IllegalArgumentException("비밀번호가 틀립니다.");
+      log.warn("비밀번호가 틀립니다. username={}", username);
     }
 
     return userMapper.toDto(user);

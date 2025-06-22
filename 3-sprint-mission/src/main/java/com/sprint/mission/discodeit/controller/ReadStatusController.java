@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.service.ReadStatusService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/readStatuses")
 @RestController
+@Slf4j
 public class ReadStatusController implements ReadStatusAPI {
 
   private final ReadStatusService readStatusService;
@@ -30,7 +32,10 @@ public class ReadStatusController implements ReadStatusAPI {
   public ResponseEntity<ReadStatusDto> create(
       @RequestBody ReadStatusCreateRequest request
   ) {
+    log.info("메시지 읽음 상태 생성 요청 userId={}, channelId={}", request.userId(), request.channelId());
+
     ReadStatusDto readStatus = readStatusService.create(request);
+    log.info("메시지 읽음 상태 생성 완료 readStatusId={}", readStatus.id());
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -44,7 +49,10 @@ public class ReadStatusController implements ReadStatusAPI {
       @PathVariable UUID readStatusId,
       @RequestBody ReadStatusUpdateRequest readStatusUpdateDto
   ) {
+    log.info("메시지 읽음 상태 수정 요청 readStatusId={}, request={}", readStatusId, readStatusUpdateDto);
+
     ReadStatusDto readStatusUpdate = readStatusService.update(readStatusId, readStatusUpdateDto);
+    log.info("메시지 읽음 상태 수정 완료 readStatusId={}", readStatusUpdate.id());
 
     return ResponseEntity
         .status(HttpStatus.OK)

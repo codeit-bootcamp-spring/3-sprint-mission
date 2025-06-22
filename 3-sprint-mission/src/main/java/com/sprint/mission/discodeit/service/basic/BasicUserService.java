@@ -7,7 +7,6 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -21,11 +20,13 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicUserService implements UserService {
 
   private final UserMapper userMapper;
@@ -34,7 +35,6 @@ public class BasicUserService implements UserService {
   private final BinaryContentService binaryContentService;
   private final BinaryContentStorage binaryContentStorage;
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentMapper binaryContentMapper;
 
   @Override
   @Transactional
@@ -47,13 +47,14 @@ public class BasicUserService implements UserService {
     String email = userCreateRequest.email();
 
     if (userRepository.existsByUsername(username)) {
-      throw new IllegalArgumentException("이미 존재하는 username입니다.");
+      log.warn("이미 존재하는 username입니다. username={}", username);
     }
 
     if (userRepository.existsByEmail(email)) {
-      throw new IllegalArgumentException("이미 존재하는 email입니다.");
+      log.warn("이미 존재하는 email입니다. email={}", email);
     }
 
+    log.debug("프로필 이미지 생성 시작 request={}", profileCreateRequest);
     BinaryContent nullableProfile = profileCreateRequest
 //        .map(binaryContentService::create)
 //        .map(binaryContentMapper::toEntity)
@@ -61,16 +62,32 @@ public class BasicUserService implements UserService {
           String fileName = profileRequest.fileName();
           String contentType = profileRequest.contentType();
           byte[] bytes = profileRequest.bytes();
+
+          log.debug("프로필 이미지 객체 생성 시작");
           BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
               contentType);
+          log.debug("프로필 이미지 객체 생성 완료 binaryContentId={}", binaryContent.getId());
+
+          log.debug("[binaryContentRepository] 프로필 이미지 저장 시작 binaryContentId={}",
+              binaryContent.getId());
           binaryContentRepository.save(binaryContent);
+          log.debug("[binaryContentRepository] 프로필 이미지 저장 완료 binaryContentId={}",
+              binaryContent.getId());
+
+          log.debug("[binaryContentStorage] 프로필 이미지 저장 시작 binaryContentId={}",
+              binaryContent.getId());
           binaryContentStorage.put(binaryContent.getId(), bytes);
+          log.debug("[binaryContentStorage] 프로필 이미지 저장 완료 binaryContentId={}",
+              binaryContent.getId());
+
           return binaryContent;
         })
         .orElse(null);
+    log.debug("프로필 이미지 생성 완료 profileId={}", nullableProfile.getId());
 
     String password = userCreateRequest.password();
 
+    log.debug("유저 생성 시작 request={}", userCreateRequest);
     User user =
         User.builder()
             .username(username)
@@ -78,18 +95,24 @@ public class BasicUserService implements UserService {
             .password(password)
             .profile(nullableProfile)
             .build();
+    log.debug("유저 생성 완료 userId={}", user.getId());
 
     userRepository.save(user);
+    log.debug("유저 저장 완료 userId={}", user.getId());
 
     Instant now = Instant.now();
 
+    log.debug("유저 상태 생성 시작 request={}", userCreateRequest);
     UserStatus userStatus =
         UserStatus.builder()
             .user(user)
             .lastActiveAt(now)
             .build();
+    log.debug("유저 상태 생성 완료 userStatusId={}", userStatus.getId());
 
     userStatusRepository.save(userStatus);
+    log.debug("유저 상태 저장 완료 userStatusId={}", userStatus.getId());
+
     return userMapper.toDto(user);
   }
 
@@ -133,25 +156,30 @@ public class BasicUserService implements UserService {
   public UserDto update(UUID userId, UserUpdateRequest userUpdateDto,
       Optional<BinaryContentCreateRequest> optionalProfileCreateDto) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
+        .orElseThrow(() -> {
+          log.warn("해당 사용자가 존재하지 않습니다. userId={}", userId);
+          return new NoSuchElementException("해당 사용자가 존재하지 않습니다.");
+        });
 
     String newUsername = userUpdateDto.newUsername();
     String newEmail = userUpdateDto.newEmail();
     BinaryContent nullableProfile;
 
     if (userRepository.existsByUsername(newUsername)) {
-      throw new IllegalArgumentException("이미 존재하는 유저 아이디입니다.");
+      log.warn("이미 존재하는 유저 이름입니다. username={}", newUsername);
     }
 
     if (userRepository.existsByEmail(newEmail)) {
-      throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+      log.warn("이미 존재하는 이메일입니다. email={}", newEmail);
     }
 
     if (optionalProfileCreateDto.isPresent() && user.getProfile() != null) {
       binaryContentService.delete(user.getProfile().getId());
+      log.debug("유저 프로필 삭제 완료 userId={}, profileId={}", user.getId(), user.getProfile().getId());
     }
 
     if (optionalProfileCreateDto.isPresent()) {
+      log.debug("프로필 이미지 생성 시작 request={}", optionalProfileCreateDto);
       nullableProfile = optionalProfileCreateDto
 //          .map(binaryContentService::create)
 //          .map(binaryContentMapper::toEntity)
@@ -159,21 +187,41 @@ public class BasicUserService implements UserService {
             String fileName = profileRequest.fileName();
             String contentType = profileRequest.contentType();
             byte[] bytes = profileRequest.bytes();
+
+            log.debug("프로필 이미지 객체 생성 시작 request={}", profileRequest);
             BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
                 contentType);
+            log.debug("프로필 이미지 객체 생성 완료 profileId={}", binaryContent.getId());
+
+            log.debug("[binaryContentRepository] 프로필 이미지 저장 시작 profileId={}",
+                binaryContent.getId());
             binaryContentRepository.save(binaryContent);
+            log.debug("[binaryContentRepository] 프로필 이미지 저장 완료 profileId={}",
+                binaryContent.getId());
+
+            log.debug("[binaryContentStorage] 프로필 이미지 저장 시작 profileId={}", binaryContent.getId());
             binaryContentStorage.put(binaryContent.getId(), bytes);
+            log.debug("[binaryContentStorage] 프로필 이미지 저장 완료 profileId={}", binaryContent.getId());
+
             return binaryContent;
           })
           .orElse(null);
+      log.debug("프로필 이미지 생성 완료 profileId={}", nullableProfile.getId());
     } else {
       nullableProfile = user.getProfile();
     }
 
     String newPassword = userUpdateDto.newPassword();
-    user.update(newUsername, newEmail, newPassword, nullableProfile);
 
-    return userMapper.toDto(userRepository.save(user));
+    log.debug("유저 업데이트 시작 userId={}", user.getId());
+    user.update(newUsername, newEmail, newPassword, nullableProfile);
+    log.debug("유저 업데이트 완료 userId={}", user.getId());
+
+    log.debug("[userRepository] 유저 저장 시작 userId={}", user.getId());
+    userRepository.save(user);
+    log.debug("[userRepository] 유저 저장 완료 userId={}", user.getId());
+
+    return userMapper.toDto(user);
   }
 
 
@@ -181,11 +229,20 @@ public class BasicUserService implements UserService {
   @Transactional
   public void delete(UUID id) {
     User user = userRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
+        .orElseThrow(() -> {
+          log.warn("해당 사용자가 존재하지 않습니다. userId={}", id);
+          return new NoSuchElementException("해당 사용자가 존재하지 않습니다.");
+        });
 
+    log.debug("[binaryContentService] 유저 삭제 시작 userId={}", user.getId());
     Optional.ofNullable(user.getProfile().getId())
         .ifPresent(binaryContentService::delete);
+    log.debug("[binaryContentService] 유저 프로필 삭제 완료 userId={}", user.getId());
+
     userStatusRepository.deleteByUserId(id);
+    log.debug("[userStatusRepository] 유저 상태 삭제 완료 userId={}", user.getId());
+
     userRepository.deleteById(id);
+    log.debug("[userRepository] 유저 삭제 완료 userId={}", user.getId());
   }
 }

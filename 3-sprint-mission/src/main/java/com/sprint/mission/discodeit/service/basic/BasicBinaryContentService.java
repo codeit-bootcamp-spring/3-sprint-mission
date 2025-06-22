@@ -11,11 +11,13 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
@@ -29,15 +31,22 @@ public class BasicBinaryContentService implements BinaryContentService {
     byte[] bytes = request.bytes();
     String contentType = request.contentType();
 
+    log.debug("파일 객체 생성 시작 request={}", request);
     BinaryContent binaryContent =
         BinaryContent.builder()
             .fileName(fileName)
             .contentType(contentType)
             .size((long) bytes.length)
             .build();
+    log.debug("파일 객체 생성 완료 binaryContentId={}", binaryContent.getId());
 
+    log.debug("[binaryContentRepository] 파일 저장 시작 binaryContentId={}", binaryContent.getId());
     binaryContentRepository.save(binaryContent);
+    log.debug("[binaryContentRepository] 파일 저장 완료 binaryContentId={}", binaryContent.getId());
+
+    log.debug("[binaryContentStorage] 파일 저장 시작 binaryContentId={}", binaryContent.getId());
     binaryContentStorage.put(binaryContent.getId(), bytes);
+    log.debug("[binaryContentStorage] 파일 저장 완료 binaryContentId={}", binaryContent.getId());
 
     return binaryContentMapper.toDto(binaryContent);
 
@@ -63,8 +72,11 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Transactional
   public void delete(UUID id) {
     if (!binaryContentRepository.existsById(id)) {
-      throw new NoSuchElementException("해당 파일이 존재하지 않습니다.");
+      log.warn("해당 파일이 존재하지 않습니다. binaryContentId={}", id);
     }
+
+    log.debug("[binaryContentRepository] 파일 삭제 시작 binaryContentId={}", id);
     binaryContentRepository.deleteById(id);
+    log.debug("[binaryContentRepository] 파일 삭제 완료 binaryContentId={}", id);
   }
 }
