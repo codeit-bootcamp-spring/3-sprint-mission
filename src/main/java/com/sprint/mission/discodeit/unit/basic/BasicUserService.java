@@ -127,7 +127,7 @@ public class BasicUserService implements UserService {
     public void deleteUser(UUID userId) {
         Objects.requireNonNull(userId, "no user Id: BasicUserService.deleteUser");
 
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(Map.of("id ", userId)));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(Map.of("userId ", userId)));
 
         if (user.getProfile() != null) { // 프로필 있으면
             BinaryContent profile = user.getProfile();

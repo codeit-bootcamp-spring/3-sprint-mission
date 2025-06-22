@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.controller.api.ChannelApi;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
+import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.unit.ChannelService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -39,14 +42,12 @@ public class ChannelController implements ChannelApi {
 
     @DeleteMapping("/{channelId}")
     public ResponseEntity<?> removeChannel(@PathVariable UUID channelId) {
-        if (channelService.deleteChannel(channelId)) {
-            return ResponseEntity.status(204).build();
-        }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "not found");
+        channelService.deleteChannel(channelId);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{channelId}")
-    public ResponseEntity<?> update(
+    public ResponseEntity<JpaChannelResponse> update(
             @PathVariable UUID channelId,
             @Valid @RequestBody ChannelUpdateRequest request) {
         return ResponseEntity.status(200).body(channelService.update(channelId, request));

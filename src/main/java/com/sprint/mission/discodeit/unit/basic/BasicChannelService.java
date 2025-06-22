@@ -64,8 +64,9 @@ public class BasicChannelService implements ChannelService {
         Set<UUID> userIds = request.participantIds();
         List<User> users = userRepository.findAllById(userIds);
 
+        //0 + 새로운 익셉션 만드는것도 생각
         if (users.size() < 2) {
-            throw new UserNotFoundException(Map.of("users", "not enough your in private channel"));
+            throw new UserNotFoundException(Map.of("users", "not enough users in private channel"));
         }
 
         // channel 생성
@@ -73,7 +74,7 @@ public class BasicChannelService implements ChannelService {
         channelRepository.save(channel);
 
         // readStatus 생성 -> participants dto 생성
-        List<JpaUserResponse> participants=new ArrayList<>();
+        List<JpaUserResponse> participants = new ArrayList<>();
         List<ReadStatus> readStatuses = new ArrayList<>();
 
         //0테스트코드 작성 끝나면 리팩토링: readStatusRepository.saveAll(readStatuses);
@@ -136,9 +137,9 @@ public class BasicChannelService implements ChannelService {
 
     @Transactional
     @Override
-    public boolean deleteChannel(UUID channelId) {
+    public void deleteChannel(UUID channelId) {
         if (!channelRepository.existsById(channelId)) {
-            throw new NoSuchElementException("channel with id " + channelId + " not found");
+            throw new ChannelNotFoundException(Map.of("channelId", channelId));
         }
 
         List<ReadStatus> targetReadStatuses = readStatusRepository.findAllByChannelId(channelId);
@@ -150,6 +151,5 @@ public class BasicChannelService implements ChannelService {
         messageRepository.deleteAll(targetMessages);
 
         channelRepository.deleteById(channelId);
-        return true;
     }
 }

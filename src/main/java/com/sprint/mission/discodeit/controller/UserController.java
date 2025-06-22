@@ -36,7 +36,6 @@ public class UserController implements UserApi {
 
     @GetMapping
     public ResponseEntity<?> findAll() {
-        System.out.println("findAll");
         return ResponseEntity.ok(userService.findAllUsers());
     }
 

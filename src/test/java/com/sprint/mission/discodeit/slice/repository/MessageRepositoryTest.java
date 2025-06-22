@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.slice;
+package com.sprint.mission.discodeit.slice.repository;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;

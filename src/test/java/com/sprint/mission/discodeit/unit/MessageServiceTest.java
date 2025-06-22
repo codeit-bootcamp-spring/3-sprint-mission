@@ -219,10 +219,10 @@ public class MessageServiceTest {
     @DisplayName("로직에 문제가 없으면 삭제 진행한다.")
     @Test
     void whenLoginIsValid_thenDeleteMessage() {
-        //when n then
-        boolean result = messageService.deleteMessage(messageId);
+        // when
+        messageService.deleteMessage(messageId);
 
-        assertThat(result).isTrue();
+        // then
         verify(messageRepository, times(1)).deleteById(messageId);
     }
 

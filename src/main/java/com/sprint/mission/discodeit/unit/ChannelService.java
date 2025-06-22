@@ -21,14 +21,13 @@ import java.util.UUID;
  */
 public interface ChannelService {
 
-    JpaChannelResponse createChannel(PrivateChannelCreateRequest request);
-
     JpaChannelResponse createChannel(PublicChannelCreateRequest request);
+
+    JpaChannelResponse createChannel(PrivateChannelCreateRequest request);
 
     JpaChannelResponse update(UUID channelId, ChannelUpdateRequest request);
 
-    boolean deleteChannel(UUID channelId);
-
+    void deleteChannel(UUID channelId);
 
     List<JpaChannelResponse> findAllByUserId(UUID userId);
 }

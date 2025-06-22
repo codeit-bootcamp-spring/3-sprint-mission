@@ -37,9 +37,10 @@ public class MessageController implements MessageApi {
 
 
     @GetMapping
-    public ResponseEntity<?> findMessagesInChannel(@RequestParam UUID channelId,
-                                                   @RequestParam(required = false) Instant cursor,
-                                                   Pageable pageable) {
+    public ResponseEntity<AdvancedJpaPageResponse> findMessagesInChannel(
+        @RequestParam UUID channelId,
+        @RequestParam(required = false) Instant cursor,
+        Pageable pageable) {
         AdvancedJpaPageResponse response = messageService.findAllByChannelIdAndCursor(channelId, cursor, pageable);
         return ResponseEntity.ok(response);
     }
@@ -55,20 +56,15 @@ public class MessageController implements MessageApi {
 
     @DeleteMapping(path = "/{messageId}")
     public ResponseEntity<?> deleteMessage(@PathVariable UUID messageId) {
-        boolean deleted = messageService.deleteMessage(messageId);
-        if (deleted) {
-            return ResponseEntity.status(204).build();
-        }
-        return ResponseEntity.status(500).body("unexpected error");
+        messageService.deleteMessage(messageId);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping(path = "/{messageId}")
-    public ResponseEntity<?> updateMessage(
+    public ResponseEntity<JpaMessageResponse> updateMessage(
             @PathVariable UUID messageId,
             @Valid @RequestBody MessageUpdateRequest request) {
         JpaMessageResponse response = messageService.updateMessage(messageId, request);
         return ResponseEntity.status(200).body(response);
     }
-
-
 }

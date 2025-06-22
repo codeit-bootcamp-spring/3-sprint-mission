@@ -18,7 +18,6 @@ import java.util.UUID;
 @Getter
 @Builder
 public class JpaChannelResponse {
-
   private final UUID id;
   private final ChannelType type;
   private final String name;

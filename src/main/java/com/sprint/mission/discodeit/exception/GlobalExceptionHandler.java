@@ -67,7 +67,6 @@ public class GlobalExceptionHandler {
         Map<String,Object> details = new HashMap<>();
         details.put(e.getFieldError().getField(),e.getFieldError().getDefaultMessage());
 
-
         ErrorResponse response = ErrorResponse.builder()
             .timestamp(Instant.now())
             .code(ErrorCode.VALIDATION_FAILED.toString())

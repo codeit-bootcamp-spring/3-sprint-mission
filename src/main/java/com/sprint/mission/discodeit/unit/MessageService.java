@@ -26,14 +26,11 @@ import java.util.UUID;
  */
 public interface MessageService {
 
-    //page 방식
-//    JpaPageResponse findAllByChannelId(UUID channelId, Pageable pageable);
-
     JpaMessageResponse createMessage(MessageCreateRequest MessageAttachmentRequest, List<MultipartFile> multipartFiles);
 
     JpaMessageResponse updateMessage(UUID messageId, MessageUpdateRequest request);
 
-    boolean deleteMessage(UUID messageId);
+    void deleteMessage(UUID messageId);
 
     AdvancedJpaPageResponse findAllByChannelIdAndCursor(UUID channelId, Instant cursor, Pageable pageable);
 }

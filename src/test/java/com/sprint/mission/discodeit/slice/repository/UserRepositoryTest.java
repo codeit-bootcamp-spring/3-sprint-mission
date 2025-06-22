@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.slice;
+package com.sprint.mission.discodeit.slice.repository;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;

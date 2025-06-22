@@ -28,12 +28,14 @@ public class DiscodeitException extends RuntimeException {
     private final Map<String, Object> details;
 
     public DiscodeitException(ErrorCode errorCode, Map<String, Object> details) {
+        super(errorCode.getMessage());
         this.timestamp = Instant.now();
         this.errorCode = errorCode;
         this.details = details;
     }
 
     public DiscodeitException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
         this.timestamp = Instant.now();
         this.errorCode = errorCode;
         this.details = null;
