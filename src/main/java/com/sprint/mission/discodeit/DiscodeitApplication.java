@@ -8,11 +8,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableJpaAuditing
-public class DiscodeitApplicationSprint {
+public class DiscodeitApplication {
 
   public static void main(String[] args) {
     System.out.println("🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️Service Start🏃‍♂️‍➡️🏃‍♂️‍➡️🏃‍♂️‍➡️");
-    SpringApplication.run(DiscodeitApplicationSprint.class, args);
+    SpringApplication.run(DiscodeitApplication.class, args);
 
   }
 
