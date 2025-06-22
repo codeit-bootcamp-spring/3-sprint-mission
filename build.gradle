@@ -48,6 +48,8 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-aop'
     runtimeOnly 'org.postgresql:postgresql'
+
+    implementation 'org.springframework.boot:spring-boot-starter-validation:3.5.0'
 }
 
 tasks.withType(JavaCompile) {

@@ -7,8 +7,10 @@ import com.sprint.mission.discodeit.exception.Message.MessageException;
 import com.sprint.mission.discodeit.exception.ReadStatus.ReadStatusException;
 import com.sprint.mission.discodeit.exception.User.UserException;
 import com.sprint.mission.discodeit.exception.UserStatus.UserStatusException;
+import java.time.Instant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -128,6 +130,21 @@ public class GlobalExceptionHandler extends RuntimeException {
             e.getMessage(), e.getDetails(),
             e.getClass().getTypeName(),
             e.getErrorCode().getHttpStatus()
+        )
+    );
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ErrorResponse> handleValidException(MethodArgumentNotValidException e) {
+    // 도메인 별 공통 로깅
+    log.error("▶▶▶▶request 데이터 검증 실패 : {} - {}", e.getMessage(), e.getParameter());
+
+    return ResponseEntity.status(ErrorCode.INVALID_REQUEST_PARAMS.getHttpStatus()).body(
+        new ErrorResponse(
+            Instant.now(), ErrorCode.INVALID_REQUEST_PARAMS.getCode(),
+            e.getMessage(), null,
+            e.getClass().getTypeName(),
+            ErrorCode.INVALID_REQUEST_PARAMS.getHttpStatus()
         )
     );
   }

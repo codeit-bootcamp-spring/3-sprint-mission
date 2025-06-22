@@ -13,11 +13,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 
 @Tag(name = "Channel", description = "Channel API")
+@Validated
 public interface ChannelApi {
 
   @Operation(summary = "Public Channel 생성")
@@ -28,7 +32,7 @@ public interface ChannelApi {
       )
   })
   ResponseEntity<ChannelDto> create(
-      @Parameter(description = "Public Channel 생성 정보") PublicChannelCreateRequest request
+      @Parameter(description = "Public Channel 생성 정보") @Valid PublicChannelCreateRequest request
   );
 
   @Operation(summary = "Private Channel 생성")
@@ -39,7 +43,7 @@ public interface ChannelApi {
       )
   })
   ResponseEntity<ChannelDto> create(
-      @Parameter(description = "Private Channel 생성 정보") PrivateChannelCreateRequest request
+      @Parameter(description = "Private Channel 생성 정보") @Valid PrivateChannelCreateRequest request
   );
 
   @Operation(summary = "Channel 정보 수정")
@@ -58,7 +62,7 @@ public interface ChannelApi {
       )
   })
   ResponseEntity<ChannelDto> update(
-      @Parameter(description = "수정할 Channel ID") UUID channelId,
+      @Parameter(description = "수정할 Channel ID") @Positive(message = "채널 ID는 양수여야 합니다") UUID channelId,
       @Parameter(description = "수정할 Channel 정보") PublicChannelUpdateRequest request
   );
 
@@ -73,7 +77,7 @@ public interface ChannelApi {
       )
   })
   ResponseEntity<Void> delete(
-      @Parameter(description = "삭제할 Channel ID") UUID channelId
+      @Parameter(description = "삭제할 Channel ID") @Positive(message = "채널 ID는 양수여야 합니다") UUID channelId
   );
 
   @Operation(summary = "User가 참여 중인 Channel 목록 조회")
@@ -84,6 +88,6 @@ public interface ChannelApi {
       )
   })
   ResponseEntity<List<ChannelDto>> findAll(
-      @Parameter(description = "조회할 User ID") UUID userId
+      @Parameter(description = "조회할 User ID") @Positive(message = "채널 ID는 양수여야 합니다") UUID userId
   );
 }

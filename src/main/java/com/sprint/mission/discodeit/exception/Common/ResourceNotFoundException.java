@@ -9,16 +9,14 @@ public class ResourceNotFoundException extends CommonException {
   }
 
   //Q. id로그만 찍는게 낫나?
-  public ResourceNotFoundException(Object requestedInfo) {
+  public ResourceNotFoundException(String message) {
     super(ErrorCode.RESOURCE_NOT_FOUND,
-        String.format("요청한 리소스를 찾을 수 없습니다:providedInput=%s", requestedInfo.toString()));
-    super.addDetails("requestedInfo", requestedInfo);
+        String.format("요청한 리소스를 찾을 수 없습니다: %s", message));
   }
 
-  public ResourceNotFoundException(Object requestedInfo, Throwable cause) {
+  public ResourceNotFoundException(String message, Throwable cause) {
     super(ErrorCode.RESOURCE_NOT_FOUND,
-        String.format("요청한 리소스를 찾을 수 없습니다:providedInput=%s", requestedInfo.toString()), cause);
-    super.addDetails("requestedInfo", requestedInfo);
+        String.format("요청한 리소스를 찾을 수 없습니다: %s", message), cause);
 
   }
 }

@@ -12,11 +12,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 
 @Tag(name = "ReadStatus", description = "Message 읽음 상태 API")
+@Validated
 public interface ReadStatusApi {
 
   @Operation(summary = "Message 읽음 상태 생성")
@@ -35,7 +39,7 @@ public interface ReadStatusApi {
       )
   })
   ResponseEntity<ReadStatusDto> create(
-      @Parameter(description = "Message 읽음 상태 생성 정보") ReadStatusCreateRequest request
+      @Parameter(description = "Message 읽음 상태 생성 정보") @Valid ReadStatusCreateRequest request
   );
 
   @Operation(summary = "Message 읽음 상태 수정")
@@ -50,7 +54,7 @@ public interface ReadStatusApi {
       )
   })
   ResponseEntity<ReadStatusDto> update(
-      @Parameter(description = "수정할 읽음 상태 ID") UUID readStatusId,
+      @Parameter(description = "수정할 읽음 상태 ID") @Positive(message = "ID는 양수여야 합니다") UUID readStatusId,
       @Parameter(description = "수정할 읽음 상태 정보") ReadStatusUpdateRequest request
   );
 
@@ -62,6 +66,6 @@ public interface ReadStatusApi {
       )
   })
   ResponseEntity<List<ReadStatusDto>> findAllByUserId(
-      @Parameter(description = "조회할 User ID") UUID userId
+      @Parameter(description = "조회할 User ID") @Positive(message = "ID는 양수여야 합니다") UUID userId
   );
 }
