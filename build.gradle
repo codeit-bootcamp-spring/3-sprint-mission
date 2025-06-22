@@ -43,6 +43,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.mapstruct/mapstruct
     implementation 'org.mapstruct:mapstruct:1.6.3'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+    runtimeOnly 'com.h2database:h2'
     testAnnotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
     implementation 'org.springframework.boot:spring-boot-starter-aop'

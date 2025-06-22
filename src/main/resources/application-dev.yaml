@@ -1,0 +1,10 @@
+# server 설정
+server:
+  port: 8080
+
+spring:
+  # DB config
+  config:
+    import: "classpath:db-dev.yaml"
+
+
