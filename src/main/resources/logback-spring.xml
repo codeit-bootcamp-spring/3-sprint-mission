@@ -1,0 +1,34 @@
+<configuration>
+
+  <!--  {년}-{월}-{일} {시}:{분}:{초}:{밀리초} [{스레드명}] {로그 레벨(5글자로 맞춤)} {로거 이름(최대 36글자)} - {로그 메시지}{줄바꿈}-->
+  <property name="CONSOLE_PATTERN"
+    value="%d{yyyy-MM-dd HH:mm:ss.SSS} %magenta([%thread]) %highlight([%-5level]) %logger{36} - %msg %n"/>
+  <property name="ROLLING_PATTERN"
+    value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+
+  <!-- appender : log 메시지가 출력될 대상-->
+  <!-- Console 출력 설정 -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <Pattern>${CONSOLE_PATTERN}</Pattern>
+    </encoder>
+  </appender>
+  <!--파일 출력 설정 -->
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>./logs/app.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- 일별 로그 파일 -->
+      <fileNamePattern>./logs/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <maxHistory>30</maxHistory> <!-- 30일 보관 -->
+    </rollingPolicy>
+    <encoder>
+      <pattern>${ROLLING_PATTERN}</pattern>
+    </encoder>
+  </appender>
+
+  <!--전역 logger-->
+  <root level="DEBUG">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="FILE"/>
+  </root>
+</configuration>

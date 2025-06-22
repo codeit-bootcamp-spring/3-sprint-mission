@@ -1,57 +1,42 @@
 package com.sprint.mission.discodeit.aspects;
 
-import org.aspectj.lang.JoinPoint;
+import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
+@Slf4j
 public class LoggingAspect {
 
-  @Before("execution(* com.sprint.mission.discodeit.controller.*.*(..))")
-  public void controllerLogBefore(JoinPoint joinPoint) {
+  @Around(
+      "execution(* com.sprint.mission.discodeit.controller.*.*(..)) || " +
+          "execution(* com.sprint.mission.discodeit.service.*.*(..)) || " +
+          "execution(* com.sprint.mission.discodeit.repository.*.*(..))"
+  )
+  public Object setLog(ProceedingJoinPoint joinPoint) throws Throwable {
+    String prefix = "com.sprint.mission.discodeit.";
+    String className = joinPoint.getSignature().getDeclaringTypeName();
+    String simplifiedName =
+        className.startsWith(prefix) ? className.substring(prefix.length()) : className;
+    String methodName = joinPoint.getSignature().getName();
+    /* joinpoint의 매개변수 출력(단, 타겟 메서드의 매개변수가 하나 이상일 때)  */
     String params = "";
-
-    /* 필기. joinpoint의 매개변수 출력(단, 타겟 메서드의 매개변수가 하나 이상일 때)  */
     if (joinPoint.getArgs().length > 0) {
       params += " " + joinPoint.getArgs()[0];
-//      System.out.println("Before joinPoint.getArgs()[0]: " + joinPoint.getArgs()[0]);
     }
 
-    System.out.println(
-        "👩 Controller execution: " + joinPoint.getTarget().getClass() + "  >> "
-            + joinPoint.getSignature().getName() + " params : " + params);
-
-  }
-
-  @Before("execution(* com.sprint.mission.discodeit.service.*.*(..))")
-  public void serviceLogBefore(JoinPoint joinPoint) {
-    String params = "";
-
-    /* 필기. joinpoint의 매개변수 출력(단, 타겟 메서드의 매개변수가 하나 이상일 때)  */
-    if (joinPoint.getArgs().length > 0) {
-      params += " " + joinPoint.getArgs()[0];
-//      System.out.println("Before joinPoint.getArgs()[0]: " + joinPoint.getArgs()[0]);
+    log.info("▶▶▶Entering {}.{}({})", simplifiedName, methodName, params);
+    try {
+      Object result = joinPoint.proceed(); // 실제 메서드 실행
+      log.info("▶▶▶Exiting {}.{}({})", simplifiedName, methodName, params);
+      return result;
+    } catch (Throwable e) {
+      log.error("▶▶▶Exception {}.{}({}) : {}", simplifiedName, methodName, params, e.getClass(), e);
+      throw e;
     }
-
-    System.out.println(
-        "💱 Service execution: " + joinPoint.getTarget().getClass() + "  >> "
-            + joinPoint.getSignature().getName() + " params : " + params);
   }
 
-  @Before("execution(* com.sprint.mission.discodeit.repository.*.*(..))")
-  public void repositoryLogBefore(JoinPoint joinPoint) {
-    String params = "";
-
-    /* 필기. joinpoint의 매개변수 출력(단, 타겟 메서드의 매개변수가 하나 이상일 때)  */
-    if (joinPoint.getArgs().length > 0) {
-      params += " " + joinPoint.getArgs()[0];
-//      System.out.println("Before joinPoint.getArgs()[0]: " + joinPoint.getArgs()[0]);
-    }
-
-    System.out.println(
-        "🗳 Repository execution: " + joinPoint.getTarget().getClass() + "  >> "
-            + joinPoint.getSignature().getName() + " params : " + params);
-  }
 }
