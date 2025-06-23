@@ -1,0 +1,26 @@
+spring:
+  # 프로덕션 환경 데이터베이스 연결 설정
+  datasource:
+    url: jdbc:postgresql://prod-db-server:5432/discodeit?currentSchema=discodeit_schema
+    username: ${DB_USERNAME:discodeit_prod_user}
+    password: ${DB_PASSWORD:discodeit_prod_password}
+    driver-class-name: org.postgresql.Driver
+  
+  # 프로덕션 환경 JPA 설정 오버라이드
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate  # 프로덕션에서는 validate 사용
+
+# 프로덕션 환경 서버 포트
+server:
+  port: 8090
+
+# 프로덕션 환경 로깅 설정
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+    org.springframework.orm.jpa: WARN
+    com.sprint.mission.discodeit: INFO
