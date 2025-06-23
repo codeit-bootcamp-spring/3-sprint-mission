@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.repository;
 
+import com.sprint.mission.discodeit.config.JpaConfig;
 import com.sprint.mission.discodeit.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
@@ -13,6 +15,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
+@Import(JpaConfig.class)
 @ActiveProfiles("test")
 @DisplayName("UserRepository 기능 테스트")
 class UserRepositoryTest {
