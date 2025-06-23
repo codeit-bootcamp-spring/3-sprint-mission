@@ -34,7 +34,10 @@ public enum ErrorCode {
 
     // BinaryContent 도메인
     BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "501_BINARY_CONTENT_NOT_FOUND", "파일(바이너리 컨텐츠)을 찾을 수 없습니다."),
-    DUPLICATED_BINARY_CONTENT(HttpStatus.BAD_REQUEST, "502_DUPLICATED_BINARY_CONTENT", "이미 존재하는 파일(바이너리 컨텐츠)입니다.");
+    DUPLICATED_BINARY_CONTENT(HttpStatus.BAD_REQUEST, "502_DUPLICATED_BINARY_CONTENT", "이미 존재하는 파일(바이너리 컨텐츠)입니다."),
+
+    // 유효성 검사
+    METHOD_ARGUE_NOT_VALID(HttpStatus.BAD_REQUEST, "601_METHOD_ARGU_NOT_VALID", "유효하지 않은 입력값입니다.");
 
     private final HttpStatus status;
     private final String code;

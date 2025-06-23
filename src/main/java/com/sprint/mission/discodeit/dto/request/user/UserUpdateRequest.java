@@ -1,16 +1,9 @@
 package com.sprint.mission.discodeit.dto.request.user;
 
 import jakarta.validation.constraints.Email;
-import java.util.Objects;
 
 public record UserUpdateRequest(
-    String newUsername,
-    String newEmail,
-    String newPassword
-) {
-
-    public UserUpdateRequest {
-        // null 체크 제거 - 부분 업데이트 허용
-    }
-
-}
+        String newUsername,
+        @Email(message = "올바른 이메일 형식으로 입력해주세요.") String newEmail,
+        String newPassword
+) {}

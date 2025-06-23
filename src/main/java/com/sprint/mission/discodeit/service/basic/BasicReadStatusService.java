@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.readstatus.DuplicatedReadStatusException;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -64,9 +65,7 @@ public class BasicReadStatusService implements ReadStatusService {
         if (readStatusRepository.findAllByUserId(userId).stream()
             .anyMatch(readStatus -> readStatus.getChannel().getId().equals(channelId))) {
             log.warn(SERVICE_NAME + "이미 존재하는 읽음 상태: userId={}, channelId={}", userId, channelId);
-            throw new IllegalArgumentException(
-                "ReadStatus with userId " + userId + " and channelId " + channelId
-                    + " already exists");
+            throw new DuplicatedReadStatusException("이미 존재하는 읽음 상태입니다.", userId, channelId);
         }
 
         Instant lastReadAt = request.lastReadAt();

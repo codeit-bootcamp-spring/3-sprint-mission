@@ -5,13 +5,14 @@ import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.userstatus.DuplicatedUserStatusException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import com.sprint.mission.discodeit.exception.user.UserStatusNotFoundException;
-import com.sprint.mission.discodeit.exception.user.UserStatusException;
-import com.sprint.mission.discodeit.exception.user.DuplicatedUserStatusException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusException;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -110,7 +111,7 @@ public class BasicUserStatusService implements UserStatusService {
         isolation = Isolation.READ_COMMITTED)
     public void delete(UUID userStatusId) {
         if (!userStatusRepository.existsById(userStatusId)) {
-            throw new UserStatusNotFoundException("유저 상태 정보를 찾을 수 없습니다.", userStatusId);
+            throw new UserStatusNotFoundException("유저 상태 정보를 찾을 수 없습니다.");
         }
         userStatusRepository.deleteById(userStatusId);
     }
