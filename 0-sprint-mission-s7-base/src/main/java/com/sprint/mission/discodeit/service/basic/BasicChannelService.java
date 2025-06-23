@@ -7,8 +7,11 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.ChannelNameAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateNotAllowedException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -39,24 +42,39 @@ public class BasicChannelService implements ChannelService {
   public ChannelDto create(PublicChannelCreateRequest request) {
     String name = request.name();
     String description = request.description();
+    if (channelRepository.existsChannelByName(name)) {
+      log.error("[Public 채널 생성 실패] 해당 채널 이름은 이미 존재합니다. 채널 이름 : {}", name);
+      throw new ChannelNameAlreadyExistsException();
+    }
+
     Channel channel = new Channel(ChannelType.PUBLIC, name, description);
     log.info("[Public 채널 생성 시도] 채널 이름 : {}", name);
 
     channelRepository.save(channel);
     log.info("[Public 채널 생성 성공] 채널 이름 : {} ", name);
     return channelMapper.toDto(channel);
+
   }
 
   @Transactional
   @Override
   public ChannelDto create(PrivateChannelCreateRequest request) {
+    List<UUID> participantIds = request.participantIds();
+
+    List<User> foundUsers = userRepository.findAllById(participantIds);
+    if (foundUsers.size() != participantIds.size()) {
+      log.error("[Private 채널 생성 실패] 존재하지 않는 유저 ID가 포함되어 있습니다. 요청된 유저 수: {}, 찾은 유저 수: {}",
+          participantIds.size(), foundUsers.size());
+      throw new UserNotFoundException();
+    }
+
     Channel channel = new Channel(ChannelType.PRIVATE, null, null);
     log.info("[Private 채널 생성 시도] 채널 ID : {}", channel.getId());
 
     channelRepository.save(channel);
     log.info("[Private 채널 생성 성공] 채널 ID : {} ", channel.getId());
 
-    List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds()).stream()
+    List<ReadStatus> readStatuses = foundUsers.stream()
         .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
         .toList();
     log.info("[읽음 상태 생성 시도] 읽음 상태 갯수 : {} ", readStatuses.size());
@@ -65,6 +83,7 @@ public class BasicChannelService implements ChannelService {
     log.info("[읽음 상태 생성 성공] 읽음 상태 갯수 : {} ", readStatuses.size());
 
     return channelMapper.toDto(channel);
+
   }
 
   @Transactional(readOnly = true)

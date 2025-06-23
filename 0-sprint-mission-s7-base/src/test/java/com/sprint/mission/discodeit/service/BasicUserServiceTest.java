@@ -1,24 +1,25 @@
 package com.sprint.mission.discodeit.service;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.never;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserEmailAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNameAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,8 +29,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.ActiveProfiles;
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 @DisplayName("UserService 단위 테스트")
 public class BasicUserServiceTest {
 
@@ -42,96 +45,133 @@ public class BasicUserServiceTest {
     @Mock
     private UserStatusRepository userStatusRepository;
 
-    @Mock
-    private BinaryContentRepository binaryContentRepository;
-
-    @Mock
-    private BinaryContentStorage binaryContentStorage;
-
     @InjectMocks
     private BasicUserService userService;
 
+
     @Test
-    @DisplayName("사용자 생성 성공 테스트")
+    @DisplayName("User 생성 -  case : success")
     void createUserSuccess() {
-        // Given
-        UserCreateRequest userCreateRequest = new UserCreateRequest("TESTMAN", "test1234@test.com", "44444");
-        UUID mockUserId = UUID.randomUUID();
+        UserCreateRequest userCreateRequest = new UserCreateRequest("KHG", "KHG@test.com", "009874");
+        User user = new User(userCreateRequest.username(), userCreateRequest.email(), userCreateRequest.password(), null);
+        UserDto userDto = new UserDto(user.getId(), user.getUsername(), user.getEmail(), null, true);
+        UserStatus userStatus = new UserStatus(user, Instant.now());
 
-        User mockUser = new User(
-            userCreateRequest.username(),
-            userCreateRequest.email(),
-            userCreateRequest.password(),
-            null
-        );
-
-        UserDto expectedUserDto = new UserDto(
-            mockUserId,
-            mockUser.getUsername(),
-            mockUser.getEmail(),
-            null,
-            true
-        );
-
-        // UserStatus Mock 추가
-        UserStatus mockUserStatus = new UserStatus(mockUser, Instant.now());
-
-        // Repository Mock 설정
         given(userRepository.existsByUsername(userCreateRequest.username())).willReturn(false);
         given(userRepository.existsByEmail(userCreateRequest.email())).willReturn(false);
-        given(userRepository.save(any(User.class))).willReturn(mockUser);
-        given(userStatusRepository.save(any(UserStatus.class))).willReturn(mockUserStatus); // 추가
-        given(userMapper.toDto(any(User.class))).willReturn(expectedUserDto);
+        given(userRepository.save(any(User.class))).willReturn(user);
+        given(userStatusRepository.save(any(UserStatus.class))).willReturn(userStatus);
+        given(userMapper.toDto(any(User.class))).willReturn(userDto);
 
-        // When
         UserDto result = userService.create(userCreateRequest, Optional.empty());
+        assertThat(result.username()).isEqualTo("KHG");
+    }
 
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.username()).isEqualTo("TESTMAN");
-        assertThat(result.email()).isEqualTo("test1234@test.com");
+    @Test
+    @DisplayName("User 생성 - case : 중복된 이름으로 인한 failed")
+    void createUserFail() {
+        UserCreateRequest userCreateRequest = new UserCreateRequest("KHG", "KHG@test.com",
+            "009874");
+        User user = new User(userCreateRequest.username(), userCreateRequest.email(),
+            userCreateRequest.password(), null);
+
+        given(userRepository.existsByUsername(user.getUsername())).willReturn(true);
+        assertThatThrownBy(() -> userService.create(userCreateRequest, Optional.empty()))
+            .isInstanceOf(UserNameAlreadyExistsException.class)
+            .hasMessageContaining("중복된 유저 이름입니다.");
+    }
+
+    @Test
+    @DisplayName("User 조회 - case : success")
+    void findUserSuccess() {
+        UUID userId = UUID.randomUUID();
+        User user = new User("KHG", "KHG@test.com", "009874", null);
+        UserDto expectedDto = new UserDto(userId, "KHG", "KHG@test.com", null, true);
+
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(userMapper.toDto(user)).willReturn(expectedDto);
+
+        UserDto result = userService.find(userId);
+
+        assertThat(result.username()).isEqualTo("KHG");
+        assertThat(result.email()).isEqualTo("KHG@test.com");
+    }
+
+    @Test
+    @DisplayName("User 조회 - case : 존재하지 않는 유저로 인한 failed")
+    void findUserFail() {
+        UUID userId = UUID.randomUUID();
+
+        given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.find(userId))
+            .isInstanceOf(UserNotFoundException.class)
+            .hasMessageContaining("유저를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("User 수정 - case : success")
+    void updatedUserSuccess() {
+        UUID userId = UUID.randomUUID();
+        User existingUser = new User("test", "test@test.com","9874",null);
+
+        UserUpdateRequest userUpdateRequest = new UserUpdateRequest("KHG","KHG@test.com","009874");
+        UserDto expectedDto = new UserDto(userId, userUpdateRequest.newUsername(), userUpdateRequest.newEmail(), null, true);
+
+        given(userRepository.findById(userId)).willReturn(Optional.of(existingUser));
+        given(userRepository.existsByUsername(userUpdateRequest.newUsername())).willReturn(false);
+        given(userMapper.toDto(existingUser)).willReturn(expectedDto);
+
+        UserDto result = userService.update(userId, userUpdateRequest, Optional.empty());
+
+        assertThat(result.username()).isEqualTo(userUpdateRequest.newUsername());
+        assertThat(result.email()).isEqualTo(userUpdateRequest.newEmail());
         assertThat(result.online()).isTrue();
-
-        // Verify interactions
-        verify(userRepository, times(1)).existsByUsername("TESTMAN");
-        verify(userRepository, times(1)).existsByEmail("test1234@test.com");
-        verify(userRepository, times(1)).save(any(User.class));
-        verify(userStatusRepository, times(1)).save(any(UserStatus.class)); // 추가
-        verify(userMapper, times(1)).toDto(any(User.class));
-    }
-
-
-    @Test
-    @DisplayName("사용자 이름 중복 시 예외 발생 테스트")
-    void createUserWithDuplicateUsername() {
-        // Given
-        UserCreateRequest userCreateRequest = new UserCreateRequest("TESTMAN", "test1234@test.com", "44444");
-
-        given(userRepository.existsByUsername("TESTMAN")).willReturn(true);
-
-        // When & Then
-        assertThatThrownBy(() -> userService.create(userCreateRequest, Optional.empty()))
-            .isInstanceOf(UserNameAlreadyExistsException.class);
-
-        verify(userRepository, times(1)).existsByUsername("TESTMAN");
-        verify(userRepository, times(0)).save(any(User.class));
     }
 
     @Test
-    @DisplayName("이메일 중복 시 예외 발생 테스트")
-    void createUserWithDuplicateEmail() {
-        // Given
-        UserCreateRequest userCreateRequest = new UserCreateRequest("TESTMAN", "test1234@test.com", "44444");
+    @DisplayName("User 수정 - case : 중복된 이메일로 인한 failed")
+    void updateUserFail() {
+        UUID userID = UUID.randomUUID();
+        User existngUser = new User("test", "test@test.com", "9874", null);
 
-        given(userRepository.existsByEmail("test1234@test.com")).willReturn(true);
+        UserUpdateRequest userUpdateRequest = new UserUpdateRequest("KHG","test@test.com","009874");
 
-        // When & Then
-        assertThatThrownBy(() -> userService.create(userCreateRequest, Optional.empty()))
-            .isInstanceOf(UserEmailAlreadyExistsException.class);
+        given(userRepository.findById(userID)).willReturn(Optional.of(existngUser));
+        given(userRepository.existsByEmail(userUpdateRequest.newEmail())).willReturn(true);
 
-        verify(userRepository, times(1)).existsByEmail("test1234@test.com");
-        verify(userRepository, times(0)).save(any(User.class));
+        assertThatThrownBy(() -> userService.update(userID, userUpdateRequest, Optional.empty()))
+            .isInstanceOf(UserEmailAlreadyExistsException.class)
+            .hasMessageContaining("중복된 이메일입니다.");
+    }
+
+    @Test
+    @DisplayName("User 삭제 - case : success")
+    void deleteUserSuccess() {
+        UUID userId = UUID.randomUUID();
+
+        given(userRepository.existsById(userId)).willReturn(true);
+        willDoNothing().given(userRepository).deleteById(userId);
+
+        userService.delete(userId);
+
+        then(userRepository).should().deleteById(userId);
+    }
+
+    @Test
+    @DisplayName("User 삭제 - case : 존재하지 않는 유저로 인한 failed")
+    void deleteUserFail() {
+        UUID userId = UUID.randomUUID();
+
+        given(userRepository.existsById(userId)).willReturn(false);
+
+        assertThatThrownBy(() -> userService.delete(userId))
+            .isInstanceOf(UserNotFoundException.class)
+            .hasMessageContaining("유저를 찾을 수 없습니다.");
+
+        then(userRepository).should(never()).deleteById(userId);
     }
 }
+
 
 
