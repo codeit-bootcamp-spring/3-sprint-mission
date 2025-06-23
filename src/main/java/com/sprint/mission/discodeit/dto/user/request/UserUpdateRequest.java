@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.dto.user.request;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.user fileName       :
@@ -10,8 +12,8 @@ import jakarta.validation.constraints.Email;
  * 최초 생성
  */
 public record UserUpdateRequest(
-    String newUsername,
+    @NotNull String newUsername,
     @Email String newEmail,
 //    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+{}\\[\\]:;<>,.?~\\\\/-]).{8,}$\n")
-    String newPassword) {
+    @NotNull String newPassword) {
 }

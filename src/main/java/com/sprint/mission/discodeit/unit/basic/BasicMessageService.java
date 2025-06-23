@@ -14,7 +14,9 @@ import com.sprint.mission.discodeit.unit.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,26 +53,28 @@ public class BasicMessageService implements MessageService {
     @Override
     public AdvancedJpaPageResponse findAllByChannelIdAndCursor(UUID channelId, Instant cursor, Pageable pageable) {
 
-        List<Message> messages = messageRepository.findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(channelId, cursor, pageable);
+        List<Message> messages = messageRepository
+            .findSliceByCursor(channelId, cursor, pageable);
 
         boolean hasNext = messages.size() > pageable.getPageSize();
-        Long totalElements = messageRepository.countByChannelId(channelId);
-        Instant nextCursor = null;
-        if(hasNext) {
+        if (hasNext) {
             messages = messages.subList(0, pageable.getPageSize());
-            nextCursor = messages.get(messages.size() - 1).getCreatedAt();
         }
+        Instant nextCursor = hasNext
+            ? messages.get(messages.size() - 1).getCreatedAt()
+            : null;
 
-        List<JpaMessageResponse> messagesDto = messages.stream().map(message -> messageMapper.toDto(message)).toList();
+        List<JpaMessageResponse> dtoList = messages.stream()
+            .map(messageMapper::toDto)
+            .toList();
 
-        AdvancedJpaPageResponse response = AdvancedJpaPageResponse.builder()
-                .content(messagesDto)
-                .nextCursor(nextCursor)
-                .size(messages.size())
-                .hasNext(hasNext)
-                .totalElements(totalElements)
-                .build();
-        return response;
+        return AdvancedJpaPageResponse.builder()
+            .content(dtoList)
+            .nextCursor(nextCursor)
+            .size(dtoList.size())
+            .hasNext(hasNext)
+            .totalElements(messageRepository.countByChannelId(channelId))
+            .build();
     }
 
     /**

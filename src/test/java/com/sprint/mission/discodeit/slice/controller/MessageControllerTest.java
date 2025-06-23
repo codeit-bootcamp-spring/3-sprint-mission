@@ -171,8 +171,8 @@ public class MessageControllerTest {
 
         // when n then
         mockMvc.perform(multipart("/api/messages")
-            .file(jsonPart)
-            .accept(MediaType.APPLICATION_JSON))
+                .file(jsonPart)
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").value(messageId.toString()))
             .andExpect(jsonPath("$.content").value("content"))
@@ -236,7 +236,7 @@ public class MessageControllerTest {
         doThrow(new MessageNotFoundException(Map.of("messageId", messageId)))
             .when(messageService).deleteMessage(any(UUID.class));
 
-        // when
+        // when n then
         mockMvc.perform(delete("/api/messages/{messageId}", messageId))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.message").value("메세지를 찾을 수 없습니다."))
@@ -244,9 +244,6 @@ public class MessageControllerTest {
             .andExpect(jsonPath("$.details").isMap())
             .andExpect(jsonPath("$.details", hasKey("messageId")))
             .andExpect(jsonPath("$.details.messageId").value(messageId.toString()));
-
-        // then
-
     }
 
 

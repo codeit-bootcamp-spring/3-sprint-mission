@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.slice.repository;
 
+import com.sprint.mission.discodeit.config.QuerydslConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -34,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DataJpaTest
 @ActiveProfiles("test")
+@Import(QuerydslConfig.class)
 @DisplayName("Message Repository 테스트")
 public class MessageRepositoryTest {
 
@@ -196,89 +199,10 @@ public class MessageRepositoryTest {
     }
 
     @Test
-    @DisplayName("페이지를 처음 불러올 땐 첫 가장 최근 생성된 메세지들을 가져온다")
-    void whenFirstTimeFindpage_thenFindBasedOnLatestMessages(){
-        // given
-        int numberOfMessages = 100;
-        int size = 10;
-        Instant cursor = null;
-        Instant latestDay = null;
-
-        Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-
-        Channel channel = Channel.builder()
-            .name("local public channel")
-            .type(ChannelType.PUBLIC)
-            .build();
-        channelRepository.save(channel);
-
-        for(int i = 0; i < numberOfMessages; i++){
-            Message message = new Message(globalUser, channel, "content #"+(i+1));
-            messageRepository.save(message);
-            latestDay = message.getCreatedAt();
-        }
-
-        // when
-        List<Message> messages = messageRepository.findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(channel.getId(), cursor, pageable);
-
-        // then
-        assertThat(messages.size()).isEqualTo(size);
-        assertThat(messages.get(0).getContent()).isEqualTo("content #" + numberOfMessages);
-        assertThat(messages.get(0).getCreatedAt()).isEqualTo(latestDay);
-    }
-
-    @Test
-    @DisplayName("Pageable이 특정 페이지를 가리키면 그 페이지를 기준으로 값을 가져올 수 있어야 한다.")
-    void whenPageableHasValue_thenFindPagesBasedOnCursor(){
-        // given
-        int numberOfMessages = 100;
-        int size = 10;
-        int indexByCursor = 10;
-
-        Instant cursor = null;
-        Instant expectedCreatedAt = null;
-        int expectedNumber = 0;
-
-        List<Message> messageList = new ArrayList<>();
-
-        Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-
-        Channel channel = Channel.builder()
-            .name("local public channel")
-            .type(ChannelType.PUBLIC)
-            .build();
-        channelRepository.save(channel);
-
-        for(int i = 0; i < numberOfMessages; i++){
-            Message message = new Message(globalUser, channel, "content #"+(i+1));
-            messageRepository.save(message);
-            messageList.add(message);
-
-            if (i == indexByCursor) {
-                cursor = message.getCreatedAt();
-                expectedNumber = i;
-                expectedCreatedAt = messageRepository
-                    .findById(messageList.get(i-1).getId())
-                    .orElseThrow()
-                    .getCreatedAt();
-            }
-        }
-
-        // when
-        List<Message> messages = messageRepository
-            .findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(channel.getId(), cursor, pageable);
-
-        // then
-        assertThat(messages.size()).isEqualTo(size);
-        assertThat(messages.get(0).getContent()).isEqualTo("content #" + expectedNumber);
-        assertThat(messages.get(0).getCreatedAt()).isEqualTo(expectedCreatedAt);
-    }
-
-    @Test
     @DisplayName("채널이 메세지를 가지고 있으면 가지고 있는 메세지의 수를 반환한다.")
     void whenChannelHasMessages_thenReturnNumberOfMessages(){
         // given
-        int numberOfMessages = 100;
+        int numberOfMessages = 28;
 
         Channel channel = Channel.builder()
             .name("local public channel")
@@ -288,6 +212,7 @@ public class MessageRepositoryTest {
 
         for (int i = 0; i < numberOfMessages; i++) {
             Message message = new Message(globalUser, channel, "content #" + (i + 1));
+            ReflectionTestUtils.setField(message, "createdAt", Instant.parse(String.format("2025-06-%02dT00:00:00Z", i + 1)));
             messageRepository.save(message);
         }
 
@@ -316,5 +241,61 @@ public class MessageRepositoryTest {
 
         // then
         assertThat(result).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("커서가 있을경우 커서를 기준으로 메세지들을 가져온다.")
+    void whenCursorExist_thenReturnListBasedOnCursor() throws Exception {
+        // given
+        int numberOfMessages = 28;
+        int targetIndex = 5;
+        UUID channelId = globalChannel.getId();
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+        Instant cursor = Instant.parse(String.format("2025-06-%02dT00:00:00Z", targetIndex));
+
+        for(int i = 0; i < numberOfMessages; i++){
+            Message message = new Message(globalUser, globalChannel, "content #" + (i + 1));
+            ReflectionTestUtils.setField(message, "createdAt", Instant.parse(String.format("2025-06-%02dT00:00:00Z", i + 1)));
+            messageRepository.save(message);
+        }
+
+        // when
+        List<Message> messages = messageRepository.findSliceByCursor(channelId, cursor, pageable);
+
+        // then
+        assertThat(messages.size()).isLessThanOrEqualTo(pageable.getPageSize());
+        assertThat(messages).allSatisfy(message -> {
+            assertThat(message.getCreatedAt()).isBefore(cursor);
+        });
+
+    }
+
+    @Test
+    @DisplayName("커서가 없을경우 가장 최신 메세지를 기준으로 가져온다.")
+    void whenCursorNotExist_thenReturnLatestMessages() throws Exception {
+        // given
+        int numberOfMessages = 28;
+
+        Channel channel = new Channel();
+        channelRepository.save(channel);
+        UUID channelId = channel.getId();
+
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+
+        for(int i = 0; i < numberOfMessages; i++){
+            Message message = new Message(globalUser, channel, "content #" + (i + 1));
+            messageRepository.save(message);
+            ReflectionTestUtils.setField(message, "createdAt", Instant.parse(String.format("2025-06-%02dT00:00:00Z", i + 1)));
+        }
+
+        // when
+        List<Message> slice = messageRepository.findSliceByCursor(channelId, null, pageable);
+
+        // then
+        assertThat(slice).hasSize(pageable.getPageSize() + 1);
+        assertThat(slice.get(0).getCreatedAt())
+            .isEqualTo(Instant.parse("2025-06-28T00:00:00Z"));
+        assertThat(slice).isSortedAccordingTo(
+            Comparator.comparing(Message::getCreatedAt).reversed());
     }
 }

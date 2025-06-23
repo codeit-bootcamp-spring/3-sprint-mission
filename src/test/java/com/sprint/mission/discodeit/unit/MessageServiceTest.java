@@ -244,18 +244,18 @@ public class MessageServiceTest {
         int numberOfMessages = 5;
         int pageSize = 3;
         List<Message> messages = new ArrayList<>();
-        String day = String.format("%02d", numberOfMessages);
-        String latestDate = "2025-06-" + day + "T00:00:00Z";
 
         for (int i = numberOfMessages; i > 0; i--) {
-            day = String.format("%02d", i);
-            Message message = Message.builder().content("2025-06-" + day + "T00:00:00Z").build();
-            ReflectionTestUtils.setField(message, "createdAt", Instant.parse("2025-06-" + day + "T00:00:00Z"));
+            String dateStr = String.format("2025-06-%02dT00:00:00Z", i);
+            Instant createdAt = Instant.parse(dateStr);
+            Message message = Message.builder().content(dateStr).build();
+            ReflectionTestUtils.setField(message, "createdAt", createdAt);
             messages.add(message);
         }
 
         Pageable pageable = PageRequest.of(0, pageSize, Sort.by("createdAt").descending());
-        given(messageRepository.findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(channelId,null, pageable)).willReturn(messages.subList(0, pageSize + 1));
+        given(messageRepository.findSliceByCursor(channelId, null, pageable))
+            .willReturn(messages.subList(0, Math.min(pageSize + 1, messages.size())));
 
         given(messageMapper.toDto(any(Message.class)))
             .willAnswer(inv -> {
@@ -270,14 +270,19 @@ public class MessageServiceTest {
         AdvancedJpaPageResponse result = messageService.findAllByChannelIdAndCursor(channelId, null, pageable);
 
         // then
-        assertThat(result.nextCursor()).isEqualTo(messages.get(result.content().size()-1).getCreatedAt());
-        assertThat(result.content().get(0).content()).isEqualTo(latestDate);
+        List<JpaMessageResponse> content = result.content();
+        assertThat(content).hasSize(pageSize);
 
-        Instant latestCreatedAt = result.content().stream()
+        Instant firstCreatedAt = content.get(0).createdAt();
+        Instant maxCreatedAt = content.stream()
             .map(JpaMessageResponse::createdAt)
-            .reduce(Instant.MAX, (a, b) -> a.isAfter(b) ? a : b);
+            .max(Comparator.naturalOrder())
+            .orElseThrow();
 
-        assertThat(latestCreatedAt).isAfter(latestDate);
+        assertThat(firstCreatedAt).isEqualTo(maxCreatedAt);
+
+        Instant lastCreatedAt = content.get(content.size() - 1).createdAt();
+        assertThat(result.nextCursor()).isEqualTo(lastCreatedAt);
 
     }
 
@@ -297,7 +302,8 @@ public class MessageServiceTest {
         }
 
         Pageable pageable = PageRequest.of(0, pageSize, Sort.by("createdAt").descending());
-        given(messageRepository.findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(channelId, null, pageable)).willReturn(messages.subList(0, pageSize + 1));
+        given(messageRepository.findSliceByCursor(channelId, null, pageable))
+            .willReturn(messages.subList(0, pageSize + 1));
 
         given(messageMapper.toDto(any(Message.class)))
             .willAnswer(inv -> {

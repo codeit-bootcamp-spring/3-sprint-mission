@@ -5,8 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.sprint.mission.discodeit.controller.UserController;
 
+import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
+import com.sprint.mission.discodeit.dto.userStatus.UserStatusUpdateByUserIdRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
@@ -15,6 +19,7 @@ import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.unit.ChannelService;
 import com.sprint.mission.discodeit.unit.UserService;
 import com.sprint.mission.discodeit.unit.basic.BasicChannelService;
+import net.bytebuddy.agent.VirtualMachine;
 import org.springframework.mock.web.MockMultipartFile;
 import com.sprint.mission.discodeit.unit.basic.BasicUserService;
 import com.sprint.mission.discodeit.unit.basic.BasicUserStatusService;
@@ -179,6 +184,7 @@ public class UserControllerTest {
         mockMvc.perform(delete("/api/users/{userId}", userId))
             .andExpect(status().isNoContent());
     }
+
     @Test
     @DisplayName("삭제할 유저를 찾지 못할 경우 UserNotFoundException(404)를 반환한다.")
     void deleteUser_noUser_UserNotFoundException() throws Exception {
@@ -188,7 +194,7 @@ public class UserControllerTest {
         doThrow(new UserNotFoundException(Map.of("userId", userId)))
             .when(userService).deleteUser(any(UUID.class));
 
-        // when
+        // when n then
         mockMvc.perform(delete("/api/users/{userId}", userId))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.message").value("유저를 찾을 수 없습니다."))
@@ -196,9 +202,116 @@ public class UserControllerTest {
             .andExpect(jsonPath("$.details").isMap())
             .andExpect(jsonPath("$.details", hasKey("userId")))
             .andExpect(jsonPath("$.details.userId").value(userId.toString()));
-
-        // then
-
     }
 
+     @Test
+     @DisplayName("유저 업데이트 API가 정상 작동한다.")
+     void updateUser_success() throws Exception {
+         // given
+         UUID userId = UUID.randomUUID();
+         UserUpdateRequest request = new UserUpdateRequest("daniel","daniel@test.com","");
+
+         MockMultipartFile jsonPart = new MockMultipartFile(
+             "userUpdateRequest",
+             "",
+             MediaType.APPLICATION_JSON_VALUE,
+             objectMapper.writeValueAsBytes(request)
+         );
+
+         JpaUserResponse response = JpaUserResponse.builder()
+             .username("daniel")
+             .email("daniel@test.com")
+             .build();
+
+         given(userService.update(any(UUID.class), any(UserUpdateRequest.class), any()))
+             .willReturn(response);
+
+         // when n then
+         mockMvc.perform(multipart("/api/users/{userId}", userId)
+                 .file(jsonPart)
+                 .accept(MediaType.APPLICATION_JSON)
+                 .with(r-> {
+                     r.setMethod("PATCH"); return r;
+                 }))
+             .andExpect(status().isOk())
+             .andExpect(jsonPath("$.username").value("daniel"))
+             .andExpect(jsonPath("$.email").value("daniel@test.com"));
+     }
+
+     @Test
+     @DisplayName("업데이트할 유저를 찾지 못할경우 UserNotFoundException(404)을 반환한다.")
+     void updateUser_UserNotFoundException() throws Exception {
+         // given
+         UUID userId = UUID.randomUUID();
+         UserUpdateRequest request = new UserUpdateRequest("daniel","daniel@test.com","");
+
+         MockMultipartFile jsonPart = new MockMultipartFile(
+             "userUpdateRequest",
+             "",
+             MediaType.APPLICATION_JSON_VALUE,
+             objectMapper.writeValueAsBytes(request)
+         );
+
+         given(userService.update(any(UUID.class), any(UserUpdateRequest.class), any()))
+             .willThrow(new UserNotFoundException(Map.of("userId", userId)));
+
+         // when n then
+         mockMvc.perform(multipart("/api/users/{userId}", userId)
+                 .file(jsonPart)
+                 .accept(MediaType.APPLICATION_JSON)
+                 .with(r-> {
+                     r.setMethod("PATCH"); return r;
+                 }))
+             .andExpect(status().isNotFound())
+             .andExpect(jsonPath("$.message").value("유저를 찾을 수 없습니다."))
+             .andExpect(jsonPath("$.code").value("USER_NOT_FOUND"))
+             .andExpect(jsonPath("$.details").isMap())
+             .andExpect(jsonPath("$.details", hasKey("userId")))
+             .andExpect(jsonPath("$.details.userId").value(userId.toString()));
+     }
+
+     @Test
+     @DisplayName("유저 최근 접속시간 업데이트 API가 정상 작동 한다.")
+     void updateUserStatus_success() throws Exception {
+         // given
+         Instant newLastActiveAt = Instant.now();
+         UUID id = UUID.randomUUID();
+         UUID userId = UUID.randomUUID();
+         UserStatusUpdateByUserIdRequest request = new UserStatusUpdateByUserIdRequest(newLastActiveAt);
+         JpaUserStatusResponse response = new JpaUserStatusResponse(id, userId, newLastActiveAt);
+
+         given(userStatusService.updateByUserId(any(UUID.class), any(Instant.class))).willReturn(response);
+
+         // when n then
+         mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .content(objectMapper.writeValueAsBytes(request)))
+             .andExpect(status().isOk())
+             .andExpect(jsonPath("$.id").value(id.toString()))
+             .andExpect(jsonPath("$.userId").value(userId.toString()))
+             .andExpect(jsonPath("$.lastActiveAt").value(newLastActiveAt.toString()));
+     }
+
+     @Test
+     @DisplayName("업데이트 유저가 없을경우 UserNotFoundException(404)를 반환한다.")
+     void updateUser_noUser_UserNotFoundException() throws Exception {
+         // given
+         Instant newLastActiveAt = Instant.now();
+         UUID userId = UUID.randomUUID();
+         UserStatusUpdateByUserIdRequest request = new UserStatusUpdateByUserIdRequest(newLastActiveAt);
+
+         given(userStatusService.updateByUserId(any(UUID.class), any(Instant.class)))
+             .willThrow(new UserNotFoundException(Map.of("userId", userId)));
+
+         // when n then
+         mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .content(objectMapper.writeValueAsBytes(request)))
+             .andExpect(status().isNotFound())
+             .andExpect(jsonPath("$.message").value("유저를 찾을 수 없습니다."))
+             .andExpect(jsonPath("$.code").value("USER_NOT_FOUND"))
+             .andExpect(jsonPath("$.details").isMap())
+             .andExpect(jsonPath("$.details", hasKey("userId")))
+             .andExpect(jsonPath("$.details.userId").value(userId.toString()));
+     }
 }

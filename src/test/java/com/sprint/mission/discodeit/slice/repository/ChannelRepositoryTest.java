@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.slice.repository;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.sprint.mission.discodeit.config.QuerydslConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
@@ -7,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
@@ -21,8 +24,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DataJpaTest
 @ActiveProfiles("test")
+@Import(QuerydslConfig.class)
 @DisplayName("Channel Repository 테스트")
 public class ChannelRepositoryTest {
+
+    @Autowired
+    JPAQueryFactory jpaQueryFactory;
 
     @Autowired
     private JpaChannelRepository channelRepository;
@@ -88,6 +95,4 @@ public class ChannelRepositoryTest {
         assertThat(channels.get(0).getName()).isEqualTo("private");
         assertThat(channels.get(0).getType()).isEqualTo(ChannelType.PRIVATE);
     }
-
-
 }

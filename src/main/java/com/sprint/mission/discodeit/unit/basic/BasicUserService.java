@@ -153,7 +153,7 @@ public class BasicUserService implements UserService {
     @Override
     public JpaUserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file) {
 
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(Map.of("id ", userId)));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(Map.of("userId ", userId)));
 
         String oldName = user.getUsername();
         String oldEmail = user.getEmail();
