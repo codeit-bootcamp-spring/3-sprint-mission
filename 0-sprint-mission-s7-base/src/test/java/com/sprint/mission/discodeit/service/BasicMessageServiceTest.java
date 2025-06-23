@@ -49,7 +49,6 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.test.context.ActiveProfiles;
 
 @ExtendWith(MockitoExtension.class)
-@ActiveProfiles("test")
 @DisplayName("MessageService 단위 테스트")
 public class BasicMessageServiceTest {
 

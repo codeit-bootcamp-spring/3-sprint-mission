@@ -32,7 +32,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
 @ExtendWith(MockitoExtension.class)
-@ActiveProfiles("test")
 @DisplayName("UserService 단위 테스트")
 public class BasicUserServiceTest {
 

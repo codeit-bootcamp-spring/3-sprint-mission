@@ -44,7 +44,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ChannelService 단위 테스트")
-@ActiveProfiles("test")
 public class BasicChannelServiceTest {
 
     @Mock
@@ -251,9 +250,9 @@ public class BasicChannelServiceTest {
         UUID userId = UUID.randomUUID();
         List<ReadStatus> emptyReadStatuses = List.of();
 
-        Channel publicChannel = new Channel(ChannelType.PUBLIC, "공개 채널", "공개 설명");
-        ChannelDto publicChannelDto = new ChannelDto(publicChannel.getId(), ChannelType.PUBLIC, "공개 채널",
-            "공개 설명", null, Instant.now());
+        Channel publicChannel = new Channel(ChannelType.PUBLIC, "testPublicChannel", "testPublicChannel description");
+        ChannelDto publicChannelDto = new ChannelDto(publicChannel.getId(), ChannelType.PUBLIC, "testPublicChannel",
+            "testPublicChannel description", null, Instant.now());
 
         given(readStatusRepository.findAllByUserId(userId)).willReturn(emptyReadStatuses);
         given(channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC, List.of())).willReturn(
@@ -263,7 +262,7 @@ public class BasicChannelServiceTest {
         List<ChannelDto> result = channelService.findAllByUserId(userId);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).name()).isEqualTo("공개 채널");
+        assertThat(result.get(0).name()).isEqualTo("testPublicChannel");
 
         then(readStatusRepository).should().findAllByUserId(userId);
         then(channelRepository).should().findAllByTypeOrIdIn(ChannelType.PUBLIC, List.of());
