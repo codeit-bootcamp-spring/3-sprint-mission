@@ -118,7 +118,7 @@ public class BasicMessageService implements MessageService {
 
         Instant nextCursor = hasNext ? contentMessages.get(contentMessages.size() - 1).getCreatedAt() : null;
 
-        List<MessageResponseDto> content = messages.stream()
+        List<MessageResponseDto> content = contentMessages.stream()
                 .map(messageMapper::toDto)
                 .toList();
 
