@@ -3,8 +3,6 @@ package com.sprint.mission.discodeit.util;
 // @Slf4j
 public class MemoryUtil {
 
-//  private static final Logger log = LogManager.getLogger(MemoryUtil.class);
-
   /**
    * JVM 현재 메모리 사용량을 로깅한다.
    *

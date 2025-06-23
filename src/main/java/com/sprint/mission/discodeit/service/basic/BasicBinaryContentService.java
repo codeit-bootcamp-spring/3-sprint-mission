@@ -2,7 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.exception.BinaryContentException;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.exception.binarycontent.InvalidBinaryContentRequestException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -10,6 +11,7 @@ import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
@@ -27,14 +30,13 @@ public class BasicBinaryContentService implements BinaryContentService {
   public BinaryContentResponse create(BinaryContentData binaryContentData) {
     if (binaryContentData.bytes() == null || binaryContentData.fileName() == null
         || binaryContentData.contentType() == null) {
-      throw BinaryContentException.invalidRequest();
+      throw new InvalidBinaryContentRequestException();
     }
 
     BinaryContent binaryContent = BinaryContent.create(
         binaryContentData.fileName(),
         (long) binaryContentData.bytes().length,
-        binaryContentData.contentType()
-    );
+        binaryContentData.contentType());
 
     BinaryContent saved = binaryContentRepository.save(binaryContent);
 
@@ -47,7 +49,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   public BinaryContentResponse find(UUID binaryContentId) {
     return binaryContentRepository.findById(binaryContentId)
         .map(BinaryContentResponse::from)
-        .orElseThrow(() -> BinaryContentException.notFound(binaryContentId));
+        .orElseThrow(() -> new BinaryContentNotFoundException(binaryContentId.toString()));
   }
 
   @Override
@@ -55,7 +57,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     List<BinaryContent> contents = binaryContentRepository.findAllById(binaryContentIds);
 
     if (contents.size() != binaryContentIds.size()) {
-      throw BinaryContentException.notFound(); // 일부 ID 누락 검증
+      throw new BinaryContentNotFoundException(); // 일부 ID 누락 검증
     }
 
     return contents.stream()
@@ -65,8 +67,10 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Override
   public ResponseEntity<Resource> download(UUID binaryContentId) {
+    log.info("파일 다운로드 요청: {}", binaryContentId);
+
     BinaryContent entity = binaryContentRepository.findById(binaryContentId)
-        .orElseThrow(() -> BinaryContentException.notFound(binaryContentId));
+        .orElseThrow(() -> new BinaryContentNotFoundException(binaryContentId.toString()));
 
     return binaryContentStorage.download(entity);
   }

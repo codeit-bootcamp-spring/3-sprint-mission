@@ -1,25 +1,13 @@
 package com.sprint.mission.discodeit.service.userstatus;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.*;
 
-import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.UserException;
-import com.sprint.mission.discodeit.exception.UserStatusException;
-import com.sprint.mission.discodeit.fixture.UserFixture;
-import com.sprint.mission.discodeit.fixture.UserStatusFixture;
-import com.sprint.mission.discodeit.mapper.UserStatusMapper;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.service.basic.BasicUserStatusService;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,6 +15,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.UserException;
+import com.sprint.mission.discodeit.exception.user.UserStatusException;
+import com.sprint.mission.discodeit.fixture.UserFixture;
+import com.sprint.mission.discodeit.fixture.UserStatusFixture;
+import com.sprint.mission.discodeit.mapper.UserStatusMapper;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.basic.BasicUserStatusService;
 
 @ExtendWith(MockitoExtension.class)
 class BasicUserStatusServiceTest {
@@ -64,8 +64,8 @@ class BasicUserStatusServiceTest {
       assertThatThrownBy(() -> userStatusService.create(userId))
           .isInstanceOf(UserException.class);
 
-      verify(userRepository).findById(userId);
-      verify(userStatusRepository, never()).save(any());
+      then(userRepository).should().findById(userId);
+      then(userStatusRepository).should(never()).save(any());
     }
 
     @Test
@@ -77,9 +77,9 @@ class BasicUserStatusServiceTest {
       assertThatThrownBy(() -> userStatusService.create(userId))
           .isInstanceOf(UserStatusException.class);
 
-      verify(userRepository).findById(userId);
-      verify(userStatusRepository).findByUserId(userId);
-      verify(userStatusRepository, never()).save(any());
+      then(userRepository).should().findById(userId);
+      then(userStatusRepository).should().findByUserId(userId);
+      then(userStatusRepository).should(never()).save(any());
     }
   }
 
@@ -94,7 +94,7 @@ class BasicUserStatusServiceTest {
       assertThatThrownBy(() -> userStatusService.find(statusId))
           .isInstanceOf(UserStatusException.class);
 
-      verify(userStatusRepository).findById(statusId);
+      then(userStatusRepository).should().findById(statusId);
     }
   }
 
@@ -108,7 +108,7 @@ class BasicUserStatusServiceTest {
       assertThatThrownBy(() -> userStatusService.updateByUserId(userId))
           .isInstanceOf(UserStatusException.class);
 
-      verify(userStatusRepository).findByUserId(userId);
+      then(userStatusRepository).should().findByUserId(userId);
     }
   }
 
@@ -122,8 +122,8 @@ class BasicUserStatusServiceTest {
 
       userStatusService.delete(statusId);
 
-      verify(userStatusRepository).findById(statusId);
-      verify(userStatusRepository).deleteById(statusId);
+      then(userStatusRepository).should().findById(statusId);
+      then(userStatusRepository).should().deleteById(statusId);
     }
 
     @Test
@@ -134,8 +134,8 @@ class BasicUserStatusServiceTest {
       assertThatThrownBy(() -> userStatusService.delete(statusId))
           .isInstanceOf(UserStatusException.class);
 
-      verify(userStatusRepository).findById(statusId);
-      verify(userStatusRepository, never()).deleteById(statusId);
+      then(userStatusRepository).should().findById(statusId);
+      then(userStatusRepository).should(never()).deleteById(statusId);
     }
   }
 
@@ -150,8 +150,7 @@ class BasicUserStatusServiceTest {
             return new UserStatusResponse(
                 status.getId(),
                 status.getUser().getId(),
-                status.getLastActiveAt()
-            );
+                status.getLastActiveAt());
           });
     }
 
@@ -165,9 +164,9 @@ class BasicUserStatusServiceTest {
       UserStatusResponse result = userStatusService.create(userId);
 
       assertThat(result.userId()).isEqualTo(userId);
-      verify(userRepository).findById(userId);
-      verify(userStatusRepository).findByUserId(userId);
-      verify(userStatusRepository).save(any(UserStatus.class));
+      then(userRepository).should().findById(userId);
+      then(userStatusRepository).should().findByUserId(userId);
+      then(userStatusRepository).should().save(any(UserStatus.class));
     }
 
     @Test
@@ -179,7 +178,7 @@ class BasicUserStatusServiceTest {
       UserStatusResponse updated = userStatusService.update(statusId);
 
       assertThat(updated).isNotNull();
-      verify(userStatusRepository).findById(statusId);
+      then(userStatusRepository).should().findById(statusId);
     }
 
     @Test
@@ -189,7 +188,7 @@ class BasicUserStatusServiceTest {
       UserStatusResponse updated = userStatusService.updateByUserId(userId);
 
       assertThat(updated).isNotNull();
-      verify(userStatusRepository).findByUserId(userId);
+      then(userStatusRepository).should().findByUserId(userId);
     }
 
     @Test
@@ -200,7 +199,7 @@ class BasicUserStatusServiceTest {
       UserStatusResponse found = userStatusService.find(statusId);
 
       assertThat(found).isNotNull();
-      verify(userStatusRepository).findById(statusId);
+      then(userStatusRepository).should().findById(statusId);
     }
 
     @Test
@@ -210,7 +209,7 @@ class BasicUserStatusServiceTest {
       UserStatusResponse result = userStatusService.findByUserId(userId);
 
       assertThat(result.userId()).isEqualTo(userId);
-      verify(userStatusRepository).findByUserId(userId);
+      then(userStatusRepository).should().findByUserId(userId);
     }
   }
 }

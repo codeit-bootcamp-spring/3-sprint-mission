@@ -1,33 +1,37 @@
 package com.sprint.mission.discodeit.service.message;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.*;
 
-import com.sprint.mission.discodeit.assembler.MessageAssembler;
-import com.sprint.mission.discodeit.dto.response.MessageResponse;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.fixture.ChannelFixture;
-import com.sprint.mission.discodeit.fixture.MessageFixture;
-import com.sprint.mission.discodeit.fixture.UserFixture;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.basic.BasicMessageService;
-import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.sprint.mission.discodeit.assembler.MessageAssembler;
+import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.fixture.ChannelFixture;
+import com.sprint.mission.discodeit.fixture.MessageFixture;
+import com.sprint.mission.discodeit.fixture.UserFixture;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
 
 @ExtendWith(MockitoExtension.class)
 class BasicMessageServiceTest {
@@ -38,8 +42,6 @@ class BasicMessageServiceTest {
   private UserRepository userRepository;
   @Mock
   private ChannelRepository channelRepository;
-  @Mock
-  private BinaryContentRepository binaryContentRepository;
   @Mock
   private MessageAssembler messageAssembler;
 
@@ -67,7 +69,7 @@ class BasicMessageServiceTest {
 
       messageService.create(command);
 
-      verify(messageRepository).save(any(Message.class));
+      then(messageRepository).should().save(any(Message.class));
     }
   }
 
@@ -81,7 +83,7 @@ class BasicMessageServiceTest {
 
       messageService.delete(message.getId());
 
-      verify(messageRepository).deleteById(message.getId());
+      then(messageRepository).should().deleteById(message.getId());
     }
   }
 
@@ -102,6 +104,67 @@ class BasicMessageServiceTest {
       messageService.updateContent(message.getId(), updatedContent);
 
       assertThat(message.getContent()).isEqualTo(updatedContent);
+    }
+  }
+
+  @Nested
+  class ExceptionCases {
+
+    @Test
+    void 존재하지_않는_유저로_메시지_생성시_예외() {
+      CreateMessageCommand command = mock(CreateMessageCommand.class);
+      given(command.authorId()).willReturn(userId);
+      given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+      assertThatThrownBy(() -> messageService.create(command)).isInstanceOf(
+          UserNotFoundException.class);
+    }
+
+    @Test
+    void 존재하지_않는_채널로_메시지_생성시_예외() {
+      User user = UserFixture.createValidUser();
+      CreateMessageCommand command = mock(CreateMessageCommand.class);
+      given(command.authorId()).willReturn(userId);
+      given(command.channelId()).willReturn(channelId);
+      given(userRepository.findById(userId)).willReturn(Optional.of(user));
+      given(channelRepository.findById(channelId)).willReturn(Optional.empty());
+
+      assertThatThrownBy(() -> messageService.create(command)).isInstanceOf(
+          ChannelNotFoundException.class);
+    }
+
+    @Test
+    void 존재하지_않는_메시지_삭제시_예외() {
+      UUID messageId = UUID.randomUUID();
+      given(messageRepository.findById(messageId)).willReturn(Optional.empty());
+
+      assertThatThrownBy(() -> messageService.delete(messageId)).isInstanceOf(
+          MessageNotFoundException.class);
+    }
+
+    @Test
+    void 존재하지_않는_메시지_업데이트시_예외() {
+      UUID messageId = UUID.randomUUID();
+      given(messageRepository.findById(messageId)).willReturn(Optional.empty());
+
+      assertThatThrownBy(() -> messageService.updateContent(messageId, "fail"))
+          .isInstanceOf(MessageNotFoundException.class);
+    }
+  }
+
+  @Nested
+  class FindByChannelId {
+
+    @Test
+    void 채널ID로_메시지_목록_조회_성공() {
+      Message message1 = MessageFixture.createValid();
+      Message message2 = MessageFixture.createValid();
+      given(messageRepository.findAllByChannelId(channelId)).willReturn(
+          List.of(message1, message2));
+      given(messageAssembler.toResponse(any())).willReturn(mock(MessageResponse.class));
+      List<MessageResponse> result = messageService.findAllByChannelId(channelId);
+
+      assertThat(result).hasSize(2);
     }
   }
 }

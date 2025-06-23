@@ -10,15 +10,16 @@ spring:
       maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
   datasource:
     url: jdbc:h2:mem:discodeit_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
     username: sa
     password:
-    driver-class-name: org.h2.Driver
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: create-drop
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
         generate_statistics: true
         default_batch_fetch_size: 1000
         format_sql: false

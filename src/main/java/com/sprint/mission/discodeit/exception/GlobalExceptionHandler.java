@@ -1,33 +1,29 @@
 package com.sprint.mission.discodeit.exception;
 
-import com.sprint.mission.discodeit.dto.response.ErrorResponse;
 import java.time.Instant;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(BusinessException.class)
-  public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
+  @ExceptionHandler(DiscodeitException.class)
+  public ResponseEntity<ErrorResponse> handleBusinessException(DiscodeitException e) {
+    log.error("[서비스 오류] code: {}, exceptionType: {}", e.getErrorCode().name(),
+        e.getClass().getSimpleName(), e);
 
-    log.error("[서비스 오류] code: {}, messageKey: {}", e.getErrorCode().getMessage(),
-        e.getErrorCode().getMessageKey(), e);
-
-    ErrorCode errorCode = e.getErrorCode();
-
-    ErrorResponse response = new ErrorResponse(
-        errorCode.getMessage(),
-        errorCode.getMessageKey(),
-        errorCode.getStatus(),
-        Instant.now()
-    );
-
-    return ResponseEntity.status(errorCode.getStatus()).body(response);
+    return ResponseEntity
+        .status(e.getErrorCode().getStatus())
+        .body(ErrorResponse.from(e));
   }
 
   @ExceptionHandler(Exception.class)
@@ -44,9 +40,29 @@ public class GlobalExceptionHandler {
     ErrorResponse response = new ErrorResponse(
         "INTERNAL_SERVER_ERROR",
         "알 수 없는 서버 에러가 발생했습니다.",
+        e.getClass().getSimpleName(),
         HttpStatus.INTERNAL_SERVER_ERROR.value(),
-        Instant.now()
-    );
+        Instant.now(),
+        Map.of("cause", e.getMessage()));
+
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
+    Map<String, String> errors = e.getBindingResult().getFieldErrors().stream()
+        .collect(java.util.stream.Collectors.toMap(
+            FieldError::getField,
+            fe -> fe.getDefaultMessage() != null ? fe.getDefaultMessage() : "잘못된 입력입니다.",
+            (a, b) -> b));
+
+    ErrorResponse response = new ErrorResponse(
+        "INVALID_INPUT_VALUE",
+        "요청 데이터가 유효하지 않습니다.",
+        e.getClass().getSimpleName(),
+        HttpStatus.BAD_REQUEST.value(),
+        Instant.now(),
+        errors);
+    return ResponseEntity.badRequest().body(response);
   }
 }

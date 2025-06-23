@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import com.sprint.mission.discodeit.exception.ErrorCode;
-import com.sprint.mission.discodeit.exception.UserException;
+import com.sprint.mission.discodeit.exception.InvalidInputException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,13 +48,13 @@ public class User extends BaseUpdatableEntity {
 
   private static void validate(String email, String name, String password) {
     if (email == null || email.isBlank()) {
-      throw new UserException(ErrorCode.INVALID_INPUT, "이메일은 비어 있을 수 없습니다.");
+      throw new InvalidInputException("이메일은 비어 있을 수 없습니다.");
     }
     if (name == null || name.isBlank()) {
-      throw new UserException(ErrorCode.INVALID_INPUT, "이름은 비어 있을 수 없습니다.");
+      throw new InvalidInputException("이름은 비어 있을 수 없습니다.");
     }
     if (password == null || password.isBlank()) {
-      throw new UserException(ErrorCode.INVALID_INPUT, "비밀번호는 비어 있을 수 없습니다.");
+      throw new InvalidInputException("비밀번호는 비어 있을 수 없습니다.");
     }
   }
 
@@ -69,21 +68,21 @@ public class User extends BaseUpdatableEntity {
 
   public void updatePassword(String password) {
     if (password == null || password.isBlank()) {
-      throw new UserException(ErrorCode.INVALID_INPUT, "비밀번호는 비어 있을 수 없습니다.");
+      throw new InvalidInputException("비밀번호는 비어 있을 수 없습니다.");
     }
     this.password = password;
   }
 
   public void updateName(String name) {
     if (name == null || name.isBlank()) {
-      throw new UserException(ErrorCode.INVALID_INPUT, "이름은 비어 있을 수 없습니다.");
+      throw new InvalidInputException("이름은 비어 있을 수 없습니다.");
     }
     this.username = name;
   }
 
   public void updateEmail(String email) {
     if (email == null || email.isBlank()) {
-      throw new UserException(ErrorCode.INVALID_INPUT, "이메일은 비어 있을 수 없습니다.");
+      throw new InvalidInputException("이메일은 비어 있을 수 없습니다.");
     }
     this.email = email;
   }

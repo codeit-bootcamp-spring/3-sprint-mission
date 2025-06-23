@@ -3,8 +3,8 @@ package com.sprint.mission.discodeit.service.binarycontent;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -45,11 +45,10 @@ class BasicBinaryContentServiceTest {
       BinaryContent expected = BinaryContent.create(
           BinaryContentFixture.getDefaultFileName(),
           (long) mockBytes.length,
-          BinaryContentFixture.getDefaultMimeType()
-      );
+          BinaryContentFixture.getDefaultMimeType());
       expected.assignIdForTest(UUID.randomUUID());
 
-      when(binaryContentRepository.save(any())).thenReturn(expected);
+      given(binaryContentRepository.save(any())).willReturn(expected);
 
       var request = BinaryContentFixture.createValidData();
 
@@ -62,8 +61,8 @@ class BasicBinaryContentServiceTest {
       assertThat(result.contentType()).isEqualTo(expected.getContentType());
       assertThat(result.size()).isEqualTo(expected.getSize());
 
-      verify(binaryContentRepository).save(any());
-      verify(binaryContentStorage).put(any(UUID.class), eq(mockBytes));
+      then(binaryContentRepository).should().save(any());
+      then(binaryContentStorage).should().put(any(UUID.class), eq(mockBytes));
     }
   }
 
@@ -75,13 +74,13 @@ class BasicBinaryContentServiceTest {
       UUID id = UUID.randomUUID();
       BinaryContent content = BinaryContentFixture.createValid();
 
-      when(binaryContentRepository.findById(id)).thenReturn(Optional.of(content));
+      given(binaryContentRepository.findById(id)).willReturn(Optional.of(content));
 
       BinaryContentResponse found = binaryContentService.find(id);
 
       assertThat(found).isNotNull();
       assertThat(found.fileName()).isEqualTo(content.getFileName());
-      verify(binaryContentRepository).findById(id);
+      then(binaryContentRepository).should().findById(id);
     }
   }
 
@@ -94,7 +93,7 @@ class BasicBinaryContentServiceTest {
 
       binaryContentService.delete(id);
 
-      verify(binaryContentRepository).deleteById(id);
+      then(binaryContentRepository).should().deleteById(id);
     }
   }
 
@@ -103,23 +102,29 @@ class BasicBinaryContentServiceTest {
 
     @Test
     void 여러_ID로_BinaryContent_목록을_조회한다() {
-      BinaryContent content1 = BinaryContentFixture.createValidWithId();
-      BinaryContent content2 = BinaryContentFixture.createValidWithId();
+      BinaryContent content1 = BinaryContentFixture.createValid();
+      BinaryContent content2 = BinaryContentFixture.createValid();
+      // save() mock을 통해 id가 할당된 객체를 반환하도록 설정
+      BinaryContent saved1 = BinaryContent.create(content1.getFileName(), content1.getSize(),
+          content1.getContentType());
+      BinaryContent saved2 = BinaryContent.create(content2.getFileName(), content2.getSize(),
+          content2.getContentType());
+      saved1.assignIdForTest(UUID.randomUUID());
+      saved2.assignIdForTest(UUID.randomUUID());
+      UUID id1 = saved1.getId();
+      UUID id2 = saved2.getId();
 
-      UUID id1 = content1.getId();
-      UUID id2 = content2.getId();
-
-      when(binaryContentRepository.findAllById(List.of(id1, id2)))
-          .thenReturn(List.of(content1, content2));
+      given(binaryContentRepository.findAllById(List.of(id1, id2)))
+          .willReturn(List.of(saved1, saved2));
 
       List<BinaryContentResponse> result = binaryContentService.findAllByIdIn(List.of(id1, id2));
 
       assertThat(result).hasSize(2);
       assertThat(result)
           .extracting(BinaryContentResponse::id)
-          .containsExactlyInAnyOrder(content1.getId(), content2.getId());
+          .containsExactlyInAnyOrder(id1, id2);
 
-      verify(binaryContentRepository).findAllById(List.of(id1, id2));
+      then(binaryContentRepository).should().findAllById(List.of(id1, id2));
     }
   }
 }
