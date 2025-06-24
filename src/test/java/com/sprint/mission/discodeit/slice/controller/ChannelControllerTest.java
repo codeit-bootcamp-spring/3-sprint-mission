@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Date         : 2025. 6. 21.
  */
 @WebMvcTest(controllers = ChannelController.class)
-@DisplayName("ChannelController 슬라이스 테스트")
+@DisplayName("Channel Controller 슬라이스 테스트")
 public class ChannelControllerTest {
 
     @Autowired
@@ -194,7 +194,7 @@ public class ChannelControllerTest {
     }
 
     @Test
-    @DisplayName("채널을 찾을 수 없을 경우 404 에러를 만든다.")
+    @DisplayName("채널을 찾을 수 없을 경우 ChannelNotFound(404) 에러를 만든다.")
     void deleteChannel_noUserExists_channelNotFound() throws Exception {
         // given
         UUID channelId = UUID.randomUUID();

@@ -60,9 +60,7 @@ public class BasicMessageService implements MessageService {
         if (hasNext) {
             messages = messages.subList(0, pageable.getPageSize());
         }
-        Instant nextCursor = hasNext
-            ? messages.get(messages.size() - 1).getCreatedAt()
-            : null;
+        Instant nextCursor = hasNext ? messages.get(messages.size() - 1).getCreatedAt() : null;
 
         List<JpaMessageResponse> dtoList = messages.stream()
             .map(messageMapper::toDto)
@@ -97,12 +95,21 @@ public class BasicMessageService implements MessageService {
                 // BinaryContent 생성
                 BinaryContent attachment;
                 try {
+                    String originalFilename = file.getOriginalFilename();
+                    String extension = "";
+
+                    int dotIndex = originalFilename.lastIndexOf(".");
+                    if (dotIndex != -1 && dotIndex < originalFilename.length() - 1) {
+                        extension = originalFilename.substring(dotIndex);
+                    } else {
+                        extension = "";
+                    }
                     BinaryContent binaryContent = BinaryContent.builder()
-                            .fileName(file.getOriginalFilename())
-                            .size((long) file.getBytes().length)
-                            .contentType(file.getContentType())
-                            .extension(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")))
-                            .build();
+                        .fileName(originalFilename)
+                        .size((long) file.getBytes().length)
+                        .contentType(file.getContentType())
+                        .extension(extension)
+                        .build();
                     attachment = binaryContentRepository.save(binaryContent);
                     binaryContentStorage.put(binaryContent.getId(),file.getBytes());
 
@@ -131,7 +138,9 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public void deleteMessage(UUID messageId) {
-        Optional.ofNullable(messageId).orElseThrow(() -> new IllegalArgumentException("require message Id : BasicMessageService.deleteMessage"));
+        if(!messageRepository.existsById(messageId)) {
+            throw new MessageNotFoundException(Map.of("messageId",messageId));
+        }
         messageRepository.deleteById(messageId);
     }
 

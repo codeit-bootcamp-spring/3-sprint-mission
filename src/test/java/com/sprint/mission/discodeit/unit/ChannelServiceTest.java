@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 /**
@@ -39,7 +40,7 @@ import static org.mockito.Mockito.*;
  * Date         : 2025. 6. 19.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Channel 관리 테스트")
+@DisplayName("Channel unit 테스트")
 public class ChannelServiceTest {
     @InjectMocks
     private BasicChannelService channelService;
@@ -89,8 +90,8 @@ public class ChannelServiceTest {
         JpaChannelResponse result = channelService.createChannel(request);
 
         // then
-        verify(channelRepository, times(1)).save(any());
-        verify(channelMapper, times(1)).toDto(any());
+        then(channelRepository).should(times(1)).save(any());
+        then(channelMapper).should(times(1)).toDto(any());
         assertThat(result.getName()).isEqualTo("name");
         assertThat(result.getDescription()).isEqualTo("description");
     }
@@ -113,10 +114,10 @@ public class ChannelServiceTest {
         assertThatThrownBy(() -> channelService.createChannel(request))
             .isInstanceOf(UserNotFoundException.class);
 
-        verify(userRepository, times(1)).findAllById(participantIds);
-        verify(readStatusRepository, never()).save(any());
-        verify(channelMapper, never()).toDto(any());
-        verify(channelRepository, never()).save(any());
+        then(userRepository).should(times(1)).findAllById(participantIds);
+        then(readStatusRepository).should(never()).save(any());
+        then(channelMapper).should(never()).toDto(any());
+        then(channelRepository).should(never()).save(any());
     }
 
     @DisplayName("사람 수가 2명 이상일 경우 사람 수 만큼의 readStatus가 만들어져야 한다.")
@@ -132,7 +133,6 @@ public class ChannelServiceTest {
             participantIds.add(userId);
             User user = new User();
             users.add(user);
-            System.out.println("User number : " + (i + 1));
         }
 
         JpaUserResponse userResponse = JpaUserResponse.builder().username("paul").build();
@@ -149,9 +149,9 @@ public class ChannelServiceTest {
         JpaChannelResponse response = channelService.createChannel(request);
 
         // then
-        verify(readStatusRepository, times(users.size())).save(any());
-        verify(channelRepository, times(1)).save(any());
-        verify(channelMapper, times(1)).toDto(any());
+        then(readStatusRepository).should(times(users.size())).save(any());
+        then(channelRepository).should(times(1)).save(any());
+        then(channelMapper).should(times(1)).toDto(any());
         assertNotNull(response);
     }
 
@@ -176,7 +176,7 @@ public class ChannelServiceTest {
         assertThatThrownBy(() -> channelService.update(channelId, request))
             .isInstanceOf(PrivateChannelUpdateException.class);
 
-        verifyNoMoreInteractions(channelMapper);
+        then(channelMapper).shouldHaveNoMoreInteractions();
     }
 
     @DisplayName("public 채널 수정을 시도할 경우 수정이 되어야 한다.")
@@ -194,7 +194,7 @@ public class ChannelServiceTest {
         channelService.update(channelId, request);
 
         // then
-        verify(channelMapper, times(1)).toDto(any());
+        then(channelMapper).should(times(1)).toDto(any());
         assertThat(channel.getName()).isEqualTo(request.newName());
         assertThat(channel.getDescription()).isEqualTo(request.newDescription());
     }
@@ -217,7 +217,7 @@ public class ChannelServiceTest {
         channelService.deleteChannel(channelId);
 
         //then
-        verify(channelRepository, times(1)).deleteById(channelId);
+        then(channelRepository).should(times(1)).deleteById(channelId);
     }
 
     @DisplayName("채널을 삭제하면 관련 readStatus, message도 삭제 되어야 한다.")
@@ -238,9 +238,9 @@ public class ChannelServiceTest {
         channelService.deleteChannel(channelId);
 
         //then
-        verify(channelRepository, times(1)).deleteById(channelId);
-        verify(readStatusRepository, times(1)).deleteAll(targetReadStatuses);
-        verify(messageRepository, times(1)).deleteAll(targetMessages);
+        then(channelRepository).should(times(1)).deleteById(channelId);
+        then(readStatusRepository).should(times(1)).deleteAll(targetReadStatuses);
+        then(messageRepository).should(times(1)).deleteAll(targetMessages);
     }
 
     /**
@@ -297,9 +297,9 @@ public class ChannelServiceTest {
         channelService.findAllByUserId(any());
 
         // then
-        verify(userRepository, times(1)).existsById(any());
-        verifyNoMoreInteractions(channelMapper);
-        verifyNoMoreInteractions(readStatusRepository);
-        verifyNoMoreInteractions(channelRepository);
+        then(userRepository).should(times(1)).existsById(any());
+        then(channelMapper).shouldHaveNoMoreInteractions();
+        then(readStatusRepository).shouldHaveNoMoreInteractions();
+        then(channelRepository).shouldHaveNoMoreInteractions();
     }
 }

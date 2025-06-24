@@ -16,8 +16,8 @@ import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
-import com.sprint.mission.discodeit.unit.basic.BasicMessageService;
 import com.sprint.mission.discodeit.storage.LocalBinaryContentStorage;
+import com.sprint.mission.discodeit.unit.basic.BasicMessageService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +31,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
-
 
 import java.time.Instant;
 import java.util.*;
@@ -48,7 +47,7 @@ import static org.mockito.BDDMockito.*;
  * Date         : 2025. 6. 20.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Message 관리 테스트")
+@DisplayName("Message unit 테스트")
 public class MessageServiceTest {
     @InjectMocks
     private BasicMessageService messageService;
@@ -118,9 +117,9 @@ public class MessageServiceTest {
         messageService.createMessage(request, fileList);
 
         // then
-        verify(binaryContentRepository, times(numberOfFiles)).save(any(BinaryContent.class));
-        verify(binaryContentStorage, times(numberOfFiles)).put(any(), any());
-        verify(messageRepository, times(1)).save(any(Message.class));
+        then(binaryContentRepository).should(times(numberOfFiles)).save(any(BinaryContent.class));
+        then(binaryContentStorage).should(times(numberOfFiles)).put(any(), any());
+        then(messageRepository).should(times(1)).save(any(Message.class));
     }
 
     @DisplayName("없는 채널일 경우 ChannelNotFoundException 반환한다.")
@@ -137,10 +136,10 @@ public class MessageServiceTest {
             .extracting("details", map(String.class, Object.class))
             .containsEntry("channelId", channelId);
 
-        verifyNoInteractions(userRepository);
-        verifyNoInteractions(binaryContentRepository);
-        verifyNoInteractions(binaryContentStorage);
-        verifyNoInteractions(messageRepository);
+        then(userRepository).shouldHaveNoInteractions();
+        then(binaryContentRepository).shouldHaveNoInteractions();
+        then(binaryContentStorage).shouldHaveNoInteractions();
+        then(messageRepository).shouldHaveNoInteractions();
     }
 
     @DisplayName("없는 유저일 경우 UserNotFoundException 반환한다.")
@@ -160,9 +159,9 @@ public class MessageServiceTest {
             .extracting("details", map(String.class, Object.class))
             .containsEntry("userId", userId);
 
-        verifyNoInteractions(binaryContentRepository);
-        verifyNoInteractions(binaryContentStorage);
-        verifyNoInteractions(messageRepository);
+        then(binaryContentRepository).shouldHaveNoInteractions();
+        then(binaryContentStorage).shouldHaveNoInteractions();
+        then(messageRepository).shouldHaveNoInteractions();
     }
 
 
@@ -193,11 +192,11 @@ public class MessageServiceTest {
         // toDto 호출 직전 넘겨주는 값 확인
         // 넘겨주는 값이 중간에 변경되는것을 확인 가능
         ArgumentCaptor<Message> captor = ArgumentCaptor.forClass(Message.class);
-        verify(messageMapper).toDto(captor.capture());
+        then(messageMapper).should().toDto(captor.capture());
         assertThat(captor.getValue().getContent()).isEqualTo("hello Paul");
 
-        verify(messageRepository, times(1)).findById(messageId);
-        verify(messageMapper, times(1)).toDto(any(Message.class));
+        then(messageRepository).should(times(1)).findById(messageId);
+        then(messageMapper).should(times(1)).toDto(any(Message.class));
     }
 
     @DisplayName("문자를 찾을 수 없을경우 MessageNotFoundException 반환.")
@@ -213,28 +212,35 @@ public class MessageServiceTest {
             .containsEntry("messageId", messageId);
 
         //then
-        verifyNoInteractions(messageMapper);
+        then(messageMapper).shouldHaveNoInteractions();
     }
 
     @DisplayName("로직에 문제가 없으면 삭제 진행한다.")
     @Test
     void whenLoginIsValid_thenDeleteMessage() {
+        // given
+        given(messageRepository.existsById(any(UUID.class))).willReturn(true);
+
         // when
         messageService.deleteMessage(messageId);
 
         // then
-        verify(messageRepository, times(1)).deleteById(messageId);
+        then(messageRepository).should(times(1)).deleteById(messageId);
     }
 
-    @DisplayName("아이디가 null 이면 IllegalArgumentException 반환")
+    @DisplayName("아이디가 존재하지 않으면 MessageNotFoundException을 반환한다.")
     @Test
-    void whenParameterIsNull_thenMessageThrowsIllegalArgumentException() {
-        //when n then
-        assertThatThrownBy(() -> messageService.deleteMessage(null))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("require message Id : BasicMessageService.deleteMessage");
+    void whenMessageNotExists_thenMessageThrowsMessageNotFoundException() {
+        UUID messageId = UUID.randomUUID();
+        given(messageRepository.existsById(messageId)).willReturn(false);
 
-        verifyNoInteractions(messageRepository);
+        // when & then
+        assertThatThrownBy(() -> messageService.deleteMessage(messageId))
+            .isInstanceOf(MessageNotFoundException.class)
+            .hasMessageContaining("메세지를 찾을 수 없습니다.");
+
+        then(messageRepository).should(times(1)).existsById(messageId);
+        then(messageRepository).should(never()).deleteById(any());
     }
 
     @DisplayName("첫 호출시 커서는 가장 최근 메세지를 반환한다.")

@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateReque
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +36,7 @@ public interface ChannelApi {
 
     @Operation(summary = "채널 삭제", description = "채널을 삭제합니다.")
     @DeleteMapping("/{channelId}")
-    ResponseEntity<?> removeChannel(@PathVariable UUID channelId);
+    ResponseEntity<?> removeChannel(@PathVariable @NotNull UUID channelId);
 
 
     @Operation(summary = "채널 정보 수정", description = "채널 정보를 수정합니다.")

@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
 import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.unit.ChannelService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,7 @@ public class ChannelController implements ChannelApi {
     }
 
     @DeleteMapping("/{channelId}")
-    public ResponseEntity<?> removeChannel(@PathVariable UUID channelId) {
+    public ResponseEntity<?> removeChannel(@PathVariable @NotNull UUID channelId) {
         channelService.deleteChannel(channelId);
         return ResponseEntity.noContent().build();
     }

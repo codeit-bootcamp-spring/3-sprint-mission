@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +43,7 @@ public interface MessageApi {
 
     @Operation(summary = "메세지 삭제", description = "메세지를 삭제 합니다.")
     @DeleteMapping(path = "/{messageId}")
-    ResponseEntity<?> deleteMessage(@PathVariable UUID messageId);
+    ResponseEntity<?> deleteMessage(@PathVariable @NotNull UUID messageId);
 
     @Operation(summary = "메세지 수정", description = "메세지를 수정 합니다.")
     @PatchMapping(path = "/{messageId}")

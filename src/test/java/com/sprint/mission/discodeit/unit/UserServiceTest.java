@@ -10,7 +10,6 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.mapper.advanced.UserMapper;
-import com.sprint.mission.discodeit.mapper.advanced.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
@@ -33,6 +32,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 /**
@@ -42,7 +43,7 @@ import static org.mockito.Mockito.*;
  * Date         : 2025. 6. 17.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("User 관리 테스트")
+@DisplayName("User unit 테스트")
 public class UserServiceTest {
 
     @Mock
@@ -63,9 +64,6 @@ public class UserServiceTest {
     @Mock
     private UserMapper userMapper;
 
-    @Mock
-    private UserStatusMapper userStatusMapper;
-
     @InjectMocks
     private BasicUserService userService;
 
@@ -81,31 +79,32 @@ public class UserServiceTest {
         Optional<BinaryContentCreateRequest> profile = Optional.of(profileRequest);
 
         BinaryContent savedBinaryContent = new BinaryContent("profile.jpg", (long) fileBytes.length, "image/jpeg", ".jpg");
-        when(binaryContentRepository.save(any(BinaryContent.class))).thenReturn(savedBinaryContent);
-        when(userMapper.toDto(any(User.class))).thenReturn(mock(JpaUserResponse.class));
+        given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(savedBinaryContent);
+        given(userMapper.toDto(any(User.class))).willReturn(mock(JpaUserResponse.class));
 
         // when
         userService.create(request, profile);
 
         // then
-        verify(binaryContentRepository, times(1)).save(argThat(bc ->
+        then(binaryContentRepository).should(times(1)).save(argThat(bc ->
             bc.getFileName().equals("profile.jpg") && bc.getContentType().equals("image/jpeg")
         ));
-        verify(binaryContentStorage, times(1)).put(any(), eq(fileBytes));
+
+        then(binaryContentStorage).should(times(1)).put(any(), eq(fileBytes));
     }
     @DisplayName("프로필이 있을 때 Binary Content가 생성되지 않는다.")
     @Test
     void whenProfileNotFound_thenShouldNotCreateBinaryContent() {
         // given
         UserCreateRequest request = new UserCreateRequest("paul", "duplicate@email.com", "password123");
-        when(userMapper.toDto(any(User.class))).thenReturn(mock(JpaUserResponse.class));
+        given(userMapper.toDto(any(User.class))).willReturn(mock(JpaUserResponse.class));
 
         // when
         userService.create(request, Optional.empty());
 
         // then
-        verify(binaryContentRepository, times(0)).save(any(BinaryContent.class));
-        verify(binaryContentStorage, times(0)).get(any());
+        then(binaryContentRepository).should(times(0)).save(any(BinaryContent.class));
+        then(binaryContentStorage).should(times(0)).get(any());
     }
 
     @DisplayName("email은 중복되어선 안된다.")
@@ -114,15 +113,15 @@ public class UserServiceTest {
         // given
         UserCreateRequest request = new UserCreateRequest("paul", "duplicate@email.com", "password123");
 
-        when(userRepository.existsByEmail(request.email())).thenReturn(true);
+        given(userRepository.existsByEmail(request.email())).willReturn(true);
 
         // when & then
         assertThatThrownBy(() -> userService.create(request, Optional.empty()))
             .isInstanceOf(UserAlreadyExistsException.class);
 
-        verify(userRepository).existsByEmail(request.email());
-        verify(userRepository).existsByUsername(request.username());
-        verifyNoMoreInteractions(userRepository);
+        then(userRepository).should().existsByEmail(request.email());
+        then(userRepository).should().existsByUsername(request.username());
+        then(userRepository).shouldHaveNoMoreInteractions();
     }
 
     @DisplayName("username은 중복되어선 안된다.")
@@ -130,15 +129,15 @@ public class UserServiceTest {
     void whenUsernameIsNotUnique_thenThrowsIllegalArgument() {
         UserCreateRequest request = new UserCreateRequest("paul", "duplicate@email.com", "password123");
 
-        when(userRepository.existsByUsername(request.username())).thenReturn(true);
+        given(userRepository.existsByUsername(request.username())).willReturn(true);
 
         // when & then
         assertThatThrownBy(() -> userService.create(request, Optional.empty()))
             .isInstanceOf(UserAlreadyExistsException.class);
 
-        verify(userRepository).existsByEmail(request.email());
-        verify(userRepository).existsByUsername(request.username());
-        verifyNoMoreInteractions(userRepository);
+        then(userRepository).should().existsByEmail(request.email());
+        then(userRepository).should().existsByUsername(request.username());
+        then(userRepository).shouldHaveNoMoreInteractions();
     }
 
     @DisplayName("유저 생성시 user status가 생성되어야 한다.")
@@ -151,9 +150,8 @@ public class UserServiceTest {
         userService.create(request, Optional.empty());
 
         // then
-        verify(userStatusRepository, times(1)).save(any(UserStatus.class));
+        then(userStatusRepository).should(times(1)).save(any(UserStatus.class));
     }
-
 
     /*
     * 0+프로필이 없을경우 삭제는 생략
@@ -165,14 +163,14 @@ public class UserServiceTest {
     void whenParameterIsNotValid_thenThrowsNoSuchElementException() {
         UUID id = UUID.randomUUID();
         // given
-        when(userRepository.findById(id)).thenThrow(new NoSuchElementException(id + " not found"));
+        given(userRepository.findById(id)).willThrow(new NoSuchElementException(id + " not found"));
 
         // when n then
         assertThatThrownBy(() -> userService.deleteUser(id))
             .isInstanceOf(NoSuchElementException.class)
             .hasMessageContaining(id + " not found");
 
-        verify(userRepository, times(1)).findById(id);
+        then(userRepository).should(times(1)).findById(id);
     }
 
     @DisplayName("프로필이 있을경우 바이너리 컨텐츠가 삭제 되어야 한다.")
@@ -189,16 +187,15 @@ public class UserServiceTest {
             .profile(binaryContent)
             .build();
 
-        when(userRepository.findById(id)).thenReturn(Optional.ofNullable(user));
-
+        given(userRepository.findById(id)).willReturn(Optional.ofNullable(user));
 
         // when
         userService.deleteUser(id);
 
         // then
-        verify(userRepository, times(1)).delete(user);
-        verify(fileUploadUtils, times(1)).getUploadPath(anyString());
-        verifyNoMoreInteractions(binaryContentRepository);
+        then(userRepository).should(times(1)).delete(user);
+        then(fileUploadUtils).should(times(1)).getUploadPath(anyString());
+        then(binaryContentRepository).shouldHaveNoMoreInteractions();
     }
 
     //0+찾는 유저가 없으면 UserNotFound를 반환 해야 한다.
@@ -217,20 +214,20 @@ public class UserServiceTest {
         UserUpdateRequest request = new UserUpdateRequest("paul", "paul@gmail.com", "newPass");
 
 
-        when(userRepository.existsByUsername(request.newUsername())).thenReturn(true);
-        when(userRepository.findById(id)).thenReturn(Optional.ofNullable(user));
+        given(userRepository.existsByUsername(request.newUsername())).willReturn(true);
+        given(userRepository.findById(id)).willReturn(Optional.ofNullable(user));
 
         // when
         assertThatThrownBy(() -> userService.update(id, request, null))
             .isInstanceOf(UserAlreadyExistsException.class);
 
-        verify(userRepository).findById(id);
-        verify(userRepository).existsByUsername(request.newUsername());
+        then(userRepository).should().findById(id);
+        then(userRepository).should().existsByUsername(request.newUsername());
 
-        verifyNoMoreInteractions(userRepository);
-        verifyNoMoreInteractions(fileUploadUtils);
-        verifyNoMoreInteractions(binaryContentRepository);
-        verifyNoMoreInteractions(binaryContentStorage);
+        then(userRepository).shouldHaveNoMoreInteractions();
+        then(fileUploadUtils).shouldHaveNoMoreInteractions();
+        then(binaryContentRepository).shouldHaveNoMoreInteractions();
+        then(binaryContentStorage).shouldHaveNoMoreInteractions();
     }
 
     @DisplayName("프로필이 있는 상태에서 업데이트를 할 경우 기존의 사진은 지워야 한다.")
@@ -257,19 +254,19 @@ public class UserServiceTest {
         File oldFile = new File(uploadDir, oldFileName);
         Files.write(oldFile.toPath(), new byte[]{1, 2});
 
-        when(userRepository.findById(any()))
-            .thenReturn(Optional.of(user));
-        when(fileUploadUtils.getUploadPath("img"))
-            .thenReturn(uploadDir);
-        when(binaryContentRepository.save(any()))
-            .thenAnswer(inv -> inv.getArgument(0));
-        when(userRepository.existsByUsername(any()))
-            .thenReturn(false);
-        when(userRepository.existsByEmail(any()))
-            .thenReturn(false);
+        given(userRepository.findById(any()))
+            .willReturn(Optional.of(user));
+        given(fileUploadUtils.getUploadPath("img"))
+            .willReturn(uploadDir);
+        given(binaryContentRepository.save(any()))
+            .willAnswer(inv -> inv.getArgument(0));
+        given(userRepository.existsByUsername(any()))
+            .willReturn(false);
+        given(userRepository.existsByEmail(any()))
+            .willReturn(false);
 
         userService.update(id, new UserUpdateRequest("daniel", "dan@mail.com", null), file);
 
-        verify(binaryContentRepository).delete(savedBinaryContent);
+        then(binaryContentRepository).should().delete(savedBinaryContent);
     }
 }

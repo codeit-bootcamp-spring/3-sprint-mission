@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.slice.repository;
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.mission.discodeit.config.QuerydslConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
@@ -27,9 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import(QuerydslConfig.class)
 @DisplayName("Channel Repository 테스트")
 public class ChannelRepositoryTest {
-
-    @Autowired
-    JPAQueryFactory jpaQueryFactory;
 
     @Autowired
     private JpaChannelRepository channelRepository;

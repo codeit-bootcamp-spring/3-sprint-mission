@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse
 import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
 import com.sprint.mission.discodeit.unit.MessageService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -55,7 +56,7 @@ public class MessageController implements MessageApi {
     }
 
     @DeleteMapping(path = "/{messageId}")
-    public ResponseEntity<?> deleteMessage(@PathVariable UUID messageId) {
+    public ResponseEntity<?> deleteMessage(@PathVariable @NotNull UUID messageId) {
         messageService.deleteMessage(messageId);
         return ResponseEntity.noContent().build();
     }

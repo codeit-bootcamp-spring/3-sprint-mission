@@ -2,45 +2,33 @@ package com.sprint.mission.discodeit.slice.controller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.sprint.mission.discodeit.controller.UserController;
-
-import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
 import com.sprint.mission.discodeit.dto.userStatus.UserStatusUpdateByUserIdRequest;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.UserNotFoundException;
-import com.sprint.mission.discodeit.unit.ChannelService;
-import com.sprint.mission.discodeit.unit.UserService;
-import com.sprint.mission.discodeit.unit.basic.BasicChannelService;
-import net.bytebuddy.agent.VirtualMachine;
-import org.springframework.mock.web.MockMultipartFile;
 import com.sprint.mission.discodeit.unit.basic.BasicUserService;
 import com.sprint.mission.discodeit.unit.basic.BasicUserStatusService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasKey;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -53,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Date         : 2025. 6. 21.
  */
 @WebMvcTest(controllers = UserController.class)
-@DisplayName("User 슬라이스 테스트")
+@DisplayName("User Controller 슬라이스 테스트")
 public class UserControllerTest {
 
     @Autowired

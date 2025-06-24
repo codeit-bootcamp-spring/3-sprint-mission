@@ -42,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Date         : 2025. 6. 21.
  */
 @WebMvcTest(controllers = MessageController.class)
-@DisplayName("Message 슬라이스 테스트")
+@DisplayName("Message Controller 슬라이스 테스트")
 public class MessageControllerTest {
 
     @Autowired
@@ -229,7 +229,7 @@ public class MessageControllerTest {
 
     @Test
     @DisplayName("삭제할 메세지를 찾지 못할경우 MessageNotFoundException을 반환한다.")
-    void when() throws Exception {
+    void deleteMessage_noMessage_MessageNotFoundException() throws Exception {
         // given
         UUID messageId = UUID.randomUUID();
 
