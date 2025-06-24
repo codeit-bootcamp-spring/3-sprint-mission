@@ -76,7 +76,6 @@ public class BasicMessageService implements MessageService {
         return messageMapper.messageToMessageDto(message);
     }
 
-    @Transactional
     @Override
     public MessageDto find(UUID messageId) {
         return messageRepository.findById(messageId)
@@ -84,7 +83,6 @@ public class BasicMessageService implements MessageService {
             .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
     }
 
-    @Transactional
     @Override
     public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createdAt, Pageable pageable) {
         Slice<MessageDto> slice = messageRepository.findAllByChannelIdWithAuthor(channelId,

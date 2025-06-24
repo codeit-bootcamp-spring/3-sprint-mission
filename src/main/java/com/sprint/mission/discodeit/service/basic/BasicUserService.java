@@ -47,14 +47,10 @@ public class BasicUserService implements UserService {
 
         // 유저 생성 및 저장
         User user = new User(userCreateRequest.username(), userCreateRequest.email(), userCreateRequest.password(), nullableProfile);
-        User createdUser = userRepository.save(user);
 
-        // UserStatus 생성
-        UserStatus userStatus = new UserStatus(user, Instant.now());
-        userStatusRepository.save(userStatus);
-        createdUser.setStatus(userStatus);
+        userRepository.save(user);
 
-        return userMapper.userToUserDto(createdUser);
+        return userMapper.userToUserDto(user);
     }
 
     private void validateUserUniqueness(String email, String username) {
@@ -73,7 +69,7 @@ public class BasicUserService implements UserService {
                     String contentType = profileRequest.contentType();
                     byte[] bytes = profileRequest.bytes();
                     BinaryContent binaryContent = new BinaryContent(fileName, (long)bytes.length, contentType, bytes);
-                    return binaryContentRepository.save(binaryContent);
+                    return binaryContent;
                 })
                 .orElse(null);
     }
@@ -110,7 +106,7 @@ public class BasicUserService implements UserService {
                     String contentType = profileRequest.contentType();
                     byte[] bytes = profileRequest.bytes();
                     BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType, bytes);
-                    return binaryContentRepository.save(binaryContent);
+                    return binaryContent;
                 })
                 .orElse(null);
 
@@ -123,12 +119,9 @@ public class BasicUserService implements UserService {
     @Transactional
     @Override
     public void delete(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-
-        Optional.ofNullable(user.getProfile())
-                .ifPresent(binaryContentRepository::delete);
-        userStatusRepository.deleteByUserId(userId);
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("User with id " + userId + " not found");
+        }
 
         userRepository.deleteById(userId);
     }
