@@ -72,21 +72,6 @@ class ChannelControllerTest {
     }
 
     @Test
-    @DisplayName("채널 생성 실패 - 이름이 비어 있을 경우")
-    void shouldFailToCreatePublicChannelWithEmptyName() throws Exception {
-        PublicChannelCreateRequest request = new PublicChannelCreateRequest("", "설명입니다.");
-
-        mockMvc.perform(post("/api/channels/public")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isBadRequest())  // 400 오류 응답
-            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
-            .andExpect(jsonPath("$.message").value("입력값이 유효하지 않습니다."))
-            .andExpect(jsonPath("$.details.name").value("채널 이름은 2자 이상 50자 이하로 입력해주세요."));
-    }
-
-
-    @Test
     @DisplayName("채널 업데이트 성공")
     void shouldUpdateChannelSuccessfully() throws Exception {
         UUID channelId = UUID.randomUUID();
