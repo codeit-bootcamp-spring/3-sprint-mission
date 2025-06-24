@@ -35,20 +35,20 @@ public class BasicBinaryContentService implements BinaryContentService {
         );
         binaryContentRepository.save(binaryContent);
 
-        return binaryContentMapper.binaryContentToBinaryContentDto(binaryContent);
+        return binaryContentMapper.toDto(binaryContent);
     }
 
     @Override
     public BinaryContentDto find(UUID binaryContentId) {
         return binaryContentRepository.findById(binaryContentId)
-            .map(binaryContentMapper::binaryContentToBinaryContentDto)
+            .map(binaryContentMapper::toDto)
                 .orElseThrow(() -> new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found"));
     }
 
     @Override
     public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
         return binaryContentRepository.findAllById(binaryContentIds).stream()
-            .map(binaryContentMapper::binaryContentToBinaryContentDto)
+            .map(binaryContentMapper::toDto)
             .toList();
     }
 

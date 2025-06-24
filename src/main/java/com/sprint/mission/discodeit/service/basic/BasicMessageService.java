@@ -73,13 +73,13 @@ public class BasicMessageService implements MessageService {
         );
         messageRepository.save(message);
 
-        return messageMapper.messageToMessageDto(message);
+        return messageMapper.toDto(message);
     }
 
     @Override
     public MessageDto find(UUID messageId) {
         return messageRepository.findById(messageId)
-            .map(messageMapper::messageToMessageDto)
+            .map(messageMapper::toDto)
             .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
     }
 
@@ -87,7 +87,7 @@ public class BasicMessageService implements MessageService {
     public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createdAt, Pageable pageable) {
         Slice<MessageDto> slice = messageRepository.findAllByChannelIdWithAuthor(channelId,
                 Optional.ofNullable(createdAt).orElse(Instant.now()), pageable)
-            .map(messageMapper::messageToMessageDto);
+            .map(messageMapper::toDto);
 
         Instant nextCursor = null;
         if (!slice.getContent().isEmpty()) {
@@ -104,7 +104,7 @@ public class BasicMessageService implements MessageService {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
         message.update(newContent);
-        return messageMapper.messageToMessageDto(message);
+        return messageMapper.toDto(message);
     }
 
     @Transactional

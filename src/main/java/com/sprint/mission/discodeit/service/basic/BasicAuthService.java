@@ -31,6 +31,6 @@ public class BasicAuthService implements AuthService {
             throw new IllegalArgumentException("Wrong password");
         }
 
-        return userMapper.userToUserDto(user);
+        return userMapper.toDto(user);
     }
 }

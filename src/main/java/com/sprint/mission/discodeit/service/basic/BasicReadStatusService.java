@@ -48,20 +48,20 @@ public class BasicReadStatusService implements ReadStatusService {
         ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
         readStatusRepository.save(readStatus);
 
-        return readStatusMapper.readStatusToReadStatusDto(readStatus);
+        return readStatusMapper.toDto(readStatus);
     }
 
     @Override
     public ReadStatusDto find(UUID readStatusId) {
         return readStatusRepository.findById(readStatusId)
-            .map(readStatusMapper::readStatusToReadStatusDto)
+            .map(readStatusMapper::toDto)
             .orElseThrow(() -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
     }
 
     @Override
     public List<ReadStatusDto> findAllByUserId(UUID userId) {
         return readStatusRepository.findAllByUserId(userId).stream()
-            .map(readStatusMapper::readStatusToReadStatusDto)
+            .map(readStatusMapper::toDto)
             .toList();
     }
 
@@ -73,7 +73,7 @@ public class BasicReadStatusService implements ReadStatusService {
                 .orElseThrow(() -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
         readStatus.update(newLastReadAt);
 
-        return readStatusMapper.readStatusToReadStatusDto(readStatus);
+        return readStatusMapper.toDto(readStatus);
     }
 
     @Transactional

@@ -41,7 +41,7 @@ public class BasicChannelService implements ChannelService {
 
         channelRepository.save(channel);
 
-        return channelMapper.channelToChannelDto(channel);
+        return channelMapper.toDto(channel);
     }
 
     @Transactional
@@ -54,13 +54,13 @@ public class BasicChannelService implements ChannelService {
                 .map(user -> new ReadStatus(user, channel, Instant.MIN))
                 .forEach(readStatusRepository::save);
 
-        return channelMapper.channelToChannelDto(channel);
+        return channelMapper.toDto(channel);
     }
 
     @Override
     public ChannelDto find(UUID channelId) {
         return channelRepository.findById(channelId)
-                .map(channelMapper::channelToChannelDto)
+                .map(channelMapper::toDto)
                 .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     }
 
@@ -76,7 +76,7 @@ public class BasicChannelService implements ChannelService {
                         channel.getType().equals(ChannelType.PUBLIC)
                                 || mySubscribedChannelIds.contains(channel.getId())
                 )
-                .map(channelMapper::channelToChannelDto)
+                .map(channelMapper::toDto)
                 .toList();
     }
 
@@ -91,7 +91,7 @@ public class BasicChannelService implements ChannelService {
             throw new IllegalArgumentException("Private channel cannot be updated");
         }
         channel.update(newName, newDescription);
-        return channelMapper.channelToChannelDto(channel);
+        return channelMapper.toDto(channel);
     }
 
     @Transactional
