@@ -106,24 +106,19 @@ class MessageRepositoryTest {
         messageRepository.save(m1);
         messageRepository.save(m2);
 
-        List<Instant> result = messageRepository.findLastMessageAtByChannelId(
-            channel.getId(),
-            PageRequest.of(0, 1)
-        );
+        Instant result = messageRepository.findLastMessageAtByChannelId(channel.getId())
+            .orElse(Instant.MIN);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isCloseTo(now, within(10, ChronoUnit.MILLIS));
+        assertThat(result).isCloseTo(now, within(10, ChronoUnit.MILLIS));
     }
 
     @Test
     @DisplayName("마지막 메시지 시간 조회 실패 - 존재하지 않는 채널 ID")
     void shouldReturnEmpty_whenNoMessagesExistForChannel() {
-        List<Instant> result = messageRepository.findLastMessageAtByChannelId(
-            UUID.randomUUID(),
-            PageRequest.of(0, 1)
-        );
+        Instant result = messageRepository.findLastMessageAtByChannelId(UUID.randomUUID())
+            .orElse(Instant.MIN);
 
-        assertThat(result).isEmpty();
+        assertThat(result).isEqualTo(Instant.MIN);
     }
 
     @Test
