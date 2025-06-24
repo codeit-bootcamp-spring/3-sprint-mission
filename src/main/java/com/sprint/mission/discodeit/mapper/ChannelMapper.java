@@ -54,6 +54,6 @@ public class ChannelMapper {
                 .stream()
                 .map(Message::getCreatedAt)
                 .findFirst()
-                .orElse(Instant.MIN);
+                .orElse(null);
     }
 }
