@@ -1,5 +1,9 @@
 # 테스트 환경 설정
 spring:
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
   # 테스트용 H2 인메모리 데이터베이스 설정
   datasource:
     # DB_CLOSE_DELAY: 테스트 종료 후 데이터베이스 연결 유지 시간 (음수 값은 연결 유지)
@@ -16,6 +20,7 @@ spring:
         format_sql: true
     #        default_batch_fetch_size: 100
     open-in-view: false
+
 
 
 logging:
