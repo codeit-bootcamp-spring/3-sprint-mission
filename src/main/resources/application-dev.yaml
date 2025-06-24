@@ -14,3 +14,29 @@ server:
 logging:
   level:
     com.sprint.mission.discodeit: DEBUG  
+
+# 개발 환경 Actuator 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers,env,beans,mappings  # env, beans, mappings 추가
+  endpoint:
+    health:
+      show-details: always  # 개발에서는 상세 헬스 정보 표시
+
+# 개발 환경 특화 정보
+info:
+  environment: development
+  datasource:
+    url: jdbc:postgresql://localhost:5432/discodeit?currentSchema=discodeit_schema
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    ddl-auto: update
+    show-sql: true
+  storage:
+    type: local
+    path: storage/binary-contents
+  multipart:
+    max-file-size: 10MB
+    max-request-size: 10MB

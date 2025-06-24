@@ -35,3 +35,29 @@ discodeit:
     type: local
     local:
       root-path: storage/binary-contents
+
+# Actuator 기본 설정 (모든 환경 공통)
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+  endpoint:
+    info:
+      access: unrestricted
+  info:
+    env:
+      enabled: true
+
+# 애플리케이션 기본 정보 (모든 환경 공통)
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+    description: Discord-like messaging application
+  java:
+    version: 17
+  spring:
+    boot:
+      version: 3.4.0
+  build:
+    timestamp: '@timestamp@'

@@ -24,3 +24,29 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: WARN
     org.springframework.orm.jpa: WARN
     com.sprint.mission.discodeit: INFO
+
+# 운영 환경 Actuator 설정 (보안 강화)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info, metrics, loggers  # 운영에서는 필수 엔드포인트만 노출
+  endpoint:
+    health:
+      show-details: never  # 운영에서는 헬스 상세 정보 숨김
+
+# 운영 환경 특화 정보
+info:
+  environment: production
+  datasource:
+    url: jdbc:postgresql://prod-db-server:5432/discodeit?currentSchema=discodeit_schema
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    ddl-auto: validate
+    show-sql: false
+  storage:
+    type: local
+    path: storage/binary-contents
+  multipart:
+    max-file-size: 10MB
+    max-request-size: 10MB
