@@ -40,6 +40,8 @@ dependencies {
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
     // actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // admin
+    implementation 'de.codecentric:spring-boot-admin-starter-client:3.4.5'
 }
 
 tasks.named('test') {

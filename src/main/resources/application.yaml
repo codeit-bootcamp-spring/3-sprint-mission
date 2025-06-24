@@ -55,7 +55,13 @@ info:
         max-request-size: 50MB
       jpa:
         ddl-auto: create
+
 spring:
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
   jpa:
     hibernate:
       ddl-auto: create
