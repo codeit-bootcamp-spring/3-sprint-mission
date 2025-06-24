@@ -21,6 +21,7 @@ spring:
 
 
 logging:
+  config: classpath:logback-spring.xml
   level:
     root: info
     org.hibernate.SQL: debug

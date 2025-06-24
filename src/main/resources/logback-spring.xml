@@ -5,7 +5,7 @@
 
   <!-- 로그 패턴 정의 -->
   <property name="LOG_PATTERN"
-    value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %-36logger{36} - %msg%n"/>
+    value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %-36logger{36} [%X{RequestID:-} | %X{RequestMethod:-} | %X{RequestURL:-}] - %msg%n"/>
 
   <!-- 콘솔 출력 설정 -->
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
