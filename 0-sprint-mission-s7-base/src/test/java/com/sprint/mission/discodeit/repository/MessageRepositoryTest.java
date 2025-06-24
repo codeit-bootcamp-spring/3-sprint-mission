@@ -29,6 +29,7 @@ import org.springframework.test.context.ActiveProfiles;
 @DataJpaTest
 @EnableJpaAuditing
 @ActiveProfiles("test")
+@DisplayName("메시지 Repo 슬라이스 테스트")
 public class MessageRepositoryTest {
 
     @Autowired

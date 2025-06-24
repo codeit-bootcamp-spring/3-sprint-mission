@@ -30,8 +30,9 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = UserController.class)
+@WebMvcTest(UserController.class)
 @Import(GlobalExceptionHandler.class)
+@DisplayName("유저 Controller 슬라이스 테스트")
 public class UserControllerTest {
 
     @Autowired

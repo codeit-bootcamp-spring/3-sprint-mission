@@ -18,6 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 @DataJpaTest
 @EnableJpaAuditing
 @ActiveProfiles("test")
+@DisplayName("채널 Repo 슬라이스 테스트")
 public class ChannelRepositoryTest {
 
     @Autowired

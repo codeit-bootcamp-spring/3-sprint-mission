@@ -30,6 +30,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest
 @Import(GlobalExceptionHandler.class)
+@DisplayName("채널 Controller 슬라이스 테스트")
 public class ChannelControllerTest {
 
     @Autowired
