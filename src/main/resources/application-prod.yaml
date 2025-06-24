@@ -3,13 +3,6 @@ server:
   address: 0.0.0.0
 
 spring:
-  sql.init.mode: never
-  # DB 접속 정보
-  datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit
-    username: discodeit_user
-    password: discodeit1234
-    driver-class-name: org.postgresql.Driver
   # JPA 설정
   jpa:
     hibernate:
@@ -25,3 +18,12 @@ discodeit:
     type: local
     local:
       root-path: ${user.dir}/data/discodeit/storage
+
+# application.yaml 설정값과 동일
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, loggers
+    server:
+      port: 8081

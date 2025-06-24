@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  # H2 콘솔 설정 (테스트 디버깅용)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # 테스트용 SQL 초기화 설정
+  sql:
+    init:
+      mode: never
+
+# 테스트용 로깅 설정
+logging:
+  level:
+    com.sprint.mission.discodeit: DEBUG  # 테스트 대상 패키지는 DEBUG 레벨
+    org.springframework.test: INFO     # Spring 테스트 프레임워크 로그
+    org.springframework.web: DEBUG     # 웹 계층 디버깅 (Section 01용)
+    org.hibernate.SQL: DEBUG          # SQL 쿼리 로그 (Section 03용)
+    org.junit: INFO                    # JUnit 프레임워크 로그
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: ./build/test-storage

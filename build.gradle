@@ -44,6 +44,8 @@ dependencies {
     implementation 'org.mapstruct:mapstruct:1.6.3'
     // https://mvnrepository.com/artifact/org.mapstruct/mapstruct-processor
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+
+    testImplementation 'com.h2database:h2'
 }
 
 tasks.named('test') {

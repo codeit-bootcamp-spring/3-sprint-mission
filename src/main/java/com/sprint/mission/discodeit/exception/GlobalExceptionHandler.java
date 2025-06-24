@@ -133,6 +133,4 @@ public class GlobalExceptionHandler extends RuntimeException {
         );
         return ResponseEntity.status(ErrorCode.METHOD_ARGUE_NOT_VALID.getStatus()).body(response);
     }
-
-    // TODO: 다른 도메인 예외 핸들러도 필요시 추가
 }

@@ -138,7 +138,7 @@ CREATE TABLE IF NOT EXISTS tbl_message_attachments
     PRIMARY KEY (message_id, attachment_id)
 --     CONSTRAINT fk_message_id FOREIGN KEY (message_id) REFERENCES tbl_messages ON DELETE CASCADE,
 --     CONSTRAINT fk_attachment_id FOREIGN KEY (attachment_id) REFERENCES tbl_binary_contents ON DELETE CASCADE
-)
+);
 
 -- -- MessageAttachment (1) -> BinaryContent (1)
 -- ALTER TABLE tbl_message_attachments
@@ -146,3 +146,15 @@ CREATE TABLE IF NOT EXISTS tbl_message_attachments
 --         FOREIGN KEY (attachment_id)
 --             REFERENCES tbl_binary_contents (id)
 --             ON DELETE CASCADE;
+
+SELECT table_schema, table_name
+FROM information_schema.tables
+WHERE table_name = 'tbl_binary_contents';
+
+SELECT table_schema, table_name
+FROM information_schema.tables
+WHERE table_schema = 'discodeit'
+  AND table_name = 'tbl_binary_contents';
+
+GRANT USAGE ON SCHEMA discodeit TO discodeit_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA discodeit TO discodeit_user;
