@@ -25,6 +25,7 @@ upload/
 *.iml
 *.ipr
 out/
+.logs/
 !**/src/main/**/out/
 !**/src/test/**/out/
 

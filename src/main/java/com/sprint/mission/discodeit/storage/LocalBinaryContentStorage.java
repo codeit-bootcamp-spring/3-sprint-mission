@@ -1,8 +1,5 @@
 package com.sprint.mission.discodeit.storage;
 
-import com.sprint.mission.discodeit.dto.CodeMessageResponseDto;
-import com.sprint.mission.discodeit.dto.ResponseCode;
-import com.sprint.mission.discodeit.dto.ResponseMessage;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +20,7 @@ import java.util.UUID;
 
 @Component
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "local")
-public class LocalBinaryContentStorage implements BinaryContentStorage{
+public class LocalBinaryContentStorage implements BinaryContentStorage {
 
     private final Path ROOT;
 

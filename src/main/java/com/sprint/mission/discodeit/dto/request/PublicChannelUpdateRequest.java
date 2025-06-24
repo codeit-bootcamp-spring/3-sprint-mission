@@ -9,4 +9,5 @@ public record PublicChannelUpdateRequest(
 
         @Schema(description = "새로운 채널 설명", example = "채널 설명이 수정되었습니다", nullable = true)
         String newDescription
-) {}
+) {
+}
