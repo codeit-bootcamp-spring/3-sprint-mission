@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.unit.basic;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
@@ -6,8 +6,7 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.advanced.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
-import com.sprint.mission.discodeit.unit.UserStatusService;
-import jakarta.persistence.EntityNotFoundException;
+import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;

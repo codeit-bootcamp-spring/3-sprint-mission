@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
 import com.sprint.mission.discodeit.dto.readStatus.JpaReadStatusResponse;
 import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.unit.ReadStatusService;
+import com.sprint.mission.discodeit.service.ReadStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

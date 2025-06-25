@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.unit;
+package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
 

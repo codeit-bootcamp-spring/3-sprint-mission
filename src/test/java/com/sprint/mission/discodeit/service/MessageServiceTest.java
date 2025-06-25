@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.unit;
+package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
@@ -17,7 +17,7 @@ import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.storage.LocalBinaryContentStorage;
-import com.sprint.mission.discodeit.unit.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
