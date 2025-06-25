@@ -66,4 +66,14 @@ public class Message extends BaseUpdatableEntity {
       setUpdatedAt();
     }
   }
+
+  @Override
+  public String toString() {
+    return "Message{" +
+        "content='" + content + '\'' +
+        ", channel=" + channel +
+        ", author=" + author +
+        ", attachments=" + attachments +
+        '}';
+  }
 }

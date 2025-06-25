@@ -7,27 +7,28 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password:
-
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: create-drop
-    properties:
-      hibernate:
-        format_sql: true
-        use_sql_comments: true
-    show-sql: true
-
+    hikari:
+      pool-name: hikariPool # DB 인스턴스 이름 고정
   h2:
     console:
       enabled: true
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        ddl-auto: create
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema-dev.sql
 
 logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
-    org.springframework.test: debug
-    com.ohgiraffers.springintegrationtdd: debug
+    org.springframework.test: debug # context 로딩, mock
+    com.discodeit: debug # 설정 패키지 debug 로그 활성화
 
 server:
-  port: 0
+  port: 8081
