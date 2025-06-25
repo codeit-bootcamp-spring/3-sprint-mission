@@ -8,7 +8,9 @@ import com.sprint.mission.discodeit.exception.ReadStatus.ReadStatusException;
 import com.sprint.mission.discodeit.exception.User.UserException;
 import com.sprint.mission.discodeit.exception.UserStatus.UserStatusException;
 import java.time.Instant;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -147,6 +149,12 @@ public class GlobalExceptionHandler extends RuntimeException {
             ErrorCode.INVALID_REQUEST_PARAMS.getHttpStatus()
         )
     );
+  }
+
+  @ExceptionHandler(RuntimeException.class)
+  public ResponseEntity<?> handleRuntime(RuntimeException ex) {
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body(Map.of("error", ex.getMessage()));
   }
 
 }
