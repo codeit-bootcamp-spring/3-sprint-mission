@@ -1,6 +1,6 @@
 -- 테이블
 -- User
-CREATE TABLE users
+CREATE TABLE IF NOT EXISTS users
 (
     id         uuid PRIMARY KEY,
     created_at timestamp with time zone NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE users
 );
 
 -- BinaryContent
-CREATE TABLE binary_contents
+CREATE TABLE IF NOT EXISTS binary_contents
 (
     id           uuid PRIMARY KEY,
     created_at   timestamp with time zone NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE binary_contents
 );
 
 -- UserStatus
-CREATE TABLE user_statuses
+CREATE TABLE IF NOT EXISTS user_statuses
 (
     id             uuid PRIMARY KEY,
     created_at     timestamp with time zone NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE user_statuses
 );
 
 -- Channel
-CREATE TABLE channels
+CREATE TABLE IF NOT EXISTS channels
 (
     id          uuid PRIMARY KEY,
     created_at  timestamp with time zone NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE channels
 );
 
 -- Message
-CREATE TABLE messages
+CREATE TABLE IF NOT EXISTS messages
 (
     id         uuid PRIMARY KEY,
     created_at timestamp with time zone NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE messages
 );
 
 -- Message.attachments
-CREATE TABLE message_attachments
+CREATE TABLE IF NOT EXISTS message_attachments
 (
     message_id    uuid,
     attachment_id uuid,
@@ -63,7 +63,7 @@ CREATE TABLE message_attachments
 );
 
 -- ReadStatus
-CREATE TABLE read_statuses
+CREATE TABLE IF NOT EXISTS read_statuses
 (
     id           uuid PRIMARY KEY,
     created_at   timestamp with time zone NOT NULL,
