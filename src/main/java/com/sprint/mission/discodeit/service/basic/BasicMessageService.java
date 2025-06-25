@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.Common.ResourceNotFoundException;
@@ -22,6 +23,7 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,14 +59,19 @@ public class BasicMessageService implements MessageService {
         .orElseThrow(
             () -> new ResourceNotFoundException("channelId = " + createRequest.channelId()));
 
-    /* 유저가 해당 채널에 있는지 validation check */
-    if (!this.readStatusRepository.existsByUserIdAndChannelId(createRequest.authorId(),
-        createRequest.channelId())) {
-      throw new AccessDeniedMessageException(user, channel);
+    /* 비공개 채널이면 -> 유저가 해당 채널에 있는지 validation check */
+    if (this.channelRepository.findById(createRequest.channelId()).get().getType()
+        == ChannelType.PRIVATE) {
+      if (!this.readStatusRepository.existsByUserIdAndChannelId(createRequest.authorId(),
+          createRequest.channelId())) {
+        throw new AccessDeniedMessageException(user, channel);
+      }
     }
 
     /* 첨부 파일 생성, 선택적으로 여러개의 첨부파일 같이 등록 가능 */
-    List<BinaryContent> attachments = binaryContentCreateRequests.stream()
+    List<BinaryContent> attachments = Optional.ofNullable(binaryContentCreateRequests)
+        .orElse(Collections.emptyList())
+        .stream()
         .map(attachmentRequest -> {
           String fileName = attachmentRequest.fileName();
           String contentType = attachmentRequest.contentType();

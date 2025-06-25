@@ -12,7 +12,6 @@ import com.sprint.mission.discodeit.exception.User.UserAlreadyExistException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
@@ -31,10 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  //만약 binaryContentService를 쓰지 않는다면 binaryContentService의 코드가 여기서도 반복되는데
-  // 이때는 그냥 의존하는것이 낫나? vs 중복된 코드를 써도 분리가 좋나? -> binaryContentService를 사용할것.
-  private final BinaryContentService binaryContentService;
-
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
 
@@ -133,7 +128,7 @@ public class BasicUserService implements UserService {
   @Transactional
   @Override
   public void delete(UUID userId) {
-    if (this.userRepository.existsById(userId)) {
+    if (!this.userRepository.existsById(userId)) {
       throw new ResourceNotFoundException(("UserId = " + userId));
     }
 
