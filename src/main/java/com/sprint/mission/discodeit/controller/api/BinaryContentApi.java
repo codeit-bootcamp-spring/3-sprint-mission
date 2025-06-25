@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.core.io.Resource;
@@ -34,7 +33,7 @@ public interface BinaryContentApi {
       )
   })
   ResponseEntity<BinaryContentDto> find(
-      @Parameter(description = "조회할 첨부 파일 ID") @Positive(message = "첨부파일 ID는 양수여야 합니다") UUID binaryContentId
+      @Parameter(description = "조회할 첨부 파일 ID") UUID binaryContentId
   );
 
   @Operation(summary = "여러 첨부 파일 조회")
@@ -56,6 +55,6 @@ public interface BinaryContentApi {
       )
   })
   ResponseEntity<?> download(
-      @Parameter(description = "다운로드할 파일 ID") @Positive(message = "첨부파일 ID는 양수여야 합니다") UUID binaryContentId
+      @Parameter(description = "다운로드할 파일 ID") UUID binaryContentId
   );
 }

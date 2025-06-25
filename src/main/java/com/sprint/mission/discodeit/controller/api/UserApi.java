@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.MediaType;
@@ -65,7 +64,7 @@ public interface UserApi {
       )
   })
   ResponseEntity<UserDto> update(
-      @Parameter(description = "수정할 User ID") @Positive(message = "사용자 ID는 양수여야 합니다") UUID userId,
+      @Parameter(description = "수정할 User ID") UUID userId,
       @Parameter(description = "수정할 User 정보") UserUpdateRequest userUpdateRequest,
       @Parameter(description = "수정할 User 프로필 이미지") MultipartFile profile
   );
@@ -83,7 +82,7 @@ public interface UserApi {
       )
   })
   ResponseEntity<Void> delete(
-      @Parameter(description = "삭제할 User ID") @Positive(message = "사용자 ID는 양수여야 합니다") UUID userId
+      @Parameter(description = "삭제할 User ID") UUID userId
   );
 
   @Operation(summary = "전체 User 목록 조회")
@@ -107,7 +106,7 @@ public interface UserApi {
       )
   })
   ResponseEntity<UserStatusDto> updateUserStatusByUserId(
-      @Parameter(description = "상태를 변경할 User ID") @Positive(message = "사용자 ID는 양수여야 합니다") UUID userId,
+      @Parameter(description = "상태를 변경할 User ID") UUID userId,
       @Parameter(description = "변경할 User 온라인 상태 정보") UserStatusUpdateRequest request
   );
 }
