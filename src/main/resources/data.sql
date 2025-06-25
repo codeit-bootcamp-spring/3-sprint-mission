@@ -35,9 +35,9 @@ VALUES ('00000000-0000-0000-0000-000000000020', now(), '00000000-0000-0000-0000-
 
 -- Channel 초기 데이터 (public, private)
 INSERT INTO channels (id, created_at, type, name, description)
-VALUES ('00000000-0000-0000-0000-000000000030', now(), 'public', 'general',
+VALUES ('00000000-0000-0000-0000-000000000030', now(), 'PUBLIC', 'general',
         'Public general discussion channel'),
-       ('00000000-0000-0000-0000-000000000031', now(), 'private', 'team',
+       ('00000000-0000-0000-0000-000000000031', now(), 'PRIVATE', 'team',
         'Private team collaboration channel');
 
 -- Message 초기 데이터
