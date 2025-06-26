@@ -23,13 +23,9 @@ public class BinaryContent extends BaseEntity {
     @Column(name = "content_type", nullable = false, length = 100)
     private String contentType;
 
-    @Column(name = "bytes", nullable = false)
-    private byte[] bytes;
-
-    public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
+    public BinaryContent(String fileName, Long size, String contentType) {
         this.fileName = Objects.requireNonNull(fileName, "File name must not be null");
         this.size = Objects.requireNonNull(size, "File size must not be null");
         this.contentType = Objects.requireNonNull(contentType, "Content type must not be null");
-        this.bytes = Objects.requireNonNull(bytes, "Binary data must not be null");
     }
 }

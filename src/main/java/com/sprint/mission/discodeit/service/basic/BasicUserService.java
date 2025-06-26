@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -25,6 +26,7 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     //
     private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentStorage binaryContentStorage;
     private final UserStatusRepository userStatusRepository;
 
     private final UserMapper userMapper;
@@ -66,7 +68,9 @@ public class BasicUserService implements UserService {
                     String fileName = profileRequest.fileName();
                     String contentType = profileRequest.contentType();
                     byte[] bytes = profileRequest.bytes();
-                    BinaryContent binaryContent = new BinaryContent(fileName, (long)bytes.length, contentType, bytes);
+                    BinaryContent binaryContent = new BinaryContent(fileName, (long)bytes.length, contentType);
+                    binaryContentRepository.save(binaryContent);
+                    binaryContentStorage.put(binaryContent.getId(), bytes);
                     return binaryContent;
                 })
                 .orElse(null);
