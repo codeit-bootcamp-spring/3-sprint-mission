@@ -42,7 +42,7 @@ public class BasicChannelService implements ChannelService {
     String name = request.name();
     String description = request.description();
     Channel channel = new Channel(ChannelType.PUBLIC, name, description);
-    log.info("채널 entity 생성: {}", channel);
+    log.debug("채널 entity 생성: {}", channel);
 
     channelRepository.save(channel);
     return channelMapper.toDto(channel);
@@ -52,7 +52,7 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   public ChannelDto create(@Valid PrivateChannelCreateRequest request) {
     Channel channel = new Channel(ChannelType.PRIVATE, null, null);
-    log.info("채널 entity 생성: {}", channel);
+    log.debug("채널 entity 생성: {}", channel);
 
     request.participantIds().stream()
         .map(userId -> userRepository.findById(userId)

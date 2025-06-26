@@ -44,7 +44,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         (long) bytes.length,
         contentType
     );
-    log.info("파일 entity 생성: {}", binaryContent);
+    log.debug("파일 entity 생성: {}", binaryContent);
 
     BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
     log.info("파일 메타데이터 저장 완료 - id: {}", savedBinaryContent.getId());

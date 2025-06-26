@@ -76,7 +76,7 @@ public class BasicUserService implements UserService {
 
     User user = new User(username, email, password, nullableProfile);
     User createdUser = userRepository.save(user);
-    log.info("사용자 entity 생성: {}",  createdUser);
+    log.debug("사용자 entity 생성: {}",  createdUser);
 
     Instant now = Instant.now();
     UserStatus userStatus = new UserStatus(createdUser, now);
@@ -133,7 +133,7 @@ public class BasicUserService implements UserService {
               (long) profileRequest.bytes().length,
               profileRequest.contentType()
           );
-          log.info("파일 entity 생성: {}",   binaryContent);
+          log.debug("파일 entity 생성: {}",   binaryContent);
 
           binaryContentStorage.put(binaryContent.getId(), profileRequest.bytes());
           return binaryContentRepository.save(binaryContent);

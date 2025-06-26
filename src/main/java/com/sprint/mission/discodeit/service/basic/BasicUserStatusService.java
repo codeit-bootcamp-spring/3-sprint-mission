@@ -50,7 +50,7 @@ public class BasicUserStatusService implements UserStatusService {
 
     Instant lastActiveAt = request.lastActiveAt();
     UserStatus userStatus = new UserStatus(user, lastActiveAt);
-    log.info("사용자 읽음 상태 entity 생성: {}", userStatus);
+    log.debug("사용자 읽음 상태 entity 생성: {}", userStatus);
 
     userStatusRepository.save(userStatus);
     return userStatusMapper.toDto(userStatus);

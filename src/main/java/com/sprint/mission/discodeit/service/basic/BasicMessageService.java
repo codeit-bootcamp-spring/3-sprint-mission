@@ -91,7 +91,7 @@ public class BasicMessageService implements MessageService {
         author,
         attachments
     );
-    log.info("메시지 entity 생성: {}", message);
+    log.debug("메시지 entity 생성: {}", message);
     messageRepository.save(message);
 
     return messageMapper.toDto(message);
