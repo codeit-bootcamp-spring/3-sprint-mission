@@ -12,15 +12,19 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.PastOrPresent;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Message", description = "Message API")
+@Validated
 public interface MessageApi {
 
   @Operation(summary = "Message 생성")
@@ -38,7 +42,7 @@ public interface MessageApi {
       @Parameter(
           description = "Message 생성 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
-      ) MessageCreateRequest messageCreateRequest,
+      ) @Valid MessageCreateRequest messageCreateRequest,
       @Parameter(
           description = "Message 첨부 파일들",
           content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -84,7 +88,7 @@ public interface MessageApi {
   })
   ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
       @Parameter(description = "조회할 Channel ID") UUID channelId,
-      @Parameter(description = "페이징 커서 정보") Instant cursor,
+      @Parameter(description = "페이징 커서 정보") @PastOrPresent(message = "미래 시간은 허용되지 않습니다") Instant cursor,
       @Parameter(description = "페이징 정보", example = "{\"size\": 50, \"sort\": \"createdAt,desc\"}") Pageable pageable
   );
 }

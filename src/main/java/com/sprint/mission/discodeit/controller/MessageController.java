@@ -7,7 +7,6 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.utils.BinaryContentConverter;
 import java.time.Instant;
@@ -40,7 +39,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class MessageController implements MessageApi {
 
   private final MessageService messageService;
-  private final PageResponseMapper pageResponseMapper;
 
   /* 메세지 생성 */
   @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
