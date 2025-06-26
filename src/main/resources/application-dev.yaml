@@ -8,6 +8,12 @@ spring:
   config:
     import: "classpath:db-dev.yaml"
 
+  # Admin 서버 설정 정보 추가
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
+
   # H2 Console 설정
   h2:
     console:

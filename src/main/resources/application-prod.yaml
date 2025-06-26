@@ -8,6 +8,12 @@ spring:
   config:
     import: "classpath:db-prod.yaml"
 
+  # Admin 서버 설정 정보 추가
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+
   # SQL 스크립트 실행 여부 (script-based 기반 sql문)
   sql:
     init:

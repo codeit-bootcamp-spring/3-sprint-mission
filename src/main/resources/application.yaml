@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: discodeit
   servlet:
     multipart:
       maxFileSize: 10MB # 파일 하나의 최대 크기
@@ -7,8 +9,15 @@ spring:
   profiles:
     active: dev
   # DB config
-#  config:
-#    import: "classpath:db.yaml"
+  #  config:
+  #    import: "classpath:db.yaml"
+
+  # Admin 서버 설정 정보 추가
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
 
 
 discodeit:
