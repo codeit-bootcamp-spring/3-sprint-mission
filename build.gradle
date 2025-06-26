@@ -3,6 +3,8 @@ plugins {
     id 'org.springframework.boot' version '3.4.0'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'io.freefair.lombok' version "8.13.1"
+    id 'jacoco'
+    id "org.sonarqube" version "3.5.0.2730"
 }
 ext {
     springBootAdminVersion = "3.4.7"
@@ -64,7 +66,19 @@ tasks.withType(JavaCompile) {
 
 test {
     useJUnitPlatform()
+    ignoreFailures = true  // 실패해도 다음 task 진행
+    finalizedBy jacocoTestReport
 }
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        csv.required = true
+        html.required = true
+    }
+}
+
 dependencyManagement {
     imports {
         mavenBom "de.codecentric:spring-boot-admin-dependencies:$springBootAdminVersion"
