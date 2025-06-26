@@ -1,10 +1,10 @@
 <configuration>
 
-  <!--  {년}-{월}-{일} {시}:{분}:{초}:{밀리초} [{스레드명}] {로그 레벨(5글자로 맞춤)} {로거 이름(최대 36글자)} - {로그 메시지}{줄바꿈}-->
+  <!--  {년}-{월}-{일} {시}:{분}:{초}:{밀리초} [{스레드명}] {로그 레벨(5글자로 맞춤)} {로거 이름(최대 36글자)} [{MDC:요청ID} | {MDC:요청 메소드} | {MDC:요청 URL}] - {로그 메시지}{줄바꿈}-->
   <property name="CONSOLE_PATTERN"
-    value="%d{yyyy-MM-dd HH:mm:ss.SSS} %magenta([%thread]) %highlight([%-5level]) %logger{36} - %msg %n"/>
+    value="%d{yyyy-MM-dd HH:mm:ss.SSS} %magenta([%thread]) %highlight([%-5level]) %logger{36}  [%X{request-id:-startup} | %X{http-method} | %X{request-uri}] %msg %n"/>
   <property name="ROLLING_PATTERN"
-    value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+    value="%d{yyyy-MM-dd HH:mm:ss.SSS} %magenta([%thread]) %highlight([%-5level]) %logger{36}  [%X{request-id:-startup} | %X{http-method} | %X{request-uri}] %msg %n"/>
 
   <!-- appender : log 메시지가 출력될 대상-->
   <!-- Console 출력 설정 -->
