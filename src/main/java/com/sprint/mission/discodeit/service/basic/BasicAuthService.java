@@ -1,34 +1,40 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.AuthLogin.AuthLoginReponse;
-import com.sprint.mission.discodeit.dto.AuthLogin.LoginRequest;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.user.WrongPasswordException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
-import jakarta.transaction.Transactional;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@Service
 @RequiredArgsConstructor
-@Transactional
+@Service
+@Slf4j
 public class BasicAuthService implements AuthService {
+
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
+    @Transactional(readOnly = true)
     @Override
-    public AuthLoginReponse login(LoginRequest request) {
-        User user = userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new NoSuchElementException("해당하는 유저는 존재하지 않습니다."));
+    public UserDto login(LoginRequest loginRequest) {
+        log.info("메서드 실행됨: public UserDto login(LoginRequest loginRequest)");
+        String username = loginRequest.username();
+        String password = loginRequest.password();
 
-        if (!user.getPassword().equals(request.password())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new UserNotFoundException(username));
+
+        if (!user.getPassword().equals(password)) {
+            throw new WrongPasswordException(user.getEmail());
         }
 
-        return AuthLoginReponse.builder()
-                .id(user.getId())
-                .userName(user.getUsername())
-                .email(user.getEmail())
-                .build();
+        return userMapper.toDto(user);
     }
 }

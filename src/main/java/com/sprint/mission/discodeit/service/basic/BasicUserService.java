@@ -1,141 +1,158 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.User.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.User.UserFindRequest;
-import com.sprint.mission.discodeit.dto.User.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.UserAlreadyExistException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
 @RequiredArgsConstructor
-@Transactional
+@Service
+@Slf4j
 public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
-    private final BinaryContentRepository binaryContentRepository;
     private final UserMapper userMapper;
+    private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
 
+    @Transactional
     @Override
-    public UserDto create(UserCreateRequest request,
-                          Optional<BinaryContentCreateRequest> binaryContentCreateRequest) throws IOException {
-        validateUniqueUser(request);
+    public UserDto create(UserCreateRequest userCreateRequest,
+        Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+        log.info("사용자 생성 요청: username={}, email={}", userCreateRequest.username(),
+            userCreateRequest.email());
 
-        BinaryContent profile = binaryContentCreateRequest
-                .map(this::storeBinaryContentMeta)
-                .orElse(null);
+        String username = userCreateRequest.username();
+        String email = userCreateRequest.email();
 
-        User user = new User(
-                request.username(),
-                request.email(),
-                request.password(),
-                profile,
-                null
-        );
-        User savedUser = userRepository.save(user);
-
-        UserStatus status = new UserStatus(savedUser, Instant.now());
-        userStatusRepository.save(status);
-
-        return userMapper.toDto(savedUser);
-    }
-
-    private BinaryContent storeBinaryContentMeta(BinaryContentCreateRequest request) {
-        BinaryContent meta = new BinaryContent();
-        meta.setFileName(request.fileName());
-        meta.setSize((long) request.bytes().length);
-        meta.setContentType(request.contentType());
-
-        BinaryContent savedMeta = binaryContentRepository.save(meta);
-
-        try {
-            UUID newFileId = savedMeta.getId();
-            binaryContentStorage.put(newFileId, request.bytes());
-        } catch (IOException e) {
-            throw new RuntimeException("프로필 사진 저장 중 오류가 발생했습니다.", e);
+        if (userRepository.existsByEmail(email)) {
+            log.error("이메일 중복: {}", email);
+            throw new UserAlreadyExistException("email", email);
+        }
+        if (userRepository.existsByUsername(username)) {
+            log.error("사용자명 중복: {}", username);
+            throw new UserAlreadyExistException("username", username);
         }
 
-        return savedMeta;
-    }
+        BinaryContent nullableProfile = optionalProfileCreateRequest
+            .map(profileRequest -> {
+                String fileName = profileRequest.fileName();
+                String contentType = profileRequest.contentType();
+                byte[] bytes = profileRequest.bytes();
+                BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+                    contentType);
+                binaryContentRepository.save(binaryContent);
+                binaryContentStorage.put(binaryContent.getId(), bytes);
+                log.debug("프로필 이미지 저장 완료: id={}", binaryContent.getId());
+                return binaryContent;
+            })
+            .orElse(null);
 
-    private void validateUniqueUser(UserCreateRequest request) {
-        if (userRepository.existsByUsername(request.username())) {
-            throw new IllegalArgumentException("이미 존재하는 이름입니다.");
-        }
-        if (userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
-        }
-    }
+        String password = userCreateRequest.password();
+        User user = new User(username, email, password, nullableProfile);
+        Instant now = Instant.now();
+        UserStatus userStatus = new UserStatus(user, now);
 
-    @Override
-    @Transactional(readOnly = true)
-    public UserDto find(UserFindRequest request) {
-        User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저는 없습니다."));
+        userRepository.save(user);
+        log.info("사용자 생성 완료: id={}", user.getId());
         return userMapper.toDto(user);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<UserDto> findAll() {
-        return userRepository.findAll().stream()
-                .map(userMapper::toDto)
-                .toList();
+    public UserDto find(UUID userId) {
+        log.debug("사용자 조회 요청: id={}", userId);
+
+        return userRepository.findById(userId)
+            .map(userMapper::toDto)
+            .orElseThrow(() -> {
+                log.warn("사용자 조회 실패: id={}", userId);
+                return new UserNotFoundException(userId);
+            });
     }
 
     @Override
-    public UserDto update(UUID userId, UserUpdateRequest request,
-                          Optional<BinaryContentCreateRequest> profileRequest) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저는 없습니다."));
-
-        if (profileRequest.isPresent()) {
-            Optional.ofNullable(user.getProfile())
-                    .ifPresent(binaryContentRepository::delete);
-
-            BinaryContent newProfile = storeBinaryContentMeta(profileRequest.get());
-            user.setProfile(newProfile);
-        }
-
-        user.update(
-                request.newUsername(),
-                request.newEmail(),
-                request.newPassword(),
-                user.getProfile()
-        );
-
-        userStatusRepository.findByUserId(user.getId()).ifPresent(status -> {
-            status.update(Instant.now());
-        });
-
-        User updated = userRepository.save(user);
-        return userMapper.toDto(updated);
+    public List<UserDto> findAll() {
+        log.debug("모든 사용자 조회 요청");
+        return userRepository.findAllWithProfileAndStatus().stream()
+            .map(userMapper::toDto)
+            .toList();
     }
 
+    @Transactional
+    @Override
+    public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
+        Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+        log.info("사용자 수정 요청: id={}, newUsername={}, newEmail={}", userId,
+            userUpdateRequest.newUsername(), userUpdateRequest.newEmail());
+
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> {
+                log.warn("사용자 수정 실패: 존재하지 않는 id={}", userId);
+                return new UserNotFoundException(userId);
+            });
+
+        String newUsername = userUpdateRequest.newUsername();
+        String newEmail = userUpdateRequest.newEmail();
+        if (userRepository.existsByEmail(newEmail)) {
+            log.error("이메일 중복(수정): {}", newEmail);
+            throw new UserAlreadyExistException("email", newEmail);
+        }
+        if (userRepository.existsByUsername(newUsername)) {
+            log.error("사용자명 중복(수정): {}", newUsername);
+            throw new UserAlreadyExistException("username", newUsername);
+        }
+
+        BinaryContent nullableProfile = optionalProfileCreateRequest
+            .map(profileRequest -> {
+                String fileName = profileRequest.fileName();
+                String contentType = profileRequest.contentType();
+                byte[] bytes = profileRequest.bytes();
+                BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+                    contentType);
+                binaryContentRepository.save(binaryContent);
+                binaryContentStorage.put(binaryContent.getId(), bytes);
+                log.debug("프로필 이미지 수정 완료: id={}", binaryContent.getId());
+                return binaryContent;
+            })
+            .orElse(null);
+
+        String newPassword = userUpdateRequest.newPassword();
+        user.update(newUsername, newEmail, newPassword, nullableProfile);
+
+        log.info("사용자 수정 완료: id={}", userId);
+        return userMapper.toDto(user);
+    }
+
+    @Transactional
     @Override
     public void delete(UUID userId) {
+        log.info("사용자 삭제 요청: id={}", userId);
+
         if (!userRepository.existsById(userId)) {
-            throw new NoSuchElementException("해당 id를 가진 유저는 없습니다.");
+            log.error("삭제 실패: 존재하지 않는 사용자 id={}", userId);
+            throw new UserNotFoundException(userId);
         }
         userRepository.deleteById(userId);
+        log.info("사용자 삭제 완료: id={}", userId);
     }
 }
