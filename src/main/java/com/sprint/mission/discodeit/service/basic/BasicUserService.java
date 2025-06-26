@@ -18,8 +18,10 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
@@ -49,6 +51,7 @@ public class BasicUserService implements UserService {
         User user = new User(userCreateRequest.username(), userCreateRequest.email(), userCreateRequest.password(), nullableProfile);
 
         userRepository.save(user);
+        log.info("User creation complete: id={}, username={}", user.getId(), user.getUsername());
 
         return userMapper.toDto(user);
     }
@@ -71,6 +74,8 @@ public class BasicUserService implements UserService {
                     BinaryContent binaryContent = new BinaryContent(fileName, (long)bytes.length, contentType);
                     binaryContentRepository.save(binaryContent);
                     binaryContentStorage.put(binaryContent.getId(), bytes);
+                    log.info("BinaryContent creation complete: id={}, fileName={}, size={}",
+                        binaryContent.getId(), fileName, bytes.length);
                     return binaryContent;
                 })
                 .orElse(null);
@@ -107,13 +112,14 @@ public class BasicUserService implements UserService {
                     String fileName = profileRequest.fileName();
                     String contentType = profileRequest.contentType();
                     byte[] bytes = profileRequest.bytes();
-                    BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType, bytes);
+                    BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
                     return binaryContent;
                 })
                 .orElse(null);
 
         String newPassword = userUpdateRequest.newPassword();
         user.update(newUsername, newEmail, newPassword, nullableProfile);
+        log.info("User modification complete: id={}", userId);
 
         return userMapper.toDto(user);
     }
@@ -126,5 +132,6 @@ public class BasicUserService implements UserService {
         }
 
         userRepository.deleteById(userId);
+        log.info("User deletion complete: id={}", userId);
     }
 }

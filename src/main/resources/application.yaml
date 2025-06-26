@@ -3,3 +3,7 @@ spring:
     name: discodeit
   profiles:
     active: dev
+
+logging:
+  level:
+    root: info

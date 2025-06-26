@@ -25,9 +25,11 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
@@ -62,6 +64,8 @@ public class BasicMessageService implements MessageService {
                     BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
                     binaryContentRepository.save(binaryContent);
                     binaryContentStorage.put(binaryContent.getId(), bytes);
+                    log.info("BinaryContent creation complete: id={}, fileName={}, size={}",
+                        binaryContent.getId(), fileName, bytes.length);
                     return binaryContent;
                 })
                 .toList();
@@ -74,6 +78,7 @@ public class BasicMessageService implements MessageService {
                 attachments
         );
         messageRepository.save(message);
+        log.info("Message creation complete: id={}", message.getId());
 
         return messageMapper.toDto(message);
     }
@@ -107,6 +112,8 @@ public class BasicMessageService implements MessageService {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
         message.update(newContent);
+        log.info("Message modification complete: id={}", messageId);
+
         return messageMapper.toDto(message);
     }
 
@@ -118,6 +125,7 @@ public class BasicMessageService implements MessageService {
 
         message.getAttachments()
                 .forEach(attachment -> binaryContentRepository.deleteById(attachment.getId()));
+        log.info("Message deletion complete: id={}", messageId);
 
         messageRepository.deleteById(messageId);
     }

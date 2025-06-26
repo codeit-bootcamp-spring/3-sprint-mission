@@ -9,12 +9,14 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class BasicBinaryContentService implements BinaryContentService {
@@ -35,6 +37,8 @@ public class BasicBinaryContentService implements BinaryContentService {
         );
         binaryContentRepository.save(binaryContent);
         binaryContentStorage.put(binaryContent.getId(), bytes);
+        log.info("BinaryContent creation complete: id={}, fileName={}, size={}",
+            binaryContent.getId(), fileName, bytes.length);
 
         return binaryContentMapper.toDto(binaryContent);
     }
