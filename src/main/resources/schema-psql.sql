@@ -1,3 +1,6 @@
+CREATE SCHEMA IF NOT EXISTS discodeit;
+SET search_path TO discodeit;
+
 DROP TABLE IF EXISTS user_statuses;
 DROP TABLE IF EXISTS read_statuses;
 DROP TABLE IF EXISTS message_attachments;

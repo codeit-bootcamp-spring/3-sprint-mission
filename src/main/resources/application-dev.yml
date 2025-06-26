@@ -33,7 +33,12 @@ spring:
       platform: h2
       schema-locations:
         - classpath:schema-h2.sql
-
+  application:
+    name: discodeit
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
 
 discodeit:
   storage:

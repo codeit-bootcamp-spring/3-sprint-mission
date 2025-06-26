@@ -6,8 +6,6 @@ build/
 !**/src/test/**/build/
 
 ### STS ###
-.data/
-.uploadedFiles/
 .apt_generated
 .classpath
 .factorypath
@@ -16,7 +14,6 @@ build/
 .springBeans
 .sts4-cache
 bin/
-/data/*.ser
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
@@ -38,8 +35,3 @@ out/
 
 ### VS Code ###
 .vscode/
-*.ser
-/files
-/data
-/logs
-.DS_Store

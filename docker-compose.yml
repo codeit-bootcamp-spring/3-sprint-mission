@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  postgres:
+    container_name: psql-prod
+    image: postgres:17
+    restart: always
+    ports:
+      - "54321:5432"
+    environment:
+      POSTGRES_DB: discodeit
+      POSTGRES_USER: discodeit_user
+      POSTGRES_PASSWORD: discodeit1234
+    volumes:
+      - psql-discodeit-prod-data:/var/lib/postgresql/data
+
+volumes:
+  psql-discodeit-prod-data:
+
