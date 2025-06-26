@@ -95,13 +95,14 @@ public class MessageController {
     @GetMapping
     public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
         @RequestParam("channelId") UUID channelId,
+        @RequestParam(value = "cursor", required=false) Instant cursor,
         @PageableDefault(
             size = 50,
             page = 0,
             sort = "createdAt",
             direction = Direction.DESC
         ) Pageable pageable) {
-        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, pageable);
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor, pageable);
         return ResponseEntity.ok(messages);
     }
 }
