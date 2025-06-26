@@ -35,7 +35,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RequestMapping("/api/messages")
 @RestController
-@Tag(name = "Messages")
 public class MessageController {
 
     private final MessageService messageService;
@@ -96,13 +95,13 @@ public class MessageController {
     @GetMapping
     public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
         @RequestParam("channelId") UUID channelId,
-        @RequestParam(value = "cursor", required = false) Instant cursor,
         @PageableDefault(
             size = 50,
             page = 0,
             sort = "createdAt",
-            direction = Direction.DESC) Pageable pageable) {
-        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor, pageable);
+            direction = Direction.DESC
+        ) Pageable pageable) {
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, pageable);
         return ResponseEntity.ok(messages);
     }
 }

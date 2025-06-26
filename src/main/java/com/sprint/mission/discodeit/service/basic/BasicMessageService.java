@@ -59,7 +59,7 @@ public class BasicMessageService implements MessageService {
                     String contentType = attachmentRequest.contentType();
                     byte[] bytes = attachmentRequest.bytes();
 
-                    BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType, bytes);
+                    BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
                     binaryContentRepository.save(binaryContent);
                     binaryContentStorage.put(binaryContent.getId(), bytes);
                     return binaryContent;
@@ -86,17 +86,10 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createdAt, Pageable pageable) {
-        Slice<MessageDto> slice = messageRepository.findAllByChannelIdWithAuthor(channelId,
-                Optional.ofNullable(createdAt).orElse(Instant.now()), pageable)
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable) {
+        Slice<MessageDto> slice = messageRepository.findAllByChannelId(channelId, pageable)
             .map(messageMapper::toDto);
-
-        Instant nextCursor = null;
-        if (!slice.getContent().isEmpty()) {
-            nextCursor = slice.getContent().get(slice.getContent().size() - 1)
-                .createdAt();
-        }
-        return pageResponseMapper.fromSlice(slice, nextCursor);
+        return pageResponseMapper.fromSlice(slice);
     }
 
     @Transactional
