@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.DuplicateUserException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -50,13 +51,9 @@ public class BasicUserService implements UserService {
     String username = userCreateRequest.username();
     String email = userCreateRequest.email();
 
-    if (userRepository.existsByEmail(email)) {
-      log.error("사용자 생성 실패 - email={}", email);
-      throw new IllegalArgumentException("이미 존재하는 이메일 (email=" + email + ")");
-    }
-    if (userRepository.existsByUsername(username)) {
-      log.error("사용자 생성 실패 - username={}", username);
-      throw new IllegalArgumentException("이미 존재하는 사용자명 (username=" + username + ")");
+    if (userRepository.existsByUsername(username) || userRepository.existsByEmail(email)) {
+      log.error("사용자 생성 실패 - username={}, email={}", username, email);
+      throw new DuplicateUserException(username, email);
     }
 
     BinaryContent nullableProfile = optionalProfileCreateRequest
