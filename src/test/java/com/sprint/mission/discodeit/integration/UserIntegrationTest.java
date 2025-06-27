@@ -17,6 +17,7 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -76,6 +77,31 @@ public class UserIntegrationTest {
         assertThat(savedUser.getEmail()).isEqualTo("test@example.com");
         assertThat(savedUser.getPassword()).isEqualTo("password123");
 
+    }
+
+    @Test
+    @DisplayName("중복된 사용자명으로 사용자생성을 시도하면 예외를 호출해야 한다")
+    @Transactional
+    void createUser_DuplicateUsername_Fail() {
+        // Given - 기존 사용자 생성
+        User existingUser = new User("testuser", "existing@example.com", "password", null);
+        UserStatus userStatus = new UserStatus(existingUser, Instant.now());
+        userRepository.save(existingUser);
+
+        UserCreateRequest request = new UserCreateRequest(
+            "testuser", // 중복된 사용자명
+            "new@example.com",
+            "password123"
+        );
+
+        // When & Then
+        assertThatThrownBy(() -> userController.create(request, null))
+            .isInstanceOf(UserAlreadyExistException.class);
+
+        // Database 검증 - 기존 사용자만 존재해야 함
+        assertThat(userRepository.count()).isEqualTo(1);
+        assertThat(userRepository.existsByUsername("testuser")).isTrue();
+        assertThat(userRepository.existsByEmail("new@example.com")).isFalse();
     }
 
     @Test

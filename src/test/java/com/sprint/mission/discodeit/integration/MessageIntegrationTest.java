@@ -154,7 +154,7 @@ public class MessageIntegrationTest {
         // When
         PageResponse<MessageDto> result = messageController.findAllByChannelId(
             channel.getId(),
-            Instant.now(),
+            Instant.now().plusSeconds(60),
             pageable
         ).getBody();
 
@@ -190,6 +190,49 @@ public class MessageIntegrationTest {
         assertThat(result).isNotNull();
         assertThat(result.content()).isEmpty();
         assertThat(result.hasNext()).isFalse();
+
+        // Database 검증
+        assertThat(messageRepository.count()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("메시지 삭제시 성공해야 한다")
+    @Transactional
+    void deleteMessage_Success() {
+        // Given - 사용자, 채널, 메시지 생성
+        User user = new User("testuser", "test@example.com", "password", null);
+        UserStatus userStatus = new UserStatus(user, Instant.now());
+        userRepository.save(user);
+
+        Channel channel = new Channel(ChannelType.PUBLIC, "test-channel", "test description");
+        channelRepository.save(channel);
+
+        Message message = new Message("Test message", channel, user, Collections.emptyList());
+        messageRepository.save(message);
+        UUID messageId = message.getId();
+
+        // 삭제 전 검증
+        assertThat(messageRepository.count()).isEqualTo(1);
+        assertThat(messageRepository.findById(messageId)).isPresent();
+
+        // When
+        messageController.delete(messageId);
+
+        // Then - Database 검증
+        assertThat(messageRepository.count()).isEqualTo(0);
+        assertThat(messageRepository.findById(messageId)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 메시지 삭제시도시 예외를 출력해야 한다 ")
+    @Transactional
+    void deleteMessage_NotFound_Fail() {
+        // Given - 존재하지 않는 메시지 ID
+        UUID nonExistentMessageId = UUID.randomUUID();
+
+        // When & Then
+        assertThatThrownBy(() -> messageController.delete(nonExistentMessageId))
+            .isInstanceOf(MessageNotFoundException.class);
 
         // Database 검증
         assertThat(messageRepository.count()).isEqualTo(0);

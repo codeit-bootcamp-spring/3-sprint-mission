@@ -8,12 +8,14 @@ import com.sprint.mission.discodeit.controller.ChannelController;
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -135,6 +137,82 @@ public class ChannelIntegrationTest {
         // Database 검증 - 채널이 생성되지 않았는지 확인
         assertThat(channelRepository.count()).isEqualTo(0);
         assertThat(readStatusRepository.count()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("공개 채널을 수정할 수 있어야 한다")
+    @Transactional
+    void updatePublicChannel_Success() {
+        // Given - 기존 공개 채널 생성
+        Channel channel = new Channel(ChannelType.PUBLIC, "old-name", "old description");
+        channelRepository.save(channel);
+        UUID channelId = channel.getId();
+
+        PublicChannelUpdateRequest request = new PublicChannelUpdateRequest(
+            "new-name",
+            "new description"
+        );
+
+        // When
+        ChannelDto result = channelController.update(channelId, request).getBody();
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(channelId);
+        assertThat(result.name()).isEqualTo("new-name");
+        assertThat(result.description()).isEqualTo("new description");
+        assertThat(result.type()).isEqualTo(ChannelType.PUBLIC);
+
+        // Database 검증
+        Channel updatedChannel = channelRepository.findById(channelId).orElse(null);
+        assertThat(updatedChannel).isNotNull();
+        assertThat(updatedChannel.getName()).isEqualTo("new-name");
+        assertThat(updatedChannel.getDescription()).isEqualTo("new description");
+    }
+
+    @Test
+    @DisplayName("공개 채널 수정시 존재하지 않는 채널을 수정시도할때 실패해야한다")
+    @Transactional
+    void updatePublicChannel_NotFound_Fail() {
+        // Given - 존재하지 않는 채널 ID
+        UUID nonExistentChannelId = UUID.randomUUID();
+        PublicChannelUpdateRequest request = new PublicChannelUpdateRequest(
+            "new-name",
+            "new description"
+        );
+
+        // When & Then
+        assertThatThrownBy(() -> channelController.update(nonExistentChannelId, request))
+            .isInstanceOf(ChannelNotFoundException.class);
+
+        // Database 검증
+        assertThat(channelRepository.count()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("비공개 채널 수정 시도시 예외를 출력해야한다.")
+    @Transactional
+    void updatePrivateChannel_Forbidden_Fail() {
+        // Given - 비공개 채널 생성
+        Channel privateChannel = new Channel(ChannelType.PRIVATE, null, null);
+        channelRepository.save(privateChannel);
+        UUID channelId = privateChannel.getId();
+
+        PublicChannelUpdateRequest request = new PublicChannelUpdateRequest(
+            "new-name",
+            "new description"
+        );
+
+        // When & Then
+        assertThatThrownBy(() -> channelController.update(channelId, request))
+            .isInstanceOf(PrivateChannelUpdateException.class);
+
+        // Database 검증 - 채널이 변경되지 않았는지 확인
+        Channel unchangedChannel = channelRepository.findById(channelId).orElse(null);
+        assertThat(unchangedChannel).isNotNull();
+        assertThat(unchangedChannel.getType()).isEqualTo(ChannelType.PRIVATE);
+        assertThat(unchangedChannel.getName()).isNull();
+        assertThat(unchangedChannel.getDescription()).isNull();
     }
 
     @Test
