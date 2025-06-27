@@ -42,3 +42,9 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+## log 파일
+.logs/
+
+## 로컬 바이너리 파일
+binaries/

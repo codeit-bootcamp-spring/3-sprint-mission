@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDto;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.util.FileConverter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -43,7 +44,7 @@ public class UserController implements UserApi {
     // 신규 유저 생성 요청
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserResponseDto> create(
-            @RequestPart("userCreateRequest") UserRequestDto userRequestDTO,
+            @Valid @RequestPart("userCreateRequest") UserRequestDto userRequestDTO,
             @RequestPart(value = "profile", required = false) MultipartFile profile) {
 
         BinaryContentDto profileRequest = FileConverter.resolveFileRequest(profile);

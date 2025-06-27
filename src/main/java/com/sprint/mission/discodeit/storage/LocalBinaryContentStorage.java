@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -20,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+@Slf4j
 @Component
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "local")
 public class LocalBinaryContentStorage implements BinaryContentStorage {
@@ -55,11 +57,17 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     public UUID put(UUID id, byte[] bytes) {
         Path path = resolvePath(id);
 
+        log.info("파일 업로드 요청: id = {}, size: {} bytes", id, bytes.length);
+        log.debug("저장 경로: {}", path.toAbsolutePath());
+
         try {
             Files.createDirectories(path.getParent());
             Files.write(path, bytes);
+            log.info("파일 업로드 성공: id={}", id);
+
             return id;
         } catch (IOException e) {
+            log.error("파일 저장 실패: id={}", id, e);
             throw new UncheckedIOException("파일 저장 실패: " + id, e);
         }
     }
@@ -79,6 +87,9 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     public ResponseEntity<?> download(BinaryContentResponseDto dto) {
         Path path = resolvePath(dto.id());
 
+        log.info("파일 다운로드 요청: id={}, fileName={}", dto.id(), dto.fileName());
+        log.debug("다운로드 경로: {}", path);
+
         try {
             // MIME 타입
             String contentType = Files.probeContentType(path);
@@ -87,6 +98,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
             }
 
             Resource resource = new FileSystemResource(path);
+            log.info("파일 다운로드 성공: id={}, contentType={}", dto.id(), contentType);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
@@ -94,6 +106,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
                     .contentLength(dto.size())
                     .body(resource);
         } catch (IOException e) {
+            log.error("파일 다운로드 실패: id={}", dto.id(), e);
             throw new UncheckedIOException("다운로드 실패: " + dto.id(), e);
         }
     }
