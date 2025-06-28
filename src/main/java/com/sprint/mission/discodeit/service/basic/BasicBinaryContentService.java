@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.binaryContent.FileNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -10,14 +11,13 @@ import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.io.InputStream;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
@@ -58,7 +58,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
         .orElseThrow(() -> {
           log.error("파일 조회 실패 - binaryContentid={}", binaryContentId);
-          return new NoSuchElementException("유효하지 않은 BinaryContent id (id=" + binaryContentId + ")");
+          return new FileNotFoundException(binaryContentId);
         });
 
     return binaryContentMapper.toDto(binaryContent);
@@ -80,7 +80,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
         .orElseThrow(() -> {
           log.error("파일 조회 실패 - binaryContentId={}", binaryContentId);
-          return new NoSuchElementException("유효하지 않은 BinaryContent id (id=" + binaryContentId + ")");
+          return new FileNotFoundException(binaryContentId);
         });
 
     binaryContentRepository.delete(binaryContent);
@@ -91,7 +91,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     binaryContentRepository.findById(binaryContentId)
         .orElseThrow(() -> {
           log.error("파일 조회 실패 - binaryContentId={}", binaryContentId);
-          return new NoSuchElementException("유효하지 않은 BinaryContent id (id=" + binaryContentId + ")");
+          return new FileNotFoundException(binaryContentId);
         });
     return binaryContentStorage.get(binaryContentId);
   }

@@ -20,11 +20,13 @@ public enum ErrorCode {
     FILE_NOT_FOUND("F001", HttpStatus.NOT_FOUND, "파일을 조회할 수 없습니다."),
     FILE_STORAGE_ERROR("F002", HttpStatus.INTERNAL_SERVER_ERROR, "파일 저장에 실패했습니다."),
     RESOURCE_URL_CREATION_ERROR("F003", HttpStatus.INTERNAL_SERVER_ERROR, "파일 URL 리소스 생성에 실패했습니다."),
+    BINARY_CONTENT_CREATION_FAILED("F004", HttpStatus.INTERNAL_SERVER_ERROR, "바이너리 컨텐츠 생성에 실패했습니다."),
 
     READSTATUS_NOT_FOUND("R001", HttpStatus.NOT_FOUND, "읽음 상태를 조회할 수 없습니다."),
     DUPLICATE_READSTATUS("R002", HttpStatus.BAD_REQUEST, "이미 존재하는 읽음 상태입니다."),
 
-    USERSTATUS_NOT_FOUND("S001", HttpStatus.NOT_FOUND, "사용자 상태를 조회할 수 없습니다.");
+    USERSTATUS_NOT_FOUND("S001", HttpStatus.NOT_FOUND, "사용자 상태를 조회할 수 없습니다."),
+    DUPLICATE_USERSTATUS("S002", HttpStatus.BAD_REQUEST, "이미 존재하는 사용자 상태입니다.");
 
     private final String code;
     private final HttpStatus status;

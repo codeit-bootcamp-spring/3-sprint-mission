@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class UserStatusNotFoundException extends UserStatusException {
 
-    public UserStatusNotFoundException(UUID userStatusId) {
-        super(Instant.now(), ErrorCode.USERSTATUS_NOT_FOUND, Map.of("userStatusId", userStatusId));
+    public UserStatusNotFoundException(UUID userStatusId, UUID userId) {
+        super(Instant.now(), ErrorCode.USERSTATUS_NOT_FOUND, Map.of("userStatusId", userStatusId, "userId", userId));
     }
 }

@@ -9,6 +9,9 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -21,7 +24,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,13 +63,13 @@ public class BasicMessageService implements MessageService {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> {
           log.error("채널 조회 실패 - channelId={}", channelId);
-          return new NoSuchElementException("유효하지 않은 채널 (channelId=" + channelId + ")");
+          return new ChannelNotFoundException(channelId);
         });
 
     User author = userRepository.findById(authorId)
         .orElseThrow(() -> {
           log.error("사용자 조회 실패 - authorId={}", authorId);
-          return new NoSuchElementException("유효하지 않은 사용자 (authorId=" + authorId+ ")");
+          return new UserNotFoundException(authorId);
         });
 
     List<BinaryContent> attachments = binaryContentCreateRequests.stream()
@@ -102,7 +104,7 @@ public class BasicMessageService implements MessageService {
     return messageRepository.findById(messageId)
         .orElseThrow(() -> {
           log.error("메시지 조회 실패 - messageId={}", messageId);
-          return new NoSuchElementException("유효하지 않은 메시지 (messageId=" + messageId + ")");
+          return new MessageNotFoundException(messageId);
         });
   }
 
@@ -142,7 +144,7 @@ public class BasicMessageService implements MessageService {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> {
           log.error("메시지 조회 실패 - messageId={}", messageId);
-          return new NoSuchElementException("유효하지 않은 메시지 (messageId=" + messageId + ")");
+          return new MessageNotFoundException(messageId);
         });
     message.update(newContent);
     return messageMapper.toDto(message);
@@ -154,7 +156,7 @@ public class BasicMessageService implements MessageService {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> {
           log.error("메시지 조회 실패 - messageId={}", messageId);
-          return new NoSuchElementException("유효하지 않은 메시지 (messageId=" + messageId + ")");
+          return new MessageNotFoundException(messageId);
         });
 
     binaryContentRepository.deleteAll(message.getAttachments());
