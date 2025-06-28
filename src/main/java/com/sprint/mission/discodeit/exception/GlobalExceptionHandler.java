@@ -35,4 +35,23 @@ public class GlobalExceptionHandler {
         body.put("error", message);
         return new ResponseEntity<>(body, status);
     }
+
+    @ExceptionHandler(DiscodeitException.class)
+    public ResponseEntity<ErrorResponse> handleDiscodeitException(DiscodeitException exception) {
+        log.error("커스텀 예외 발생: code={}, message={}", exception.getErrorCode(), exception.getMessage(), exception);
+        HttpStatus status = determineHttpStatus(exception);
+        ErrorResponse response = new ErrorResponse(exception, status.value());
+        return ResponseEntity
+            .status(status)
+            .body(response);
+    }
+
+    private HttpStatus determineHttpStatus(DiscodeitException exception) {
+        ErrorCode errorCode = exception.getErrorCode();
+        return switch (errorCode) {
+            case USER_NOT_FOUND, CHANNEL_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case DUPLICATE_USER -> HttpStatus.CONFLICT;
+            case PRIVATE_CHANNEL_UPDATE -> HttpStatus.BAD_REQUEST;
+        };
+    }
 }
