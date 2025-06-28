@@ -1,42 +1,63 @@
+# 기본 활성 프로파일
+spring:
+  profiles:
+    active: dev
+  application:
+    name: discodeit
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
+
 discodeit:
   storage:
     type: local
     local:
       root-path: .discodeit/storage
-  repository:
-    #    type: file # jcf | file
-    file-directory: .discodeit
 
-server:
-  port: 8080
-logging:
-  level:
-    root: INFO
-    org.hibernate.sql: debug
-    org.hibernate.jdbc.bind: trace
+# Spring Boot Actuator 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers  # 엔드포인트 노출
+      base-path: /actuator  # Actuator 엔드포인트 기본 경로
+  endpoint:
+    health:
+      show-details: always      # 건강 상태 상세 정보 표시
+      show-components: always   # 컴포넌트별 상태 정보 표시
+    info:
+      enabled: true             # info 엔드포인트 명시적 활성화
+    loggers:
+      access: unrestricted
+  # info 추가설정
+  info:
+    os:
+      enabled: true
+    java:
+      enabled: true
+    env:
+      enabled: true
 
-# DB
-spring:
+# 애플리케이션 정보 (Actuator info 엔드포인트용)
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+    encoding: UTF-8
+    java:
+      version: 17
+    spring:
+      version: 3.4.0
   datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit
-    username: discodeit_user
-    password: discodeit1234
-    driver-class-name: org.postgresql.Driver
-    # PostgreSQL createClob() 경고 메시지 제거
-    hikari:
-      connection-init-sql: SET SESSION hibernate.jdbc.lob.non_contextual_creation=true
+    url: ${spring.datasource.url}
+    driver-class-name: ${spring.datasource.driver-class-name}
   jpa:
-    generate-ddl: false
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    properties:
-      hibernate:
-        format_sql: true
-        highlight_sql: true
-        use_sql_comments: false
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        show_sql: true
-    # OSIV 비활성화
-    open-in-view: false
-
-
+    ddl-auto: ${spring.jpa.hibernate.ddl-auto}
+  storage:
+    type: ${discodeit.storage.type}
+    path: ${discodeit.storage.local.root-path}
+  multipart:
+    max-file-size: ${spring.servlet.multipart.max-file-size}
+    max-request-size: ${spring.servlet.multipart.max-request-size}

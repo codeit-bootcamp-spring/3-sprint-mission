@@ -40,7 +40,6 @@ public class ChannelMapper {
                     .stream()
                     .map(rs -> userMapper.toDto(rs.getUser()))
                     .toList();
-
         }
 
         return new ChannelDto(

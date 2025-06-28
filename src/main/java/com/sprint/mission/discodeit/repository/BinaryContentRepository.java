@@ -12,9 +12,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BinaryContentRepository extends JpaRepository<BinaryContent, UUID> {
 
-    List<BinaryContent> findAllByIdIn(Collection<UUID> ids);
-
-    Optional<BinaryContent> findById(UUID id);
-
-    void deleteAllByIdIn(Collection<UUID> ids);
 }
