@@ -1,12 +1,10 @@
 spring:
   application:
     name: discodeit
-
   servlet:
     multipart:
       maxFileSize: 10MB
       maxRequestSize: 30MB
-
   jpa:
     show-sql: true
     open-in-view: false
@@ -22,11 +20,46 @@ logging:
     org.hibernate.SQL: info
     org.hibernate.orm.jdbc.bind: trace
 
-server:
-  port: 8080
-
 discodeit:
   storage:
     type: local
     local:
       root-path: /path/to/storage/root
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - metrics
+          - loggers
+          - env
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+  java:
+    version: ${java.version}
+  spring-boot:
+    version: 3.4.4
+  datasource:
+    url: ${spring.datasource.url}
+    driver: ${spring.datasource.driver-class-name}
+  jpa:
+    ddl-auto: ${spring.jpa.properties.hibernate.ddl-auto}
+  storage:
+    type: ${discodeit.storage.type}
+    path: ${discodeit.storage.local.root-path}
+  multipart:
+    max-file-size: ${spring.servlet.multipart.maxFileSize}
+    max-request-size: ${spring.servlet.multipart.maxRequestSize}

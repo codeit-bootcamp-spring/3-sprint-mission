@@ -25,6 +25,7 @@ logging:
   level:
     org.hibernate.SQL: info
     org.hibernate.orm.jdbc.bin  d: trace
+    org.springframework.boot.context.config: DEBUG
 
 server:
   port: 8080
