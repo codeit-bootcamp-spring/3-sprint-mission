@@ -11,10 +11,10 @@ DROP TABLE IF EXISTS message_attachments CASCADE;
 CREATE TABLE binary_contents
 (
     id           uuid PRIMARY KEY,
-    created_at   timestamptz  NOT NULL,
-    file_name    varchar(255) NOT NULL,
-    size         bigint       NOT NULL,
-    content_type varchar(100) NOT NULL,
+    created_at   timestamp with time zone NOT NULL,
+    file_name    varchar(255)             NOT NULL,
+    size         bigint                   NOT NULL,
+    content_type varchar(100)             NOT NULL,
     bytes        bytea
 );
 
@@ -22,11 +22,11 @@ CREATE TABLE binary_contents
 CREATE TABLE users
 (
     id         uuid PRIMARY KEY,
-    created_at timestamptz         NOT NULL,
-    updated_at timestamptz,
-    username   varchar(50) UNIQUE  NOT NULL,
-    email      varchar(100) UNIQUE NOT NULL,
-    password   varchar(60)         NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
+    username   varchar(50) UNIQUE       NOT NULL,
+    email      varchar(100) UNIQUE      NOT NULL,
+    password   varchar(60)              NOT NULL,
     profile_id uuid,
     CONSTRAINT fk_users_profile FOREIGN KEY (profile_id)
         REFERENCES binary_contents (id) ON DELETE SET NULL
@@ -36,10 +36,10 @@ CREATE TABLE users
 CREATE TABLE user_statuses
 (
     id             uuid PRIMARY KEY,
-    created_at     timestamptz NOT NULL,
-    updated_at     timestamptz,
-    user_id        uuid UNIQUE NOT NULL,
-    last_active_at timestamptz NOT NULL,
+    created_at     timestamp with time zone NOT NULL,
+    updated_at     timestamp with time zone,
+    user_id        uuid UNIQUE              NOT NULL,
+    last_active_at timestamp with time zone NOT NULL,
     CONSTRAINT fk_user_status_user FOREIGN KEY (user_id)
         REFERENCES users (id) ON DELETE CASCADE
 );
@@ -48,21 +48,21 @@ CREATE TABLE user_statuses
 CREATE TABLE channels
 (
     id          uuid PRIMARY KEY,
-    created_at  timestamptz NOT NULL,
-    updated_at  timestamptz,
+    created_at  timestamp with time zone NOT NULL,
+    updated_at  timestamp with time zone,
     name        varchar(100),
     description varchar(500),
-    type        varchar(10) NOT NULL CHECK ( type IN ('PUBLIC', 'PRIVATE') )
+    type        varchar(10)              NOT NULL CHECK ( type IN ('PUBLIC', 'PRIVATE') )
 );
 
 -- messages
 CREATE TABLE messages
 (
     id         uuid PRIMARY KEY,
-    created_at timestamptz NOT NULL,
-    updated_at timestamptz,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
     content    text,
-    channel_id uuid        NOT NULL,
+    channel_id uuid                     NOT NULL,
     author_id  uuid, -- 유저가 사라져도 메세지는 남기겠다는 의미
     CONSTRAINT fk_messages_channel FOREIGN KEY (channel_id)
         REFERENCES channels (id) ON DELETE CASCADE,
@@ -74,11 +74,11 @@ CREATE TABLE messages
 CREATE TABLE read_statuses
 (
     id           uuid PRIMARY KEY,
-    created_at   timestamptz NOT NULL,
-    updated_at   timestamptz,
+    created_at   timestamp with time zone NOT NULL,
+    updated_at   timestamp with time zone,
     user_id      uuid,
     channel_id   uuid,
-    last_read_at timestamptz NOT NULL,
+    last_read_at timestamp with time zone NOT NULL,
     CONSTRAINT uk_read_status UNIQUE (user_id, channel_id),
     CONSTRAINT fk_read_user FOREIGN KEY (user_id)
         REFERENCES users (id) ON DELETE CASCADE,
