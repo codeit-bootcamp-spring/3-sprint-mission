@@ -16,7 +16,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     Slice<Message> findAllByChannelId(UUID channelId, Pageable pageable);
 
-    @Query("SELECT m FROM message m " +
+    @Query("SELECT m FROM Message m " +
             // message 엔티티를 조회하라 (별칭 m 사용)
 
             "LEFT JOIN FETCH m.author a " +

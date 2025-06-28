@@ -12,8 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
-@Entity(name = "channel")
-@Table(name = "tbl_channels", schema = "discodeit")
+@Entity
+@Table(name = "tbl_channels")
 @NoArgsConstructor
 @Getter
 @DynamicUpdate

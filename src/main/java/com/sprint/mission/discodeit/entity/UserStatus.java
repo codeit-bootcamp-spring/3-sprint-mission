@@ -10,8 +10,8 @@ import org.hibernate.annotations.DynamicUpdate;
 import java.time.Duration;
 import java.time.Instant;
 
-@Entity(name = "user_status")
-@Table(name = "tbl_user_statuses", schema = "discodeit")
+@Entity
+@Table(name = "tbl_user_statuses")
 @NoArgsConstructor
 @Getter
 @DynamicUpdate

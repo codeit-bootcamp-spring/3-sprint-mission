@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicUpdate;
 
-@Entity(name = "user")
-@Table(name = "tbl_users", schema = "discodeit")
+@Entity
+@Table(name = "tbl_users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicUpdate

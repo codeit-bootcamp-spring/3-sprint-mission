@@ -10,8 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
-@Entity(name = "binary_content")
-@Table(name = "tbl_binary_contents", schema = "discodeit")
+@Entity
+@Table(name = "tbl_binary_contents")
 @NoArgsConstructor
 @Getter
 @DynamicUpdate

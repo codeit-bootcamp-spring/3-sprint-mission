@@ -45,6 +45,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.mapstruct/mapstruct-processor
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
+    runtimeOnly 'com.h2database:h2'
     testImplementation 'com.h2database:h2'
 }
 

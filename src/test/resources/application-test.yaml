@@ -1,38 +1,37 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false;INIT=CREATE SCHEMA IF NOT EXISTS discodeit
     driver-class-name: org.h2.Driver
     username: sa
     password:
+
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create-drop # 테스트 실행 시 스키마 새로 생성
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: discodeit
+    open-in-view: false
+    defer-datasource-initialization: true
 
-  # H2 콘솔 설정 (테스트 디버깅용)
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-
-  # 테스트용 SQL 초기화 설정
   sql:
     init:
-      mode: never
+      mode: never # schema.sql, data.sql 등을 자동 실행하지 않음
 
-# 테스트용 로깅 설정
+  h2:
+    console:
+      enabled: true # 필요 시 http://localhost:/h2-console 에서 확인 가능
+
 logging:
   level:
-    com.sprint.mission.discodeit: DEBUG  # 테스트 대상 패키지는 DEBUG 레벨
-    org.springframework.test: INFO     # Spring 테스트 프레임워크 로그
-    org.springframework.web: DEBUG     # 웹 계층 디버깅 (Section 01용)
-    org.hibernate.SQL: DEBUG          # SQL 쿼리 로그 (Section 03용)
-    org.junit: INFO                    # JUnit 프레임워크 로그
-discodeit:
-  storage:
-    type: local
-    local:
-      root-path: ./build/test-storage
+    root: info
+    org.hibernate.SQL: debug # 실행되는 SQL 확인
+    org.hibernate.type.descriptor.sql.BasicBinder: trace # 바인딩 파라미터 확인
+
+server:
+  port: 0 # 랜덤 포트 사용 (보통 @SpringBootTest(webEnvironment = RANDOM_PORT) 대비)

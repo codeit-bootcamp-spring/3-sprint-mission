@@ -21,8 +21,8 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-@Entity(name = "message")
-@Table(name = "tbl_messages", schema = "discodeit")
+@Entity
+@Table(name = "tbl_messages")
 @Getter
 @NoArgsConstructor
 @DynamicUpdate
