@@ -1,7 +1,8 @@
 package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
-import com.sprint.mission.discodeit.exception.CustomException;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.exception.binarycontent.FileUploadFailedException;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,7 +53,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
       log.debug("파일 저장 완료: {} ({}bytes)", filePath.toAbsolutePath(), bytes.length);
       return id;
     } catch (IOException e) {
-      throw new CustomException.BinaryContentNotFoundException("파일 저장 실패: " + e.getMessage());
+      throw FileUploadFailedException.withCause(e);
     }
   }
 
@@ -61,11 +62,11 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     try {
       Path filePath = resolvePath(id);
       if (!Files.exists(filePath)) {
-        throw new CustomException.BinaryContentNotFoundException("파일이 존재하지 않습니다: " + id);
+        throw BinaryContentNotFoundException.withBinaryContentId(id);
       }
       return Files.newInputStream(filePath);
     } catch (IOException e) {
-      throw new CustomException.BinaryContentNotFoundException("파일 읽기 실패: " + e.getMessage());
+      throw BinaryContentNotFoundException.withBinaryContentId(id);
     }
   }
 
@@ -84,7 +85,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
           .headers(headers)
           .body(resource);
     } catch (Exception e) {
-      throw new CustomException.BinaryContentNotFoundException("파일 다운로드 실패: " + e.getMessage());
+      throw BinaryContentNotFoundException.of();
     }
   }
 

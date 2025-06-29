@@ -9,7 +9,10 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
-import com.sprint.mission.discodeit.exception.CustomException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.readstatus.DuplicateReadStatusException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,17 +38,15 @@ public class BasicReadStatusService implements ReadStatusService {
     // N+1 문제 해결: 효율적인 쿼리로 중복 체크
     boolean alreadyExists = readStatusRepository.existsByUserIdAndChannelId(userId, channelId);
     if (alreadyExists) {
-      throw new CustomException.DuplicateReadStatusException(
-          "ReadStatus with userId " + userId + " and channelId " + channelId + " already exists");
+      throw DuplicateReadStatusException.withUserIdAndChannelId(userId, channelId);
     }
 
     // 연관 엔티티들을 로드
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new CustomException.UserNotFoundException("User with id " + userId + " does not exist"));
+        .orElseThrow(() -> UserNotFoundException.withUserId(userId));
 
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(
-            () -> new CustomException.ChannelNotFoundException("Channel with id " + channelId + " does not exist"));
+        .orElseThrow(() -> ChannelNotFoundException.withChannelId(channelId));
 
     Instant lastReadAt = request.lastReadAt();
     // 엔티티 연관관계를 활용한 ReadStatus 생성
@@ -59,8 +60,7 @@ public class BasicReadStatusService implements ReadStatusService {
   public ReadStatus find(UUID readStatusId) {
     // N+1 문제 해결: 연관 엔티티를 Fetch Join으로 한 번에 조회
     return readStatusRepository.findByIdWithUserAndChannel(readStatusId)
-        .orElseThrow(
-            () -> new CustomException.ReadStatusNotFoundException("ReadStatus with id " + readStatusId + " not found"));
+        .orElseThrow(() -> ReadStatusNotFoundException.withReadStatusId(readStatusId));
   }
 
   @Override
@@ -76,8 +76,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
     // N+1 문제 해결: 연관 엔티티를 Fetch Join으로 한 번에 조회
     ReadStatus readStatus = readStatusRepository.findByIdWithUserAndChannel(readStatusId)
-        .orElseThrow(
-            () -> new CustomException.ReadStatusNotFoundException("ReadStatus with id " + readStatusId + " not found"));
+        .orElseThrow(() -> ReadStatusNotFoundException.withReadStatusId(readStatusId));
 
     // 변경 감지(Dirty Checking) 활용 - save() 호출 불필요
     readStatus.update(newLastReadAt);
@@ -89,8 +88,7 @@ public class BasicReadStatusService implements ReadStatusService {
   public void delete(UUID readStatusId) {
     // N+1 문제 해결: 연관 엔티티를 Fetch Join으로 한 번에 조회
     ReadStatus readStatus = readStatusRepository.findByIdWithUserAndChannel(readStatusId)
-        .orElseThrow(
-            () -> new CustomException.ReadStatusNotFoundException("ReadStatus with id " + readStatusId + " not found"));
+        .orElseThrow(() -> ReadStatusNotFoundException.withReadStatusId(readStatusId));
 
     readStatusRepository.delete(readStatus);
   }
