@@ -7,6 +7,10 @@ spring:
     hikari:
       maximum-pool-size: 4
       connection-init-sql: SET TIME ZONE 'Asia/Seoul'
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
 
   jpa:
     hibernate:

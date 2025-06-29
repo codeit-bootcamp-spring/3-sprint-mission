@@ -3,6 +3,11 @@ spring:
     name: discodeit
   profiles:
     active: dev
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
 
   servlet:
     multipart:
