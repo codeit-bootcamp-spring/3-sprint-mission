@@ -6,11 +6,11 @@
 
     <!-- 콘솔 출력 패턴 설정 -->
     <property name="CONSOLE_LOG_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %yellow(%logger{36}) - [traceId=%X{traceId:-N/A}, uri=%X{requestURI:-N/A}, ip=%X{remoteAddr:-N/A}] %highlight(%msg%n)"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %yellow(%logger{36}) - [traceId=%X{traceId:-N/A}, url=%X{url:-N/A}, method=%X{method:-N/A}] %highlight(%msg%n)"/>
 
     <!-- 파일 출력 패턴 설정 -->
     <property name="FILE_LOG_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - [traceId=%X{traceId:-N/A}, uri=%X{requestURI:-N/A}, ip=%X{remoteAddr:-N/A}] %msg%n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - [traceId=%X{traceId:-N/A}, url=%X{url:-N/A}, method=%X{method:-N/A}] %msg%n"/>
 
     <!-- 콘솔 Appender -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">

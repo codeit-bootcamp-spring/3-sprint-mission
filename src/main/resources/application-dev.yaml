@@ -3,6 +3,10 @@ server:
   address: 0.0.0.0
 
 spring:
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
   # H2 Console 활성화
   h2:
     console:

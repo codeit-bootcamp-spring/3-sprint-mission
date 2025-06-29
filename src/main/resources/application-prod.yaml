@@ -7,7 +7,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
 logging:
   level:
     root: info

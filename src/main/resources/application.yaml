@@ -66,6 +66,11 @@ spring:
         default_batch_fetch_size: 100
         default_schema: discodeit
     open-in-view: false
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
 
 logging:
   level:

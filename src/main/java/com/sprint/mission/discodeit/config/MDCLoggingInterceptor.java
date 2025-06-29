@@ -52,6 +52,7 @@ public class MDCLoggingInterceptor implements HandlerInterceptor {
                     MDC.put("traceId", traceId);
                     MDC.put("requestURI", request.getRequestURI());
                     MDC.put("method", request.getMethod());
+                    MDC.put("url", request.getRequestURL().toString());
                     MDC.put("remoteAddr", getClientIpAddress(request));
 
                     // 응답 헤더에 traceId 포함 – 클라이언트에서 요청 추적 가능
