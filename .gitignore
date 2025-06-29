@@ -44,3 +44,4 @@ out/
 
 /data/
 /src/main/resources/test.sql
+/.logs/

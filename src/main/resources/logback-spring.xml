@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <!-- 로그 저장 경로 설정 -->
+  <property name="LOG_PATH" value=".logs"/>
+
+  <!-- 로그 패턴 설정 -->
+  <property name="LOG_PATTERN"
+    value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %-36logger - %msg%n"/>
+
+  <!-- 콘솔 로그 설정 -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>${LOG_PATTERN}</pattern>
+    </encoder>
+  </appender>
+
+  <!-- 파일 로그 설정: 일자별 롤링 -->
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/discodeit.log</file>
+
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- 로그 파일 이름 형식 -->
+      <fileNamePattern>${LOG_PATH}/discodeit-%d{yyyy-MM-dd}.log</fileNamePattern>
+      <!-- 30일간 보관 -->
+      <maxHistory>30</maxHistory>
+      <!-- 로그 파일 보관 용량 (선택) -->
+      <totalSizeCap>1GB</totalSizeCap>
+    </rollingPolicy>
+
+    <encoder>
+      <pattern>${LOG_PATTERN}</pattern>
+    </encoder>
+  </appender>
+
+  <!-- 루트 로거: 콘솔 + 파일 모두 기록 -->
+  <root level="DEBUG">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="FILE"/>
+  </root>
+
+</configuration>
