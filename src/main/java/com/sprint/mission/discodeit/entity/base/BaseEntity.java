@@ -17,14 +17,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
-    // 직접 테이블로 매핑되지 않으며, 이를 상속받는 엔티티 클래스에 필드가 포함된다.
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "uuid", updatable = false, nullable = false) // id UUID NOT NULL
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 
     @CreatedDate
-    @Column(name = "created_at", nullable = false) // Java 필드명은 createdAt, DB 컬럼명은 created_at으로 매핑
+    @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 }

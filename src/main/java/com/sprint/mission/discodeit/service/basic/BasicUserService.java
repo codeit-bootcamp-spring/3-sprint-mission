@@ -66,12 +66,6 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public Optional<UserDto> find(UUID id) {
-        return userRepository.findById(id)
-            .map(userMapper::toDto);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<UserDto> findAll() {
         return userRepository.findAll().stream()

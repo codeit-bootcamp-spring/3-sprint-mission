@@ -27,25 +27,21 @@ public class Channel extends BaseUpdatableEntity {
     private String description;
 
     public Channel(ChannelType type, String name, String description) {
-        super();
         this.type = type;
         this.name = name;
         this.description = description;
     }
 
     public void update(String newName, String newDescription) {
-        boolean anyValueUpdated = false;
         if (newName != null && !newName.equals(this.name)) {
             this.name = newName;
-            anyValueUpdated = true;
         }
         if (newDescription != null && !newDescription.equals(this.description)) {
             this.description = newDescription;
-            anyValueUpdated = true;
         }
+    }
 
-        if (anyValueUpdated) {
-            update();
-        }
+    public boolean isPrivate() {
+        return ChannelType.PRIVATE.equals(this.type);
     }
 }

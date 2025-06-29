@@ -21,7 +21,6 @@ public abstract class BaseUpdatableEntity extends BaseEntity {
         super();
     }
 
-    //update 메소드
     public void update() {
         this.updatedAt = Instant.now();
     }

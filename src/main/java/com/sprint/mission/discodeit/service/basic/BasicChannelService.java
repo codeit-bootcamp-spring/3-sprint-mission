@@ -62,13 +62,6 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<ChannelDto> find(UUID channelId) {
-        return channelRepository.findById(channelId)
-            .map(channelMapper::toDto);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<ChannelDto> findAllByUserId(UUID userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
