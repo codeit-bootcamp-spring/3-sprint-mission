@@ -32,7 +32,7 @@ spring:
         instance:
           metadata:
             startup: true
-          service-url: http://127.0.0.1:8081/not-used
+          service-url: http://127.0.0.1:8081
           management-url: http://127.0.0.1:8081/actuator
           health-url: http://127.0.0.1:8081/actuator/health
 
