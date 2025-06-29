@@ -1,57 +1,41 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
-
+@Entity
+@Table(name = "channels")
 @Getter
-public class Channel implements Serializable {
-    @Serial
-    private static final long serialVersionUID = -7716860811813642738L;
-    private final UUID id;
-    private final Instant createdAt;
-    private Instant updatedAt;
-    //
-    private final ChannelType type;
-    private String name;
-    private String description;
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Channel extends BaseUpdatableEntity {
 
-    public Channel(ChannelType type, String name, String description) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        //
-        this.type = type;
-        this.name = name;
-        this.description = description;
-    }
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private ChannelType type;
+  @Column(length = 100)
+  private String name;
+  @Column(length = 500)
+  private String description;
 
-    public void update(String newName, String newDescription) {
-        boolean isupdated = false;
-        if (newName != null && !newName.equals(this.name)) {
-            this.name = newName;
-            isupdated = true;
-        }
-        if (newDescription != null && !newDescription.equals(this.description)) {
-            this.description = newDescription;
-            isupdated = true;
-        }
-        if (isupdated) {
-            this.updatedAt = Instant.now();
-        }
-    }
+  public Channel(ChannelType type, String name, String description) {
+    this.type = type;
+    this.name = name;
+    this.description = description;
+  }
 
-    @Override
-    public String toString() {
-        return "Channel{" +
-                "id=" + id +
-                ", type=" + type +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
+  public void update(String newName, String newDescription) {
+    if (newName != null && !newName.equals(this.name)) {
+      this.name = newName;
     }
+    if (newDescription != null && !newDescription.equals(this.description)) {
+      this.description = newDescription;
+    }
+  }
 }

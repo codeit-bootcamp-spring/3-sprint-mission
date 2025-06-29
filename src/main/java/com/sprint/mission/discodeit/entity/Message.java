@@ -1,57 +1,55 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-import lombok.Setter;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.Instant;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
+@Entity
+@Table(name = "messages")
 @Getter
-public class Message implements Serializable {
-    @Serial
-    private static final long serialVersionUID = -6322726657551422728L;
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Message extends BaseUpdatableEntity {
 
-    private final UUID id;
-    private final Instant createdAt;
-    private Instant updatedAt = null;
-    //
-    private String text;
-    private final UUID channelId;
-    private final UUID userId;
-    @Setter
-    private List<UUID> contentIds = null;
+  @Column(columnDefinition = "text", nullable = false)
+  private String content;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "channel_id", columnDefinition = "uuid")
+  private Channel channel;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "author_id", columnDefinition = "uuid")
+  private User author;
+  @BatchSize(size = 100)
+  @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
+  @JoinTable(
+      name = "message_attachments",
+      joinColumns = @JoinColumn(name = "message_id"),
+      inverseJoinColumns = @JoinColumn(name = "attachment_id")
+  )
+  private List<BinaryContent> attachments = new ArrayList<>();
 
+  public Message(String content, Channel channel, User author, List<BinaryContent> attachments) {
+    this.channel = channel;
+    this.content = content;
+    this.author = author;
+    this.attachments = attachments;
+  }
 
-    public Message(String text, UUID channelId, UUID userId) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        //
-        this.text = text;
-        this.channelId = channelId;
-        this.userId = userId;
+  public void update(String newContent) {
+    if (newContent != null && !newContent.equals(this.content)) {
+      this.content = newContent;
     }
-    public void update(String newText){
-        if (newText != null && !newText.equals(this.text)) {
-            this.text = newText;
-            if(updatedAt== null) {
-                this.text += "*** 수정됨 ***";
-            }
-            this.updatedAt = Instant.now();
-        }
-    }
-
-    @Override
-    public String toString() {
-        return "Message{" +
-                "id=" + id +
-                ", content='" + text + '\'' +
-                ", channelId=" + channelId +
-                ", authorId=" + userId +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
-    }
+  }
 }
