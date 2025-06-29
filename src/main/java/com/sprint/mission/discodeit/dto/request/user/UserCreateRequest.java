@@ -2,17 +2,10 @@ package com.sprint.mission.discodeit.dto.request.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import java.util.Objects;
 
 public record UserCreateRequest(
-    @NotBlank String username,
-    @NotBlank @Email String email,
-    @NotBlank String password
+    @NotBlank(message = "사용자명을 입력해주세요") String username,
+    @NotBlank(message = "이메일을 입력해주세요") @Email(message = "올바른 이메일 형식으로 입력해주세요") String email,
+    @NotBlank(message = "비밀번호를 입력해주세요") String password
 ) {
-
-    public UserCreateRequest {
-        Objects.requireNonNull(username, "username must not be null");
-        Objects.requireNonNull(email, "email must not be null");
-        Objects.requireNonNull(password, "password must not be null");
-    }
 }

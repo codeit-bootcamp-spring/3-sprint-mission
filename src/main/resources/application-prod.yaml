@@ -1,0 +1,32 @@
+server:
+  port: ${PORT:9090}
+  address: 0.0.0.0
+
+spring:
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: none
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+logging:
+  level:
+    root: info
+    # Hibernate 설정은 공통에 선언되어 유지됨 (SQL: debug, bind: trace)
+
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: ${user.dir}/data/discodeit/storage
+
+# application.yaml 설정값과 동일
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, loggers
+    server:
+      port: 8081
