@@ -10,8 +10,5 @@ import java.util.UUID;
 @Repository
 public interface UserStatusRepository extends JpaRepository<UserStatus, UUID> {
 
-    // 존재 여부
-    boolean existsById(UUID id);
-
     Optional<UserStatus> findUserStatusByUserId(UUID userId);
 }

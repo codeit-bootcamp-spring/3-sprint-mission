@@ -5,6 +5,8 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 .data
+.logs
+.binarycontents
 
 ### STS ###
 .apt_generated
@@ -36,3 +38,5 @@ out/
 
 ### VS Code ###
 .vscode/
+
+/src/main/generated/

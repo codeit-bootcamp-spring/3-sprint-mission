@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
 import com.sprint.mission.discodeit.dto.response.BinaryContentDto;
-import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
@@ -23,7 +22,6 @@ public class BinaryContentController implements BinaryContentApi {
 
     private final BinaryContentService binaryContentService;
     private final BinaryContentStorage binaryContentStorage;
-    BinaryContentMapper binaryContentMapper;
 
     // 단일 파일 조회
     @GetMapping("/{binaryContentId}")

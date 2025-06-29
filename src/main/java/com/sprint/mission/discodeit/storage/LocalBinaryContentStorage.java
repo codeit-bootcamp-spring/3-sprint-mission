@@ -2,20 +2,22 @@ package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.response.BinaryContentDto;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.NoSuchElementException;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 @ConditionalOnProperty(value = "discodeit.storage.type", havingValue = "local", matchIfMissing = false)
 @Component
@@ -24,21 +26,14 @@ public class LocalBinaryContentStorage implements BinaryContentStorage{
     private final Path root;
 
     public LocalBinaryContentStorage(
-            @Value("${discodeit.storage.local.root-path:data}") String localDirectory
+            @Value("${discodeit.storage.local.root-path:data}") Path root
     ) {
-        this.root = Paths.get(localDirectory);
+        this.root = root;
     }
 
-
-    private Path resolvePath(UUID id) {
-        String EXTENSION = ".ser";
-        return root.resolve(id + EXTENSION);
-    }
-
-    // 루트 디렉토리 초기화
     @PostConstruct
-    void init(){
-        if (Files.notExists(root)) {
+    public void init() {
+        if (!Files.exists(root)) {
             try {
                 Files.createDirectories(root);
             } catch (IOException e) {
@@ -47,15 +42,20 @@ public class LocalBinaryContentStorage implements BinaryContentStorage{
         }
     }
 
+    private Path resolvePath(UUID key) {
+        return root.resolve(key.toString());
+    }
 
     @Override
     public UUID put(UUID id, byte[] bytes) {
         Path path = resolvePath(id);
-        try(
-                FileOutputStream fos = new FileOutputStream(path.toFile());
-                ObjectOutputStream oos = new ObjectOutputStream(fos)
-                ){
-            oos.writeObject(bytes);
+
+        if (Files.exists(path)) {
+            throw new IllegalArgumentException(id + " 아이디를 가지는 파일이 이미 존재합니다.");
+        }
+
+        try(OutputStream outputStream = Files.newOutputStream(path)){
+            outputStream.write(bytes);
         }catch (IOException e){
             throw new RuntimeException("바이트 파일 저장 중 오류 발생", e);
         }
@@ -67,8 +67,11 @@ public class LocalBinaryContentStorage implements BinaryContentStorage{
     public InputStream get(UUID id) {
         Path path = resolvePath(id);
 
+        if (Files.notExists(path)) {
+            throw new NoSuchElementException(id + ", 파일을 찾을 수 없습니다.");
+        }
         try {
-            return new FileInputStream(path.toFile());
+            return Files.newInputStream(path);
         }catch (IOException e){
             throw new RuntimeException("바이트 파일 읽기 중 오류 발생", e);
         }
@@ -77,16 +80,15 @@ public class LocalBinaryContentStorage implements BinaryContentStorage{
 
     @Override
     public ResponseEntity<Resource> download(BinaryContentDto binaryContentDto) {
-        HttpHeaders header = new HttpHeaders();
-        header.add(HttpHeaders.CONTENT_DISPOSITION, "attchment; filename=\"" + binaryContentDto.fileName() + "\"");
-
         InputStream inputStream = get(binaryContentDto.id()); // 예외를 상위로 던짐
         InputStreamResource resource = new InputStreamResource(inputStream);
 
-        return ResponseEntity.ok()
-                .headers(header)
-                .contentType(MediaType.parseMediaType(binaryContentDto.contentType()))
-                .body(resource);
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attchment; filename=\"" + binaryContentDto.fileName() + "\"")
+            .header(HttpHeaders.CONTENT_TYPE, binaryContentDto.contentType())
+            .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(binaryContentDto.size()))
+            .body(resource);
     }
 
 

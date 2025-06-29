@@ -8,20 +8,20 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import java.util.List;
+import java.util.UUID;
+import java.util.logging.Logger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
-import java.util.logging.Logger;
 
 @RequiredArgsConstructor
 @Service
@@ -41,21 +41,13 @@ public class BasicChannelService implements ChannelService {
     @Transactional
     public ChannelDto createPublicChannel(PublicChannelCreateRequest request) {
 
-        logger.info("공개 채널 생성 메서드 진입");
-
         Channel channel = new Channel(
                 request.name(),
                 ChannelType.PUBLIC,
                 request.description()
         );
 
-        if (channelRepository.existsByName(request.name())) {
-            throw new IllegalArgumentException("ChannelService: 채널 이름이 이미 존재합니다.");
-        }
         channelRepository.save(channel);
-
-        logger.info("공개 채널 생성하고 저장함");
-        logger.info("이제 Mapper.toDto로 반환할거임");
         return channelMapper.toDto(channel);
     }
 
@@ -69,12 +61,11 @@ public class BasicChannelService implements ChannelService {
                 ChannelType.PRIVATE,
                 null
         );
+        channelRepository.save(channel);
 
         request.participantIds().stream()
                 .map(userId -> new ReadStatus(userRepository.findById(userId).get(), channel, channel.getCreatedAt()))
-                .forEach(readStatusRepository::save
-                );
-        channelRepository.save(channel);
+                .forEach(readStatusRepository::save);
 
         return channelMapper.toDto(channel);
     }
@@ -102,9 +93,9 @@ public class BasicChannelService implements ChannelService {
     @Transactional(readOnly = true)
     public ChannelDto find(UUID channelId) {
         return channelRepository.findById(channelId)
-            .map(channelMapper::toDto)
-            .orElseThrow(
-                    () -> new NoSuchElementException("해당 채널이 없습니다."));
+                .map(channelMapper::toDto)
+                .orElseThrow(
+                        () -> new ChannelNotFoundException(channelId));
     }
 
     // 채널 이름 수정
@@ -113,10 +104,10 @@ public class BasicChannelService implements ChannelService {
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
 
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다."));
+                .orElseThrow(() -> new ChannelNotFoundException(channelId));
 
         if (channel.getType().equals(ChannelType.PRIVATE)) {
-            throw new IllegalArgumentException("비공개 채널은 수정할 수 없습니다.");
+            throw new PrivateChannelUpdateException(channelId);
         }
 
         channel.updateChannelName(request.newName());
@@ -132,14 +123,13 @@ public class BasicChannelService implements ChannelService {
     public void delete(UUID channelId) {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(
-                        () -> new NoSuchElementException("해당하는 채널이 없습니다."));
+                        () -> new ChannelNotFoundException(channelId));
 
         List<Message> messages = messageRepository.findAllByChannelId(channelId);
         messageRepository.deleteAll(messages);
 
         List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelId(channelId);
         readStatusRepository.deleteAll(readStatuses);
-
 
         channelRepository.deleteById(channelId);
         logger.info("ChannelService: 채널이 삭제되었습니다.");

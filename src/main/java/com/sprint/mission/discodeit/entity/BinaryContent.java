@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Getter
 public class BinaryContent extends BaseEntity {
 
-    @Column(name = "filename", nullable = false)
+    @Column(name = "file_name", nullable = false)
     private String fileName;
 
     @Column(name = "size", nullable = false)

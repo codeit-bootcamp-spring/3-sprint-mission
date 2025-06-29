@@ -1,38 +1,61 @@
 spring:
   application:
     name: discodeit
-  servlet:
-    multipart:
-      maxFileSize: 10MB # 파일 하나의 최대 크기
-      maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
 
-  datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit
-    username: discodeit_user
-    password: discodeit1234
-    driver-class-name: org.postgresql.Driver
 
-    hikari:
-      connection-init-sql: SET SESSION hibernate.jdbc.lob.non_contextual_creation=true
+
+  profiles:
+    active: dev
 
   jpa:
     generate-ddl: false
     database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+#    database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
         format_sql: true
-        highlight_sql: true
         use_sql_comments: true
+    open-in-view: false
+
+management:
+  endpoints:
+    web:
+      base-path: /discodeit/monitor
+      exposure:
+        include: health, info, metrics, loggers
+  endpoint:
+    info:
+      cache:
+        time-to-live: 60s  # 60초간 info를 메모리에 저장
+    health:
+      show-details: always      # 건강 상태 상세 정보 표시
+
+  # Actuator info 엔드포인트 설정
+  info:
+    env:
+      enabled: true             # 환경 변수 정보 포함
+    java:
+      enabled: false             # Java 정보 포함
+    os:
+      enabled: false             # OS 정보 포함
 
 
-# logging.level.org.hibernate.orm.jdbc.bind:
-# PreparedStatement내 ?(place holder)에
-#실제 런타임 시 어떤 값이 바인딩 되는지 로그를 작성해주는 설정
+info:
+  app:
+    name: "Discodeit"
+    version: "1.7.0"
+    java:
+      version: "17"
+  test:
+    status: "working"
+    environment: "test"
+
+# 공통 로깅 설정
 logging:
   level:
-    org.hibernate.SQL: debug
-    org.hibernate.orm.jdbc.bind: trace
+    root: info
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"
 
 discodeit:
   storage:

@@ -3,47 +3,46 @@ package com.sprint.mission.discodeit.mapper;
 import com.sprint.mission.discodeit.dto.response.ChannelDto;
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@RequiredArgsConstructor
-@Component
-//@RequiredArgsConstructor
-public class ChannelMapper {
+@Mapper(componentModel = "spring", uses = {UserMapper.class})
+public abstract class ChannelMapper {
 
-    private final MessageRepository messageRepository;
-    private final ReadStatusRepository readStatusRepository;
-    private final UserMapper userMapper;
-    private static final Logger logger = Logger.getLogger(ChannelMapper.class.getName()); // 필드로 Logger 선언
+    @Autowired
+    private MessageRepository messageRepository;
+    @Autowired
+    private ReadStatusRepository readStatusRepository;
+    @Autowired
+    private UserMapper userMapper;
 
-    public ChannelDto toDto(Channel channel){
-        logger.info("채널 매퍼 진입");
+    @Mapping(target = "participants", expression = "java(resolveParticipants(channel))")
+    @Mapping(target = "lastMessageAt", expression = "java(resolveLastMessageAt(channel))")
+    abstract public ChannelDto toDto(Channel channel);
 
-        List<UserDto> participants = readStatusRepository.findAllByChannelId(channel.getId()).stream()
+    protected Instant resolveLastMessageAt(Channel channel) {
+        return messageRepository.findLastMessageAtByChannelId(
+                channel.getId())
+            .orElse(Instant.MIN);
+    }
+
+    protected List<UserDto> resolveParticipants(Channel channel) {
+        List<UserDto> participants = new ArrayList<>();
+        if (channel.getType().equals(ChannelType.PRIVATE)) {
+            readStatusRepository.findAllByChannelIdWithUser(channel.getId())
+                .stream()
                 .map(ReadStatus::getUser)
                 .map(userMapper::toDto)
-                .toList();
-        logger.info("유저 매퍼 이용해서 참여자 조회");
-
-        Instant lastMessageAt = messageRepository.findFirstByChannelOrderByCreatedAtDesc(channel).stream()
-                .map(Message::getCreatedAt)
-                .findFirst().orElse(null);
-        logger.info("메시지 레포지토리 이용해서 마지막 메시지 전송 시간 조회");
-
-        return new ChannelDto(
-                channel.getId(),
-                channel.getType(),
-                channel.getName(),
-                channel.getDescription(),
-                participants,
-                lastMessageAt
-        );
+                .forEach(participants::add);
+        }
+        return participants;
     }
 }

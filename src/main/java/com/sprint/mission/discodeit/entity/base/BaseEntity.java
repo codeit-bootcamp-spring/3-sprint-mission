@@ -15,6 +15,7 @@ public abstract class BaseEntity {
 
     @Id
     @GeneratedValue
+    @Column(nullable = false, updatable = false)
     private UUID id;
 
     @CreatedDate
