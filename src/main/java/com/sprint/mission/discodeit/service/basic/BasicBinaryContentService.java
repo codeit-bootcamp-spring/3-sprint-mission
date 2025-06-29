@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -49,8 +50,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         log.info("File fetch: id={}", binaryContentId);
         return binaryContentRepository.findById(binaryContentId)
             .map(binaryContentMapper::toDto)
-            .orElseThrow(() -> new NoSuchElementException(
-                "BinaryContent with id " + binaryContentId + " not found"));
+            .orElseThrow(() -> new BinaryContentNotFoundException(binaryContentId));
     }
 
     @Override
@@ -65,7 +65,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     public void delete(UUID binaryContentId) {
         log.info("File delete: id={}", binaryContentId);
         if (!binaryContentRepository.existsById(binaryContentId)) {
-            throw new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found");
+            throw new BinaryContentNotFoundException(binaryContentId);
         }
         binaryContentRepository.deleteById(binaryContentId);
     }
