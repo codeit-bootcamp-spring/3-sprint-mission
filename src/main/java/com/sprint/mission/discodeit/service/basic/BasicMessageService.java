@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.common.ErrorMessages;
 import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
@@ -10,6 +9,10 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageEmptyException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -18,19 +21,16 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -49,28 +49,25 @@ public class BasicMessageService implements MessageService {
     @Override
     @Transactional
     public MessageDto create(MessageCreateRequest request,
-                             List<BinaryContentCreateRequest> attachmentRequests) {
+        List<BinaryContentCreateRequest> attachmentRequests) {
+        UUID authorId = request.authorId();
+        UUID channelId = request.channelId();
+        log.info("[message] 생성 요청: authorId={}, channelId={}", authorId, channelId);
 
-        User author = userRepository.findById(request.authorId())
-            .orElseThrow(() -> new NoSuchElementException(
-                ErrorMessages.format("User", ErrorMessages.ERROR_NOT_FOUND))
-            );
-        Channel channel = channelRepository.findById(request.channelId())
-            .orElseThrow(() -> new NoSuchElementException(
-                ErrorMessages.format("Channel", ErrorMessages.ERROR_NOT_FOUND))
-            );
+        User author = userRepository.findById(authorId)
+            .orElseThrow(() -> {
+                log.warn("[message] 생성 실패 - 존재하지 않는 userId: userId={}", authorId);
+                return new UserNotFoundException(authorId);
+            });
 
-        List<BinaryContent> attachments = attachmentRequests == null ? List.of() :
-            attachmentRequests.stream()
-                .map(req -> {
-                    BinaryContent binaryContent = new BinaryContent(req.fileName(),
-                        (long) req.bytes().length,
-                        req.contentType());
-                    BinaryContent savedAttachment = binaryContentRepository.save(binaryContent);
-                    binaryContentStorage.put(savedAttachment.getId(), req.bytes());
-                    return savedAttachment;
-                })
-                .toList();
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(() -> {
+                log.warn("[message] 생성 실패 - 존재하지 않는 channelId: channelId={}",
+                    channelId);
+                return new ChannelNotFoundException(channelId);
+            });
+
+        List<BinaryContent> attachments = createAttachment(attachmentRequests);
 
         Message message = new Message(
             request.content(),
@@ -79,58 +76,114 @@ public class BasicMessageService implements MessageService {
             attachments
         );
 
-        message.validateContent(attachments);
-        Message savedMessage = messageRepository.save(message);
-
-        return messageMapper.toDto(savedMessage);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public MessageDto find(UUID id) {
-        Message message = messageRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException(
-                ErrorMessages.format("Message", ErrorMessages.ERROR_NOT_FOUND)
-            ));
+        validateContent(request.content(), attachments);
+        messageRepository.save(message);
+        log.info("[message] 생성 완료: messageId={}, authorId={}, channelId={}",
+            message.getId(), authorId, channelId);
 
         return messageMapper.toDto(message);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor,
-                                                       Pageable pageable) {
-        int pageSize = (pageable != null && pageable.isPaged()) ? pageable.getPageSize() : 50;
+    public MessageDto find(UUID id) {
+        log.info("[message] 조회 요청: id={}", id);
 
-        PageRequest pageRequest = PageRequest.of(0, pageSize + 1,
-            Sort.by("createdAt").descending());
+        return messageRepository.findById(id)
+            .map(messageMapper::toDto)
+            .orElseThrow(() -> {
+                log.warn("[message] 조회 실패 - 존재하지 않는 id: id={}", id);
+                return new MessageNotFoundException(id);
+            });
+    }
 
-        Slice<Message> messageSlice = (cursor != null)
-            ? messageRepository.findAllByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(
-            channelId, cursor, pageRequest)
-            : messageRepository.findAllByChannelIdOrderByCreatedAtDesc(channelId, pageRequest);
+    @Transactional(readOnly = true)
+    @Override
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createAt,
+        Pageable pageable) {
+        Slice<MessageDto> slice = messageRepository.findByChannelIdAndCreatedAtLessThan(channelId,
+                Optional.ofNullable(createAt).orElse(Instant.now()), pageable)
+            .map(messageMapper::toDto);
 
-        return pageResponseMapper.fromSlice(messageSlice.map(messageMapper::toDto));
+        log.info("[message] 전체 조회 요청: channelId={}, size={}", channelId, slice.getContent().size());
+        log.debug("[message] Slice 정보: {}", slice);
+
+        Instant nextCursor = null;
+        if (slice.hasContent()) {
+            nextCursor = slice.getContent().get(slice.getContent().size() - 1)
+                .createdAt();
+        }
+
+        log.info("[message] 전체 조회 응답: channelId={}, 결과 개수={}, nextCursor={}",
+            channelId, slice.getContent().size(), nextCursor);
+        return pageResponseMapper.fromSlice(slice, nextCursor);
     }
 
     @Override
     @Transactional
     public MessageDto update(UUID messageId, MessageUpdateRequest request) {
         String newContent = request.newContent();
+        log.info("[message] 수정 요청: messageId={}, newContent={}", messageId, request.newContent());
+
         Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> new NoSuchElementException(
-                ErrorMessages.format("Message", ErrorMessages.ERROR_NOT_FOUND)));
+            .orElseThrow(() -> {
+                log.warn("[message] 수정 실패 - 존재하지 않는 id: id={}", messageId);
+                return new MessageNotFoundException(messageId);
+            });
 
         message.update(newContent);
+        log.info("[message] 수정 완료: messageId={}, newContent={}", messageId, request.newContent());
+
         return messageMapper.toDto(message);
     }
 
     @Transactional
     @Override
     public void delete(UUID messageId) {
-        messageRepository.findById(messageId).orElseThrow(() -> new NoSuchElementException(
-            ErrorMessages.format("Message", ErrorMessages.ERROR_NOT_FOUND)));
+        if (!messageRepository.existsById(messageId)) {
+            log.warn("[message] 삭제 실패 - 존재하지 않는 id: id={}", messageId);
+            throw new MessageNotFoundException(messageId);
+        }
 
         messageRepository.deleteById(messageId);
+        log.info("[message] 삭제 완료: id={}", messageId);
+    }
+
+    /**
+     * 첨부파일 생성 메서드
+     */
+    private List<BinaryContent> createAttachment(
+        List<BinaryContentCreateRequest> attachmentRequests) {
+        List<BinaryContent> attachments = attachmentRequests == null ? List.of() :
+            attachmentRequests.stream()
+                .map(
+                    req -> {
+                        BinaryContent binaryContent = new BinaryContent(
+                            req.fileName(),
+                            (long) req.bytes().length,
+                            req.contentType());
+                        BinaryContent savedAttachment = binaryContentRepository.save(binaryContent);
+                        binaryContentStorage.put(savedAttachment.getId(), req.bytes());
+                        return savedAttachment;
+                    })
+                .toList();
+        log.debug("[message] 첨부파일 요청 수: {}",
+            attachmentRequests != null ? attachmentRequests.size() : 0);
+
+        return attachments;
+    }
+
+    /**
+     * 엔티티에 있던 검증 로직 서비스로 이동
+     * <p>
+     * 메시지의 내용과 첨부파일이 없으면 예외를 던짐
+     */
+    private void validateContent(String content, List<BinaryContent> attachments) {
+        boolean isContentEmpty = (content == null || content.trim().isEmpty());
+        boolean hasNoAttachments = (attachments == null || attachments.isEmpty());
+
+        if (isContentEmpty && hasNoAttachments) {
+            throw new MessageEmptyException();
+        }
     }
 }

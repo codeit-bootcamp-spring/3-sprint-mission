@@ -8,47 +8,43 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
 import java.time.Instant;
 import java.util.List;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Component
-@RequiredArgsConstructor
-public class ChannelMapper {
+@Mapper(componentModel = "spring", uses = {UserMapper.class})
+public abstract class ChannelMapper {
 
-    private final MessageRepository messageRepository;
-    private final ReadStatusRepository readStatusRepository;
-    private final UserMapper userMapper;
+    @Autowired
+    private MessageRepository messageRepository;
 
-    public ChannelDto toDto(Channel channel) {
-        if (channel == null) {
-            return null;
-        }
+    @Autowired
+    private ReadStatusRepository readStatusRepository;
 
-        // 가장 최근 메시지 조회
-        Instant lastMessageAt = messageRepository
-            .findTop1ByChannelIdOrderByCreatedAtDesc(channel.getId())
+    @Autowired
+    private UserMapper userMapper;
+
+    @Mapping(target = "participants", expression = "java(resolveParticipants(channel))")
+    @Mapping(target = "lastMessageAt", expression = "java(resolveLastMessageAt(channel))")
+    abstract public ChannelDto toDto(Channel channel);
+
+
+    protected Instant resolveLastMessageAt(Channel channel) {
+        return messageRepository.findFirstByChannelIdOrderByCreatedAtDesc(channel.getId())
             .map(Message::getCreatedAt)
             .orElse(Instant.MIN);
+    }
 
-        // PRIVATE 채널인 경우에만 참가자 조회
-        List<UserDto> participants = null;
-        if (ChannelType.PRIVATE.equals(channel.getType())) {
-            participants = readStatusRepository.findAllByChannelId(channel.getId()).stream()
+    protected List<UserDto> resolveParticipants(Channel channel) {
+        if (channel.getType().equals(ChannelType.PRIVATE)) {
+            return readStatusRepository.findAllByChannelId(channel.getId())
+                .stream()
                 .map(ReadStatus::getUser)
                 .map(userMapper::toDto)
                 .toList();
         }
-
-        return new ChannelDto(
-            channel.getId(),
-            channel.getType(),
-            channel.getName(),
-            channel.getDescription(),
-            participants,
-            lastMessageAt
-        );
+        return List.of();
     }
 }

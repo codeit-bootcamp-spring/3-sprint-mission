@@ -4,10 +4,9 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
@@ -18,7 +17,7 @@ public class SwaggerConfig {
             .info(new Info()
                 .title("Discodeit API")
                 .description("Discodeit 프로젝트의 Swagger API 문서입니다.")
-                .version("v1.0.0")
+                .version("v1.2")
                 .contact(new Contact()
                     .name("조현아")
                     .email("akbkck8101@gmail.com")

@@ -4,7 +4,9 @@ import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /*바이너리 데이터 표현 도메인
  * 프로필이미지, 메시지 첨부 파일 저장하기 위해
@@ -14,6 +16,7 @@ import lombok.Getter;
 @Entity
 @Table(name = "binary_contents")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BinaryContent extends BaseEntity {
 
     @Column(length = 225, nullable = false)
@@ -24,9 +27,6 @@ public class BinaryContent extends BaseEntity {
 
     @Column(length = 100, nullable = false)
     private String contentType;
-
-    public BinaryContent() {
-    }
 
     public BinaryContent(String fileName, Long size, String contentType) {
         this.fileName = fileName;
