@@ -1,31 +1,30 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false;INIT=CREATE SCHEMA IF NOT EXISTS discodeit
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
     driver-class-name: org.h2.Driver
     username: sa
     password:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop # 테스트 실행 시 스키마 새로 생성
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-        highlight_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
         use_sql_comments: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        default_schema: discodeit
+        default_schema:
     open-in-view: false
     defer-datasource-initialization: true
 
   sql:
     init:
-      mode: never # schema.sql, data.sql 등을 자동 실행하지 않음
+      mode: never
 
   h2:
     console:
-      enabled: true # 필요 시 http://localhost:/h2-console 에서 확인 가능
+      enabled: true
 
 logging:
   level:
