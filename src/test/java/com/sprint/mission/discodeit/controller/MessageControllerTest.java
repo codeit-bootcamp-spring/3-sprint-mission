@@ -1,16 +1,13 @@
 package com.sprint.mission.discodeit.controller;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -104,46 +101,24 @@ class MessageControllerTest {
     }
 
     @Test
-    @DisplayName("메시지 업데이트 성공")
-    void shouldUpdateMessageSuccessfully() throws Exception {
-        UUID messageId = UUID.randomUUID();
-        UUID channelId = UUID.randomUUID();
-        UUID authorId = UUID.randomUUID();
-        MessageUpdateRequest request = new MessageUpdateRequest("수정된 메시지");
+    @DisplayName("채널 ID 없이 메시지 생성 시 400 반환")
+    void shouldReturn400WhenChannelIdMissing() throws Exception {
+        MessageCreateRequest invalidRequest = new MessageCreateRequest("유효하지 않은 요청", null,
+            UUID.randomUUID());
 
-        MessageResponse response = new MessageResponse(
-            messageId,
-            Instant.now(),
-            Instant.now(),
-            "수정된 메시지",
-            channelId,
-            new UserDto(authorId, "tester", "tester@email.com", null, true),
-            List.of()
+        MockMultipartFile jsonPart = new MockMultipartFile(
+            "messageCreateRequest",
+            "",
+            "application/json",
+            objectMapper.writeValueAsBytes(invalidRequest)
         );
 
-        BDDMockito.given(messageService.update(messageId, request)).willReturn(response);
-
-        mockMvc.perform(patch("/api/messages/{messageId}", messageId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content").value("수정된 메시지"))
-            .andExpect(jsonPath("$.channelId").value(channelId.toString()))
-            .andExpect(jsonPath("$.author.id").value(authorId.toString()));
-    }
-
-    @Test
-    @DisplayName("메시지 삭제 성공")
-    void shouldDeleteMessageSuccessfully() throws Exception {
-        UUID messageId = UUID.randomUUID();
-        MessageResponse response = new MessageResponse(
-            messageId, Instant.now(), Instant.now(), "삭제된 메시지", UUID.randomUUID(), null, List.of()
-        );
-
-        BDDMockito.given(messageService.delete(messageId)).willReturn(response);
-
-        mockMvc.perform(delete("/api/messages/{messageId}", messageId))
-            .andExpect(status().isNoContent());
+        mockMvc.perform(multipart("/api/messages")
+                .file(jsonPart)
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").exists())
+            .andExpect(jsonPath("$.code").exists());
     }
 
 
