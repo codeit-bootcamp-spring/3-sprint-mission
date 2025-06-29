@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.0'
     id 'io.spring.dependency-management' version '1.1.6'
+    id 'jacoco'
 }
 ext {
     springBootAdminVersion = "3.4.7"
@@ -62,3 +63,40 @@ dependencyManagement {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+test {
+    finalizedBy jacocoTestReport // 테스트가 끝나면 커버리지 리포트를 자동 생성
+}
+
+jacocoTestReport {
+    dependsOn test // 테스트가 실행된 후에만 리포트 생성 가능
+
+    reports {
+        xml.required = true   // XML 리포트 생성 (CI에서 사용 가능)
+        html.required = true  // HTML 리포트 생성 (눈으로 보기 좋음)
+    }
+}
+
+// 커버리지 기준을 자동으로 검증 (옵션)
+// 이 설정을 통해 특정 패키지에 대해 커버리지 기준을 강제할 수 있음
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            // 검증 범위를 PACKAGE로 설정 (클래스별도 가능)
+            element = 'PACKAGE'
+
+            // 검증 대상 패키지: service.basic
+            includes = ['com.sprint.mission.discodeit.service.basic']
+
+            // 조건 설정: 커버리지 라인 비율이 60% 이상이어야 함
+            limit {
+                counter = 'LINE' // 기준 항목: 라인 커버리지
+                value = 'COVEREDRATIO' // 비율 기준
+                minimum = 0.60 // 60% 이상 필수
+            }
+        }
+    }
+}
+
+// `gradlew check` 명령으로 위 검증까지 같이 실행되도록 설정
+check.dependsOn jacocoTestCoverageVerification
