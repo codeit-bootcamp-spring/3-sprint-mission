@@ -1,70 +1,48 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.data.ChannelDto;
-import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Component
-@RequiredArgsConstructor
-public class ChannelMapper {
+@Mapper(componentModel = "spring", uses = {UserMapper.class})
+public abstract class ChannelMapper {
 
-  private final MessageRepository messageRepository;
-  private final ReadStatusRepository readStatusRepository;
-  private final UserMapper userMapper;
+    @Autowired
+    protected MessageRepository messageRepository;
 
-  public ChannelDto toDto(Channel entity) {
-    UUID channelId = entity.getId();
+    @Autowired
+    protected ReadStatusRepository readStatusRepository;
 
-    List<UserDto> participants = entity.getType() == ChannelType.PRIVATE
-        ? readStatusRepository.findAllByChannel_Id(channelId).stream()
-        .map(ReadStatus::getUser)
-        .map(userMapper::toDto)
-        .collect(Collectors.toList())
-        : List.of();
-    Instant lastMessageAt = messageRepository.findLastMessageTimeByChannelId(channelId)
-        .orElse(Instant.MIN);
+    @Autowired
+    protected UserMapper userMapper;
 
-    return new ChannelDto(
-        entity.getId(),
-        entity.getType(),
-        entity.getName(),
-        entity.getDescription(),
-        participants,
-        lastMessageAt
-    );
-  }
+    @Mapping(target = "participants", expression = "java(resolveParticipants(channel))")
+    @Mapping(target = "lastMessageAt", expression = "java(resolveLastMessageAt(channel))")
+    public abstract ChannelResponse toResponse(Channel channel);
 
-  public ChannelResponse toResponse(Channel entity) {
-    UUID channelId = entity.getId();
+    protected Instant resolveLastMessageAt(Channel channel) {
+        return messageRepository.findLastMessageAtByChannelId(channel.getId())
+            .orElse(Instant.MIN);
+    }
 
-    Instant lastMessageAt = messageRepository.findLastMessageTimeByChannelId(channelId)
-        .orElse(Instant.MIN);
-
-    List<UUID> participantIds = entity.getType() == ChannelType.PRIVATE
-        ? readStatusRepository.findAllByChannel_Id(channelId).stream()
-        .map(rs -> rs.getUser().getId())
-        .toList()
-        : List.of();
-
-    return new ChannelResponse(
-        entity.getId(),
-        entity.getType(),
-        entity.getName(),
-        entity.getDescription(),
-        lastMessageAt,
-        participantIds
-    );
-  }
-
+    protected List<UserResponse> resolveParticipants(Channel channel) {
+        List<UserResponse> participants = new ArrayList<>();
+        if (channel.getType() == ChannelType.PRIVATE) {
+            readStatusRepository.findAllByChannelIdWithUser(channel.getId()).stream()
+                .map(ReadStatus::getUser)
+                .map(userMapper::toResponse)
+                .forEach(participants::add);
+        }
+        return participants;
+    }
 }

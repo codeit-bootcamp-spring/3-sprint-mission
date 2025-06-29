@@ -1,10 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import static com.sprint.mission.discodeit.global.constant.ErrorMessages.DUPLICATE_BOTH;
-import static com.sprint.mission.discodeit.global.constant.ErrorMessages.DUPLICATE_EMAIL;
-import static com.sprint.mission.discodeit.global.constant.ErrorMessages.DUPLICATE_USERNAME;
-
-import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
@@ -12,7 +7,10 @@ import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.global.exception.DuplicateUserException;
+import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
+import com.sprint.mission.discodeit.exception.user.DuplicateUserException;
+import com.sprint.mission.discodeit.exception.user.DuplicateUsernameException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -21,16 +19,17 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
@@ -39,11 +38,14 @@ public class BasicUserService implements UserService {
     private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
 
-
     @Transactional
     @Override
     public UserResponse create(UserCreateRequest request,
         Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+
+        log.info("[BasicUserService] Creating user. [username={}] [email={}]", request.username(),
+            request.email());
+
         validateDuplicate(request.username(), request.email());
 
         BinaryContent profile = optionalProfileCreateRequest
@@ -61,75 +63,107 @@ public class BasicUserService implements UserService {
 
         User user = new User(request.username(), request.email(), request.password(), profile);
         userRepository.save(user);
-
         userStatusRepository.save(new UserStatus(user, Instant.now()));
 
+        log.debug("[BasicUserService] User created. [id={}]", user.getId());
         return userMapper.toResponse(user);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public UserDto find(UUID userId) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+    public UserResponse find(UUID userId) {
+        log.info("[BasicUserService] Finding user. [id={}]", userId);
 
-        return userMapper.toDto(user);
+        return userRepository.findById(userId)
+            .map(userMapper::toResponse)
+            .orElseThrow(() -> {
+                log.warn("[BasicUserService] User not found. [id={}]", userId);
+                return new UserNotFoundException(userId.toString());
+            });
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<UserDto> findAll() {
-        return userRepository.findAll().stream()
-            .map(userMapper::toDto)
+    public List<UserResponse> findAll() {
+        log.info("[BasicUserService] Finding all users.");
+        List<UserResponse> result = userRepository.findAllWithProfileAndStatus().stream()
+            .map(userMapper::toResponse)
             .collect(Collectors.toList());
+        log.debug("[BasicUserService] Users found. [count={}]", result.size());
+        return result;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     @Override
     public UserResponse update(UUID userId, UserUpdateRequest request,
         Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+        log.info("[BasicUserService] Updating user. [id={}]", userId);
+
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+            .orElseThrow(() -> {
+                log.warn("[BasicUserService] User not found for update. [id={}]", userId);
+                return new UserNotFoundException(userId.toString());
+            });
 
-        validateDuplicate(request.newUsername(), request.newEmail());
+        String newUsername = request.newUsername();
+        String newEmail = request.newEmail();
 
-        BinaryContent newProfile = optionalProfileCreateRequest
-            .map(profile -> {
-                Optional.ofNullable(user.getProfile())
-                    .ifPresent(old -> {
-                        binaryContentRepository.delete(old);
-                        binaryContentStorage.delete(old.getId());
-                    });
-                BinaryContent entity = new BinaryContent(
-                    profile.fileName(),
-                    (long) profile.bytes().length,
-                    profile.contentType()
-                );
-                BinaryContent saved = binaryContentRepository.save(entity);
-                binaryContentStorage.put(saved.getId(), profile.bytes());
-                return saved;
-            })
-            .orElse(user.getProfile());
+        if (!user.getEmail().equals(newEmail) && userRepository.existsByEmail(newEmail)) {
+            log.warn("[BasicUserService] Email already exists. [email={}]", newEmail);
+            throw new DuplicateEmailException(newEmail);
+        }
 
-        user.update(request.newUsername(), request.newEmail(), request.newPassword(), newProfile);
+        if (!user.getUsername().equals(newUsername) && userRepository.existsByUsername(
+            newUsername)) {
+            log.warn("[BasicUserService] Username already exists. [username={}]", newUsername);
+            throw new DuplicateUsernameException(newUsername);
+        }
 
+        BinaryContent updatedProfile = user.getProfile();
+        if (optionalProfileCreateRequest.isPresent()) {
+            BinaryContentCreateRequest profileRequest = optionalProfileCreateRequest.get();
+            BinaryContent binaryContent = new BinaryContent(
+                profileRequest.fileName(),
+                (long) profileRequest.bytes().length,
+                profileRequest.contentType()
+            );
+            binaryContentRepository.save(binaryContent);
+            binaryContentStorage.put(binaryContent.getId(), profileRequest.bytes());
+
+            Optional.ofNullable(user.getProfile()).ifPresent(old -> {
+                binaryContentRepository.delete(old);
+                binaryContentStorage.delete(old.getId());
+            });
+
+            updatedProfile = binaryContent;
+        }
+
+        user.update(newUsername, newEmail, request.newPassword(), updatedProfile);
+
+        log.debug("[BasicUserService] User updated. [id={}]", userId);
         return userMapper.toResponse(user);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     @Override
     public UserResponse delete(UUID userId) {
+        log.info("[BasicUserService] Deleting user. [id={}]", userId);
+
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-
-        Optional.ofNullable(user.getProfile())
-            .ifPresent(profile -> {
-                binaryContentRepository.delete(profile);
-                binaryContentStorage.delete(profile.getId());
+            .orElseThrow(() -> {
+                log.warn("[BasicUserService] User not found for deletion. [id={}]", userId);
+                return new UserNotFoundException(userId.toString());
             });
-        userStatusRepository.deleteByUser_Id(userId);
-        userRepository.deleteById(userId);
 
+        Optional.ofNullable(user.getProfile()).ifPresent(profile -> {
+            binaryContentRepository.delete(profile);
+            binaryContentStorage.delete(profile.getId());
+        });
+
+        userRepository.deleteById(userId);
+        userRepository.delete(user);
+
+        log.debug("[BasicUserService] User deleted. [id={}]", userId);
         return userMapper.toResponse(user);
     }
 
@@ -138,11 +172,15 @@ public class BasicUserService implements UserService {
         boolean emailExists = userRepository.existsByEmail(email);
 
         if (usernameExists && emailExists) {
-            throw new DuplicateUserException(DUPLICATE_BOTH);
+            log.warn("[BasicUserService] Duplicate username and email. [username={}] [email={}]",
+                username, email);
+            throw new DuplicateUserException(username, email);
         } else if (usernameExists) {
-            throw new DuplicateUserException(DUPLICATE_USERNAME);
+            log.warn("[BasicUserService] Duplicate username. [username={}]", username);
+            throw new DuplicateUsernameException(username);
         } else if (emailExists) {
-            throw new DuplicateUserException(DUPLICATE_EMAIL);
+            log.warn("[BasicUserService] Duplicate email. [email={}]", email);
+            throw new DuplicateEmailException(email);
         }
     }
 }

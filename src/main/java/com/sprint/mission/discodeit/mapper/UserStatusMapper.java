@@ -2,26 +2,12 @@ package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import java.time.Instant;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-public class UserStatusMapper {
+@Mapper(componentModel = "spring")
+public interface UserStatusMapper {
 
-  public boolean isOnline(UserStatus status) {
-    return status != null &&
-        status.getLastAccessedAt() != null &&
-        status.getLastAccessedAt().isAfter(Instant.now().minusSeconds(300));
-  }
-
-  public UserStatusResponse toResponse(UserStatus entity) {
-    return new UserStatusResponse(
-        entity.getId(),
-        entity.getCreatedAt(),
-        entity.getUpdatedAt(),
-        entity.getUser().getId(),
-        entity.getLastAccessedAt(),
-        isOnline(entity)
-    );
-  }
+    @Mapping(target = "userId", source = "user.id")
+    UserStatusResponse toResponse(UserStatus userStatus);
 }

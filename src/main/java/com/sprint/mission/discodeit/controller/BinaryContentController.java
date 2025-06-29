@@ -1,13 +1,14 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
-import com.sprint.mission.discodeit.global.exception.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,45 +19,51 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/binaryContents")
-public class BinaryContentController {
+@Slf4j
+public class BinaryContentController implements BinaryContentApi {
 
-  private final BinaryContentService binaryContentService;
-  private final BinaryContentStorage binaryContentStorage;
+    private final BinaryContentService binaryContentService;
+    private final BinaryContentStorage binaryContentStorage;
 
-  @GetMapping("/{id}")
-  public ResponseEntity<Map<String, Object>> findById(@PathVariable("id") UUID id) {
-    System.out.println("📥 [GET] /api/binaryContents/" + id + " called");
+    @GetMapping(path = "{binaryContentId}")
+    public ResponseEntity<BinaryContentDto> find(
+        @PathVariable("binaryContentId") UUID binaryContentId) {
 
-    BinaryContentDto content = binaryContentService.find(id)
-        .orElse(null);
+        log.info("[BinaryContentController] Find request received. [binaryContentId={}]",
+            binaryContentId);
 
-    if (content == null) {
-      System.out.println("❌ Binary content not found for UUID: " + id);
-      return ResponseEntity.notFound().build();
+        BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
+
+        log.debug("[BinaryContentController] Binary content found. [id={}]", binaryContent.id());
+        return ResponseEntity.status(HttpStatus.OK).body(binaryContent);
     }
 
-    System.out.println("✅ Found binary content: filename=" + content.fileName() + ", contentType="
-        + content.contentType());
+    @GetMapping
+    public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
+        @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
 
-    return ResponseEntity.ok(Map.of(
-        "filename", content.fileName(),
-        "contentType", content.contentType()
-    ));
-  }
+        log.info("[BinaryContentController] Batch find request received. [ids={}]",
+            binaryContentIds);
 
+        List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(
+            binaryContentIds);
 
-  @GetMapping("/findAllByIdIn")
-  public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
-      @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
-    List<BinaryContentDto> contents = binaryContentService.findAllByIdIn(binaryContentIds);
-    return ResponseEntity.ok(contents);
-  }
+        log.debug("[BinaryContentController] Binary contents found. [count={}]",
+            binaryContents.size());
+        return ResponseEntity.status(HttpStatus.OK).body(binaryContents);
+    }
 
-  @GetMapping("/{id}/download")
-  public ResponseEntity<?> download(@PathVariable("id") UUID id) {
-    BinaryContentDto content = binaryContentService.find(id)
-        .orElseThrow(() -> new BinaryContentNotFoundException(id.toString()));
+    @GetMapping(path = "{binaryContentId}/download")
+    public ResponseEntity<?> download(
+        @PathVariable("binaryContentId") UUID binaryContentId) {
 
-    return binaryContentStorage.download(content);
-  }
+        log.info("[BinaryContentController] Download request received. [binaryContentId={}]",
+            binaryContentId);
+
+        BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
+
+        log.debug("[BinaryContentController] Downloading binary content. [id={}]",
+            binaryContentDto.id());
+        return binaryContentStorage.download(binaryContentDto);
+    }
 }
