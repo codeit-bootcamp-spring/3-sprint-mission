@@ -1,39 +1,41 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import java.util.List;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "channels")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Channel extends BaseUpdatableEntity {
-  private ChannelType type;
-  private String name;
-  private String description;
 
-  private List<User> participants;
-  private List<Message> messages;
-  private List<ReadStatus> readStatuses;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ChannelType type;
+    @Column(length = 100)
+    private String name;
+    @Column(length = 500)
+    private String description;
 
-  public Channel(ChannelType channelType, String name, String description) {
-    super();
-  }
+    public Channel(ChannelType type, String name, String description) {
+        this.type = type;
+        this.name = name;
+        this.description = description;
+    }
 
-  public ChannelType getType() { return type; }
-  public void setType(ChannelType type) { this.type = type; }
-
-  public String getName() { return name; }
-  public void setName(String name) { this.name = name; }
-
-  public String getDescription() { return description; }
-  public void setDescription(String description) { this.description = description; }
-
-  public List<User> getParticipants() { return participants; }
-  public void setParticipants(List<User> participants) { this.participants = participants; }
-
-  public List<Message> getMessages() { return messages; }
-  public void setMessages(List<Message> messages) { this.messages = messages; }
-
-  public List<ReadStatus> getReadStatuses() { return readStatuses; }
-  public void setReadStatuses(List<ReadStatus> readStatuses) { this.readStatuses = readStatuses; }
-
-  public void update(String newName, String newDescription) {
-  }
+    public void update(String newName, String newDescription) {
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+        }
+    }
 }
