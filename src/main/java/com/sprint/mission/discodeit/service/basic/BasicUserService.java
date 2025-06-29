@@ -115,7 +115,7 @@ public class BasicUserService implements UserService {
         // USER STATUS
         UserStatus userStatus = new UserStatus(user);
         userStatusRepository.save(userStatus);
-        user.setUserStatus(userStatus); // 양방향성을 위한 주입
+        user.changeUserStatus(userStatus); // 양방향성을 위한 주입
 
         JpaUserResponse response = userMapper.toDto(user);
         return response;
@@ -172,17 +172,17 @@ public class BasicUserService implements UserService {
         if (userRepository.existsByUsername(newName) && (!oldName.equals(newName))) { // 있고 내 이름도 아닌경우
             throw new  UserAlreadyExistsException(Map.of("username", newName));
         }
-        user.setUsername(newName);
+        user.changeUsername(newName);
 
         // email: 있으면 400
         if (userRepository.existsByEmail(newEmail) && (!oldEmail.equals(newEmail))) { // 있고 내 이메일이 아닌경우
             throw new  UserAlreadyExistsException(Map.of("email", newEmail));
         }
-        user.setEmail(newEmail);
+        user.changeEmail(newEmail);
 
         // password: 없으면 내버려두고 있으면 수정
         if (request.newPassword() != null) {
-            user.setPassword(request.newPassword());
+            user.changePassword(request.newPassword());
         }
 
         // 프로필 여부 확인 (있으면 삭제 후 추가)
@@ -220,7 +220,7 @@ public class BasicUserService implements UserService {
                 throw new RuntimeException(e);
             }
             // update user
-            user.setProfile(binaryContent);
+            user.changeProfile(binaryContent);
         }
 
         JpaUserResponse response = userMapper.toDto(user);

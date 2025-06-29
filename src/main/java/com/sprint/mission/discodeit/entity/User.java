@@ -23,7 +23,7 @@ import java.util.UUID;
  */
 @Getter
 @Entity
-@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -83,22 +83,20 @@ public class User extends BaseUpdatableEntity implements Serializable {
         this.status = status;
     }
 
-    public void setUserStatus(UserStatus status) {
+    public void changeUserStatus(UserStatus status) {
         this.status = status;
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "username='" + username + '\'' +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", profile=" + profile +
-                ", status=" + status +
-                ", updatedAt(updatable)=" + updatedAt +
-                ", id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
+    public void changeUsername(String username) {
+        this.username = username;
+    }
+    public void changeEmail(String email) {
+        this.email = email;
+    }
+    public void changePassword(String password) {
+        this.password = password;
+    }
+    public void changeProfile(BinaryContent profile) {
+        this.profile = profile;
     }
 }

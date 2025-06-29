@@ -41,10 +41,9 @@ public class BasicUserStatusService implements UserStatusService {
 
     User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
     UserStatus userStatus = user.getStatus();
-    userStatus.setLastActiveAt(newLastActiveAt);
+    userStatus.changeLastActiveAt(newLastActiveAt);
 
-    JpaUserStatusResponse response = userStatusMapper.toDto(userStatus);
-    return response;
+    return userStatusMapper.toDto(userStatus);
   }
 
 }

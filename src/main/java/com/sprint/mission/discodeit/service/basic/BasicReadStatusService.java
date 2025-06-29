@@ -84,7 +84,7 @@ public class BasicReadStatusService implements ReadStatusService {
     public JpaReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest request) {
 
         ReadStatus readStatus = readStatusRepository.findById(readStatusId).orElseThrow(() -> new NoSuchElementException("readStatus with id " + readStatusId + " not found"));
-        readStatus.setLastReadAt(request.newLastReadAt());
+        readStatus.changeLastReadAt(request.newLastReadAt());
 
         JpaReadStatusResponse response = new JpaReadStatusResponse(
                 readStatus.getId(),

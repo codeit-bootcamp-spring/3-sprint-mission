@@ -19,7 +19,6 @@ import java.time.Instant;
  * Date         : 2025. 5. 27.
  */
 @Getter
-@Setter
 @MappedSuperclass
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
