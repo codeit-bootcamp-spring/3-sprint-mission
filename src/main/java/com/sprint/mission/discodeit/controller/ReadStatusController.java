@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusUpdateReque
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,22 +32,19 @@ public class ReadStatusController implements ReadStatusApi {
     private final ReadStatusService readStatusService;
 
     @GetMapping
-    public ResponseEntity<?> find(@RequestParam UUID userId) {
-        List<JpaReadStatusResponse> allByUserId = readStatusService.findAllByUserId(userId);
-        return ResponseEntity.ok(allByUserId);
+    public ResponseEntity<List<JpaReadStatusResponse>> find(@RequestParam UUID userId) {
+        return ResponseEntity.ok(readStatusService.findAllByUserId(userId));
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody ReadStatusCreateRequest request) {
-        JpaReadStatusResponse response = readStatusService.create(request);
-        return ResponseEntity.status(201).body(response);
+    public ResponseEntity<JpaReadStatusResponse> create(@Valid @RequestBody ReadStatusCreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(readStatusService.create(request));
     }
 
     @PatchMapping("/{readStatusId}")
-    public ResponseEntity<?> update(
+    public ResponseEntity<JpaReadStatusResponse> update(
             @PathVariable UUID readStatusId,
             @Valid @RequestBody ReadStatusUpdateRequest request) {
-        JpaReadStatusResponse update = readStatusService.update(readStatusId, request);
-        return ResponseEntity.ok(update);
+        return ResponseEntity.ok(readStatusService.update(readStatusId, request));
     }
 }

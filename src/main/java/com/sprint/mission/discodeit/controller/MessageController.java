@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,17 +43,15 @@ public class MessageController implements MessageApi {
         @RequestParam UUID channelId,
         @RequestParam(required = false) Instant cursor,
         Pageable pageable) {
-        AdvancedJpaPageResponse response = messageService.findAllByChannelIdAndCursor(channelId, cursor, pageable);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(messageService.findAllByChannelIdAndCursor(channelId, cursor, pageable));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> creatMessage(
+    public ResponseEntity<JpaMessageResponse> creatMessage(
             @Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachmentFiles
     ) {
-        JpaMessageResponse message = messageService.createMessage(request, attachmentFiles);
-        return ResponseEntity.status(201).body(message);
+        return ResponseEntity.status(HttpStatus.CREATED).body(messageService.createMessage(request, attachmentFiles));
     }
 
     @DeleteMapping(path = "/{messageId}")
@@ -65,7 +64,6 @@ public class MessageController implements MessageApi {
     public ResponseEntity<JpaMessageResponse> updateMessage(
             @PathVariable UUID messageId,
             @Valid @RequestBody MessageUpdateRequest request) {
-        JpaMessageResponse response = messageService.updateMessage(messageId, request);
-        return ResponseEntity.status(200).body(response);
+        return ResponseEntity.ok(messageService.updateMessage(messageId, request));
     }
 }

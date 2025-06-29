@@ -28,8 +28,8 @@ public class AuthController implements AuthApi {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
         LoginResponse loginResponse = authService.login(loginRequest);
-        return ResponseEntity.status(200).body(loginResponse);
+        return ResponseEntity.ok(loginResponse);
     }
 }

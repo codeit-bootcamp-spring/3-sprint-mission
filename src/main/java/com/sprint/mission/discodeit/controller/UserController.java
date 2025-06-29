@@ -5,11 +5,13 @@ import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
 import com.sprint.mission.discodeit.dto.userStatus.UserStatusUpdateByUserIdRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,18 +42,18 @@ public class UserController implements UserApi {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> create(
+    public ResponseEntity<JpaUserResponse> create(
             @RequestPart("userCreateRequest") UserCreateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profileFile) {
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profileFile)
                 .flatMap(this::resolveProfileRequest);
-        return ResponseEntity.status(201).body(userService.create(request, profileRequest));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(request, profileRequest));
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<?> delete(@PathVariable UUID userId) {
         userService.deleteUser(userId);
-        return ResponseEntity.status(204).build();
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -65,10 +67,10 @@ public class UserController implements UserApi {
     //0 USER STATUS 에서 가져온 메서드
     // 관심사 분리를 위해선 userStatus에서 하는게 맞지 않나? 메서드가 하나라 그냥 하는건가?
     @PatchMapping("/{userId}/userStatus")
-    public ResponseEntity<?> updateTime(
+    public ResponseEntity<JpaUserStatusResponse> updateTime(
             @PathVariable UUID userId,
             @Valid @RequestBody UserStatusUpdateByUserIdRequest request) {
-        return ResponseEntity.status(200).body(userStatusService.updateByUserId(userId, request.newLastActiveAt()));
+        return ResponseEntity.ok(userStatusService.updateByUserId(userId, request.newLastActiveAt()));
     }
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {

@@ -30,20 +30,17 @@ public class BinaryContentController implements BinaryContentApi {
     private final BinaryContentStorage binaryContentStorage;
 
     @GetMapping
-    public ResponseEntity<?> findAttachment(@RequestParam List<UUID> binaryContentIds) {
-        List<JpaBinaryContentResponse> responses = binaryContentService.findAllByIdIn(binaryContentIds);
-        return ResponseEntity.ok(responses);
+    public ResponseEntity<List<JpaBinaryContentResponse>> findAttachment(@RequestParam List<UUID> binaryContentIds) {
+        return ResponseEntity.ok(binaryContentService.findAllByIdIn(binaryContentIds));
     }
 
     @GetMapping(path = "/{binaryContentId}")
-    public ResponseEntity<?> findBinaryContent(@PathVariable UUID binaryContentId) {
-        JpaBinaryContentResponse response = binaryContentService.find(binaryContentId);
-        return ResponseEntity.status(200).body(response);
+    public ResponseEntity<JpaBinaryContentResponse> findBinaryContent(@PathVariable UUID binaryContentId) {
+        return ResponseEntity.ok(binaryContentService.find(binaryContentId));
     }
 
     @GetMapping(path = "/{binaryContentId}/download")
     public ResponseEntity<?> downloadBinaryContent(@PathVariable UUID binaryContentId) {
-        JpaBinaryContentResponse binaryContentResponse = binaryContentService.find(binaryContentId);
-        return binaryContentStorage.download(binaryContentResponse);
+        return binaryContentStorage.download(binaryContentService.find(binaryContentId));
     }
 }

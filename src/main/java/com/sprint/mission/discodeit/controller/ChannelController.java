@@ -9,9 +9,11 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -28,13 +30,13 @@ public class ChannelController implements ChannelApi {
     private final ChannelService channelService;
 
     @PostMapping("/public")
-    public ResponseEntity<?> create(@Valid @RequestBody PublicChannelCreateRequest request) {
-        return ResponseEntity.status(201).body(channelService.createChannel(request));
+    public ResponseEntity<JpaChannelResponse> create(@Valid @RequestBody PublicChannelCreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(channelService.createChannel(request));
     }
 
     @PostMapping("/private")
-    public ResponseEntity<?> create(@Valid @RequestBody PrivateChannelCreateRequest request) {
-        return ResponseEntity.status(201).body(channelService.createChannel(request));
+    public ResponseEntity<JpaChannelResponse> create(@Valid @RequestBody PrivateChannelCreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(channelService.createChannel(request));
     }
 
     @DeleteMapping("/{channelId}")
@@ -47,11 +49,11 @@ public class ChannelController implements ChannelApi {
     public ResponseEntity<JpaChannelResponse> update(
             @PathVariable UUID channelId,
             @Valid @RequestBody ChannelUpdateRequest request) {
-        return ResponseEntity.status(200).body(channelService.update(channelId, request));
+        return ResponseEntity.ok(channelService.update(channelId, request));
     }
 
     @GetMapping
-    public ResponseEntity<?> findChannels(@RequestParam UUID userId) {
-        return ResponseEntity.status(200).body(channelService.findAllByUserId(userId));
+    public ResponseEntity<List<JpaChannelResponse>> findChannels(@RequestParam UUID userId) {
+        return ResponseEntity.ok(channelService.findAllByUserId(userId));
     }
 }
