@@ -4,9 +4,8 @@ import com.sprint.mission.discodeit.dto.response.PageResponse;
 import org.mapstruct.Mapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
-import org.springframework.stereotype.Component;
 
-@Component
+@Mapper(componentModel = "spring")
 public interface PageResponseMapper {
     default <T> PageResponse<T> fromSlice(Slice<T> slice, Object nextCursor) {
         return new PageResponse<>(

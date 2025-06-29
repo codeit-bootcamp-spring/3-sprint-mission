@@ -26,4 +26,9 @@
       <totalSizeCap>10GB</totalSizeCap>
     </rollingPolicy>
   </appender>
+
+  <root>
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="TIME_BASED_FILE"/>
+  </root>
 </configuration>
