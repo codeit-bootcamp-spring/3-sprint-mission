@@ -1,35 +1,57 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 
 import java.util.List;
 import java.util.UUID;
 
-@RestController
-@RequestMapping("/api/binaries")
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@Slf4j
 @RequiredArgsConstructor
-public class BinaryContentController {
+@RestController
+@RequestMapping("/api/binaryContents")
+public class BinaryContentController implements BinaryContentApi {
 
     private final BinaryContentService binaryContentService;
+    private final BinaryContentStorage binaryContentStorage;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<byte[]> download(@PathVariable UUID id) {
-        BinaryContent content = binaryContentService.find(id);
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_TYPE, content.getContentType())
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + content.getFileName() + "\"")
-                .body(content.getBytes());
+    @GetMapping(path = "{binaryContentId}")
+    public ResponseEntity<BinaryContentDto> find(
+        @PathVariable("binaryContentId") UUID binaryContentId) {
+        log.info("GET  /api/binaryContents/{}", binaryContentId);
+        BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(binaryContent);
     }
 
     @GetMapping
-    public ResponseEntity<List<BinaryContent>> downloadMany(@RequestParam List<UUID> ids) {
-        return ResponseEntity.ok(binaryContentService.findAllByIdIn(ids));
+    public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
+        @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
+        log.info("GET  /api/binaryContents  count={}", binaryContentIds.size());
+        List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(binaryContents);
+    }
+
+    @GetMapping(path = "{binaryContentId}/download")
+    public ResponseEntity<?> download(
+        @PathVariable("binaryContentId") UUID binaryContentId) {
+        log.info("GET  /api/binaryContents/{}/download", binaryContentId);
+        BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
+        return binaryContentStorage.download(binaryContentDto);
     }
 }
