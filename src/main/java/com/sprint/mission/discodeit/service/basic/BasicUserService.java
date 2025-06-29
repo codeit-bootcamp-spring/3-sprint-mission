@@ -130,8 +130,9 @@ public class BasicUserService implements UserService {
           );
           log.debug("파일 entity 생성: {}",   binaryContent);
 
+          BinaryContent saveBc = binaryContentRepository.save(binaryContent);
           binaryContentStorage.put(binaryContent.getId(), profileRequest.bytes());
-          return binaryContentRepository.save(binaryContent);
+          return saveBc;
         })
         .orElse(user.getProfile());
 
