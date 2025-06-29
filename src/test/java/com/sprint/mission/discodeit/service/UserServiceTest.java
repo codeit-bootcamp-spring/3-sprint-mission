@@ -38,6 +38,12 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+/**
+ * UserService의 주요 기능(생성, 수정, 삭제, 예외 등)에 대한 단위 테스트 클래스입니다.
+ * <p>
+ * - 사용자 생성, 수정, 삭제, 예외 상황 등을 검증합니다.
+ * - Mockito를 활용한 Mock 객체 기반 테스트입니다.
+ */
 public class UserServiceTest {
 
     @InjectMocks
@@ -82,7 +88,11 @@ public class UserServiceTest {
         assertNotNull(basicUserService, "basicUserService가 정상적으로 주입되어야 한다");
     }
 
+    /**
+     * [성공] 프로필 없이 사용자를 생성할 수 있는지 검증합니다.
+     */
     @Test
+    @DisplayName("[성공] 프로필 없이 사용자 생성")
     void create_ShouldCreateUserWithoutProfile_WhenNoProfileProvided() {
 
         // Given
@@ -107,7 +117,11 @@ public class UserServiceTest {
         then(binaryContentStorage).shouldHaveNoInteractions();
     }
 
+    /**
+     * [성공] 프로필이 있을 때 사용자를 생성할 수 있는지 검증합니다.
+     */
     @Test
+    @DisplayName("[성공] 프로필과 함께 사용자 생성")
     void create_ShouldCreateUserWithProfile_WhenProfileProvided() {
 
         // Given
@@ -135,7 +149,11 @@ public class UserServiceTest {
         then(userStatusRepository).should().save(any(UserStatus.class));
     }
 
+    /**
+     * [실패] 이메일이 중복될 때 예외가 발생하는지 검증합니다.
+     */
     @Test
+    @DisplayName("[실패] 중복 이메일로 사용자 생성 시 예외 발생")
     void create_ShouldThrowDuplicatedUserException_WhenEmailExists() {
 
         // Given
@@ -151,7 +169,11 @@ public class UserServiceTest {
         then(userRepository).should(never()).saveAndFlush(any());
     }
 
+    /**
+     * [실패] 유저명이 중복될 때 예외가 발생하는지 검증합니다.
+     */
     @Test
+    @DisplayName("[실패] 중복 유저명으로 사용자 생성 시 예외 발생")
     void create_ShouldThrowDuplicatedUserException_WhenUsernameExists() {
 
         // Given
@@ -169,8 +191,11 @@ public class UserServiceTest {
         then(userRepository).should(never()).saveAndFlush(any());
     }
 
+    /**
+     * 사용자 수정 관련 테스트 모음입니다.
+     */
     @Nested
-    @DisplayName("유저 수정 테스트")
+    @DisplayName("[유저] 수정 기능 테스트")
     class UpdateUserTests {
 
         @Test

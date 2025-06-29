@@ -39,16 +39,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * UserController에 대한 슬라이스 테스트 클래스입니다.
- * 
- * <p>이 테스트는 컨트롤러 레이어만을 독립적으로 테스트하며, 
- * 서비스 레이어는 Mock으로 대체하여 컨트롤러의 HTTP 요청/응답 처리 로직을 검증합니다.</p>
- * 
- * <p>테스트 시나리오:</p>
+ * <p>
+ * 컨트롤러 레이어만을 독립적으로 테스트하며, 서비스 레이어는 Mock으로 대체하여 HTTP 요청/응답 처리 로직을 검증합니다.
  * <ul>
- *   <li>사용자 생성 (성공/실패 케이스)</li>
- *   <li>사용자 수정 (성공/실패 케이스)</li>
- *   <li>사용자 삭제 (성공/실패 케이스)</li>
- *   <li>사용자 목록 조회 (성공 케이스)</li>
+ *   <li>사용자 생성, 수정, 삭제, 전체 조회 등 다양한 시나리오를 검증합니다.</li>
  * </ul>
  */
 @WebMvcTest(UserController.class)
@@ -89,8 +83,11 @@ class UserControllerTest {
     @DisplayName("사용자 생성 테스트")
     class CreateUserTest {
 
+        /**
+         * [성공] 유효한 사용자 정보로 사용자를 생성할 수 있는지 검증합니다.
+         */
         @Test
-        @DisplayName("유효한 사용자 정보로 사용자를 생성하면 201 Created와 함께 생성된 사용자 정보를 반환한다")
+        @DisplayName("[성공] 유효한 사용자 정보로 사용자 생성")
         void shouldCreateUserSuccessfully_whenValidUserDataProvided() throws Exception {
             // given: 유효한 사용자 생성 요청 데이터 준비
             UserCreateRequest createRequest = new UserCreateRequest(
@@ -118,8 +115,11 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.email").value("test@example.com"));
         }
 
+        /**
+         * [성공] 프로필 이미지와 함께 사용자를 생성할 수 있는지 검증합니다.
+         */
         @Test
-        @DisplayName("프로필 이미지와 함께 사용자를 생성하면 201 Created와 함께 생성된 사용자 정보를 반환한다")
+        @DisplayName("[성공] 프로필 이미지와 함께 사용자 생성")
         void shouldCreateUserWithProfileImage_whenProfileImageProvided() throws Exception {
             // given: 프로필 이미지가 포함된 사용자 생성 요청 데이터 준비
             UserCreateRequest createRequest = new UserCreateRequest(
@@ -153,8 +153,11 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.id").value(testUserId.toString()));
         }
 
+        /**
+         * [실패] 잘못된 사용자 정보로 사용자 생성 시 400 Bad Request가 반환되는지 검증합니다.
+         */
         @Test
-        @DisplayName("유효하지 않은 사용자 정보로 사용자 생성을 요청하면 400 Bad Request를 반환한다")
+        @DisplayName("[실패] 잘못된 사용자 정보로 사용자 생성 시 400 반환")
         void shouldReturnBadRequest_whenInvalidUserDataProvided() throws Exception {
             // given: 유효하지 않은 사용자 생성 요청 데이터 준비 (이메일 형식 오류)
             UserCreateRequest invalidRequest = new UserCreateRequest(

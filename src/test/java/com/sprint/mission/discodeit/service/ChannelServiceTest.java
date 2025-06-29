@@ -37,6 +37,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
+/**
+ * ChannelService의 주요 기능(공개/비공개 채널 생성, 수정, 삭제 등)에 대한 단위 테스트 클래스입니다.
+ * <p>
+ * - 채널 생성, 수정, 삭제, 예외 상황 등을 검증합니다.
+ * - Mockito를 활용한 Mock 객체 기반 테스트입니다.
+ */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ChannelService 단위 테스트")
 public class ChannelServiceTest {
@@ -75,8 +81,11 @@ public class ChannelServiceTest {
     @DisplayName("공개 채널 생성 테스트")
     class CreatePublicChannelTests {
 
+        /**
+         * [성공] 공개 채널을 정상적으로 생성하는지 검증합니다.
+         */
         @Test
-        @DisplayName("공개 채널 생성 성공")
+        @DisplayName("[성공] 공개 채널 생성")
         void shouldCreatePublicChannelSuccessfully() {
 
             // Given
@@ -92,8 +101,11 @@ public class ChannelServiceTest {
             then(channelRepository).should().save(any(Channel.class));
         }
 
+        /**
+         * [실패] DB 제약조건 위반 시 예외가 발생하는지 검증합니다.
+         */
         @Test
-        @DisplayName("공개 채널 생성 실패 - DB 제약조건 위반")
+        @DisplayName("[실패] 공개 채널 생성 - DB 제약조건 위반")
         void shouldFailToCreatePublicChannel_WhenDBConstraintViolation() {
 
             // Given
@@ -112,8 +124,11 @@ public class ChannelServiceTest {
     @DisplayName("비공개 채널 생성 테스트")
     class CreatePrivateChannelTests {
 
+        /**
+         * [성공] 비공개 채널을 정상적으로 생성하는지 검증합니다.
+         */
         @Test
-        @DisplayName("비공개 채널 생성 성공")
+        @DisplayName("[성공] 비공개 채널 생성")
         void shouldCreatePrivateChannelSuccessfully() {
             // Given
             List<UUID> participantIds = List.of(userId);
@@ -133,8 +148,11 @@ public class ChannelServiceTest {
             then(readStatusRepository).should().save(any(ReadStatus.class));
         }
 
+        /**
+         * [성공] 비공개 채널 생성 시 참여자가 존재하지 않을 때의 동작을 검증합니다.
+         */
         @Test
-        @DisplayName("비공개 채널 생성 성공 - 참여자가 존재하지 않음")
+        @DisplayName("[성공] 비공개 채널 생성 - 참여자 없음")
         void shouldHandleMissingParticipantsGracefully() {
             // Given
             List<UUID> participantIds = List.of(userId);
