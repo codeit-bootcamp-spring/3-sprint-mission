@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.transaction.Transactional;
 import java.awt.print.Pageable;
 import java.time.Instant;
@@ -24,9 +25,11 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
@@ -35,7 +38,7 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-
+    private final BinaryContentStorage binaryContentStorage;
     private final MessageMapper messageMapper;
     private final PageResponseMapper pageResponseMapper;
 
@@ -58,8 +61,11 @@ public class BasicMessageService implements MessageService {
                     String contentType = attachmentRequest.contentType();
                     byte[] bytes = attachmentRequest.bytes();
 
-                    BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType, bytes);
+                    BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
                     binaryContentRepository.save(binaryContent);
+                    binaryContentStorage.put(binaryContent.getId(), bytes);
+                    log.info("BinaryContent creation complete: id={}, fileName={}, size={}",
+                        binaryContent.getId(), fileName, bytes.length);
                     return binaryContent;
                 })
                 .toList();
@@ -72,24 +78,24 @@ public class BasicMessageService implements MessageService {
                 attachments
         );
         messageRepository.save(message);
+        log.info("Message creation complete: id={}", message.getId());
 
-        return messageMapper.messageToMessageDto(message);
+        return messageMapper.toDto(message);
     }
 
-    @Transactional
     @Override
     public MessageDto find(UUID messageId) {
         return messageRepository.findById(messageId)
-            .map(messageMapper::messageToMessageDto)
+            .map(messageMapper::toDto)
             .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
     }
 
-    @Transactional
     @Override
     public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createdAt, Pageable pageable) {
         Slice<MessageDto> slice = messageRepository.findAllByChannelIdWithAuthor(channelId,
-                Optional.ofNullable(createdAt).orElse(Instant.now()), pageable)
-            .map(messageMapper::messageToMessageDto);
+                Optional.ofNullable(createdAt).orElse(Instant.now()),
+                pageable)
+            .map(messageMapper::toDto);
 
         Instant nextCursor = null;
         if (!slice.getContent().isEmpty()) {
@@ -106,7 +112,9 @@ public class BasicMessageService implements MessageService {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
         message.update(newContent);
-        return messageMapper.messageToMessageDto(message);
+        log.info("Message modification complete: id={}", messageId);
+
+        return messageMapper.toDto(message);
     }
 
     @Transactional
@@ -117,6 +125,7 @@ public class BasicMessageService implements MessageService {
 
         message.getAttachments()
                 .forEach(attachment -> binaryContentRepository.deleteById(attachment.getId()));
+        log.info("Message deletion complete: id={}", messageId);
 
         messageRepository.deleteById(messageId);
     }

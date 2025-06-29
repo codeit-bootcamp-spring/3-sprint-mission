@@ -9,11 +9,13 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +44,7 @@ import org.springframework.web.multipart.MultipartFile;
  *   - (옵션) 응답 헤더 정의
  * */
 
+@Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 @RestController
@@ -77,7 +80,7 @@ public class UserController {
     )
     public ResponseEntity<UserDto> update(
             @PathVariable("userId") UUID userId,
-            @RequestPart("userUpdateRequest") UserUpdateRequest request,
+            @RequestPart("userUpdateRequest") @Valid UserUpdateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
@@ -110,7 +113,7 @@ public class UserController {
     @PatchMapping(path = "{userId}/userStatus")
     public ResponseEntity<UserStatusDto> updateStatus(
             @PathVariable("userId") UUID userId,
-            @RequestBody UserStatusUpdateRequest request
+            @RequestBody @Valid UserStatusUpdateRequest request
     ) {
         UserStatusDto updatedStatus = userStatusService.updateByUserId(userId, request);
         return ResponseEntity.ok(updatedStatus);

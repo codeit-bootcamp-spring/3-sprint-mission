@@ -6,9 +6,11 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.service.ChannelService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/channels")
 @RestController
@@ -33,7 +36,7 @@ public class ChannelController {
      * 공개 채널 생성
      */
     @PostMapping(path = "public")
-    public ResponseEntity<ChannelDto> create(@RequestBody PublicChannelCreateRequest request) {
+    public ResponseEntity<ChannelDto> create(@RequestBody @Valid PublicChannelCreateRequest request) {
         ChannelDto createdChannel = channelService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
     }
@@ -42,7 +45,7 @@ public class ChannelController {
      * 비공개 채널 생성
      */
     @PostMapping(path = "private")
-    public ResponseEntity<ChannelDto> create(@RequestBody PrivateChannelCreateRequest request) {
+    public ResponseEntity<ChannelDto> create(@RequestBody @Valid PrivateChannelCreateRequest request) {
         ChannelDto createdChannel = channelService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
     }
@@ -53,7 +56,7 @@ public class ChannelController {
     @PatchMapping(path = "{channelId}")
     public ResponseEntity<ChannelDto> update(
             @PathVariable("channelId") UUID channelId,
-            @RequestBody PublicChannelUpdateRequest request
+            @RequestBody @Valid PublicChannelUpdateRequest request
     ) {
         ChannelDto udpatedChannel = channelService.update(channelId, request);
         return ResponseEntity.ok(udpatedChannel);

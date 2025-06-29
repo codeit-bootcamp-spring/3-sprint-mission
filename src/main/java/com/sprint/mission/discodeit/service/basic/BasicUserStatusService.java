@@ -16,8 +16,10 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class BasicUserStatusService implements UserStatusService {
@@ -42,20 +44,20 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = new UserStatus(user, lastActiveAt);
         userStatusRepository.save(userStatus);
 
-        return userStatusMapper.userStatusToUserStatusDto(userStatus);
+        return userStatusMapper.toDto(userStatus);
     }
 
     @Override
     public UserStatusDto find(UUID userStatusId) {
         return userStatusRepository.findById(userStatusId)
-            .map(userStatusMapper::userStatusToUserStatusDto)
+            .map(userStatusMapper::toDto)
             .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
     }
 
     @Override
     public List<UserStatusDto> findAll() {
         return userStatusRepository.findAll().stream()
-            .map(userStatusMapper::userStatusToUserStatusDto)
+            .map(userStatusMapper::toDto)
             .toList();
     }
 
@@ -68,7 +70,7 @@ public class BasicUserStatusService implements UserStatusService {
                 .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
         userStatus.update(newLastActiveAt);
 
-        return userStatusMapper.userStatusToUserStatusDto(userStatus);
+        return userStatusMapper.toDto(userStatus);
     }
 
     @Transactional
@@ -80,7 +82,7 @@ public class BasicUserStatusService implements UserStatusService {
                 .orElseThrow(() -> new NoSuchElementException("UserStatus with userId " + userId + " not found"));
         userStatus.update(newLastActiveAt);
 
-        return userStatusMapper.userStatusToUserStatusDto(userStatus);
+        return userStatusMapper.toDto(userStatus);
     }
 
     @Transactional
