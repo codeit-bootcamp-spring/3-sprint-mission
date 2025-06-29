@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.mapper;
 import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -33,7 +32,7 @@ public class ChannelMapper {
             .findFirst()
             .orElse(Instant.MIN);
 
-        if (channel.getType().equals(ChannelType.PRIVATE)) {
+        if (channel.isPrivate()) {
             participants = readStatusRepository.findByChannelId(channel.getId())
                 .stream()
                 .map(ReadStatus::getUser)

@@ -5,9 +5,9 @@ import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/binaryContents")
+@Slf4j
 public class BinaryContentController implements BinaryContentApi {
 
     private final BinaryContentService binaryContentService;
@@ -28,8 +29,8 @@ public class BinaryContentController implements BinaryContentApi {
     @Override
     public ResponseEntity<BinaryContentDto> find(
         @PathVariable("binaryContentId") UUID binaryContentId) {
-        BinaryContentDto file = binaryContentService.findById(binaryContentId)
-            .orElseThrow(() -> new NoSuchElementException("파일 조회에 실패하였습니다.: " + binaryContentId));
+
+        BinaryContentDto file = binaryContentService.findById(binaryContentId);
 
         return ResponseEntity
             .status(HttpStatus.OK)
@@ -49,11 +50,9 @@ public class BinaryContentController implements BinaryContentApi {
 
     @GetMapping("/{binaryContentId}/download")
     public ResponseEntity<?> download(@PathVariable("binaryContentId") UUID binaryContentId) {
-        BinaryContentDto binaryContentDto = binaryContentService.findById(binaryContentId)
-            .orElseThrow(() -> new NoSuchElementException("파일 조회에 실패하였습니다.: " + binaryContentId));
+        log.info("파일 다운로드 요청 - 파일ID: {}", binaryContentId);
+        BinaryContentDto binaryContentDto = binaryContentService.findById(binaryContentId);
 
-        ResponseEntity<?> response = binaryContentStorage.download(binaryContentDto);
-
-        return response;
+        return binaryContentStorage.download(binaryContentDto);
     }
 }

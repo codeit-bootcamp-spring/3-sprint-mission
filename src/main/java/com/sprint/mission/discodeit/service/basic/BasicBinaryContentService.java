@@ -3,11 +3,14 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +30,10 @@ public class BasicBinaryContentService implements BinaryContentService {
     public BinaryContentDto create(BinaryContentCreateRequest request, UUID userId,
         UUID messageId) {
         if (!request.isValid()) {
-            throw new IllegalArgumentException("유효하지 않은 파일 정보입니다.");
+            throw new DiscodeitException(
+                ErrorCode.BINARY_CONTENT_INVALID,
+                Map.of("fileName", request.fileName())
+            );
         }
 
         String fileName = request.fileName();
@@ -44,17 +50,23 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<BinaryContentDto> findById(UUID id) {
+    public BinaryContentDto findById(UUID id) {
         return binaryContentRepository.findById(id)
-            .map(binaryContentMapper::toDto);
+            .map(binaryContentMapper::toDto)
+            .orElseThrow(() -> new DiscodeitException(
+                ErrorCode.BINARY_CONTENT_NOT_FOUND,
+                Map.of("binaryContentId", id)
+            ));
     }
 
     @Override
     public List<BinaryContentDto> findAllByIdIn(
         List<UUID> ids) {
         if (ids == null || ids.isEmpty()) {
-            throw new IllegalArgumentException(
-                "ID 리스트가 비어있거나 null입니다.");
+            throw new DiscodeitException(
+                ErrorCode.BINARY_CONTENT_INVALID,
+                Map.of("ids", ids == null ? "null" : "empty")
+            );
         }
 
         return ids
