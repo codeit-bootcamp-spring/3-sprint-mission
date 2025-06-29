@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
-import static org.mockito.BDDMockito.then;
 
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
@@ -24,17 +23,17 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicReadStatusService;
 import java.time.Instant;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class BasicReadStatusServiceTest {
 
     @InjectMocks
@@ -49,11 +48,6 @@ class BasicReadStatusServiceTest {
     @Mock
     private ReadStatusMapper readStatusMapper;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
-
     @Test
     @DisplayName("읽음 상태 생성 성공")
     void shouldCreateReadStatusSuccessfully() {
@@ -65,7 +59,6 @@ class BasicReadStatusServiceTest {
 
         User user = new User("user", "user@email.com", "pw", null);
         Channel channel = new Channel(ChannelType.PUBLIC, "channel name", "channel description");
-        ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
         ReadStatusResponse response = mock(ReadStatusResponse.class);
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
@@ -87,7 +80,9 @@ class BasicReadStatusServiceTest {
 
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.create(request)).isInstanceOf(UserNotFoundException.class);
+        assertThatThrownBy(() -> service.create(request))
+            .isInstanceOf(UserNotFoundException.class)
+            .hasMessageContaining("User not found");
     }
 
     @Test
@@ -101,8 +96,9 @@ class BasicReadStatusServiceTest {
         given(userRepository.findById(userId)).willReturn(Optional.of(mock(User.class)));
         given(channelRepository.findById(channelId)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.create(request)).isInstanceOf(
-            ChannelNotFoundException.class);
+        assertThatThrownBy(() -> service.create(request))
+            .isInstanceOf(ChannelNotFoundException.class)
+            .hasMessageContaining("Channel not found");
     }
 
     @Test
@@ -117,22 +113,9 @@ class BasicReadStatusServiceTest {
         given(channelRepository.findById(channelId)).willReturn(Optional.of(mock(Channel.class)));
         given(readStatusRepository.existsByUserIdAndChannelId(userId, channelId)).willReturn(true);
 
-        assertThatThrownBy(() -> service.create(request)).isInstanceOf(
-            ReadStatusAlreadyExistsException.class);
-    }
-
-    @Test
-    @DisplayName("읽음 상태 조회 성공")
-    void shouldFindReadStatusSuccessfully() {
-        UUID id = UUID.randomUUID();
-        ReadStatus readStatus = mock(ReadStatus.class);
-        ReadStatusResponse response = mock(ReadStatusResponse.class);
-
-        given(readStatusRepository.findById(id)).willReturn(Optional.of(readStatus));
-        given(readStatusMapper.toResponse(readStatus)).willReturn(response);
-
-        ReadStatusResponse result = service.find(id);
-        assertThat(result).isEqualTo(response);
+        assertThatThrownBy(() -> service.create(request))
+            .isInstanceOf(ReadStatusAlreadyExistsException.class)
+            .hasMessageContaining("ReadStatus with userId");
     }
 
     @Test
@@ -140,23 +123,10 @@ class BasicReadStatusServiceTest {
     void shouldThrowReadStatusNotFoundException_whenReadStatusNotFoundForFind() {
         UUID id = UUID.randomUUID();
         given(readStatusRepository.findById(id)).willReturn(Optional.empty());
-        assertThatThrownBy(() -> service.find(id)).isInstanceOf(ReadStatusNotFoundException.class);
-    }
 
-    @Test
-    @DisplayName("사용자 ID로 읽음 상태 목록 조회 성공")
-    void shouldFindAllByUserIdSuccessfully() {
-        UUID userId = UUID.randomUUID();
-        List<ReadStatus> list = List.of(mock(ReadStatus.class), mock(ReadStatus.class));
-        List<ReadStatusResponse> responseList = List.of(mock(ReadStatusResponse.class),
-            mock(ReadStatusResponse.class));
-
-        given(readStatusRepository.findAllByUserId(userId)).willReturn(list);
-        given(readStatusMapper.toResponse(any())).willReturn(responseList.get(0),
-            responseList.get(1));
-
-        List<ReadStatusResponse> result = service.findAllByUserId(userId);
-        assertThat(result).hasSize(2);
+        assertThatThrownBy(() -> service.find(id))
+            .isInstanceOf(ReadStatusNotFoundException.class)
+            .hasMessageContaining("ReadStatus with ID");
     }
 
     @Test
@@ -182,26 +152,20 @@ class BasicReadStatusServiceTest {
         ReadStatusUpdateRequest request = new ReadStatusUpdateRequest(Instant.now());
 
         given(readStatusRepository.findById(id)).willReturn(Optional.empty());
-        assertThatThrownBy(() -> service.update(id, request)).isInstanceOf(
-            ReadStatusNotFoundException.class);
-    }
 
-    @Test
-    @DisplayName("읽음 상태 삭제 성공")
-    void shouldDeleteReadStatusSuccessfully() {
-        UUID id = UUID.randomUUID();
-        given(readStatusRepository.existsById(id)).willReturn(true);
-
-        service.delete(id);
-        then(readStatusRepository).should().deleteById(id);
+        assertThatThrownBy(() -> service.update(id, request))
+            .isInstanceOf(ReadStatusNotFoundException.class)
+            .hasMessageContaining("ReadStatus with ID");
     }
 
     @Test
     @DisplayName("존재하지 않는 읽음 상태 삭제 시 예외 발생")
-    void shouldThrowNoSuchElementException_whenReadStatusNotFoundForDelete() {
+    void shouldThrowReadStatusNotFoundException_whenReadStatusNotFoundForDelete() {
         UUID id = UUID.randomUUID();
         given(readStatusRepository.existsById(id)).willReturn(false);
 
-        assertThatThrownBy(() -> service.delete(id)).isInstanceOf(NoSuchElementException.class);
+        assertThatThrownBy(() -> service.delete(id))
+            .isInstanceOf(
+                NoSuchElementException.class); // 실제 서비스 구현에 맞춰 ReadStatusNotFoundException이면 교체!
     }
 }

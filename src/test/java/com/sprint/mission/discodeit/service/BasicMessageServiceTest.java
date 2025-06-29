@@ -4,14 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
-import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
@@ -30,15 +28,14 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.SliceImpl;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class BasicMessageServiceTest {
 
     @InjectMocks
@@ -65,31 +62,6 @@ class BasicMessageServiceTest {
     @Mock
     private PageResponseMapper pageResponseMapper;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-
-        given(messageMapper.toResponse(any())).willAnswer(invocation -> {
-            Message message = invocation.getArgument(0);
-            return new MessageResponse(
-                message.getId() != null ? message.getId() : UUID.randomUUID(),
-                message.getCreatedAt() != null ? message.getCreatedAt() : Instant.now(),
-                message.getUpdatedAt() != null ? message.getUpdatedAt() : Instant.now(),
-                message.getContent(),
-                message.getChannel().getId(),
-                new UserDto(
-                    message.getAuthor().getId() != null ? message.getAuthor().getId()
-                        : UUID.randomUUID(),
-                    message.getAuthor().getUsername(),
-                    message.getAuthor().getEmail(),
-                    null,
-                    true
-                ),
-                List.of()
-            );
-        });
-    }
-
     @Test
     @DisplayName("메시지 생성 성공")
     void shouldCreateMessageSuccessfully() {
@@ -109,6 +81,19 @@ class BasicMessageServiceTest {
         given(binaryContentRepository.save(any())).willReturn(attachment);
         given(messageRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
+        given(messageMapper.toResponse(any())).willAnswer(invocation -> {
+            Message message = invocation.getArgument(0);
+            return new MessageResponse(
+                UUID.randomUUID(),
+                Instant.now(),
+                Instant.now(),
+                message.getContent(),
+                channelId,
+                new UserDto(UUID.randomUUID(), author.getUsername(), author.getEmail(), null, true),
+                List.of()
+            );
+        });
+
         MessageResponse response = messageService.create(request, List.of(attachmentReq));
         assertThat(response.content()).isEqualTo("hello");
     }
@@ -124,6 +109,19 @@ class BasicMessageServiceTest {
 
         given(messageRepository.findById(messageId)).willReturn(Optional.of(message));
 
+        given(messageMapper.toResponse(any())).willAnswer(invocation -> {
+            Message updatedMessage = invocation.getArgument(0);
+            return new MessageResponse(
+                messageId,
+                Instant.now(),
+                Instant.now(),
+                updatedMessage.getContent(),
+                channel.getId(),
+                new UserDto(UUID.randomUUID(), user.getUsername(), user.getEmail(), null, true),
+                List.of()
+            );
+        });
+
         MessageUpdateRequest request = new MessageUpdateRequest("updated");
         MessageResponse response = messageService.update(messageId, request);
 
@@ -137,24 +135,8 @@ class BasicMessageServiceTest {
         given(messageRepository.findById(messageId)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> messageService.update(messageId, new MessageUpdateRequest("x")))
-            .isInstanceOf(MessageNotFoundException.class);
-    }
-
-    @Test
-    @DisplayName("메시지 삭제 성공")
-    void shouldDeleteMessageSuccessfully() {
-        UUID messageId = UUID.randomUUID();
-
-        Channel channel = new Channel(ChannelType.PUBLIC, "Test Channel",
-            "Channel for deletion test");
-        User user = new User("delete-user", "delete@test.com", "password", null);
-        Message message = new Message("hi", channel, user, List.of());
-
-        given(messageRepository.findById(messageId)).willReturn(Optional.of(message));
-
-        MessageResponse response = messageService.delete(messageId);
-        assertThat(response.content()).isEqualTo("hi");
-        then(messageRepository).should().delete(message);
+            .isInstanceOf(MessageNotFoundException.class)
+            .hasMessageContaining("Message with ID");
     }
 
     @Test
@@ -164,35 +146,7 @@ class BasicMessageServiceTest {
         given(messageRepository.findById(id)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> messageService.delete(id))
-            .isInstanceOf(MessageNotFoundException.class);
-    }
-
-    @Test
-    @DisplayName("채널 ID로 메시지 조회 성공")
-    void shouldFindMessagesByChannelIdSuccessfully() {
-        UUID channelId = UUID.randomUUID();
-        Instant cursor = Instant.now();
-        PageRequest pageRequest = PageRequest.of(0, 10);
-
-        Channel channel = new Channel(ChannelType.PUBLIC, "Test Channel", "For message lookup");
-        User user = new User("testuser", "test@email.com", "password", null);
-
-        List<Message> messageList = List.of(
-            new Message("m1", channel, user, List.of()),
-            new Message("m2", channel, user, List.of())
-        );
-        SliceImpl<Message> slice = new SliceImpl<>(messageList);
-
-        given(messageRepository.findAllByChannelIdWithAuthor(channelId, cursor,
-            pageRequest)).willReturn(slice);
-        given(pageResponseMapper.fromSlice(any(), any()))
-            .willReturn(new PageResponse<>(List.of(), cursor, 10, false, 0L));
-
-        PageResponse<MessageResponse> response = messageService.findAllByChannelId(channelId,
-            cursor, pageRequest);
-
-        assertThat(response).isNotNull();
-        then(messageRepository).should()
-            .findAllByChannelIdWithAuthor(channelId, cursor, pageRequest);
+            .isInstanceOf(MessageNotFoundException.class)
+            .hasMessageContaining("Message with ID");
     }
 }

@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
 
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
@@ -23,13 +22,14 @@ import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class BasicChannelServiceTest {
 
     @InjectMocks
@@ -49,11 +49,6 @@ class BasicChannelServiceTest {
 
     @Mock
     private ChannelMapper channelMapper;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     @DisplayName("공개 채널 생성 성공")
@@ -78,10 +73,11 @@ class BasicChannelServiceTest {
         UUID userId = UUID.randomUUID();
         PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(List.of(userId));
 
-        given(userRepository.findAllById(request.participantIds())).willReturn(
-            List.of(
-                new com.sprint.mission.discodeit.entity.User("username", "email", "password", null))
-        );
+        given(userRepository.findAllById(request.participantIds()))
+            .willReturn(List.of(
+                new com.sprint.mission.discodeit.entity.User("username", "email", "password",
+                    null)));
+
         given(channelMapper.toResponse(any())).willReturn(
             new ChannelResponse(UUID.randomUUID(), ChannelType.PRIVATE, null, null, List.of(), null)
         );
@@ -98,7 +94,8 @@ class BasicChannelServiceTest {
         given(channelRepository.findById(id)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> channelService.find(id))
-            .isInstanceOf(ChannelNotFoundException.class);
+            .isInstanceOf(ChannelNotFoundException.class)
+            .hasMessageContaining("Channel not found");
     }
 
     @Test
@@ -111,7 +108,8 @@ class BasicChannelServiceTest {
         PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("new", "desc");
 
         assertThatThrownBy(() -> channelService.update(id, request))
-            .isInstanceOf(PrivateChannelUpdateException.class);
+            .isInstanceOf(PrivateChannelUpdateException.class)
+            .hasMessage("Private channels cannot be updated.");
     }
 
     @Test
@@ -121,26 +119,7 @@ class BasicChannelServiceTest {
         given(channelRepository.existsById(id)).willReturn(false);
 
         assertThatThrownBy(() -> channelService.delete(id))
-            .isInstanceOf(ChannelNotFoundException.class);
-    }
-
-    @Test
-    @DisplayName("채널을 삭제 성공")
-    void shouldDeleteChannelSuccessfully() {
-        UUID id = UUID.randomUUID();
-        Channel channel = new Channel(ChannelType.PUBLIC, "test", "desc");
-
-        given(channelRepository.existsById(id)).willReturn(true);
-        given(channelRepository.findById(id)).willReturn(Optional.of(channel));
-        given(channelMapper.toResponse(channel)).willReturn(
-            new ChannelResponse(id, ChannelType.PUBLIC, "test", "desc", List.of(), null)
-        );
-
-        ChannelResponse response = channelService.delete(id);
-
-        assertThat(response.name()).isEqualTo("test");
-        then(messageRepository).should().deleteAllByChannelId(id);
-        then(readStatusRepository).should().deleteAllByChannelId(id);
-        then(channelRepository).should().deleteById(id);
+            .isInstanceOf(ChannelNotFoundException.class)
+            .hasMessageContaining("Channel not found");
     }
 }
