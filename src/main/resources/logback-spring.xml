@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-
-    <!-- 로그 파일 저장 경로 설정 -->
+옥티
     <property name="LOG_PATH" value="./logs"/>
     <property name="LOG_FILE_NAME" value="discodeit"/>
 
