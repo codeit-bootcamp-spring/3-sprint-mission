@@ -38,3 +38,6 @@ out/
 .vscode/
 
 **/storage
+
+.env
+.env.*
