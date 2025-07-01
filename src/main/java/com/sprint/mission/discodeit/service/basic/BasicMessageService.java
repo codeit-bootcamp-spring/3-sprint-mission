@@ -11,6 +11,8 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
@@ -56,19 +58,13 @@ public class BasicMessageService implements MessageService {
         Channel channel = channelRepository.findById(messageRequest.channelId())
             .orElseThrow(() -> {
                 log.error("메시지 생성 실패 - 존재하지 않는 채널ID: {}", messageRequest.channelId());
-                return new DiscodeitException(
-                    ErrorCode.CHANNEL_NOT_FOUND,
-                    Map.of("channelId", messageRequest.channelId())
-                );
+                return ChannelNotFoundException.withId(messageRequest.channelId());
             });
 
         User author = userRepository.findById(messageRequest.authorId())
             .orElseThrow(() -> {
                 log.error("메시지 생성 실패 - 존재하지 않는 유저ID: {}", messageRequest.authorId());
-                return new UserNotFoundException(
-                    ErrorCode.USER_NOT_FOUND,
-                    Map.of("userId", messageRequest.authorId())
-                );
+                return UserNotFoundException.withId(messageRequest.authorId());
             });
 
         List<BinaryContent> attachmentIds = new ArrayList<>();
@@ -110,10 +106,7 @@ public class BasicMessageService implements MessageService {
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> {
                 log.error("메시지 목록 조회 실패 - 존재하지 않는 채널 ID: {}", channelId);
-                return new DiscodeitException(
-                    ErrorCode.CHANNEL_NOT_FOUND,
-                    Map.of("channelId", channelId)
-                );
+                return ChannelNotFoundException.withId(channelId);
             });
 
         Slice<Message> slice = messageRepository.findAllByChannelIdWithAuthor(channelId,
@@ -138,10 +131,7 @@ public class BasicMessageService implements MessageService {
         Message msg = messageRepository.findById(messageId)
             .orElseThrow(() -> {
                 log.error("메시지 수정 실패 - 존재하지 않는 메시지ID: {}", messageId);
-                return new DiscodeitException(
-                    ErrorCode.MESSAGE_NOT_FOUND,
-                    Map.of("messageId", messageId)
-                );
+                return MessageNotFoundException.withId(messageId);
             });
 
         msg.updateContent(request.newContent());
@@ -156,10 +146,7 @@ public class BasicMessageService implements MessageService {
         Message msg = messageRepository.findById(messageId)
             .orElseThrow(() -> {
                 log.error("메시지 삭제 실패 - 존재하지 않는 메시지ID: {}", messageId);
-                return new DiscodeitException(
-                    ErrorCode.MESSAGE_NOT_FOUND,
-                    Map.of("messageId", messageId)
-                );
+                return MessageNotFoundException.withId(messageId);
             });
 
         if (!msg.getAuthor().getId().equals(senderId)) {

@@ -8,6 +8,8 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusAlreadyExistException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -32,16 +34,10 @@ public class BasicUserStatusService implements UserStatusService {
         UUID userId = request.userId();
 
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new UserNotFoundException(
-                ErrorCode.USER_NOT_FOUND,
-                Map.of("userId", userId)
-            ));
+            .orElseThrow(() -> UserNotFoundException.withId(userId));
 
         if (userStatusRepository.findByUserId(userId).isPresent()) {
-            throw new DiscodeitException(
-                ErrorCode.USER_STATUS_ALREADY_EXISTS,
-                Map.of("userId", userId)
-            );
+            throw UserStatusAlreadyExistException.withUserId(userId);
         }
 
         UserStatus status = new UserStatus(user, request.lastActiveAt());
@@ -53,10 +49,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public UserStatusDto findById(UUID id) {
         UserStatus userStatus = userStatusRepository.findById(id)
-            .orElseThrow(() -> new DiscodeitException(
-                ErrorCode.USER_STATUS_NOT_FOUND,
-                Map.of("userStatusId", id)
-            ));
+            .orElseThrow(() -> UserStatusNotFoundException.withId(id));
         return userStatusMapper.toDto(userStatus);
     }
 
@@ -65,10 +58,7 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request) {
 
         UserStatus status = userStatusRepository.findById(userStatusId)
-            .orElseThrow(() -> new DiscodeitException(
-                ErrorCode.USER_STATUS_NOT_FOUND,
-                Map.of("userStatusId", userStatusId)
-            ));
+            .orElseThrow(() -> UserStatusNotFoundException.withId(userStatusId));
 
         status.update(request.newLastActiveAt());
         UserStatus updatedUserStatus = userStatusRepository.save(status);
@@ -80,10 +70,7 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
 
         UserStatus status = userStatusRepository.findByUserId(userId)
-            .orElseThrow(() -> new DiscodeitException(
-                ErrorCode.USER_STATUS_NOT_FOUND,
-                Map.of("userId", userId)
-            ));
+            .orElseThrow(() -> UserStatusNotFoundException.withUserId(userId));
 
         status.update(request.newLastActiveAt());
         UserStatus updatedUserStatus = userStatusRepository.save(status);

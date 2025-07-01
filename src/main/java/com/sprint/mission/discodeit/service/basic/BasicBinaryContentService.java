@@ -3,14 +3,13 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.exception.DiscodeitException;
-import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentInvalidException;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +29,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     public BinaryContentDto create(BinaryContentCreateRequest request, UUID userId,
         UUID messageId) {
         if (!request.isValid()) {
-            throw new DiscodeitException(
-                ErrorCode.BINARY_CONTENT_INVALID,
-                Map.of("fileName", request.fileName())
-            );
+            throw BinaryContentInvalidException.withFile(request.fileName());
         }
 
         String fileName = request.fileName();
@@ -53,20 +49,14 @@ public class BasicBinaryContentService implements BinaryContentService {
     public BinaryContentDto findById(UUID id) {
         return binaryContentRepository.findById(id)
             .map(binaryContentMapper::toDto)
-            .orElseThrow(() -> new DiscodeitException(
-                ErrorCode.BINARY_CONTENT_NOT_FOUND,
-                Map.of("binaryContentId", id)
-            ));
+            .orElseThrow(() -> BinaryContentNotFoundException.withId(id));
     }
 
     @Override
     public List<BinaryContentDto> findAllByIdIn(
         List<UUID> ids) {
         if (ids == null || ids.isEmpty()) {
-            throw new DiscodeitException(
-                ErrorCode.BINARY_CONTENT_INVALID,
-                Map.of("ids", ids == null ? "null" : "empty")
-            );
+            throw BinaryContentInvalidException.missingFile();
         }
 
         return ids
