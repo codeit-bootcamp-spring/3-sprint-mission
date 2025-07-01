@@ -1,10 +1,4 @@
 spring:
-  boot:
-    admin:
-      client:
-        enabled: false
-        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
-
   datasource:
     url: jdbc:postgresql://database-1.c1648sy8849e.ap-northeast-2.rds.amazonaws.com:5432/discodeit
     driver-class-name: org.postgresql.Driver
