@@ -1,0 +1,30 @@
+/.gradle
+/build
+/target
+
+# IntelliJ IDEA
+*.iml
+.idea
+*.iws
+*.ipr
+out/
+.vscode/
+
+# OS
+.DS_Store
+
+# 로그 파일
+*.log
+
+.gitignore
+.git
+README.md
+Dockerfile
+.dockerignore
+
+# 환경 설정 파일
+.env
+
+# 임시 파일
+*.tmp
+*.swp
