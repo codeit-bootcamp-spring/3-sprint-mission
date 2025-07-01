@@ -35,12 +35,14 @@ dependencies {
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
 
+    implementation 'software.amazon.awssdk:s3:2.31.7'
+
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.postgresql:postgresql:42.7.5'
     runtimeOnly 'com.h2database:h2'
 
     // Log4j2
-    runtimeOnly 'org.springframework.boot:spring-boot-starter-log4j2'
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
     implementation 'org.apache.logging.log4j:log4j-layout-template-json:2.20.0'
 
     // Tomcat log
@@ -57,9 +59,15 @@ dependencies {
     implementation 'org.mapstruct:mapstruct:1.6.3'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
-    // 테스트
+    /* 테스트 */
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'com.h2database:h2'
+
+    // .env 파일 로드용
+    testImplementation 'io.github.cdimascio:dotenv-java:3.0.2'
+
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
