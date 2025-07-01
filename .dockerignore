@@ -1,0 +1,45 @@
+# Gradle build directories (기존 빌드 결과는 제외, Docker에서 새로 빌드)
+build/
+.gradle/
+gradle-app.setting
+
+# gradle/wrapper는 Docker 빌드에 필요하므로 포함
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Git (Git 히스토리는 Docker 이미지에 불필요)
+.git/
+.gitignore
+
+# Docker files (Docker 빌드 시 자기 자신은 불필요)
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Environment files (.env는 런타임에 환경변수로 전달)
+.env
+.env.*
+
+# Documentation
+README.md
+*.md
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Test resources
+src/test/resources/images/
+
+# Temporary files
+*.tmp
+*.swp
+*.bak

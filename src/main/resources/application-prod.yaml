@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://database-1.c1648sy8849e.ap-northeast-2.rds.amazonaws.com:5432/discodeit
+    url:
     driver-class-name: org.postgresql.Driver
     username: ${DB_USER_NAME}
     password: ${DB_USER_PASSWORD}

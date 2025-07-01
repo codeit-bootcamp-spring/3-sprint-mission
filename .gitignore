@@ -56,3 +56,6 @@ data
 ### logs ###
 logs
 *.log
+
+### Docker ###
+.env*
