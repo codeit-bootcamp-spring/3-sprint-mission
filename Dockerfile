@@ -3,7 +3,7 @@ FROM amazoncorretto:17
 
 # 환경 변수 설정
 ENV PROJECT_NAME=3-sprint-mission
-ENV PROJECT_VERSION=1.2.-M8
+ENV PROJECT_VERSION=1.2-M8
 ENV JVM_OPTS=""
 
 # 작업 디렉토리 설정
