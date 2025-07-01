@@ -33,12 +33,6 @@ spring:
       platform: h2
       schema-locations:
         - classpath:schema-h2.sql
-  application:
-    name: discodeit
-  boot:
-    admin:
-      client:
-        url: http://localhost:9090
 
 discodeit:
   storage:
@@ -82,12 +76,6 @@ file:
 logging:
   file:
     path: logs
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, metrics, logger        # 엔드포인트 노출 (개발 환경용)
-      base-path: /actuator  # Actuator 엔드포인트 기본 경로
 
   endpoint:
     health:
@@ -114,24 +102,3 @@ management:
   metrics:
     tags:
       application: library-system  # 메트릭 태그 추가
-
-info:
-  app:
-    name: Discodeit
-    version: 1.7.0
-  java:
-    version: 17
-  spring-boot:
-    version: 3.4.0
-  datasource:
-    url: ${spring.datasource.url}
-    driver-class-name: ${spring.datasource.driver-class-name}
-  jpa:
-    ddl-auto: ${spring.jpa.hibernate.ddl-auto}
-  storage:
-    type: ${discodeit.storage.type}
-    path: ${discodeit.repository.file-directory}
-  multipart:
-    max-file-size: ${spring.servlet.multipart.max-file-size}
-    max-request-size: ${spring.servlet.multipart.max-request-size}
-

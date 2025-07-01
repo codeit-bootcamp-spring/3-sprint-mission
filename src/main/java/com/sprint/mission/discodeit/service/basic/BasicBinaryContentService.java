@@ -54,5 +54,4 @@ public class BasicBinaryContentService implements BinaryContentService {
 
         return binaryContentMapper.toDto(binaryContent);
     }
-
 }

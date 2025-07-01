@@ -12,8 +12,8 @@ import jakarta.validation.constraints.NotNull;
  * 최초 생성
  */
 public record UserUpdateRequest(
-    @NotNull String newUsername,
+    String newUsername,
     @Email String newEmail,
 //    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+{}\\[\\]:;<>,.?~\\\\/-]).{8,}$\n")
-    @NotNull String newPassword) {
+    String newPassword) {
 }

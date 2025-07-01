@@ -64,8 +64,6 @@ public class UserController implements UserApi {
         return ResponseEntity.ok(userService.update(userId, request, profileFile));
     }
 
-    //0 USER STATUS 에서 가져온 메서드
-    // 관심사 분리를 위해선 userStatus에서 하는게 맞지 않나? 메서드가 하나라 그냥 하는건가?
     @PatchMapping("/{userId}/userStatus")
     public ResponseEntity<JpaUserStatusResponse> updateTime(
             @PathVariable UUID userId,
