@@ -1,19 +1,5 @@
 package com.sprint.mission.discodeit.exception;
 
-import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.exception.user.DuplicateUserException;
-import com.sprint.mission.discodeit.exception.user.InvalidPasswordException;
-import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
-import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
-import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
-import com.sprint.mission.discodeit.exception.readstatus.DuplicateReadStatusException;
-import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
-import com.sprint.mission.discodeit.exception.binarycontent.FileUploadFailedException;
-import com.sprint.mission.discodeit.exception.binarycontent.FileDeleteFailedException;
-import com.sprint.mission.discodeit.exception.userstatus.InvalidUserStatusException;
-import com.sprint.mission.discodeit.exception.userstatus.DuplicateUserStatusException;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,176 +22,28 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GlobalExceptionHandler {
 
-  // === DiscodeitException 기본 처리 ===
+  // === DiscodeitException 통합 처리 ===
 
   /**
-   * 모든 DiscodeitException의 기본 처리기
-   * 하위 예외들이 처리되지 않은 경우 이 핸들러가 동작합니다.
+   * 모든 DiscodeitException의 통합 처리기
+   * 모든 커스텀 예외를 일관되게 처리합니다.
    */
   @ExceptionHandler(DiscodeitException.class)
   public ResponseEntity<ErrorResponse> handleDiscodeitException(DiscodeitException e) {
-    log.warn("Discodeit 예외 발생: {} - {}", e.getErrorCode(), e.getMessage());
+    // 로그 레벨을 ErrorCode의 HTTP 상태에 따라 결정
+    HttpStatus status = e.getErrorCode().getHttpStatus();
+    if (status.is5xxServerError()) {
+      log.error("서버 오류 발생: {} - {}", e.getErrorCode(), e.getMessage(), e);
+    } else if (status.is4xxClientError()) {
+      log.warn("클라이언트 오류: {} - {}", e.getErrorCode(), e.getMessage());
+    } else {
+      log.info("예외 발생: {} - {}", e.getErrorCode(), e.getMessage());
+    }
 
     ErrorResponse errorResponse = ErrorResponse.of(e);
-    HttpStatus status = e.getErrorCode().getHttpStatus();
 
     return ResponseEntity
         .status(status)
-        .body(errorResponse);
-  }
-
-  // === 사용자 관련 예외들 ===
-
-  @ExceptionHandler(UserNotFoundException.class)
-  public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException e) {
-    log.warn("사용자를 찾을 수 없음: {}", e.getMessage());
-
-    ErrorResponse errorResponse = ErrorResponse.of(e);
-
-    return ResponseEntity
-        .status(HttpStatus.NOT_FOUND)
-        .body(errorResponse);
-  }
-
-  @ExceptionHandler(DuplicateUserException.class)
-  public ResponseEntity<ErrorResponse> handleDuplicateUserException(DuplicateUserException e) {
-    log.warn("중복된 사용자: {}", e.getMessage());
-
-    ErrorResponse errorResponse = ErrorResponse.of(e);
-
-    return ResponseEntity
-        .status(HttpStatus.CONFLICT)
-        .body(errorResponse);
-  }
-
-  @ExceptionHandler(InvalidPasswordException.class)
-  public ResponseEntity<ErrorResponse> handleInvalidPasswordException(InvalidPasswordException e) {
-    log.warn("잘못된 비밀번호: {}", e.getMessage());
-
-    ErrorResponse errorResponse = ErrorResponse.of(e);
-
-    return ResponseEntity
-        .status(HttpStatus.UNAUTHORIZED)
-        .body(errorResponse);
-  }
-
-  // === 사용자 상태 관련 예외들 ===
-
-  @ExceptionHandler(InvalidUserStatusException.class)
-  public ResponseEntity<ErrorResponse> handleInvalidUserStatusException(InvalidUserStatusException e) {
-    log.warn("잘못된 사용자 상태: {}", e.getMessage());
-
-    ErrorResponse errorResponse = ErrorResponse.of(e);
-
-    return ResponseEntity
-        .status(HttpStatus.BAD_REQUEST)
-        .body(errorResponse);
-  }
-
-  @ExceptionHandler(DuplicateUserStatusException.class)
-  public ResponseEntity<ErrorResponse> handleDuplicateUserStatusException(DuplicateUserStatusException e) {
-    log.warn("중복된 사용자 상태: {}", e.getMessage());
-
-    ErrorResponse errorResponse = ErrorResponse.of(e);
-
-    return ResponseEntity
-        .status(HttpStatus.CONFLICT)
-        .body(errorResponse);
-  }
-
-  // === 채널 관련 예외들 ===
-
-  @ExceptionHandler(ChannelNotFoundException.class)
-  public ResponseEntity<ErrorResponse> handleChannelNotFoundException(ChannelNotFoundException e) {
-    log.warn("채널을 찾을 수 없음: {}", e.getMessage());
-
-    ErrorResponse errorResponse = ErrorResponse.of(e);
-
-    return ResponseEntity
-        .status(HttpStatus.NOT_FOUND)
-        .body(errorResponse);
-  }
-
-  @ExceptionHandler(PrivateChannelUpdateException.class)
-  public ResponseEntity<ErrorResponse> handlePrivateChannelUpdateException(PrivateChannelUpdateException e) {
-    log.warn("비공개 채널 수정 시도: {}", e.getMessage());
-
-    ErrorResponse errorResponse = ErrorResponse.of(e);
-
-    return ResponseEntity
-        .status(HttpStatus.FORBIDDEN)
-        .body(errorResponse);
-  }
-
-  // === 메시지 관련 예외들 ===
-
-  @ExceptionHandler(MessageNotFoundException.class)
-  public ResponseEntity<ErrorResponse> handleMessageNotFoundException(MessageNotFoundException e) {
-    log.warn("메시지를 찾을 수 없음: {}", e.getMessage());
-
-    ErrorResponse errorResponse = ErrorResponse.of(e);
-
-    return ResponseEntity
-        .status(HttpStatus.NOT_FOUND)
-        .body(errorResponse);
-  }
-
-  // === 읽기 상태 관련 예외들 ===
-
-  @ExceptionHandler(ReadStatusNotFoundException.class)
-  public ResponseEntity<ErrorResponse> handleReadStatusNotFoundException(ReadStatusNotFoundException e) {
-    log.warn("읽기 상태를 찾을 수 없음: {}", e.getMessage());
-
-    ErrorResponse errorResponse = ErrorResponse.of(e);
-
-    return ResponseEntity
-        .status(HttpStatus.NOT_FOUND)
-        .body(errorResponse);
-  }
-
-  @ExceptionHandler(DuplicateReadStatusException.class)
-  public ResponseEntity<ErrorResponse> handleDuplicateReadStatusException(DuplicateReadStatusException e) {
-    log.warn("중복된 읽기 상태: {}", e.getMessage());
-
-    ErrorResponse errorResponse = ErrorResponse.of(e);
-
-    return ResponseEntity
-        .status(HttpStatus.CONFLICT)
-        .body(errorResponse);
-  }
-
-  // === 바이너리 콘텐츠 관련 예외들 ===
-
-  @ExceptionHandler(BinaryContentNotFoundException.class)
-  public ResponseEntity<ErrorResponse> handleBinaryContentNotFoundException(BinaryContentNotFoundException e) {
-    log.warn("바이너리 콘텐츠를 찾을 수 없음: {}", e.getMessage());
-
-    ErrorResponse errorResponse = ErrorResponse.of(e);
-
-    return ResponseEntity
-        .status(HttpStatus.NOT_FOUND)
-        .body(errorResponse);
-  }
-
-  @ExceptionHandler(FileUploadFailedException.class)
-  public ResponseEntity<ErrorResponse> handleFileUploadFailedException(FileUploadFailedException e) {
-    log.error("파일 업로드 실패: {}", e.getMessage());
-
-    ErrorResponse errorResponse = ErrorResponse.of(e);
-
-    return ResponseEntity
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(errorResponse);
-  }
-
-  @ExceptionHandler(FileDeleteFailedException.class)
-  public ResponseEntity<ErrorResponse> handleFileDeleteFailedException(FileDeleteFailedException e) {
-    log.error("파일 삭제 실패: {}", e.getMessage());
-
-    ErrorResponse errorResponse = ErrorResponse.of(e);
-
-    return ResponseEntity
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(errorResponse);
   }
 

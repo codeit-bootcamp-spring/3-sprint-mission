@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.channel.DuplicateParticipantsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -127,8 +128,7 @@ class BasicChannelServiceTest {
 
     // When & Then
     assertThatThrownBy(() -> channelService.create(request))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("중복된 참가자가 있습니다.");
+        .isInstanceOf(DuplicateParticipantsException.class);
 
     then(channelRepository).should(never()).save(any(Channel.class));
   }

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.channel.DuplicateParticipantsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 
 import java.time.Instant;
@@ -141,12 +142,12 @@ public class BasicChannelService implements ChannelService {
    * 중복된 참가자가 있는지 확인합니다.
    * 
    * @param participantIds 검증할 참가자 ID 목록
-   * @throws IllegalArgumentException 중복된 참가자가 있는 경우
+   * @throws DuplicateParticipantsException 중복된 참가자가 있는 경우
    */
   private void validateParticipants(List<UUID> participantIds) {
     Set<UUID> uniqueParticipantIds = new HashSet<>(participantIds);
     if (uniqueParticipantIds.size() != participantIds.size()) {
-      throw new IllegalArgumentException("중복된 참가자가 있습니다.");
+      throw DuplicateParticipantsException.withParticipantIds(participantIds);
     }
   }
 
