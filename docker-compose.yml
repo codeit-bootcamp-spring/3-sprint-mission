@@ -36,10 +36,19 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       SERVER_PORT: ${APP_INTERNAL_PORT:-80}
       JVM_OPTS: ${JVM_OPTS:-}
+      # Storage Configuration
+      STORAGE_TYPE: ${STORAGE_TYPE:-local}
+      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH:storage}
+      # AWS S3 Configuration
+      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
+      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION:-600}
     ports:
       - "${APP_EXTERNAL_PORT:-8081}:${APP_INTERNAL_PORT:-80}"
     volumes:
-      - app_storage:/app/storage
+      - .discodeit/storage:/app/storage
     depends_on:
       postgres:
         condition: service_healthy
@@ -50,8 +59,6 @@ services:
 # 볼륨 정의
 volumes:
   postgres_data:
-    driver: local
-  app_storage:
     driver: local
 
 # 네트워크 정의
