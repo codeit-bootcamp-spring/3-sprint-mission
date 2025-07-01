@@ -19,6 +19,8 @@ services:
     build:
       context: .
     image: discodeit:local
+    env_file:
+      - .env
     container_name: spring-discodeit-app
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}

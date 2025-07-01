@@ -4,8 +4,11 @@ import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
+import com.sprint.mission.discodeit.storage.s3.AWSS3Test;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +45,8 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     private static final String PROFILE_PATH = "img";
     private static final Logger log = LoggerFactory.getLogger(LocalBinaryContentStorage.class);
 
+
     private final JpaBinaryContentRepository binaryContentRepository;
-
-
 
     private Path root;
 
@@ -63,12 +65,12 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         this.root = Paths.get(uploadPath);
     }
 
-
     @Override
     public UUID put(UUID binaryContentId, byte[] bytes) {
         log.info("upload profile image is {}",binaryContentId);
         BinaryContent attachment = binaryContentRepository.findById(binaryContentId).orElseThrow(() -> new IllegalStateException("image information is not saved"));
         Path path = resolvePath(binaryContentId, attachment.getExtension());
+
 
         // 사진 저장
         try (FileOutputStream fos = new FileOutputStream(path.toFile())) {

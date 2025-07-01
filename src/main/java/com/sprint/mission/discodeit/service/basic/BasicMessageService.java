@@ -4,12 +4,18 @@ import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse;
 import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
-import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.advanced.MessageMapper;
-import com.sprint.mission.discodeit.repository.jpa.*;
+import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
+import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
+import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +27,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic
@@ -45,8 +54,6 @@ public class BasicMessageService implements MessageService {
     private final JpaBinaryContentRepository binaryContentRepository;
     private final MessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
-
-
 
     @Override
     public AdvancedJpaPageResponse findAllByChannelIdAndCursor(UUID channelId, Instant cursor, Pageable pageable) {
@@ -90,6 +97,7 @@ public class BasicMessageService implements MessageService {
         List<BinaryContent> attachments = new ArrayList<>();
         if (hasValue(fileList)) {
             for (MultipartFile file : fileList) {
+
                 // BinaryContent 생성
                 BinaryContent attachment;
                 try {
