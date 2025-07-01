@@ -72,7 +72,8 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-tasks.withType(JavaCompile).configureEach {
+tasks.withType(JavaCompile) {
+    options.compilerArgs += ["-parameters"]
     options.compilerArgs += ['--add-modules', 'java.logging']
 }
 
