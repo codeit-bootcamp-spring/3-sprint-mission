@@ -14,9 +14,9 @@ import java.util.UUID;
  */
 public interface BinaryContentStorage {
 
-    UUID put(UUID BinaryContentId, byte[] bytes);
+    UUID put(UUID binaryContentId, byte[] bytes);
 
-    InputStream get(UUID BinaryContentId);
+    InputStream get(UUID binaryContentId);
 
     ResponseEntity<?> download(JpaBinaryContentResponse response);
 

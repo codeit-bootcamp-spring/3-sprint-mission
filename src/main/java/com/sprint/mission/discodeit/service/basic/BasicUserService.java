@@ -210,11 +210,16 @@ public class BasicUserService implements UserService {
             try {
                 String filename = file.getOriginalFilename();
                 String contentType = file.getContentType();
-                String extension = file.getOriginalFilename().substring(filename.lastIndexOf("."));
+                String extension = "";
+                if (filename != null && filename.contains(".")) {
+                    extension = filename.substring(filename.lastIndexOf("."));
+                }
 
                 byte[] bytes = file.getBytes();
+
                 binaryContent = new BinaryContent(filename, (long) bytes.length, contentType, extension);
                 binaryContentRepository.save(binaryContent);
+
                 binaryContentStorage.put(binaryContent.getId(), bytes);
             } catch (IOException e) {
                 throw new RuntimeException(e);

@@ -63,12 +63,14 @@ file:
     all:
       path: ./files/img
 
-# AWS 설정
-aws:
-  region: ${AWS_S3_REGION:}
-  credentials:
-    access-key: ${AWS_S3_ACCESS_KEY:}
-    secret-key: ${AWS_S3_SECRET_KEY:}
-  s3:
-    bucket: ${AWS_S3_BUCKET:}
+discodeit:
+  storage:
+    type: aws
+    s3:
+      access-key: ${AWS_S3_ACCESS_KEY}
+      secret-key: ${AWS_S3_SECRET_KEY}
+      region: ${AWS_S3_REGION}
+      bucket: ${AWS_S3_BUCKET}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
+
 

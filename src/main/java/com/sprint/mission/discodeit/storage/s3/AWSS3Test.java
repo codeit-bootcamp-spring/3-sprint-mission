@@ -10,7 +10,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.net.URI;
 import java.util.UUID;
 
 /**
@@ -26,10 +25,10 @@ public class AWSS3Test {
     private final String bucketName;
     private final String region;
 
-    public AWSS3Test(@Value("${aws.credentials.access-key:}") String accessKey,
-                     @Value("${aws.credentials.secret-key}") String secretKey,
-                     @Value("${aws.s3.bucket}") String bucketName,
-                     @Value("${aws.region}") String region) {
+    public AWSS3Test(@Value("${discodeit.storage.s3.access-key}") String accessKey,
+                     @Value("${discodeit.storage.s3.access-key}") String secretKey,
+                     @Value("${discodeit.storage.s3.bucket}") String bucketName,
+                     @Value("${discodeit.storage.s3.region}") String region) {
 
         this.bucketName = bucketName;
         this.region = region;

@@ -2,14 +2,9 @@ package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
-import com.sprint.mission.discodeit.storage.s3.AWSS3Test;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
-import lombok.extern.log4j.Log4j2;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,14 +66,15 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     @Override
     public UUID put(UUID binaryContentId, byte[] bytes) {
         log.info("upload profile image is {}",binaryContentId);
+        //0+ new exception
         BinaryContent attachment = binaryContentRepository.findById(binaryContentId).orElseThrow(() -> new IllegalStateException("image information is not saved"));
         Path path = resolvePath(binaryContentId, attachment.getExtension());
-
 
         // 사진 저장
         try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
             fos.write(bytes);
         } catch (IOException e) {
+            //0+ new exception
             throw new RuntimeException("image not saved", e);
         }
         return attachment.getId();
@@ -84,6 +83,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     @Transactional(readOnly = true)
     @Override
     public InputStream get(UUID binaryContentId) {
+        //0+ new exception
         BinaryContent attachment = binaryContentRepository.findById(binaryContentId).orElseThrow(() -> new IllegalStateException("image information not found"));
 
         Path path = resolvePath(binaryContentId, attachment.getExtension());
