@@ -53,6 +53,8 @@ dependencies {
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
     // actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // S3
+    implementation 'software.amazon.awssdk:s3:2.31.7'
 }
 
 tasks.named('test') {
