@@ -55,3 +55,8 @@ discodeit:
 logging:
   level:
     root: info
+
+file:
+  upload:
+    all:
+      path: ./files

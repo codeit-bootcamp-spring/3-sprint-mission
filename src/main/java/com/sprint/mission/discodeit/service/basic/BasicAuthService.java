@@ -34,7 +34,9 @@ public class BasicAuthService implements AuthService {
         String username = request.username();
         String password = request.password();
 
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new NoSuchElementException("User with username " + username + " not found"));
+        //0+new exception
+//        User user = userRepository.findByUsername(username).orElseThrow(() -> new NoSuchElementException("User with username " + username + " not found"));
+        User user = userRepository.findByUsernameWithProfileAndStatus(username).orElseThrow(() -> new NoSuchElementException("User with username " + username + " not found"));
 
         BinaryContent profile = user.getProfile();
         JpaBinaryContentResponse profileDto = null;
