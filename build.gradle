@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '1.2.-M8'
+version = '1.2-M8'
 
 java {
     toolchain {
@@ -52,7 +52,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     runtimeOnly 'com.h2database:h2'
-
+    implementation 'software.amazon.awssdk:s3:2.31.7'
     implementation 'org.mapstruct:mapstruct:1.6.3'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 

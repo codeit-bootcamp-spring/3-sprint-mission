@@ -25,17 +25,6 @@ spring:
       hibernate:
         format_sql: true
 
-  boot:
-    admin:
-      client:
-        url: http://localhost:9090
-        instance:
-          metadata:
-            startup: true
-          service-url: http://127.0.0.1:8081
-          management-url: http://127.0.0.1:8081/actuator
-          health-url: http://127.0.0.1:8081/actuator/health
-
 server:
   port: 8081
 

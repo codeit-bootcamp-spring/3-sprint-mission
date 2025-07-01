@@ -1,0 +1,53 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:80"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      PROJECT_NAME: ${PROJECT_NAME}
+      PROJECT_VERSION: ${PROJECT_VERSION}
+      JVM_OPTS: ${JVM_OPTS}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_JPA_SHOW_SQL: "true"
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: DEBUG
+      STORAGE_TYPE: ${STORAGE_TYPE}
+      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
+      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
+
+    volumes:
+      - ./BinaryContentStorage:/app/BinaryContentStorage
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: discodeit-postgres
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+    volumes:
+      - ./init-scripts:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d discodeit" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:

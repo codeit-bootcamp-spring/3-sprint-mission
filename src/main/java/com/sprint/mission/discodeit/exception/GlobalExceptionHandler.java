@@ -13,8 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-
+    
     @ExceptionHandler(DiscodeitException.class)
     public ResponseEntity<ErrorResponse> handleDiscodeitException(DiscodeitException ex) {
         ErrorCode errorCode = ex.getErrorCode();
