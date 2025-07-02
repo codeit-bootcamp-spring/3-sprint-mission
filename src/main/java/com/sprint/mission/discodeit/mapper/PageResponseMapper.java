@@ -6,23 +6,25 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PageResponseMapper<T> {
+public class PageResponseMapper {
 
-    public PageResponse<T> fromSlice(Slice<T> slice) {
+    public <T> PageResponse<T> fromSlice(Slice<T> slice, Object nextCursor) {
         return new PageResponse<T>(
             slice.getContent(),
-            slice.getNumber(),
+            nextCursor,
             slice.getSize(),
-            slice.hasNext(), null);
+            slice.hasNext(),
+            null
+        );
     }
 
-    public PageResponse<T> fromPage(Page<T> page) {
+    public <T> PageResponse<T> fromPage(Page<T> page, Object nextCursor) {
         return new PageResponse<T>(
             page.getContent(),
-            page.getNumber(),
+            nextCursor,
             page.getSize(),
             page.hasNext(),
-            page.getTotalElements());
+            page.getTotalElements()
+        );
     }
-
 }

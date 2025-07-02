@@ -15,5 +15,4 @@ public interface BinaryContentRepository extends JpaRepository<BinaryContent, UU
 
     void deleteById(UUID id);
 
-    boolean existsById(UUID binaryContentId);
 }
