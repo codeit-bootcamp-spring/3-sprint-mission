@@ -79,13 +79,13 @@ public class BasicMessageService implements MessageService {
         // 채널과 사용자 존재 여부 확인 및 조회
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> {
-                log.warn(SERVICE_NAME + "채널을 찾을 수 없음: channelId={}", channelId);
+                log.error(SERVICE_NAME + "채널을 찾을 수 없음: channelId={}", channelId);
                 return new MessageNotFoundException("채널을 찾을 수 없습니다.");
             });
             
         User user = userRepository.findById(authorId)
             .orElseThrow(() -> {
-                log.warn(SERVICE_NAME + "사용자를 찾을 수 없음: authorId={}", authorId);
+                log.error(SERVICE_NAME + "사용자를 찾을 수 없음: authorId={}", authorId);
                 return new MessageNotFoundException("사용자를 찾을 수 없습니다.");
             });
 
@@ -141,7 +141,7 @@ public class BasicMessageService implements MessageService {
         
         Message message = messageRepository.findById(messageId)
             .orElseThrow(() -> {
-                log.warn(SERVICE_NAME + "메시지를 찾을 수 없음: messageId={}", messageId);
+                log.error(SERVICE_NAME + "메시지를 찾을 수 없음: messageId={}", messageId);
                 return new MessageNotFoundException("메시지를 찾을 수 없습니다.");
             });
 
@@ -206,7 +206,7 @@ public class BasicMessageService implements MessageService {
         
         Message message = messageRepository.findById(messageId)
             .orElseThrow(() -> {
-                log.warn(SERVICE_NAME + "메시지를 찾을 수 없음: messageId={}", messageId);
+                log.error(SERVICE_NAME + "메시지를 찾을 수 없음: messageId={}", messageId);
                 return new MessageNotFoundException("메시지를 찾을 수 없습니다.");
             });
             
@@ -233,7 +233,7 @@ public class BasicMessageService implements MessageService {
         
         Message message = messageRepository.findById(messageId)
             .orElseThrow(() -> {
-                log.warn(SERVICE_NAME + "메시지를 찾을 수 없음: messageId={}", messageId);
+                log.error(SERVICE_NAME + "메시지를 찾을 수 없음: messageId={}", messageId);
                 return new MessageNotFoundException("메시지를 찾을 수 없습니다.");
             });
 

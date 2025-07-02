@@ -6,11 +6,15 @@ import com.sprint.mission.discodeit.exception.message.MessageException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusException;
 import com.sprint.mission.discodeit.exception.user.UserException;
 import com.sprint.mission.discodeit.exception.userstatus.UserStatusException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.validation.FieldError;
+
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,8 +22,24 @@ import java.util.stream.Collectors;
 /**
  * 애플리케이션 전역에서 발생하는 예외를 처리하는 핸들러입니다.
  */
+@Slf4j
 @RestControllerAdvice
-public class GlobalExceptionHandler extends RuntimeException {
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception ex) {
+        log.error("예상치 못한 오류 발생: {}", ex.getMessage(), ex);
+        ErrorResponse response = new ErrorResponse(
+                500,
+                "500",
+                ex.getMessage(),
+                Instant.now(),
+                Map.of("서비스에서 예상치 못한 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR)
+        );
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
+    }
 
     /**
      * User 도메인 예외를 처리합니다.

@@ -82,7 +82,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContentDto dto = binaryContentRepository.findById(binaryContentId)
                 .map(binaryContentMapper::toDto)
                 .orElseThrow(() -> {
-                    log.warn(SERVICE_NAME + "바이너리컨텐츠 조회 실패 - 없음: id={}", binaryContentId);
+                    log.error(SERVICE_NAME + "바이너리컨텐츠 조회 실패 - 없음: id={}", binaryContentId);
                     return new BinaryContentNotFoundException(
                             "BinaryContent with id " + binaryContentId + " not found");
                 });
@@ -120,7 +120,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         log.info(SERVICE_NAME + "바이너리 콘텐츠 삭제 시도: id={}", binaryContentId);
 
         if (!binaryContentRepository.existsById(binaryContentId)) {
-            log.warn(SERVICE_NAME + "바이너리컨텐츠 삭제 실패 - 없음: id={}", binaryContentId);
+            log.error(SERVICE_NAME + "바이너리컨텐츠 삭제 실패 - 없음: id={}", binaryContentId);
             throw new BinaryContentNotFoundException(
                     SERVICE_NAME + "BinaryContent with id " + binaryContentId + " not found");
         }

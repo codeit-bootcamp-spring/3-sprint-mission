@@ -3,6 +3,10 @@ server:
   address: 0.0.0.0
 
 spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   # JPA 설정
   jpa:
     hibernate:
@@ -13,20 +17,9 @@ spring:
         url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
 logging:
   level:
-    root: info
-    # Hibernate 설정은 공통에 선언되어 유지됨 (SQL: debug, bind: trace)
-
-discodeit:
-  storage:
-    type: local
-    local:
-      root-path: ${user.dir}/data/discodeit/storage
-
-# application.yaml 설정값과 동일
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, metrics, loggers
-    server:
-      port: 8081
+    com.sprint.mission.discodeit: info
+    org.hibernate.boot.SQL: info
+    # 실행되는 SQL 출력
+    org.hibernate.SQL: info
+    # 바인딩되는 파라미터 출력
+    org.hibernate.orm.jdbc.bind: info
