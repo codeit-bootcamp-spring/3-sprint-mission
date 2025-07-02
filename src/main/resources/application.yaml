@@ -1,14 +1,24 @@
 spring:
   application:
     name: discodeit
+
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
+
   servlet:
     multipart:
       maxFileSize: 10MB # 파일 하나의 최대 크기
-      maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
+      maxRequestSize: 30MB # 한 번에 최대 업로드 가능 용량
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit
-    username: discodeit_user
-    password: discodeit1234
+  # 환경별로 오버라이드
+  # url: jdbc:postgresql://localhost:5432/discodeit
+  # username: ${USER_NAME}
+  # password: ${USER_PASSWORD}
+
   jpa:
     open-in-view: false
     hibernate:
@@ -25,3 +35,40 @@ discodeit:
     type: "local"
     local:
       root-path: .discodeit/binary-content
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+
+logging:
+  level:
+    root: info
+    com.sprint.mission: info
+
+info:
+  app:
+    name: discodeit
+    version: 1.7.0
+    java:
+      version: 17
+    spring-boot:
+      version: 3.4.4
+  datasource:
+    url: ${spring.datasource.url:unknown}
+    driver-class-name: ${spring.datasource.driver-class-name:unknown}
+  jpa:
+    ddl-auto: ${spring.jpa.hibernate.ddl-auto:unknown}
+  storage:
+    type: ${discodeit.storage.type:unknown}
+    path: ${discodeit.storage.local.root-path:unknown}
+  multipart:
+    max-file-size: ${spring.servlet.multipart.maxFileSize:unknown}
+    max-request-size: ${spring.servlet.multipart.maxRequestSize:unknown}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers
+# 기본값 외 실제 또는 추가 설정은 프로필 설정에서 오버라이드.

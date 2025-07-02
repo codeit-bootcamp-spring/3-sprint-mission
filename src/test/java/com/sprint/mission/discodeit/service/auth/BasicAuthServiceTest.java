@@ -1,12 +1,19 @@
 package com.sprint.mission.discodeit.service.auth;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.*;
+
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
@@ -14,19 +21,12 @@ import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.AuthException;
+import com.sprint.mission.discodeit.exception.user.UserException;
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicAuthService;
-import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class BasicAuthServiceTest {
@@ -51,8 +51,7 @@ class BasicAuthServiceTest {
         "test@test.com",
         "길동쓰",
         "pwd123",
-        profile
-    );
+        profile);
     userStatus = mock(UserStatus.class);
     user.updateUserStatus(userStatus);
 
@@ -69,18 +68,16 @@ class BasicAuthServiceTest {
               user.getProfile().getId(),
               user.getProfile().getFileName(),
               user.getProfile().getContentType(),
-              user.getProfile().getSize()
-          );
+              user.getProfile().getSize());
 
           return new UserResponse(
               user.getId(),
               user.getUsername(),
               user.getEmail(),
               profile,
-              user.getUserStatus().isOnline()
-          );
+              user.getUserStatus().isOnline());
         });
-    when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
+    given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));
 
     // when
     UserResponse response = authService.login(loginRequest.username(), loginRequest.password());
@@ -91,8 +88,8 @@ class BasicAuthServiceTest {
         .usingRecursiveComparison()
         .isEqualTo(userMapper.toResponse(user));
 
-    verify(userRepository).findByUsername(loginRequest.username());
-    verify(userStatus).updateLastActiveAt();
+    then(userRepository).should().findByUsername(loginRequest.username());
+    then(userStatus).should().updateLastActiveAt();
   }
 
   @Test
@@ -101,15 +98,13 @@ class BasicAuthServiceTest {
     String nonExistingUserName = "non-existing-user";
     String nonExistingPassword = "pwd";
     LoginRequest nonExistingRequest = new LoginRequest(nonExistingUserName, nonExistingPassword);
-    given(
-        userRepository.findByUsername(nonExistingUserName)).willReturn(
-        Optional.empty());
+    given(userRepository.findByUsername(nonExistingUserName)).willReturn(Optional.empty());
 
     // When & Then
-    assertThrows(AuthException.class,
+    assertThrows(UserException.class,
         () -> authService.login(nonExistingRequest.username(), nonExistingRequest.password()),
         "예외 메시지 검증");
 
-    verify(userRepository).findByUsername(nonExistingUserName);
+    then(userRepository).should().findByUsername(nonExistingUserName);
   }
 }

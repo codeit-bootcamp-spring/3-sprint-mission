@@ -11,60 +11,60 @@ DROP TABLE IF EXISTS channels CASCADE;
 CREATE TABLE channels
 (
     id          UUID PRIMARY KEY,
-    created_at  TIMESTAMPTZ NOT NULL,
-    updated_at  TIMESTAMPTZ,
+    created_at  TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at  TIMESTAMP WITH TIME ZONE,
     name        VARCHAR(100),
     description VARCHAR(500),
-    type        VARCHAR(10) NOT NULL CHECK (type IN ('PUBLIC', 'PRIVATE'))
+    type        VARCHAR(10)              NOT NULL CHECK (type IN ('PUBLIC', 'PRIVATE'))
 );
 
 CREATE TABLE users
 (
     id         UUID PRIMARY KEY,
-    created_at TIMESTAMPTZ  NOT NULL,
-    updated_at TIMESTAMPTZ,
-    username   VARCHAR(50)  NOT NULL,
-    email      VARCHAR(100) NOT NULL,
-    password   VARCHAR(60)  NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE,
+    username   VARCHAR(50)              NOT NULL,
+    email      VARCHAR(100)             NOT NULL,
+    password   VARCHAR(60)              NOT NULL,
     profile_id UUID
 );
 
 CREATE TABLE binary_contents
 (
     id           UUID PRIMARY KEY,
-    created_at   TIMESTAMPTZ  NOT NULL,
-    file_name    VARCHAR(255) NOT NULL,
-    size         BIGINT       NOT NULL,
-    content_type VARCHAR(100) NOT NULL
+    created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
+    file_name    VARCHAR(255)             NOT NULL,
+    size         BIGINT                   NOT NULL,
+    content_type VARCHAR(100)             NOT NULL
 );
 
 CREATE TABLE messages
 (
     id         UUID PRIMARY KEY,
-    channel_id UUID        NOT NULL,
-    author_id  UUID        NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ,
+    channel_id UUID                     NOT NULL,
+    author_id  UUID                     NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE,
     content    TEXT
 );
 
 CREATE TABLE read_statuses
 (
     id           UUID PRIMARY KEY,
-    user_id      UUID        NOT NULL,
-    channel_id   UUID        NOT NULL,
-    created_at   TIMESTAMPTZ NOT NULL,
-    updated_at   TIMESTAMPTZ,
-    last_read_at TIMESTAMPTZ NOT NULL
+    user_id      UUID                     NOT NULL,
+    channel_id   UUID                     NOT NULL,
+    created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at   TIMESTAMP WITH TIME ZONE,
+    last_read_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 CREATE TABLE user_statuses
 (
     id             UUID PRIMARY KEY,
-    user_id        UUID        NOT NULL,
-    created_at     TIMESTAMPTZ NOT NULL,
-    updated_at     TIMESTAMPTZ,
-    last_active_at TIMESTAMPTZ NOT NULL
+    user_id        UUID                     NOT NULL,
+    created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at     TIMESTAMP WITH TIME ZONE,
+    last_active_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 CREATE TABLE message_attachments

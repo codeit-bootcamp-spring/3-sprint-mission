@@ -1,27 +1,12 @@
 package com.sprint.mission.discodeit.service.readstatus;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 
-import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.response.ReadStatusResponse;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.ErrorCode;
-import com.sprint.mission.discodeit.exception.ReadStatusException;
-import com.sprint.mission.discodeit.fixture.ChannelFixture;
-import com.sprint.mission.discodeit.fixture.ReadStatusFixture;
-import com.sprint.mission.discodeit.fixture.UserFixture;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.basic.BasicReadStatusService;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,6 +14,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.sprint.mission.discodeit.dto.response.ReadStatusResponse;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusException;
+import com.sprint.mission.discodeit.fixture.ChannelFixture;
+import com.sprint.mission.discodeit.fixture.ReadStatusFixture;
+import com.sprint.mission.discodeit.fixture.UserFixture;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.basic.BasicReadStatusService;
 
 @ExtendWith(MockitoExtension.class)
 public class BasicReadStatusServiceTest {
@@ -49,13 +48,12 @@ public class BasicReadStatusServiceTest {
   private Channel channel;
   private UUID userId;
   private UUID channelId;
-  private ReadStatusCreateRequest request;
   private ReadStatus readStatus;
 
   @BeforeEach
   public void setUp() {
-    user = UserFixture.createValidUser();
-    channel = ChannelFixture.createPublic();
+    user = UserFixture.createValidUserWithId();
+    channel = ChannelFixture.createValidChannelWithId();
     userId = user.getId();
     channelId = channel.getId();
     readStatus = ReadStatusFixture.create(user, channel);
@@ -66,9 +64,9 @@ public class BasicReadStatusServiceTest {
 
     @Test
     public void 읽기_상태가_정상적으로_생성돼야_한다() {
-      when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-      when(channelRepository.findById(channelId)).thenReturn(Optional.of(channel));
-      when(readStatusRepository.save(any(ReadStatus.class))).thenReturn(readStatus);
+      given(userRepository.findById(userId)).willReturn(Optional.of(user));
+      given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
+      given(readStatusRepository.save(any(ReadStatus.class))).willReturn(readStatus);
 
       ReadStatusResponse createdStatus = readStatusService.create(userId, channelId);
 
@@ -77,46 +75,47 @@ public class BasicReadStatusServiceTest {
       assertEquals(channelId, createdStatus.channelId());
     }
 
-
     @Test
     public void 존재하지_않는_사용자의_읽기_상태_생성_시_예외가_발생해야_한다() {
       // given: 사용자가 존재하지 않음
-      when(userRepository.findById(userId)).thenReturn(Optional.empty());
+      UUID userId = UUID.randomUUID();
+      given(userRepository.findById(userId)).willReturn(Optional.empty());
 
       ReadStatusException exception = assertThrows(ReadStatusException.class, () -> {
         readStatusService.create(userId, channelId);
       });
 
-      assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
+      assertEquals(ErrorCode.READ_STATUS_INVALID_USER_OR_CHANNEL, exception.getErrorCode());
     }
 
     @Test
     public void 존재하지_않는_채널의_읽기_상태_생성_시_예외가_발생해야_한다() {
       // given: 채널이 존재하지 않음
-      when(userRepository.findById(userId)).thenReturn(Optional.of(UserFixture.createValidUser()));
-      when(channelRepository.findById(channelId)).thenReturn(Optional.empty());
+      UUID channelId = UUID.randomUUID();
+      given(userRepository.findById(userId)).willReturn(Optional.of(UserFixture.createValidUser()));
+      given(channelRepository.findById(channelId)).willReturn(Optional.empty());
 
       ReadStatusException exception = assertThrows(ReadStatusException.class, () -> {
         readStatusService.create(userId, channelId);
       });
 
-      assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
+      assertEquals(ErrorCode.READ_STATUS_INVALID_USER_OR_CHANNEL, exception.getErrorCode());
     }
 
     @Test
     public void 읽기_상태_생성_시_중복되는_경우_예외가_발생해야_한다() {
       // given: 중복된 ReadStatus가 존재
-      when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-      when(channelRepository.findById(channelId)).thenReturn(
+      given(userRepository.findById(userId)).willReturn(Optional.of(user));
+      given(channelRepository.findById(channelId)).willReturn(
           Optional.of(channel));
-      when(readStatusRepository.findByUserIdAndChannelId(userId, channelId))
-          .thenReturn(Optional.of(readStatus));
+      given(readStatusRepository.findByUserIdAndChannelId(userId, channelId))
+          .willReturn(Optional.of(readStatus));
 
-      ReadStatusException exception = assertThrows(ReadStatusException.class, () -> {
-        readStatusService.create(userId, channelId);
-      });
-
-      assertEquals(ErrorCode.ALREADY_EXISTS, exception.getErrorCode());
+      ReadStatusException exception = assertThrows(ReadStatusException.class,
+          () -> {
+            readStatusService.create(userId, channelId);
+          });
+      assertEquals(ErrorCode.READ_STATUS_ALREADY_EXISTS, exception.getErrorCode());
     }
   }
 
@@ -126,13 +125,14 @@ public class BasicReadStatusServiceTest {
     @Test
     public void 존재하지_않는_읽기_상태를_조회_시도하면_예외가_발생해야_한다() {
       // given: ReadStatus 객체가 리포지토리에 존재하지 않음
-      when(readStatusRepository.findById(userId)).thenReturn(Optional.empty());
+      UUID id = UUID.randomUUID();
+      given(readStatusRepository.findById(id)).willReturn(Optional.empty());
 
-      ReadStatusException exception = assertThrows(ReadStatusException.class, () -> {
-        readStatusService.find(userId);
-      });
-
-      assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
+      ReadStatusException exception = assertThrows(ReadStatusException.class,
+          () -> {
+            readStatusService.find(id);
+          });
+      assertEquals(ErrorCode.READ_STATUS_NOT_FOUND, exception.getErrorCode());
     }
   }
 
@@ -141,8 +141,8 @@ public class BasicReadStatusServiceTest {
 
     @Test
     public void 읽기_상태는_정상적으로_업데이트_돼야_한다() {
-      when(readStatusRepository.findById(readStatus.getId())).thenReturn(Optional.of(readStatus));
-      when(readStatusRepository.save(any(ReadStatus.class))).thenReturn(readStatus);
+      given(readStatusRepository.findById(readStatus.getId())).willReturn(Optional.of(readStatus));
+      given(readStatusRepository.save(any(ReadStatus.class))).willReturn(readStatus);
 
       ReadStatusResponse updatedStatus = readStatusService.update(readStatus.getId());
 
@@ -156,13 +156,14 @@ public class BasicReadStatusServiceTest {
     @Test
     public void 존재하지_않는_읽기_상태_삭제_시도하면_예외가_발생해야_한다() {
       // given: 삭제할 ReadStatus 객체가 없음
-      when(readStatusRepository.findById(userId)).thenReturn(Optional.empty());
+      UUID id = UUID.randomUUID();
+      given(readStatusRepository.findById(id)).willReturn(Optional.empty());
 
-      ReadStatusException exception = assertThrows(ReadStatusException.class, () -> {
-        readStatusService.delete(userId);
-      });
-
-      assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
+      ReadStatusException exception = assertThrows(ReadStatusException.class,
+          () -> {
+            readStatusService.delete(id);
+          });
+      assertEquals(ErrorCode.READ_STATUS_NOT_FOUND, exception.getErrorCode());
     }
   }
 }

@@ -4,7 +4,9 @@ import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.UserException;
+import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
+import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -67,32 +69,32 @@ public class BasicUserService implements UserService {
 
   private void validateUserEmail(String email) {
     userRepository.findByEmail(email).ifPresent(user -> {
-      throw UserException.duplicateEmail();
+      throw new DuplicateEmailException();
     });
   }
 
   private void validateUserName(String name) {
     userRepository.findByUsername(name).ifPresent(user -> {
-      throw UserException.duplicateName();
+      throw new DuplicateNameException();
     });
   }
 
   @Override
   public UserResponse findById(UUID userId) {
     return userRepository.findById(userId).map(this::toUserResponse)
-        .orElseThrow(() -> UserException.notFound(userId));
+        .orElseThrow(() -> new UserNotFoundException(userId.toString()));
   }
 
   @Override
   public UserResponse findByName(String name) {
     return userRepository.findByUsername(name).map(this::toUserResponse)
-        .orElseThrow(UserException::notFound);
+        .orElseThrow(UserNotFoundException::new);
   }
 
   @Override
   public UserResponse findByEmail(String email) {
     return userRepository.findByEmail(email).map(this::toUserResponse)
-        .orElseThrow(UserException::notFound);
+        .orElseThrow(UserNotFoundException::new);
   }
 
   @Override
@@ -127,7 +129,7 @@ public class BasicUserService implements UserService {
 
           User savedUser = userRepository.save(user);
           return toUserResponse(savedUser);
-        }).orElseThrow(() -> UserException.notFound(command.userId()));
+        }).orElseThrow(() -> new UserNotFoundException(command.userId().toString()));
   }
 
   @Override
@@ -141,7 +143,7 @@ public class BasicUserService implements UserService {
       userStatusRepository.findByUserId(userId)
           .ifPresent(status -> userStatusRepository.deleteById(status.getId()));
     }, () -> {
-      throw UserException.notFound(userId);
+      throw new UserNotFoundException(userId.toString());
     });
   }
 
@@ -150,8 +152,7 @@ public class BasicUserService implements UserService {
       BinaryContent binaryContent = BinaryContent.create(
           profile.fileName(),
           (long) profile.bytes().length,
-          profile.contentType()
-      );
+          profile.contentType());
 
       BinaryContent saved = binaryContentRepository.save(binaryContent);
 
@@ -175,7 +176,6 @@ public class BasicUserService implements UserService {
         base.username(),
         base.email(),
         base.profile(),
-        isOnline
-    );
+        isOnline);
   }
 }

@@ -4,7 +4,6 @@ import static com.sprint.mission.discodeit.support.TestUtils.json;
 import static com.sprint.mission.discodeit.support.TestUtils.jsonHeader;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.sprint.mission.discodeit.config.JpaAuditingConfig;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import java.nio.file.Path;
@@ -20,7 +19,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
@@ -32,6 +30,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -41,19 +40,19 @@ import org.springframework.util.MultiValueMap;
  * `test` 프로필로 실행됩니다.
  *
  * <ol>
- *   <li>사용자_생성</li>
- *   <li>공개_채널_생성</li>
- *   <li>비공개_채널_생성</li>
- *   <li>특정_유저의_채널_조회</li>
- *   <li>공개_채널_수정</li>
- *   <li>채널_삭제</li>
- *   <li>사용자_삭제</li>
+ * <li>사용자_생성</li>
+ * <li>공개_채널_생성</li>
+ * <li>비공개_채널_생성</li>
+ * <li>특정_유저의_채널_조회</li>
+ * <li>공개_채널_수정</li>
+ * <li>채널_삭제</li>
+ * <li>사용자_삭제</li>
  * </ol>
  */
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Import(JpaAuditingConfig.class)
+@Transactional
 class ChannelAcceptanceTest {
 
   @Autowired
@@ -89,8 +88,7 @@ class ChannelAcceptanceTest {
     headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
     ResponseEntity<UserResponse> response = restTemplate.postForEntity(
-        "/api/users", new HttpEntity<>(body, headers), UserResponse.class
-    );
+        "/api/users", new HttpEntity<>(body, headers), UserResponse.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     Assertions.assertNotNull(response.getBody());
@@ -106,8 +104,7 @@ class ChannelAcceptanceTest {
     var response = restTemplate.postForEntity(
         "/api/channels/public",
         new HttpEntity<>(request, headers),
-        ChannelResponse.class
-    );
+        ChannelResponse.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     Assertions.assertNotNull(response.getBody());
@@ -123,8 +120,7 @@ class ChannelAcceptanceTest {
     var response = restTemplate.postForEntity(
         "/api/channels/private",
         new HttpEntity<>(request, headers),
-        ChannelResponse.class
-    );
+        ChannelResponse.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     Assertions.assertNotNull(response.getBody());
@@ -139,8 +135,7 @@ class ChannelAcceptanceTest {
         HttpMethod.GET,
         null,
         new ParameterizedTypeReference<List<ChannelResponse>>() {
-        }
-    );
+        });
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(response.getBody()).hasSize(2);
@@ -156,8 +151,7 @@ class ChannelAcceptanceTest {
         "/api/channels/" + publicChannelId,
         HttpMethod.PATCH,
         new HttpEntity<>(request, headers),
-        ChannelResponse.class
-    );
+        ChannelResponse.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     Assertions.assertNotNull(response.getBody());
