@@ -26,5 +26,9 @@ ENV SPRING_PROFILES_ACTIVE=prod
 # JVM 옵션 환경 변수 (빈 문자열로 기본 설정)
 ENV JVM_OPTS=""
 
-# 애플리케이션 실행 명령어 설정 (환경변수 활용)
-CMD ["sh", "-c", "java $JVM_OPTS -jar build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar"]
+# 실행 스크립트 복사
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# 기존 CMD 제거하고 아래로 대체
+CMD ["/app/entrypoint.sh"]
