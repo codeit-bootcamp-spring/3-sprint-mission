@@ -1,3 +1,4 @@
+import lombok.extern.slf4j.Slf4j;
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;

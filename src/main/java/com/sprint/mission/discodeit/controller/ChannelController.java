@@ -1,3 +1,4 @@
+import lombok.extern.slf4j.Slf4j;
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ChannelApi;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/channels")
+@Slf4j
 public class ChannelController implements ChannelApi {
 
   private final ChannelService channelService;

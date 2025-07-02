@@ -1,3 +1,4 @@
+import lombok.extern.slf4j.Slf4j;
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/binaryContents")
+@Slf4j
 public class BinaryContentController implements BinaryContentApi {
 
   private final BinaryContentService binaryContentService;
