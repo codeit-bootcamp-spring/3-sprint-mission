@@ -10,5 +10,6 @@ public record ReadStatusResponse(
     UUID channelId,
     Instant lastReadAt
 ) {
+
 }
 

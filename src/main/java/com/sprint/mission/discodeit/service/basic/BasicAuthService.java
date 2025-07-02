@@ -2,18 +2,20 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.exception.auth.InvalidPasswordException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicAuthService implements AuthService {
-
-    private static final String INVALID_CREDENTIALS = "Invalid username or password";
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -21,9 +23,23 @@ public class BasicAuthService implements AuthService {
     @Transactional(readOnly = true)
     @Override
     public UserResponse login(LoginRequest request) {
-        return userRepository.findByUsername(request.username())
-            .filter(user -> user.isPasswordMatch(request.password()))
-            .map(userMapper::toResponse)
-            .orElseThrow(() -> new IllegalArgumentException(INVALID_CREDENTIALS));
+        String username = request.username();
+        String password = request.password();
+
+        log.info("[BasicAuthService] Login attempt received. [username={}]", username);
+
+        var user = userRepository.findByUsername(username)
+            .orElseThrow(() -> {
+                log.warn("[BasicAuthService] User not found. [username={}]", username);
+                return new UserNotFoundException(username);
+            });
+
+        if (!user.getPassword().equals(password)) {
+            log.warn("[BasicAuthService] Invalid password. [username={}]", username);
+            throw new InvalidPasswordException();
+        }
+
+        log.debug("[BasicAuthService] Login successful. [userId={}]", user.getId());
+        return userMapper.toResponse(user);
     }
 }
