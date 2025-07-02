@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+        use_sql_comments: true
+        default_schema:
+    open-in-view: false
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: never
+
+  h2:
+    console:
+      enabled: true
+
+logging:
+  level:
+    root: info
+    org.hibernate.SQL: debug # 실행되는 SQL 확인
+    org.hibernate.type.descriptor.sql.BasicBinder: trace # 바인딩 파라미터 확인
+
+server:
+  port: 0 # 랜덤 포트 사용 (보통 @SpringBootTest(webEnvironment = RANDOM_PORT) 대비)
