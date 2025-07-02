@@ -85,7 +85,7 @@ public class BasicChannelService implements ChannelService {
                         log.debug(SERVICE_NAME + "비공개 채널 참가자 추가: Channel ID = {}, User ID = {}",
                                 createdChannel.getId(), user.getId());
                     },
-                    () -> log.warn(SERVICE_NAME + "참가자 ID를 찾을 수 없음: {}", participantId)
+                    () -> log.error(SERVICE_NAME + "참가자 ID를 찾을 수 없음: {}", participantId)
             );
         });
 
@@ -117,7 +117,7 @@ public class BasicChannelService implements ChannelService {
         ChannelDto channelDto = channelRepository.findById(channelId)
             .map(channelMapper::toDto)
             .orElseThrow(() -> {
-                log.warn(SERVICE_NAME + "채널 조회 실패: 존재하지 않는 ID = {}", channelId);
+                log.error(SERVICE_NAME + "채널 조회 실패: 존재하지 않는 ID = {}", channelId);
                 return new ChannelNotFoundException("채널을 찾을 수 없습니다.");
             });
 
@@ -169,7 +169,7 @@ public class BasicChannelService implements ChannelService {
 
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> {
-                log.warn(SERVICE_NAME + "채널 수정 실패: 존재하지 않는 ID = {}", channelId);
+                log.error(SERVICE_NAME + "채널 수정 실패: 존재하지 않는 ID = {}", channelId);
                 return new ChannelNotFoundException("채널을 찾을 수 없습니다.");
             });
 
@@ -199,7 +199,7 @@ public class BasicChannelService implements ChannelService {
         log.info(SERVICE_NAME + "채널 삭제 시도: ID = {}", channelId);
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> {
-                log.warn(SERVICE_NAME + "채널 삭제 실패: 존재하지 않는 ID = {}", channelId);
+                log.error(SERVICE_NAME + "채널 삭제 실패: 존재하지 않는 ID = {}", channelId);
                 return new ChannelNotFoundException("채널을 찾을 수 없습니다.");
             });
 

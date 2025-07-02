@@ -58,11 +58,11 @@ public class BasicAuthService implements AuthService {
 
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> {
-                    log.warn(SERVICE_NAME + "로그인 실패 - 사용자 없음: username={}", username);
+                    log.error(SERVICE_NAME + "로그인 실패 - 사용자 없음: username={}", username);
                     return new UserNotFoundException("해당 사용자를 찾을 수 없습니다.");
                 });
         if (!user.getPassword().equals(password)) {
-            log.warn(SERVICE_NAME + "로그인 실패 - 비밀번호 불일치: username={}", username);
+            log.error(SERVICE_NAME + "로그인 실패 - 비밀번호 불일치: username={}", username);
             throw new InvalidPasswordException("비밀번호가 일치하지 않습니다.");
         }
 

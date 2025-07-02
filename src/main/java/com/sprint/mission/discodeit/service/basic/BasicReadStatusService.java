@@ -53,18 +53,18 @@ public class BasicReadStatusService implements ReadStatusService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.warn(SERVICE_NAME + "사용자 없음: userId={}", userId);
+                    log.error(SERVICE_NAME + "사용자 없음: userId={}", userId);
                     return new ReadStatusNotFoundException("사용자를 찾을 수 없습니다.");
                 });
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> {
-                    log.warn(SERVICE_NAME + "채널 없음: channelId={}", channelId);
+                    log.error(SERVICE_NAME + "채널 없음: channelId={}", channelId);
                     return new ReadStatusNotFoundException("채널을 찾을 수 없습니다.");
                 });
 
         if (readStatusRepository.findAllByUserId(userId).stream()
             .anyMatch(readStatus -> readStatus.getChannel().getId().equals(channelId))) {
-            log.warn(SERVICE_NAME + "이미 존재하는 읽음 상태: userId={}, channelId={}", userId, channelId);
+            log.error(SERVICE_NAME + "이미 존재하는 읽음 상태: userId={}, channelId={}", userId, channelId);
             throw new DuplicatedReadStatusException("이미 존재하는 읽음 상태입니다.", userId, channelId);
         }
 
@@ -89,7 +89,7 @@ public class BasicReadStatusService implements ReadStatusService {
                     return readStatusMapper.toDto(readStatus);
                 })
                 .orElseThrow(() -> {
-                    log.warn(SERVICE_NAME + "읽음 상태 없음: id={}", readStatusId);
+                    log.error(SERVICE_NAME + "읽음 상태 없음: id={}", readStatusId);
                     return new ReadStatusNotFoundException("읽음 상태 정보를 찾을 수 없습니다.");
                 });
     }
@@ -122,7 +122,7 @@ public class BasicReadStatusService implements ReadStatusService {
         Instant newLastReadAt = request.newLastReadAt();
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
             .orElseThrow(() -> {
-                log.warn(SERVICE_NAME + "읽음 상태 없음: id={}", readStatusId);
+                log.error(SERVICE_NAME + "읽음 상태 없음: id={}", readStatusId);
                 return new ReadStatusNotFoundException("읽음 상태 정보를 찾을 수 없습니다.");
             });
         readStatus.update(newLastReadAt);
@@ -140,7 +140,7 @@ public class BasicReadStatusService implements ReadStatusService {
     public void delete(UUID readStatusId) {
         log.info(SERVICE_NAME + "읽음 상태 삭제 시도: id={}", readStatusId);
         if (!readStatusRepository.existsById(readStatusId)) {
-            log.warn(SERVICE_NAME + "읽음 상태 없음: id={}", readStatusId);
+            log.error(SERVICE_NAME + "읽음 상태 없음: id={}", readStatusId);
             throw new ReadStatusNotFoundException("읽음 상태 정보를 찾을 수 없습니다.");
         }
         readStatusRepository.deleteById(readStatusId);

@@ -59,11 +59,11 @@ public class BasicUserService implements UserService {
         log.info(SERVICE_NAME + "신규 유저 생성 시도: username={}, email={}", username, email);
 
         if (userRepository.existsByEmail(email)) {
-            log.warn(SERVICE_NAME + "이미 존재하는 이메일: {}", email);
+            log.error(SERVICE_NAME + "이미 존재하는 이메일: {}", email);
             throw new DuplicatedUserException("이미 가입된 이메일입니다.");
         }
         if (userRepository.existsByUsername(username)) {
-            log.warn(SERVICE_NAME + "이미 존재하는 사용자명: {}", username);
+            log.error(SERVICE_NAME + "이미 존재하는 사용자명: {}", username);
             throw new DuplicatedUserException("이미 가입된 사용자명입니다.");
         }
 
@@ -105,7 +105,7 @@ public class BasicUserService implements UserService {
         return userRepository.findById(userId)
             .map(userMapper::toDto)
             .orElseThrow(() -> {
-                log.warn(SERVICE_NAME + "유저 없음: userId={}", userId);
+                log.error(SERVICE_NAME + "유저 없음: userId={}", userId);
                 return new UserNotFoundException("해당 사용자를 찾을 수 없습니다.");
             });
     }
@@ -139,7 +139,7 @@ public class BasicUserService implements UserService {
         log.info(SERVICE_NAME + "유저 정보 수정 시도: userId={}", userId);
         User user = userRepository.findById(userId)
             .orElseThrow(() -> {
-                log.warn(SERVICE_NAME + "유저 없음: userId={}", userId);
+                log.error(SERVICE_NAME + "유저 없음: userId={}", userId);
                 return new UserNotFoundException("해당 사용자를 찾을 수 없습니다.");
             });
 
@@ -149,7 +149,7 @@ public class BasicUserService implements UserService {
         // username 업데이트 (null이 아닌 경우에만)
         if (newUsername != null && !newUsername.trim().isEmpty()) {
             if (userRepository.existsByUsername(newUsername) && !newUsername.equals(user.getUsername())) {
-                log.warn(SERVICE_NAME + "이미 존재하는 사용자명(수정): {}", newUsername);
+                log.error(SERVICE_NAME + "이미 존재하는 사용자명(수정): {}", newUsername);
                 throw new DuplicatedUserException("이미 가입된 사용자명입니다.");
             }
         } else {
@@ -158,7 +158,7 @@ public class BasicUserService implements UserService {
         // email 업데이트 (null이 아닌 경우에만)
         if (newEmail != null && !newEmail.trim().isEmpty()) {
             if (userRepository.existsByEmail(newEmail) && !newEmail.equals(user.getEmail())) {
-                log.warn(SERVICE_NAME + "이미 존재하는 이메일(수정): {}", newEmail);
+                log.error(SERVICE_NAME + "이미 존재하는 이메일(수정): {}", newEmail);
                 throw new DuplicatedUserException("이미 가입된 이메일입니다.");
             }
         } else {
@@ -202,7 +202,7 @@ public class BasicUserService implements UserService {
     public void delete(UUID userId) {
         log.info(SERVICE_NAME + "유저 삭제 시도: userId={}", userId);
         if (!userRepository.existsById(userId)) {
-            log.warn(SERVICE_NAME + "유저 없음: userId={}", userId);
+            log.error(SERVICE_NAME + "유저 없음: userId={}", userId);
             throw new UserNotFoundException("해당 사용자를 찾을 수 없습니다.");
         }
         userRepository.deleteById(userId);
