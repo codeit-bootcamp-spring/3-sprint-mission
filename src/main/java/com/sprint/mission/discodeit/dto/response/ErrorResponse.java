@@ -1,21 +1,29 @@
 package com.sprint.mission.discodeit.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.Map;
+import lombok.Builder;
 import org.springframework.http.HttpStatus;
 
+@Builder
 public record ErrorResponse(
-    String error,
+    Instant timestamp,
+    String code,
     String message,
-    int status,
-    LocalDateTime timestamp
+    Map<String, Object> details,
+    String exceptionType,
+    int status
 ) {
 
-    public static ErrorResponse of(HttpStatus status, String message) {
-        return new ErrorResponse(
-            status.getReasonPhrase(),
-            message,
-            status.value(),
-            LocalDateTime.now()
-        );
+    public static ErrorResponse of(Instant timestamp, String code, String message,
+        Map<String, Object> details, String exceptionType, HttpStatus status) {
+        return ErrorResponse.builder()
+            .timestamp(timestamp)
+            .code(code)
+            .message(message)
+            .details(details)
+            .exceptionType(exceptionType)
+            .status(status.value())
+            .build();
     }
 }

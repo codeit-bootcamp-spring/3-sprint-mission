@@ -43,3 +43,6 @@ bin/
 
 ### Storage ###
 .storage
+
+### Logs ###
+logs

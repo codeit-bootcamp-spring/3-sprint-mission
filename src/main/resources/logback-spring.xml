@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+
+  <!-- ========= 공통 프로퍼티 ========= -->
+  <property name="LOG_PATH" value="logs"/>
+  <property name="APP_NAME" value="discodeit-system"/>
+
+  <!-- 콘솔 전용: ANSI 색상 유지 + MDC -->
+  <property name="LOG_PATTERN_CONSOLE"
+    value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{36}) [%X{requestId} | %X{requestMethod} | %X{requestUrl}] - %msg%n"/>
+
+  <!-- 파일 전용: 색상 제거 + MDC -->
+  <property name="LOG_PATTERN_FILE"
+    value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId} | %X{requestMethod} | %X{requestUrl}] - %msg%n"/>
+
+  <!-- ========= Appender ========= -->
+  <!-- 1) 콘솔 -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>${LOG_PATTERN_CONSOLE}</pattern>
+    </encoder>
+  </appender>
+
+  <!-- 2) 공통 파일 -->
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/${APP_NAME}.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/${APP_NAME}.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>${LOG_PATTERN_FILE}</pattern>
+    </encoder>
+  </appender>
+
+  <!-- 3) ERROR 전용 파일 -->
+  <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/${APP_NAME}-error.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/${APP_NAME}-error.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>ERROR</level>
+    </filter>
+    <encoder>
+      <pattern>${LOG_PATTERN_FILE}</pattern>
+    </encoder>
+  </appender>
+
+  <!-- ========= 로그 레벨 & 프로파일 ========= -->
+  <!-- 개발(dev) -->
+  <springProfile name="dev">
+    <root level="DEBUG">
+      <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.springframework.web" level="DEBUG"/>
+    <logger name="org.springframework.transaction" level="DEBUG"/>
+
+    <logger name="org.hibernate" level="INFO"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+  </springProfile>
+
+  <!-- 운영(prod) -->
+  <springProfile name="prod">
+    <root level="INFO">
+      <appender-ref ref="CONSOLE"/>
+      <appender-ref ref="FILE"/>
+      <appender-ref ref="ERROR_FILE"/>
+    </root>
+
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+  </springProfile>
+
+</configuration>

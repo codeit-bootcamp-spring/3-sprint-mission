@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: discodeit
+
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
+
+  config:
+    activate:
+      on-profile: dev
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:discodeit;MODE=POSTGRESQL
+    username: root
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+
+  aop:
+    proxy-target-class: true
+
+logging:
+  level:
+    root: debug
+    com.sprint.mission.discodeit: debug
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    org.springframework: INFO
+
+server:
+  port: 8080
