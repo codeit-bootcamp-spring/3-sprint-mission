@@ -6,9 +6,9 @@ import com.sprint.mission.discodeit.dto.Message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.Message.MessageDto;
 import com.sprint.mission.discodeit.dto.Message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.util.BinaryContentUtil;
+import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +47,7 @@ public class MessageController implements MessageApi {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Override
     public ResponseEntity<MessageDto> create(
-            @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
+            @Valid @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
         List<BinaryContentCreateRequest> attachmentsRequestDTO =
@@ -77,7 +77,7 @@ public class MessageController implements MessageApi {
     @Override
     public ResponseEntity<MessageDto> update(
             @PathVariable UUID messageId,
-            @RequestBody MessageUpdateRequest messageUpdateRequest
+            @Valid @RequestBody MessageUpdateRequest messageUpdateRequest
     ) {
         MessageDto updatedMessage = messageService.update(messageId, messageUpdateRequest);
 

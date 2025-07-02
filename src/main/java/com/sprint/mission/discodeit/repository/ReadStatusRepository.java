@@ -15,13 +15,13 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
 
-    void deleteAllByChannel_Id(UUID channelId);
-
-    boolean existsByChannel_IdAndUser_Id(UUID channelId, UUID userId);
-
-    List<ReadStatus> findAllByUser_Id(UUID userId);
-
     Optional<ReadStatus> findById(UUID id);
 
     List<ReadStatus> findAllByChannel_Id(UUID channelId);
+
+    void deleteAllByChannelId(UUID channelId);
+
+    boolean existsByUserIdAndChannelId(UUID userId, UUID channelId);
+
+    List<ReadStatus> findAllByUserId(UUID userId);
 }

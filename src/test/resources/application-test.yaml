@@ -1,0 +1,29 @@
+# logging config
+logging:
+  level:
+    root: DEBUG
+
+spring:
+  # db config
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true         # H2 웹 콘솔 사용 설정
+      path: /h2-console     # 접속 경로 (기본값: /h2-console)
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    database: h2
+    database-platform: org.hibernate.dialect.H2Dialect
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: false
+    # OSIV 비활성화
+    open-in-view: false

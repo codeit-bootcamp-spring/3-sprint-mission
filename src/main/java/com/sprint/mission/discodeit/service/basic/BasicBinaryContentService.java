@@ -4,12 +4,12 @@ import com.sprint.mission.discodeit.annotation.Logging;
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.BinaryContent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,6 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
-
     private final BinaryContentMapper binaryContentMapper;
 
     /**
@@ -57,13 +56,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Transactional(readOnly = true)
     public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
 
-        if (ids == null || ids.isEmpty()) {
-            throw new IllegalArgumentException("조회할 ID 목록이 비어 있습니다.");
-        }
+//        if (ids == null || ids.isEmpty()) {
+//            throw new IllegalArgumentException("조회할 ID 목록이 비어 있습니다.");
+//        }
 
-        List<BinaryContent> binaryContents = binaryContentRepository.findAllByIdIn(ids);
-
-        return binaryContents.stream()
+        return binaryContentRepository.findAllById(ids).stream()
                 .map(binaryContentMapper::toDto)
                 .toList();
     }
@@ -73,12 +70,13 @@ public class BasicBinaryContentService implements BinaryContentService {
      *
      * @param id 조회할 BinaryContent ID
      * @return 조회된 BinaryContent
+     * @throws BinaryContentNotFoundException 존재하는 BinaryContent가 없는 경우
      */
     @Override
     @Transactional(readOnly = true)
     public BinaryContentDto find(UUID id) {
         BinaryContent binaryContent = binaryContentRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 컨텐츠입니다."));
+                .orElseThrow(() -> new BinaryContentNotFoundException(id));
 
         return binaryContentMapper.toDto(binaryContent);
     }
@@ -87,13 +85,15 @@ public class BasicBinaryContentService implements BinaryContentService {
      * 주어진 id에 해당하는 BinaryContent 삭제
      *
      * @param id 삭제할 BinaryContent id
+     * @throws BinaryContentNotFoundException 존재하는 BinaryContent가 없는 경우
      */
     @Override
     @Transactional
     public void delete(UUID id) {
-        BinaryContent binaryContent = binaryContentRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException(("존재하지 않는 컨텐츠입니다.")));
+        if (!binaryContentRepository.existsById(id)) {
+            throw new BinaryContentNotFoundException(id);
+        }
 
-        binaryContentRepository.delete(binaryContent);
+        binaryContentRepository.deleteById(id);
     }
 }
