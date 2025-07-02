@@ -30,7 +30,7 @@
       <charset>UTF-8</charset>
       <pattern>${FILE_LOG_PATTERN}</pattern>
     </encoder>
-    <file>${LOG_PATH}/${LOG_FILE_NAME}-error.log</file>
+    <file>./.logs/${LOG_FILE_NAME}-error.log</file>
     <filter class="ch.qos.logback.classic.filter.LevelFilter">
       <level>ERROR</level>
       <onMatch>ACCEPT</onMatch>

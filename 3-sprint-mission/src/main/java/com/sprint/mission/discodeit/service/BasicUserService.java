@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.basic;
+package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
@@ -7,16 +7,15 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -48,10 +47,12 @@ public class BasicUserService implements UserService {
 
     if (userRepository.existsByUsername(username)) {
       log.warn("이미 존재하는 username입니다. username={}", username);
+      throw UserAlreadyExistsException.fromUsername(username);
     }
 
     if (userRepository.existsByEmail(email)) {
       log.warn("이미 존재하는 email입니다. email={}", email);
+      throw UserAlreadyExistsException.fromEmail(email);
     }
 
     log.debug("프로필 이미지 생성 시작 request={}", profileCreateRequest);
@@ -83,7 +84,6 @@ public class BasicUserService implements UserService {
           return binaryContent;
         })
         .orElse(null);
-    log.debug("프로필 이미지 생성 완료 profileId={}", nullableProfile.getId());
 
     String password = userCreateRequest.password();
 
@@ -121,7 +121,7 @@ public class BasicUserService implements UserService {
   public UserDto find(UUID id) {
     return userRepository.findById(id)
         .map(userMapper::toDto)
-        .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
+        .orElseThrow(() -> UserNotFoundException.fromUserId(id));
   }
 
   @Override
@@ -129,7 +129,7 @@ public class BasicUserService implements UserService {
   public UserDto findByUsername(String username) {
     return userRepository.findByUsername(username)
         .map(userMapper::toDto)
-        .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
+        .orElseThrow(() -> UserNotFoundException.fromUsername(username));
   }
 
 
@@ -138,7 +138,7 @@ public class BasicUserService implements UserService {
   public UserDto findByEmail(String email) {
     return userRepository.findByEmail(email)
         .map(userMapper::toDto)
-        .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
+        .orElseThrow(() -> UserNotFoundException.fromUsername(email));
 
   }
 
@@ -158,7 +158,7 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> {
           log.warn("해당 사용자가 존재하지 않습니다. userId={}", userId);
-          return new NoSuchElementException("해당 사용자가 존재하지 않습니다.");
+          return UserNotFoundException.fromUserId(userId);
         });
 
     String newUsername = userUpdateDto.newUsername();
@@ -231,11 +231,12 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(id)
         .orElseThrow(() -> {
           log.warn("해당 사용자가 존재하지 않습니다. userId={}", id);
-          return new NoSuchElementException("해당 사용자가 존재하지 않습니다.");
+          return UserNotFoundException.fromUserId(id);
         });
 
     log.debug("[binaryContentService] 유저 삭제 시작 userId={}", user.getId());
-    Optional.ofNullable(user.getProfile().getId())
+    Optional.ofNullable(user.getProfile())
+        .map(BinaryContent::getId)
         .ifPresent(binaryContentService::delete);
     log.debug("[binaryContentService] 유저 프로필 삭제 완료 userId={}", user.getId());
 

@@ -1,14 +1,14 @@
-package com.sprint.mission.discodeit.service.basic;
+package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.userStatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -90,7 +90,7 @@ public class BasicUserStatusService implements UserStatusService {
     UserStatus userStatus = userStatusRepository.findById(id)
         .orElseThrow(() -> {
           log.warn("존재하지 않는 사용자 상태입니다. userStatusId={}", id);
-          return new NoSuchElementException("UserStatus with id " + id + " not found");
+          return new UserStatusNotFoundException(id);
         });
 
     log.debug("UserStatus 업데이트 시작 userStatusId={}", userStatus.getId());
@@ -109,7 +109,7 @@ public class BasicUserStatusService implements UserStatusService {
         .orElseThrow(
             () -> {
               log.warn("존재하지 않는 사용자 상태입니다. userId={}", userId);
-              return new NoSuchElementException("UserStatus with userId " + userId + " not found");
+              return new UserStatusNotFoundException(userId);
             });
 
     log.debug("UserStatus 업데이트 시작 userId={}", userStatus.getUser().getId());

@@ -11,14 +11,9 @@ server:
   port: 8080
 
 logging:
-  config: classpath:logback-spring.xml
   level:
-    org.hibernate.sql: debug
-    org.hibernate.orm.jdbc.bind: trace
-    com.sprint.mission.discodeit: DEBUG
-    org.springframework.web: DEBUG
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss:SSS} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"
+    root:
+      info
 
 spring:
   application:
@@ -46,6 +41,48 @@ spring:
         ddl-auto: update
         show_sql: false
     open-in-view: false
+
+# Spring Boot Actuator 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, loggers
+        # 모든 엔드포인트 노출 (개발 환경용)
+        # include: "*"
+      base-path: /actuator  # Actuator 엔드포인트 기본 경로
+  endpoint:
+    health:
+      show-details: always
+
+# 애플리케이션 정보 (Actuator info 엔드포인트용)
+info:
+  app:
+    name: Discodeit
+    description: 디스코드잇 채팅 서비스
+    version: 1.7.0
+    encoding: UTF-8
+    java:
+      version: 17
+    springboot:
+      version: 3.4.0
+    config:
+      datasource:
+        url: ${spring.datasource.url}
+        driver-class-name: ${spring.datasource.driver-class-name}
+      jpa:
+        ddl-auto: ${spring.jpa.hibernate.ddl-auto}
+      storage:
+        type: ${discodeit.storage.type}
+        path: ${discodeit.storage.local.root-path}
+      multipart:
+        max-file-size: ${spring.servlet.multipart.maxFileSize}
+        max-request-size: ${spring.servlet.multipart.maxRequestSize}
+
+  build:
+    artifact: chap01-spring-stability
+    group: com.ohgiraffers.stability
+    time: 2024-01-01T00:00:00.000Z
 
 jdbc:
   time_zone: UTC

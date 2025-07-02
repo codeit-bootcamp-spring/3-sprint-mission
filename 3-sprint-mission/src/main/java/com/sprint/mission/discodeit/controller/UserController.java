@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -60,7 +61,7 @@ public class UserController implements UserAPI {
   @Override
   @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
   public ResponseEntity<UserDto> create(
-      @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
+      @RequestPart("userCreateRequest") @Valid UserCreateRequest userCreateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
     log.info("사용자 생성 요청 request={}", userCreateRequest);
@@ -97,7 +98,7 @@ public class UserController implements UserAPI {
   )
   public ResponseEntity<UserDto> update(
       @PathVariable("userId") UUID userId,
-      @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
+      @RequestPart("userUpdateRequest") @Valid UserUpdateRequest userUpdateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
     log.info("사용자 정보 수정 요청 userId={}, request={}", userId, userUpdateRequest);
@@ -141,7 +142,7 @@ public class UserController implements UserAPI {
   )
   public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
       @PathVariable("userId") UUID userId,
-      @RequestBody UserStatusUpdateRequest request
+      @RequestBody @Valid UserStatusUpdateRequest request
   ) {
     log.info("사용자 상태 업데이트 요청 userId={}, request={}", userId, request);
 

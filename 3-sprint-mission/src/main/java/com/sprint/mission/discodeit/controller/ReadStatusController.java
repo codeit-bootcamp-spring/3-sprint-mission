@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +31,9 @@ public class ReadStatusController implements ReadStatusAPI {
 
   @PostMapping
   public ResponseEntity<ReadStatusDto> create(
-      @RequestBody ReadStatusCreateRequest request
+      @RequestBody @Valid ReadStatusCreateRequest request
   ) {
     log.info("메시지 읽음 상태 생성 요청 userId={}, channelId={}", request.userId(), request.channelId());
-
     ReadStatusDto readStatus = readStatusService.create(request);
     log.info("메시지 읽음 상태 생성 완료 readStatusId={}", readStatus.id());
 
@@ -47,10 +47,9 @@ public class ReadStatusController implements ReadStatusAPI {
   )
   public ResponseEntity<ReadStatusDto> update(
       @PathVariable UUID readStatusId,
-      @RequestBody ReadStatusUpdateRequest readStatusUpdateDto
+      @RequestBody @Valid ReadStatusUpdateRequest readStatusUpdateDto
   ) {
     log.info("메시지 읽음 상태 수정 요청 readStatusId={}, request={}", readStatusId, readStatusUpdateDto);
-
     ReadStatusDto readStatusUpdate = readStatusService.update(readStatusId, readStatusUpdateDto);
     log.info("메시지 읽음 상태 수정 완료 readStatusId={}", readStatusUpdate.id());
 
@@ -63,8 +62,9 @@ public class ReadStatusController implements ReadStatusAPI {
   public ResponseEntity<List<ReadStatusDto>> findAllByUserId(
       @RequestParam("userId") UUID userId
   ) {
-//        List<ReadStatus> readStatus = readStatusService.findAll();
+    log.info("메시지 읽음 상태 목록 조회 요청 userId={}", userId);
     List<ReadStatusDto> readStatusDto = readStatusService.findAllByUserId(userId);
+    log.info("메시지 읽음 상태 목록 조회 완료 count={}", readStatusDto.size());
 
     return ResponseEntity
         .status(HttpStatus.OK)

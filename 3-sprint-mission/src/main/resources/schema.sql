@@ -1,4 +1,5 @@
 --0. create schema and database
+--*운영용 DB
 CREATE USER discodeit_user
     PASSWORD 'discodeit1234'
     CREATEDB;
@@ -12,10 +13,39 @@ create database discodeit
     LC_CTYPE = 'en_US.utf-8'
     TEMPLATE template0;
 
-\c discodeit discodeit_user
+create schema discodeit;
 
-SELECT *
-FROM discodeit.USERS;
+GRANT ALL PRIVILEGES ON DATABASE discodeit TO discodeit_user;
+GRANT USAGE ON SCHEMA discodeit TO discodeit_user;
+GRANT ALL ON ALL TABLES IN SCHEMA discodeit TO discodeit_user;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA discodeit TO discodeit_user;
+
+--* 개발용 DB
+CREATE USER dev_user
+    PASSWORD 'dev_1234'
+    CREATEDB;
+
+create database discodeit_dev
+    WITH
+    OWNER = dev_user
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'en_US.utf-8'
+    LC_CTYPE = 'en_US.utf-8'
+    TEMPLATE template0;
+
+GRANT ALL PRIVILEGES ON DATABASE discodeit TO dev_user;
+GRANT USAGE ON SCHEMA discodeit TO dev_user;
+GRANT ALL ON ALL TABLES IN SCHEMA discodeit TO dev_user;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA discodeit TO dev_user;
+
+create schema discodeit;
+
+\c discodeit postgres;
+\c discodeit discodeit_user
+SET SCHEMA 'discodeit';
+
+\c discodeit_dev dev_user
+SET SCHEMA 'discodeit';
 
 DROP TABLE IF EXISTS user_statuses;
 DROP TABLE IF EXISTS read_statuses;
@@ -104,6 +134,5 @@ CREATE TABLE read_statuses
 -- ALTER TABLE binary_contents
 --     DROP COLUMN bytes;
 
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA discodeit TO discodeit_user;
 
 commit;

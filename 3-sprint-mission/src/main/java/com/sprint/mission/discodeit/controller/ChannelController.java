@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.service.ChannelService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ public class ChannelController implements ChannelAPI {
       , consumes = MediaType.APPLICATION_JSON_VALUE
   )
   public ResponseEntity<ChannelDto> create(
-      @RequestBody PublicChannelCreateRequest publicChannelCreateDto
+      @RequestBody @Valid PublicChannelCreateRequest publicChannelCreateDto
   ) {
     log.info("공개 채팅방 개설 요청 request={}", publicChannelCreateDto);
 
@@ -54,7 +55,7 @@ public class ChannelController implements ChannelAPI {
       value = "/private"
       , consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ChannelDto> create(
-      @RequestBody PrivateChannelCreateRequest privateChannelCreateDto
+      @RequestBody @Valid PrivateChannelCreateRequest privateChannelCreateDto
   ) {
     log.info("비공개 채팅방 개설 요청 request={}", privateChannelCreateDto);
 
@@ -73,7 +74,7 @@ public class ChannelController implements ChannelAPI {
   )
   public ResponseEntity<ChannelDto> update(
       @PathVariable UUID channelId,
-      @RequestBody PublicChannelUpdateRequest publicChannelUpdateDto
+      @RequestBody @Valid PublicChannelUpdateRequest publicChannelUpdateDto
   ) {
     log.info("공개 채널 정보 수정 요청 channelId={}, request={}", channelId, publicChannelUpdateDto);
 
