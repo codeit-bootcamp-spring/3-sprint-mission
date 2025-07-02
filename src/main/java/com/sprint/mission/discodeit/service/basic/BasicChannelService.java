@@ -6,9 +6,9 @@ import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateReque
 import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
 import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.PrivateChannelUpdateException;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.advanced.UserMapper;
 import com.sprint.mission.discodeit.mapper.advanced.ChannelMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;

@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.storage.s3;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
  */
 @Getter
 @Component
+@ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "aws")
 public class S3Values {
 
     private final String bucketName;

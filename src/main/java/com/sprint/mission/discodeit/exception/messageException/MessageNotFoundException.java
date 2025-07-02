@@ -1,4 +1,6 @@
-package com.sprint.mission.discodeit.exception;
+package com.sprint.mission.discodeit.exception.messageException;
+
+import com.sprint.mission.discodeit.exception.ErrorCode;
 
 import java.util.Map;
 

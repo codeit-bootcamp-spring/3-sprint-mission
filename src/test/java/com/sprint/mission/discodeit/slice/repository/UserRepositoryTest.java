@@ -87,7 +87,7 @@ public class UserRepositoryTest {
         // given
 
         // when
-        Optional<User> foundUser = userRepository.findByUsername("paul");
+        Optional<User> foundUser = userRepository.findByUsernameWithProfileAndStatus("paul");
 
         // then
         assertThat(foundUser).isPresent();
@@ -100,7 +100,7 @@ public class UserRepositoryTest {
         // given
 
         // when
-        Optional<User> foundUser = userRepository.findByUsername("daniel");
+        Optional<User> foundUser = userRepository.findByUsernameWithProfileAndStatus("daniel");
 
         // then
         assertThat(foundUser).isNotPresent();

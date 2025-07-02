@@ -1,6 +1,7 @@
-package com.sprint.mission.discodeit.exception;
+package com.sprint.mission.discodeit.exception.messageException;
 
-import org.springframework.http.HttpStatus;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 
 import java.util.Map;
 
