@@ -1,24 +1,13 @@
 spring:
   application:
-    name: discodeit
+    name: ${PROJECT_NAME}
+    version: ${PROJECT_VERSION}
   servlet:
     multipart:
       maxFileSize: 10MB # 파일 하나의 최대 크기
       maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
-
   profiles:
     active: dev
-  # DB config
-  #  config:
-  #    import: "classpath:db.yaml"
-
-  # Admin 서버 설정 정보 추가
-  boot:
-    admin:
-      client:
-        instance:
-          name: discodeit
-
 
 discodeit:
   storage:
@@ -60,7 +49,7 @@ info:
   spring-boot:
     version: 3.4.0
   datasource:
-    url: ${spring.datasource.url}
+    url: ${DB_URL}
     driver-class-name: ${spring.datasource.driver-class-name}
   jpa:
     ddl-auto: ${spring.jpa.hibernate.ddl-auto}
@@ -73,3 +62,9 @@ info:
 
 
 
+#  # Admin 서버 설정 정보 추가
+#  boot:
+#    admin:
+#      client:
+#        instance:
+#          name: discodeit

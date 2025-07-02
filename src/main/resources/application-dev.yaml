@@ -4,29 +4,15 @@ server:
 
 # ─────────────────────────────────────────────
 spring:
-  # 외부 DB 설정 파일 분리
-  config:
-    import: "classpath:db-dev.yaml"
-
-  # Admin 서버 설정 정보 추가
-  boot:
-    admin:
-      client:
-        url: http://localhost:9090
-
-  # H2 Console 설정
-  h2:
-    console:
-      enabled: true      # H2 Console 사용 여부
-      path: /h2-console  # H2 Console 접속 주소
-
-  # SQL 스크립트 실행 여부 (script-based 기반 sql문)
-  sql:
-    init:
-      mode: always  # 외부 DB도 실행
-
-  # JPA 공통 설정 (보안 정보 제외)
+  # DB config
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.h2.Driver
+  # JPA + h2 설정
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: validate
     show-sql: false
@@ -34,6 +20,15 @@ spring:
       hibernate:
         format_sql: true     # 쿼리 로그 포맷 (정렬)
         highlight_sql: true  # 쿼리 로그 출력
+  # H2 Console 설정
+  h2:
+    console:
+      enabled: true      # H2 Console 사용 여부
+      path: /h2-console  # H2 Console 접속 주소
+  # SQL 스크립트 실행 여부 (script-based 기반 sql문)
+  sql:
+    init:
+      mode: always  # 외부 DB도 실행
 
 # ─────────────────────────────────────────────
 # 로깅 설정
@@ -42,3 +37,10 @@ logging:
     org.hibernate.sql: debug            #  = spring.jpa.show-sql: true  +  sql 이 실행된 시간 정보
     org.hibernate.orm.jdbc.bind: trace  # SQL에 바인딩된 실제 값을 보기 위해 설정
     org.springframework.web: warn
+
+# ─────────────────────────────────────────────
+#  # Admin 서버 설정 정보 추가
+#  boot:
+#    admin:
+#      client:
+#        url: http://localhost:9090
