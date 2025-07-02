@@ -40,7 +40,7 @@ public class UserController implements UserApi {
     private final UserService userService;
     private final UserStatusService userStatusService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)   // 파일(프로필 이미지)이 있을수도 있고 없을수도 있다.
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Override
     public ResponseEntity<UserDto> create(
         @Valid @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
