@@ -37,8 +37,8 @@ out/
 ### VS Code ###
 .vscode/
 
-**/storage
+.discodeit/storage
 
 .env
-.env.*
+*.env
 *.txt
