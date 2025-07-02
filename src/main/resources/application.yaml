@@ -1,5 +1,12 @@
 spring:
-  application:
+  
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
+
+application:
     name: discodeit
   servlet:
     multipart:

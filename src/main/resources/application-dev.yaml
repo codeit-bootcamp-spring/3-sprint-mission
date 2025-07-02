@@ -2,7 +2,13 @@ server:
   port: 8080
 
 spring:
-  datasource:
+  
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
+
+datasource:
     url: jdbc:postgresql://localhost:5432/discodeit
     username: discodeit_user
     password: discodeit1234
