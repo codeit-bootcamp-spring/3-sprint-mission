@@ -40,8 +40,20 @@ public class TestDataBuilder {
     return new UserCreateRequest(username, email, "password123");
   }
 
+  public static UserCreateRequest createUserCreateRequest() {
+    return new UserCreateRequest("testuser", "test@example.com", "password123");
+  }
+
+  public static UserCreateRequest createUserCreateRequest(String username, String email, String password) {
+    return new UserCreateRequest(username, email, password);
+  }
+
   public static UserUpdateRequest createUserUpdateRequest(String newUsername, String newEmail) {
     return new UserUpdateRequest(newUsername, newEmail, "newPassword123");
+  }
+
+  public static UserUpdateRequest createUserUpdateRequest() {
+    return new UserUpdateRequest("updateduser", "updated@example.com", "newPassword123");
   }
 
   public static UserDto createDefaultUserDto() {
