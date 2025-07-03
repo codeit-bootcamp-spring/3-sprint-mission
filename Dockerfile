@@ -30,5 +30,9 @@ WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar ${PROJECT_NAME}-${PROJECT_VERSION}.jar
 # 5. 포트 노출
 EXPOSE 8080
-# 6. 애플리케이션 실행 명령
-CMD java $JVM_OPTS -jar "$PROJECT_NAME-$PROJECT_VERSION.jar"
+# 6. DB 실행까지 기다리는 스크립트
+COPY wait-for-it.sh /wait-for-it.sh
+RUN chmod +x /wait-for-it.sh
+
+# 7. 애플리케이션 실행 명령
+CMD sh -c "/wait-for-it.sh postgresDB:5432 -- echo 'postgresDB is up' && java $JVM_OPTS -jar ${PROJECT_NAME}-${PROJECT_VERSION}.jar"
