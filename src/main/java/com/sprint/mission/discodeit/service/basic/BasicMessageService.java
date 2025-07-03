@@ -48,6 +48,8 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageDto create(MessageCreateRequest messageCreateRequest,
         List<BinaryContentCreateRequest> binaryContentCreateRequests) {
+        //테스트 용
+        log.info("S3 버킷 이름 = {}", System.getenv("AWS_S3_BUCKET"));
 
         log.info("메시지 생성 요청: channelId={}, authorId={}, 첨부파일 개수={}",
             messageCreateRequest.channelId(),
