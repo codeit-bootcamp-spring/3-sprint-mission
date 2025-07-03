@@ -19,7 +19,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.sprint.mission.discodeit.exception.CustomException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.channel.DuplicateParticipantsException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 
 import java.time.Instant;
 import java.util.*;
@@ -76,8 +79,7 @@ public class BasicChannelService implements ChannelService {
     // N+1 문제 해결: 참가자 정보를 Fetch Join으로 한 번에 조회
     return channelRepository.findByIdWithParticipants(channelId)
         .map(mapperFacade::toDto)
-        .orElseThrow(() -> new CustomException.ChannelNotFoundException(
-            "Channel with id " + channelId + " not found"));
+        .orElseThrow(() -> ChannelNotFoundException.withChannelId(channelId));
   }
 
   @Override
@@ -110,11 +112,10 @@ public class BasicChannelService implements ChannelService {
     log.info("채널 수정 요청 - 채널 ID: {}", channelId);
 
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new CustomException.ChannelNotFoundException(
-            "Channel with id " + channelId + " not found"));
+        .orElseThrow(() -> ChannelNotFoundException.withChannelId(channelId));
 
     if (channel.getType().isPrivate()) {
-      throw new CustomException.PrivateChannelUpdateException("Private channel cannot be updated");
+      throw PrivateChannelUpdateException.of();
     }
 
     channel.update(request.newName(), request.newDescription());
@@ -128,8 +129,7 @@ public class BasicChannelService implements ChannelService {
     log.info("채널 삭제 요청 - 채널 ID: {}", channelId);
 
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new CustomException.ChannelNotFoundException(
-            "Channel with id " + channelId + " not found"));
+        .orElseThrow(() -> ChannelNotFoundException.withChannelId(channelId));
 
     channelRepository.delete(channel);
     log.info("채널 삭제 완료 - 채널 ID: {}", channelId);
@@ -142,12 +142,12 @@ public class BasicChannelService implements ChannelService {
    * 중복된 참가자가 있는지 확인합니다.
    * 
    * @param participantIds 검증할 참가자 ID 목록
-   * @throws IllegalArgumentException 중복된 참가자가 있는 경우
+   * @throws DuplicateParticipantsException 중복된 참가자가 있는 경우
    */
   private void validateParticipants(List<UUID> participantIds) {
     Set<UUID> uniqueParticipantIds = new HashSet<>(participantIds);
     if (uniqueParticipantIds.size() != participantIds.size()) {
-      throw new IllegalArgumentException("중복된 참가자가 있습니다.");
+      throw DuplicateParticipantsException.withParticipantIds(participantIds);
     }
   }
 
@@ -158,7 +158,7 @@ public class BasicChannelService implements ChannelService {
    * @param participantIds 참가자 ID 목록
    * @param savedChannel   생성된 채널 (실패 시 삭제용)
    * @return 조회된 참가자 목록
-   * @throws CustomException.UserNotFoundException 일부 사용자를 찾을 수 없는 경우
+   * @throws UserNotFoundException 일부 사용자를 찾을 수 없는 경우
    */
   private List<User> validateAndGetParticipants(List<UUID> participantIds, Channel savedChannel) {
     List<User> participants = userRepository.findAllById(participantIds);
@@ -167,7 +167,7 @@ public class BasicChannelService implements ChannelService {
 
     if (participants.size() != participantIds.size()) {
       channelRepository.delete(savedChannel);
-      throw new CustomException.UserNotFoundException("일부 사용자를 찾을 수 없습니다.");
+      throw UserNotFoundException.of();
     }
 
     return participants;
@@ -193,11 +193,11 @@ public class BasicChannelService implements ChannelService {
    * 사용자 존재 여부를 확인합니다.
    * 
    * @param userId 확인할 사용자 ID
-   * @throws CustomException.UserNotFoundException 사용자가 존재하지 않는 경우
+   * @throws UserNotFoundException 사용자가 존재하지 않는 경우
    */
   private void validateUserExists(UUID userId) {
     if (!userRepository.existsById(userId)) {
-      throw new CustomException.UserNotFoundException("User with id " + userId + " not found");
+      throw UserNotFoundException.withUserId(userId);
     }
   }
 
