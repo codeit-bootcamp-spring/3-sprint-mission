@@ -46,3 +46,6 @@ bin/
 ### file
 file-data-map/
 **/resources/static/
+
+logs/
+.env

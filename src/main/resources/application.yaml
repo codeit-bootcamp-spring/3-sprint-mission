@@ -2,7 +2,13 @@ spring:
   application:
     name: discodeit
   profiles:
-    active: dev
+    active: prod
+
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: .discodeit/storage
 
 logging:
   level:
