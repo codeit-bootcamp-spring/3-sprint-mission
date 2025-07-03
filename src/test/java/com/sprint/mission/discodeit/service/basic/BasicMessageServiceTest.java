@@ -1,12 +1,34 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import static com.sprint.mission.discodeit.testutil.TestConstants.NON_EXISTENT_CHANNEL_ID;
+import static com.sprint.mission.discodeit.testutil.TestConstants.NON_EXISTENT_MESSAGE_ID;
+import static com.sprint.mission.discodeit.testutil.TestConstants.NON_EXISTENT_USER_ID;
+import static com.sprint.mission.discodeit.testutil.TestConstants.TEST_MESSAGE_CONTENT;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.CHANNEL_ID_1;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.MESSAGE_ID_1;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.USER_ID_1;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createBinaryContentCreateRequest;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createDefaultUser;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createMessage;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createMessageCreateRequest;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createMessageDto;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createMessageDtoList;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createMessageList;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createMessageUpdateRequest;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createPublicChannel;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.then;
+
 import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.mapper.PageMapper;
 import com.sprint.mission.discodeit.dto.mapper.mapstruct.MapperFacade;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -17,23 +39,16 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import static com.sprint.mission.discodeit.testutil.TestConstants.*;
-import static com.sprint.mission.discodeit.testutil.TestDataBuilder.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("BasicMessageService 단위 테스트")

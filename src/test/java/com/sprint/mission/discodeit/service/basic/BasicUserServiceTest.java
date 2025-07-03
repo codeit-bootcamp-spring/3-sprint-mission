@@ -1,5 +1,27 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import static com.sprint.mission.discodeit.testutil.TestConstants.DUPLICATE_EMAIL;
+import static com.sprint.mission.discodeit.testutil.TestConstants.NEW_EMAIL;
+import static com.sprint.mission.discodeit.testutil.TestConstants.NEW_USERNAME;
+import static com.sprint.mission.discodeit.testutil.TestConstants.NON_EXISTENT_USER_ID;
+import static com.sprint.mission.discodeit.testutil.TestConstants.TEST_EMAIL;
+import static com.sprint.mission.discodeit.testutil.TestConstants.TEST_USERNAME;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.USER_ID_1;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createBinaryContentCreateRequest;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createDefaultUser;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createDefaultUserCreateRequest;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createDefaultUserDto;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createUserDto;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createUserDtoList;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createUserList;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createUserUpdateRequest;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.then;
+
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.mapper.mapstruct.MapperFacade;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
@@ -12,22 +34,14 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.testutil.TestDataBuilder;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Optional;
-
-import static com.sprint.mission.discodeit.testutil.TestConstants.*;
-import static com.sprint.mission.discodeit.testutil.TestDataBuilder.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("BasicUserService 단위 테스트")

@@ -1,5 +1,28 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import static com.sprint.mission.discodeit.testutil.TestConstants.NON_EXISTENT_CHANNEL_ID;
+import static com.sprint.mission.discodeit.testutil.TestConstants.NON_EXISTENT_USER_ID;
+import static com.sprint.mission.discodeit.testutil.TestConstants.TEST_CHANNEL_DESCRIPTION;
+import static com.sprint.mission.discodeit.testutil.TestConstants.TEST_CHANNEL_NAME;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.CHANNEL_ID_1;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.CHANNEL_ID_2;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.USER_ID_1;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createDefaultUser;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createPrivateChannel;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createPrivateChannelCreateRequest;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createPublicChannel;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createPublicChannelCreateRequest;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createPublicChannelDto;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createPublicChannelUpdateRequest;
+import static com.sprint.mission.discodeit.testutil.TestDataBuilder.createUserList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.then;
+
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.mapper.mapstruct.MapperFacade;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
@@ -7,33 +30,25 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.channel.DuplicateParticipantsException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import static com.sprint.mission.discodeit.testutil.TestConstants.*;
-import static com.sprint.mission.discodeit.testutil.TestDataBuilder.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("BasicChannelService 단위 테스트")
