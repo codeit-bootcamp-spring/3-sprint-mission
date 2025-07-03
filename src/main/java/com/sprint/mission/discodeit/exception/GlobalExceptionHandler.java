@@ -6,8 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -122,6 +124,39 @@ public class GlobalExceptionHandler {
         HttpStatus.BAD_REQUEST.value(),
         e.getClass().getSimpleName(),
         errorMessage);
+
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body(errorResponse);
+  }
+
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  public ResponseEntity<ErrorResponse> handleMissingServletRequestParameterException(
+      MissingServletRequestParameterException e) {
+    log.warn("필수 요청 파라미터 누락: {} (타입: {})", e.getParameterName(), e.getParameterType());
+
+    ErrorResponse errorResponse = ErrorResponse.of(
+        HttpStatus.BAD_REQUEST.value(),
+        e.getClass().getSimpleName(),
+        String.format("필수 파라미터가 누락되었습니다: %s", e.getParameterName()));
+
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body(errorResponse);
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(
+      MethodArgumentTypeMismatchException e) {
+    log.warn("파라미터 타입 변환 실패: {} = '{}' (기대 타입: {})",
+        e.getName(), e.getValue(), e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : "unknown");
+
+    String message = String.format("파라미터 '%s'의 값이 올바르지 않습니다: %s", e.getName(), e.getValue());
+
+    ErrorResponse errorResponse = ErrorResponse.of(
+        HttpStatus.BAD_REQUEST.value(),
+        e.getClass().getSimpleName(),
+        message);
 
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)

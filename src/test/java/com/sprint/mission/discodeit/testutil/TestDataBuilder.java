@@ -114,6 +114,11 @@ public class TestDataBuilder {
         CHANNEL_ID_1, createDefaultUserDto(), null);
   }
 
+  public static MessageDto createUpdatedMessageDto() {
+    return new MessageDto(MESSAGE_ID_1, Instant.now(), Instant.now(), "Updated message content",
+        CHANNEL_ID_1, createDefaultUserDto(), null);
+  }
+
   // === BinaryContent 관련 ===
   public static BinaryContentCreateRequest createBinaryContentCreateRequest() {
     return new BinaryContentCreateRequest("test-file.jpg", "image/jpeg", new byte[1024]);
