@@ -7,13 +7,13 @@ spring:
       maxFileSize: 10MB # 파일 하나의 최대 크기
       maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
 discodeit:
   storage:
     type: local
     local:
-      root-path: "./data" # ${user.dir}/data
+      root-path: ${SPRING_BINARY_CONTENT_PATH} # ${user.dir}/data
   #  repository:
   #    type: file   # jcf | file
   #    file-directory: .discodeit

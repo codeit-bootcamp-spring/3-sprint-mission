@@ -30,6 +30,7 @@ spring:
 # 로깅 설정
 logging:
   level:
+    root: info
     org.hibernate.sql: debug                #  = spring.jpa.show-sql: true  +  sql 이 실행된 시간 정보
     org.hibernate.orm.jdbc.bind: trace     # SQL에 바인딩된 실제 값을 보기 위해 설정
 
