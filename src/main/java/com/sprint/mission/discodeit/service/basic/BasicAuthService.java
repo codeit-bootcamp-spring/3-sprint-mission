@@ -9,8 +9,10 @@ import com.sprint.mission.discodeit.service.AuthService;
 import jakarta.transaction.Transactional;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
@@ -31,6 +33,6 @@ public class BasicAuthService implements AuthService {
             throw new IllegalArgumentException("Wrong password");
         }
 
-        return userMapper.userToUserDto(user);
+        return userMapper.toDto(user);
     }
 }

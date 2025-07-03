@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 60000
+  jpa:
+    hibernate.ddl-auto: none
+    defer-datasource-initialization: true
+    show-sql: false
+    properties.hibernate:
+      format_sql: true
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+  sql.init:
+    mode: always
+    continue-on-error: false
+
+logging:
+  level.org:
+    hibernate:
+      SQL: warn
+      orm.jdbc.bind: warn
+    springframework.data: warn
