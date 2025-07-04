@@ -67,36 +67,17 @@ jobs:
           aws ecs describe-task-definition \
             --task-definition $ECS_TASK_DEFINITION \
             --query "taskDefinition" > task-definition.json
-          
-          # 디버깅
-          echo "--- 'Use task definition' 스텝 후 파일 목록 ---"
-          ls -l
-          echo "--- task-definition.json 내용 ---"
-          cat task-definition.json || echo "task-definition.json 파일이 없습니다."
-          echo "--------------------------------------"
 
       - name: Update image in task definition
         env:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           IMAGE_URI=$ECR_REPOSITORY_URI:$IMAGE_TAG
-          
-          # 디버깅: task-definition.json 파일 존재 여부 확인
           if [ ! -f task-definition.json ]; then
             echo "오류: task-definition.json 파일이 존재하지 않습니다. 이전 스텝을 확인하세요."
             exit 1 # 파일이 없으면 스크립트 종료
           fi
-          
-          # jq 명령어를 --arg 옵션을 사용하여 한 줄로 작성합니다.
-          # 쉘의 따옴표 및 줄바꿈 해석 문제를 완전히 회피합니다.
           cat task-definition.json | jq --arg img_uri "$IMAGE_URI" 'del(.taskDefinitionArn, .revision, .status, .compatibilities, .requiresAttributes, .registeredAt, .registeredBy) | (.containerDefinitions[0].image) = $img_uri' > new-task-def.json
-          
-          # 디버깅: new-task-def.json 파일 생성 및 내용 확인
-          echo "--- 'Update image in task definition' 스텝 후 파일 목록 ---"
-          ls -l
-          echo "--- new-task-def.json 내용 ---"
-          cat new-task-def.json || echo "new-task-def.json 파일이 없습니다."
-          echo "----------------------------------------------"
 
       - name: Register new task definition
         id: register-task
@@ -120,3 +101,58 @@ jobs:
             --service $ECS_SERVICE \
             --task-definition ${{ steps.register-task.outputs.task_def_arn }} \
             --desired-count 1
+
+      - name: Clean up old ECR Public images (Keep only 'latest')
+        env:
+          ECR_REPOSITORY_URI: ${{ env.ECR_REPOSITORY_URI }} # ECR_REPOSITORY_URI 환경 변수를 다시 사용합니다.
+          AWS_REGION: ${{ env.AWS_REGION }} # AWS_REGION 환경 변수도 필요합니다.
+        run: |
+          echo "Starting ECR Public image cleanup for repository: $ECR_REPOSITORY"
+          
+          # ECR Public Repository 이름만 추출합니다. (예: discodeit)
+          REPO_NAME=$(echo $ECR_REPOSITORY_URI | awk -F'/' '{print $NF}')
+          
+          # 1. 'latest' 태그가 붙은 이미지의 다이제스트(SHA)를 찾습니다.
+          #    (describe-images는 항상 최신부터 반환하므로, 첫 번째 결과를 사용합니다.)
+          LATEST_IMAGE_DIGEST=$(aws ecr-public describe-images \
+            --region $AWS_REGION \
+            --repository-name $REPO_NAME \
+            --query 'imageDetails[?contains(imageTags, `latest`)].[imageDigest]' \
+            --output text | head -n 1) # 여러 latest가 있을 수 있으므로 첫 번째만 사용 (shouldn't happen)
+          
+          if [ -z "$LATEST_IMAGE_DIGEST" ]; then
+            echo "Warning: No image with 'latest' tag found. Skipping cleanup."
+            exit 0 # latest 태그가 없으면 삭제할 기준이 없으므로 종료
+          fi
+          
+          echo "Current 'latest' image digest: $LATEST_IMAGE_DIGEST"
+          
+          # 2. 모든 이미지의 다이제스트와 태그를 가져옵니다.
+          #    latest 태그가 없거나 다른 태그가 붙은 이미지를 포함하여 모든 이미지를 가져옵니다.
+          ALL_IMAGE_DETAILS=$(aws ecr-public describe-images \
+            --region $AWS_REGION \
+            --repository-name $REPO_NAME \
+            --query 'imageDetails[*].[imageDigest,imageTags[]]' \
+            --output json)
+          
+          # 3. 'latest' 태그가 붙은 이미지를 제외한 모든 이미지 다이제스트를 필터링합니다.
+          #    jq를 사용하여 latest_image_digest와 일치하지 않는 모든 imageDigest를 추출합니다.
+          IMAGES_TO_DELETE=$(echo "$ALL_IMAGE_DETAILS" | jq -r --arg LATEST_DIGEST "$LATEST_IMAGE_DIGEST" \
+            '[.[] | select(.[0] != $LATEST_DIGEST) | .[0]] | unique | .[]')
+          
+          if [ -z "$IMAGES_TO_DELETE" ]; then
+            echo "No old images to delete."
+          else
+            echo "Old images to delete (digests):"
+            echo "$IMAGES_TO_DELETE"
+          
+            # 4. 필터링된 이미지들을 삭제합니다.
+            #    xargs를 사용하여 각 다이제스트를 delete-image 명령에 전달합니다.
+            echo "$IMAGES_TO_DELETE" | xargs -I {} aws ecr-public batch-delete-image \
+              --region $AWS_REGION \
+              --repository-name $REPO_NAME \
+              --image-ids imageDigest={}
+          
+            echo "Old images successfully deleted."
+          fi
+          echo "ECR Public image cleanup completed."
