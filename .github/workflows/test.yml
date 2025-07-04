@@ -1,6 +1,8 @@
 name: Test AWS(CI)
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -18,6 +20,7 @@ jobs:
           distribution: 'corretto'
 
       - name: Configure AWS credentials
+        if: github.event_name == 'push'
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -25,6 +28,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Test AWS CLI
+        if: github.event_name == 'push'
         run: |
           aws sts get-caller-identity
           aws ecr-public describe-repositories \
@@ -33,8 +37,16 @@ jobs:
 
       - name: Generate JaCoCo report
         run: ./gradlew test jacocoTestReport
+
       - name: Upload coverage reports to Codecov
+        if: github.event_name == 'push'
         uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           slug: bladnoch/3-sprint-mission
+
+# 프라이빗 환경( 토큰 필요)
+#      - name: Upload coverage reports to Codecov
+#        uses: codecov/codecov-action@v5
+#        with:
+#          token: ${{ secrets.CODECOV_TOKEN }}
+#          slug: bladnoch/3-sprint-mission
