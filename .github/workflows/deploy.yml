@@ -114,7 +114,7 @@ jobs:
           LATEST_IMAGE_DIGEST=$(aws ecr-public describe-images \
             --region $ECR_PUBLIC_REGION \
             --repository-name $REPO_NAME \
-            --query 'imageDetails[?contains(imageTags, `latest`)].[imageDigest]' \
+            --query 'imageDetails[?imageTags != null && contains(imageTags, `latest`)].[imageDigest]' \
             --output text | head -n 1)
           
           if [ -z "$LATEST_IMAGE_DIGEST" ]; then
