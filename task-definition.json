@@ -2,7 +2,7 @@
   "containerDefinitions": [
     {
       "name": "discodeit-app",
-      "image": "public.ecr.aws/m8n4t4p5/discodeit",
+      "image": "public.ecr.aws/m8n4t4p5/discodeit:<IMAGE_TAG>",
       "cpu": 256,
       "memory": 512,
       "memoryReservation": 256,
@@ -44,9 +44,6 @@
   "networkMode": "bridge",
   "volumes": [],
   "placementConstraints": [],
-  "compatibilities": [
-    "EC2"
-  ],
   "requiresCompatibilities": [
     "EC2"
   ],
@@ -58,3 +55,5 @@
   },
   "enableFaultInjection": false
 }
+
+
