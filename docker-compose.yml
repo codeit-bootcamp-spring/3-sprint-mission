@@ -1,0 +1,165 @@
+# Docker Compose를 활용한 멀티 컨테이너 환경 구성
+# Spring Boot 애플리케이션 + PostgreSQL 데이터베이스 연동
+version: '3.8'
+
+# ====================================================================
+# 서비스 정의
+# ====================================================================
+services:
+  # PostgreSQL 데이터베이스 서비스
+  postgres:
+    image: postgres:17-alpine
+    container_name: discodeit
+    restart: unless-stopped
+
+    # 환경변수 설정
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+      TZ: "Asia/Seoul"
+
+    # 포트 매핑 (호스트:컨테이너)
+    # 로컬 PostgreSQL과의 포트 충돌 방지를 위해 54321 포트 사용
+    ports:
+      - "${POSTGRES_PORT:-54321}:5432"
+
+    # 볼륨 마운트 (데이터 영속화)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # 초기 스크립트 실행 (선택사항)
+      # - ./src/main/resources/00_CREATE_USER_DATABASE.sql:/docker-entrypoint-initdb.d/01-create-database.sql:ro
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+
+    # 헬스체크 설정
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    # 네트워크 설정
+    networks:
+      - discodeit-network
+
+  # Spring Boot 애플리케이션 서비스
+  app:
+    # 로컬 Dockerfile 빌드 또는 이미지 지정
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: discodeit-app
+    restart: unless-stopped
+
+    # PostgreSQL 서비스가 건강한 상태가 된 후 시작
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    # 환경변수 설정
+    environment:
+      # Spring 프로파일
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+
+      # 데이터베이스 연결 정보
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+      # 서버 설정
+      SERVER_PORT: ${SERVER_PORT}
+
+      # JVM 설정
+      JVM_OPTS: ${JVM_OPTS}
+
+      # 로깅 설정
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_FILE_PATH: /app/logs/application.log
+
+      # 기타 설정
+      TZ: "Asia/Seoul"
+
+    # 포트 매핑 (호스트:컨테이너)
+    # 로컬 Spring Boot 애플리케이션과의 포트 충돌 방지를 위해 8888 포트 사용
+    ports:
+      - "${APP_PORT}:${SERVER_PORT}"
+
+    # 볼륨 마운트
+    volumes:
+      # 데이터 디렉토리
+      - binary_storage:/app/.discodeit/storage
+
+    # 헬스체크 설정
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${SERVER_PORT}/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    # 네트워크 설정
+    networks:
+      - discodeit-network
+
+    # 로그 설정
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# ====================================================================
+# 볼륨 정의 (데이터 영속화)
+# ====================================================================
+volumes:
+  # PostgreSQL 데이터 볼륨
+  postgres_data:
+    driver: local
+
+  # 애플리케이션 데이터 볼륨
+  binary_storage:
+    driver: local
+
+# ====================================================================
+# 네트워크 정의
+# ====================================================================
+networks:
+  discodeit-network:
+    driver: bridge
+
+# =====================================================================
+# Docker Compose 사용법:
+#
+# 1. 전체 서비스 시작:
+#    docker-compose up -d
+#
+# 2. 로그 확인:
+#    docker-compose logs -f
+#    docker-compose logs -f app
+#    docker-compose logs -f postgres
+#
+# 3. 서비스 상태 확인:
+#    docker-compose ps
+#
+# 4. 환경변수 파일(.env) 사용:
+#    SPRING_PROFILES_ACTIVE=dev
+#    POSTGRES_PASSWORD=mysecretpassword
+#    JVM_OPTS=-Xms512m -Xmx1024m
+#    LOG_LEVEL=debug
+#
+# 5. 특정 환경별 실행:
+#    # 개발 환경
+#    SPRING_PROFILES_ACTIVE=dev docker-compose up -d
+#    # 프로덕션 환경
+#    SPRING_PROFILES_ACTIVE=prod docker-compose up -d
+#
+# 6. 서비스 재시작:
+#    docker-compose restart app
+#
+# 7. 전체 종료 및 정리:
+#    docker-compose down
+#    docker-compose down -v  # 볼륨도 함께 삭제
+# =====================================================================
