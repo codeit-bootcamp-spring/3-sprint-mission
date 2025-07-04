@@ -2,19 +2,19 @@ volumes:
   db_data: # This is your named volume
   storage_data: # This is your named volume
 services:
-  springApp:
+  spring-app:
     build:
-     context: .
-     args:
-      PROJECT_NAME: ${PROJECT_NAME}
-      PROJECT_VERSION: ${PROJECT_VERSION}
-    image: 3-sprint-mission:aws
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PROJECT_NAME: ${PROJECT_NAME}
+        PROJECT_VERSION: ${PROJECT_VERSION}
     ports:
-      - "8080:8080"
+      - "8080:80"
     env_file:
-      - .env
-#    environment:
-#      - SPRING_BINARY_CONTENT_PATH=${SPRING_BINARY_CONTENT_PATH}
+      - .env.docker
+    #    environment:
+    #      - APP_STORAGE_PATH=${APP_STORAGE_PATH}
     volumes:
       - storage_data:/app/data    # 로컬 → 컨테이너 내부 경로 연결
     depends_on:
@@ -30,7 +30,7 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - .env
+      - .env.docker
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U discodeit_user -d discodeit" ]
       interval: 5s
