@@ -19,6 +19,7 @@ import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.time.Instant;
 import java.util.List;
@@ -27,6 +28,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
@@ -34,9 +37,15 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @ActiveProfiles("test")
-@WebMvcTest(controllers = MessageController.class)
+@WebMvcTest(
+    controllers = MessageController.class,
+    excludeFilters = @ComponentScan.Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        classes = GlobalExceptionHandler.class
+    )
+)
 @DisplayName("MessageController 슬라이스 테스트")
-public class MessageController {
+public class MessageControllerTest {
 
     @Autowired
      MockMvc mockMvc;
@@ -98,8 +107,8 @@ public class MessageController {
             .andExpect(status().isCreated())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.id").value(messageId.toString()))
-            .andExpect(jsonPath("$.content").value("hello"))
-            .andExpect(jsonPath("$.attachments[0].fileName").value("test.txt"));
+            .andExpect(jsonPath("$.content").value(messageDto.content()))
+            .andExpect(jsonPath("$.attachments[0].fileName").value(attachDto.fileName()));
 
         then(messageService).should(times(1))
             .create(any(MessageCreateRequest.class), anyList());
@@ -135,7 +144,7 @@ public class MessageController {
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(messageId.toString()))
-            .andExpect(jsonPath("$.content").value("update content"));
+            .andExpect(jsonPath("$.content").value(messageDto.content()));
 
         then(messageService).should(times(1))
             .update(messageId, req);

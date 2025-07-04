@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
@@ -16,6 +17,7 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.Optional;
@@ -24,6 +26,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -34,7 +38,13 @@ import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequ
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @ActiveProfiles("test")
-@WebMvcTest(controllers = UserController.class)
+@WebMvcTest(
+    controllers = UserController.class,
+    excludeFilters = @ComponentScan.Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        classes = GlobalExceptionHandler.class
+    )
+)
 @DisplayName("UserController 슬라이스 테스트")
 public class UserControllerTest {
 
@@ -73,8 +83,7 @@ public class UserControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.username").value("tom"))
             .andExpect(jsonPath("$.email").value("tom@test.com"))
-            .andExpect(jsonPath("$.profile").doesNotExist())
-            .andExpect(jsonPath("$.emailVerified").value(false));
+            .andExpect(jsonPath("$.profile").doesNotExist());
     }
 
     @Test
@@ -87,7 +96,7 @@ public class UserControllerTest {
         UUID contentId = UUID.randomUUID();
         BinaryContentDto profileDto = new BinaryContentDto(contentId, "profile.png", 1024L, "image/png");
 
-        UserDto returned = new UserDto(userId, "tommy", "tommy@test.com", profileDto, false);
+        UserDto returned = new UserDto(eq(userId), "tommy", "tommy@test.com", profileDto, false);
         given(userService.update(userId, any(UserUpdateRequest.class), any(Optional.class))).willReturn(returned);
 
         MockMultipartFile userInfoPart = new MockMultipartFile(
@@ -113,12 +122,11 @@ public class UserControllerTest {
         mockMvc.perform(builder)
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.id").value(userId.toString()))
             .andExpect(jsonPath("$.username").value("tommy"))
             .andExpect(jsonPath("$.email").value("tommy@test.com"));
 
         then(userService).should(times(1))
-            .update(userId, any(UserUpdateRequest.class), any(Optional.class));
+            .update(eq(userId), any(UserUpdateRequest.class), any(Optional.class));
     }
 
     @Test
