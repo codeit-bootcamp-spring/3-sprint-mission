@@ -67,15 +67,36 @@ jobs:
           aws ecs describe-task-definition \
             --task-definition $ECS_TASK_DEFINITION \
             --query "taskDefinition" > task-definition.json
+          
+          # 디버깅
+          echo "--- 'Use task definition' 스텝 후 파일 목록 ---"
+          ls -l
+          echo "--- task-definition.json 내용 ---"
+          cat task-definition.json || echo "task-definition.json 파일이 없습니다."
+          echo "--------------------------------------"
 
       - name: Update image in task definition
         env:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           IMAGE_URI=$ECR_REPOSITORY_URI:$IMAGE_TAG
+          
+          # 디버깅
+          if [ ! -f task-definition.json ]; then
+            echo "오류: task-definition.json 파일이 존재하지 않습니다. 이전 스텝을 확인하세요."
+            exit 1 # 파일이 없으면 스크립트 종료
+          fi
+          
           cat task-definition.json | jq \
             '(.containerDefinitions[0].image) = "'"$IMAGE_URI"'"' \
             > new-task-def.json
+          
+          # 디버깅 
+          echo "--- 'Update image in task definition' 스텝 후 파일 목록 ---"
+          ls -l
+          echo "--- new-task-def.json 내용 ---"
+          cat new-task-def.json || echo "new-task-def.json 파일이 없습니다."
+          echo "----------------------------------------------"
 
       - name: Register new task definition
         id: register-task
