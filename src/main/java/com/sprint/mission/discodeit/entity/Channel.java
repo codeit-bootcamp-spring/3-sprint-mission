@@ -1,45 +1,41 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "channels")
 @Getter
-public class Channel implements Serializable {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Channel extends BaseUpdatableEntity {
 
-  @Serial
-  private static final long serialVersionUID = 7955482681221044662L;
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
-  private String description;
-  private ChannelType type;
-  private String name;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ChannelType type;
+    @Column(length = 100)
+    private String name;
+    @Column(length = 500)
+    private String description;
 
-  public Channel(ChannelType type, String name, String description) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-
-    this.type = type;
-    this.name = name;
-    this.description = description;
-  }
-
-
-  public void update(String newName, String newDescription) {
-    boolean anyValueUpdated = false;
-    if (newName != null && !newName.equals(this.name)) {
-      this.name = newName;
-      anyValueUpdated = true;
+    public Channel(ChannelType type, String name, String description) {
+        this.type = type;
+        this.name = name;
+        this.description = description;
     }
-    if (newDescription != null && !newDescription.equals(this.description)) {
-      this.description = newDescription;
-      anyValueUpdated = true;
+
+    public void update(String newName, String newDescription) {
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+        }
     }
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
-    }
-  }
 }
