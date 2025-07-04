@@ -49,3 +49,5 @@ bin/
 
 ##
 **/generated/*
+/.env.*
+*.env
