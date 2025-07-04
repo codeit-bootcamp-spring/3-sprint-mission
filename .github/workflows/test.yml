@@ -1,4 +1,4 @@
-name: CI
+name: discodeit CI workflow
 
 on:
   pull_request:
@@ -30,7 +30,7 @@ jobs:
         run: ./gradlew test
 
       # 5단계: CodeCov에 커버리지 전송
-      - name: Upload coverage to CodeCov
-        uses: codecov/codecov-action@v2
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
