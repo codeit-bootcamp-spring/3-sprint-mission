@@ -36,7 +36,7 @@ public class User extends BaseUpdatableEntity {
 
   @JsonManagedReference
   @Setter(AccessLevel.PROTECTED)
-  @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY, orphanRemoval = true)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private UserStatus userStatus;
 
   @Builder
@@ -58,7 +58,7 @@ public class User extends BaseUpdatableEntity {
     if (newPassword != null && !newPassword.equals(this.password)) {
       this.password = newPassword;
     }
-    if (newProfile != null && !newProfile.equals(this.profile)) {
+    if (newProfile != null) {
       this.profile = newProfile;
     }
   }

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.storage;
 
-import com.sprint.mission.discodeit.dto.data.BinaryContentDTO;
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,58 +31,57 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   @PostConstruct
   public void init() {
-    try {
-      Files.createDirectories(root);
-    } catch (IOException e) {
-      throw new RuntimeException("Could not create directory: " + root, e);
+    if (!Files.exists(root)) {
+      try {
+        Files.createDirectories(root);
+      } catch (IOException e) {
+        throw new RuntimeException("Could not create directory: " + root, e);
+      }
     }
   }
 
-  private Path resolvePath(UUID id) {
-    return root.resolve(id.toString());
+  private Path resolvePath(UUID key) {
+    return root.resolve(key.toString());
   }
 
   @Override
-  public UUID put(UUID id, byte[] bytes) {
-    Path path = resolvePath(id);
-    if (Files.exists(path)) {
-      throw new IllegalArgumentException("File with key " + id + " already exists");
+  public UUID put(UUID binaryContentId, byte[] bytes) {
+    Path filePath = resolvePath(binaryContentId);
+    if (Files.exists(filePath)) {
+      throw new IllegalArgumentException("File with key " + binaryContentId + " already exists");
     }
-    try (OutputStream outputStream = Files.newOutputStream(path)) {
+    try (OutputStream outputStream = Files.newOutputStream(filePath)) {
       outputStream.write(bytes);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    return id;
+    return binaryContentId;
   }
 
   @Override
-  public InputStream get(UUID id) {
-    Path path = resolvePath(id);
-    if (Files.notExists(path)) {
-      throw new NoSuchElementException("File with key " + id + " does not exist");
+  public InputStream get(UUID binaryContentId) {
+    Path filePath = resolvePath(binaryContentId);
+    if (Files.notExists(filePath)) {
+      throw new NoSuchElementException("File with key " + binaryContentId + " does not exist");
     }
     try {
-      return Files.newInputStream(path);
+      return Files.newInputStream(filePath);
     } catch (IOException e) {
+      e.printStackTrace();
       throw new RuntimeException("Failed to read file", e);
     }
   }
 
   @Override
-  public ResponseEntity<Resource> download(BinaryContentDTO binaryContentDTO) {
-    try {
-      InputStream inputStream = get(binaryContentDTO.id());
-      InputStreamResource resource = new InputStreamResource(inputStream);
+  public ResponseEntity<Resource> download(BinaryContentDto metaData) {
+    InputStream inputStream = get(metaData.id());
+    Resource resource = new InputStreamResource(inputStream);
 
-      return ResponseEntity.ok()
-          .header(HttpHeaders.CONTENT_DISPOSITION,
-              "attachment; filename=\"" + binaryContentDTO.fileName() + "\"")
-          .header(HttpHeaders.CONTENT_TYPE, binaryContentDTO.contentType())
-          .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(binaryContentDTO.size()))
-          .body(resource);
-    } catch (Exception e) {
-      return ResponseEntity.notFound().build();
-    }
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION,
+            "attachment; filename=\"" + metaData.fileName() + "\"")
+        .header(HttpHeaders.CONTENT_TYPE, metaData.contentType())
+        .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(metaData.size()))
+        .body(resource);
   }
 }

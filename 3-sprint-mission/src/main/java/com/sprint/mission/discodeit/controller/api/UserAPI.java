@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.data.UserDTO;
-import com.sprint.mission.discodeit.dto.data.UserStatusDTO;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
@@ -37,7 +37,7 @@ public interface UserAPI {
       ),
   })
     // ApiResponses: 응답에 대한 설명
-  ResponseEntity<UserDTO> create(
+  ResponseEntity<UserDto> create(
       @Parameter( // Parameter: 요청 파라미터에 대한 설명
           description = "User 생성 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
@@ -63,7 +63,7 @@ public interface UserAPI {
           content = @Content(examples = @ExampleObject("user with email {newEmail} already exists"))
       )
   })
-  ResponseEntity<UserDTO> update(
+  ResponseEntity<UserDto> update(
       @Parameter(description = "수정할 User ID") UUID userId,
       @Parameter(description = "수정할 User 정보") UserUpdateRequest userUpdateRequest,
       @Parameter(description = "수정할 User 프로필 이미지") MultipartFile profile
@@ -89,10 +89,10 @@ public interface UserAPI {
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "200", description = "User 목록 조회 성공",
-          content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDTO.class)))
+          content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDto.class)))
       )
   })
-  ResponseEntity<List<UserDTO>> findAll();
+  ResponseEntity<List<UserDto>> findAll();
 
   @Operation(summary = "User 온라인 상태 업데이트")
   @ApiResponses(value = {
@@ -105,7 +105,7 @@ public interface UserAPI {
           content = @Content(examples = @ExampleObject(value = "UserStatus with userId {userId} not found"))
       )
   })
-  ResponseEntity<UserStatusDTO> updateUserStatusByUserId(
+  ResponseEntity<UserStatusDto> updateUserStatusByUserId(
       @Parameter(description = "상태를 변경할 User ID") UUID userId,
       @Parameter(description = "변경할 User 온라인 상태 정보") UserStatusUpdateRequest request
   );
