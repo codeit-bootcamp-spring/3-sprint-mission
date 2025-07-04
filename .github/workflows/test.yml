@@ -20,15 +20,13 @@ jobs:
           distribution: 'corretto'
 
       - name: Configure AWS credentials
-        if: github.event_name == 'push'
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Test AWS CLI
-        if: github.event_name == 'push'
         run: |
           aws sts get-caller-identity
           aws ecr-public describe-repositories \
@@ -39,7 +37,6 @@ jobs:
         run: ./gradlew test jacocoTestReport
 
       - name: Upload coverage reports to Codecov
-        if: github.event_name == 'push'
         uses: codecov/codecov-action@v5
         with:
           slug: bladnoch/3-sprint-mission
