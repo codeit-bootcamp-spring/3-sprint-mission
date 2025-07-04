@@ -34,6 +34,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: discodeit-app:local-slim
     container_name: discodeit_app
     env_file: .env
     # 환경 변수 설정
@@ -63,7 +64,7 @@ services:
       - app_data:/app/binary_content_storage
 
     ports:
-      - "${APP_PORT}:8080"
+      - "${APP_PORT}:80"
 
 volumes:
   postgres_data:

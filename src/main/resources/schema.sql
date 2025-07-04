@@ -1,26 +1,4 @@
--- 1. distcodeit 스키마 생성
-CREATE SCHEMA IF NOT EXISTS discodeit;
--- 2. 권한 설정
---GRANT ALL PRIVILEGES ON SCHEMA discodeit TO discodeit_user;
---GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA discodeit TO discodeit_user;
--- 3. 권한 설정 확인
--- SELECT n.nspname                   AS schema_name,
---        pg_get_userbyid(n.nspowner) AS schema_owner
--- FROM pg_namespace n
--- WHERE n.nspname = 'discodeit';
--- 4. 검색 경로 설정
--- ALTER ROLE discodeit_user SET search_path TO discodeit, public;
--- 5. 검색 경로 확인
--- SHOW search_path;
--- 6. 테이블 삭제
-DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS binary_contents CASCADE;
-DROP TABLE IF EXISTS user_statuses CASCADE;
-DROP TABLE IF EXISTS read_statuses CASCADE;
-DROP TABLE IF EXISTS message_attachments CASCADE;
-DROP TABLE IF EXISTS channels CASCADE;
-DROP TABLE IF EXISTS messages CASCADE;
--- 7. 테이블 생성
+-- 테이블 생성
 CREATE TABLE IF NOT EXISTS binary_contents
 (
     id           UUID,
