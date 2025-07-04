@@ -21,17 +21,23 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3단계: 권한 수정 후 Gradle 빌드 실행
+      # 3단계: Gradle 빌드 실행
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
       - name: Build with Gradle
         run: ./gradlew build
 
-      # 4단계: 테스트 실행
+      # 4단계: AWS 환경 변수 설정 및 테스트 실행
       - name: Run tests
         run: ./gradlew test
+        env:
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+          AWS_S3_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY }}
+          AWS_S3_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_KEY }}
+          AWS_S3_PRESIGNED_URL_EXPIRATION: 600  # 기본값 설정
 
-      # 5단계: CodeCov에 커버리지 전송
+      # 5단계: CodeCov 커버리지 리포트 업로드
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
