@@ -1,6 +1,8 @@
 name: Test AWS(CI)
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
 
