@@ -21,7 +21,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3단계: Gradle 빌드 실행
+      # 3단계: 권한 수정 후 Gradle 빌드 실행
+      - name: Change wrapper permissions
+        run: chmod +x ./gradlew
       - name: Build with Gradle
         run: ./gradlew build
 
