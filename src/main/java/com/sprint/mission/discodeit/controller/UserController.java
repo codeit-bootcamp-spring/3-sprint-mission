@@ -59,7 +59,7 @@ public class UserController {
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserDto> create(
-            @ModelAttribute UserCreateRequest userCreateRequest,
+            @RequestPart("userCreateRequest") @Valid UserCreateRequest userCreateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
             ) {
 

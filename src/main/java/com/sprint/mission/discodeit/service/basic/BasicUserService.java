@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -13,6 +14,8 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.transaction.Transactional;
+
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -49,6 +52,8 @@ public class BasicUserService implements UserService {
 
         // 유저 생성 및 저장
         User user = new User(userCreateRequest.username(), userCreateRequest.email(), userCreateRequest.password(), nullableProfile);
+        Instant now = Instant.now();
+        UserStatus userStatus = new UserStatus(user, now);
 
         userRepository.save(user);
         log.info("User creation complete: id={}, username={}", user.getId(), user.getUsername());
