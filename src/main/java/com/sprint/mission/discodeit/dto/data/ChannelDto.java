@@ -2,9 +2,7 @@ package com.sprint.mission.discodeit.dto.data;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.ToString;
 
 import java.time.Instant;
 import java.util.List;
@@ -24,5 +22,6 @@ public record ChannelDto(
         @JsonFormat(shape = JsonFormat.Shape.STRING)
         Instant lastMessageAt
 
-) {}
+) {
+}
 

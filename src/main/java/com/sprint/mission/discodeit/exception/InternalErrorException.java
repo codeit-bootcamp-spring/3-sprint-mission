@@ -1,23 +1,17 @@
 package com.sprint.mission.discodeit.exception;
 
-import com.sprint.mission.discodeit.dto.ResponseCode;
+import com.sprint.mission.discodeit.dto.ErrorCode;
 import com.sprint.mission.discodeit.dto.ResponseMessage;
-import org.springframework.http.HttpStatus;
 
-public class InternalErrorException extends BaseException {
+import java.time.Instant;
+import java.util.Map;
 
-    @Override
-    public String getCode() {
-        return ResponseCode.INTERNAL_ERROR;
-    }
-
-    @Override
-    public String getMessage() {
-        return ResponseMessage.INTERNAL_SERVER_ERROR;
-    }
-
-    @Override
-    public HttpStatus getHttpStatus() {
-        return HttpStatus.INTERNAL_SERVER_ERROR;
+public class InternalErrorException extends DiscodeitException {
+    public InternalErrorException() {
+        super(
+                Instant.now(),
+                ErrorCode.INTERNAL_ERROR,
+                Map.of("message", ResponseMessage.INTERNAL_SERVER_ERROR)
+        );
     }
 }

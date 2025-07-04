@@ -12,4 +12,5 @@ public record UserUpdateRequest(
 
         @Schema(description = "새로운 비밀번호", example = "newpassword123", nullable = true)
         String newPassword
-) {}
+) {
+}

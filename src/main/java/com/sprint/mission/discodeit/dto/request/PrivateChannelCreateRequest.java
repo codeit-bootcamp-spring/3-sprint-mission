@@ -15,4 +15,5 @@ public record PrivateChannelCreateRequest(
         )
         @ArraySchema(schema = @Schema(type = "string", format = "uuid"))
         List<UUID> participantIds
-) {}
+) {
+}

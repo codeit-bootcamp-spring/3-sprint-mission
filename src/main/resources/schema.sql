@@ -7,16 +7,16 @@ CREATE TABLE tbl_user (
     email varchar(100) unique not null,
     password varchar(60) not null,
     profile_id uuid,
-    created_at timestamptz not null,
-    updated_at timestamptz
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone
 );
 
 CREATE TABLE tbl_user_status (
     id uuid primary key,
-    last_active_at timestamptz not null,
+    last_active_at timestamp with time zone NOT NULL,
     user_id uuid unique,
-    created_at timestamptz not null,
-    updated_at timestamptz
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone
 );
 
 CREATE TABLE tbl_channel (
@@ -24,8 +24,8 @@ CREATE TABLE tbl_channel (
     name varchar(100),
     description varchar(500),
     type channel_type not null,
-    created_at timestamptz not null,
-    updated_at timestamptz
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone
 );
 
 CREATE TABLE tbl_message (
@@ -33,8 +33,8 @@ CREATE TABLE tbl_message (
     content text,
     channel_id uuid not null,
     author_id uuid,
-    created_at timestamptz not null,
-    updated_at timestamptz
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone
 );
 
 CREATE TABLE tbl_message_attachment (
@@ -48,16 +48,16 @@ CREATE TABLE tbl_read_status (
     last_read_at timestamptz not null,
     user_id uuid,
     channel_id uuid,
-    created_at timestamptz not null,
-    updated_at timestamptz
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone
 );
 
 CREATE TABLE tbl_binary_content (
     id uuid primary key,
     file_name varchar(255) not null,
     size bigint not null,
-    content_type varchar(100) not null,
-    created_at timestamptz not null
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone
 );
 
 ALTER TABLE tbl_user ADD CONSTRAINT fk_user_profile FOREIGN KEY (profile_id) REFERENCES tbl_binary_content(id) ON DELETE SET NULL;
