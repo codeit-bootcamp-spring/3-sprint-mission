@@ -1,84 +1,26 @@
-# 테스트 환경 설정
+server:
+  port: 8080
+
 spring:
-  boot:
-    admin:
-      client:
-        url: http://localhost:9090
-  # 테스트용 H2 인메모리 데이터베이스 설정
   datasource:
-    # DB_CLOSE_DELAY: 테스트 종료 후 데이터베이스 연결 유지 시간 (음수 값은 연결 유지)
-    # DB_CLOSE_ON_EXIT: 프로그램 종료 시 데이터베이스 연결 닫기 여부
-    url: jdbc:h2:mem:discodeit;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
+    url: jdbc:postgresql://localhost:5432/discodeit
     username: discodeit_user
     password: discodeit1234
   jpa:
-    hibernate:
-      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
-    #        default_batch_fetch_size: 100
-    open-in-view: false
-
-
 
 logging:
-  config: classpath:logback-spring.xml
   level:
+    com.sprint.mission.discodeit: debug
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
-    com.sprint.mission.discodeit: debug
 
-discodeit:
-  storage:
-    type: local
-    local:
-      root-path: .discodeit/storage
-
-
-# Actuator 설정
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,loggers
-      base-path: /actuator
   endpoint:
     health:
       show-details: always
-    info:
-      enabled: true
   info:
     env:
       enabled: true
-    java:
-      enabled: true
-    os:
-      enabled: true
-
-# 애플리케이션 정보
-info:
-  app:
-    name: Discodeit
-    version: 1.7.0
-    description: Spring Boot Application with Actuator
-  java:
-    version: 17
-  spring:
-    boot:
-      version: 3.4.0
-  database:
-    url: ${spring.datasource.url}
-    driver: ${spring.datasource.driver-class-name}
-  jpa:
-    ddl-auto: ${spring.jpa.hibernate.ddl-auto}
-  storage:
-    type: ${storage.type}
-    path: ${storage.path}
-  multipart:
-    max-file-size: ${spring.servlet.multipart.max-file-size}
-    max-request-size: ${spring.servlet.multipart.max-request-size}
-
-server:
-  port: 8080
