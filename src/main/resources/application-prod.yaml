@@ -1,5 +1,9 @@
 # 운영 환경 설정
 spring:
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
   datasource:
     url: jdbc:postgresql://localhost:5432/discodeit
     username: discodeit_user
