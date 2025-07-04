@@ -27,5 +27,7 @@ jobs:
       - name: Test AWS CLI
         run: |
           aws sts get-caller-identity
-          aws ecr describe-repositories --repository-names ${{ secrets.ECR_REPOSITORY }}
+          aws ecr-public describe-repositories \
+           --repository-names ${{ secrets.ECR_REPOSITORY }} \
+           --region ${{ secrets.AWS_REGION }}
 
