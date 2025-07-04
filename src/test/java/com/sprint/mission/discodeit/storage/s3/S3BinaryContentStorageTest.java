@@ -47,7 +47,7 @@ class S3BinaryContentStorageTest {
 
     @Value("${discodeit.storage.s3.region}")
     private String region;
-
+    
     private UUID testId;
 
     @BeforeEach
