@@ -88,8 +88,9 @@ jobs:
           fi
           
           cat task-definition.json | jq \
+            --arg img_uri "$IMAGE_URI" \
             'del(.taskDefinitionArn, .revision, .status, .compatibilities, .requiresAttributes, .registeredAt, .registeredBy) | \
-            (.containerDefinitions[0].image) = "'"$IMAGE_URI"'"' \
+            (.containerDefinitions[0].image) = $img_uri' \
             > new-task-def.json
           
           # 디버깅 
