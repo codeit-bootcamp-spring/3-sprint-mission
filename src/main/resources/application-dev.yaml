@@ -1,8 +1,4 @@
 spring:
-  boot:
-    admin:
-      client:
-        url: http://localhost:9091
   h2:
     console:
       enabled: true
@@ -13,10 +9,12 @@ spring:
     username: sa
     password:
   jpa:
+    hibernate:
+      ddl-auto: create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-
+        
 server:
   port: 8081
 
