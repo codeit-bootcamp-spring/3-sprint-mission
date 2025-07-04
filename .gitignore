@@ -1,11 +1,15 @@
-HELP.md
 .gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-application-*.yaml
+.env
+
+application-*.yml
+
+application-*.properties
+application.properties
 
 ### STS ###
 .apt_generated
@@ -37,8 +41,31 @@ out/
 
 ### VS Code ###
 .vscode/
+=
 
-# log
+## 로그 & 임시 파일
+logs/
 .logs/
+*.log
 
-.env
+Thumbs.db
+Desktop.ini
+
+## 파일 업로드 / 임시 디렉토리
+uploads/
+files/
+images/
+temp/
+
+## AWS 관련 민감 파일
+*.pem
+*.key
+aws-credentials.txt
+.aws/
+credentials
+config
+
+## Docker 관련
+.docker/config.json
+docker-compose.override.yml
+

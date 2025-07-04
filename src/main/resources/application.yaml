@@ -1,62 +1,52 @@
 spring:
-  profiles:
-    active: prod
   application:
     name: discodeit
   servlet:
     multipart:
       maxFileSize: 10MB # 파일 하나의 최대 크기
-      maxRequestSize: 30MB # 한 번에 최대 업로드 가능 용량
+      maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
+  datasource:
+    driver-class-name: org.postgresql.Driver
   jpa:
-    show-sql: false
-    open-in-view: false
     hibernate:
       ddl-auto: validate
-    properties:
-      hibernate:
-        format_sql: true
-  boot:
-    admin:
-      client:
-        instance:
-          name: discodeit
-  web:
-    resources:
-      add-mappings: true
-  config:
-    import: optional:file:.env[.properties]
-
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-  api-docs:
-    path: /v3/api-docs
-
+    open-in-view: false
+  profiles:
+    active:
+      - prod
 
 management:
   endpoints:
     web:
       exposure:
-        include: info, health, metrics, loggers
+        include: health,info,metrics
   endpoint:
     health:
-      show-details: always
-    info:
-      access: read-only
+      show-details: when-authorized
+      show-components: always
 info:
-  app:
-    name: Discodeit
-    version: 1.7.0
-    java-version: 17
-    spring-boot-version: 3.4.4
-logging:
-  level:
-    org.hibernate.SQL: OFF
-    org.hibernate.orm.jdbc.bind: OFF
+  name: Discodeit
+  version: 1.2-M8
+  java:
+    version: 17
+  spring-boot:
+    version: 3.4.0
+  config:
+    datasource:
+      url: ${spring.datasource.url}
+      driver-class-name: ${spring.datasource.driver-class-name}
+    jpa:
+      ddl-auto: ${spring.jpa.hibernate.ddl-auto}
+    storage:
+      type: ${discodeit.storage.type}
+      path: ${discodeit.storage.local.root-path}
+    multipart:
+      max-file-size: ${spring.servlet.multipart.maxFileSize}
+      max-request-size: ${spring.servlet.multipart.maxRequestSize}
 
 discodeit:
   storage:
-    type: ${STORAGE_TYPE:local}   # local | s3 (기본값: local)
+    type: ${STORAGE_TYPE:local}  # local | s3 (기본값: local)
     local:
       root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
     s3:

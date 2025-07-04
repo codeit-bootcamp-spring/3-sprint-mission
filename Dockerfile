@@ -1,30 +1,38 @@
-########################################################################################
-# Single Stage: Build & Run with Amazon Corretto 17
-########################################################################################
+# --------------------------
+# 빌드 스테이지
+# --------------------------
+FROM amazoncorretto:17 AS builder
 
-# Use Amazon Corretto 17 JDK as base image for build and runtime
-FROM amazoncorretto:17
-
-# Set working directory
 WORKDIR /app
 
-# Copy Gradle Wrapper and configuration files
 COPY gradlew .
-COPY gradle gradle
-COPY build.gradle .
-COPY settings.gradle .
+COPY gradle ./gradle
+COPY build.gradle settings.gradle ./
+RUN ./gradlew dependencies
 
-# Copy application source code
-COPY src src
+COPY src ./src
+RUN ./gradlew build -x test
 
-# Build the application
-RUN ./gradlew bootJar
 
-# Set environment variables (optional)
-ENV JVM_OPTS=""
+# --------------------------
+# 런타임 스테이지
+# --------------------------
+FROM amazoncorretto:17-alpine3.21
 
-# Expose container port (Spring Boot default 8080)
-EXPOSE 8080
+WORKDIR /app
 
-# Run the application using prod profile
-ENTRYPOINT ["sh", "-c", "java $JVM_OPTS -jar build/libs/*.jar --spring.profiles.active=prod"]
+ENV PROJECT_NAME=discodeit \
+    PROJECT_VERSION=1.2-M8 \
+    JVM_OPTS=""
+
+# 빌드한 jar 복사
+COPY --from=builder /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar ./
+
+# 엔트리포인트 스크립트 복사
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# 컨테이너 내부 포트 노출
+EXPOSE 80
+
+ENTRYPOINT ["sh", "-c", "java ${JVM_OPTS} -jar ${PROJECT_NAME}-${PROJECT_VERSION}.jar"]
