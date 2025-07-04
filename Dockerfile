@@ -9,7 +9,7 @@ WORKDIR /app
 # 3. JAR 파일 복사
 # build/libs/*.jar - Gradle 빌드 결과물 (와일드카드로 버전 무관하게 복사)
 # app.jar - 컨테이너 내부에서 사용할 파일명 (단순화)
-COPY build/libs/*.jar app.jar
+COPY build/libs/discodeit-0.0.1-SNAPSHOT.jar app.jar
 
 # 4. 포트 노출 설정
 # Spring Boot 애플리케이션의 기본 포트인 80을 노출
@@ -33,10 +33,16 @@ CMD ["java", "-jar", "app.jar"]
 # ./gradlew build
 # 
 # 2. Docker 이미지 빌드:
-# docker build -t menu-app:basic .
+# docker build -t discodeit-app:local .
 # 
 # 3. 컨테이너 실행:
-# docker run -p 8888:8080 menu-app:basic
+# docker run -d --name discodeit-app-local \
+#  -p 8081:8080 \
+#  -e SPRING_PROFILES_ACTIVE=prod \
+#  -e SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/discodeit \
+#  -e SPRING_DATASOURCE_USERNAME=discodeit_user \
+#  -e SPRING_DATASOURCE_PASSWORD=discodeit1234 \
+#  discodeit-app:local
 # 
 # 4. 애플리케이션 접속 확인:
 # curl http://localhost:8888/actuator/health

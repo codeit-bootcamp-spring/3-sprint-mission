@@ -4,12 +4,6 @@ spring:
   profiles:
     active: prod
 
-discodeit:
-  storage:
-    type: local
-    local:
-      root-path: .discodeit/storage
-
 logging:
   level:
     root: info
