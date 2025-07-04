@@ -5,3 +5,29 @@ build
 .idea
 .DS_Store
 .env
+discodeit.env
+
+# 보안 민감 파일
+*.pem
+*.key
+.env
+.env.*
+aws-credentials.txt
+.aws/
+credentials
+config
+
+# 업로드된 유저 파일
+uploads/
+files/
+images/
+temp/
+
+# 시스템 쓰레기 파일
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# 로그
+*.log
+logs/

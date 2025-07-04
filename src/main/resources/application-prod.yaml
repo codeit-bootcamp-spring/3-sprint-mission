@@ -12,7 +12,7 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:postgresql://postgres:5432/discodeit
+    url: jdbc:postgresql://postgres:5432/discodeit?currentSchema=discodeit
 #    url: jdbc:postgresql://host.docker.internal:5432/discodeit 도커 사용시에도 내 로컬 db 연결
 #    url: jdbc:postgresql://localhost:5432/discodeit
     username: discodeit_user

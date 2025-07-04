@@ -116,6 +116,10 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     }
 
     private String generatedPresignedUrl(String key, String contentType) {
+        if (key.startsWith("env/")) {
+            log.warn("'env/' 접근 시도 감지");
+            throw new SecurityException("접근 불가능한 저장공간입니다.");
+        }
         AwsBasicCredentials credentials = AwsBasicCredentials.create(s3Values.getAccessKey(), s3Values.getSecretKey());
 
         S3Presigner presigner = S3Presigner.builder()

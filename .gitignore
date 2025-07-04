@@ -44,5 +44,49 @@ out/
 /logs
 .DS_Store
 .env
+discodeit.env
+
+### 환경변수 및 설정 파일 (보안상 중요!) ###
 .env
-.env
+.env.*
+!.env.example
+application-*.yml
+!application-local.yml
+!application-aws.yml
+
+### AWS 관련 민감 파일들 ###
+*.pem
+*.key
+aws-credentials.txt
+.aws/
+credentials
+config
+
+### Docker 관련 ###
+docker-compose.override.yml
+*.log
+
+### Spring Boot 관련 ###
+logs/
+application.properties
+application-*.properties
+
+### 파일 업로드 디렉토리 ###
+uploads/
+files/
+images/
+temp/
+
+### OS별 시스템 파일들 ###
+.DS_Store          # macOS
+Thumbs.db          # Windows
+Desktop.ini        # Windows
+
+### 학습용 임시 파일들 ###
+TODO.md
+NOTES.md
+memo.txt
+test-*.txt
+
+### 실습 가이드 파일들 (교육용 자료) ###
+HOWTO-PHASE-*.md

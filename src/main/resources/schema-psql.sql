@@ -1,3 +1,7 @@
+-- GRANT ALL PRIVILEGES ON SCHEMA discodeit TO discodeit_user;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE discodeit_user IN SCHEMA discodeit GRANT ALL ON TABLES TO discodeit_user;
+-- GRANT ALL ON ALL TABLES IN SCHEMA discodeit TO discodeit_user;
+
 CREATE SCHEMA IF NOT EXISTS discodeit;
 SET search_path TO discodeit;
 
