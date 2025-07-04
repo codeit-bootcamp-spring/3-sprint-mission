@@ -81,19 +81,17 @@ jobs:
         run: |
           IMAGE_URI=$ECR_REPOSITORY_URI:$IMAGE_TAG
           
-          # 디버깅
+          # 디버깅: task-definition.json 파일 존재 여부 확인
           if [ ! -f task-definition.json ]; then
             echo "오류: task-definition.json 파일이 존재하지 않습니다. 이전 스텝을 확인하세요."
             exit 1 # 파일이 없으면 스크립트 종료
           fi
           
-          cat task-definition.json | jq \
-            --arg img_uri "$IMAGE_URI" \
-            'del(.taskDefinitionArn, .revision, .status, .compatibilities, .requiresAttributes, .registeredAt, .registeredBy) | \
-            (.containerDefinitions[0].image) = $img_uri' \
-            > new-task-def.json
+          # jq 명령어를 --arg 옵션을 사용하여 한 줄로 작성합니다.
+          # 쉘의 따옴표 및 줄바꿈 해석 문제를 완전히 회피합니다.
+          cat task-definition.json | jq --arg img_uri "$IMAGE_URI" 'del(.taskDefinitionArn, .revision, .status, .compatibilities, .requiresAttributes, .registeredAt, .registeredBy) | (.containerDefinitions[0].image) = $img_uri' > new-task-def.json
           
-          # 디버깅 
+          # 디버깅: new-task-def.json 파일 생성 및 내용 확인
           echo "--- 'Update image in task definition' 스텝 후 파일 목록 ---"
           ls -l
           echo "--- new-task-def.json 내용 ---"
