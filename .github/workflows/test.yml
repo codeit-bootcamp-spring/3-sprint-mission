@@ -1,6 +1,8 @@
 name: Run Tests
 
 on:
+  push:
+    branches: [ main, 고희준-sprint8 ]
   pull_request:
     branches: [ main ]
 
