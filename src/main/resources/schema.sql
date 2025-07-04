@@ -1,3 +1,5 @@
+CREATE SCHEMA IF NOT EXISTS discodeit;
+
 -- 테이블 생성
 CREATE TABLE IF NOT EXISTS binary_contents
 (
