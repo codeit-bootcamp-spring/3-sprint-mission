@@ -36,17 +36,17 @@ class S3BinaryContentStorageTest {
     @Autowired
     private S3BinaryContentStorage s3BinaryContentStorage;
 
-    @Value("${AWS_S3_BUCKET}")
-    private String bucket;
-
-    @Value("${AWS_S3_ACCESS_KEY}")
+    @Value("${discodeit.storage.s3.access-key}")
     private String accessKey;
 
-    @Value("${AWS_S3_SECRET_KEY}")
+    @Value("${discodeit.storage.s3.secret-key}")
     private String secretKey;
 
-    @Value("${AWS_S3_REGION}")
+    @Value("${discodeit.storage.s3.region}")
     private String region;
+
+    @Value("${discodeit.storage.s3.bucket}")
+    private String bucket;
 
     private UUID testId;
 
