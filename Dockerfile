@@ -1,30 +1,38 @@
-# Amazon Corretto 17 이미지 사용
-FROM amazoncorretto:17
+# ---------- [1단계] 빌드 스테이지 ----------
+FROM amazoncorretto:17 AS builder
 
-# 작업 디렉토리 설정
 WORKDIR /app
 
-# 프로젝트 파일 복사 (불필요한 건 .dockerignore로 제외)
+# Gradle 설정 파일 및 Wrapper 복사
+COPY build.gradle settings.gradle gradlew ./
+COPY gradle ./gradle
+
+# Gradle 실행 권한 부여
+RUN chmod +x ./gradlew
+
+# 의존성 캐싱
+RUN ./gradlew dependencies || true
+
+# 전체 프로젝트 복사
 COPY . .
 
-# Gradle Wrapper를 사용하여 애플리케이션 빌드
-RUN chmod +x ./gradlew
+# 테스트 제외 빌드
 RUN ./gradlew clean build -x test
 
+# ---------- [2단계] 런타임 스테이지 ----------
+FROM amazoncorretto:17-alpine AS runtime
 
-# 실행할 JAR 경로로 복사
-RUN mkdir -p /app/build/libs
+WORKDIR /app
 
-# 80 포트 노출
+# 빌드 결과물 복사
+COPY --from=builder /app/build/libs/discodeit-1.2-M8.jar app.jar
+
+# 포트 노출
 EXPOSE 80
 
-# 프로젝트 정보 환경 변수 설정
-ENV PROJECT_NAME=discodeit
-ENV PROJECT_VERSION=1.2-M8
+# 환경 변수
+ENV JVM_OPTS=""
 ENV SPRING_PROFILES_ACTIVE=prod
 
-# JVM 옵션 환경 변수 (빈 문자열로 기본 설정)
-ENV JVM_OPTS=""
-
-# 애플리케이션 실행 명령어 설정 (환경변수 활용)
-CMD sh -c "java $JVM_OPTS -jar build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar"
+# 실행 명령
+ENTRYPOINT ["sh", "-c", "java $JVM_OPTS -jar app.jar"]
