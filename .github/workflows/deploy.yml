@@ -78,7 +78,15 @@ jobs:
           container-name: discodeit-app
           image: ${{ steps.build-image.outputs.image }}
 
-      # 8단계: ECS 서비스 배포
+      # 8단계: 기존 서비스 멈춤
+      - name: Stop ECS Service (set Desired Count 0)
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --desired-count 0
+
+      # 9단계: ECS 서비스 배포
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
