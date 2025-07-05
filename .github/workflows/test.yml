@@ -32,8 +32,8 @@ jobs:
         env:
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
-          AWS_S3_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY }}
-          AWS_S3_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_KEY }}
+          AWS_S3_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_S3_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
 
       # 5단계: CodeCov 커버리지 리포트 업로드
       - name: Upload coverage reports to Codecov
