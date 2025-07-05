@@ -21,10 +21,10 @@ import java.util.UUID;
 
 public interface ReadStatusService {
 
-    List<JpaReadStatusResponse> findAllByUserId(UUID userId);
+    List<ReadStatusResponse> findAllByUserId(UUID userId);
 
-    JpaReadStatusResponse create(ReadStatusCreateRequest request);
+    ReadStatusResponse create(ReadStatusCreateRequest request);
 
-    JpaReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest request);
+    ReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest request);
 
 }

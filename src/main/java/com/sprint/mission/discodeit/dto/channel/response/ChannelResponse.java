@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.channel.response;
 
-import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,11 +17,11 @@ import java.util.UUID;
  */
 @Getter
 @Builder
-public class JpaChannelResponse {
+public class ChannelResponse {
   private final UUID id;
   private final ChannelType type;
   private final String name;
   private final String description;
-  private final List<JpaUserResponse> participants;
+  private final List<UserResponse> participants;
   private final Instant lastMessageAt;
 }

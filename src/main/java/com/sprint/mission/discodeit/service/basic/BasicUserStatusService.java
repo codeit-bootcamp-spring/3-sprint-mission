@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
+import com.sprint.mission.discodeit.dto.userStatus.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
@@ -34,7 +34,7 @@ public class BasicUserStatusService implements UserStatusService {
 
   @Transactional
   @Override
-  public JpaUserStatusResponse updateByUserId(UUID userId, Instant newLastActiveAt) {
+  public UserStatusResponse updateByUserId(UUID userId, Instant newLastActiveAt) {
     Objects.requireNonNull(userId, "no userId in param");
 
     if (userRepository.count() < 1) log.warn("any user exists");

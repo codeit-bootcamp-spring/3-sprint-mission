@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.exception;
 
 import com.sprint.mission.discodeit.dto.ErrorResponse;
 import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channelException.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.messageException.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.userException.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;

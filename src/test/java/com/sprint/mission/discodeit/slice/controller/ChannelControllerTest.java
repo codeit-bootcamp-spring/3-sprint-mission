@@ -5,12 +5,12 @@ import com.sprint.mission.discodeit.controller.ChannelController;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
-import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.channelException.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import org.junit.jupiter.api.DisplayName;
@@ -57,12 +57,12 @@ public class ChannelControllerTest {
         // given
         PublicChannelCreateRequest request = new PublicChannelCreateRequest("Test channel", "Test channel description");
 
-        List<JpaUserResponse> participants = new ArrayList<>();
-        JpaUserResponse participant = JpaUserResponse.builder().build();
+        List<UserResponse> participants = new ArrayList<>();
+        UserResponse participant = UserResponse.builder().build();
         participants.add(participant);
 
         UUID id = UUID.randomUUID();
-        JpaChannelResponse response = JpaChannelResponse.builder()
+        ChannelResponse response = ChannelResponse.builder()
             .id(id)
             .type(ChannelType.PUBLIC)
             .name("Test channel")
@@ -116,23 +116,23 @@ public class ChannelControllerTest {
         UUID id = UUID.randomUUID();
         Instant lastMessageAt = Instant.now();
 
-        JpaUserResponse userResponse1 = JpaUserResponse.builder()
+        UserResponse userResponse1 = UserResponse.builder()
             .username("paul")
             .id(user1.getId())
             .email("paul@gmail.com")
             .build();
 
-        JpaUserResponse userResponse2 = JpaUserResponse.builder()
+        UserResponse userResponse2 = UserResponse.builder()
             .username("daniel")
             .id(user2.getId())
             .email("daniel@gmail.com")
             .build();
 
-        List<JpaUserResponse> participantsList = new ArrayList<>();
+        List<UserResponse> participantsList = new ArrayList<>();
         participantsList.add(userResponse1);
         participantsList.add(userResponse2);
 
-        JpaChannelResponse response = JpaChannelResponse.builder()
+        ChannelResponse response = ChannelResponse.builder()
             .id(id)
             .type(ChannelType.PRIVATE)
             .name("")
@@ -219,7 +219,7 @@ public class ChannelControllerTest {
         Instant lastMessageAt = Instant.now();
         ChannelUpdateRequest request = new ChannelUpdateRequest("new channel name","new description");
 
-        JpaChannelResponse response = JpaChannelResponse.builder()
+        ChannelResponse response = ChannelResponse.builder()
             .id(channelId)
             .type(ChannelType.PUBLIC)
             .name("new channel name")
@@ -269,10 +269,10 @@ public class ChannelControllerTest {
         // given
         UUID userId = UUID.randomUUID();
 
-        JpaChannelResponse response1 = JpaChannelResponse.builder().build();
-        JpaChannelResponse response2 = JpaChannelResponse.builder().build();
+        ChannelResponse response1 = ChannelResponse.builder().build();
+        ChannelResponse response2 = ChannelResponse.builder().build();
 
-        List<JpaChannelResponse> responseList = Arrays.asList(response1, response2);
+        List<ChannelResponse> responseList = Arrays.asList(response1, response2);
 
         given(channelService.findAllByUserId(any(UUID.class))).willReturn(responseList);
 

@@ -3,10 +3,10 @@ package com.sprint.mission.discodeit.slice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.controller.UserController;
-import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
+import com.sprint.mission.discodeit.dto.userStatus.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.userStatus.UserStatusUpdateByUserIdRequest;
 import com.sprint.mission.discodeit.exception.userException.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
@@ -61,17 +61,17 @@ public class UserControllerTest {
     @DisplayName("모든 유저를 찾는 API가 정상 작동한다.")
     void findAllUsers_success() throws Exception {
         // given
-        JpaUserResponse response1 = JpaUserResponse.builder()
+        UserResponse response1 = UserResponse.builder()
             .id(UUID.randomUUID())
             .username("testUser1")
             .email("test1@example.com")
             .build();
-        JpaUserResponse response2 = JpaUserResponse.builder()
+        UserResponse response2 = UserResponse.builder()
             .id(UUID.randomUUID())
             .username("testUser2")
             .email("test2@example.com")
             .build();
-        List<JpaUserResponse> responses = List.of(response1, response2);
+        List<UserResponse> responses = List.of(response1, response2);
 
         given(userService.findAllUsers()).willReturn(responses);
 
@@ -91,7 +91,7 @@ public class UserControllerTest {
     @DisplayName("유저가 없으면 빈 리스트를 반환한다.")
     void whenNoUsers_thenReturnEmptyList() throws Exception {
         // given
-        List<JpaUserResponse> responses = Collections.emptyList();
+        List<UserResponse> responses = Collections.emptyList();
 
         given(userService.findAllUsers()).willReturn(responses);
 
@@ -117,7 +117,7 @@ public class UserControllerTest {
             objectMapper.writeValueAsBytes(request)
         );
 
-        JpaUserResponse response = JpaUserResponse.builder()
+        UserResponse response = UserResponse.builder()
             .username("paul")
             .email("test@test.com")
             .build();
@@ -206,7 +206,7 @@ public class UserControllerTest {
              objectMapper.writeValueAsBytes(request)
          );
 
-         JpaUserResponse response = JpaUserResponse.builder()
+         UserResponse response = UserResponse.builder()
              .username("daniel")
              .email("daniel@test.com")
              .build();
@@ -266,7 +266,7 @@ public class UserControllerTest {
          UUID id = UUID.randomUUID();
          UUID userId = UUID.randomUUID();
          UserStatusUpdateByUserIdRequest request = new UserStatusUpdateByUserIdRequest(newLastActiveAt);
-         JpaUserStatusResponse response = new JpaUserStatusResponse(id, userId, newLastActiveAt);
+         UserStatusResponse response = new UserStatusResponse(id, userId, newLastActiveAt);
 
          given(userStatusService.updateByUserId(any(UUID.class), any(Instant.class))).willReturn(response);
 

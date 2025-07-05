@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.mapper.advanced;
 
-import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import org.mapstruct.Mapper;
 
@@ -13,5 +13,5 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface BinaryContentMapper {
 
-    JpaBinaryContentResponse toDto(BinaryContent binaryContent);
+    BinaryContentResponse toDto(BinaryContent binaryContent);
 }

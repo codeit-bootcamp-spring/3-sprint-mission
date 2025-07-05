@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.controller.MessageController;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse;
-import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
-import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.message.response.PageResponse;
+import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.messageException.MessageNotFoundException;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
@@ -64,14 +64,14 @@ public class MessageControllerTest {
         UUID channelId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
 
-        JpaMessageResponse message = JpaMessageResponse.builder()
+        MessageResponse message = MessageResponse.builder()
             .id(UUID.randomUUID())
             .channelId(channelId)
             .build();
 
-        List<JpaMessageResponse> messageResponses = Arrays.asList(message);
+        List<MessageResponse> messageResponses = Arrays.asList(message);
 
-        AdvancedJpaPageResponse response = AdvancedJpaPageResponse.builder()
+        PageResponse response = PageResponse.builder()
             .content(messageResponses)
             .build();
 
@@ -99,9 +99,9 @@ public class MessageControllerTest {
         int numberOfMessages = 4;
         Pageable pageable = PageRequest.of(0, 2, Sort.by("createdAt").descending());
 
-        List<JpaMessageResponse> messageResponses = new ArrayList<>();
+        List<MessageResponse> messageResponses = new ArrayList<>();
         for (int i = 0; i < numberOfMessages; i++) {
-            JpaMessageResponse message = JpaMessageResponse.builder()
+            MessageResponse message = MessageResponse.builder()
                 .id(UUID.randomUUID())
                 .content("content" + i)
                 .channelId(channelId)
@@ -110,7 +110,7 @@ public class MessageControllerTest {
             messageResponses.add(message);
         }
 
-        AdvancedJpaPageResponse response = AdvancedJpaPageResponse.builder()
+        PageResponse response = PageResponse.builder()
             .content(messageResponses)
             .nextCursor(cursor)
             .size(pageable.getPageSize())
@@ -148,11 +148,11 @@ public class MessageControllerTest {
             .content("content")
             .build();
 
-        JpaUserResponse userResponse = JpaUserResponse.builder()
+        UserResponse userResponse = UserResponse.builder()
             .id(userId)
             .build();
 
-        JpaMessageResponse response = JpaMessageResponse.builder()
+        MessageResponse response = MessageResponse.builder()
             .id(messageId)
             .content("content")
             .channelId(channelId)
@@ -253,7 +253,7 @@ public class MessageControllerTest {
         // given
         UUID messageId = UUID.randomUUID();
         MessageUpdateRequest request = new MessageUpdateRequest("new Content");
-        JpaMessageResponse response = JpaMessageResponse.builder()
+        MessageResponse response = MessageResponse.builder()
             .id(messageId)
             .content("new Content")
             .build();

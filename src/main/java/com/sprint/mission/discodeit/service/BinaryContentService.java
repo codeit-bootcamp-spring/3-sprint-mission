@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +18,7 @@ import java.util.UUID;
  */
 public interface BinaryContentService {
 
-    JpaBinaryContentResponse find(UUID binaryContentId);
+    BinaryContentResponse find(UUID binaryContentId);
 
-    List<JpaBinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds);
+    List<BinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds);
 }

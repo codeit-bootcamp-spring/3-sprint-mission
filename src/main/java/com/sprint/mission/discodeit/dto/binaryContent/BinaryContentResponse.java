@@ -11,7 +11,7 @@ import java.util.UUID;
  * Date         : 2025. 5. 28.
  */
 @Builder
-public record JpaBinaryContentResponse(
+public record BinaryContentResponse(
                 UUID id,
                 String fileName,
                 Long size,

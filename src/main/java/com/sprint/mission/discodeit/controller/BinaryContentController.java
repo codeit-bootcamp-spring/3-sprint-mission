@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
-import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +30,12 @@ public class BinaryContentController implements BinaryContentApi {
     private final BinaryContentStorage binaryContentStorage;
 
     @GetMapping
-    public ResponseEntity<List<JpaBinaryContentResponse>> findAttachment(@RequestParam List<UUID> binaryContentIds) {
+    public ResponseEntity<List<BinaryContentResponse>> findAttachment(@RequestParam List<UUID> binaryContentIds) {
         return ResponseEntity.ok(binaryContentService.findAllByIdIn(binaryContentIds));
     }
 
     @GetMapping(path = "/{binaryContentId}")
-    public ResponseEntity<JpaBinaryContentResponse> findBinaryContent(@PathVariable UUID binaryContentId) {
+    public ResponseEntity<BinaryContentResponse> findBinaryContent(@PathVariable UUID binaryContentId) {
         return ResponseEntity.ok(binaryContentService.find(binaryContentId));
     }
 

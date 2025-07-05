@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -52,10 +52,10 @@ public class BasicUserService implements UserService {
 
 
     @Transactional(readOnly = true)
-    public List<JpaUserResponse> findAllUsers() {
+    public List<UserResponse> findAllUsers() {
         List<User> users = userRepository.findAllWithBinaryContentAndUserStatus();
 
-        List<JpaUserResponse> responses = new ArrayList<>();
+        List<UserResponse> responses = new ArrayList<>();
         // user fields + online 으로 response 생성
         for (User user : users) {
             userMapper.toDto(user);
@@ -66,7 +66,7 @@ public class BasicUserService implements UserService {
 
 
     @Override
-    public JpaUserResponse create(
+    public UserResponse create(
             UserCreateRequest userCreateRequest,
             Optional<BinaryContentCreateRequest> profile
     ) {
@@ -74,11 +74,8 @@ public class BasicUserService implements UserService {
         boolean emailNotUnique = userRepository.existsByEmail(userCreateRequest.email());
 
         if (usernameNotUnique || emailNotUnique) {
-            if (usernameNotUnique) {
-                throw new UserAlreadyExistsException(Map.of("username", userCreateRequest.username()));
-            } else {
-                throw new UserAlreadyExistsException(Map.of("email", userCreateRequest.email()));
-            }
+            log.info("Username or Email already exists");
+            throw new UserAlreadyExistsException(Map.of("username", userCreateRequest.username(), "email", userCreateRequest.email()));
         }
 
         log.info("profile image is " + profile.map(BinaryContentCreateRequest::fileName).stream().findFirst().orElse(null));
@@ -117,7 +114,7 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(userStatus);
         user.changeUserStatus(userStatus); // 양방향성을 위한 주입
 
-        JpaUserResponse response = userMapper.toDto(user);
+        UserResponse response = userMapper.toDto(user);
         return response;
 //        BinaryContent 생성 -> (분기)이미지 없을 경우 -> User 생성 -> userStatus 생성 -> return response
 //                           -> (분기)이미지 있을 경우 -> User 생성 -> attachment 저장 -> userStatus 생성 -> return response
@@ -151,7 +148,7 @@ public class BasicUserService implements UserService {
     // name, email, password 수정 image는 optional
     @Transactional
     @Override
-    public JpaUserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file) {
+    public UserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file) {
 
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(Map.of("userId ", userId)));
 
@@ -228,7 +225,7 @@ public class BasicUserService implements UserService {
             user.changeProfile(binaryContent);
         }
 
-        JpaUserResponse response = userMapper.toDto(user);
+        UserResponse response = userMapper.toDto(user);
         return response;
 //        // 파일 확인(있음) -> 파일 삭제 -> binary content 삭제 -> binary content 추가 -> 파일 생성 -> user 업데이트
 //        // 파일 확인(없음) ->                                  -> binary content 추가 -> 파일 생성 -> user 업데이트

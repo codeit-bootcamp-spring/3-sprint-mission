@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.mapper.advanced;
 
-import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
+import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -16,5 +16,5 @@ import org.mapstruct.Mapping;
 public interface MessageMapper {
 
     @Mapping(source = "channel.id", target = "channelId")
-    JpaMessageResponse toDto(Message message);
+    MessageResponse toDto(Message message);
 }

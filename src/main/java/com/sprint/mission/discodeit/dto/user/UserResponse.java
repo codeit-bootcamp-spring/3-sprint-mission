@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.user;
 
-import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 import lombok.Builder;
 
 import java.util.UUID;
@@ -12,11 +12,11 @@ import java.util.UUID;
  * Date         : 2025. 5. 29.
  */
 @Builder
-public record JpaUserResponse(
+public record UserResponse(
         UUID id,
         String username,
         String email,
-        JpaBinaryContentResponse profile,
+        BinaryContentResponse profile,
         boolean online
 ) {
 }

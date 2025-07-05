@@ -3,8 +3,8 @@ package com.sprint.mission.discodeit.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse;
-import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
+import com.sprint.mission.discodeit.dto.message.response.PageResponse;
+import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -138,7 +138,7 @@ public class MessageTest {
         Pageable pageable = PageRequest.of(0, size, Sort.by("createdAt").descending());
 
         // when
-        AdvancedJpaPageResponse result = messageService.findAllByChannelIdAndCursor(channel.getId(), cursor, pageable);
+        PageResponse result = messageService.findAllByChannelIdAndCursor(channel.getId(), cursor, pageable);
 
         // then
         assertThat(result.content().size()).isLessThanOrEqualTo(numberOfMessages);
@@ -151,7 +151,7 @@ public class MessageTest {
     @DisplayName("채널 정보가 없을경우 빈 리스트를 반환한다.")
     void findMessage_noUser_EmptyList() throws Exception {
         // when
-        AdvancedJpaPageResponse response =
+        PageResponse response =
             messageService.findAllByChannelIdAndCursor(UUID.randomUUID(), null, PageRequest.of(0, 10, Sort.by("createdAt").descending()));
 
         // then
@@ -195,7 +195,7 @@ public class MessageTest {
         List<MultipartFile> files = Arrays.asList(jsonPart, imgPart);
 
         // when
-        JpaMessageResponse message = messageService.createMessage(request, files);
+        MessageResponse message = messageService.createMessage(request, files);
 
         // then
         assertThat(message).isNotNull();
@@ -317,7 +317,7 @@ public class MessageTest {
         MessageUpdateRequest request = new MessageUpdateRequest("new content");
 
         // when
-        JpaMessageResponse response = messageService.updateMessage(message.getId(), request);
+        MessageResponse response = messageService.updateMessage(message.getId(), request);
 
         // then
         assertThat(response).isNotNull();

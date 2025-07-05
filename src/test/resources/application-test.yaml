@@ -49,13 +49,9 @@ discodeit:
   repository:
     type: jcf  # jcf | file
     file-directory: data/
-  # 서블릿 관련 설정
   servlet:
-    # Multi-part 파일 업로드 관련 설정
     multipart:
-      # 파일 하나의 최대 크기를 10MB로 설정
       max-file-size: 10MB
-      # 요청 당 최대 크기를 10MB로 설정
       max-request-size: 10MB
   mvc:
     static-path-pattern: /**

@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse;
-import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
+import com.sprint.mission.discodeit.dto.message.response.PageResponse;
+import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -56,7 +56,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentStorage binaryContentStorage;
 
     @Override
-    public AdvancedJpaPageResponse findAllByChannelIdAndCursor(UUID channelId, Instant cursor, Pageable pageable) {
+    public PageResponse findAllByChannelIdAndCursor(UUID channelId, Instant cursor, Pageable pageable) {
 
         List<Message> messages = messageRepository
             .findSliceByCursor(channelId, cursor, pageable);
@@ -67,11 +67,11 @@ public class BasicMessageService implements MessageService {
         }
         Instant nextCursor = hasNext ? messages.get(messages.size() - 1).getCreatedAt() : null;
 
-        List<JpaMessageResponse> dtoList = messages.stream()
+        List<MessageResponse> dtoList = messages.stream()
             .map(messageMapper::toDto)
             .toList();
 
-        return AdvancedJpaPageResponse.builder()
+        return PageResponse.builder()
             .content(dtoList)
             .nextCursor(nextCursor)
             .size(dtoList.size())
@@ -89,7 +89,7 @@ public class BasicMessageService implements MessageService {
      * @return
      */
     @Override
-    public JpaMessageResponse createMessage(MessageCreateRequest request, List<MultipartFile> fileList) {
+    public MessageResponse createMessage(MessageCreateRequest request, List<MultipartFile> fileList) {
         Channel channel = channelRepository.findById(request.channelId()).orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId",request.channelId())));
         User user = userRepository.findById(request.authorId()).orElseThrow(() -> new UserNotFoundException(Map.of("userId",request.authorId())));
 
@@ -136,7 +136,7 @@ public class BasicMessageService implements MessageService {
                 .build();
         messageRepository.save(message);
 
-        JpaMessageResponse response = messageMapper.toDto(message);
+        MessageResponse response = messageMapper.toDto(message);
 
         return response;
         // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
@@ -151,11 +151,11 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public JpaMessageResponse updateMessage(UUID messageId, MessageUpdateRequest request) {
+    public MessageResponse updateMessage(UUID messageId, MessageUpdateRequest request) {
         Message message = messageRepository.findById(messageId).orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
         message.setContent(request.newContent());
 
-        JpaMessageResponse response = messageMapper.toDto(message);
+        MessageResponse response = messageMapper.toDto(message);
         return response;
     }
 

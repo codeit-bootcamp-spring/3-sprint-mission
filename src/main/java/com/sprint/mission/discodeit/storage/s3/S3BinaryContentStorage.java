@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.storage.s3;
 
-import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -96,7 +96,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     }
 
     @Override
-    public ResponseEntity<?> download(JpaBinaryContentResponse response) {
+    public ResponseEntity<?> download(BinaryContentResponse response) {
         log.info("downloading image from S3: {}", response.fileName());
 
         String presignedUrl = generatedPresignedUrl(response.fileName(), response.contentType());
