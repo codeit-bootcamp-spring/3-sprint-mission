@@ -1,98 +1,88 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.common.model.Auditable;
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * 메시지 정보 관리
  * <p>
- * 공통 속성(고유 아이디, 생성/수정 시간) 관리는 {@link Base} 객체에 위임하여 컴포지션 방식으로 구현한다.
  * <ul>
- *   <li>메시지 내용</li>
- *   <li>생성자 id</li>
- *   <li>채널 id</li>
- *   <li>삭제 여부</li>
+ * <li>AuditInfo (id, createdAt, updatedAt)</li>
+ * <li>메시지 내용</li>
+ * <li>생성자 id</li>
+ * <li>채널 id</li>
+ * <li>삭제 여부</li>
  * </ul>
  */
-public class Message implements Serializable {
+@Getter
+@ToString(callSuper = true)
+@Builder(toBuilder = true, access = AccessLevel.PRIVATE)
+public class Message extends Auditable implements Serializable {
 
   @Serial
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 5091331492371241399L;
 
-  private final Base base;
   private String content;
+
+  // 참조 정보
   private final UUID userId;
   private final UUID channelId;
-  private boolean deleted = false;
+  private Instant deletedAt;
 
-  // 외부에서 직접 객체 생성 방지.
-  private Message(String content, UUID userId, UUID channelId) {
-    this.base = new Base();
+  private Message(String content, UUID userId, UUID channelId, Instant deletedAt) {
     this.content = content;
     this.userId = userId;
     this.channelId = channelId;
+    this.deletedAt = deletedAt;
   }
 
   // 정적 팩토리 메서드로 명시적인 생성
   public static Message create(String content, UUID userId, UUID channelId) {
-    return new Message(content, userId, channelId);
+    Message message = new Message(content, userId, channelId, null);
+    message.touch();
+    return message;
   }
 
-  // 메시지 내용 관리
   public String getContent() {
-    return deleted ? "삭제된 메시지입니다." : content;
+    return deletedAt != null ? "삭제된 메시지입니다." : content;
   }
 
   public void updateContent(String content) {
-    if (!deleted) {
+    if (deletedAt == null) {
       this.content = content;
-      base.setUpdatedAt();
+      touch();
     }
-  }
-
-  public boolean isDeleted() {
-    return deleted;
   }
 
   public void delete() {
-    if (!deleted) {
-      deleted = true;
-      base.setUpdatedAt();
+    if (deletedAt == null) {
+      deletedAt = Instant.now();
+      touch();
     }
   }
 
-  // Base 위임 메서드
-  public UUID getId() {
-    return base.getId();
-  }
-
-  public long getCreatedAt() {
-    return base.getCreatedAt();
-  }
-
-  public long getUpdatedAt() {
-    return base.getUpdatedAt();
-  }
-
-  // 참조 정보 getter
-  public UUID getUserId() {
-    return userId;
-  }
-
-  public UUID getChannelId() {
-    return channelId;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Message message = (Message) o;
+    return Objects.equals(getId(), message.getId());
   }
 
   @Override
-  public String toString() {
-    return "Message{" +
-        "id=" + getId() +
-        ", createdAt=" + getCreatedAt() +
-        ", updatedAt=" + getUpdatedAt() +
-        ", content='" + content + '\'' +
-        ", userId=" + userId +
-        ", channelId=" + channelId +
-        '}';
+  public int hashCode() {
+    return Objects.hash(getId());
   }
 }

@@ -1,3 +1,4 @@
+HELP.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -6,11 +7,12 @@ build/
 
 ### IntelliJ IDEA ###
 # .gitignore에 IntelliJ와 관련된 파일이 형상관리 되지 않도록 .idea디렉토리를 추가합니다.
-.idea
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+
+.idea
 *.iws
 *.iml
 *.ipr
@@ -18,7 +20,7 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
-### Eclipse ###
+### STS ###
 .apt_generated
 .classpath
 .factorypath
@@ -44,4 +46,9 @@ bin/
 .DS_Store
 
 ### Files ###
+.discodeit
 data
+!**/src/main/**/data
+
+### logs ###
+logs

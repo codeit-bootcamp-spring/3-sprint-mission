@@ -13,11 +13,11 @@ public class JCFMessageRepository implements MessageRepository {
   private final List<Message> messages = new CopyOnWriteArrayList<>();
 
   @Override
-  public Message save(Message message) {
-    // 이미 존재하면 갱신, 아니면 추가
-    messages.removeIf(m -> m.getId().equals(message.getId()));
+  public void insert(Message message) {
+    if (messages.stream().anyMatch(m -> m.getId().equals(message.getId()))) {
+      throw new IllegalArgumentException("이미 존재하는 메시지입니다. [ID: " + message.getId() + "]");
+    }
     messages.add(message);
-    return message;
   }
 
   @Override
@@ -31,7 +31,33 @@ public class JCFMessageRepository implements MessageRepository {
   }
 
   @Override
-  public void deleteById(UUID id) {
-    messages.removeIf(m -> m.getId().equals(id));
+  public List<Message> findAllByChannelId(UUID channelId) {
+    return messages.stream()
+        .filter(message -> message.getChannelId().equals(channelId))
+        .toList();
+  }
+
+  @Override
+  public Message save(Message message) {
+    messages.removeIf(m -> m.getId().equals(message.getId()));  // 기존 메시지 제거
+    messages.add(message);  // 메시지 추가
+    return message;
+  }
+
+  @Override
+  public void update(Message message) {
+    boolean exists = messages.stream().anyMatch(m -> m.getId().equals(message.getId()));
+    if (!exists) {
+      throw new IllegalArgumentException("존재하지 않는 메시지입니다. [ID: " + message.getId() + "]");
+    }
+    save(message);  // update는 save로 처리
+  }
+
+  @Override
+  public void delete(UUID id) {
+    boolean removed = messages.removeIf(m -> m.getId().equals(id));
+    if (!removed) {
+      throw new IllegalArgumentException("메시지를 찾을 수 없습니다. [ID: " + id + "]");
+    }
   }
 }

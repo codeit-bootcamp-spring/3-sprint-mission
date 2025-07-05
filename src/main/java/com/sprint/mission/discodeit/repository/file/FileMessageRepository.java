@@ -2,102 +2,82 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
+import com.sprint.mission.discodeit.repository.storage.FileStorage;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 public class FileMessageRepository implements MessageRepository {
 
-  private final String FILE_PATH;
-  private Map<UUID, Message> messages = new HashMap<>();
+  private final FileStorage fileStorage;
 
-  private FileMessageRepository(String filePath) {
-    this.FILE_PATH = filePath;
-    loadData();
+  private FileMessageRepository(FileStorage fileStorage) {
+    this.fileStorage = fileStorage;
   }
 
-  public static FileMessageRepository from(String filePath) {
-    return new FileMessageRepository(filePath);
-  }
-
-  public static FileMessageRepository createDefault() {
-    return new FileMessageRepository("data/messages.ser");
+  public static FileMessageRepository create(FileStorage fileStorage) {
+    return new FileMessageRepository(fileStorage);
   }
 
   @Override
-  public Message save(Message message) {
-    loadData();
-    messages.put(message.getId(), message);
-    saveData();
-    return message;
+  public void insert(Message message) {
+    Optional<Message> existing = findById(message.getId());
+    if (existing.isPresent()) {
+      throw new IllegalArgumentException("이미 존재하는 메시지입니다. [ID: " + message.getId() + "]");
+    }
+    fileStorage.saveObject(message.getId(), message);
   }
 
   @Override
   public Optional<Message> findById(UUID id) {
-    loadData();
-    return Optional.ofNullable(messages.get(id));
+    try {
+      return Optional.of((Message) fileStorage.readObject(id));
+    } catch (Exception e) {
+      return Optional.empty();
+    }
   }
 
   @Override
   public List<Message> findAll() {
-    loadData();
-    return new ArrayList<>(messages.values());
+    return fileStorage.readAll().stream()
+        .map(obj -> (Message) obj)
+        .toList();
   }
 
   @Override
-  public void deleteById(UUID id) {
-    loadData();
-    messages.remove(id);
-    saveData();
+  public List<Message> findAllByChannelId(UUID channelId) {
+    return fileStorage.readAll().stream()
+        .map(obj -> (Message) obj)
+        .filter(message -> message.getChannelId().equals(channelId))
+        .toList();
   }
 
-  @SuppressWarnings("unchecked")
-  private void loadData() {
-    File file = new File(FILE_PATH);
-    if (!file.exists() || file.length() == 0) {
-      createDataFile();
-      return;
+  @Override
+  public Message save(Message message) {
+    Optional<Message> existing = findById(message.getId());
+    if (existing.isPresent()) {
+      fileStorage.updateObject(message.getId(), message);
+    } else {
+      fileStorage.saveObject(message.getId(), message);
     }
-
-    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-      Object obj = ois.readObject();
-      if (obj instanceof Map<?, ?> map) {
-        messages = (Map<UUID, Message>) map;
-      }
-    } catch (IOException | ClassNotFoundException e) {
-      e.printStackTrace();
-    }
+    return message;
   }
 
-  private void saveData() {
-    File file = new File(FILE_PATH);
-    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
-      oos.writeObject(messages);
-    } catch (IOException e) {
-      e.printStackTrace();
+  @Override
+  public void update(Message message) {
+    Optional<Message> existing = findById(message.getId());
+    if (existing.isEmpty()) {
+      throw new IllegalArgumentException("존재하지 않는 메시지입니다. [ID: " + message.getId() + "]");
     }
+    fileStorage.updateObject(message.getId(), message);
   }
 
-  private void createDataFile() {
-    File file = new File(FILE_PATH);
-    File parentDir = file.getParentFile();
-    if (parentDir != null && !parentDir.exists()) {
-      parentDir.mkdirs();
-    }
-
+  @Override
+  public void delete(UUID id) {
     try {
-      file.createNewFile();
-    } catch (IOException e) {
-      e.printStackTrace();
+      fileStorage.deleteObject(id);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("메시지 삭제 실패 [ID: " + id + "]", e);
     }
   }
 }
