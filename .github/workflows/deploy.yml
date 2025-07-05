@@ -67,7 +67,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: discodeit-container
+          container-name: discodeit-app
           image: ${{ steps.build-image.outputs.image }}
           environment-variables: |
             AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY }}
