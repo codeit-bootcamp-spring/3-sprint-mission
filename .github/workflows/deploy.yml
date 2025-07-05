@@ -86,7 +86,7 @@ jobs:
             --service ${{ env.ECS_SERVICE }} \
             --desired-count 0
 
-      # 9단계: ECS 서비스 배포
+      # 9단계: ECS 서비스 업데이트
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
@@ -94,3 +94,4 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
+          desired-count: 1
