@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.sprint.mission.discodeit.config.TestJpaConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -23,6 +25,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
+@Import(TestJpaConfig.class)
 @DisplayName("MessageRepository 슬라이스 테스트")
 public class MessageRepositoryTest {
 
@@ -64,6 +67,7 @@ public class MessageRepositoryTest {
         messageRepository.save(new Message("msg1", channel, user, List.of()));
         messageRepository.save(new Message("msg2", channel, user, List.of()));
         messageRepository.save(new Message("msg3", channel, user, List.of()));
+
         em.flush();
         em.clear();
 
@@ -84,24 +88,29 @@ public class MessageRepositoryTest {
 
     @Test
     @DisplayName("특정 채널의 메시지 목록의 첫 페이지 이후 추가적인 메시지 조회")
-    void findAllByChannelIdWithCursor() {
+    void findAllByChannelIdWithCursor() throws InterruptedException {
         // given
-        Message msg1 = messageRepository.save(new Message("msg1", channel, user, List.of()));
-        Message msg2 = messageRepository.save(new Message("msg2", channel, user, List.of()));
-        Message msg3 = messageRepository.save(new Message("msg3", channel, user, List.of()));
-        em.flush();
+        Message msg1 = messageRepository.saveAndFlush(new Message("msg1", channel, user, List.of()));
+        Thread.sleep(200);
+        Message msg2 = messageRepository.saveAndFlush(new Message("msg2", channel, user, List.of()));
+        Thread.sleep(200);
+        Message msg3 = messageRepository.saveAndFlush(new Message("msg3", channel, user, List.of()));
+
         em.clear();
 
+        Instant cursorTime = msg2.getCreatedAt().plusMillis(1);
+        Pageable pageable = PageRequest.of(0, 2);
+
         // when
-        Instant cursor = msg1.getCreatedAt();
-        Pageable pageReq = PageRequest.of(0, 10);
-        Slice<Message> slice = messageRepository.findAllByChannelId(channel.getId(), cursor, pageReq);
+        Slice<Message> slice = messageRepository.findAllByChannelId(
+            channel.getId(), cursorTime, pageable
+        );
 
         // then
-        assertThat(slice.getNumberOfElements()).isEqualTo(2);
+        assertThat(slice.getNumberOfElements()).isEqualTo(1);
         assertThat(slice.getContent())
             .extracting(Message::getContent)
-            .containsExactly("msg2", "msg3");
+            .containsExactly("msg3");
         assertThat(slice.hasNext()).isFalse();
     }
 
