@@ -1,0 +1,23 @@
+name: Test AWS Connection
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1단계: AWS 자격 증명 설정 단계
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # 2단계: AWS CLI를 사용한 연결 테스트 단계
+      - name: Test AWS CLI
+        run: |
+          aws sts get-caller-identity
+          aws ecr describe-repositories --repository-names ${{ vars.ECR_REPOSITORY }}
