@@ -31,9 +31,9 @@ services:
     container_name: discodeit-app
     environment:
       SPRING_PROFILES_ACTIVE: dev # 개발 환경용
-      DB_USER_NAME: ${DB_USER_NAME}
-      DB_USER_PASSWORD: ${DB_USER_PASSWORD}
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SERVER_PORT: ${APP_INTERNAL_PORT:-80}
       JVM_OPTS: ${JVM_OPTS:-}
       # Storage Configuration

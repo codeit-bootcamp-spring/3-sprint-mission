@@ -1,9 +1,9 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit
+    url:
     driver-class-name: org.postgresql.Driver
-    username: ${DB_USER_NAME:discodeit_user}
-    password: ${DB_USER_PASSWORD:discodeit1234}
+    username: ${SPRING_DATASOURCE_USERNAME:discodeit_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:discodeit1234}
 
   jpa:
     hibernate:
