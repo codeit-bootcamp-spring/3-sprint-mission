@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.authService.LoginRequest;
 import com.sprint.mission.discodeit.dto.authService.LoginResponse;
-import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -39,9 +39,9 @@ public class BasicAuthService implements AuthService {
         User user = userRepository.findByUsernameWithProfileAndStatus(username).orElseThrow(() -> new NoSuchElementException("User with username " + username + " not found"));
 
         BinaryContent profile = user.getProfile();
-        JpaBinaryContentResponse profileDto = null;
+        BinaryContentResponse profileDto = null;
         if(profile != null) {
-            profileDto = new JpaBinaryContentResponse(
+            profileDto = new BinaryContentResponse(
                     profile.getId(),
                     profile.getFileName(),
                     profile.getSize(),

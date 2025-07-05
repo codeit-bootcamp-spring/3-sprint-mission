@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.storage;
 
-import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import jakarta.annotation.PostConstruct;
@@ -100,7 +100,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     }
 
     @Override
-    public ResponseEntity<?> download(JpaBinaryContentResponse response) {
+    public ResponseEntity<?> download(BinaryContentResponse response) {
         log.info("downloading image {}", response.fileName());
         try {
             byte[] bytes = get(response.id()).readAllBytes();

@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -80,7 +80,7 @@ public class UserServiceTest {
 
         BinaryContent savedBinaryContent = new BinaryContent("profile.jpg", (long) fileBytes.length, "image/jpeg", ".jpg");
         given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(savedBinaryContent);
-        given(userMapper.toDto(any(User.class))).willReturn(mock(JpaUserResponse.class));
+        given(userMapper.toDto(any(User.class))).willReturn(mock(UserResponse.class));
 
         // when
         userService.create(request, profile);
@@ -97,7 +97,7 @@ public class UserServiceTest {
     void whenProfileNotFound_thenShouldNotCreateBinaryContent() {
         // given
         UserCreateRequest request = new UserCreateRequest("paul", "duplicate@email.com", "password123");
-        given(userMapper.toDto(any(User.class))).willReturn(mock(JpaUserResponse.class));
+        given(userMapper.toDto(any(User.class))).willReturn(mock(UserResponse.class));
 
         // when
         userService.create(request, Optional.empty());

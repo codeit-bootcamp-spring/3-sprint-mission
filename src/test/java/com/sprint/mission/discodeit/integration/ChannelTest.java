@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
-import com.sprint.mission.discodeit.exception.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.channelException.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
@@ -81,7 +81,7 @@ public class ChannelTest {
         PublicChannelCreateRequest request = new PublicChannelCreateRequest("channel", "description");
 
         // when
-        JpaChannelResponse response = channelService.createChannel(request);
+        ChannelResponse response = channelService.createChannel(request);
 
         // then
         assertThat(response).isNotNull();
@@ -121,7 +121,7 @@ public class ChannelTest {
         PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(participantIds);
 
         // when
-        JpaChannelResponse response = channelService.createChannel(request);
+        ChannelResponse response = channelService.createChannel(request);
 
         // then
         assertThat(response).isNotNull();
@@ -163,7 +163,7 @@ public class ChannelTest {
         ChannelUpdateRequest request = new ChannelUpdateRequest("update channel", "update description");
 
         // when
-        JpaChannelResponse result = channelService.update(channel.getId(), request);
+        ChannelResponse result = channelService.update(channel.getId(), request);
 
         // then
         assertThat(result).isNotNull();

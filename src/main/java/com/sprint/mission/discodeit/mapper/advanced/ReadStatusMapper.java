@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.mapper.advanced;
 
-import com.sprint.mission.discodeit.dto.readStatus.JpaReadStatusResponse;
+import com.sprint.mission.discodeit.dto.readStatus.ReadStatusResponse;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,5 +17,5 @@ public interface ReadStatusMapper {
 
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "channel.id", target = "channelId")
-    JpaReadStatusResponse toDto(ReadStatus readStatus);
+    ReadStatusResponse toDto(ReadStatus readStatus);
 }

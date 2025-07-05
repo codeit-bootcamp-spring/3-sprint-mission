@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.controller.api.ChannelApi;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
 import com.sprint.mission.discodeit.service.ChannelService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -30,12 +30,12 @@ public class ChannelController implements ChannelApi {
     private final ChannelService channelService;
 
     @PostMapping("/public")
-    public ResponseEntity<JpaChannelResponse> create(@Valid @RequestBody PublicChannelCreateRequest request) {
+    public ResponseEntity<ChannelResponse> create(@Valid @RequestBody PublicChannelCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(channelService.createChannel(request));
     }
 
     @PostMapping("/private")
-    public ResponseEntity<JpaChannelResponse> create(@Valid @RequestBody PrivateChannelCreateRequest request) {
+    public ResponseEntity<ChannelResponse> create(@Valid @RequestBody PrivateChannelCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(channelService.createChannel(request));
     }
 
@@ -46,14 +46,14 @@ public class ChannelController implements ChannelApi {
     }
 
     @PatchMapping("/{channelId}")
-    public ResponseEntity<JpaChannelResponse> update(
+    public ResponseEntity<ChannelResponse> update(
             @PathVariable UUID channelId,
             @Valid @RequestBody ChannelUpdateRequest request) {
         return ResponseEntity.ok(channelService.update(channelId, request));
     }
 
     @GetMapping
-    public ResponseEntity<List<JpaChannelResponse>> findChannels(@RequestParam UUID userId) {
+    public ResponseEntity<List<ChannelResponse>> findChannels(@RequestParam UUID userId) {
         return ResponseEntity.ok(channelService.findAllByUserId(userId));
     }
 }

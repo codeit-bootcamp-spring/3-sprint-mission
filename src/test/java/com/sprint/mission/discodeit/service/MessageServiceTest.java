@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse;
-import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
+import com.sprint.mission.discodeit.dto.message.response.PageResponse;
+import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -175,7 +175,7 @@ public class MessageServiceTest {
 
         MessageUpdateRequest request = new MessageUpdateRequest("hello Paul");
 
-        JpaMessageResponse response = JpaMessageResponse.builder()
+        MessageResponse response = MessageResponse.builder()
             .content("hello Paul")
             .build();
 
@@ -183,7 +183,7 @@ public class MessageServiceTest {
         given(messageMapper.toDto(any(Message.class))).willReturn(response);
 
         //when
-        JpaMessageResponse result = messageService.updateMessage(messageId, request);
+        MessageResponse result = messageService.updateMessage(messageId, request);
 
         //then
         assertThat(result).isEqualTo(response);
@@ -266,22 +266,22 @@ public class MessageServiceTest {
         given(messageMapper.toDto(any(Message.class)))
             .willAnswer(inv -> {
                 Message m = inv.getArgument(0);
-                return JpaMessageResponse.builder()
+                return MessageResponse.builder()
                     .content(m.getContent())
                     .createdAt(m.getCreatedAt())
                     .build();
             });
 
         // when
-        AdvancedJpaPageResponse result = messageService.findAllByChannelIdAndCursor(channelId, null, pageable);
+        PageResponse result = messageService.findAllByChannelIdAndCursor(channelId, null, pageable);
 
         // then
-        List<JpaMessageResponse> content = result.content();
+        List<MessageResponse> content = result.content();
         assertThat(content).hasSize(pageSize);
 
         Instant firstCreatedAt = content.get(0).createdAt();
         Instant maxCreatedAt = content.stream()
-            .map(JpaMessageResponse::createdAt)
+            .map(MessageResponse::createdAt)
             .max(Comparator.naturalOrder())
             .orElseThrow();
 
@@ -314,13 +314,13 @@ public class MessageServiceTest {
         given(messageMapper.toDto(any(Message.class)))
             .willAnswer(inv -> {
                 Message m = inv.getArgument(0);
-                return JpaMessageResponse.builder()
+                return MessageResponse.builder()
                     .createdAt(m.getCreatedAt())
                     .build();
             });
 
         // when
-        AdvancedJpaPageResponse result = messageService.findAllByChannelIdAndCursor(channelId, null, pageable);
+        PageResponse result = messageService.findAllByChannelIdAndCursor(channelId, null, pageable);
 
         // then
         assertThat(result.hasNext()).isTrue();

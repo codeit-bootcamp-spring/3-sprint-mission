@@ -17,7 +17,7 @@ import java.util.UUID;
  * 2025. 5. 16.        doungukkim       최초 생성
  */
 @Builder
-public record JpaReadStatusResponse(
+public record ReadStatusResponse(
         UUID id,
         UUID userId,
         UUID channelId,

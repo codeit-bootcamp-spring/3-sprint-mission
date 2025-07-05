@@ -3,8 +3,8 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.controller.api.MessageApi;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse;
-import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
+import com.sprint.mission.discodeit.dto.message.response.PageResponse;
+import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -39,7 +39,7 @@ public class MessageController implements MessageApi {
 
 
     @GetMapping
-    public ResponseEntity<AdvancedJpaPageResponse> findMessagesInChannel(
+    public ResponseEntity<PageResponse> findMessagesInChannel(
         @RequestParam UUID channelId,
         @RequestParam(required = false) Instant cursor,
         Pageable pageable) {
@@ -47,7 +47,7 @@ public class MessageController implements MessageApi {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<JpaMessageResponse> creatMessage(
+    public ResponseEntity<MessageResponse> creatMessage(
             @Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachmentFiles
     ) {
@@ -61,7 +61,7 @@ public class MessageController implements MessageApi {
     }
 
     @PatchMapping(path = "/{messageId}")
-    public ResponseEntity<JpaMessageResponse> updateMessage(
+    public ResponseEntity<MessageResponse> updateMessage(
             @PathVariable UUID messageId,
             @Valid @RequestBody MessageUpdateRequest request) {
         return ResponseEntity.ok(messageService.updateMessage(messageId, request));

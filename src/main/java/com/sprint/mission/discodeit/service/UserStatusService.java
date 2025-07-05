@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
+import com.sprint.mission.discodeit.dto.userStatus.UserStatusResponse;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -15,5 +15,5 @@ import java.util.UUID;
 
 public interface UserStatusService {
 
-  JpaUserStatusResponse updateByUserId(UUID userId, Instant newLastActiveAt);  // throw
+  UserStatusResponse updateByUserId(UUID userId, Instant newLastActiveAt);  // throw
 }

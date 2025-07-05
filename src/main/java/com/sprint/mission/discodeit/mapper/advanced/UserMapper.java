@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.mapper.advanced;
 
-import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import org.mapstruct.Mapper;
@@ -20,7 +20,7 @@ public interface UserMapper {
 
     @Mapping(source = "profile", target = "profile")
     @Mapping(target = "online", expression = "java(isOnline(user.getStatus()))")
-    JpaUserResponse toDto(User user);
+    UserResponse toDto(User user);
 
 
     default boolean isOnline(UserStatus userStatus) {

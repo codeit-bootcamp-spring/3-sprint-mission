@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.mapper.advanced;
 
-import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
+import com.sprint.mission.discodeit.dto.userStatus.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -14,5 +14,5 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface UserStatusMapper {
     @Mapping(source = "user.id", target = "userId")
-    JpaUserStatusResponse toDto(UserStatus userStatus);
+    UserStatusResponse toDto(UserStatus userStatus);
 }

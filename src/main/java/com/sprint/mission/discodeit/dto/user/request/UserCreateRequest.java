@@ -20,7 +20,6 @@ import lombok.Builder;
 public record UserCreateRequest(
         @NotBlank String username,
         @Email String email,
-//        @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+{}\\[\\]:;<>,.?~\\\\/-]).{8,}$\n")
         @NotBlank String password
 ) { }
 

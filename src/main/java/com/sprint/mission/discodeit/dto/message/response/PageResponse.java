@@ -11,8 +11,8 @@ import java.util.List;
  * Date         : 2025. 6. 2.
  */
 @Builder
-public record AdvancedJpaPageResponse (
-        List<JpaMessageResponse> content,
+public record PageResponse(
+        List<MessageResponse> content,
         Object nextCursor,
         int size,
         boolean hasNext,
