@@ -3,10 +3,10 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
-import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.exception.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.channelException.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.advanced.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.advanced.UserMapper;
@@ -77,7 +77,7 @@ public class ChannelServiceTest {
         given(channelRepository.save(any(Channel.class)))
             .willAnswer(inv -> inv.getArgument(0));
 
-        JpaChannelResponse response = JpaChannelResponse.builder()
+        ChannelResponse response = ChannelResponse.builder()
             .id(channelId)
             .name("name")
             .description("description")
@@ -87,7 +87,7 @@ public class ChannelServiceTest {
             .willReturn(response);
 
         // when
-        JpaChannelResponse result = channelService.createChannel(request);
+        ChannelResponse result = channelService.createChannel(request);
 
         // then
         then(channelRepository).should(times(1)).save(any());
@@ -135,7 +135,7 @@ public class ChannelServiceTest {
             users.add(user);
         }
 
-        JpaUserResponse userResponse = JpaUserResponse.builder().username("paul").build();
+        UserResponse userResponse = UserResponse.builder().username("paul").build();
 
         PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(participantIds);
 
@@ -143,10 +143,10 @@ public class ChannelServiceTest {
         given(channelRepository.save(any(Channel.class))).willAnswer(inv -> inv.getArgument(0));
         given(readStatusRepository.save(any(ReadStatus.class))).willAnswer(inv -> inv.getArgument(0));
         given(userMapper.toDto(any(User.class))).willReturn(userResponse);
-        given(channelMapper.toDto(any(Channel.class))).willReturn(mock(JpaChannelResponse.class));
+        given(channelMapper.toDto(any(Channel.class))).willReturn(mock(ChannelResponse.class));
 
         // when
-        JpaChannelResponse response = channelService.createChannel(request);
+        ChannelResponse response = channelService.createChannel(request);
 
         // then
         then(readStatusRepository).should(times(users.size())).save(any());
@@ -258,12 +258,12 @@ public class ChannelServiceTest {
         Channel publicChannel = Channel.builder().type(ChannelType.PUBLIC).build();
         ReflectionTestUtils.setField(publicChannel, "id", publicChannelId);
         pulicList.add(publicChannel);
-        JpaChannelResponse publicResponse = JpaChannelResponse.builder()
+        ChannelResponse publicResponse = ChannelResponse.builder()
             .id(publicChannelId).build();
 
         Channel privateChannel = Channel.builder().type(ChannelType.PRIVATE).build();
         ReflectionTestUtils.setField(privateChannel, "id", privateChannelId);
-        JpaChannelResponse privateResponse = JpaChannelResponse.builder()
+        ChannelResponse privateResponse = ChannelResponse.builder()
             .id(privateChannelId).build();
 
         List<ReadStatus> readStatusList = new ArrayList<>();
@@ -278,7 +278,7 @@ public class ChannelServiceTest {
         given(channelMapper.toDto(privateChannel)).willReturn(privateResponse);
 
         // when
-        List<JpaChannelResponse> result = channelService.findAllByUserId(userId);
+        List<ChannelResponse> result = channelService.findAllByUserId(userId);
 
         // then
         assertThat(result.size() == 2).isTrue();

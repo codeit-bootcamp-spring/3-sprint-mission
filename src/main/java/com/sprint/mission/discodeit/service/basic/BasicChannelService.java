@@ -3,11 +3,11 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
-import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.channelException.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.advanced.UserMapper;
 import com.sprint.mission.discodeit.mapper.advanced.ChannelMapper;
@@ -48,7 +48,7 @@ public class BasicChannelService implements ChannelService {
     private final UserMapper userMapper;
 
     @Override
-    public JpaChannelResponse createChannel(PublicChannelCreateRequest request) {
+    public ChannelResponse createChannel(PublicChannelCreateRequest request) {
         String channelName = request.name();
         String description = request.description();
 
@@ -60,7 +60,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public JpaChannelResponse createChannel(PrivateChannelCreateRequest request) {
+    public ChannelResponse createChannel(PrivateChannelCreateRequest request) {
         Set<UUID> userIds = request.participantIds();
         List<User> users = userRepository.findAllById(userIds);
 
@@ -74,7 +74,7 @@ public class BasicChannelService implements ChannelService {
         channelRepository.save(channel);
 
         // readStatus 생성 -> participants dto 생성
-        List<JpaUserResponse> participants = new ArrayList<>();
+        List<UserResponse> participants = new ArrayList<>();
         List<ReadStatus> readStatuses = new ArrayList<>();
 
         //0테스트코드 작성 끝나면 리팩토링: readStatusRepository.saveAll(readStatuses);
@@ -92,13 +92,13 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public List<JpaChannelResponse> findAllByUserId(UUID userId) {
+    public List<ChannelResponse> findAllByUserId(UUID userId) {
         //0+유저 정보가 없을경우 exception을 반환하는게 더 적합할 수 있음
         if(!userRepository.existsById(userId)) {
             return Collections.emptyList();
         }
 
-        List<JpaChannelResponse> responses = new ArrayList<>();
+        List<ChannelResponse> responses = new ArrayList<>();
         Set<UUID> channelIds = new HashSet<>();
 
         List<Channel> publicChannels = channelRepository.findAllByType(ChannelType.PUBLIC);
@@ -121,15 +121,13 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public JpaChannelResponse update(UUID channelId, ChannelUpdateRequest request) {
+    public ChannelResponse update(UUID channelId, ChannelUpdateRequest request) {
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", channelId.toString())));
 
         // channel update
         if (channel.getType().equals(ChannelType.PUBLIC)) {
             channel.changeChannelInformation(request.newName(), request.newDescription());
-//            channel.setName(request.newName());
-//            channel.setDescription(request.newDescription());
         } else {
             throw new PrivateChannelUpdateException(Map.of("channelId", channelId));
         }

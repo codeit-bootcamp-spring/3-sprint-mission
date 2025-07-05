@@ -69,12 +69,21 @@
 # ------------------------------------------------------------
 # 1단계: Gradle 빌드 환경
 # ------------------------------------------------------------
-FROM gradle:jdk17-alpine AS builder
+FROM amazoncorretto:17 AS builder
 
 WORKDIR /app
-COPY . .
 
-RUN gradle bootJar --no-daemon
+RUN yum update -y && \
+    yum install -y curl && \
+    yum clean all
+
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle .
+COPY settings.gradle .
+COPY src src
+
+RUN ./gradlew bootJar
 
 # ------------------------------------------------------------
 # 2단계: 실행 환경

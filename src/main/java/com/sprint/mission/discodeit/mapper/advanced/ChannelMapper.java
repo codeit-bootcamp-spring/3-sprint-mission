@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.mapper.advanced;
 
-import com.sprint.mission.discodeit.dto.channel.response.JpaChannelResponse;
-import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -30,7 +30,7 @@ public class ChannelMapper {
     private final JpaReadStatusRepository readStatusRepository;
     private final UserMapper userMapper;
 
-    public JpaChannelResponse toDto(Channel channel) {
+    public ChannelResponse toDto(Channel channel) {
         if(channel == null) return null;
 
         Message message = messageRepository.findTopByChannelIdOrderByCreatedAtDesc((channel.getId()));
@@ -45,11 +45,11 @@ public class ChannelMapper {
                 .map(ReadStatus::getUser)
                 .collect(Collectors.toSet());
 
-        List<JpaUserResponse> participants = users.stream()
+        List<UserResponse> participants = users.stream()
                 .map(userMapper::toDto)
                 .collect(Collectors.toList());
 
-        return JpaChannelResponse.builder()
+        return ChannelResponse.builder()
                 .id(channel.getId())
                 .type(channel.getType())
                 .name(channel.getName())

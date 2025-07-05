@@ -2,10 +2,10 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
+import com.sprint.mission.discodeit.dto.userStatus.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.userStatus.UserStatusUpdateByUserIdRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -42,7 +42,7 @@ public class UserController implements UserApi {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<JpaUserResponse> create(
+    public ResponseEntity<UserResponse> create(
             @RequestPart("userCreateRequest") UserCreateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profileFile) {
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profileFile)
@@ -57,7 +57,7 @@ public class UserController implements UserApi {
     }
 
     @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<JpaUserResponse> update(
+    public ResponseEntity<UserResponse> update(
             @PathVariable UUID userId,
             @Valid @RequestPart("userUpdateRequest") UserUpdateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profileFile) {
@@ -65,7 +65,7 @@ public class UserController implements UserApi {
     }
 
     @PatchMapping("/{userId}/userStatus")
-    public ResponseEntity<JpaUserStatusResponse> updateTime(
+    public ResponseEntity<UserStatusResponse> updateTime(
             @PathVariable UUID userId,
             @Valid @RequestBody UserStatusUpdateByUserIdRequest request) {
         return ResponseEntity.ok(userStatusService.updateByUserId(userId, request.newLastActiveAt()));

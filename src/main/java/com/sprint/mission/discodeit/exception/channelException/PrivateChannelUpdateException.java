@@ -1,6 +1,6 @@
-package com.sprint.mission.discodeit.exception;
+package com.sprint.mission.discodeit.exception.channelException;
 
-import com.sprint.mission.discodeit.exception.channelException.ChannelException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 
 import java.util.Map;
 

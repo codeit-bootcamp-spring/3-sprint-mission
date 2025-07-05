@@ -1,12 +1,13 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.user.JpaUserResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.userException.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.mapper.advanced.UserMapper;
@@ -27,11 +28,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
@@ -80,7 +82,7 @@ public class UserServiceTest {
 
         BinaryContent savedBinaryContent = new BinaryContent("profile.jpg", (long) fileBytes.length, "image/jpeg", ".jpg");
         given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(savedBinaryContent);
-        given(userMapper.toDto(any(User.class))).willReturn(mock(JpaUserResponse.class));
+        given(userMapper.toDto(any(User.class))).willReturn(mock(UserResponse.class));
 
         // when
         userService.create(request, profile);
@@ -97,7 +99,7 @@ public class UserServiceTest {
     void whenProfileNotFound_thenShouldNotCreateBinaryContent() {
         // given
         UserCreateRequest request = new UserCreateRequest("paul", "duplicate@email.com", "password123");
-        given(userMapper.toDto(any(User.class))).willReturn(mock(JpaUserResponse.class));
+        given(userMapper.toDto(any(User.class))).willReturn(mock(UserResponse.class));
 
         // when
         userService.create(request, Optional.empty());
@@ -107,6 +109,29 @@ public class UserServiceTest {
         then(binaryContentStorage).should(times(0)).get(any());
     }
 
+    @DisplayName("username 또는 email이 중복될 경우 UserAlreadyExistsException을 응답한다.")
+    @Test
+    void whenUsernameIsNotUnique_thenThrowsUserAlreadyExistsException() {
+        // given
+        UserCreateRequest request = new UserCreateRequest("paul", "duplicate@email.com", "password123");
+
+        given(userRepository.existsByUsername(request.username())).willReturn(true);
+        given(userRepository.existsByEmail(request.email())).willReturn(true);
+
+        // when & then
+        UserAlreadyExistsException result = catchThrowableOfType(
+            () -> userService.create(request, Optional.empty()), UserAlreadyExistsException.class
+        );
+
+        assertThat(result).isNotNull();
+        assertThat(result.getErrorCode()).isEqualTo(ErrorCode.USER_ALREADY_EXISTS);
+        assertThat(result.getMessage()).contains("유저가 이미 있습니다.");
+
+        then(userRepository).should().existsByEmail(request.email());
+        then(userRepository).should().existsByUsername(request.username());
+        then(userRepository).shouldHaveNoMoreInteractions();
+    }
+
     @DisplayName("email은 중복되어선 안된다.")
     @Test
     void whenEmailIsNotUnique_thenThrowsIllegalArgument() {
@@ -114,26 +139,39 @@ public class UserServiceTest {
         UserCreateRequest request = new UserCreateRequest("paul", "duplicate@email.com", "password123");
 
         given(userRepository.existsByEmail(request.email())).willReturn(true);
+        given(userRepository.existsByUsername(request.username())).willReturn(false);
 
         // when & then
-        assertThatThrownBy(() -> userService.create(request, Optional.empty()))
-            .isInstanceOf(UserAlreadyExistsException.class);
+        UserAlreadyExistsException result = catchThrowableOfType(
+            () -> userService.create(request, Optional.empty()), UserAlreadyExistsException.class
+        );
+
+        assertThat(result).isNotNull();
+        assertThat(result.getDetails())
+            .containsEntry("username or email already exist", "paul, duplicate@email.com");
 
         then(userRepository).should().existsByEmail(request.email());
         then(userRepository).should().existsByUsername(request.username());
         then(userRepository).shouldHaveNoMoreInteractions();
     }
 
-    @DisplayName("username은 중복되어선 안된다.")
+    @DisplayName("username이 중복되어선 안된다.")
     @Test
     void whenUsernameIsNotUnique_thenThrowsIllegalArgument() {
+        // given
         UserCreateRequest request = new UserCreateRequest("paul", "duplicate@email.com", "password123");
 
         given(userRepository.existsByUsername(request.username())).willReturn(true);
+        given(userRepository.existsByEmail(request.email())).willReturn(false);
 
         // when & then
-        assertThatThrownBy(() -> userService.create(request, Optional.empty()))
-            .isInstanceOf(UserAlreadyExistsException.class);
+        UserAlreadyExistsException result = catchThrowableOfType(
+            () -> userService.create(request, Optional.empty()), UserAlreadyExistsException.class
+        );
+
+        assertThat(result).isNotNull();
+        assertThat(result.getDetails())
+            .containsEntry("username or email already exist", "paul, duplicate@email.com");
 
         then(userRepository).should().existsByEmail(request.email());
         then(userRepository).should().existsByUsername(request.username());

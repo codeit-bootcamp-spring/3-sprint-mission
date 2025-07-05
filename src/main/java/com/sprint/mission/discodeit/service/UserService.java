@@ -18,11 +18,11 @@ import java.util.UUID;
  */
 public interface UserService {
 
-    List<JpaUserResponse> findAllUsers();
+    List<UserResponse> findAllUsers();
 
-    JpaUserResponse create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profile);
+    UserResponse create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profile);
 
-    JpaUserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file);
+    UserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file);
 
     void deleteUser(UUID userId);
 

@@ -12,7 +12,7 @@ import java.util.UUID;
  * ----------------------------------------------------------- 2025. 5. 15.        doungukkim 최초 생성
  */
 @Builder
-public record JpaUserStatusResponse(
+public record UserStatusResponse(
     UUID id,
     UUID userId,
     Instant lastActiveAt

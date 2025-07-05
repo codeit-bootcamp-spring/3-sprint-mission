@@ -40,10 +40,3 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           slug: bladnoch/3-sprint-mission
-
-# 프라이빗 환경( 토큰 필요)
-#      - name: Upload coverage reports to Codecov
-#        uses: codecov/codecov-action@v5
-#        with:
-#          token: ${{ secrets.CODECOV_TOKEN }}
-#          slug: bladnoch/3-sprint-mission

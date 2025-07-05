@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.authService;
 
-import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 
 import java.util.UUID;
 
@@ -15,7 +15,7 @@ public record LoginResponse(
         UUID id,
         String username,
         String email,
-        JpaBinaryContentResponse profile,
+        BinaryContentResponse profile,
         boolean online
 
 ) {
