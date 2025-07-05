@@ -70,7 +70,6 @@ public class JCFChannelService implements ChannelService {
   @Override
   public void removeParticipant(UUID channelId, UUID userId)
       throws ChannelNotFoundException, ParticipantNotFoundException {
-
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(channelId));
 

@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService.ChannelNotFoundException;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotFoundException;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService.UserNotParticipantException;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
