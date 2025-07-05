@@ -164,7 +164,8 @@ public class UserTest {
                     .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("USER_ALREADY_EXISTS"))
-            .andExpect(jsonPath("$.details.username").value("paul"));
+            .andExpect(jsonPath("$.details['username or email already exist']")
+                .value(request.username() + ", " + request.email()));
     }
 
     @Test
