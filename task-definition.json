@@ -18,6 +18,10 @@
       "essential": true,
       "environment": [],
       "environmentFiles": [
+        {
+          "value": "arn:aws:s3:::discodeit-binary-content-storage-lcw/discodeit.env",
+          "type": "s3"
+        }
       ],
       "mountPoints": [],
       "volumesFrom": [],
