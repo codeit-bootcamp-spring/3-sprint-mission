@@ -1,9 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface ReadStatusService {
@@ -11,18 +9,19 @@ public interface ReadStatusService {
   /**
    * 새로운 ReadStatus를 생성한다
    *
-   * @param request ReadStatusCreateRequest 객체
+   * @param userId    유저 ID
+   * @param channelId 채널 ID
    * @return 생성된 ReadStatus 객체
    */
-  ReadStatus create(ReadStatusCreateRequest request);
+  ReadStatus create(UUID userId, UUID channelId);
 
   /**
    * ID로 ReadStatus를 조회한다
    *
-   * @param id ReadStatus ID
-   * @return Optional<ReadStatus> (존재하지 않으면 비어 있을 수 있음)
+   * @param readStatusId ReadStatus ID
+   * @return ReadStatus
    */
-  Optional<ReadStatus> find(UUID id);
+  ReadStatus find(UUID readStatusId);
 
   /**
    * 사용자의 모든 ReadStatus를 조회한다
@@ -35,15 +34,15 @@ public interface ReadStatusService {
   /**
    * ReadStatus를 업데이트한다
    *
-   * @param id ReadStatus ID
+   * @param readStatusId ReadStatus ID
    * @return 업데이트된 ReadStatus 객체
    */
-  ReadStatus update(UUID id);
+  ReadStatus update(UUID readStatusId);
 
   /**
    * ReadStatus를 삭제한다
    *
-   * @param id ReadStatus ID
+   * @param reaStatusId ReadStatus ID
    */
-  void delete(UUID id);
+  void delete(UUID reaStatusId);
 }

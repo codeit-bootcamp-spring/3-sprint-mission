@@ -5,6 +5,10 @@ import java.util.UUID;
 
 public class BinaryContentException extends BusinessException {
 
+  public BinaryContentException(ErrorCode errorCode) {
+    super(errorCode, errorCode.getMessage());
+  }
+
   public BinaryContentException(ErrorCode errorCode, String message) {
     super(errorCode, message);
   }
@@ -16,6 +20,10 @@ public class BinaryContentException extends BusinessException {
   }
 
   public static BinaryContentException invalidRequest() {
-    return new BinaryContentException(ErrorCode.INVALID_INPUT, "필수 값이 누락되었습니다.");
+    return new BinaryContentException(ErrorCode.INVALID_INPUT);
+  }
+
+  public static BinaryContentException processingError() {
+    return new BinaryContentException(ErrorCode.PROCESSING_ERROR);
   }
 }

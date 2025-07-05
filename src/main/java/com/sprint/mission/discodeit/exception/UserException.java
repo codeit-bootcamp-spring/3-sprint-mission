@@ -5,8 +5,19 @@ import java.util.UUID;
 
 public class UserException extends BusinessException {
 
+  public UserException(ErrorCode errorCode) {
+    super(errorCode, errorCode.getMessage());
+  }
+
   public UserException(ErrorCode errorCode, String message) {
     super(errorCode, message);
+  }
+
+  public static UserException notFound() {
+    return new UserException(
+        ErrorCode.NOT_FOUND,
+        "유저를 찾을 수 없습니다."
+    );
   }
 
   public static UserException notFound(UUID userId) {

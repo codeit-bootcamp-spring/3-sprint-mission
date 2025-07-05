@@ -1,60 +1,74 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.ChannelApi;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.service.ChannelService;
+import io.swagger.v3.oas.annotations.Parameter;
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+
+@RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/channel")
-public class ChannelController {
+@RequestMapping("/api/channels")
+public class ChannelController implements ChannelApi {
 
   private final ChannelService channelService;
 
-  @RequestMapping(value = "/public", method = RequestMethod.POST)
+  @PostMapping("/public")
   public ResponseEntity<ChannelResponse> create(
       @RequestBody PublicChannelCreateRequest request) {
-    ChannelResponse response = channelService.create(request);
-    return ResponseEntity.created(URI.create("/api/channel/public/" + response.id()))
+    ChannelResponse response = channelService.create(
+        request.name(),
+        request.description()
+    );
+    return ResponseEntity.created(URI.create("/api/channels/" + response.id()))
         .body(response);
   }
 
-  @RequestMapping(value = "/private", method = RequestMethod.POST)
+  @PostMapping("/private")
   public ResponseEntity<ChannelResponse> create(
       @RequestBody PrivateChannelCreateRequest request) {
-    ChannelResponse response = channelService.create(request);
-    return ResponseEntity.created(URI.create("/api/channel/private/" + response.id()))
+    ChannelResponse response = channelService.create(
+        request.participantIds()
+    );
+    return ResponseEntity.created(URI.create("/api/channels/" + response.id()))
         .body(response);
   }
 
-  @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
-  public ResponseEntity<List<ChannelResponse>> findAllByUser(@PathVariable UUID userId) {
+  @GetMapping
+  public ResponseEntity<List<ChannelResponse>> findAllByUser(@Parameter UUID userId) {
     return ResponseEntity.ok(channelService.findAllByUserId(userId));
   }
 
-  @RequestMapping(value = "/public", method = RequestMethod.PUT)
+  @PatchMapping("/{channelId}")
   public ResponseEntity<ChannelResponse> update(
+      @PathVariable UUID channelId,
       @RequestBody PublicChannelUpdateRequest request) {
-    Optional<ChannelResponse> updated = channelService.update(request);
-    return updated.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    return ResponseEntity.ok(channelService.update(
+        channelId,
+        request.newName(),
+        request.newDescription()
+    ));
   }
 
-  @RequestMapping(value = "/{channelId}", method = RequestMethod.DELETE)
-  public ResponseEntity<ChannelResponse> delete(@PathVariable UUID channelId) {
-    Optional<ChannelResponse> deleted = channelService.delete(channelId);
-    return deleted.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+  @DeleteMapping("/{channelId}")
+  public ResponseEntity<Void> delete(@PathVariable UUID channelId) {
+    channelService.delete(channelId);
+    return ResponseEntity.noContent().build();
   }
 }
