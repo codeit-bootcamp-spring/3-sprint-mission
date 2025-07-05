@@ -1,61 +1,41 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Message;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-public interface MessageRepository {
+public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-  /**
-   * 메시지 삽입
-   *
-   * @param message Message
-   */
-  void insert(Message message);
+  @NonNull
+  @EntityGraph(attributePaths = {"author", "channel", "attachments"})
+  Optional<Message> findById(@NonNull UUID messageId);
 
-  /**
-   * 메시지 객체의 고유 아이디로 조회
-   *
-   * @param id UUID
-   * @return Optional<Message>
-   */
-  Optional<Message> findById(UUID id);
-
-  /**
-   * 모든 메시지 조회
-   *
-   * @return List<Message>
-   */
-  List<Message> findAll();
-
-  /**
-   * 특정 채널의 모든 메시지를 조회
-   *
-   * @param channelId UUID
-   * @return List<Message>
-   */
+  @EntityGraph(attributePaths = {"author", "channel", "attachments"})
   List<Message> findAllByChannelId(UUID channelId);
 
-  /**
-   * 메시지 저장 또는 업데이트
-   *
-   * @param message Message
-   * @return Message
-   */
-  Message save(Message message);
+  @Query("SELECT m.id FROM Message m WHERE m.channel.id = :channelId")
+  List<UUID> findMessageIdsByChannelId(@Param("channelId") UUID channelId);
 
-  /**
-   * 메시지 업데이트 (존재하지 않으면 예외)
-   *
-   * @param message Message
-   */
-  void update(Message message);
+  @Query("""
+      SELECT MAX(m.createdAt)
+            FROM Message m
+            WHERE m.channel.id = :channelId
+      """)
+  Instant findLastCreatedAtByChannelId(@NonNull UUID channelId);
 
-  /**
-   * 메시지 객체의 고유 아이디로 삭제
-   *
-   * @param id UUID
-   */
-  void delete(UUID id);
+  Page<Message> findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(UUID channelId,
+      Instant createdAt, Pageable pageable);
+
+  void deleteById(@NonNull UUID messageId);
+
+  void deleteByChannelId(@NonNull UUID channelId);
 }

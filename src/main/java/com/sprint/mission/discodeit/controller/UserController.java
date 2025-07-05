@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 import com.sprint.mission.discodeit.exception.BinaryContentException;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -64,9 +64,9 @@ public class UserController implements UserApi {
   }
 
   @PatchMapping("/{userId}/userStatus")
-  public ResponseEntity<UserStatus> userStatusUpdate(@PathVariable UUID userId) {
-    UserStatus userstatus = userStatusService.updateByUserId(userId);
-    return ResponseEntity.ok(userstatus);
+  public ResponseEntity<UserStatusResponse> userStatusUpdate(@PathVariable UUID userId) {
+    UserStatusResponse userStatus = userStatusService.updateByUserId(userId);
+    return ResponseEntity.ok(userStatus);
   }
 
   @GetMapping("/email")

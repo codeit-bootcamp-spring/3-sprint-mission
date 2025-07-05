@@ -1,92 +1,123 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.assembler.MessageAssembler;
+import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.ChannelException;
 import com.sprint.mission.discodeit.exception.MessageException;
 import com.sprint.mission.discodeit.exception.UserException;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicMessageService implements MessageService {
 
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
   private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
+  private final MessageAssembler messageAssembler;
+  private final MessageMapper messageMapper;
 
   @Override
-  public Message create(CreateMessageCommand command) {
-    userRepository.findById(command.authorId())
+  public MessageResponse create(CreateMessageCommand command) {
+    User author = userRepository.findById(command.authorId())
         .orElseThrow(() -> UserException.notFound(command.authorId()));
-
-    channelRepository.findById(command.channelId())
+    Channel channel = channelRepository.findById(command.channelId())
         .orElseThrow(() -> ChannelException.notFound(command.channelId()));
+    Message message = Message.create(command.content(), author, channel);
 
-    Set<UUID> attachmentIds = command.attachments().stream()
-        .map(attachmentRequest -> {
-          String fileName = attachmentRequest.fileName();
-          String contentType = attachmentRequest.contentType();
-          byte[] bytes = attachmentRequest.bytes();
+    command.attachments().forEach(attachment -> {
+      BinaryContent binaryContent = BinaryContent.create(
+          attachment.fileName(),
+          (long) attachment.bytes().length,
+          attachment.contentType()
+      );
+      BinaryContent saved = binaryContentRepository.save(binaryContent);
+      binaryContentStorage.put(saved.getId(), attachment.bytes());
+      message.attach(saved);
+    });
 
-          BinaryContent binaryContent = BinaryContent.create(fileName, (long) bytes.length,
-              contentType, bytes);
-          BinaryContent createdBinaryContent = binaryContentRepository.save(binaryContent);
-          return createdBinaryContent.getId();
-        }).collect(Collectors.toSet());
-
-    Message message = Message.create(command.content(),
-        command.authorId(),
-        command.channelId(),
-        attachmentIds);
-
-    return messageRepository.save(message);
+    return messageAssembler.toResponse(messageRepository.save(message));
   }
 
   @Override
-  public Message findById(UUID messageId) {
+  public MessageResponse findById(UUID messageId) {
     return messageRepository.findById(messageId)
+        .map(messageAssembler::toResponse)
         .orElseThrow(() -> MessageException.notFound(messageId));
   }
 
   @Override
-  public List<Message> findAllByChannelId(UUID channelId) {
+  public List<MessageResponse> findAllByChannelId(UUID channelId) {
     return messageRepository.findAllByChannelId(channelId).stream()
-        .filter(m -> m.getDeletedAt() == null)
         .sorted(Comparator.comparing(Message::getCreatedAt))
-        .collect(Collectors.toList());
+        .map(messageAssembler::toResponse)
+        .toList();
   }
 
   @Override
-  public Message updateContent(UUID messageId, String newContent) {
+  public PageResponse<MessageResponse> findAllByChannelIdWithCursor(
+      UUID channelId, Instant nextCursor, Pageable pageable
+  ) {
+    Instant cursor = nextCursor != null ? nextCursor : Instant.now();
+
+    Page<Message> messages = messageRepository
+        .findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(
+            channelId,
+            cursor,
+            pageable
+        );
+    List<MessageResponse> responses = messageMapper.fromEntityList(messages.getContent());
+
+    Instant newNextCursor =
+        responses.isEmpty() ? null : responses.get(responses.size() - 1).createdAt();
+
+    return new PageResponse<>(
+        responses,
+        newNextCursor != null ? newNextCursor.toString() : null,
+        pageable.getPageSize(),
+        messages.hasNext(),
+        null
+    );
+  }
+
+  @Override
+  public MessageResponse updateContent(UUID messageId, String newContent) {
     return messageRepository.findById(messageId)
         .map(message -> {
           message.updateContent(newContent);
-          return messageRepository.save(message);
-        }).orElseThrow(() -> MessageException.notFound(messageId));
+          return messageAssembler.toResponse(messageRepository.save(message));
+        })
+        .orElseThrow(() -> MessageException.notFound(messageId));
   }
 
   @Override
-  public Message delete(UUID messageId) {
-    return messageRepository.findById(messageId)
-        .filter(m -> m.getDeletedAt() == null)
-        .map(m -> {
-          m.getAttachmentIds().forEach(binaryContentRepository::delete);
-          m.delete();
-          return messageRepository.save(m);
-        }).orElseThrow(() -> MessageException.notFound(messageId));
+  public void delete(UUID messageId) {
+    messageRepository.findById(messageId)
+        .orElseThrow(() -> MessageException.notFound(messageId));
+    messageRepository.deleteById(messageId);
   }
 }

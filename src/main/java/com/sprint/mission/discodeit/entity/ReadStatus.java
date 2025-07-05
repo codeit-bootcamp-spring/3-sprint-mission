@@ -1,52 +1,51 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
-import java.io.Serial;
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.ToString;
+import lombok.NoArgsConstructor;
 
 @Getter
-@ToString
-public class ReadStatus implements Serializable {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+@Table(
+    name = "read_statuses",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "channel_id"})
+)
+public class ReadStatus extends BaseUpdatableEntity {
 
-  @Serial
-  private static final long serialVersionUID = -6861799438879244084L;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
-  private final UUID id;
-  private final Instant createdAt;
-  private Instant updatedAt;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "channel_id", nullable = false)
+  private Channel channel;
 
+  @Column(name = "last_read_at", nullable = false)
   private Instant lastReadAt;
-  private final UUID userId;
-  private final UUID channelId;
 
-  private ReadStatus(UUID userId, UUID channelId) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    this.userId = userId;
-    this.channelId = channelId;
-    this.lastReadAt = getCreatedAt();
+  private ReadStatus(User user, Channel channel) {
+    this.user = user;
+    this.channel = channel;
+    this.lastReadAt = Instant.now();
   }
 
-  public static ReadStatus create(UUID userId, UUID channelId) {
-    return new ReadStatus(userId, channelId);
-  }
-
-  public static ReadStatus create(ReadStatusCreateRequest request) {
-    return new ReadStatus(request.userId(), request.channelId());
-  }
-
-  public void touch() {
-    this.updatedAt = Instant.now();
+  public static ReadStatus create(User user, Channel channel) {
+    return new ReadStatus(user, channel);
   }
 
   public void updateLastReadAt() {
     this.lastReadAt = Instant.now();
-    touch();
   }
 
   @Override

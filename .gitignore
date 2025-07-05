@@ -4,6 +4,7 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+*.zip
 
 ### IntelliJ IDEA ###
 # .gitignore에 IntelliJ와 관련된 파일이 형상관리 되지 않도록 .idea디렉토리를 추가합니다.
@@ -17,6 +18,7 @@ build/
 *.iml
 *.ipr
 out/
+**/generated
 !**/src/main/**/out/
 !**/src/test/**/out/
 
@@ -53,3 +55,4 @@ data
 
 ### logs ###
 logs
+*.log
