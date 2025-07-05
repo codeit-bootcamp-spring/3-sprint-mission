@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.common.model.Auditable;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.UserStatusException;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Duration;
@@ -10,40 +11,40 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * 사용자의 상태 관리
- * <p>
- * <ul>
- * <li>AuditInfo (id, createdAt, updatedAt)</li>
- * <li>사용자 ID</li>
- * <li>마지막 접속 시간</li>
- * </ul>
- */
 @Getter
-@ToString(callSuper = true)
-public class UserStatus extends Auditable implements Serializable {
+@ToString
+public class UserStatus implements Serializable {
 
   @Serial
   private static final long serialVersionUID = -7917996053260213133L;
 
-  // 마지막 접속 시간이 현재 시간으로부터 5분 이내이면 현재 접속 중인 유저로 간주합니다.
   private static final Duration ACTIVE_DURATION = Duration.ofMinutes(5);
 
-  // 참조 정보
+  private final UUID id;
+  private final Instant createdAt;
+  private Instant updatedAt;
+
   private final UUID userId;
   private Instant lastActiveAt;
 
-  // 외부에서 직접 객체 생성 방지
   private UserStatus(UUID userId) {
+    if (userId == null) {
+      throw new UserStatusException(ErrorCode.INVALID_INPUT, "userId는 필수입니다.");
+    }
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
     this.userId = userId;
-    this.lastActiveAt = getCreatedAt(); // 초기값은 생성 시간으로 설정
+    this.lastActiveAt = getCreatedAt();
   }
 
-  // 정적 팩토리 메서드로 명시적인 생성
   public static UserStatus create(UUID userId) {
     UserStatus userStatus = new UserStatus(userId);
-    userStatus.touch(); // 초기 updatedAt 설정
+    userStatus.touch();
     return userStatus;
+  }
+
+  public void touch() {
+    this.updatedAt = Instant.now();
   }
 
   public void updateLastActiveAt() {
@@ -51,15 +52,20 @@ public class UserStatus extends Auditable implements Serializable {
     touch();
   }
 
-  /**
-   * 마지막 접속 시간이 현재 시간으로부터 5분 이내인지 확인하여 현재 접속 중인 유저인지 판단
-   *
-   * @return 현재 접속 중인 유저이면 true, 아니면 false
-   */
-  public boolean isCurrentlyActive() {
-    Instant now = Instant.now();
-    Duration duration = Duration.between(lastActiveAt, now);
-    return duration.compareTo(ACTIVE_DURATION) <= 0;
+  public void updateLastActiveAt(Instant instant) {
+    if (instant == null) {
+      throw new UserStatusException(ErrorCode.INVALID_INPUT, "lastActiveAt는 필수입니다.");
+    }
+    this.lastActiveAt = instant;
+    this.updatedAt = Instant.now();
+  }
+
+  public boolean isOnline() {
+    if (lastActiveAt == null) {
+      throw new UserStatusException(ErrorCode.INVALID_INPUT,
+          "lastActiveAt 값이 null이므로 isOnline을 판단할 수 없습니다.");
+    }
+    return this.lastActiveAt.isAfter(Instant.now().minus(ACTIVE_DURATION));
   }
 
   @Override
@@ -67,15 +73,14 @@ public class UserStatus extends Auditable implements Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof UserStatus userStatus)) {
       return false;
     }
-    UserStatus that = (UserStatus) o;
-    return Objects.equals(getId(), that.getId());
+    return Objects.equals(id, userStatus.id);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getId());
+    return Objects.hash(id);
   }
 }

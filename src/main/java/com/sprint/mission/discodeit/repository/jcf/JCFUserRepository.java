@@ -8,7 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 public class JCFUserRepository implements UserRepository {
 
   private final Map<UUID, User> users = new HashMap<>();
@@ -41,7 +45,7 @@ public class JCFUserRepository implements UserRepository {
   }
 
   @Override
-  public Optional<User> findByNameWithPassword(String name, String password) {
+  public Optional<User> findByNameAndPassword(String name, String password) {
     return users.values().stream()
         .filter(user -> user.getName().equals(name) && user.getPassword().equals(password))
         .findFirst();

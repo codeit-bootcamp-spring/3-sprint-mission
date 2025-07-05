@@ -3,20 +3,25 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.storage.FileStorage;
+import com.sprint.mission.discodeit.repository.storage.FileStorageImpl;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Repository;
 
+@Primary
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file", matchIfMissing = true)
 public class FileReadStatusRepository implements ReadStatusRepository {
 
   private final FileStorage fileStorage;
 
-  private FileReadStatusRepository(FileStorage fileStorage) {
-    this.fileStorage = fileStorage;
-  }
-
-  public static FileReadStatusRepository create(FileStorage fileStorage) {
-    return new FileReadStatusRepository(fileStorage);
+  public FileReadStatusRepository(
+      @Value("${discodeit.repository.file-directory.folder:data}${discodeit.repository.file-directory.read-status:/read-status}") String fileDirectory) {
+    this.fileStorage = new FileStorageImpl(fileDirectory);
   }
 
   @Override
@@ -49,14 +54,14 @@ public class FileReadStatusRepository implements ReadStatusRepository {
   }
 
   @Override
-  public List<ReadStatus> findByUserId(UUID userId) {
+  public List<ReadStatus> findAllByUserId(UUID userId) {
     return findAll().stream()
         .filter(readStatus -> readStatus.getUserId().equals(userId))
         .toList();
   }
 
   @Override
-  public List<ReadStatus> findByChannelId(UUID channelId) {
+  public List<ReadStatus> findAllByChannelId(UUID channelId) {
     return findAll().stream()
         .filter(readStatus -> readStatus.getChannelId().equals(channelId))
         .toList();
