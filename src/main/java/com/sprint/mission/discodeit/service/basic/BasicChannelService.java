@@ -128,8 +128,6 @@ public class BasicChannelService implements ChannelService {
         // channel update
         if (channel.getType().equals(ChannelType.PUBLIC)) {
             channel.changeChannelInformation(request.newName(), request.newDescription());
-//            channel.setName(request.newName());
-//            channel.setDescription(request.newDescription());
         } else {
             throw new PrivateChannelUpdateException(Map.of("channelId", channelId));
         }

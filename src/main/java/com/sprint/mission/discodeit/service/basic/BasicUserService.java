@@ -75,7 +75,7 @@ public class BasicUserService implements UserService {
 
         if (usernameNotUnique || emailNotUnique) {
             log.info("Username or Email already exists");
-            throw new UserAlreadyExistsException(Map.of("username", userCreateRequest.username(), "email", userCreateRequest.email()));
+            throw new UserAlreadyExistsException(Map.of("username or email already exist", (userCreateRequest.username() + ", " + userCreateRequest.email())));
         }
 
         log.info("profile image is " + profile.map(BinaryContentCreateRequest::fileName).stream().findFirst().orElse(null));
