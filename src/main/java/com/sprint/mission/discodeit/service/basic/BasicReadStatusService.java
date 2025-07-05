@@ -4,7 +4,9 @@ import com.sprint.mission.discodeit.dto.response.ReadStatusResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.ReadStatusException;
+import com.sprint.mission.discodeit.exception.readstatus.DuplicateReadStatusException;
+import com.sprint.mission.discodeit.exception.readstatus.InvalidUserOrChannelException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -27,16 +29,14 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   public ReadStatusResponse create(UUID userId, UUID channelId) {
     User user = userRepository.findById(userId)
-        .orElseThrow(
-            () -> ReadStatusException.invalidUserOrChannel(userId, channelId));
+        .orElseThrow(() -> new InvalidUserOrChannelException(userId.toString(), channelId.toString()));
 
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(
-            () -> ReadStatusException.invalidUserOrChannel(userId, channelId));
+        .orElseThrow(() -> new InvalidUserOrChannelException(userId.toString(), channelId.toString()));
 
     readStatusRepository.findByUserIdAndChannelId(userId, channelId)
         .ifPresent(existingStatus -> {
-          throw ReadStatusException.duplicate(userId, channelId);
+          throw new DuplicateReadStatusException(userId.toString(), channelId.toString());
         });
 
     ReadStatus readStatus = ReadStatus.create(user, channel);
@@ -44,12 +44,11 @@ public class BasicReadStatusService implements ReadStatusService {
     return ReadStatusResponse.from(readStatusRepository.save(readStatus));
   }
 
-
   @Override
   public ReadStatusResponse find(UUID readStatusId) {
     return readStatusRepository.findById(readStatusId)
         .map(ReadStatusResponse::from)
-        .orElseThrow(() -> ReadStatusException.notFound(readStatusId));
+        .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId.toString()));
   }
 
   @Override
@@ -61,7 +60,7 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   public ReadStatusResponse update(UUID readStatusId) {
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-        .orElseThrow(() -> ReadStatusException.notFound(readStatusId));
+        .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId.toString()));
 
     readStatus.updateLastReadAt();
     return ReadStatusResponse.from(readStatusRepository.save(readStatus));
@@ -70,7 +69,7 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   public void delete(UUID reaStatusId) {
     if (readStatusRepository.findById(reaStatusId).isEmpty()) {
-      throw ReadStatusException.notFound(reaStatusId);
+      throw new ReadStatusNotFoundException(reaStatusId.toString());
     }
     readStatusRepository.deleteById(reaStatusId);
   }

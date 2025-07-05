@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.Objects;
+import java.util.UUID;
+
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import java.util.Objects;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,8 +30,7 @@ public class BinaryContent extends BaseEntity {
   private BinaryContent(
       String fileName,
       Long size,
-      String contentType
-  ) {
+      String contentType) {
     this.fileName = fileName;
     this.size = size;
     this.contentType = contentType;
@@ -38,8 +39,7 @@ public class BinaryContent extends BaseEntity {
   public static BinaryContent create(
       String fileName,
       Long size,
-      String contentType
-  ) {
+      String contentType) {
     return BinaryContent.builder()
         .fileName(Objects.requireNonNull(fileName))
         .size(size)

@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 
 import com.sprint.mission.discodeit.assembler.ChannelAssembler;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
@@ -15,7 +15,7 @@ import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.ChannelException;
+import com.sprint.mission.discodeit.exception.channel.ChannelException;
 import com.sprint.mission.discodeit.fixture.ChannelFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +38,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("BasicChannelService 단위 테스트")
 class BasicChannelServiceTest {
 
   @Mock
@@ -83,28 +81,26 @@ class BasicChannelServiceTest {
   class Create {
 
     @Test
-    @DisplayName("공개 채널 생성")
     void 공개채널_생성() {
-      when(channelRepository.save(any(Channel.class))).thenReturn(publicChannel);
+      given(channelRepository.save(any(Channel.class))).willReturn(publicChannel);
 
       ChannelResponse response = channelService.create("테스트 채널", "테스트 채널임");
 
       assertEquals("테스트 채널", response.name());
       assertEquals(ChannelType.PUBLIC, response.type());
-      verify(channelRepository).save(any());
+      then(channelRepository).should().save(any());
     }
 
     @Test
-    @DisplayName("비공개 채널 생성 및 ReadStatus 생성")
     void 비공개채널_및_ReadStatus_생성() {
-      when(readStatusRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-      when(channelRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-      when(userRepository.findById(any())).thenReturn(Optional.of(user));
+      given(readStatusRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
+      given(channelRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
+      given(userRepository.findById(any())).willReturn(Optional.of(user));
 
       channelService.create(List.of(user.getId()));
 
-      verify(readStatusRepository).save(any());
-      verify(channelRepository).save(any(Channel.class));
+      then(readStatusRepository).should().save(any());
+      then(channelRepository).should().save(any(Channel.class));
     }
   }
 
@@ -112,9 +108,8 @@ class BasicChannelServiceTest {
   class Read {
 
     @Test
-    @DisplayName("유저별 채널 조회 및 응답 검증")
-    void findAllByUserIdReturnsProperResponses() {
-      when(channelRepository.findAllByUserId(user.getId())).thenReturn(
+    void 유저별_채널_조회_및_응답_검증() {
+      given(channelRepository.findAllByUserId(user.getId())).willReturn(
           List.of(privateChannel, publicChannel));
 
       List<ChannelResponse> responses = channelService.findAllByUserId(user.getId());
@@ -150,7 +145,7 @@ class BasicChannelServiceTest {
     void 비공개_채널_이름_변경_시_예외() {
       UUID channelId = UUID.randomUUID();
       Channel privateCh = Channel.createPrivate();
-      when(channelRepository.findById(channelId)).thenReturn(Optional.of(privateCh));
+      given(channelRepository.findById(channelId)).willReturn(Optional.of(privateCh));
 
       PublicChannelUpdateRequest req = new PublicChannelUpdateRequest("new-name", null);
 
@@ -162,8 +157,8 @@ class BasicChannelServiceTest {
     void 공개_채널_이름_및_설명_변경_성공() {
       UUID channelId = UUID.randomUUID();
       Channel publicCh = Channel.createPublic("old-name", "old-desc");
-      when(channelRepository.findById(channelId)).thenReturn(Optional.of(publicCh));
-      when(channelRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+      given(channelRepository.findById(channelId)).willReturn(Optional.of(publicCh));
+      given(channelRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
       PublicChannelUpdateRequest req = new PublicChannelUpdateRequest("new-name", "new-desc");
 
@@ -172,12 +167,11 @@ class BasicChannelServiceTest {
 
       assertEquals(req.newName(), response.name());
       assertEquals(req.newDescription(), response.description());
-      verify(channelRepository).save(any());
+      then(channelRepository).should().save(any());
     }
   }
 
   @Nested
-  @DisplayName("Delete 테스트")
   class DeleteTests {
 
     @Test
@@ -186,15 +180,15 @@ class BasicChannelServiceTest {
       UUID channelId = UUID.randomUUID();
       Channel channel = Channel.createPublic("general", "desc");
 
-      when(channelRepository.findById(channelId)).thenReturn(Optional.of(channel));
+      given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
 
       // When
       channelService.delete(channelId);
 
       // Then
-      verify(messageRepository).deleteByChannelId(channelId);
-      verify(readStatusRepository).deleteByChannelId(channelId);
-      verify(channelRepository).deleteById(channelId);
+      then(messageRepository).should().deleteByChannelId(channelId);
+      then(readStatusRepository).should().deleteByChannelId(channelId);
+      then(channelRepository).should().deleteById(channelId);
     }
   }
 }
