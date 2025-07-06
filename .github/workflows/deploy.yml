@@ -17,6 +17,8 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
     steps:
       # 코드 체크아웃
       - name: Checkout code
