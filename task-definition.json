@@ -84,7 +84,6 @@
     },
     "registeredAt": "2025-07-05T13:41:59.117Z",
     "registeredBy": "arn:aws:iam::745208956218:user/discodeit",
-    "enableFaultInjection": false,
     "tags": [
         {
             "key": "project",
