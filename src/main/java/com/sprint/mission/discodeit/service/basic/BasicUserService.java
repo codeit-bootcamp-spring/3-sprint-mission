@@ -56,9 +56,7 @@ public class BasicUserService implements UserService {
         List<User> users = userRepository.findAllWithBinaryContentAndUserStatus();
 
         List<UserResponse> responses = new ArrayList<>();
-        // user fields + online 으로 response 생성
         for (User user : users) {
-            userMapper.toDto(user);
             responses.add(userMapper.toDto(user));
         }
         return responses;
@@ -73,9 +71,12 @@ public class BasicUserService implements UserService {
         boolean usernameNotUnique = userRepository.existsByUsername(userCreateRequest.username());
         boolean emailNotUnique = userRepository.existsByEmail(userCreateRequest.email());
 
-        if (usernameNotUnique || emailNotUnique) {
-            log.info("Username or Email already exists");
-            throw new UserAlreadyExistsException(Map.of("username or email already exist", (userCreateRequest.username() + ", " + userCreateRequest.email())));
+        if (emailNotUnique) {
+            log.info("Email already exists");
+            throw new UserAlreadyExistsException(Map.of("email", userCreateRequest.email()));
+        }
+        if (usernameNotUnique) {
+            throw new UserAlreadyExistsException(Map.of("username", userCreateRequest.username()));
         }
 
         log.info("profile image is " + profile.map(BinaryContentCreateRequest::fileName).stream().findFirst().orElse(null));
@@ -164,20 +165,16 @@ public class BasicUserService implements UserService {
             newEmail = oldEmail;
         }
 
-
-        // name : 있으면 400
         if (userRepository.existsByUsername(newName) && (!oldName.equals(newName))) { // 있고 내 이름도 아닌경우
             throw new  UserAlreadyExistsException(Map.of("username", newName));
         }
         user.changeUsername(newName);
 
-        // email: 있으면 400
         if (userRepository.existsByEmail(newEmail) && (!oldEmail.equals(newEmail))) { // 있고 내 이메일이 아닌경우
             throw new  UserAlreadyExistsException(Map.of("email", newEmail));
         }
         user.changeEmail(newEmail);
 
-        // password: 없으면 내버려두고 있으면 수정
         if (request.newPassword() != null) {
             user.changePassword(request.newPassword());
         }

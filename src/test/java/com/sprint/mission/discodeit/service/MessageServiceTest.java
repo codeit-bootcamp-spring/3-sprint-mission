@@ -70,12 +70,6 @@ public class MessageServiceTest {
     @Mock
     private LocalBinaryContentStorage binaryContentStorage;
 
-
-    /**
-     * 0+없는 채널일 경우 ChannelNotFoundException 반환한다.
-     *  +없는 유저일 경우 UserNotFoundException을 반환한다.
-     */
-
     UUID userId = UUID.randomUUID();
     UUID channelId = UUID.randomUUID();
     UUID messageId = UUID.randomUUID();
@@ -83,6 +77,51 @@ public class MessageServiceTest {
     private Channel channel;
     private User user;
     private Message message;
+
+    @Test
+    @DisplayName("없는 채널일 경우 ChannelNotFoundException 반환한다.")
+    void whenChannelNotExists_thenThrowsChannelNotFoundException() throws Exception {
+        // given
+        MessageCreateRequest request = MessageCreateRequest.builder()
+            .channelId(UUID.randomUUID())
+            .authorId(UUID.randomUUID())
+            .build();
+        given(channelRepository.findById(request.channelId())).willThrow(new ChannelNotFoundException(Map.of("channelId",request.channelId())));
+
+        // when
+        assertThatThrownBy(() -> {messageService.createMessage(request,null);})
+            .isInstanceOf(ChannelNotFoundException.class);
+
+        // then
+        then(binaryContentRepository).shouldHaveNoInteractions();
+        then(binaryContentStorage).shouldHaveNoInteractions();
+        then(messageRepository).shouldHaveNoInteractions();
+        then(messageMapper).shouldHaveNoInteractions();
+    }
+
+    @Test
+    @DisplayName("없는 유저일 경우 UserNotFoundException을 반환한다.")
+    void whenUserNotExists_thenThrowsChannelNotFoundException() throws Exception {
+        // given
+        MessageCreateRequest request = MessageCreateRequest.builder()
+            .channelId(UUID.randomUUID())
+            .authorId(UUID.randomUUID())
+            .build();
+        Channel channel = new Channel();
+        given(channelRepository.findById(request.channelId())).willReturn(Optional.of(channel));
+        given(userRepository.findById(request.authorId())).willThrow(new UserNotFoundException(Map.of("userId",request.authorId())));
+
+        // when
+        assertThatThrownBy(() -> {messageService.createMessage(request,null);})
+            .isInstanceOf(UserNotFoundException.class);
+
+        // then
+        then(channelRepository).shouldHaveNoMoreInteractions();
+        then(binaryContentRepository).shouldHaveNoInteractions();
+        then(binaryContentStorage).shouldHaveNoInteractions();
+        then(messageRepository).shouldHaveNoInteractions();
+        then(messageMapper).shouldHaveNoInteractions();
+    }
 
     @DisplayName("이미지가 있는경우 이미지 수만큼 BinaryContent를 생성한다.")
     @Test
@@ -326,5 +365,4 @@ public class MessageServiceTest {
         assertThat(result.hasNext()).isTrue();
         assertThat(result.content().size()).isLessThan(numberOfMessages);
     }
-
 }

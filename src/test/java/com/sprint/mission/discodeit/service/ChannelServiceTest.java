@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateReque
 import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channelException.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.advanced.ChannelMapper;
@@ -65,8 +66,6 @@ public class ChannelServiceTest {
 
     private Channel channel;
 
-    //0+public channel 사용시 channelMapper과 channelRepository.save가 호출 되어야 한다.
-
     @DisplayName("public 체널 정상 생성시 올바른 비즈니스 로직이 수행되어야 한다.")
     @Test
     void whenCreateChannelSuccess_thenServiceShouldUseChannelMapperAndRepository() {
@@ -123,39 +122,47 @@ public class ChannelServiceTest {
     @DisplayName("사람 수가 2명 이상일 경우 사람 수 만큼의 readStatus가 만들어져야 한다.")
     @Test
     void whenUsersAreMoreThanTwo_thenCreatePrivateChannel() {
-
         // given
+        int numberOfUsers = 2;
         Set<UUID> participantIds = new HashSet<>();
         List<User> users = new ArrayList<>();
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < numberOfUsers; i++) {
             UUID userId = UUID.randomUUID();
             participantIds.add(userId);
             User user = new User();
             users.add(user);
         }
 
-        UserResponse userResponse = UserResponse.builder().username("paul").build();
-
         PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(participantIds);
-
         given(userRepository.findAllById(participantIds)).willReturn(users);
-        given(channelRepository.save(any(Channel.class))).willAnswer(inv -> inv.getArgument(0));
-        given(readStatusRepository.save(any(ReadStatus.class))).willAnswer(inv -> inv.getArgument(0));
-        given(userMapper.toDto(any(User.class))).willReturn(userResponse);
-        given(channelMapper.toDto(any(Channel.class))).willReturn(mock(ChannelResponse.class));
+        given(channelMapper.toDto(any())).willReturn(mock(ChannelResponse.class));
 
         // when
         ChannelResponse response = channelService.createChannel(request);
 
         // then
-        then(readStatusRepository).should(times(users.size())).save(any());
         then(channelRepository).should(times(1)).save(any());
+        then(readStatusRepository).should(times(1)).saveAll(any());
         then(channelMapper).should(times(1)).toDto(any());
         assertNotNull(response);
     }
 
-    //0+채널 찾지 못할 경우 ChannelNotFoundException 반환
+    @Test
+    @DisplayName("채널 찾지 못할 경우 ChannelNotFoundException 반환")
+    void whenChannelNotExists_thenThrowsChannelNotFoundException() throws Exception {
+        // given
+        UUID id = UUID.randomUUID();
+
+        given(channelRepository.findById(id)).willThrow(ChannelNotFoundException.class);
+        ChannelUpdateRequest request = new ChannelUpdateRequest("name", "description");
+
+        // when
+        assertThatThrownBy(()-> channelService.update(id, request))
+            .isInstanceOf(ChannelNotFoundException.class);
+
+        then(channelMapper).shouldHaveNoMoreInteractions();
+    }
 
 
     @DisplayName("프라이빗 채널 수정을 시도할 경우 PrivateChannelUpdateException 반환")
@@ -199,7 +206,24 @@ public class ChannelServiceTest {
         assertThat(channel.getDescription()).isEqualTo(request.newDescription());
     }
 
-    //0+삭제할 채널이 없을경우 NoSuchElementException을 반환한다.
+
+
+    @Test
+    @DisplayName("삭제할 채널이 없을경우 NoSuchElementException을 반환한다.")
+    void whenNoChannelToDelete_thenThrowsNoSuchElementException() throws Exception {
+        // given
+        UUID channelId = UUID.randomUUID();
+        given(channelRepository.existsById(channelId)).willThrow(ChannelNotFoundException.class);
+
+        // when
+        assertThatThrownBy(()-> channelService.deleteChannel(channelId))
+            .isInstanceOf(ChannelNotFoundException.class);
+
+        then(channelRepository).should(times(1)).existsById(channelId);
+        then(channelMapper).shouldHaveNoMoreInteractions();
+        then(messageRepository).shouldHaveNoInteractions();
+        then(readStatusRepository).shouldHaveNoInteractions();
+    }
 
     @DisplayName("정상 로직에선 채널이 삭제 되어야 한다.")
     @Test
@@ -243,9 +267,24 @@ public class ChannelServiceTest {
         then(messageRepository).should(times(1)).deleteAll(targetMessages);
     }
 
-    /**
-     * 0+유저 정보가 없을경우 빈 리스트를 반환한다.
-     */
+    @Test
+    @DisplayName("유저 정보가 없을경우 빈 리스트를 반환한다.")
+    void whenNoUser_thenReturnEmptyList() throws Exception {
+        // given
+        UUID id = UUID.randomUUID();
+        given(userRepository.existsById(id)).willReturn(false);
+
+        // when
+        List<ChannelResponse> result = channelService.findAllByUserId(id);
+
+        // then
+        assertThat(result).isEmpty();
+        then(channelRepository).shouldHaveNoInteractions();
+        then(readStatusRepository).shouldHaveNoInteractions();
+        then(channelMapper).shouldHaveNoInteractions();
+    }
+
+
     @DisplayName("정상적인 로직에선 채널을 찾아야 한다.")
     @Test
     void whenLogicHasAnyProblem_thenFindChannels() {
@@ -286,7 +325,6 @@ public class ChannelServiceTest {
         assertThat(result.get(1).getId()).isEqualTo(privateChannelId);
     }
 
-    //0+유저 정보가 없을경우 exception을 반환하는게 더 적합할 수 있음
     @DisplayName("유저 정보가 없을경우 빈 리스트를 반환한다.")
     @Test
     void whenUserNotExists_thenReturnEmptyList() {
