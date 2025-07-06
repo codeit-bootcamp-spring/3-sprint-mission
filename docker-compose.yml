@@ -1,5 +1,5 @@
 # Docker Compose를 활용한 멀티 컨테이너 환경 구성
-# Spring Boot 애플리케이션 + PostgreSQL 데이터베이스 연동
+# Spring Boot 애플리케이션 + PostgreSQL 데이터베이스 연동 + S3 스토리지 지원
 version: '3.8'
 
 # ====================================================================
@@ -79,6 +79,22 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       LOG_FILE_PATH: /app/logs/application.log
 
+      # ============================================================
+      # 스토리지 설정 (로컬 또는 S3)
+      # ============================================================
+      # 스토리지 타입 설정 (local | s3)
+      STORAGE_TYPE: ${STORAGE_TYPE:-local}
+
+      # 로컬 스토리지 설정
+      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH:-.discodeit/storage}
+
+      # AWS S3 스토리지 설정
+      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY:-}
+      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY:-}
+      AWS_S3_REGION: ${AWS_S3_REGION:-ap-northeast-2}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-}
+      AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION:-600}
+
       # 기타 설정
       TZ: "Asia/Seoul"
 
@@ -89,8 +105,9 @@ services:
 
     # 볼륨 마운트
     volumes:
-      # 데이터 디렉토리
-      - binary_storage:/app/.discodeit/storage
+      # 로컬 스토리지 사용 시에만 필요한 데이터 디렉토리
+      # S3 사용 시에는 마운트하지 않아도 됨
+      - binary_storage:.discodeit/storage
 
     # 헬스체크 설정
     healthcheck:
@@ -119,7 +136,7 @@ volumes:
   postgres_data:
     driver: local
 
-  # 애플리케이션 데이터 볼륨
+  # 애플리케이션 로컬 스토리지 볼륨 (STORAGE_TYPE=local일 때만 사용)
   binary_storage:
     driver: local
 
@@ -129,37 +146,3 @@ volumes:
 networks:
   discodeit-network:
     driver: bridge
-
-# =====================================================================
-# Docker Compose 사용법:
-#
-# 1. 전체 서비스 시작:
-#    docker-compose up -d
-#
-# 2. 로그 확인:
-#    docker-compose logs -f
-#    docker-compose logs -f app
-#    docker-compose logs -f postgres
-#
-# 3. 서비스 상태 확인:
-#    docker-compose ps
-#
-# 4. 환경변수 파일(.env) 사용:
-#    SPRING_PROFILES_ACTIVE=dev
-#    POSTGRES_PASSWORD=mysecretpassword
-#    JVM_OPTS=-Xms512m -Xmx1024m
-#    LOG_LEVEL=debug
-#
-# 5. 특정 환경별 실행:
-#    # 개발 환경
-#    SPRING_PROFILES_ACTIVE=dev docker-compose up -d
-#    # 프로덕션 환경
-#    SPRING_PROFILES_ACTIVE=prod docker-compose up -d
-#
-# 6. 서비스 재시작:
-#    docker-compose restart app
-#
-# 7. 전체 종료 및 정리:
-#    docker-compose down
-#    docker-compose down -v  # 볼륨도 함께 삭제
-# =====================================================================
