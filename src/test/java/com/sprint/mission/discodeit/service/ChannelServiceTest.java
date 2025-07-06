@@ -154,7 +154,7 @@ public class ChannelServiceTest {
         // given
         UUID id = UUID.randomUUID();
 
-        given(channelRepository.findById(id)).willThrow(ChannelNotFoundException.class);
+        given(channelRepository.findById(id)).willReturn(Optional.empty());
         ChannelUpdateRequest request = new ChannelUpdateRequest("name", "description");
 
         // when
@@ -213,7 +213,7 @@ public class ChannelServiceTest {
     void whenNoChannelToDelete_thenThrowsNoSuchElementException() throws Exception {
         // given
         UUID channelId = UUID.randomUUID();
-        given(channelRepository.existsById(channelId)).willThrow(ChannelNotFoundException.class);
+        given(channelRepository.existsById(channelId)).willReturn(false);
 
         // when
         assertThatThrownBy(()-> channelService.deleteChannel(channelId))

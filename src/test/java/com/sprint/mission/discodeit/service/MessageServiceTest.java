@@ -101,7 +101,7 @@ public class MessageServiceTest {
 
     @Test
     @DisplayName("없는 유저일 경우 UserNotFoundException을 반환한다.")
-    void whenUserNotExists_thenThrowsChannelNotFoundException() throws Exception {
+    void whenUserNotExists_thenThrowsUserNotFoundException() throws Exception {
         // given
         MessageCreateRequest request = MessageCreateRequest.builder()
             .channelId(UUID.randomUUID())
