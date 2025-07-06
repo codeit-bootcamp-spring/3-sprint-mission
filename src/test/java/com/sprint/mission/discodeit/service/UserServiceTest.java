@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
@@ -9,6 +10,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.userException.UserAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.mapper.advanced.UserMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
@@ -28,10 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
@@ -109,14 +108,13 @@ public class UserServiceTest {
         then(binaryContentStorage).should(times(0)).get(any());
     }
 
-    @DisplayName("username 또는 email이 중복될 경우 UserAlreadyExistsException을 응답한다.")
+    @DisplayName("username이 중복될 경우 UserAlreadyExistsException을 응답한다.")
     @Test
     void whenUsernameIsNotUnique_thenThrowsUserAlreadyExistsException() {
         // given
         UserCreateRequest request = new UserCreateRequest("paul", "duplicate@email.com", "password123");
 
         given(userRepository.existsByUsername(request.username())).willReturn(true);
-        given(userRepository.existsByEmail(request.email())).willReturn(true);
 
         // when & then
         UserAlreadyExistsException result = catchThrowableOfType(
@@ -126,9 +124,11 @@ public class UserServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getErrorCode()).isEqualTo(ErrorCode.USER_ALREADY_EXISTS);
         assertThat(result.getMessage()).contains("유저가 이미 있습니다.");
+        assertThat(result.getDetails())
+            .containsEntry("username","paul");
 
-        then(userRepository).should().existsByEmail(request.email());
         then(userRepository).should().existsByUsername(request.username());
+        then(userRepository).should().existsByEmail(request.email());
         then(userRepository).shouldHaveNoMoreInteractions();
     }
 
@@ -148,10 +148,9 @@ public class UserServiceTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getDetails())
-            .containsEntry("username or email already exist", "paul, duplicate@email.com");
+            .containsEntry("email", request.email());
 
         then(userRepository).should().existsByEmail(request.email());
-        then(userRepository).should().existsByUsername(request.username());
         then(userRepository).shouldHaveNoMoreInteractions();
     }
 
@@ -171,7 +170,7 @@ public class UserServiceTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getDetails())
-            .containsEntry("username or email already exist", "paul, duplicate@email.com");
+            .containsEntry("username", request.username());
 
         then(userRepository).should().existsByEmail(request.email());
         then(userRepository).should().existsByUsername(request.username());
@@ -191,10 +190,23 @@ public class UserServiceTest {
         then(userStatusRepository).should(times(1)).save(any(UserStatus.class));
     }
 
-    /*
-    * 0+프로필이 없을경우 삭제는 생략
-    *  +userStatus가 삭제되어야 한다.
-    * */
+    @Test
+    @DisplayName("프로필이 사진이 없을경우 삭제 로직은 방문하지 않는다.")
+    void whenNoProfile_thenNotUseDeleteFileLogic() throws Exception {
+        // given
+        UUID id = UUID.randomUUID();
+        User user = new User();
+        given(userRepository.findById(any(UUID.class)))
+            .willReturn(Optional.of(user));
+
+        // when
+        userService.deleteUser(id);
+
+        // then
+        then(userRepository).should(times(1)).findById(any(UUID.class));
+        then(fileUploadUtils).shouldHaveNoInteractions();
+        then(userRepository).should(times(1)).delete(any(User.class));
+    }
 
     @DisplayName("올바른 파라미터가 아닐경우 NoSuchElementException 반환 해야 한다.")
     @Test
@@ -236,8 +248,29 @@ public class UserServiceTest {
         then(binaryContentRepository).shouldHaveNoMoreInteractions();
     }
 
-    //0+찾는 유저가 없으면 UserNotFound를 반환 해야 한다.
-    // +프로필이 없을 경우 프로필 삭제 로직으로 가면 안된다.
+    @Test
+    @DisplayName("수정을 위해 찾는 유저가 없으면 UserNotFound를 반환 해야 한다.")
+    void whenUpdateUserNotFound_ThenThrowsUserNotFound() throws Exception {
+        // given
+        UUID id = UUID.randomUUID();
+        UserUpdateRequest request = new UserUpdateRequest("paul", "paul@gmail.com", "newPass");
+
+        // when
+        assertThatThrownBy(() -> userService.update(id, request,null))
+            .isInstanceOf(UserNotFoundException.class)
+            .hasMessageContaining("유저를 찾을 수 없습니다.");
+
+        then(userRepository).should().findById(id);
+        then(userRepository).shouldHaveNoMoreInteractions();
+
+        then(userRepository).shouldHaveNoMoreInteractions();
+        then(fileUploadUtils).shouldHaveNoMoreInteractions();
+        then(binaryContentRepository).shouldHaveNoMoreInteractions();
+        then(binaryContentStorage).shouldHaveNoMoreInteractions();
+
+    }
+
+    //0+프로필이 없을 경우 프로필 삭제 로직으로 가면 안된다.
 
     @DisplayName("중복된 username 으로 변경시 UserAlreadyExistsException을 반환 해야한다.")
     @Test
@@ -306,5 +339,53 @@ public class UserServiceTest {
         userService.update(id, new UserUpdateRequest("daniel", "dan@mail.com", null), file);
 
         then(binaryContentRepository).should().delete(savedBinaryContent);
+    }
+
+    @Test
+    @DisplayName("모든 유저 정보를 찾을 때 응답은 비밀번호를 가지고 있어선 안된다.")
+    void whenFindAllUsers_ShouldNotContainPassword() throws Exception {
+        // given
+        User user = new User();
+        given(userRepository.findAllWithBinaryContentAndUserStatus())
+            .willReturn(List.of(user));
+        given(userMapper.toDto(user))
+            .willReturn(
+                UserResponse.builder()
+                    .username("paul")
+                    .email("paul@example.com")
+                    .build()
+            );
+
+        // when
+        List<UserResponse> responses = userService.findAllUsers();
+
+        // then
+        ObjectMapper objectMapper = new ObjectMapper();
+        String toJson = objectMapper.writeValueAsString(responses.get(0));
+
+        assertThat(toJson).doesNotContain("password");
+    }
+
+    @Test
+    @DisplayName("모든 유저를 찾을 때 결과는 dto를 통해 반환해야 한다.")
+    void whenFindAllUsers_thenResponseWithDto() throws Exception {
+        // given
+        User user = new User();
+        given(userRepository.findAllWithBinaryContentAndUserStatus())
+            .willReturn(List.of(user));
+        given(userMapper.toDto(user))
+            .willReturn(
+                UserResponse.builder()
+                    .username("paul")
+                    .email("paul@example.com")
+                    .build()
+            );
+
+        // when
+        List<UserResponse> responses = userService.findAllUsers();
+
+        // then
+        assertThat(responses).hasSize(1);
+        assertThat(responses.get(0)).isInstanceOf(UserResponse.class);
     }
 }
