@@ -144,8 +144,8 @@ public class UserTest {
     }
 
     @Test
-    @DisplayName("유저정보중 username 또는 email이 중복될경우 계정 생성을 실패한다.")
-    void createUser_sameInfo_throwException() throws Exception {
+    @DisplayName("유저정보중 username이 중복될경우 계정 생성을 실패한다.")
+    void createUser_sameUsername_throwException() throws Exception {
         // given
         userRepository.save(new User("paul", "a@a.com", "1234"));
 
@@ -164,8 +164,33 @@ public class UserTest {
                     .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("USER_ALREADY_EXISTS"))
-            .andExpect(jsonPath("$.details['username or email already exist']")
-                .value(request.username() + ", " + request.email()));
+            .andExpect(jsonPath("$.details.username")
+                .value(request.username()));
+    }
+
+    @Test
+    @DisplayName("유저정보중 email이 중복될경우 계정 생성을 실패한다.")
+    void createUser_sameEmail_throwException() throws Exception {
+        // given
+        userRepository.save(new User("paul", "a@a.com", "1234"));
+
+        UserCreateRequest request = new UserCreateRequest("john", "a@a.com", "4321");
+
+        MockMultipartFile jsonPart = new MockMultipartFile(
+            "userCreateRequest",
+            "",
+            MediaType.APPLICATION_JSON_VALUE,
+            objectMapper.writeValueAsBytes(request)
+        );
+
+        mockMvc.perform(
+                multipart("/api/users")
+                    .file(jsonPart)
+                    .contentType(MediaType.MULTIPART_FORM_DATA))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("USER_ALREADY_EXISTS"))
+            .andExpect(jsonPath("$.details.email")
+                .value(request.email()));
     }
 
     @Test
@@ -205,7 +230,7 @@ public class UserTest {
     }
 
     @Test
-    @DisplayName("프로핑 사진이 없을 때 유저 삭제 프로세스가 모든 계층에 올바르게 동작해야 한다.")
+    @DisplayName("프로필 사진이 없을 때 유저 삭제 프로세스가 모든 계층에 올바르게 동작해야 한다.")
     void deleteUser_noProfile_success() throws Exception {
         // given
         User user = User.builder()

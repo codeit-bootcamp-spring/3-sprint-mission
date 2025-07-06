@@ -52,7 +52,6 @@ public class ChannelTest {
     @PersistenceContext
     private EntityManager em;
 
-
     @Autowired
     private MockMvc mockMvc;
 

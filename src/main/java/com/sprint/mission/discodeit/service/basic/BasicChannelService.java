@@ -64,7 +64,6 @@ public class BasicChannelService implements ChannelService {
         Set<UUID> userIds = request.participantIds();
         List<User> users = userRepository.findAllById(userIds);
 
-        //0 + 새로운 익셉션 만드는것도 생각
         if (users.size() < 2) {
             throw new UserNotFoundException(Map.of("users", "not enough users in private channel"));
         }
@@ -73,27 +72,16 @@ public class BasicChannelService implements ChannelService {
         Channel channel = new Channel();
         channelRepository.save(channel);
 
-        // readStatus 생성 -> participants dto 생성
-        List<UserResponse> participants = new ArrayList<>();
-        List<ReadStatus> readStatuses = new ArrayList<>();
+        List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds()).stream()
+            .map(user -> new ReadStatus(user, channel))
+            .toList();
+        readStatusRepository.saveAll(readStatuses);
 
-        //0테스트코드 작성 끝나면 리팩토링: readStatusRepository.saveAll(readStatuses);
-        for (User user : users) {
-            ReadStatus readStatus = new ReadStatus(user, channel);
-            readStatusRepository.save(readStatus);
-            readStatuses.add(readStatus);
-        }
-
-        List<User> userList = readStatuses.stream().map(r -> r.getUser()).toList();
-        for (User user : userList) {
-            participants.add(userMapper.toDto(user));
-        }
         return channelMapper.toDto(channel);
     }
 
     @Override
     public List<ChannelResponse> findAllByUserId(UUID userId) {
-        //0+유저 정보가 없을경우 exception을 반환하는게 더 적합할 수 있음
         if(!userRepository.existsById(userId)) {
             return Collections.emptyList();
         }
