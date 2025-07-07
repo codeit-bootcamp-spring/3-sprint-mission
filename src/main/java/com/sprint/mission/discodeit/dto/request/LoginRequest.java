@@ -1,8 +1,14 @@
 package com.sprint.mission.discodeit.dto.request;
 
-public record LoginRequest(
-    String username,
-    String password
-) {
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-}
+public record LoginRequest(
+
+    @NotBlank
+    String username,
+
+    @NotBlank
+    @Size(min = 8, max = 20, message = "비밀번호는 8자 이상 20자 이하입니다.")
+    String password
+) { }

@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.exception.binaryContent.FileStorageErrorException;
+import com.sprint.mission.discodeit.exception.binaryContent.ResourceUrlCreationErrorException;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
@@ -18,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @ConditionalOnProperty(
     prefix = "discodeit.storage",
@@ -49,10 +53,10 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         Path file = resolvePath(id);
         try {
             Files.write(file, data);
+            log.info("파일 데이터 로컬에 저장 완료 - id: {}", id);
             return id;
         } catch (IOException e) {
-            throw new IllegalStateException(
-                "Failed to store binary content with id " + id, e);
+            throw new FileStorageErrorException(id);
         }
     }
 
@@ -62,8 +66,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         try {
             return Files.newInputStream(file);
         } catch (IOException e) {
-            throw new IllegalStateException(
-                "Failed to read binary content with id " + id, e);
+            throw new FileStorageErrorException(id);
         }
     }
 
@@ -74,12 +77,10 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         try {
             resource = new UrlResource(file.toUri());
             if (!resource.exists() || !resource.isReadable()) {
-                throw new IllegalStateException(
-                    "Could not read file for download: " + file);
+                throw new FileStorageErrorException(dto.id());
             }
         } catch (MalformedURLException e) {
-            throw new IllegalStateException(
-                "Failed to create URL resource for file: " + file, e);
+            throw new ResourceUrlCreationErrorException(dto.id());
         }
 
         return ResponseEntity.ok()

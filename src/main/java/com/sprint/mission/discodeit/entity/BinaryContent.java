@@ -27,4 +27,13 @@ public class BinaryContent extends BaseEntity {
   }
 
   public BinaryContent() { }
+
+  @Override
+  public String toString() {
+    return "BinaryContent{" +
+        "fileName='" + fileName + '\'' +
+        ", size=" + size +
+        ", contentType='" + contentType + '\'' +
+        '}';
+  }
 }
