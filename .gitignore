@@ -81,7 +81,6 @@ $RECYCLE.BIN/
 .discodeit
 .env
 discodeit.env
-discodeit.env
 !discodeit.env.example
 
 ### 환경변수 및 설정 파일 (보안상 중요!) ###
