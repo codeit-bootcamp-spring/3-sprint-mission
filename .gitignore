@@ -47,3 +47,6 @@ bin/
 ### File 추가 ###
 .discodeit
 .logs
+
+.env
+discodeit.env

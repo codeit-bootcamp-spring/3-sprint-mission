@@ -1,5 +1,12 @@
 package com.sprint.mission.discodeit.service;
 
+import static com.sprint.mission.discodeit.fixture.BinaryContentFixture.createBinaryContent;
+import static com.sprint.mission.discodeit.fixture.BinaryContentFixture.createBinaryContentDto;
+import static com.sprint.mission.discodeit.fixture.ChannelFixture.createChannel;
+import static com.sprint.mission.discodeit.fixture.MessageFixture.createMessage;
+import static com.sprint.mission.discodeit.fixture.MessageFixture.createMessageDto;
+import static com.sprint.mission.discodeit.fixture.MessageFixture.createMessageDtoWithAttachments;
+import static com.sprint.mission.discodeit.fixture.UserFixture.createUser;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -16,7 +23,6 @@ import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.Message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.Message.MessageDto;
 import com.sprint.mission.discodeit.dto.Message.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.User.UserDto;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -51,7 +57,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MessageService 단위 테스트")
@@ -77,55 +82,6 @@ public class MessageServiceTest {
 
     private Instant fixedNow = Instant.parse("2025-01-01T01:00:00Z");
 
-    private User createUser(String userName, String email, String password) {
-        User user = new User(userName, email, password, null, null);
-        ReflectionTestUtils.setField(user, "id", UUID.randomUUID());
-        return user;
-    }
-
-    private Channel createChannel(ChannelType channelType, String name, String description) {
-        Channel channel = new Channel(channelType, name, description);
-        ReflectionTestUtils.setField(channel, "id", UUID.randomUUID());
-        return channel;
-    }
-
-    private Message createMessage(String content, Channel ch, User user) {
-        Message message = new Message(content, ch, user, null);
-        ReflectionTestUtils.setField(message, "id", UUID.randomUUID());
-        return message;
-    }
-
-    private BinaryContent createAttachment(String name, Long size, String type) {
-        BinaryContent attachment = new BinaryContent(name, size, type);
-        ReflectionTestUtils.setField(attachment, "id", UUID.randomUUID());
-        return attachment;
-    }
-
-    private UserDto createUserDto(User user) {
-        return new UserDto(user.getId(), user.getUsername(), user.getEmail(), null,
-                true);
-    }
-
-    private MessageDto createMessageDto(Message message, Channel ch, User user, Instant time) {
-        UserDto userDto = createUserDto(user);
-        return new MessageDto(
-                message.getId(), time, time, message.getContent(),
-                ch.getId(), userDto, new ArrayList<>()
-        );
-    }
-
-    private MessageDto createMessageDtoWithAttachments(Message message, Channel ch, User user,
-            List<BinaryContentDto> attachments) {
-        UserDto userDto = createUserDto(user);
-        return new MessageDto(message.getId(), fixedNow, fixedNow,
-                message.getContent(), ch.getId(), userDto, attachments);
-    }
-
-    private BinaryContentDto createBinaryContentDto(BinaryContent attachment) {
-        return new BinaryContentDto(attachment.getId(), attachment.getFileName(),
-                attachment.getSize(), attachment.getContentType());
-    }
-
     @Test
     @DisplayName("유효한 생성 요청으로 첨부파일이 포함된 메시지를 생성할 수 있다.")
     void shouldCreateMessageWithAttachment_whenValidRequest() {
@@ -134,7 +90,7 @@ public class MessageServiceTest {
         User user = createUser("테스터", "tester@codeit.com", "test1234");
         Channel channel = createChannel(ChannelType.PUBLIC, "테스트 채널", "테스트 채널입니다.");
         byte[] testBytes = "테스트 이미지".getBytes(StandardCharsets.UTF_8);
-        BinaryContent attachment = createAttachment("test.png", 1024L, "image/png");
+        BinaryContent attachment = createBinaryContent("test.png", 1024L, "image/png");
         UUID userId = user.getId();
         UUID channelId = channel.getId();
         UUID attachmentId = attachment.getId();
