@@ -1,4 +1,4 @@
-# Pure - Discord Clone Application
+# Pure - Discord Clone Application [![codecov](https://codecov.io/gh/pureod/3-sprint-mission/branch/sprint8/graph/badge.svg?token=4IDIFWEUFI)](https://codecov.io/gh/pureod/3-sprint-mission)
 
 Spring Boot 기반의 실시간 채팅 애플리케이션입니다. Discord와 유사한 기능들을 제공하는 RESTful API 서버입니다.
 
