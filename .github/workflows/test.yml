@@ -3,6 +3,12 @@ name: Run Tests and Upload Coverage to Codecov
 on:
   pull_request:
     branches: [ main ]
+  workflow_call: # <- 다른 워크플로우에서 재사용 가능하도록 설정
+    inputs:
+      java-version:
+        required: false
+        type: string
+        default: '17'
 
 jobs:
   test:
