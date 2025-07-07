@@ -1,0 +1,97 @@
+{
+  "containerDefinitions": [
+    {
+      "name": "discodeit-app",
+      "image": "public.ecr.aws/j5n8s8m1/discodeit:latest",
+      "cpu": 256,
+      "memory": 307,
+      "memoryReservation": 205,
+      "portMappings": [
+        {
+          "name": "discodeit-app-80-tcp",
+          "containerPort": 80,
+          "hostPort": 80,
+          "protocol": "tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "AWS_REGION",
+          "value": "ap-northeast-2"
+        },
+        {
+          "name": "RDS_DATABASE",
+          "value": "discodeit"
+        },
+        {
+          "name": "AWS_S3_BUCKET",
+          "value": "discodeit-binary-content-storage-kh"
+        },
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "RDS_ENDPOINT",
+          "value": "discodeit-db.c3ak62my6xof.ap-northeast-2.rds.amazonaws.com"
+        },
+        {
+          "name": "STORAGE_TYPE",
+          "value": "s3"
+        },
+        {
+          "name": "RDS_USERNAME",
+          "value": "discodeit_user"
+        },
+        {
+          "name": "RDS_PASSWORD",
+          "value": "discodeit1234"
+        }
+      ],
+      "environmentFiles": [],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "ulimits": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/discodeit-task",
+          "awslogs-create-group": "true",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        },
+        "secretOptions": []
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8080/actuator/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      },
+      "systemControls": []
+    }
+  ],
+  "family": "discodeit-task",
+  "executionRoleArn": "arn:aws:iam::867930415693:role/ecsTaskExecutionRole",
+  "networkMode": "bridge",
+  "volumes": [],
+  "placementConstraints": [],
+  "compatibilities": [
+    "EC2"
+  ],
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "cpu": "256",
+  "memory": "512",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  }
+}

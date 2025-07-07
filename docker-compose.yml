@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: discodeit-db
+    restart: unless-stopped
+
+    # 환경변수
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-discodeit}
+      POSTGRES_USER: ${POSTGRES_USER:-discodeit_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+      TZ: "Asia/Seoul"
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "${POSTGRES_PORT:-54321}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+
+  # Spring Boot 애플리케이션 서비스
+  app:
+    # 로컬 Dockerfile 빌드 또는 이미지 지정
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PROJECT_NAME: discodeit
+        PROJECT_VERSION: latest
+
+    container_name: discodeit-app
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    ports:
+      - "${APP_PORT:-8081}:8080"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-discodeit}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-discodeit_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-discodeit1234}
+      SPRING_STORAGE_TYPE: ${STORAGE_TYPE}
+
+    volumes:
+      - binary_content:/upload # BinaryContentStorage
+
+volumes:
+  postgres_data:
+  binary_content:

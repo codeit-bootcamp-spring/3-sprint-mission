@@ -12,5 +12,6 @@ public record BinaryContentCreateRequest(
 
         @Schema(description = "파일 바이트 데이터")
         byte[] bytes
-) {}
+) {
+}
 

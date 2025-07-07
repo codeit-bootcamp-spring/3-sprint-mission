@@ -12,7 +12,7 @@ public interface ResponseMessage {
     String READ_STATUS_NOT_FOUND = "읽음 상태를 찾을 수 없음";
     String USER_OR_CHANNEL_NOT_FOUND = "유저 또는 채널을 찾을 수 없음";
     String DUPLICATE_USER = "이미 존재하는 사용자임";
-    String PASSWORD_VALID = "비밀번호가 일치하지 않음";
+    String ID_OR_PASSWORD_VALID = "아이디 또는 비밀번호가 일치하지 않음";
     String DUPLICATE_READ_STATUS = "이미 존재하는 읽음 상태임";
     String FILE_PROCESSING_ERROR = "파일 처리 중 오류가 발생했습니다.";
     String INTERNAL_SERVER_ERROR = "서버 내부 오류가 발생했습니다.";

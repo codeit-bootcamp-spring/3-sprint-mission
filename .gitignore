@@ -20,13 +20,17 @@ bin/
 upload/
 
 ### IntelliJ IDEA ###
+*.env
 .idea
 *.iws
 *.iml
 *.ipr
 out/
+.logs/
 !**/src/main/**/out/
 !**/src/test/**/out/
+*.yaml
+.discodeit/
 
 ### NetBeans ###
 /nbproject/private/
