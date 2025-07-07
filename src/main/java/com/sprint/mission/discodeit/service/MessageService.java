@@ -1,12 +1,14 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.response.MessageResponse;
-import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
 import org.springframework.data.domain.Pageable;
+
+import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
 
 public interface MessageService {
 

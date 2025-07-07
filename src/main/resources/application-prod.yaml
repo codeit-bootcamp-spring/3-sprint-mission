@@ -1,22 +1,16 @@
 spring:
-  boot:
-    admin:
-      client:
-        enabled: false
-        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
-
   datasource:
-    url: jdbc:postgresql://database-1.c1648sy8849e.ap-northeast-2.rds.amazonaws.com:5432/discodeit
+    url:
     driver-class-name: org.postgresql.Driver
-    username: ${DB_USER_NAME}
-    password: ${DB_USER_PASSWORD}
+    username:
+    password:
 
   jpa:
     hibernate:
       ddl-auto: validate
 
 server:
-  port: 8080
+  port: 80
 
 logging:
   level:
