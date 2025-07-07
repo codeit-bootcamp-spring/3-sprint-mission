@@ -69,6 +69,10 @@ test {
     finalizedBy jacocoTestReport // 테스트가 끝나면 커버리지 리포트를 자동 생성
 }
 
+jacoco {
+    toolVersion = "0.8.11"
+}
+
 jacocoTestReport {
     dependsOn test // 테스트가 실행된 후에만 리포트 생성 가능
 

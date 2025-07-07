@@ -6,6 +6,21 @@ FROM
 WHERE
     n.nspname = 'discodeit';*/
 
+
+-- 1. 새 유저 'discodeit_user' 생성 (비밀번호는 원하는 값으로 설정)
+-- CREATE USER discodeit_user WITH PASSWORD 'discodeit1234';
+
+-- 2. postgres 계정은 AWS RDS 환경 특성상 완전한 super user가 아니므로, discodeit_user에 대한 권한을 추가로 부여해야함.
+-- GRANT discodeit_user TO postgres;
+
+-- 3. 'discodeit' 데이터베이스 생성 (소유자는 'discodeit_user')
+-- CREATE DATABASE discodeit OWNER discodeit_user;
+
+-- 4. schema.sql 실행하여 테이블 생성
+CREATE SCHEMA IF NOT EXISTS discodeit;
+
+ALTER ROLE discodeit_user SET search_path TO discodeit;
+
 DROP TABLE IF EXISTS tbl_users CASCADE;
 DROP TABLE IF EXISTS tbl_channels CASCADE;
 DROP TABLE IF EXISTS tbl_binary_contents CASCADE;
@@ -14,7 +29,7 @@ DROP TABLE IF EXISTS tbl_read_statuses CASCADE;
 DROP TABLE IF EXISTS tbl_messages CASCADE;
 DROP TABLE IF EXISTS tbl_message_attachments CASCADE;
 
-CREATE TABLE IF NOT EXISTS tbl_binary_contents
+CREATE TABLE IF NOT EXISTS discodeit.tbl_binary_contents
 (
     id           UUID PRIMARY KEY, --> tbl_users profile_id, tbl_message_attachments attachment_id
     created_at   TIMESTAMP WITH TIME ZONE  NOT NULL,
@@ -25,7 +40,7 @@ CREATE TABLE IF NOT EXISTS tbl_binary_contents
 );
 
 -- 실제로 파일 다운로드하기 전까지는 메타 정보만 알고 있으면 되기 때문에 상대적인 성능 향상 위해 DROP
-ALTER TABLE tbl_binary_contents
+ALTER TABLE discodeit.tbl_binary_contents
     DROP COLUMN bytes;
 
 CREATE TABLE IF NOT EXISTS tbl_users
@@ -49,7 +64,7 @@ CREATE TABLE IF NOT EXISTS tbl_users
 --             REFERENCES tbl_binary_contents (id)
 --             ON DELETE SET NULL;
 
-CREATE TABLE IF NOT EXISTS tbl_user_statuses
+CREATE TABLE IF NOT EXISTS discodeit.tbl_user_statuses
 (
     id             UUID PRIMARY KEY,
     created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -66,7 +81,7 @@ CREATE TABLE IF NOT EXISTS tbl_user_statuses
 --             REFERENCES tbl_users (id)
 --             ON DELETE CASCADE;
 
-CREATE TABLE IF NOT EXISTS tbl_channels
+CREATE TABLE IF NOT EXISTS discodeit.tbl_channels
 (
     id          UUID PRIMARY KEY, --> tbl_messages channel_id
     created_at  TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -76,7 +91,7 @@ CREATE TABLE IF NOT EXISTS tbl_channels
     type        VARCHAR(10) NOT NULL CHECK (type IN ('PUBLIC', 'PRIVATE'))
 );
 
-CREATE TABLE IF NOT EXISTS tbl_read_statuses
+CREATE TABLE IF NOT EXISTS discodeit.tbl_read_statuses
 (
     id           UUID PRIMARY KEY,
     created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -86,7 +101,7 @@ CREATE TABLE IF NOT EXISTS tbl_read_statuses
     last_read_at TIMESTAMP WITH TIME ZONE NOT NULL,
     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES tbl_users (id) ON DELETE CASCADE,
     CONSTRAINT fk_channel_id FOREIGN KEY (channel_id) REFERENCES tbl_channels (id) ON DELETE CASCADE,
-    CONSTRAINT uk_user_channel UNIQUE (user_id, channel_id)
+    UNIQUE (user_id, channel_id)
 );
 
 -- -- ReadStatus (N) -> User (1)
@@ -105,7 +120,7 @@ CREATE TABLE IF NOT EXISTS tbl_read_statuses
 
 /*CREATE TYPE channel_type AS ENUM ('PUBLIC', 'PRIVATE');*/
 
-CREATE TABLE IF NOT EXISTS tbl_messages
+CREATE TABLE IF NOT EXISTS discodeit.tbl_messages
 (
     id         UUID PRIMARY KEY, --> tbl_message_attachments message_id
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -131,7 +146,7 @@ CREATE TABLE IF NOT EXISTS tbl_messages
 --             REFERENCES tbl_users (id)
 --             ON DELETE SET NULL;
 
-CREATE TABLE IF NOT EXISTS tbl_message_attachments
+CREATE TABLE IF NOT EXISTS discodeit.tbl_message_attachments
 (
     message_id    UUID,
     attachment_id UUID,
