@@ -43,11 +43,6 @@ public class UserStatus extends BaseUpdatableEntity implements Serializable {
         this.user = user;
         this.lastActiveAt = Instant.now();
     }
-
-//    @Override
-//    public void setUpdatedAt(Instant updatedAt) {
-//        super.setUpdatedAt(updatedAt);
-//    }
     public void changeLastActiveAt(Instant lastActiveAt) {
         this.lastActiveAt = lastActiveAt;
     }
