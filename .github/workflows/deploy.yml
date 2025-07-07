@@ -64,8 +64,8 @@ jobs:
       - name: Stop currently running ECS service tasks (set desiredCount to 0)
         run: |
           aws ecs update-service \
-            --cluster $env.ECS_CLUSTER \
-            --service $env.ECS_SERVICE \
+            --cluster $ECS_CLUSTER \
+            --service $ECS_SERVICE \
             --desired-count 0
 
       # step 7
