@@ -1,6 +1,5 @@
 server:
   port: 80
-  address: 0.0.0.0
   tomcat:
     uri-encoding: UTF-8
 
@@ -13,7 +12,7 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:postgresql://postgres:5432/discodeit?currentSchema=${POSTGRES_DB}
+    url: ${SPRING_DATASOURCE_URL}?currentSchema=${POSTGRES_DB}
 #    url: jdbc:postgresql://host.docker.internal:5432/discodeit 도커 사용시에도 내 로컬 db 연결
 #    url: jdbc:postgresql://localhost:5432/discodeit
     username: ${POSTGRES_USER}
