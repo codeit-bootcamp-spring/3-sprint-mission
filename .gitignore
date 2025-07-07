@@ -1,0 +1,94 @@
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Discodeit ###
+.discodeit
+
+### 숨김 파일 ###
+.*
+!.gitignore
+!.dockerignore
+!.github/
+!.github/workflows/
+
+# 환경 변수 파일 (보안상 형상관리에서 제외)
+.env
+discodeit.env
+.env.local
+.env.*.local
+
+# 로그 파일들 (Spring Boot 기본)
+*.log
+*.log.*
+logs/
+log/
+
+# Logback 설정 관련
+logback-test.xml.bak
+logback-spring.xml.bak
+
+# Log4j 관련
+*.log4j
+*.log4j2
+
+# 일반적인 로그 패턴들
+application*.log
+spring*.log
+error*.log
+debug*.log
+trace*.log
+access*.log
+audit*.log
+
+# 날짜별/시간별 로그 파일들
+*.log.????-??-??
+*.log.????-??-??-??
+*.log.gz
+*.log.zip
+
+# 시스템별 로그 디렉토리
+logs/
+log/
+tmp/logs/
+var/log/
+# Docker 볼륨 데이터
+postgres_data/
+app_storage/
+
