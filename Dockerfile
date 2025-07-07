@@ -38,4 +38,24 @@ COPY --from=build /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar app.jar
 EXPOSE 80
 
 # 애플리케이션 실행
-CMD ["sh", "-c", "java $JVM_OPTS -jar app.jar"]
+# 시작 스크립트 생성 (따옴표 제거 처리 포함)
+RUN echo '#!/bin/sh' > /start.sh && \
+    echo 'echo "=== Environment Variables ==="' >> /start.sh && \
+    echo 'env | grep -E "(JVM_OPTS|JAVA_OPTS)"' >> /start.sh && \
+    echo 'echo "============================="' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo '# JVM_OPTS에서 따옴표 제거' >> /start.sh && \
+    echo 'if [ -n "$JVM_OPTS" ]; then' >> /start.sh && \
+    echo '  # 앞뒤 따옴표 제거' >> /start.sh && \
+    echo '  JVM_OPTS=$(echo "$JVM_OPTS" | sed "s/^\"\(.*\)\"$/\1/")' >> /start.sh && \
+    echo '  echo "Cleaned JVM_OPTS: $JVM_OPTS"' >> /start.sh && \
+    echo 'else' >> /start.sh && \
+    echo '  JVM_OPTS="-Xmx512m -Xms256m"' >> /start.sh && \
+    echo '  echo "Using default JVM_OPTS: $JVM_OPTS"' >> /start.sh && \
+    echo 'fi' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo 'echo "Final command: java $JVM_OPTS -jar /app/app.jar"' >> /start.sh && \
+    echo 'exec java $JVM_OPTS -jar /app/app.jar' >> /start.sh && \
+    chmod +x /start.sh
+
+ENTRYPOINT ["/start.sh"]

@@ -116,12 +116,12 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     void init(){
         AwsBasicCredentials aws = AwsBasicCredentials.create(accessKey, secretKey);
 
-        S3Client.builder()
+        s3Client=S3Client.builder()
             .region(Region.of(region))
             .credentialsProvider(StaticCredentialsProvider.create(aws))
             .build();
 
-        S3Presigner presigner = S3Presigner.builder()
+        s3Presigner = S3Presigner.builder()
             .region(Region.of(region))
             .credentialsProvider(StaticCredentialsProvider.create(aws))
             .build();
