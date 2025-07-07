@@ -1,0 +1,19 @@
+# Gradle 캐시 및 빌드 결과 제외
+.gradle
+build
+
+# IDE 파일
+.idea
+*.iml
+out
+*.iws
+*.ipr
+
+# Git 관련
+.git
+.gitignore
+
+
+out
+*.iws
+*.ipr
