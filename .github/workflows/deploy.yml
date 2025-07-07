@@ -58,19 +58,19 @@ jobs:
             --image-ids imageTag=latest || true
 
           echo "Finding dangling images (no tags)..."
-          dangling=$(aws ecr-public list-images \
+          dangling=$(aws ecr-public describe-images \
             --repository-name ${{ env.ECR_REPOSITORY }} \
-            --query 'imageIds[?imageTag==null]' \
+            --query 'imageDetails[?length(imageTags)==`0`].imageDigest' \
             --output json)
 
           echo "Dangling images: $dangling"
 
           if [ "$dangling" != "[]" ]; then
-            echo "$dangling" | jq -c '.[]' | while read image; do
-              echo "Deleting image: $image"
+            echo "$dangling" | jq -r '.[]' | while read digest; do
+              echo "Deleting image digest: $disgest"
               aws ecr-public batch-delete-image \
-                --repository-name discodeit \
-                --image-ids "$image" || true
+                --repository-name ${{ env.ECR_REPOSITORY }} \
+                --image-ids imageDigest=$digest || true
             done
           else
             echo "No dangling images to delete."
