@@ -1,6 +1,6 @@
 ## Code Coverage
 
-[![codecov](https://codecov.io/gh/yeokyeong/3-sprint-mission/graph/badge.svg?token=6U8SOA9QBO)](https://codecov.io/gh/yeokyeong/3-sprint-mission)
+[![codecov](https://codecov.io/gh/yeokyeong/3-sprint-mission/branch/%EC%95%88%EC%97%AC%EA%B2%BD-sprint7/graph/badge.svg?token=6U8SOA9QBO)](https://codecov.io/gh/yeokyeong/3-sprint-mission)
 
 ## **기본 요구사항**
 
