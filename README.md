@@ -1,3 +1,7 @@
+## Code Coverage
+
+[![codecov](https://codecov.io/gh/yeokyeong/3-sprint-mission/graph/badge.svg?token=6U8SOA9QBO)](https://codecov.io/gh/yeokyeong/3-sprint-mission)
+
 ## **기본 요구사항**
 
 ### **프로파일 기반 설정 관리**
@@ -213,90 +217,91 @@
 - [x]  `admin` 모듈의 메인 클래스에 `@EnableAdminServer` 어노테이션을 추가하고, 서버는 9090번 포트로 설정합니다.
 
   ```java
-  
-  import de.codecentric.boot.admin.server.config.EnableAdminServer;
-  
-  @SpringBootApplication
-  @EnableAdminServer
-  public class AdminApplication {
-      public static void main(String[] args) {
-          SpringApplication.run(AdminApplication.class, args);
-      }
+
+import de.codecentric.boot.admin.server.config.EnableAdminServer;
+
+@SpringBootApplication
+@EnableAdminServer
+public class AdminApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(AdminApplication.class, args);
   }
-  
-  ```
+}
+
+```
 
   ```yaml
-  
-  # application.yaml
-  spring:
-      application:
-          name: admin
-  server:
-      port: 9090
-  
-  ```
+
+# application.yaml
+spring:
+  application:
+    name: admin
+server:
+  port: 9090
+
+```
 
 - [x]  `admin` 서버 실행 후 [localhost:9090/applications](http://localhost:9090/applications) 에 접속해봅니다.
 - [x]  discodeit 프로젝트에 Spring Boot Admin Client를 적용합니다.
 - [x]  의존성을 추가합니다.
 
   ```groovy
-  
-  dependencies {
-      ...
-      implementation 'de.codecentric:spring-boot-admin-starter-client:3.4.5
-  }
-  
-  ```
+
+dependencies {
+    ...
+    implementation 'de.codecentric:spring-boot-admin-starter-client:3.4.5
+}
+
+```
 
 - [x]  admin 서버에 등록될 수 있도록 설정 정보를 추가합니다.
 
   ```yaml
-  
-  # application.yml
-  spring:
-    application:
-      name: discodeit
-      ...
-    boot:
-      admin:
-        client:
-          instance:
-            name: discodeit
+
+# application.yml
+spring:
+  application:
+    name: discodeit
+    ...
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
   ...
-  
-  ```
+
+```
 
   ```yaml
-  
-  # application-dev.yml
-  spring:
-    application:
-      name: discodeit
-      ...
-    boot:
-      admin:
-        client:
-          url: http://localhost:9090
+
+# application-dev.yml
+spring:
+  application:
+    name: discodeit
+    ...
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
   ...
-  
-  ```
+
+```
 
   ```yaml
-  
-  # application-prod.yml
-  spring:
-    application:
-      name: discodeit
-      ...
-    boot:
-      admin:
-        client:
-          url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+
+# application-prod.yml
+spring:
+  application:
+    name: discodeit
+    ...
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
   ...
-  
-  ```
+
+```
 
 - [x]  discodeit 서버를 실행하고, admin 대시보드에 discodeit 인스턴스가 추가되었는지 확인합니다.
 - [x]  admin 대시보드 화면을 조작해보면서 각종 메트릭 정보를 확인해보세요.
