@@ -11,7 +11,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.messageException.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
-import com.sprint.mission.discodeit.mapper.advanced.MessageMapper;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
