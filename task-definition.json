@@ -8,9 +8,9 @@
       "memoryReservation": 256,
       "portMappings": [
         {
-          "name": "discodeit-app-8080-tcp",
-          "containerPort": 8080,
-          "hostPort": 8080,
+          "name": "discodeit-app-80-tcp",
+          "containerPort": 80,
+          "hostPort": 80,
           "protocol": "tcp",
           "appProtocol": "http"
         }
@@ -37,35 +37,6 @@
         "secretOptions": []
       },
       "systemControls": []
-    },
-    {
-      "name": "nginx",
-      "image": "public.ecr.aws/m8n4t4p5/nginx-discodeit:latest",
-      "cpu": 128,
-      "memory": 128,
-      "portMappings": [
-        {
-          "containerPort": 80,
-          "hostPort": 80,
-          "protocol": "tcp"
-        }
-      ],
-      "essential": true,
-      "dependsOn": [
-        {
-          "containerName": "discodeit-app",
-          "condition": "START"
-        }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/discodeit-task-v2",
-          "awslogs-create-group": "true",
-          "awslogs-region": "ap-northeast-2",
-          "awslogs-stream-prefix": "ecs"
-        }
-      }
     }
   ],
   "family": "discodeit-task",
