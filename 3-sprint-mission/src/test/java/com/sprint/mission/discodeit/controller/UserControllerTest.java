@@ -257,7 +257,7 @@ class UserControllerTest {
 
     given(userService.update(eq(nonExistentUserId), any(UserUpdateRequest.class),
         any(Optional.class)))
-        .willThrow(UserNotFoundException.fromUserId(nonExistentUserId));
+        .willThrow(UserNotFoundException.withId(nonExistentUserId));
 
     // When & Then
     mockMvc.perform(multipart("/api/users/{userId}", nonExistentUserId)
@@ -289,7 +289,7 @@ class UserControllerTest {
   void deleteUser_Failure_UserNotFound() throws Exception {
     // Given
     UUID nonExistentUserId = UUID.randomUUID();
-    willThrow(UserNotFoundException.fromUserId(nonExistentUserId))
+    willThrow(UserNotFoundException.withId(nonExistentUserId))
         .given(userService).delete(nonExistentUserId);
 
     // When & Then
@@ -332,7 +332,7 @@ class UserControllerTest {
     UserStatusUpdateRequest updateRequest = new UserStatusUpdateRequest(lastActiveAt);
 
     given(userStatusService.updateByUserId(eq(userId), any(UserStatusUpdateRequest.class)))
-        .willThrow(UserNotFoundException.fromUserId(userId));
+        .willThrow(UserNotFoundException.withId(userId));
 
     // When & Then
     mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)

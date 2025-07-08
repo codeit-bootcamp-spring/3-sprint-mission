@@ -20,6 +20,7 @@ file-data-map/
 /answer/
 .logs/
 storage/
+.env
 
 ### Eclipse ###
 .apt_generated

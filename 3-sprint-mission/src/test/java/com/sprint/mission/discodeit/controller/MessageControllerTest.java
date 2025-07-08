@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
@@ -56,9 +57,9 @@ class MessageControllerTest {
     UUID channelId = UUID.randomUUID();
     UUID authorId = UUID.randomUUID();
     MessageCreateRequest createRequest = new MessageCreateRequest(
+        "안녕하세요, 테스트 메시지입니다.",
         channelId,
-        authorId,
-        "안녕하세요, 테스트 메시지입니다."
+        authorId
     );
 
     MockMultipartFile messageCreateRequestPart = new MockMultipartFile(
@@ -77,7 +78,7 @@ class MessageControllerTest {
 
     UUID messageId = UUID.randomUUID();
     Instant now = Instant.now();
-
+    
     UserDto author = new UserDto(
         authorId,
         "testuser",
@@ -85,7 +86,7 @@ class MessageControllerTest {
         null,
         true
     );
-
+    
     BinaryContentDto attachmentDto = new BinaryContentDto(
         UUID.randomUUID(),
         "test.jpg",
@@ -124,9 +125,9 @@ class MessageControllerTest {
   void createMessage_Failure_InvalidRequest() throws Exception {
     // Given
     MessageCreateRequest invalidRequest = new MessageCreateRequest(
+        "", // 내용이 비어있음 (NotBlank 위반)
         null, // 채널 ID가 비어있음 (NotNull 위반)
-        null,  // 작성자 ID가 비어있음 (NotNull 위반)
-        "" // 내용이 비어있음 (NotBlank 위반)
+        null  // 작성자 ID가 비어있음 (NotNull 위반)
     );
 
     MockMultipartFile messageCreateRequestPart = new MockMultipartFile(
@@ -150,13 +151,13 @@ class MessageControllerTest {
     UUID messageId = UUID.randomUUID();
     UUID channelId = UUID.randomUUID();
     UUID authorId = UUID.randomUUID();
-
+    
     MessageUpdateRequest updateRequest = new MessageUpdateRequest(
         "수정된 메시지 내용입니다."
     );
 
     Instant now = Instant.now();
-
+    
     UserDto author = new UserDto(
         authorId,
         "testuser",
@@ -194,13 +195,13 @@ class MessageControllerTest {
   void updateMessage_Failure_MessageNotFound() throws Exception {
     // Given
     UUID nonExistentMessageId = UUID.randomUUID();
-
+    
     MessageUpdateRequest updateRequest = new MessageUpdateRequest(
         "수정된 메시지 내용입니다."
     );
 
     given(messageService.update(eq(nonExistentMessageId), any(MessageUpdateRequest.class)))
-        .willThrow(new MessageNotFoundException(nonExistentMessageId));
+        .willThrow(MessageNotFoundException.withId(nonExistentMessageId));
 
     // When & Then
     mockMvc.perform(patch("/api/messages/{messageId}", nonExistentMessageId)
@@ -227,7 +228,7 @@ class MessageControllerTest {
   void deleteMessage_Failure_MessageNotFound() throws Exception {
     // Given
     UUID nonExistentMessageId = UUID.randomUUID();
-    willThrow(new MessageNotFoundException(nonExistentMessageId))
+    willThrow(MessageNotFoundException.withId(nonExistentMessageId))
         .given(messageService).delete(nonExistentMessageId);
 
     // When & Then
@@ -244,7 +245,7 @@ class MessageControllerTest {
     UUID authorId = UUID.randomUUID();
     Instant cursor = Instant.now();
     Pageable pageable = PageRequest.of(0, 50, Sort.Direction.DESC, "createdAt");
-
+    
     UserDto author = new UserDto(
         authorId,
         "testuser",
@@ -252,7 +253,7 @@ class MessageControllerTest {
         null,
         true
     );
-
+    
     List<MessageDto> messages = List.of(
         new MessageDto(
             UUID.randomUUID(),
@@ -273,7 +274,7 @@ class MessageControllerTest {
             new ArrayList<>()
         )
     );
-
+    
     PageResponse<MessageDto> pageResponse = new PageResponse<>(
         messages,
         cursor.minusSeconds(30), // nextCursor 값

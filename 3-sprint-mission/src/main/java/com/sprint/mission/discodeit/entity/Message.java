@@ -13,28 +13,24 @@ import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
 
-@Getter
-@Table(name = "messages", schema = "discodeit")
 @Entity
+@Table(name = "messages")
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Message extends BaseUpdatableEntity {
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "author_id", columnDefinition = "uuid")
-  private User author;
-
+  @Column(columnDefinition = "text", nullable = false)
+  private String content;
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "channel_id", columnDefinition = "uuid")
   private Channel channel;
-
-  @Column(name = "content", columnDefinition = "text", nullable = false)
-  private String content;
-
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "author_id", columnDefinition = "uuid")
+  private User author;
   @BatchSize(size = 100)
   @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
   @JoinTable(
@@ -44,12 +40,10 @@ public class Message extends BaseUpdatableEntity {
   )
   private List<BinaryContent> attachments = new ArrayList<>();
 
-  @Builder
-  public Message(User currentUser, Channel currentChannel, String content,
-      List<BinaryContent> attachments) {
-    this.author = currentUser;
-    this.channel = currentChannel;
+  public Message(String content, Channel channel, User author, List<BinaryContent> attachments) {
+    this.channel = channel;
     this.content = content;
+    this.author = author;
     this.attachments = attachments;
   }
 
@@ -58,5 +52,4 @@ public class Message extends BaseUpdatableEntity {
       this.content = newContent;
     }
   }
-
 }

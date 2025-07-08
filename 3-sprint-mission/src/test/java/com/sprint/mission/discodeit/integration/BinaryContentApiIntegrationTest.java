@@ -80,9 +80,9 @@ class BinaryContentApiIntegrationTest {
 
     // 첨부파일이 있는 메시지 생성
     MessageCreateRequest messageRequest = new MessageCreateRequest(
-        user.id(),
+        "첨부파일이 있는 메시지입니다.",
         channel.id(),
-        "첨부파일이 있는 메시지입니다."
+        user.id()
     );
 
     byte[] fileContent = "테스트 파일 내용입니다.".getBytes();
@@ -134,9 +134,9 @@ class BinaryContentApiIntegrationTest {
     var channel = channelService.create(channelRequest);
 
     MessageCreateRequest messageRequest = new MessageCreateRequest(
-        user.id(),
+        "첨부파일이 있는 메시지입니다.",
         channel.id(),
-        "첨부파일이 있는 메시지입니다."
+        user.id()
     );
 
     // 첫 번째 첨부파일
