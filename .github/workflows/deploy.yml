@@ -117,9 +117,43 @@ jobs:
             --cluster $ECS_CLUSTER \
             --services $ECS_SERVICE
 
-      - name: Clean up old ECR Public images (Keep only 'latest')
+      - name: Clean up old ECR Public spring images (Keep only 'latest')
         env:
           ECR_REPOSITORY_URI: ${{ env.ECR_REPOSITORY_URI }}
+        run: |
+          REPO_NAME=$(echo $ECR_REPOSITORY_URI | awk -F'/' '{print $NF}')
+          ECR_PUBLIC_REGION="us-east-1"
+          
+          LATEST_IMAGE_DIGEST=$(aws ecr-public describe-images \
+            --region $ECR_PUBLIC_REGION \
+            --repository-name $REPO_NAME \
+            --query 'imageDetails[?imageTags != null && contains(imageTags, `latest`)].[imageDigest]' \
+            --output text | head -n 1)
+          
+          if [ -z "$LATEST_IMAGE_DIGEST" ]; then
+            exit 0
+          fi
+          
+          ALL_IMAGE_DETAILS=$(aws ecr-public describe-images \
+            --region $ECR_PUBLIC_REGION \
+            --repository-name $REPO_NAME \
+            --query 'imageDetails[*].[imageDigest,imageTags[]]' \
+            --output json)
+          
+          IMAGES_TO_DELETE=$(echo "$ALL_IMAGE_DETAILS" | jq -r --arg LATEST_DIGEST "$LATEST_IMAGE_DIGEST" \
+            '[.[] | select(.[0] != $LATEST_DIGEST) | .[0]] | unique | .[]')
+          
+          if [ -n "$IMAGES_TO_DELETE" ]; then
+            echo "$IMAGES_TO_DELETE" | xargs -I {} aws ecr-public batch-delete-image \
+              --region $ECR_PUBLIC_REGION \
+              --repository-name $REPO_NAME \
+              --image-ids imageDigest={}
+          fi
+      
+
+      - name: Clean up old ECR Public nginx images (Keep only 'latest')
+        env:
+          ECR_REPOSITORY_URI: ${{ env.ECR_NGINX_URI }}
         run: |
           REPO_NAME=$(echo $ECR_REPOSITORY_URI | awk -F'/' '{print $NF}')
           ECR_PUBLIC_REGION="us-east-1"
