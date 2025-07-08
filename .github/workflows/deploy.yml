@@ -65,13 +65,13 @@ jobs:
           # Public ECR에 이미지 푸시
           echo "Pushing Docker image to ECR..."
           # ECR에 이미지 푸쉬 (커밋 해시 태그) - 실제 이미지 업로드
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY:$IMAGE_TAG
           # ECR에 이미지 푸쉬 (latest 태그) - 태그만 추가로 푸쉬 (용량 추가 없음)
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY:latest
           
           # 다음 단계에서 사용할 수 있도록 빌드된 이미지 정보를 출력
           # 이 단계의 출력값을 다른 단계에서 사용하기 위한 ID 설정 (GITHUB_OUTPUT가 변수화됨)
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "image=$ECR_REGISTRY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
   deploy:
     name: Update ECS Service
@@ -80,36 +80,68 @@ jobs:
 
     steps:
       # 1. AWS 자격 증명 설정 (AWS CLI)
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials for ECS
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}  # [요구사항] ECS 클러스터 접근에 필요한 리전 사용
 
-      # 2. 현재 실행 중인 ECS 서비스 중단 (스케일 0)
+      # 2. 기존 태스크 정의 다운로드 (JSON 포맷)
+      - name: Download existing task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ vars.ECS_TASK_DEFINITION }} \
+            --query "taskDefinition" > task-definition.json
+
+      # 3. 최신 커밋 해시 기반 이미지로 태스크 정의의 image 필드 수정
+      - name: Replace image tag with latest commit SHA
+        env:
+          IMAGE_URI: ${{ vars.ECR_REPOSITORY_URI }}:${{ github.sha }}
+        run: |
+          jq --arg IMAGE "$IMAGE_URI" '
+          .containerDefinitions |= map(
+            if .name == "discodeit-app" then
+            .image = $IMAGE
+            else .
+            end
+          )
+          ' task-definition.json > updated-task-def.json
+
+
+      # 4. 기존 ECS 서비스 중지 (스케일 0)
       - name: Deregister previous ECS service (scale down to 0)
         run: |
           aws ecs update-service \
             --cluster ${{ vars.ECS_CLUSTER }} \
             --service ${{ vars.ECS_SERVICE }} \
             --desired-count 0  # [요구사항] 프리티어 고려해 실행 중지
-            --region ${{ vars.AWS_REGION }}
 
-      # 3. 새 태스크 정의 등록 (task-definition.json 기반)
-      - name: Register new task definition with updated image
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ vars.ECS_SERVICE }}
-          cluster: ${{ vars.ECS_CLUSTER }}
-          wait-for-service-stability: true
+      # 4.5 등록 가능한 필드만 남기기 (불필요한 필드 제거)
+      - name: Clean task definition JSON for registration
+        run: |
+          jq 'del(
+            .taskDefinitionArn,
+            .revision,
+            .status,
+            .requiresAttributes,
+            .compatibilities,
+            .registeredAt,
+            .registeredBy
+          )' updated-task-def.json > clean-task-def.json
 
-      # 4. 새 태스크 정의를 서비스에 반영하고 다시 실행
+      # 5. 새 태스크 정의 등록 (업데이트된 이미지 포함)
+      - name: Register new task definition
+        run: |
+          aws ecs register-task-definition \
+            --cli-input-json file://clean-task-def.json > new-task-def.json
+          echo "TASK_DEF_ARN=$(jq -r '.taskDefinition.taskDefinitionArn' new-task-def.json)" >> $GITHUB_ENV
+
+      # 6. 새 태스크 정의로 ECS 서비스 업데이트 및 재시작
       - name: Update ECS service with new task definition
         run: |
           aws ecs update-service \
             --cluster ${{ vars.ECS_CLUSTER }} \
             --service ${{ vars.ECS_SERVICE }} \
+            --task-definition ${{ env.TASK_DEF_ARN }} \
             --desired-count 1  # 🔹 [요구사항] 서비스 재실행
-            --region ${{ vars.AWS_REGION }}
