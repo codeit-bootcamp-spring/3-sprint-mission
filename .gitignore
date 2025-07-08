@@ -90,4 +90,3 @@ test-*.txt
 HOWTO-PHASE-*.md
 allow-cloudflare-ipv6.sh
 allow-cloudflare.sh
-default.conf
