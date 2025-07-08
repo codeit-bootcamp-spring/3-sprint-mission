@@ -5,6 +5,9 @@ server:
 
 # Spring 설정
 spring:
+  web:
+    resources:
+      add-mappings: false # 정적 리소스 비활성화(nginx가 관리)
   logging:
     level:
       root: INFO
