@@ -3,18 +3,21 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.user.InvalidCredentialsException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.NoSuchElementException;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
+@Slf4j
 public class BasicAuthService implements AuthService {
 
     private final UserRepository userRepository;
@@ -25,14 +28,17 @@ public class BasicAuthService implements AuthService {
         String username = loginRequest.username();
         String password = loginRequest.password();
 
+        log.debug("사용자 로그인 시도 : username = {}", username);
+
         User user = userRepository.findByUsername(username)
             .orElseThrow(
-                () -> new NoSuchElementException("User with username " + username + " not found"));
+                () -> UserNotFoundException.withUsername(username));
 
         if (!user.getPassword().equals(password)) {
-            throw new IllegalArgumentException("Wrong password");
+            throw InvalidCredentialsException.wrongPassword();
         }
 
+        log.info("사용자 로그인 성공 : userId = {}, username = {}", user.getId(), username);
         return userMapper.toDto(user);
     }
 }

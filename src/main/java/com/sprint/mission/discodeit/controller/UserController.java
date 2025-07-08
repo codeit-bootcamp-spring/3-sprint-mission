@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import java.util.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 @RestController
+@Slf4j
 public class UserController implements UserApi {
 
     private final UserService userService;
@@ -32,12 +34,14 @@ public class UserController implements UserApi {
         @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
         @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
+        log.info("사용자 생성 요청 : {}", userCreateRequest);
 
         Optional<BinaryContentCreateRequest> profileRequest =
             Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest);
 
         UserDto createdUser = userService.create(userCreateRequest, profileRequest);
+        log.debug("사용자 생성 응답 : {}", createdUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
@@ -49,12 +53,14 @@ public class UserController implements UserApi {
         , @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest
         , @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
+        log.info("사용자 수정 요청 : id = {}, request = {}", userId, userUpdateRequest);
         UserDto updatedUser = userService.update(
             userId,
             userUpdateRequest,
             Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest)
         );
+        log.debug("사용자 수정 응답 : {}", updatedUser);
         return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
     }
 
