@@ -50,13 +50,23 @@ jobs:
           docker push $ECR_REPOSITORY_URI:latest
           docker push $ECR_REPOSITORY_URI:$IMAGE_TAG
 
+      - name: Check working directory
+        run: |
+          echo "PWD: $(pwd)"
+          ls -al
+
+
       - name: Build and push nginx image
         env:
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -f Dockerfile.nginx -t $ECR_NGINX_URI:latest -t $ECR_NGINX_URI:$IMAGE_TAG .
+          docker build -f ./Dockerfile.nginx \
+            -t $ECR_NGINX_URI:latest \
+            -t $ECR_NGINX_URI:$IMAGE_TAG \
+            .
           docker push $ECR_NGINX_URI:latest
           docker push $ECR_NGINX_URI:$IMAGE_TAG
+  
 
   deploy:
     name: Deploy to ECS
