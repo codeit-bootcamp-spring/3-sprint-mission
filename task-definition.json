@@ -8,7 +8,7 @@
       "memoryReservation": 256,
       "portMappings": [
         {
-          "name": "discodeit-app-80-tcp",
+          "name": "discodeit-app-8080-tcp",
           "containerPort": 8080,
           "hostPort": 8080,
           "protocol": "tcp",
@@ -50,7 +50,7 @@
           "protocol": "tcp"
         }
       ],
-      "essential": false,
+      "essential": true,
       "dependsOn": [
         {
           "containerName": "discodeit-app",
