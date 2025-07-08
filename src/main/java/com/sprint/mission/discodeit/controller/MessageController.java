@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
+import jakarta.validation.Valid;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,7 @@ public class MessageController implements MessageApi {
 
     @PostMapping
     public ResponseEntity<MessageDto> create(
-        @RequestPart("messageCreateRequest") MessageCreateRequest request,
+        @RequestPart("messageCreateRequest") @Valid MessageCreateRequest request,
         @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
         log.info("메세지 생성 요청 : request = {}, attachments = {}",
@@ -64,7 +65,7 @@ public class MessageController implements MessageApi {
     @PatchMapping("/{messageId}")
     public ResponseEntity<MessageDto> update(
         @PathVariable UUID messageId,
-        @RequestBody MessageUpdateRequest request
+        @RequestBody @Valid MessageUpdateRequest request
     ) {
         log.info("메세지 수정 요청 : id = {}, request = {}", messageId, request);
         MessageDto updateMessage = messageService.update(messageId, request);

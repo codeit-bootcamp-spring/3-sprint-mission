@@ -50,7 +50,7 @@ public class UserController implements UserApi {
     @Override
     public ResponseEntity<UserDto> update(
         @PathVariable("userId") UUID userId
-        , @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest
+        , @RequestPart("userUpdateRequest") @Valid UserUpdateRequest userUpdateRequest
         , @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         log.info("사용자 수정 요청 : id = {}, request = {}", userId, userUpdateRequest);
