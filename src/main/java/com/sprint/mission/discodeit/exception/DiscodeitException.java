@@ -19,7 +19,7 @@ public class DiscodeitException extends RuntimeException {
     public DiscodeitException(ErrorCode errorCode, Map<String, Object> details) {
         super(errorCode.getMessage());
         this.errorCode = errorCode;
-        this.details = details;
+        this.details = (details == null) ? null : Map.copyOf(details);
     }
 
     public void addDetail(String key, Object value) {

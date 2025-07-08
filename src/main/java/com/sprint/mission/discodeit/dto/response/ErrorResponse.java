@@ -22,20 +22,8 @@ public class ErrorResponse {
             .timestamp(Instant.now())
             .code(error.getCode())
             .message(error.getMessage())
-            .status(error.getStatus())
+            .status(error.getStatus().value())
             .exceptionType(error.getClass().getSimpleName())
-            .build();
-    }
-
-    public static ErrorResponse of(ErrorCode errorCode, Map<String, Object> details,
-        String exceptionType) {
-        return ErrorResponse.builder()
-            .timestamp(Instant.now())
-            .code(errorCode.getCode())
-            .message(errorCode.getMessage())
-            .status(errorCode.getStatus())
-            .details(details)
-            .exceptionType(exceptionType)
             .build();
     }
 }

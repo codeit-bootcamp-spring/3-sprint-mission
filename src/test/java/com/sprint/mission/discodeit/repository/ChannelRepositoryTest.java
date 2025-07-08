@@ -11,9 +11,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
+@EnableJpaAuditing
 @ActiveProfiles("test")
 class ChannelRepositoryTest {
 
@@ -52,10 +54,11 @@ class ChannelRepositoryTest {
     @DisplayName("조건에 맞는 채널이 없을 경우 빈 리스트 반환")
     void findAllByTypeOrIdIn_notFound() {
         //given
+        channelRepository.delete(publicChannel);
         List<UUID> unrelatedIds = List.of(UUID.randomUUID());
 
         //when
-        List<Channel> result = channelRepository.findAllByTypeOrIdIn(ChannelType.PRIVATE,
+        List<Channel> result = channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC,
             unrelatedIds);
 
         //then

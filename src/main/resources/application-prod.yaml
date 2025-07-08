@@ -10,6 +10,11 @@ spring:
     properties:
       hibernate:
         format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
 
 logging:
   level:

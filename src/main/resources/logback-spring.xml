@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+  <!-- 로그 레벨별 색상 설정 -->
+  <conversionRule conversionWord="clr"
+    converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
 
   <!-- 로그 저장 경로 설정 -->
   <property name="LOG_PATH" value=".logs"/>
 
   <!-- 로그 패턴 설정 -->
   <property name="LOG_PATTERN"
-    value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %-36logger - %msg%n"/>
+    value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %clr(%-5level) %-36logger{36} [%X{requestId} | %X{requestMethod} | %X{requestUri}] - %msg%n"/>
 
   <!-- 콘솔 로그 설정 -->
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">

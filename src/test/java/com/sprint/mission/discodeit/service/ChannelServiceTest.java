@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -12,6 +13,7 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
@@ -33,6 +35,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("BasicChannelService 단위 테스트")
@@ -60,6 +63,7 @@ public class ChannelServiceTest {
     private Channel privateChannel;
     private ChannelDto channelDto;
     private User user;
+    private PublicChannelUpdateRequest updateRequest;
 
     @BeforeEach
     void setUp() {
@@ -70,9 +74,11 @@ public class ChannelServiceTest {
 
         user = new User("user1", "test@abc.com", "1234", null);
         publicChannel = new Channel(ChannelType.PUBLIC, channelName, channelDescription);
+        ReflectionTestUtils.setField(publicChannel, "id", channelId);
         privateChannel = new Channel(ChannelType.PRIVATE, null, null);
         channelDto = new ChannelDto(channelId, ChannelType.PUBLIC, channelName, channelDescription,
             List.of(), Instant.now());
+        updateRequest = new PublicChannelUpdateRequest("이름1", "설명1");
     }
 
     @Test
@@ -126,13 +132,12 @@ public class ChannelServiceTest {
     @DisplayName("새로운 입력값으로 채널을 수정할 수 있다.")
     void updateChannel_success() {
         //given
-        PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("이름1", "설명1");
         given(channelRepository.findById(channelId)).willReturn(Optional.of(publicChannel));
         given(channelRepository.save(any())).willReturn(publicChannel);
         given(channelMapper.toDto(any(Channel.class))).willReturn(channelDto);
 
         //when
-        ChannelDto result = channelService.update(channelId, request);
+        ChannelDto result = channelService.update(channelId, updateRequest);
 
         //then
         assertThat(result).isEqualTo(channelDto);
@@ -142,11 +147,10 @@ public class ChannelServiceTest {
     @DisplayName("채널이 존재하지 않는다면 채널을 수정할 수 없다.")
     void updateChannel_fail_ifChannelNotFound() {
         //given
-        PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("이름1", "설명1");
         given(channelRepository.findById(channelId)).willReturn(Optional.empty());
 
         // when, then
-        assertThatThrownBy(() -> channelService.update(channelId, request))
+        assertThatThrownBy(() -> channelService.update(channelId, updateRequest))
             .isInstanceOf(ChannelNotFoundException.class);
     }
 
@@ -154,11 +158,10 @@ public class ChannelServiceTest {
     @DisplayName("비공개채널은 수정할 수 없다.")
     void updateChannel_fail_ifPrivateChannel() {
         // given
-        PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("이름1", "설명1");
         given(channelRepository.findById(channelId)).willReturn(Optional.of(privateChannel));
 
         //when, then
-        assertThatThrownBy(() -> channelService.update(channelId, request))
+        assertThatThrownBy(() -> channelService.update(channelId, updateRequest))
             .isInstanceOf(PrivateChannelUpdateException.class);
     }
 
@@ -189,12 +192,15 @@ public class ChannelServiceTest {
     }
 
     @Test
-    @DisplayName("채널을 조회할 수 있다.")
+    @DisplayName("사용자별 채널을 조회할 수 있다.")
     void findChannel_success() {
         //given
+        List<ReadStatus> readStatuses = List.of(new ReadStatus(user, publicChannel, Instant.now()));
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
-        given(readStatusRepository.findAllByUserId(userId)).willReturn(List.of());
-        given(channelRepository.findAll()).willReturn(List.of(publicChannel));
+        given(readStatusRepository.findAllByUserId(eq(userId))).willReturn(readStatuses);
+        given(channelRepository.findAllByTypeOrIdIn(eq(ChannelType.PUBLIC),
+            eq(List.of(publicChannel.getId()))))
+            .willReturn(List.of(publicChannel));
         given(channelMapper.toDto(any(Channel.class))).willReturn(channelDto);
 
         //when

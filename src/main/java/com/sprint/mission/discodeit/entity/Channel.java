@@ -42,10 +42,10 @@ public class Channel extends BaseUpdatableEntity {
     }
 
     public boolean isPrivate() {
-        return ChannelType.PRIVATE.equals(this.type);
+        return this.type.isPrivate();
     }
 
     public boolean isPublic() {
-        return ChannelType.PUBLIC.equals(this.type);
+        return this.type.isPublic();
     }
 }

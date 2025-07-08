@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -23,7 +22,7 @@ public class GlobalExceptionHandler {
             .timestamp(Instant.now())
             .code(error.getCode())
             .message(error.getMessage())
-            .status(error.getStatus())
+            .status(error.getStatus().value())
             .exceptionType(e.getClass().getSimpleName())
             .details(e.getDetails())
             .build();
@@ -53,17 +52,19 @@ public class GlobalExceptionHandler {
                 (existing, replacement) -> existing
             ));
 
-        ErrorResponse error = ErrorResponse.builder()
+        ErrorCode error = ErrorCode.VALIDATION_FAILED;
+
+        ErrorResponse response = ErrorResponse.builder()
             .timestamp(Instant.now())
-            .code("VALIDATION_FAILED")
-            .message("요청 데이터 유효성 검증에 실패하였습니다.")
-            .status(HttpStatus.BAD_REQUEST.value())
+            .code(error.getCode())
+            .message(error.getMessage())
+            .status(error.getStatus().value())
             .exceptionType(e.getClass().getSimpleName())
             .details(details)
             .build();
 
         return ResponseEntity
             .status(error.getStatus())
-            .body(error);
+            .body(response);
     }
 }
