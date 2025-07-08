@@ -52,3 +52,11 @@ binaries/
 ## 환경 설정 파일
 discodeit.env
 .env
+
+## AWS 관련 민감 파일들
+*.pem
+*.key
+aws-credentials.txt
+.aws/
+credentials
+config
