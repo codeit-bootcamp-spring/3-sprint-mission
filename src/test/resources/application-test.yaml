@@ -34,3 +34,15 @@ logging:
 
 server:
   port: 0 # 랜덤 포트 사용 (보통 @SpringBootTest(webEnvironment = RANDOM_PORT) 대비)
+
+discodeit:
+  storage:
+    type: ${STORAGE_TYPE:local}  # local | s3 (기본값: local)
+    local:
+      root-path: ${DISCODEIT_STORAGE_LOCAL_ROOT_PATH}:${user.dir}/data/discodeit/storage
+    s3:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY:}
+      bucket: ${AWS_S3_BUCKET}
+      region: ${AWS_REGION:ap-northeast-2}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)

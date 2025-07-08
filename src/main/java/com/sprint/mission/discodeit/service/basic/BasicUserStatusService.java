@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.userStatus.UserStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.request.userStatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -11,7 +11,6 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
-import com.sprint.mission.discodeit.exception.userstatus.UserStatusException;
 
 import java.time.Instant;
 import java.util.List;

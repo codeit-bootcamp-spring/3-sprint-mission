@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
-import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.readStatus.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.request.readStatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
@@ -15,13 +15,10 @@ import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundExcep
 import com.sprint.mission.discodeit.exception.readstatus.DuplicatedReadStatusException;
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
