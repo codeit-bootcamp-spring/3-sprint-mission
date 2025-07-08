@@ -10,12 +10,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 
 @Tag(name = "BinaryContent", description = "첨부 파일 API")
+@Validated
 public interface BinaryContentApi {
 
   @Operation(summary = "첨부 파일 조회")
@@ -41,7 +44,7 @@ public interface BinaryContentApi {
       )
   })
   ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
-      @Parameter(description = "조회할 첨부 파일 ID 목록") List<UUID> binaryContentIds
+      @Parameter(description = "조회할 첨부 파일 ID 목록") @NotNull List<UUID> binaryContentIds
   );
 
   @Operation(summary = "파일 다운로드")

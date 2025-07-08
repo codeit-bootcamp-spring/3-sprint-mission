@@ -3,10 +3,11 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.User.InvalidCredentialsException;
+import com.sprint.mission.discodeit.exception.User.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +24,10 @@ public class BasicAuthService implements AuthService {
   @Override
   public UserDto login(LoginRequest loginRequest) {
     User user = this.userRepository.findByUsername(loginRequest.username()).orElseThrow(
-        () -> new NoSuchElementException(
-            "User with email " + loginRequest.username() + " not found"));
+        () -> new UserNotFoundException(loginRequest.username()));
 
     if (!user.getPassword().equals(loginRequest.password())) {
-      throw new IllegalArgumentException("이메일 또는 비밀번호가 틀렸습니다.");
+      throw new InvalidCredentialsException(loginRequest.username(), loginRequest.password());
     }
 
     return userMapper.toDto(user);

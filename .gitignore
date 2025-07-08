@@ -44,6 +44,10 @@ bin/
 
 ## config
 **/db.yaml
+**/db-dev.yaml
+**/db-prod.yaml
 
 ##
 **/generated/*
+/.env.*
+*.env
