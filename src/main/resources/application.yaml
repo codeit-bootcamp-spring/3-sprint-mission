@@ -1,12 +1,25 @@
-# server 설정
-server:
-  port: 8080
+spring:
+  application:
+    name: ${PROJECT_NAME}
+    version: ${PROJECT_VERSION}
+  servlet:
+    multipart:
+      maxFileSize: 10MB # 파일 하나의 최대 크기
+      maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:prod}
 
 discodeit:
   storage:
-    type: local
+    type: ${APP_STORAGE_TYPE:local} # local, s3
     local:
-      root-path: "./data" # ${user.dir}/data
+      root-path: ${APP_STORAGE_PATH:./data} # ${user.dir}/data
+    aws:
+      accessKey: ${AWS_ACCESS_KEY_ID}
+      secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+      s3Bucket: ${AWS_S3_BUCKET}
+      s3Region: ${AWS_S3_REGION}
+      s3PresignedUrlExpiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
   #  repository:
   #    type: file   # jcf | file
   #    file-directory: .discodeit
@@ -22,7 +35,42 @@ springdoc:
     operations-sorter: alpha
 
 
-# DB config
-spring:
-  config:
-    import: "classpath:db.yaml"
+# Actuator 엔드포인트 활성화 및 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, loggers
+  info:
+    env:
+      enabled: true
+
+#  http://localhost:8080/actuator/info
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+  java:
+    version: 17
+  spring-boot:
+    version: 3.4.0
+  datasource:
+    url: ${DB_URL}
+    driver-class-name: ${spring.datasource.driver-class-name}
+  jpa:
+    ddl-auto: ${spring.jpa.hibernate.ddl-auto}
+  storage:
+    type: ${discodeit.storage.type}
+    path: ${discodeit.storage.local.root-path}
+  multipart:
+    max-file-size: ${spring.servlet.multipart.maxFileSize}
+    max-request-size: ${spring.servlet.multipart.maxRequestSize}
+
+
+
+#  # Admin 서버 설정 정보 추가
+#  boot:
+#    admin:
+#      client:
+#        instance:
+#          name: discodeit

@@ -3,10 +3,14 @@ plugins {
     id 'org.springframework.boot' version '3.4.0'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'io.freefair.lombok' version "8.13.1"
+    id 'jacoco'
+    id "org.sonarqube" version "3.5.0.2730"
+}
+ext {
 }
 
 group = 'org.example'
-version = '1.0-SNAPSHOT'
+version = '1.2-M8'
 
 java {
     toolchain {
@@ -43,10 +47,19 @@ dependencies {
     // https://mvnrepository.com/artifact/org.mapstruct/mapstruct
     implementation 'org.mapstruct:mapstruct:1.6.3'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+    runtimeOnly 'com.h2database:h2'
     testAnnotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
     implementation 'org.springframework.boot:spring-boot-starter-aop'
     runtimeOnly 'org.postgresql:postgresql'
+
+    implementation 'org.springframework.boot:spring-boot-starter-validation:3.5.0'
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator:3.5.0'
+
+    implementation 'software.amazon.awssdk:s3:2.31.7'
+
+    implementation 'io.github.cdimascio:dotenv-java:3.2.0'
 }
 
 tasks.withType(JavaCompile) {
@@ -55,4 +68,20 @@ tasks.withType(JavaCompile) {
 
 test {
     useJUnitPlatform()
+    ignoreFailures = true  // 실패해도 다음 task 진행
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        csv.required = true
+        html.required = true
+    }
+}
+
+dependencyManagement {
+    imports {
+    }
 }

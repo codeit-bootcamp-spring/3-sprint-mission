@@ -1,0 +1,38 @@
+volumes:
+  db_data: # This is your named volume
+  storage_data: # This is your named volume
+services:
+  spring-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PROJECT_NAME: ${PROJECT_NAME}
+        PROJECT_VERSION: ${PROJECT_VERSION}
+    ports:
+      - "8080:80"
+    env_file:
+      - .env.docker
+    #    environment:
+    #      - APP_STORAGE_PATH=${APP_STORAGE_PATH}
+    volumes:
+      - storage_data:/app/data    # 로컬 → 컨테이너 내부 경로 연결
+    depends_on:
+      postgresDB:
+        condition: service_healthy
+    restart: always
+
+  postgresDB:
+    image: postgres:17
+    volumes:
+      - db_data:/var/lib/postgresql/data  # 로컬 → 컨테이너 내부 경로 연결
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/init-schema.sql # Initial script
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env.docker
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U discodeit_user -d discodeit" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5

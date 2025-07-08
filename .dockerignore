@@ -1,0 +1,19 @@
+# 빌드 아웃풋 제외
+/build
+.gradle
+target/
+
+# IDE 설정 파일 제외
+*.iml
+.idea/
+
+# OS/툴 임시파일 제외
+.DS_Store
+*.log
+
+# 환경 변수 파일 등 민감 정보 제외
+.env.*
+secrets/
+**/db.yaml
+**/db-dev.yaml
+**/db-prod.yaml
