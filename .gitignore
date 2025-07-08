@@ -42,7 +42,7 @@ bin/
 .discodeit
 
 ### 숨김 파일 ###
-.*
+.logs
 !.gitignore
 .env
 discodeit.env

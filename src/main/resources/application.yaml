@@ -48,7 +48,7 @@ discodeit:
   storage:
     type: ${STORAGE_TYPE:local}  # local | s3 (기본값: local)
     local:
-      root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage/}
     s3:
       access-key: ${AWS_S3_ACCESS_KEY}
       secret-key: ${AWS_S3_SECRET_KEY}

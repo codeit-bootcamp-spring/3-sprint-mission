@@ -25,6 +25,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3")
@@ -42,7 +43,8 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     @Value("${discodeit.storage.local.root-path}")
     private String path;
 
-    public S3BinaryContentStorage(@Value("${discodeit.storage.s3.access-key}") String accessKey,
+    public S3BinaryContentStorage(
+        @Value("${discodeit.storage.s3.access-key}") String accessKey,
         @Value("${discodeit.storage.s3.secret-key}") String secretKey,
         @Value("${discodeit.storage.s3.region}") String region,
         @Value("${discodeit.storage.s3.bucket}") String bucket) {
@@ -62,7 +64,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
                 .bucket(bucket)
                 .key(key)
                 .contentLength((long) bytes.length)
-                .contentType("application/octet-stream")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE)
                 .build();
 
             PutObjectResponse response = s3Client.putObject(putRequest,
@@ -144,18 +146,18 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
     private String generatePresignedUrl(String key, String contentType){
         try{
-            PutObjectRequest request = PutObjectRequest.builder()
+            GetObjectRequest request = GetObjectRequest.builder()
                 .bucket(bucket)
-                .key(key)
-                .contentType(contentType)
+                .key(path+key)
+                .responseContentType(contentType)
                 .build();
 
-            PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+            GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
                 .signatureDuration(Duration.ofMinutes(15))
-                .putObjectRequest(request)
+                .getObjectRequest(request)
                 .build();
 
-            return s3Presigner.presignPutObject(presignRequest).url().toString();
+            return s3Presigner.presignGetObject(presignRequest).url().toString();
         }
         catch (Exception e){
             throw new RuntimeException(e);

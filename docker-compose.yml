@@ -95,8 +95,6 @@ services:
       AWS_S3_BUCKET: ${AWS_S3_BUCKET:-}
       AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION:-600}
 
-      # 기타 설정
-      TZ: "Asia/Seoul"
 
     # 포트 매핑 (호스트:컨테이너)
     # 로컬 Spring Boot 애플리케이션과의 포트 충돌 방지를 위해 8888 포트 사용
