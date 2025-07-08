@@ -17,8 +17,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-
-import java.time.Instant;
 import java.util.*;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,45 +36,29 @@ public class BasicChannelService implements ChannelService {
     public ChannelDto create(PrivateChannelCreateRequest request) {
         log.debug("Private Channel 생성 시작 : {}", request);
         // PRIVATE CHANNEL 생성
-        Channel channel = new Channel(
-            ChannelType.PRIVATE,
-            // name 및 description 속성 생략
-            null,
-            null
-        );
-        Channel createdChannel = channelRepository.save(channel);
+        Channel channel = new Channel(ChannelType.PRIVATE, null, null);
+        channelRepository.save(channel);
 
-        Instant createdAt = createdChannel.getCreatedAt();
-
-        for (UUID userId : request.participantIds()) {
-            User user = userRepository.findById(userId)
-                .orElseThrow(
-                    () -> new NoSuchElementException("User with id " + userId + " not found"));
-
-            ReadStatus readStatus = new ReadStatus(user, createdChannel, createdAt);
-            readStatusRepository.save(readStatus);
-        }
+        List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds())
+            .stream()
+            .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
+            .toList();
+        readStatusRepository.saveAll(readStatuses);
 
         log.info("Private Channel 생성 완료 : id = {}, name = {}", channel.getId(), channel.getName());
-        return channelMapper.toDto(createdChannel);
+        return channelMapper.toDto(channel);
     }
 
     @Override
     public ChannelDto create(PublicChannelCreateRequest request) {
         log.debug("Public Channel 생성 시작 : {}", request);
-
         String name = request.name();
         String description = request.description();
-        // PUBLIC CHANNEL 생성
-        Channel channel = new Channel(
-            ChannelType.PUBLIC,
-            name,
-            description
-        );
-        Channel created = channelRepository.save(channel);
+        Channel channel = new Channel(ChannelType.PUBLIC, name, description);
 
+        channelRepository.save(channel);
         log.info("Public Channel 생성 완료 : id = {}, name = {}", channel.getId(), channel.getName());
-        return channelMapper.toDto(created);
+        return channelMapper.toDto(channel);
     }
 
     @Override
