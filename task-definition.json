@@ -1,59 +1,88 @@
 {
-  "containerDefinitions": [
-    {
-      "name": "discodeit-app",
-      "image": "public.ecr.aws/m8n4t4p5/discodeit:<IMAGE_TAG>",
-      "cpu": 256,
-      "memory": 512,
-      "memoryReservation": 256,
-      "portMappings": [
+    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:090532593589:task-definition/discodeit-task:14",
+    "containerDefinitions": [
         {
-          "name": "discodeit-app-80-tcp",
-          "containerPort": 80,
-          "hostPort": 80,
-          "protocol": "tcp",
-          "appProtocol": "http"
+            "name": "discodeit-app",
+            "image": "public.ecr.aws/m8n4t4p5/discodeit:0af8a00293cc5f142f97552a314450a85c1b184b",
+            "cpu": 256,
+            "memory": 512,
+            "memoryReservation": 256,
+            "portMappings": [
+                {
+                    "containerPort": 80,
+                    "hostPort": 80,
+                    "protocol": "tcp",
+                    "name": "discodeit-app-80-tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [],
+            "environmentFiles": [
+                {
+                    "value": "arn:aws:s3:::discodeit-binary-content-storage-dounguk/env/discodeit.env",
+                    "type": "s3"
+                }
+            ],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/discodeit-task",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "ap-northeast-2",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "systemControls": []
         }
-      ],
-      "essential": true,
-      "environment": [],
-      "environmentFiles": [
+    ],
+    "family": "discodeit-task",
+    "executionRoleArn": "arn:aws:iam::090532593589:role/ecsTaskExecutionRole",
+    "networkMode": "bridge",
+    "revision": 14,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
         {
-          "value": "arn:aws:s3:::discodeit-binary-content-storage-dounguk/env/discodeit.env",
-          "type": "s3"
-        }
-      ],
-      "mountPoints": [],
-      "volumesFrom": [],
-      "ulimits": [],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/discodeit-task-v2",
-          "awslogs-create-group": "true",
-          "awslogs-region": "ap-northeast-2",
-          "awslogs-stream-prefix": "ecs"
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
         },
-        "secretOptions": []
-      },
-      "systemControls": []
-    }
-  ],
-  "family": "discodeit-task",
-  "executionRoleArn": "arn:aws:iam::090532593589:role/ecsTaskExecutionRole",
-  "networkMode": "bridge",
-  "volumes": [],
-  "placementConstraints": [],
-  "requiresCompatibilities": [
-    "EC2"
-  ],
-  "cpu": "256",
-  "memory": "512",
-  "runtimePlatform": {
-    "cpuArchitecture": "X86_64",
-    "operatingSystemFamily": "LINUX"
-  },
-  "enableFaultInjection": false
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "ecs.capability.env-files.s3"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EC2"
+    ],
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "cpu": "256",
+    "memory": "512",
+    "registeredAt": "2025-07-08T17:13:40.202000+09:00",
+    "registeredBy": "arn:aws:iam::090532593589:user/discodeit",
+    "enableFaultInjection": false
 }
-
-
