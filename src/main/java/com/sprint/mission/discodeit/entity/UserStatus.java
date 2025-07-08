@@ -1,16 +1,16 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
 
-import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import lombok.NoArgsConstructor;
@@ -18,18 +18,16 @@ import lombok.NoArgsConstructor;
 // 사용자별 마지막 접속 시간( last+5 : 온라인 ) / 판별 메서드 정의
 @Getter
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "user_statuses")
-public class UserStatus extends BaseUpdatableEntity implements Serializable {
+public class UserStatus extends BaseUpdatableEntity {
 
-    private static final long serialVersionUID = 1L;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, unique = true,
-        foreignKey = @ForeignKey(name = "fk_user_status_user", foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"))
+    @JsonBackReference
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @Column(name = "last_active_at", nullable = false)
+    @Column(name = "last_active_at", columnDefinition = "timestamp with time zone", nullable = false)
     private Instant lastActiveAt;
 
     // 생성자

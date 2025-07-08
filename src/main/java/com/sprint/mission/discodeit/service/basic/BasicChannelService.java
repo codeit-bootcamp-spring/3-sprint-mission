@@ -91,14 +91,12 @@ public class BasicChannelService implements ChannelService {
     @Transactional(readOnly = true)
     public List<ChannelDto> findAllByUserId(UUID userId) {
         List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
-            .map(readStatus -> readStatus.getChannel().getId())
+            .map(ReadStatus::getChannel)
+            .map(Channel::getId)
             .toList();
 
-        return channelRepository.findAll().stream()
-            .filter(channel ->
-                channel.getType().equals(ChannelType.PUBLIC)
-                    || mySubscribedChannelIds.contains(channel.getId())
-            )
+        return channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC, mySubscribedChannelIds)
+            .stream()
             .map(channelMapper::toDto)
             .toList();
     }

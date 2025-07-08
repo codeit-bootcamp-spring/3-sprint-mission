@@ -1,30 +1,28 @@
 package com.sprint.mission.discodeit.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.io.Serializable;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "users")
-public class User extends BaseUpdatableEntity implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class User extends BaseUpdatableEntity {
 
     // 필드 정의
     @Column(name = "username", nullable = false, length = 50, unique = true)
@@ -38,13 +36,13 @@ public class User extends BaseUpdatableEntity implements Serializable {
 
     // BinaryContent 참조 ID
     // 단방향 참조
-    @JoinColumn(name = "profile_id",
-        foreignKey = @ForeignKey(name = "fk_user_profile", value = ConstraintMode.CONSTRAINT),
-        nullable = true)
-    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_id", columnDefinition = "uuid", nullable = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private BinaryContent profile;
 
     // 양방향 참조
+    @JsonManagedReference
+    @Setter(AccessLevel.PROTECTED)
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserStatus status;
 
