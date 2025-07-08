@@ -1,12 +1,8 @@
 package com.sprint.mission.discodeit.dto.request.message;
 
 import jakarta.validation.constraints.NotBlank;
-import java.util.Objects;
 
 public record MessageUpdateRequest(
-    @NotBlank String newContent
+    @NotBlank(message = "수정할 메시지 내용을 입력해주세요") String newContent
 ) {
-    public MessageUpdateRequest {
-        Objects.requireNonNull(newContent, "newContent must not be null");
-    }
 }

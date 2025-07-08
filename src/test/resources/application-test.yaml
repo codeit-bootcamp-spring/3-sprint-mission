@@ -1,0 +1,44 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/discodeit
+    driver-class-name: org.postgresql.Driver
+    username: discodeit_user
+    password: discodeit1234
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        use_sql_comments: true
+        default_schema: discodeit
+    open-in-view: false
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+
+logging:
+  level:
+    root: info
+    org.hibernate.SQL: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
+
+server:
+  port: 0
+
+discodeit:
+  storage:
+    type: ${STORAGE_TYPE:local}  # local | s3 (기본값: local)
+    local:
+      root-path: ${DISCODEIT_STORAGE_LOCAL_ROOT_PATH}:${user.dir}/data/discodeit/storage
+    s3:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY:}
+      bucket: ${AWS_S3_BUCKET}
+      region: ${AWS_REGION:ap-northeast-2}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)

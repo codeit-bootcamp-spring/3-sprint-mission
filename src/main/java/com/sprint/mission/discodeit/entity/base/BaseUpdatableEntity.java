@@ -4,21 +4,17 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.MappedSuperclass;
 import java.time.Instant;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+
+import lombok.*;
 import org.springframework.data.annotation.LastModifiedDate;
 
-@RequiredArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
-@ToString
 @MappedSuperclass
 public abstract class BaseUpdatableEntity extends BaseEntity {
 
     @LastModifiedDate
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", columnDefinition = "timestamp with time zone")
     private Instant updatedAt;
 }

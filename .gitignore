@@ -1,8 +1,21 @@
 .gradle
+.gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
 .idea
@@ -12,6 +25,12 @@ build/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+### IDE 특화: JetBrains 추가 캐시 ###
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/shelf/
+
 
 ### Eclipse ###
 .apt_generated
@@ -35,8 +54,73 @@ bin/
 ### VS Code ###
 .vscode/
 
-### Mac OS ###
+### 파일 업로드 디렉토리 ###
+uploads/
+files/
+images/
+temp/
+
+### macOS ###
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+### Windows ###
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
 
 ### Discodeit ###
 .discodeit
+discodeit.env
+!discodeit.env.example
+
+### 환경변수 및 설정 파일 (보안상 중요!) ###
+.env.*
+.env
+application-*.yml
+!application-dev.yml
+!application-prod.yml
+
+### AWS 관련 민감 파일들 ###
+*.pem
+*.key
+aws-credentials.txt
+.aws/
+credentials
+config
+
+### Docker 관련 ###
+docker-compose.yml
+docker-compose.override.yml
+.dockerignore
+*.log
+
+### Spring Boot 관련 ###
+logs/
+application.properties
+application-*.properties
+
+### OS별 시스템 파일들 ###
+.DS_Store          # macOS
+Thumbs.db          # Windows
+Desktop.ini        # Windows
+
+### 테스트 커버리지 리포트 (JaCoCo 등) ###
+/build/reports/
+!build/reports/jacoco/
+!build/reports/jacoco/test/
+!build/reports/jacoco/test/jacocoTestReport.xml
+
+### JUnit / Test Output (특정 IDE 또는 로그 파일) ###
+/test-results/
+
+### Lombok 관련 캐시 ###
+*.lombok.log

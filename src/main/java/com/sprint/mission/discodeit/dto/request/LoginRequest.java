@@ -1,14 +1,9 @@
 package com.sprint.mission.discodeit.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import java.util.Objects;
 
 public record LoginRequest(
-    @NotBlank String username,
-    @NotBlank String password
+    @NotBlank(message = "사용자명을 입력해주세요") String username,
+    @NotBlank(message = "비밀번호를 입력해주세요") String password
 ) {
-    public LoginRequest {
-        Objects.requireNonNull(username, "username must not be null");
-        Objects.requireNonNull(password, "password must not be null");
-    }
 }
