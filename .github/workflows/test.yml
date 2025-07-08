@@ -2,7 +2,7 @@ name: CI - Test
 
 on:
   pull_request:
-    branches: [ "강문구" ]
+    branches: [ main ]
 
 jobs:
   test:
