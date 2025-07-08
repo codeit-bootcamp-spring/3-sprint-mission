@@ -12,7 +12,6 @@ WORKDIR /app
 COPY build/libs/discodeit-0.0.1-SNAPSHOT.jar app.jar
 
 # 4. 포트 노출 설정
-# Spring Boot 애플리케이션의 기본 포트인 80을 노출
 # EXPOSE는 문서화 목적이며, 실제 포트 매핑은 docker run -p 옵션으로 설정
 EXPOSE 80
 
@@ -34,15 +33,20 @@ CMD ["java", "-jar", "app.jar"]
 # 
 # 2. Docker 이미지 빌드:
 # docker build -t discodeit-app:local .
+#
+# 멀티 플랫폼 이미지 빌드
+# docker buildx build \
+# --platform linux/amd64,linux/arm64 \
+# -t discodeit-app:latest .
 # 
 # 3. 컨테이너 실행:
 # docker run -d --name discodeit-app-local \
-#  -p 8081:8080 \
+#  -p 8081:80 \
 #  -e SPRING_PROFILES_ACTIVE=prod \
 #  -e SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/discodeit \
 #  -e SPRING_DATASOURCE_USERNAME=discodeit_user \
 #  -e SPRING_DATASOURCE_PASSWORD=discodeit1234 \
-#  discodeit-app:local
+#  discodeit-app:latest
 # 
 # 4. 애플리케이션 접속 확인:
 # curl http://localhost:8888/actuator/health
