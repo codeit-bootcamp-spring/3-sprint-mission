@@ -23,7 +23,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run unit tests only
-        run: ./gradlew test jacocoTestReport --tests '*' --exclude-task test
+        run: ./gradlew test jacocoTestReport
         env:
           SPRING_PROFILES_ACTIVE: test
 
