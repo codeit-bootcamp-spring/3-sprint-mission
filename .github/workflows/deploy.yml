@@ -64,8 +64,14 @@ jobs:
 
           # Public ECR에 이미지 푸시
           echo "Pushing Docker image to ECR..."
-          docker push $ECR_REGISTRY:$IMAGE_TAG
-          docker push $ECR_REGISTRY:latest
+          # ECR에 이미지 푸쉬 (커밋 해시 태그) - 실제 이미지 업로드
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          # ECR에 이미지 푸쉬 (latest 태그) - 태그만 추가로 푸쉬 (용량 추가 없음)
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          
+          # 다음 단계에서 사용할 수 있도록 빌드된 이미지 정보를 출력
+          # 이 단계의 출력값을 다른 단계에서 사용하기 위한 ID 설정 (GITHUB_OUTPUT가 변수화됨)
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
   deploy:
     name: Update ECS Service
@@ -88,17 +94,16 @@ jobs:
             --cluster ${{ vars.ECS_CLUSTER }} \
             --service ${{ vars.ECS_SERVICE }} \
             --desired-count 0  # [요구사항] 프리티어 고려해 실행 중지
+            --region ${{ vars.AWS_REGION }}
 
       # 3. 새 태스크 정의 등록 (task-definition.json 기반)
       - name: Register new task definition with updated image
-        id: register-task
-        run: |
-          # [요구사항] 기존 태스크 정의 기반으로 업데이트 수행
-          aws ecs register-task-definition \
-            --cli-input-json file://task-definition.json > task-def-result.json
-
-          # 등록된 태스크 정의 ARN을 추출하여 환경 변수로 저장
-          echo "TASK_DEF_ARN=$(jq -r '.taskDefinition.taskDefinitionArn' task-def-result.json)" >> $GITHUB_ENV
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ vars.ECS_SERVICE }}
+          cluster: ${{ vars.ECS_CLUSTER }}
+          wait-for-service-stability: true
 
       # 4. 새 태스크 정의를 서비스에 반영하고 다시 실행
       - name: Update ECS service with new task definition
@@ -106,5 +111,5 @@ jobs:
           aws ecs update-service \
             --cluster ${{ vars.ECS_CLUSTER }} \
             --service ${{ vars.ECS_SERVICE }} \
-            --task-definition ${{ env.TASK_DEF_ARN }} \
             --desired-count 1  # 🔹 [요구사항] 서비스 재실행
+            --region ${{ vars.AWS_REGION }}
