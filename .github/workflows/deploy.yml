@@ -58,9 +58,9 @@ jobs:
           # 새 이미지 URI로 업데이트
           NEW_IMAGE="${{ vars.ECR_REPOSITORY_URI }}:latest"
           
-          # 새 태스크 정의 생성 (불필요한 필드 제거)
+          # 새 태스크 정의 생성 (읽기 전용 필드들 제거)
           jq --arg img "$NEW_IMAGE" '
-            del(.taskDefinitionArn, .revision, .status, .registeredAt, .registeredBy, .placementConstraints, .compatibilities) |
+            del(.taskDefinitionArn, .revision, .status, .registeredAt, .registeredBy, .placementConstraints, .compatibilities, .requiresAttributes) |
             .containerDefinitions[0].image = $img
           ' task-def.json > new-task-def.json
           
