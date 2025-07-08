@@ -22,8 +22,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run tests (excluding AWS S3 tests)
-        run: ./gradlew test jacocoTestReport -Dtest.exclude="**/AWSS3Test.class"
+      - name: Run unit tests only
+        run: ./gradlew test jacocoTestReport --tests '*' --exclude-task test
         env:
           SPRING_PROFILES_ACTIVE: test
 
