@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -49,11 +48,10 @@ public interface BinaryContentApi {
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "200", description = "파일 다운로드 성공",
-          content = @Content(schema = @Schema(type = "string", format = "binary"))
+          content = @Content(schema = @Schema(implementation = Resource.class))
       )
   })
   ResponseEntity<?> download(
       @Parameter(description = "다운로드할 파일 ID") UUID binaryContentId
   );
-
-}
+} 
