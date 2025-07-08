@@ -32,6 +32,7 @@ RUN ./gradlew dependencies --no-daemon
 # =============================
 
 COPY src src
+RUN ./gradlew bootJar --no-daemon
 
 # ==============================
 # 2단계: Runtime Stage (경량 이미지)
@@ -41,9 +42,6 @@ FROM amazoncorretto:17-alpine
 
 # 실행 디렉토리
 WORKDIR /app
-
-# 애플리케이션 빌드 (bootJar 사용)
-RUN ./gradlew bootJar
 
 # 1단계에서 생성된 JAR 파일만 복사
 COPY --from=builder /app/build/libs/*.jar ./app.jar
