@@ -36,6 +36,17 @@ out/
 ### VS Code ###
 .vscode/
 
+# 파일 저장소 (사용자가 업로드한 파일들)
+.discodeit/storage/
 /binary-contents/
+
+# 로그 파일들
+*.logs
+*.logs.*
+
+# 기타
 *.ser
 
+.env
+
+discodeit.env

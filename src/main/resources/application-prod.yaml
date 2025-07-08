@@ -1,0 +1,23 @@
+server:
+  port: 80
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+logging:
+  level:
+    root: info
+    com.sprint.mission.discodeit: info
+    org.hibernate.SQL: off
+    org.hibernate.orm.jdbc.bind: off

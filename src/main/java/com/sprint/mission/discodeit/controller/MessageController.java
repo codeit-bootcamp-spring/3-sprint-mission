@@ -7,22 +7,34 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
-import lombok.RequiredArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/messages")
@@ -32,15 +44,16 @@ public class MessageController implements MessageApi {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MessageDto> create(
-        @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
+        @RequestPart("messageCreateRequest") @Valid MessageCreateRequest messageCreateRequest,
         @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
-        List<MultipartFile> multipartAttachments = attachments != null ? attachments : List.of();
-
-        List<BinaryContentCreateRequest> attachmentRequests = multipartAttachments.stream()
-            .map(this::resolveAttachmentRequest)
-            .flatMap(Optional::stream)
-            .collect(Collectors.toList());
+        List<BinaryContentCreateRequest> attachmentRequests =
+            Optional.ofNullable(attachments)
+                .orElse(List.of())
+                .stream()
+                .map(this::resolveAttachmentRequest)
+                .flatMap(Optional::stream)
+                .collect(Collectors.toList());
 
         MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
 
@@ -51,18 +64,25 @@ public class MessageController implements MessageApi {
 
     @GetMapping
     public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
-        @RequestParam UUID channelId,
-        @RequestParam(required = false) Instant cursor,
-        @ParameterObject Pageable pageable
-    ) {
-        PageResponse<MessageDto> pageResponse = messageService.findAllByChannelId(channelId,
-            cursor, pageable);
-        return ResponseEntity.ok(pageResponse);
+        @RequestParam("channelId") UUID channelId,
+        @RequestParam(value = "cursor", required = false) Instant cursor,
+        @PageableDefault(
+            size = 50,
+            page = 0,
+            sort = "createdAt",
+            direction = Direction.DESC
+        ) Pageable pageable) {
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor,
+            pageable);
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(messages);
     }
 
     @PatchMapping(path = "/{messageId}")
     public ResponseEntity<MessageDto> update(
-        @PathVariable UUID messageId,
+        @PathVariable("messageId") UUID messageId,
         @RequestBody MessageUpdateRequest messageUpdateRequest
     ) {
         MessageDto updatedMessage = messageService.update(messageId, messageUpdateRequest);
@@ -73,10 +93,12 @@ public class MessageController implements MessageApi {
     }
 
     @DeleteMapping(path = "/{messageId}")
-    public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
+    public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
         messageService.delete(messageId);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity
+            .status(HttpStatus.NO_CONTENT)
+            .build();
     }
 
     private Optional<BinaryContentCreateRequest> resolveAttachmentRequest(

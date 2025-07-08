@@ -3,21 +3,16 @@ package com.sprint.mission.discodeit.mapper;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class MessageMapper {
 
-    private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
     private final UserMapper userMapper;
 
@@ -28,16 +23,11 @@ public class MessageMapper {
 
         UserDto author = userMapper.toDto(message.getAuthor());
 
-        List<UUID> attachmentIds = Optional.ofNullable(message.getAttachments())
-            .orElse(List.of())
-            .stream()
-            .map(BinaryContent::getId)
-            .toList();
-
-        List<BinaryContent> binaryContents = binaryContentRepository.findAllByIdIn(attachmentIds);
-        List<BinaryContentDto> binaryContentDtos = binaryContents.stream()
-            .map(binaryContentMapper::toDto)
-            .toList();
+        List<BinaryContentDto> attachments = Optional.ofNullable(message.getAttachments())
+            .map(list -> list.stream()
+                .map(binaryContentMapper::toDto)
+                .toList())
+            .orElse(List.of());
 
         return new MessageDto(
             message.getId(),
@@ -46,8 +36,7 @@ public class MessageMapper {
             message.getContent(),
             message.getChannel().getId(),
             author,
-            binaryContentDtos
+            attachments
         );
     }
-
 }
