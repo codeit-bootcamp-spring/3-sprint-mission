@@ -6,10 +6,10 @@ import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.alreadyexist.ReadStatusAlreadyExistsException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundChannelException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundReadStatusException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
+import com.sprint.mission.discodeit.exception.readstatus.NotFoundReadStatusException;
+import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
 import com.sprint.mission.discodeit.mapper.struct.ReadStatusStructMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -40,15 +40,15 @@ public class BasicReadStatusService implements ReadStatusService {
         UUID channelId = readStatusRequestDTO.channelId();
 
         if (!userRepository.existsById(userId)) {
-            throw new NotFoundUserException();
+            throw new NotFoundUserException(userId);
         }
 
         if (!channelRepository.existsById(channelId)) {
-            throw new NotFoundChannelException();
+            throw new NotFoundChannelException(channelId);
         }
 
         if (readStatusRepository.existsByUserIdAndChannelId(userId, channelId)) {
-            throw new ReadStatusAlreadyExistsException();
+            throw new ReadStatusAlreadyExistsException(userId, channelId);
         }
 
         User user = findUser(userId);
@@ -103,16 +103,16 @@ public class BasicReadStatusService implements ReadStatusService {
 
     private ReadStatus findReadStatus(UUID id) {
         return readStatusRepository.findById(id)
-                .orElseThrow(NotFoundReadStatusException::new);
+                .orElseThrow(() -> new NotFoundReadStatusException(id));
     }
 
     private User findUser(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(NotFoundUserException::new);
+                .orElseThrow(() -> new NotFoundUserException(id));
     }
 
     private Channel findChannel(UUID id) {
         return channelRepository.findById(id)
-                .orElseThrow(NotFoundChannelException::new);
+                .orElseThrow(() -> new NotFoundChannelException(id));
     }
 }

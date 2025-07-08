@@ -5,9 +5,9 @@ import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.alreadyexist.UserStatusAlreadyExistsException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundUserStatusException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
+import com.sprint.mission.discodeit.exception.userstatus.NotFoundUserStatusException;
 import com.sprint.mission.discodeit.mapper.struct.UserStatusStructMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -34,11 +34,11 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusResponseDto create(UserStatusRequestDto userStatusRequestDTO) {
         UUID userId = userStatusRequestDTO.userId();
         if (!userRepository.existsById(userId)) {
-            throw new NotFoundUserException();
+            throw new NotFoundUserException(userId);
         }
 
         if (userStatusRepository.existsByUserId(userId)) {
-            throw new UserStatusAlreadyExistsException();
+            throw new UserStatusAlreadyExistsException(userId);
         }
 
         User user = findUser(userStatusRequestDTO.userId());
@@ -84,7 +84,7 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusResponseDto updateByUserId(UUID userId,
                                                 UserStatusUpdateDto userStatusUpdateDTO) {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(NotFoundUserStatusException::new);
+                .orElseThrow(() -> new NotFoundUserStatusException(userId));
 
         userStatus.updatelastActiveAt(userStatusUpdateDTO.newLastActiveAt());
         userStatusRepository.save(userStatus);
@@ -105,6 +105,6 @@ public class BasicUserStatusService implements UserStatusService {
 
     private User findUser(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(NotFoundUserException::new);
+                .orElseThrow(() -> new NotFoundUserException(id));
     }
 }

@@ -8,9 +8,9 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundChannelException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundMessageException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
+import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
+import com.sprint.mission.discodeit.exception.message.NotFoundMessageException;
+import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.struct.BinaryContentStructMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service("basicMessageService")
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -63,6 +65,9 @@ public class BasicMessageService implements MessageService {
 
         String content = messageRequestDto.content();
 
+        log.info("[BasicMessageService] 메시지 생성 요청- authorId: {}, channelId: {}, content: {}",
+                author.getId(), channel.getId(), messageRequestDto.content());
+
         Message message = Message.builder()
                 .content(content)
                 .author(author)
@@ -72,7 +77,11 @@ public class BasicMessageService implements MessageService {
 
         message.updateAttachments(binaryContents);
 
-        messageRepository.save(message);
+        Message savedMessage = messageRepository.save(message);
+
+        log.info("[BasicMessageService] 메시지 생성 성공- id: {}, authorId: {}, channelId: {}, content: {}",
+                savedMessage.getId(), savedMessage.getAuthor().getId(), savedMessage.getChannel().getId(),
+                savedMessage.getContent());
 
         return messageMapper.toDto(message);
     }
@@ -109,7 +118,7 @@ public class BasicMessageService implements MessageService {
 
         Instant nextCursor = hasNext ? contentMessages.get(contentMessages.size() - 1).getCreatedAt() : null;
 
-        List<MessageResponseDto> content = messages.stream()
+        List<MessageResponseDto> content = contentMessages.stream()
                 .map(messageMapper::toDto)
                 .toList();
 
@@ -119,25 +128,35 @@ public class BasicMessageService implements MessageService {
     @Override
     @Transactional
     public MessageResponseDto updateContent(UUID messageId, String content) {
+        log.info("[BasicMessageService] 메시지 내용 수정 요청- id: {} content: {}", messageId, content);
+
         Message message = findMessage(messageId);
 
         message.updateContent(content);
 
-        messageRepository.save(message);
+        Message updatedMessage = messageRepository.save(message);
 
-        return messageMapper.toDto(message);
+        log.info("[BasicMessageService] 메시지 내용 수정 성공- id: {}, newContent: {}", updatedMessage.getId(),
+                updatedMessage.getContent());
+
+        return messageMapper.toDto(updatedMessage);
     }
 
     @Override
     @Transactional
     public void deleteById(UUID messageId) {
+        log.info("[BasicMessageService] 메시지 삭제 요청: id: {}", messageId);
+
         Message message = findMessage(messageId);
+        log.info("[BasicMessageService] 삭제할 메시지 조회 완료: id: {}", message.getId());
 
         for (BinaryContent binaryContent : message.getAttachments()) {
             binaryContentRepository.deleteById(binaryContent.getId());
         }
 
         messageRepository.deleteById(messageId);
+
+        log.info("[BasicMessageService] 메시지 삭제 성공: id: {}", messageId);
     }
 
     private List<BinaryContent> convertBinaryContentDtos(List<BinaryContentDto> binaryContentDtos) {
@@ -148,16 +167,16 @@ public class BasicMessageService implements MessageService {
 
     private Message findMessage(UUID id) {
         return messageRepository.findById(id)
-                .orElseThrow(NotFoundMessageException::new);
+                .orElseThrow(() -> new NotFoundMessageException(id));
     }
 
     private Channel findChannel(UUID id) {
         return channelRepository.findById(id)
-                .orElseThrow(NotFoundChannelException::new);
+                .orElseThrow(() -> new NotFoundChannelException(id));
     }
 
     private User findUser(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(NotFoundUserException::new);
+                .orElseThrow(() -> new NotFoundUserException(id));
     }
 }

@@ -1,43 +1,69 @@
-discodeit:
-  storage:
-    type: local
-    local:
-      root-path: ./binaries
-
-springdoc:
-  api-docs:
-    # OpenAPI 명세서 경로(JSON)
-    path: /v3/api-docs
-  swagger-ui:
-    # OpenAPI 명세서 경로(HTML)
-    path: /swagger-ui.html
-    # 요청 응답 시간 표시
-    display-request-duration: true
-    # HTTP 메서드 기준으로 정렬
-    operations-sorter: method
-
 spring:
-  # DB 접속 정보
   datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit
-    username: discodeit_user
-    password: discodeit1234
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
-  # JPA 설정
+
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-        highlight_sql: true
         use_sql_comments: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 
-# logging 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, loggers
+  endpoint:
+    info:
+      enabled: true
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+
+discodeit:
+  storage:
+    type: ${STORAGE_TYPE:local}
+    local:
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:./binaries}
+    s3:
+      access-key: ${AWS_S3_ACCESS_KEY}
+      secret-key: ${AWS_S3_SECRET_KEY}
+      region: ${AWS_S3_REGION}
+      bucket: ${AWS_S3_BUCKET}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+    operations-sorter: method
+
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+    java:
+      version: 17
+    spring-boot:
+      version: 3.4.0
+
 logging:
   level:
+    com.sprint.mission.discodeit: INFO
     org.hibernate.sql: debug
     org.hibernate.orm.jdbc.bind: trace

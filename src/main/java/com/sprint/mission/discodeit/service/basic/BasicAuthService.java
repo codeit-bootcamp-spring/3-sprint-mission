@@ -4,9 +4,9 @@ import com.sprint.mission.discodeit.dto.auth.LoginDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.LoginFailedException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundUserException;
-import com.sprint.mission.discodeit.exception.notfound.NotFoundUserStatusException;
+import com.sprint.mission.discodeit.exception.user.LoginFailedException;
+import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
+import com.sprint.mission.discodeit.exception.userstatus.NotFoundUserStatusException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -34,10 +34,10 @@ public class BasicAuthService implements AuthService {
         String password = loginDTO.password();
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new NotFoundUserException("username이 " + username + "인 사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundUserException(username));
 
         if (!user.getPassword().equals(password)) {
-            throw new LoginFailedException();
+            throw new LoginFailedException(user.getUsername());
         }
 
         // User 로그인 시 User 온라인 상태 정보 변경
@@ -51,6 +51,6 @@ public class BasicAuthService implements AuthService {
 
     private UserStatus findUserStatus(UUID userId) {
         return userStatusRepository.findByUserId(userId)
-                .orElseThrow(NotFoundUserStatusException::new);
+                .orElseThrow(() -> new NotFoundUserStatusException(userId));
     }
 }
