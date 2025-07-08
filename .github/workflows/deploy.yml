@@ -30,8 +30,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ vars.ECR_REPOSITORY_URI }} : latest
-            ${{ vars.ECR_REPOSITORY_URI }} : ${{ github.sha }}
+            ${{ vars.ECR_REPOSITORY_URI }}:latest
+            ${{ vars.ECR_REPOSITORY_URI }}:${{ github.sha }}
           platforms: linux/amd64
 
   deploy:
