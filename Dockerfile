@@ -1,3 +1,4 @@
+# A. 빌드 스테이지
 # 1. 베이스 이미지 선택
 FROM amazoncorretto:17
 
@@ -6,6 +7,24 @@ FROM amazoncorretto:17
 # /app 디렉토리가 없으면 자동으로 생성된다
 WORKDIR /app
 
+# Gradle 래퍼와 설정 파일 복사
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle .
+COPY settings.gradle .
+
+# 의존성 다운로드 (캐시 최적화)
+RUN ./gradlew dependencies --no-daemon
+
+# 소스 코드 복사 및 빌드
+COPY src src
+RUN ./gradlew build --no-daemon
+
+# B. 실행 스테이지
+FROM amazoncorretto:17
+WORKDIR /app
+
+# 빌드 스테이지에서 JAR 파일만 복사
 # 3. JAR 파일 복사
 # build/libs/*.jar - Gradle 빌드 결과물 (와일드카드로 버전 무관하게 복사)
 # app.jar - 컨테이너 내부에서 사용할 파일명 (단순화)
