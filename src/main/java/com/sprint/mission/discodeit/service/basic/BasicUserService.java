@@ -45,10 +45,14 @@ public class BasicUserService implements UserService {
         String email = userCreateRequest.email();
         String password = userCreateRequest.password();
 
-        // 유효성 검사( Unique Key )
-        validateUniqueUsernameAndEmail(username, email);
+        if (userRepository.existsByEmail(email)) {
+            throw UserAlreadyExistsException.withEmail(email);
+        }
+        if (userRepository.existsByUsername(username)) {
+            throw UserAlreadyExistsException.withUsername(username);
+        }
 
-        BinaryContent profile = profileCreateRequest
+        BinaryContent nullableProfile = profileCreateRequest
             .map(profileRequest -> {
                 String fileName = profileRequest.fileName();
                 String contentType = profileRequest.contentType();
@@ -61,12 +65,11 @@ public class BasicUserService implements UserService {
             })
             .orElse(null);
 
-        User user = new User(username, email, password, profile);
+        User user = new User(username, email, password, nullableProfile);
         Instant now = Instant.now();
-
         UserStatus userStatus = new UserStatus(user, now);
-        userRepository.save(user);
 
+        userRepository.save(user);
         log.info("사용자 생성 완료 : id = {}, username = {}", user.getId(), username);
         return userMapper.toDto(user);
     }
@@ -100,16 +103,24 @@ public class BasicUserService implements UserService {
         log.debug("사용자 수정 시작 : id = {}, request = {}", userId, userUpdateRequest);
 
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+            .orElseThrow(() -> {
+                UserNotFoundException exception = UserNotFoundException.withId(userId);
+                return exception;
+            });
 
         String newUsername = userUpdateRequest.newUsername();
         String newEmail = userUpdateRequest.newEmail();
         String newPassword = userUpdateRequest.newPassword();
 
-        // 유효성 검사( Unique Key + Primary Key )
-        validateUniqueUsernameAndEmail(newUsername, newEmail, user);
+        if (userRepository.existsByEmail(newEmail)) {
+            throw UserAlreadyExistsException.withEmail(newEmail);
+        }
 
-        BinaryContent profile = optionalProfileCreateRequest
+        if (userRepository.existsByUsername(newUsername)) {
+            throw UserAlreadyExistsException.withUsername(newUsername);
+        }
+
+        BinaryContent nullableProfile = optionalProfileCreateRequest
             .map(profileRequest -> {
 
                 String fileName = profileRequest.fileName();
@@ -123,7 +134,7 @@ public class BasicUserService implements UserService {
             })
             .orElse(null);
 
-        user.update(newUsername, newEmail, newPassword, profile);
+        user.update(newUsername, newEmail, newPassword, nullableProfile);
 
         log.info("사용자 수정 완료 : id = {}", userId);
         return userMapper.toDto(user);
@@ -133,51 +144,12 @@ public class BasicUserService implements UserService {
     @Override
     public void delete(UUID userId) {
         log.debug("사용자 삭제 시작 : id = {}", userId);
-        if (userRepository.existsById(userId)) {
-            throw new NoSuchElementException("User with id " + userId + " not found");
+        if (!userRepository.existsById(userId)) {
+            throw UserNotFoundException.withId(userId);
         }
 
         userRepository.deleteById(userId);
         log.info("사용자 삭제 완료 : id = {}", userId);
-    }
-
-
-    // 프로필 저장
-    private BinaryContent saveProfile(BinaryContentCreateRequest profileRequest) {
-        BinaryContent binaryContent = new BinaryContent(
-            profileRequest.fileName(),
-            (long) profileRequest.bytes().length,
-            profileRequest.contentType()
-        );
-
-        BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
-        binaryContentStorage.put(savedBinaryContent.getId(), profileRequest.bytes());
-        return savedBinaryContent;
-    }
-
-    // 유효성 검사( username, email ) : create
-    private void validateUniqueUsernameAndEmail(String username, String email) {
-        if (userRepository.existsByUsername(username)) {
-            throw UserAlreadyExistsException.withUsername(username);
-        }
-        if (userRepository.existsByEmail(email)) {
-            throw UserAlreadyExistsException.withEmail(email);
-        }
-    }
-
-    // 유효성 검사( username, email, userId ) : update
-    private void validateUniqueUsernameAndEmail(String newUsername, String newEmail,
-        User currentUser) {
-        if (newUsername != null &&
-            !newUsername.equals(currentUser.getUsername()) &&
-            userRepository.existsByUsername(newUsername)) {
-            throw UserAlreadyExistsException.withUsername(newUsername);
-        }
-        if (newEmail != null &&
-            !newEmail.equals(currentUser.getEmail()) &&
-            userRepository.existsByEmail(newEmail)) {
-            throw UserAlreadyExistsException.withEmail(newEmail);
-        }
     }
 
 }
