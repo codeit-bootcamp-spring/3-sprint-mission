@@ -9,24 +9,17 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
-@Service
 public interface MessageService {
 
-  // id = message ID
-  MessageDto create(MessageCreateRequest messageCreateDto,
-      List<BinaryContentCreateRequest> binaryContentCreateDto);
+  MessageDto create(MessageCreateRequest messageCreateRequest,
+      List<BinaryContentCreateRequest> binaryContentCreateRequests);
 
-  PageResponse<MessageDto> findAllByChannelId(UUID channeId, Instant cursor, Pageable pageable);
+  MessageDto find(UUID messageId);
 
-  MessageDto find(UUID id);
+  PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createdAt, Pageable pageable);
 
-  PageResponse<MessageDto> findAllByChannelIdAndContent(UUID channelId, String content,
-      Instant cursor, Pageable pageable);
+  MessageDto update(UUID messageId, MessageUpdateRequest request);
 
-  MessageDto update(UUID id, MessageUpdateRequest messageUpdateDto);
-
-  void delete(UUID id);
-
+  void delete(UUID messageId);
 }

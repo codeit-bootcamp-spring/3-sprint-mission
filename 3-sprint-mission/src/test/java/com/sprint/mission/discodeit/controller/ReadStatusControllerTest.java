@@ -3,9 +3,10 @@ package com.sprint.mission.discodeit.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -13,7 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.exception.readStatus.ReadStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import java.time.Instant;
 import java.util.List;
@@ -45,7 +46,7 @@ class ReadStatusControllerTest {
     UUID userId = UUID.randomUUID();
     UUID channelId = UUID.randomUUID();
     Instant lastReadAt = Instant.now();
-
+    
     ReadStatusCreateRequest createRequest = new ReadStatusCreateRequest(
         userId,
         channelId,
@@ -99,7 +100,7 @@ class ReadStatusControllerTest {
     UUID userId = UUID.randomUUID();
     UUID channelId = UUID.randomUUID();
     Instant newLastReadAt = Instant.now();
-
+    
     ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(newLastReadAt);
 
     ReadStatusDto updatedReadStatus = new ReadStatusDto(
@@ -129,11 +130,11 @@ class ReadStatusControllerTest {
     // Given
     UUID nonExistentId = UUID.randomUUID();
     Instant newLastReadAt = Instant.now();
-
+    
     ReadStatusUpdateRequest updateRequest = new ReadStatusUpdateRequest(newLastReadAt);
 
     given(readStatusService.update(eq(nonExistentId), any(ReadStatusUpdateRequest.class)))
-        .willThrow(new ReadStatusNotFoundException(nonExistentId));
+        .willThrow(ReadStatusNotFoundException.withId(nonExistentId));
 
     // When & Then
     mockMvc.perform(patch("/api/readStatuses/{readStatusId}", nonExistentId)
@@ -150,7 +151,7 @@ class ReadStatusControllerTest {
     UUID channelId1 = UUID.randomUUID();
     UUID channelId2 = UUID.randomUUID();
     Instant now = Instant.now();
-
+    
     List<ReadStatusDto> readStatuses = List.of(
         new ReadStatusDto(UUID.randomUUID(), userId, channelId1, now.minusSeconds(60)),
         new ReadStatusDto(UUID.randomUUID(), userId, channelId2, now)

@@ -1,0 +1,83 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.multistage.dockerfile
+      args:
+        PROJECT_NAME: discodeit
+        PROJECT_VERSION: 1.2-M8
+    container_name: discodeit-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8081}:${SERVER_PORT:-80}"
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SERVER_PORT: ${SERVER_PORT:-80}
+      JVM_OPTS: ${JVM_OPTS:--Xms256m -Xmx512m -XX:+UseG1GC}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_FILE_PATH: /app/logs/application.log
+      TZ: "Asia/Seoul"
+    depends_on:
+      - postgres
+    volumes:
+      - app_logs:/app/logs
+      - ./config:/app/config:ro
+      - app_data:/app/data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${SERVER_PORT:-8080}/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - discodeit-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: discodeit-db
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL","pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - discodeit-network
+
+
+volumes:
+  app_logs:
+    driver: local
+    name: discodeit-app-logs
+
+  app_data:
+    driver: local
+    name: discodeit-app-data
+
+  postgres_data:
+    driver: local
+    name: discodeit-postgres-data
+
+networks:
+  discodeit-network:
+    driver: bridge
+    name: discodeit-network
