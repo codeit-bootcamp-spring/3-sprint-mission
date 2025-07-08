@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import java.util.UUID;
 
 public record UserResponse(
-
     UUID id,
     String username,
     String email,

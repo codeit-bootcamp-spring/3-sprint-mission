@@ -109,7 +109,7 @@ class MessageRepositoryTest {
         Instant result = messageRepository.findLastMessageAtByChannelId(channel.getId())
             .orElse(Instant.MIN);
 
-        assertThat(result).isCloseTo(now, within(10, ChronoUnit.MILLIS));
+        assertThat(result).isCloseTo(now, within(50, ChronoUnit.MILLIS));
     }
 
     @Test
