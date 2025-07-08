@@ -57,16 +57,19 @@ jobs:
           # 새 이미지 URI로 업데이트
           NEW_IMAGE="${{ vars.ECR_REPOSITORY_URI }}:latest"
           
+          # containerDefinitions 업데이트 (첫 번째 컨테이너의 이미지만 변경)
+          jq --arg img "$NEW_IMAGE" '.containerDefinitions[0].image = $img' task-def.json > updated-task-def.json
+          
           # 새 태스크 정의 등록
           NEW_TASK_DEF=$(aws ecs register-task-definition \
             --family ${{ vars.ECS_TASK_DEFINITION }} \
-            --task-role-arn $(jq -r '.taskRoleArn' task-def.json) \
-            --execution-role-arn $(jq -r '.executionRoleArn' task-def.json) \
-            --network-mode $(jq -r '.networkMode' task-def.json) \
-            --cpu $(jq -r '.cpu' task-def.json) \
-            --memory $(jq -r '.memory' task-def.json) \
-            --requires-compatibilities $(jq -r '.requiresCompatibilities[]' task-def.json) \
-            --container-definitions "$(jq --arg img "$NEW_IMAGE" '.[0].image = $img' task-def.json | jq -c '.[0:1]')" \
+            --task-role-arn $(jq -r '.taskRoleArn // empty' updated-task-def.json) \
+            --execution-role-arn $(jq -r '.executionRoleArn // empty' updated-task-def.json) \
+            --network-mode $(jq -r '.networkMode // "bridge"' updated-task-def.json) \
+            --cpu $(jq -r '.cpu // empty' updated-task-def.json) \
+            --memory $(jq -r '.memory // empty' updated-task-def.json) \
+            --requires-compatibilities $(jq -r '.requiresCompatibilities[]? // "EC2"' updated-task-def.json) \
+            --container-definitions "$(jq -c '.containerDefinitions' updated-task-def.json)" \
             --query 'taskDefinition.taskDefinitionArn' \
             --output text)
           
