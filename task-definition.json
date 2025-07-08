@@ -3,8 +3,8 @@
     {
       "name": "discodeit-app",
       "image": "public.ecr.aws/m8n4t4p5/discodeit:<IMAGE_TAG>",
-      "cpu": 512,
-      "memory": 1024,
+      "cpu": 384,
+      "memory": 512,
       "memoryReservation": 256,
       "portMappings": [
         {
@@ -29,7 +29,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/discodeit-task",
+          "awslogs-group": "/ecs/discodeit-task-v2",
           "awslogs-create-group": "true",
           "awslogs-region": "ap-northeast-2",
           "awslogs-stream-prefix": "ecs"
@@ -60,7 +60,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/discodeit-task",
+          "awslogs-group": "/ecs/discodeit-task-v2",
           "awslogs-create-group": "true",
           "awslogs-region": "ap-northeast-2",
           "awslogs-stream-prefix": "ecs"
