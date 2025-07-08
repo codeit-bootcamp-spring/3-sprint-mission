@@ -19,7 +19,9 @@
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
       <!-- 일별 로그 파일 -->
       <fileNamePattern>./logs/app.%d{yyyy-MM-dd}.log</fileNamePattern>
-      <maxHistory>30</maxHistory> <!-- 30일 보관 -->
+      <maxFileSize>100MB</maxFileSize> <!-- 파일 하나가 100MB 넘으면 새로 만듦 -->
+      <maxHistory>30</maxHistory>       <!-- 최대 30일 보관 -->
+      <totalSizeCap>5GB</totalSizeCap>  <!-- 전체 합이 5GB 넘으면 오래된 것부터 삭제 -->
     </rollingPolicy>
     <encoder>
       <pattern>${ROLLING_PATTERN}</pattern>
