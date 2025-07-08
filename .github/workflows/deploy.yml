@@ -11,6 +11,7 @@ env:
   ECS_SERVICE: discodeit-service
   ECS_CLUSTER: discodeit-cluster
   ECS_TASK_DEFINITION: discodeit-task
+  ECR_NGINX_URI: public.ecr.aws/m8n4t4p5/nginx-discodeit
 
 jobs:
   docker:
@@ -48,6 +49,11 @@ jobs:
           docker build -t $ECR_REPOSITORY_URI:latest -t $ECR_REPOSITORY_URI:$IMAGE_TAG .
           docker push $ECR_REPOSITORY_URI:latest
           docker push $ECR_REPOSITORY_URI:$IMAGE_TAG
+
+      - name: Build and push nginx image
+        run: |
+          docker build -f Dockerfile.nginx -t $ECR_NGINX_URI:latest .
+          docker push $ECR_NGINX_URI:latest
 
   deploy:
     name: Deploy to ECS

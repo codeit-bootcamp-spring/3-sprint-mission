@@ -82,11 +82,13 @@ temp/
 Thumbs.db          # Windows
 Desktop.ini        # Windows
 
-### 학습용 임시 파일들 ###
 TODO.md
 NOTES.md
 memo.txt
 test-*.txt
 
-### 실습 가이드 파일들 (교육용 자료) ###
 HOWTO-PHASE-*.md
+allow-cloudflare-ipv6.sh
+allow-cloudflare.sh
+default.conf
+Dockerfile.ngnix
