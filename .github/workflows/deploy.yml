@@ -75,6 +75,25 @@ jobs:
           cat new-task-def.json | jq --arg img_uri "$IMAGE_URI" \
             '(.containerDefinitions[0].image) = $img_uri' > final-task-def.json
 
+      - name: Prepare final task definition
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE_URI=$ECR_REPOSITORY_URI:$IMAGE_TAG
+
+          jq --arg img_uri "$IMAGE_URI" '
+            del(
+              .taskDefinitionArn,
+              .revision,
+              .status,
+              .requiresAttributes,
+              .compatibilities,
+              .registeredAt,
+              .registeredBy
+            ) |
+            .containerDefinitions[0].image = $img_uri
+          ' task-definition.json > final-task-def.json
+
       - name: Register new task definition
         id: register-task
         run: |
