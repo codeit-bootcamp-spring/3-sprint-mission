@@ -24,6 +24,7 @@ Dockerfile
 
 # 환경 설정 파일
 .env
+discodeit.env
 
 # 임시 파일
 *.tmp
