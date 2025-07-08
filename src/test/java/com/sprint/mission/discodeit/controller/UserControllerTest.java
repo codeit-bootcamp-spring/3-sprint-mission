@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.UUID;
 
@@ -76,16 +77,16 @@ class UserControllerTest {
                 .willReturn(expectedResponse);
 
         // when
-        mockMvc.perform(multipart("/api/users")
-                        .file(userCreateRequest)
-                        .file(profile)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isCreated())
+        ResultActions result = mockMvc.perform(multipart("/api/users")
+                .file(userCreateRequest)
+                .file(profile)
+                .contentType(MediaType.MULTIPART_FORM_DATA));
+
+        // then
+        result.andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(userId.toString()))
                 .andExpect(jsonPath("$.username").value("test"))
                 .andExpect(jsonPath("$.email").value("test@test.com"));
-
-        // then
         verify(userService).create(argThat(req ->
                 req.username().equals("test") &&
                         req.email().equals("test@test.com")
@@ -108,10 +109,12 @@ class UserControllerTest {
         );
 
         // when
-        mockMvc.perform(multipart("/api/users")
-                        .file(userCreateRequest)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isBadRequest())
+        ResultActions result = mockMvc.perform(multipart("/api/users")
+                .file(userCreateRequest)
+                .contentType(MediaType.MULTIPART_FORM_DATA));
+
+        // then
+        result.andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
                 .andExpect(jsonPath("$.message").value("유효성 검사 실패"));
     }

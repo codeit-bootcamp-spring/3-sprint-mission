@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -131,7 +133,6 @@ class BasicMessageServiceTest {
         assertEquals(content, result.content());
         assertEquals(channelId, result.channelId());
         assertEquals(List.of(attachment), result.attachments());
-
         verify(userRepository).findById(authorId);
         verify(channelRepository).findById(channelId);
         verify(binaryContentRepository).saveAll(List.of(binaryContent));
@@ -151,9 +152,12 @@ class BasicMessageServiceTest {
         given(userRepository.findById(notExistUserId)).willReturn(Optional.empty());
 
         // when
-        assertThrows(NotFoundUserException.class, () -> messageService.create(request, null));
+        Throwable thrown = catchThrowable(() -> messageService.create(request, null));
 
         // then
+        assertThat(thrown)
+                .isInstanceOf(NotFoundUserException.class)
+                .hasMessageContaining("사용자");
         verify(messageRepository, never()).save(any());
     }
 
@@ -177,9 +181,12 @@ class BasicMessageServiceTest {
         given(channelRepository.findById(notExistChannelId)).willReturn(Optional.empty());
 
         // when
-        assertThrows(NotFoundChannelException.class, () -> messageService.create(request, null));
+        Throwable thrown = catchThrowable(() -> messageService.create(request, null));
 
         // then
+        assertThat(thrown)
+                .isInstanceOf(NotFoundChannelException.class)
+                .hasMessageContaining("채널");
         verify(messageRepository, never()).save(any());
     }
 
@@ -229,7 +236,6 @@ class BasicMessageServiceTest {
         assertNotNull(result);
         assertEquals(content, result.content());
         assertEquals(channel.getId(), result.channelId());
-
         verify(messageRepository).findById(messageId);
         verify(messageMapper).toDto(message);
     }
@@ -244,9 +250,12 @@ class BasicMessageServiceTest {
         given(messageRepository.findById(notExistId)).willReturn(Optional.empty());
 
         // when
-        assertThrows(NotFoundMessageException.class, () -> messageService.findById(notExistId));
+        Throwable thrown = catchThrowable(() -> messageService.findById(notExistId));
 
         // then
+        assertThat(thrown)
+                .isInstanceOf(NotFoundMessageException.class)
+                .hasMessageContaining("메시지");
         verify(messageRepository).findById(notExistId);
         verifyNoInteractions(messageMapper);
     }
@@ -297,7 +306,6 @@ class BasicMessageServiceTest {
         assertTrue(result.hasNext());
         assertEquals(dto1, result.content().get(0));
         assertEquals(dto2, result.content().get(1));
-
         verify(messageRepository).findPageByChannelId(channelId, extendedPageable);
         verify(messageMapper).toDto(msg1);
         verify(messageMapper).toDto(msg2);
@@ -352,7 +360,6 @@ class BasicMessageServiceTest {
         assertEquals(dto1, result.content().get(0));
         assertEquals(dto2, result.content().get(1));
         assertEquals(t2, result.nextCursor()); // 마지막 메시지의 createdAt
-
         verify(messageRepository).findByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(channelId, cursor, extendedPageable);
         verify(messageMapper).toDto(msg1);
         verify(messageMapper).toDto(msg2);
@@ -391,7 +398,6 @@ class BasicMessageServiceTest {
         // then
         assertNotNull(result);
         assertEquals(expectedMessage, result);
-
         verify(messageRepository).findById(messageId);
     }
 
@@ -405,9 +411,12 @@ class BasicMessageServiceTest {
         given(messageRepository.findById(notExistId)).willReturn(Optional.empty());
 
         // when
-        assertThrows(NotFoundMessageException.class, () -> messageService.updateContent(notExistId, "Hello"));
+        Throwable thrown = catchThrowable(() -> messageService.updateContent(notExistId, "hello"));
 
         // then
+        assertThat(thrown)
+                .isInstanceOf(NotFoundMessageException.class)
+                .hasMessageContaining("메시지");
         verify(messageRepository).findById(notExistId);
     }
 
@@ -448,9 +457,12 @@ class BasicMessageServiceTest {
         given(messageRepository.findById(notExistId)).willReturn(Optional.empty());
 
         // when
-        assertThrows(NotFoundMessageException.class, () -> messageService.deleteById(notExistId));
+        Throwable thrown = catchThrowable(() -> messageService.deleteById(notExistId));
 
         // then
+        assertThat(thrown)
+                .isInstanceOf(NotFoundMessageException.class)
+                .hasMessageContaining("메시지");
         verify(messageRepository).findById(notExistId);
         verifyNoMoreInteractions(binaryContentRepository);
     }

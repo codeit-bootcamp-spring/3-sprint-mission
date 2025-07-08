@@ -70,20 +70,14 @@ public class UserServiceIntegrationTest {
 
         // then
         assertNotNull(result);
-
-        UUID userId = result.id();
-
-        Optional<User> foundUser = userRepository.findById(userId);
-        assertTrue(foundUser.isPresent());
+        Optional<User> foundUser = userRepository.findById(result.id());
+        assertTrue(foundUser.isPresent(), "유저가 저장되어야 한다.");
         assertEquals("test", foundUser.get().getUsername());
-
-        Optional<UserStatus> status = userStatusRepository.findByUserId(userId);
-        assertTrue(status.isPresent());
-
+        Optional<UserStatus> status = userStatusRepository.findByUserId(result.id());
+        assertTrue(status.isPresent(), "유저 1명의 UserStatus가 생성되어야 한다.");
         BinaryContent userProfile = foundUser.get().getProfile();
-        assertNotNull(userProfile);
+        assertNotNull(userProfile, "프로필 사진이 등록되어야 한다.");
         assertEquals("profile.png", userProfile.getFileName());
-
         byte[] data = binaryContentStorage.get(userProfile.getId()).readAllBytes();
         assertArrayEquals(imageBytes, data);
     }
@@ -121,12 +115,10 @@ public class UserServiceIntegrationTest {
         // then
         Optional<User> foundUser = userRepository.findById(userId);
         assertTrue(foundUser.isEmpty());
-
         Optional<BinaryContent> foundProfile = binaryContentRepository.findById(profileId);
-        assertTrue(foundProfile.isEmpty());
-
+        assertTrue(foundProfile.isEmpty(), "삭제된 유저의 프로필 사진도 삭제되어야 한다.");
         Optional<UserStatus> foundUserStatus = userStatusRepository.findByUserId(userId);
-        assertTrue(foundUserStatus.isEmpty());
+        assertTrue(foundUserStatus.isEmpty(), "삭제된 유저의 UserStatus도 삭제되어야 한다.");
     }
 
     /*

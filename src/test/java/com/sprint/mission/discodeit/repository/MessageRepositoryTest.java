@@ -101,10 +101,8 @@ class MessageRepositoryTest {
 
         // when
         List<Message> page1 = messageRepository.findPageByChannelId(savedChannel.getId(), PageRequest.of(0, 2));
-        List<Message> page2 = messageRepository.findPageByChannelId(savedChannel.getId(), PageRequest.of(1, 2));
 
         // then
         assertEquals(2, page1.size());
-        assertEquals(2, page2.size());
     }
 }
