@@ -2,11 +2,16 @@ spring:
   application:
     name: discodeit
   profiles:
-    active: dev  # 기본은 개발 환경. 운영 환경에선 prod로 바꿈
+    active: dev
   servlet:
     multipart:
       maxFileSize: 10MB
       maxRequestSize: 30MB
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        default_batch_fetch_size: 20
 
 management:
   endpoints:
@@ -39,9 +44,6 @@ info:
   multipart:
     max-file-size: 10MB
     max-request-size: 30MB
-
-jpa:
-  open-in-view: false
 
 logging:
   config: classpath:logback-spring.xml

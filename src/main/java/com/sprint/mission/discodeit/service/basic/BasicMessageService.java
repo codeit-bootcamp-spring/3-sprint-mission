@@ -115,7 +115,7 @@ public class BasicMessageService implements MessageService {
         Pageable pageable) {
         log.debug("채널 메시지 목록 조회 요청: channelId={}, createAt={}", channelId, createAt);
 
-        Slice<MessageDto> slice = messageRepository.findAllByChannelIdWithAuthor(
+        Slice<MessageDto> slice = messageRepository.findByChannelIdAndCreatedAtBefore(
             channelId,
             Optional.ofNullable(createAt).orElse(Instant.now()),
             pageable
