@@ -155,7 +155,6 @@ public class BasicMessageService implements MessageService {
             log.error("삭제 실패: 메시지 없음 - id={}", messageId);
             throw new MessageNotFoundException(messageId);
         }
-
         messageRepository.deleteById(messageId);
         log.info("메시지 삭제 완료: id={}", messageId);
     }
