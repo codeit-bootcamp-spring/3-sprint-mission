@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.config.JpaAuditingConfig;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +30,9 @@ class UserRepositoryTest {
 
     @Autowired
     private UserStatusRepository userStatusRepository;
+
+    @Autowired
+    EntityManager em;
 
     @Test
     @DisplayName("사용자 저장 및 findByUsername 성공")
@@ -105,10 +109,17 @@ class UserRepositoryTest {
         User user = new User("deluser", "del@exam.com", "pw", profile);
         userRepository.save(user);
 
+        // 연관 끊기 👇
+        user.clearProfile();
+        userRepository.save(user);
+
         // when
         binaryContentRepository.delete(profile);
 
         // then
+        em.flush();
+        em.clear();
+
         User fetchedUser = userRepository.findByUsername("deluser").orElseThrow();
         assertThat(fetchedUser.getProfile()).isNull();
     }

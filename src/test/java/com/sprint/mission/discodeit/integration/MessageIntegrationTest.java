@@ -31,6 +31,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -66,7 +67,7 @@ public class MessageIntegrationTest {
     @Test
     @DisplayName("메시지 생성 성공 - 첨부파일 포함")
     void createMessage_withAttachment_success() throws Exception {
-        // given
+        // Given
         MessageCreateRequest messageCreateRequest = new MessageCreateRequest(
             "Hello, this is a message.",
             channel.getId(),
@@ -87,24 +88,26 @@ public class MessageIntegrationTest {
             "Hello File!".getBytes(StandardCharsets.UTF_8)
         );
 
-        // when & then
-        mockMvc.perform(
-                multipart("/api/messages")
-                    .file(requestPart)
-                    .file(file)
-                    .contentType(MediaType.MULTIPART_FORM_DATA)
-            )
-            .andExpect(status().isCreated())
+        // When
+        ResultActions result = mockMvc.perform(
+            multipart("/api/messages")
+                .file(requestPart)
+                .file(file)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+        );
+
+        // Then
+        result.andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.content").value("Hello, this is a message."))
             .andExpect(jsonPath("$.author.id").value(author.getId().toString()))
             .andExpect(jsonPath("$.channelId").value(channel.getId().toString()));
     }
 
-
     @Test
     @DisplayName("메시지 생성 성공 - 첨부파일 미포함")
     void createMessage_success() throws Exception {
+        // Given
         MessageCreateRequest request = new MessageCreateRequest("Hello world", channel.getId(),
             author.getId());
         String json = objectMapper.writeValueAsString(request);
@@ -114,10 +117,13 @@ public class MessageIntegrationTest {
             json.getBytes(StandardCharsets.UTF_8)
         );
 
-        mockMvc.perform(multipart("/api/messages")
-                .file(requestPart)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-            .andExpect(status().isCreated())
+        // When
+        ResultActions result = mockMvc.perform(multipart("/api/messages")
+            .file(requestPart)
+            .contentType(MediaType.MULTIPART_FORM_DATA));
+
+        // Then
+        result.andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.content").value("Hello world"))
             .andExpect(jsonPath("$.channelId").value(channel.getId().toString()))
@@ -132,37 +138,47 @@ public class MessageIntegrationTest {
             author.getId());
         MessageDto created = createTestMessage(createRequest);
 
-        // When
         MessageUpdateRequest updateRequest = new MessageUpdateRequest("updated content");
-        mockMvc.perform(patch("/api/messages/" + created.id())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateRequest)))
-            .andExpect(status().isOk())
+
+        // When
+        ResultActions result = mockMvc.perform(patch("/api/messages/" + created.id())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(updateRequest)));
+
+        // Then
+        result.andExpect(status().isOk())
             .andExpect(jsonPath("$.content").value("updated content"));
     }
 
     @Test
     @DisplayName("메시지 삭제 성공")
     void deleteMessage_success() throws Exception {
+        // Given
         MessageDto created = createTestMessage(
             new MessageCreateRequest("to delete", channel.getId(), author.getId()));
 
-        mockMvc.perform(delete("/api/messages/" + created.id()))
-            .andExpect(status().isNoContent());
+        // When
+        ResultActions result = mockMvc.perform(delete("/api/messages/" + created.id()));
 
+        // Then
+        result.andExpect(status().isNoContent());
         assertThat(messageRepository.existsById(created.id())).isFalse();
     }
 
     @Test
     @DisplayName("채널의 메시지 목록 조회")
     void findAllByChannelId_success() throws Exception {
+        // Given
         for (int i = 0; i < 3; i++) {
             createTestMessage(new MessageCreateRequest("msg" + i, channel.getId(), author.getId()));
         }
 
-        mockMvc.perform(get("/api/messages")
-                .param("channelId", channel.getId().toString()))
-            .andExpect(status().isOk())
+        // When
+        ResultActions result = mockMvc.perform(get("/api/messages")
+            .param("channelId", channel.getId().toString()));
+
+        // Then
+        result.andExpect(status().isOk())
             .andExpect(jsonPath("$.content.length()").value(3));
     }
 

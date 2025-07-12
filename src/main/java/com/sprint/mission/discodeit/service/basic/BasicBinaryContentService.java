@@ -3,9 +3,11 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
@@ -23,6 +25,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
     private final BinaryContentStorage binaryContentStorage;
+    private final UserRepository userRepository;
 
     @Transactional
     @Override
@@ -78,7 +81,18 @@ public class BasicBinaryContentService implements BinaryContentService {
             throw new BinaryContentNotFoundException(binaryContentId);
         }
 
+        BinaryContent profile = binaryContentRepository.findById(binaryContentId)
+            .orElseThrow(() -> new BinaryContentNotFoundException(binaryContentId));
+
+        List<User> usersWithProfile = userRepository.findAllByProfile(profile);
+
+        for (User user : usersWithProfile) {
+            user.clearProfile();
+            userRepository.save(user);
+        }
+
         binaryContentRepository.deleteById(binaryContentId);
+
         log.info("파일 삭제 완료: id={}", binaryContentId);
     }
 }

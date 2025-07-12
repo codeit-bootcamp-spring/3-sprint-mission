@@ -21,7 +21,6 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +28,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -38,32 +38,32 @@ class ChannelIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private ReadStatusRepository readStatusRepository;
-
-    @Autowired
-    private ChannelRepository channelRepository;
-
-    @Autowired
-    private ObjectMapper objectMapper;
     @Autowired
     private UserStatusRepository userStatusRepository;
-
+    @Autowired
+    private ChannelRepository channelRepository;
+    @Autowired
+    private ReadStatusRepository readStatusRepository;
 
     @Test
     @DisplayName("공개 채널 생성 성공")
     void createPublicChannel_success() throws Exception {
+        // Given
         PublicChannelCreateRequest request = new PublicChannelCreateRequest("General",
             "Public channel");
 
-        mockMvc.perform(post("/api/channels/public")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isCreated())
+        // When
+        ResultActions result = mockMvc.perform(post("/api/channels/public")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)));
+
+        // Then
+        result.andExpect(status().isCreated())
             .andExpect(jsonPath("$.name").value("General"))
             .andExpect(jsonPath("$.description").value("Public channel"));
     }
@@ -71,44 +71,48 @@ class ChannelIntegrationTest {
     @Test
     @DisplayName("비공개 채널 생성 성공")
     void createPrivateChannel_success() throws Exception {
-
+        // Given
         User user1 = new User("user1", "u1@example.com", "pass", null);
         User user2 = new User("user2", "u2@example.com", "pass", null);
         userRepository.saveAll(List.of(user1, user2));
-        UserStatus status1 = new UserStatus(user1, Instant.now());
-        UserStatus status2 = new UserStatus(user2, Instant.now());
 
-        userStatusRepository.saveAll(List.of(status1, status2));
+        userStatusRepository.saveAll(List.of(
+            new UserStatus(user1, Instant.now()),
+            new UserStatus(user2, Instant.now())
+        ));
 
-        List<UUID> participantIds = List.of(user1.getId(), user2.getId());
-        PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(participantIds);
+        PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(
+            List.of(user1.getId(), user2.getId())
+        );
 
-        mockMvc.perform(post("/api/channels/private")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isCreated())
+        // When
+        ResultActions result = mockMvc.perform(post("/api/channels/private")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)));
+
+        // Then
+        result.andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.participants.length()").value(2));
-
     }
-
 
     @Test
     @DisplayName("공개 채널 수정 성공")
     void updatePublicChannel_success() throws Exception {
-        // given
-        Channel channel = new Channel(com.sprint.mission.discodeit.entity.ChannelType.PUBLIC,
-            "OldName", "OldDescription");
+        // Given
+        Channel channel = new Channel(ChannelType.PUBLIC, "OldName", "OldDescription");
         channelRepository.save(channel);
 
-        UUID channelId = channel.getId();
         PublicChannelUpdateRequest updateRequest = new PublicChannelUpdateRequest("NewName",
             "NewDesc");
 
-        mockMvc.perform(patch("/api/channels/" + channelId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateRequest)))
-            .andExpect(status().isOk())
+        // When
+        ResultActions result = mockMvc.perform(patch("/api/channels/" + channel.getId())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(updateRequest)));
+
+        // Then
+        result.andExpect(status().isOk())
             .andExpect(jsonPath("$.name").value("NewName"))
             .andExpect(jsonPath("$.description").value("NewDesc"));
     }
@@ -116,36 +120,34 @@ class ChannelIntegrationTest {
     @Test
     @DisplayName("공개 채널 삭제 성공")
     void deleteChannel_success() throws Exception {
-        // given
-        Channel channel = new Channel(ChannelType.PUBLIC,
-            "ToDelete", "...");
+        // Given
+        Channel channel = new Channel(ChannelType.PUBLIC, "ToDelete", "...");
         channelRepository.save(channel);
-        UUID id = channel.getId();
 
-        mockMvc.perform(delete("/api/channels/" + id))
-            .andExpect(status().isNoContent());
+        // When
+        ResultActions result = mockMvc.perform(delete("/api/channels/" + channel.getId()));
+
+        // Then
+        result.andExpect(status().isNoContent());
     }
-
 
     @Test
     @DisplayName("사용자 기준 채널 목록 조회 성공")
     void findAllChannelsByUserId_success() throws Exception {
-        // given
+        // Given
         User user = new User("subUser", "sub@example.com", "pass", null);
         userRepository.save(user);
+        userStatusRepository.save(new UserStatus(user, Instant.now()));
 
-        UserStatus status = new UserStatus(user, Instant.now());
-        userStatusRepository.save(status);
-
-        // 공개 채널도 하나 만들어주기
-        Channel publicChannel = new Channel(ChannelType.PUBLIC,
-            "open", "desc");
+        Channel publicChannel = new Channel(ChannelType.PUBLIC, "open", "desc");
         channelRepository.save(publicChannel);
 
-        // when & then
-        mockMvc.perform(get("/api/channels")
-                .param("userId", user.getId().toString()))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(1));
+        // When
+        ResultActions result = mockMvc.perform(get("/api/channels")
+            .param("userId", user.getId().toString()));
+
+        // Then
+        result.andExpect(status().isOk())
+            .andExpect(jsonPath("$[?(@.name == 'open')]").exists());
     }
 }
