@@ -42,3 +42,4 @@ out/
 .env
 *.env
 *.txt
+.env.bak
