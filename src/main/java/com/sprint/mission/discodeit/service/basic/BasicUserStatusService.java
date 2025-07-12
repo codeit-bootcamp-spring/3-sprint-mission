@@ -5,6 +5,9 @@ import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.DuplicateUserStatusException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -35,11 +38,11 @@ public class BasicUserStatusService implements UserStatusService {
 
         UUID userId = request.userId();
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+            .orElseThrow(() -> UserNotFoundException.withId(userId));
 
         Optional.ofNullable(user.getStatus())
             .ifPresent(status -> {
-                throw new IllegalArgumentException("UserStatus with id " + userId + " already exists");
+                throw DuplicateUserStatusException.withUserId(userId);
             });
 
         Instant lastActiveAt = request.lastActiveAt();
@@ -55,7 +58,7 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusDto find(UUID userStatusId) {
         return userStatusRepository.findById(userStatusId)
             .map(userStatusMapper::toDto)
-            .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
+            .orElseThrow(() -> UserStatusNotFoundException.withId(userStatusId));
     }
 
     @Override
@@ -73,7 +76,7 @@ public class BasicUserStatusService implements UserStatusService {
             userStatusId, newLastActiveAt);
 
         UserStatus userStatus = userStatusRepository.findById(userStatusId)
-                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
+                .orElseThrow(() -> UserStatusNotFoundException.withId(userStatusId));
         userStatus.update(newLastActiveAt);
 
         log.info("사용자 상태 수정 완료: id={}", userStatusId);
@@ -89,7 +92,7 @@ public class BasicUserStatusService implements UserStatusService {
             userId, newLastActiveAt);
 
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NoSuchElementException("UserStatus with userId " + userId + " not found"));
+                .orElseThrow(() -> UserStatusNotFoundException.withUserId(userId));
         userStatus.update(newLastActiveAt);
 
         log.info("사용자 ID로 상태 수정 완료: userId={}", userId);
@@ -103,7 +106,7 @@ public class BasicUserStatusService implements UserStatusService {
         log.debug("사용자 상태 삭제 시작: id={}", userStatusId);
 
         if (!userStatusRepository.existsById(userStatusId)) {
-            throw new NoSuchElementException("UserStatus with id " + userStatusId + " not found");
+            throw UserStatusNotFoundException.withId(userStatusId);
         }
         userStatusRepository.deleteById(userStatusId);
 
