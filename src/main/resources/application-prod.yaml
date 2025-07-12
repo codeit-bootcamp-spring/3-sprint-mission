@@ -18,8 +18,8 @@ spring:
 
 logging:
   level:
-    root: INFO
     com.sprint.mission.discodeit: INFO
+    org.hibernate.sql: INFO
 
 discodeit:
   storage:

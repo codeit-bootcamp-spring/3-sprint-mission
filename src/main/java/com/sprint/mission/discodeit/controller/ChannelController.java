@@ -37,7 +37,12 @@ public class ChannelController {
      */
     @PostMapping(path = "public")
     public ResponseEntity<ChannelDto> create(@RequestBody @Valid PublicChannelCreateRequest request) {
+        log.info("공개 채널 생성 요청: {}", request);
+
         ChannelDto createdChannel = channelService.create(request);
+
+        log.debug("공개 채널 생성 응답: {}", createdChannel);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
     }
 
@@ -46,7 +51,12 @@ public class ChannelController {
      */
     @PostMapping(path = "private")
     public ResponseEntity<ChannelDto> create(@RequestBody @Valid PrivateChannelCreateRequest request) {
+        log.info("비공개 채널 생성 요청: {}", request);
+
         ChannelDto createdChannel = channelService.create(request);
+
+        log.debug("비공개 채널 생성 응답: {}", createdChannel);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
     }
 
@@ -58,8 +68,13 @@ public class ChannelController {
             @PathVariable("channelId") UUID channelId,
             @RequestBody @Valid PublicChannelUpdateRequest request
     ) {
-        ChannelDto udpatedChannel = channelService.update(channelId, request);
-        return ResponseEntity.ok(udpatedChannel);
+        log.info("채널 수정 요청: id={}, request={}", channelId, request);
+
+        ChannelDto updatedChannel = channelService.update(channelId, request);
+
+        log.debug("채널 수정 응답: {}", updatedChannel);
+
+        return ResponseEntity.ok(updatedChannel);
     }
 
     /**
@@ -67,7 +82,12 @@ public class ChannelController {
      */
     @DeleteMapping(path = "{channelId}")
     public ResponseEntity<Void> delete(@PathVariable("channelId") UUID channelId) {
+        log.info("채널 삭제 요청: id={}", channelId);
+
         channelService.delete(channelId);
+
+        log.debug("채널 삭제 완료");
+
         return ResponseEntity.noContent().build();
     }
 
@@ -76,7 +96,12 @@ public class ChannelController {
      */
     @GetMapping
     public ResponseEntity<List<ChannelDto>> findAll(@RequestParam("userId") UUID userId) {
+        log.info("사용자별 채널 목록 조회 요청: userId={}", userId);
+
         List<ChannelDto> channels = channelService.findAllByUserId(userId);
+
+        log.debug("사용자별 채널 목록 조회 응답: count={}", channels.size());
+
         return ResponseEntity.ok(channels);
     }
 }

@@ -24,7 +24,12 @@ public class AuthController {
 
     @PostMapping(path = "login")
     public ResponseEntity<UserDto> login(@RequestBody @Valid LoginRequest loginRequest) {
+        log.info("로그인 요청: username={}", loginRequest.username());
+
         UserDto user = authService.login(loginRequest);
+
+        log.debug("로그인 응답: {}", user);
+
         return ResponseEntity.ok(user);
     }
 }

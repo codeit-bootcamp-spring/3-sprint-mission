@@ -50,6 +50,9 @@ public class MessageController {
             @RequestPart("messageCreateRequest") @Valid MessageCreateRequest messageCreateRequest,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
+        log.info("메시지 생성 요청: request={}, attachmentCount={}",
+            messageCreateRequest, attachments != null ? attachments.size() : 0);
+
         List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
                 .map(files -> files.stream()
                         .map(file -> {
@@ -68,6 +71,8 @@ public class MessageController {
 
         MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
 
+        log.debug("메시지 생성 응답: {}", createdMessage);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
     }
 
@@ -79,7 +84,12 @@ public class MessageController {
             @PathVariable("messageId") UUID messageId,
             @RequestBody @Valid MessageUpdateRequest request
     ) {
+        log.info("메시지 수정 요청: id={}, request={}", messageId, request);
+
         MessageDto updatedMessage = messageService.update(messageId, request);
+
+        log.debug("메시지 수정 응답: {}", updatedMessage);
+
         return ResponseEntity.ok(updatedMessage);
     }
 
@@ -88,7 +98,12 @@ public class MessageController {
      */
     @DeleteMapping(path = "{messageId}")
     public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
+        log.info("메시지 삭제 요청: id={}", messageId);
+
         messageService.delete(messageId);
+
+        log.debug("메시지 삭제 완료");
+
         return ResponseEntity.noContent().build();
     }
 
@@ -105,7 +120,13 @@ public class MessageController {
             sort = "createdAt",
             direction = Direction.DESC
         ) Pageable pageable) {
+        log.info("채널별 메시지 목록 조회 요청: channelId={}, cursor={}, pageable={}",
+            channelId, cursor, pageable);
+
         PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor, pageable);
+
+        log.debug("채널별 메시지 목록 조회 응답: totalElements={}", messages.totalElements());
+
         return ResponseEntity.ok(messages);
     }
 }

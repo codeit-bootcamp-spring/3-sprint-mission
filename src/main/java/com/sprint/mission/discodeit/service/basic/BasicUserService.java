@@ -39,6 +39,7 @@ public class BasicUserService implements UserService {
     @Transactional
     @Override
     public UserDto create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+        log.debug("사용자 생성 시작: {}", userCreateRequest);
 
         if (userCreateRequest.username() == null || userCreateRequest.email() == null || userCreateRequest.password() == null) {
             throw new IllegalArgumentException("Missing required fields");
@@ -56,7 +57,8 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = new UserStatus(user, now);
 
         userRepository.save(user);
-        log.info("User creation complete: id={}, username={}", user.getId(), user.getUsername());
+
+        log.info("사용자 생성 완료: id={}, username={}", user.getId(), user.getUsername());
 
         return userMapper.toDto(user);
     }
@@ -104,6 +106,8 @@ public class BasicUserService implements UserService {
     @Transactional
     @Override
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+        log.debug("사용자 수정 시작: id={}, request={}", userId, userUpdateRequest);
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
@@ -124,7 +128,8 @@ public class BasicUserService implements UserService {
 
         String newPassword = userUpdateRequest.newPassword();
         user.update(newUsername, newEmail, newPassword, nullableProfile);
-        log.info("User modification complete: id={}", userId);
+
+        log.info("사용자 수정 완료: id={}", userId);
 
         return userMapper.toDto(user);
     }
@@ -132,11 +137,14 @@ public class BasicUserService implements UserService {
     @Transactional
     @Override
     public void delete(UUID userId) {
+        log.debug("사용자 삭제 시작: id={}", userId);
+
         if (!userRepository.existsById(userId)) {
             throw new NoSuchElementException("User with id " + userId + " not found");
         }
 
         userRepository.deleteById(userId);
-        log.info("User deletion complete: id={}", userId);
+
+        log.info("사용자 삭제 완료: id={}", userId);
     }
 }

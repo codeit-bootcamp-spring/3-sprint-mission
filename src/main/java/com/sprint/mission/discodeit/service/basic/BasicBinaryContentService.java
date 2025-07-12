@@ -27,6 +27,9 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Transactional
     @Override
     public BinaryContentDto create(BinaryContentCreateRequest request) {
+        log.debug("바이너리 컨텐츠 생성 시작: fileName={}, size={}, contentType={}",
+            request.fileName(), request.bytes().length, request.contentType());
+
         String fileName = request.fileName();
         byte[] bytes = request.bytes();
         String contentType = request.contentType();
@@ -37,9 +40,9 @@ public class BasicBinaryContentService implements BinaryContentService {
         );
         binaryContentRepository.save(binaryContent);
         binaryContentStorage.put(binaryContent.getId(), bytes);
-        log.info("BinaryContent creation complete: id={}, fileName={}, size={}",
-            binaryContent.getId(), fileName, bytes.length);
 
+        log.info("바이너리 컨텐츠 생성 완료: id={}, fileName={}, size={}",
+            binaryContent.getId(), fileName, bytes.length);
         return binaryContentMapper.toDto(binaryContent);
     }
 
@@ -60,9 +63,13 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Transactional
     @Override
     public void delete(UUID binaryContentId) {
+        log.debug("바이너리 컨텐츠 삭제 시작: id={}", binaryContentId);
+
         if (!binaryContentRepository.existsById(binaryContentId)) {
             throw new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found");
         }
         binaryContentRepository.deleteById(binaryContentId);
+
+        log.info("바이너리 컨텐츠 삭제 완료: id={}", binaryContentId);
     }
 }

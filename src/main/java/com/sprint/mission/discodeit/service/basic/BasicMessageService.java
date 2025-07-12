@@ -45,6 +45,8 @@ public class BasicMessageService implements MessageService {
     @Transactional
     @Override
     public MessageDto create(MessageCreateRequest messageCreateRequest, List<BinaryContentCreateRequest> binaryContentCreateRequests) {
+        log.debug("메시지 생성 시작: request={}", messageCreateRequest);
+
         Channel channel = channelRepository.findById(messageCreateRequest.channelId())
             .orElseThrow(() -> {
                 return new NoSuchElementException("Channel with id " + messageCreateRequest.channelId() + " does not exist");
@@ -78,7 +80,8 @@ public class BasicMessageService implements MessageService {
                 attachments
         );
         messageRepository.save(message);
-        log.info("Message creation complete: id={}", message.getId());
+
+        log.info("메시지 생성 완료: id={}, channelId={}", message.getId(), messageCreateRequest.channelId());
 
         return messageMapper.toDto(message);
     }
@@ -108,11 +111,14 @@ public class BasicMessageService implements MessageService {
     @Transactional
     @Override
     public MessageDto update(UUID messageId, MessageUpdateRequest request) {
+        log.debug("메시지 수정 시작: id={}, request={}", messageId, request);
+
         String newContent = request.newContent();
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
         message.update(newContent);
-        log.info("Message modification complete: id={}", messageId);
+
+        log.info("메시지 수정 완료: id={}, channelId={}", messageId, message.getChannel().getId());
 
         return messageMapper.toDto(message);
     }
@@ -120,13 +126,16 @@ public class BasicMessageService implements MessageService {
     @Transactional
     @Override
     public void delete(UUID messageId) {
+        log.debug("메시지 삭제 시작: id={}", messageId);
+
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
 
         message.getAttachments()
                 .forEach(attachment -> binaryContentRepository.deleteById(attachment.getId()));
-        log.info("Message deletion complete: id={}", messageId);
 
         messageRepository.deleteById(messageId);
+
+        log.info("메시지 삭제 완료: id={}", messageId);
     }
 }

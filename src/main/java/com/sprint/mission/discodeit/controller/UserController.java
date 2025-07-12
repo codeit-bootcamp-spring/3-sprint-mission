@@ -62,12 +62,16 @@ public class UserController {
             @RequestPart("userCreateRequest") @Valid UserCreateRequest userCreateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
             ) {
+        log.info("사용자 생성 요청: {}", userCreateRequest);
 
         Optional<BinaryContentCreateRequest> profileRequest =
                 Optional.ofNullable(profile)
                         .flatMap(this::resolveProfileRequest);
 
         UserDto createdUser = userService.create(userCreateRequest, profileRequest);
+
+        log.debug("사용자 생성 응답: {}", createdUser);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
@@ -83,10 +87,15 @@ public class UserController {
             @RequestPart("userUpdateRequest") @Valid UserUpdateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
+        log.info("사용자 수정 요청: id={}, request={}", userId, request);
+
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest);
 
         UserDto updatedUser = userService.update(userId, request, profileRequest);
+
+        log.debug("사용자 수정 응답: {}", updatedUser);
+
         return ResponseEntity.ok(updatedUser);
     }
 
