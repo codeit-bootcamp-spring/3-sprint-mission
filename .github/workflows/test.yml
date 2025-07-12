@@ -3,8 +3,6 @@ name: Run Tests
 on:
   push:
     branches: [ main, 고희준-sprint8 ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   test:
@@ -25,6 +23,8 @@ jobs:
 
       - name: Run tests with JaCoCo
         run: ./gradlew clean test jacocoTestReport
+        env:
+          SPRING_PROFILES_ACTIVE: test
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
