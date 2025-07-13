@@ -35,9 +35,6 @@ services:
     volumes:
       - binary-content-volume:/app/files
 
-
 volumes:
   psql-discodeit-prod-data:
   binary-content-volume:
-
-
