@@ -47,7 +47,7 @@ public class ReadStatusController {
     /**
      * 특정 채널의 메시지 수신 정보 수정
      */
-    @PatchMapping(path = "{readStatusId}")
+    @PatchMapping(path = "/{readStatusId}")
     public ResponseEntity<ReadStatusDto> update(
             @PathVariable("readStatusId") UUID readStatusId,
             @RequestBody ReadStatusUpdateRequest request

@@ -21,7 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -79,7 +78,7 @@ public class UserController {
      * 유저 정보 수정
      */
     @PatchMapping(
-            path = "{userId}",
+            path = "/{userId}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     public ResponseEntity<UserDto> update(
@@ -102,7 +101,7 @@ public class UserController {
     /**
      * 유저 삭제
      */
-    @DeleteMapping(path = "{userId}")
+    @DeleteMapping(path = "/{userId}")
     public ResponseEntity<Void> delete(@PathVariable("userId") UUID userId) {
         userService.delete(userId);
         return ResponseEntity.noContent().build();
@@ -119,7 +118,7 @@ public class UserController {
     /**
      * 온라인 상태(마지막 활동 시간) 업데이트
      */
-    @PatchMapping(path = "{userId}/userStatus")
+    @PatchMapping(path = "/{userId}/userStatus")
     public ResponseEntity<UserStatusDto> updateStatus(
             @PathVariable("userId") UUID userId,
             @RequestBody @Valid UserStatusUpdateRequest request

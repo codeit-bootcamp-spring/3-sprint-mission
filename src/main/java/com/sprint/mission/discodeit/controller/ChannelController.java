@@ -35,7 +35,7 @@ public class ChannelController {
     /**
      * 공개 채널 생성
      */
-    @PostMapping(path = "public")
+    @PostMapping(path = "/public")
     public ResponseEntity<ChannelDto> create(@RequestBody @Valid PublicChannelCreateRequest request) {
         log.info("공개 채널 생성 요청: {}", request);
 
@@ -49,7 +49,7 @@ public class ChannelController {
     /**
      * 비공개 채널 생성
      */
-    @PostMapping(path = "private")
+    @PostMapping(path = "/private")
     public ResponseEntity<ChannelDto> create(@RequestBody @Valid PrivateChannelCreateRequest request) {
         log.info("비공개 채널 생성 요청: {}", request);
 
@@ -63,7 +63,7 @@ public class ChannelController {
     /**
      * 공개 채널 정보 수정
      */
-    @PatchMapping(path = "{channelId}")
+    @PatchMapping(path = "/{channelId}")
     public ResponseEntity<ChannelDto> update(
             @PathVariable("channelId") UUID channelId,
             @RequestBody @Valid PublicChannelUpdateRequest request
@@ -80,7 +80,7 @@ public class ChannelController {
     /**
      * 채널 삭제
      */
-    @DeleteMapping(path = "{channelId}")
+    @DeleteMapping(path = "/{channelId}")
     public ResponseEntity<Void> delete(@PathVariable("channelId") UUID channelId) {
         log.info("채널 삭제 요청: id={}", channelId);
 

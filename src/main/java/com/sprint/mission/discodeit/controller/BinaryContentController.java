@@ -26,7 +26,7 @@ public class BinaryContentController {
     /**
      * 바이너리 파일 단건 조회
      */
-    @GetMapping(path = "{binaryContentId}")
+    @GetMapping(path = "/{binaryContentId}")
     public ResponseEntity<BinaryContentDto> find(@PathVariable("binaryContentId") UUID binaryContentId) {
         log.info("바이너리 컨텐츠 조회 요청: id={}", binaryContentId);
 
@@ -54,7 +54,7 @@ public class BinaryContentController {
     /**
      * 바이너리 파일 다운로드
      */
-    @GetMapping(path = "{binaryContentId}/download")
+    @GetMapping(path = "/{binaryContentId}/download")
     public ResponseEntity<?> download(
         @PathVariable("binaryContentId") UUID binaryContentId) {
         log.info("바이너리 컨텐츠 다운로드 요청: id={}", binaryContentId);

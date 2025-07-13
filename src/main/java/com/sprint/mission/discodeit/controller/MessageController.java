@@ -79,7 +79,7 @@ public class MessageController {
     /**
      * 메시지 수정
      */
-    @PatchMapping(path = "{messageId}")
+    @PatchMapping(path = "/{messageId}")
     public ResponseEntity<MessageDto> update(
             @PathVariable("messageId") UUID messageId,
             @RequestBody @Valid MessageUpdateRequest request
@@ -96,7 +96,7 @@ public class MessageController {
     /**
      * 메시지 삭제
      */
-    @DeleteMapping(path = "{messageId}")
+    @DeleteMapping(path = "/{messageId}")
     public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
         log.info("메시지 삭제 요청: id={}", messageId);
 

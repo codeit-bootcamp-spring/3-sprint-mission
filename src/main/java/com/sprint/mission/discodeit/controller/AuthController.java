@@ -22,7 +22,7 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping(path = "login")
+    @PostMapping(path = "/login")
     public ResponseEntity<UserDto> login(@RequestBody @Valid LoginRequest loginRequest) {
         log.info("로그인 요청: username={}", loginRequest.username());
 
