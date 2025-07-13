@@ -92,7 +92,6 @@ CREATE TABLE IF NOT EXISTS messages
     CONSTRAINT pk_messages PRIMARY KEY (id),
     CONSTRAINT fk_channel_id FOREIGN KEY (channel_id) REFERENCES channels (id) ON DELETE CASCADE,
     CONSTRAINT fk_author_id FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE SET NULL
-
 );
 
 CREATE TABLE IF NOT EXISTS message_attachments
