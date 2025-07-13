@@ -1,13 +1,19 @@
 discodeit:
   storage:
-    type: local
+    type: ${STORAGE_TYPE:local}
     local:
-      root-path: data/binaryContent
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:data/binaryContent}
+    s3:
+      access-key: ${AWS_S3_ACCESS_KEY}
+      secret-key: ${AWS_S3_SECRET_KEY}
+      region: ${AWS_S3_REGION}
+      bucket: ${AWS_S3_BUCKET}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
 
 spring:
   profiles:
     active:
-      - dev
+      - prod
   servlet:
     multipart:
       maxFileSize: 10MB
@@ -18,6 +24,11 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
 
 logging:
   level:
