@@ -38,4 +38,5 @@ public class BinaryContent extends BaseEntity implements Serializable {
 
     @Column(name = "extensions", nullable = false, length = 20)
     private String extension;
+
 }
