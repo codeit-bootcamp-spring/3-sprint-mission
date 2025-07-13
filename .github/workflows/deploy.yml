@@ -4,7 +4,7 @@ name: Deploy to AWS ECS - discodeit
 # 트리거 조건: main 브랜치에 푸쉬 시 자동 실행
 on:
   push:
-    branches: [ 고희준-sprint8 , main ]
+    branches: [ 고희준-sprint8 , main , release ]
 
 # 워크플로우 전체에서 사용할 환경 변수 정의
 env:
