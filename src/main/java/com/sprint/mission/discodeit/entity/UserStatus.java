@@ -24,7 +24,6 @@ public class UserStatus extends BaseUpdatableEntity {
   @OneToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "user_id", nullable = false, unique = true)
   private User user;
-
   @Column(columnDefinition = "timestamp with time zone", nullable = false)
   private Instant lastActiveAt;
 

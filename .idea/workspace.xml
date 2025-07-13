@@ -10,6 +10,9 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="CodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -28,6 +31,23 @@
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="discodeit" type="f1a62948:ProjectNode" />
               </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="discodeit" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="discodeit" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="application" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="discodeit" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
+              </path>
             </expand>
             <select />
           </tree_state>
@@ -41,6 +61,9 @@
         <option value="Class" />
         <option value="Record" />
         <option value="Interface" />
+        <option value="spring-beans.schema" />
+        <option value="Enum" />
+        <option value="Exception" />
       </list>
     </option>
   </component>
@@ -56,7 +79,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="박인규-sprint4" />
+        <entry key="$PROJECT_DIR$" value="박인규-sprint6" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -83,6 +106,10 @@
     &quot;url&quot;: &quot;https://github.com/Leichtstar/3-sprint-mission_01.git&quot;,
     &quot;accountId&quot;: &quot;89eeed5c-9622-43bd-9bda-9299693e6fad&quot;
   }
+}</component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
 }</component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -111,14 +138,18 @@
     &quot;Gradle.3-sprint-mission_01 [clean].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.Build 3-sprint-mission_01.executor&quot;: &quot;Run&quot;,
     &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;Spring Boot.DiscodeitApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;박인규-sprint5&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;박인규-sprint7&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/myGitWs/3-sprint-mission_01/src/main/java/com/sprint/mission/discodeit/repository&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/myGitWs/3-sprint-mission_01&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -127,10 +158,13 @@
     &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.45524544&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;actions.on.save&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.import&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
   &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;postgresql&quot;
+    ],
     &quot;GitStage.ChangesTree.GroupingKeys&quot;: [
       &quot;directory&quot;,
       &quot;module&quot;,
@@ -140,19 +174,24 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\myGitWs\3-sprint-mission_01\src\main\java\com\sprint\mission\discodeit\repository" />
-      <recent name="C:\myGitWs\3-sprint-mission_01\src\main\java\com\sprint\mission\discodeit\repository\jcf" />
-      <recent name="C:\myGitWs\3-sprint-mission_01\src\main\java\com\sprint\mission\discodeit\repository\file" />
+      <recent name="C:\myGitWs\3-sprint-mission_01\src\main\resources" />
+      <recent name="C:\myGitWs\3-sprint-mission_01\src\main\java\com\sprint\mission\discodeit" />
+      <recent name="C:\myGitWs\3-sprint-mission_01\src\main\resources\static" />
+      <recent name="C:\myGitWs\3-sprint-mission_01\src\main\java\com\sprint\mission\discodeit\dto" />
+      <recent name="C:\myGitWs\3-sprint-mission_01\src\main\java\com\sprint\mission\discodeit\mapper" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\myGitWs\3-sprint-mission_01\src\main\resources" />
+      <recent name="C:\myGitWs\3-sprint-mission_01\src\main\resources\static" />
       <recent name="C:\myGitWs\3-sprint-mission_01\src\main\java" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.sprint.mission.discodeit.dto.data" />
       <recent name="com.sprint.mission.discodeit.control" />
       <recent name="com.sprint.mission.discodeit" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.DiscodeitApplication">
+  <component name="RunManager" selected="Spring Boot.DiscodeitApplication">
     <configuration name="DiscodeitApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.sprint.mission.discodeit.DiscodeitApplication" />
       <module name="discodeit.main" />
@@ -289,6 +328,23 @@
       <workItem from="1748248464677" duration="1106000" />
       <workItem from="1748304283151" duration="10884000" />
       <workItem from="1748347829356" duration="386000" />
+      <workItem from="1748434801975" duration="1225000" />
+      <workItem from="1748479014469" duration="16299000" />
+      <workItem from="1748510507125" duration="9650000" />
+      <workItem from="1748567240942" duration="7689000" />
+      <workItem from="1748830124022" duration="30571000" />
+      <workItem from="1748953781661" duration="3076000" />
+      <workItem from="1749392510737" duration="5804000" />
+      <workItem from="1749433250782" duration="6863000" />
+      <workItem from="1750230534107" duration="4992000" />
+      <workItem from="1750291258766" duration="43932000" />
+      <workItem from="1750651693673" duration="23103000" />
+      <workItem from="1750837539530" duration="21000" />
+      <workItem from="1751201323002" duration="4230000" />
+      <workItem from="1751273035636" duration="3475000" />
+      <workItem from="1751330110539" duration="36221000" />
+      <workItem from="1751432600735" duration="14004000" />
+      <workItem from="1751590851803" duration="1887000" />
     </task>
     <task id="LOCAL-00001" summary="- 빌드를 최초 생성시 이용한 IntelliJ에서 Gradle로 변경 후 런이 안되는 문제 발견&#10;- IntelliJ로 프로젝트 생성시 src\main\java\main.java 구조를 만들지 않고 src\main.java로 바로 생성하는데 그레이들에서 src\main\java\ 구조가 없으면 빌드를 안해주는 문제 확인&#10;- src\ 아래 있는 모든 구조 및 클래스를 src\main\java 디렉토리 하위로 이동, 정상 런 확인">
       <option name="closed" value="true" />
@@ -474,7 +530,23 @@
       <option name="project" value="LOCAL" />
       <updated>1748214079728</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="-feat: mission 6 BaseCode 적용">
+      <option name="closed" value="true" />
+      <created>1751203902834</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1751203902834</updated>
+    </task>
+    <task id="LOCAL-00025" summary="-feat: profile별 application.yaml파일 적용, logging 레벨 설정">
+      <option name="closed" value="true" />
+      <created>1751274953045</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1751274953045</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -560,7 +632,11 @@
     <MESSAGE value="-미션4 수정 및 모든 기능 테스트 완료&#10; ㄴ postman 활용, 모든 기능 동작 확인됨" />
     <MESSAGE value="-미션5 수정 및 모든 기능 테스트 완료&#10; ㄴ postman 활용, 모든 기능 동작 확인됨&#10; ㄴ API 연결 테스트.&#10; ㄴ 로그인 ok&#10; ㄴ 참여중인 유저 목록 뷰 ok&#10; ㄴ 메세지 작성 ok / 메세지 내용,작성자가 뷰에서 확인 안됨&#10; ㄴ 공개채널 작성 불가 등 오류 발견." />
     <MESSAGE value="-미션5 기능 테스트 진행함.&#10; ㄴ postman 활용, 모든 기능 동작 확인됨&#10; ㄴ API 연결 테스트.&#10;  ㄴ 로그인 ok&#10;  ㄴ 참여중인 유저 목록 뷰 ok&#10;  ㄴ 메세지 작성 ok / 메세지 내용,작성자가 뷰에서 확인 안됨&#10;  ㄴ 공개채널 작성 불가 등 오류 발견." />
-    <option name="LAST_COMMIT_MESSAGE" value="-미션5 기능 테스트 진행함.&#10; ㄴ postman 활용, 모든 기능 동작 확인됨&#10; ㄴ API 연결 테스트.&#10;  ㄴ 로그인 ok&#10;  ㄴ 참여중인 유저 목록 뷰 ok&#10;  ㄴ 메세지 작성 ok / 메세지 내용,작성자가 뷰에서 확인 안됨&#10;  ㄴ 공개채널 작성 불가 등 오류 발견." />
+    <MESSAGE value="-미션5 재병합 요청" />
+    <MESSAGE value="Merge branch '박인규' of https://github.com/Leichtstar/3-sprint-mission_01 into 박인규-sprint5&#10;&#10;# Conflicts:&#10;#&#9;.gradle/buildOutputCleanup/buildOutputCleanup.lock&#10;#&#9;src/main/java/com/sprint/mission/discodeit/Controller/UserController.java&#10;#&#9;src/main/java/com/sprint/mission/discodeit/service/basic/BasicChannelService.java&#10;#&#9;src/main/java/com/sprint/mission/discodeit/service/basic/BasicMessageService.java&#10;#&#9;src/main/java/com/sprint/mission/discodeit/service/basic/BasicUserService.java" />
+    <MESSAGE value="-feat: mission 6 BaseCode 적용" />
+    <MESSAGE value="-feat: profile별 application.yaml파일 적용, logging 레벨 설정" />
+    <option name="LAST_COMMIT_MESSAGE" value="-feat: profile별 application.yaml파일 적용, logging 레벨 설정" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
