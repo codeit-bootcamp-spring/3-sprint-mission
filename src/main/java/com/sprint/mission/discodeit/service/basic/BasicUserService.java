@@ -51,6 +51,7 @@ public class BasicUserService implements UserService {
     private static final Logger log= LoggerFactory.getLogger(BasicUserService.class);
 
 
+
     @Transactional(readOnly = true)
     public List<UserResponse> findAllUsers() {
         List<User> users = userRepository.findAllWithBinaryContentAndUserStatus();
