@@ -50,7 +50,7 @@ public class ReadStatusController {
     @PatchMapping(path = "/{readStatusId}")
     public ResponseEntity<ReadStatusDto> update(
             @PathVariable("readStatusId") UUID readStatusId,
-            @RequestBody ReadStatusUpdateRequest request
+            @RequestBody @Valid ReadStatusUpdateRequest request
     ) {
         log.info("읽음 상태 수정 요청: id={}, request={}", readStatusId, request);
 
