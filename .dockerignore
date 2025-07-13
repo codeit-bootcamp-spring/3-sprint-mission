@@ -32,5 +32,6 @@ Desktop.ini
 *.log
 logs/
 
-default.conf
-Dockerfile.ngnix
+!Dockerfile
+!Dockerfile.nginx
+!default.conf

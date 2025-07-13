@@ -10,8 +10,6 @@ env:
   ECR_REPOSITORY: discodeit
   ECS_SERVICE: discodeit-service
   ECS_CLUSTER: discodeit-cluster
-  ECS_TASK_DEFINITION: discodeit-task
-  ECR_NGINX_URI: public.ecr.aws/m8n4t4p5/nginx-discodeit
 
 jobs:
   docker:
@@ -50,17 +48,15 @@ jobs:
           docker push $ECR_REPOSITORY_URI:latest
           docker push $ECR_REPOSITORY_URI:$IMAGE_TAG
 
-      - name: Build and push nginx image
-        run: |
-          docker build -f Dockerfile.nginx -t $ECR_NGINX_URI:latest .
-          docker push $ECR_NGINX_URI:latest
-
   deploy:
     name: Deploy to ECS
     needs: docker
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Configure AWS credentials for ECS
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -68,24 +64,41 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Use task definition
-        run: |
-          aws ecs describe-task-definition \
-            --task-definition $ECS_TASK_DEFINITION \
-            --query "taskDefinition" > task-definition.json
+      - name: Load task definition from repo
+        run: cp task-definition.json new-task-def.json
 
       - name: Update image in task definition
         env:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           IMAGE_URI=$ECR_REPOSITORY_URI:$IMAGE_TAG
-          cat task-definition.json | jq --arg img_uri "$IMAGE_URI" 'del(.taskDefinitionArn, .revision, .status, .compatibilities, .requiresAttributes, .registeredAt, .registeredBy) | (.containerDefinitions[0].image) = $img_uri' > new-task-def.json
+          cat new-task-def.json | jq --arg img_uri "$IMAGE_URI" \
+            '(.containerDefinitions[0].image) = $img_uri' > final-task-def.json
+
+      - name: Prepare final task definition
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE_URI=$ECR_REPOSITORY_URI:$IMAGE_TAG
+
+          jq --arg img_uri "$IMAGE_URI" '
+            del(
+              .taskDefinitionArn,
+              .revision,
+              .status,
+              .requiresAttributes,
+              .compatibilities,
+              .registeredAt,
+              .registeredBy
+            ) |
+            .containerDefinitions[0].image = $img_uri
+          ' task-definition.json > final-task-def.json
 
       - name: Register new task definition
         id: register-task
         run: |
           arn=$(aws ecs register-task-definition \
-            --cli-input-json file://new-task-def.json \
+            --cli-input-json file://final-task-def.json \
             --query "taskDefinition.taskDefinitionArn" --output text)
           echo "task_def_arn=$arn" >> $GITHUB_OUTPUT
 
@@ -110,32 +123,32 @@ jobs:
             --cluster $ECS_CLUSTER \
             --services $ECS_SERVICE
 
-      - name: Clean up old ECR Public images (Keep only 'latest')
+      - name: Clean up old ECR Public images (keep only 'latest')
         env:
           ECR_REPOSITORY_URI: ${{ env.ECR_REPOSITORY_URI }}
         run: |
           REPO_NAME=$(echo $ECR_REPOSITORY_URI | awk -F'/' '{print $NF}')
           ECR_PUBLIC_REGION="us-east-1"
-          
+
           LATEST_IMAGE_DIGEST=$(aws ecr-public describe-images \
             --region $ECR_PUBLIC_REGION \
             --repository-name $REPO_NAME \
             --query 'imageDetails[?imageTags != null && contains(imageTags, `latest`)].[imageDigest]' \
             --output text | head -n 1)
-          
+
           if [ -z "$LATEST_IMAGE_DIGEST" ]; then
             exit 0
           fi
-          
+
           ALL_IMAGE_DETAILS=$(aws ecr-public describe-images \
             --region $ECR_PUBLIC_REGION \
             --repository-name $REPO_NAME \
             --query 'imageDetails[*].[imageDigest,imageTags[]]' \
             --output json)
-          
+
           IMAGES_TO_DELETE=$(echo "$ALL_IMAGE_DETAILS" | jq -r --arg LATEST_DIGEST "$LATEST_IMAGE_DIGEST" \
             '[.[] | select(.[0] != $LATEST_DIGEST) | .[0]] | unique | .[]')
-          
+
           if [ -n "$IMAGES_TO_DELETE" ]; then
             echo "$IMAGES_TO_DELETE" | xargs -I {} aws ecr-public batch-delete-image \
               --region $ECR_PUBLIC_REGION \
