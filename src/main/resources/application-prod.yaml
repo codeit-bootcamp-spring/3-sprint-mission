@@ -22,3 +22,12 @@ logging:
     com.sprint.mission.discodeit: INFO
     org.hibernate.SQL: INFO
     org.hibernate.orm.jdbc.bind: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
