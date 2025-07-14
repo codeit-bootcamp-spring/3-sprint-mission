@@ -8,15 +8,16 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity
-@Table(name = "user_statuses")
 @Getter
+@Table(name = "user_statuses", schema = "discodeit")
+@Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserStatus extends BaseUpdatableEntity {
 
@@ -24,9 +25,11 @@ public class UserStatus extends BaseUpdatableEntity {
   @OneToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "user_id", nullable = false, unique = true)
   private User user;
-  @Column(columnDefinition = "timestamp with time zone", nullable = false)
+
+  @Column(name = "last_active_at", columnDefinition = "timestamp with time zone", nullable = false)
   private Instant lastActiveAt;
 
+  @Builder
   public UserStatus(User user, Instant lastActiveAt) {
     setUser(user);
     this.lastActiveAt = lastActiveAt;
@@ -39,12 +42,15 @@ public class UserStatus extends BaseUpdatableEntity {
   }
 
   public Boolean isOnline() {
-    Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
-    return lastActiveAt.isAfter(instantFiveMinutesAgo);
+    Boolean isOnline =
+        this.lastActiveAt.isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));
+    return isOnline;
+
   }
 
   protected void setUser(User user) {
     this.user = user;
-    user.setStatus(this);
+    user.setUserStatus(this);
   }
+
 }

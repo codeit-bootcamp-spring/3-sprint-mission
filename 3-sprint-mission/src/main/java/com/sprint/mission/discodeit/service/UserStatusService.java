@@ -10,13 +10,13 @@ public interface UserStatusService {
 
   UserStatusDto create(UserStatusCreateRequest request);
 
-  UserStatusDto find(UUID userStatusId);
+  UserStatusDto find(UUID id);
 
   List<UserStatusDto> findAll();
 
-  UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request);
+  UserStatusDto update(UUID id, UserStatusUpdateRequest request);
 
   UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request);
 
-  void delete(UUID userStatusId);
+  void delete(UUID id);
 }

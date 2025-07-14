@@ -1,23 +1,32 @@
 package com.sprint.mission.discodeit.exception.user;
 
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import java.util.Map;
 import java.util.UUID;
 
-import com.sprint.mission.discodeit.exception.ErrorCode;
-
 public class UserNotFoundException extends UserException {
-    public UserNotFoundException() {
-        super(ErrorCode.USER_NOT_FOUND);
-    }
-    
-    public static UserNotFoundException withId(UUID userId) {
-        UserNotFoundException exception = new UserNotFoundException();
-        exception.addDetail("userId", userId);
-        return exception;
-    }
-    
-    public static UserNotFoundException withUsername(String username) {
-        UserNotFoundException exception = new UserNotFoundException();
-        exception.addDetail("username", username);
-        return exception;
-    }
-} 
+
+  private UUID userId;
+  private String username;
+  private String email;
+
+  private UserNotFoundException(UUID userId, String username, String email,
+      Map<String, Object> details) {
+    super(ErrorCode.USER_NOT_FOUND, details);
+    this.userId = userId;
+    this.username = username;
+    this.email = email;
+  }
+
+  public static UserNotFoundException fromUserId(UUID userId) {
+    return new UserNotFoundException(userId, null, null, Map.of("userId", userId));
+  }
+
+  public static UserNotFoundException fromUsername(String username) {
+    return new UserNotFoundException(null, username, null, Map.of("username", username));
+  }
+
+  public static UserNotFoundException fromEmail(String email) {
+    return new UserNotFoundException(null, null, email, Map.of("email", email));
+  }
+}

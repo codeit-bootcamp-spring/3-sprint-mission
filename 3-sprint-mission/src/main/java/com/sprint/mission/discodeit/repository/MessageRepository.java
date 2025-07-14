@@ -14,20 +14,33 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
   @Query("SELECT m FROM Message m "
       + "LEFT JOIN FETCH m.author a "
-      + "JOIN FETCH a.status "
+      + "JOIN FETCH a.userStatus "
       + "LEFT JOIN FETCH a.profile "
-      + "WHERE m.channel.id=:channelId AND m.createdAt < :createdAt")
-  Slice<Message> findAllByChannelIdWithAuthor(
+      + "WHERE m.channel.id = :channelId "
+      + "AND m.createdAt < :createdAt "
+      + "ORDER BY m.createdAt DESC ")
+  Slice<Message> findAllByChannelIdAndUser(
       @Param("channelId") UUID channelId,
       @Param("createdAt") Instant createdAt,
-      Pageable pageable);
+      Pageable pageable
+  );
 
-
-  @Query("SELECT m.createdAt "
-      + "FROM Message m "
+  @Query("SELECT m FROM Message m "
       + "WHERE m.channel.id = :channelId "
-      + "ORDER BY m.createdAt DESC LIMIT 1")
-  Optional<Instant> findLastMessageAtByChannelId(@Param("channelId") UUID channelId);
+      + "AND m.content LIKE %:content%")
+  Slice<Message> findAllByChannelIdAndContent(
+      @Param("channelId") UUID channelId,
+      @Param("content") String content,
+      @Param("createdAt") Instant createdAt,
+      Pageable pageable
+  );
+
+  @Query("SELECT MAX(m.createdAt) FROM Message m "
+      + "WHERE m.channel.id = :channelId")
+  Optional<Instant> findLastMessageAtByChannelId(
+      @Param("channelId") UUID channelId
+  );
 
   void deleteAllByChannelId(UUID channelId);
 }
+

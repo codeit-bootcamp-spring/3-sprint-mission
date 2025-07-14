@@ -8,4 +8,7 @@ import org.mapstruct.Mapper;
 public interface BinaryContentMapper {
 
   BinaryContentDto toDto(BinaryContent binaryContent);
+
+  BinaryContent toEntity(BinaryContentDto binaryContentDto);
+
 }

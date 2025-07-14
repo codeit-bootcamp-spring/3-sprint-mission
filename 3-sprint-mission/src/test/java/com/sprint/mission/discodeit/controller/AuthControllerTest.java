@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -10,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
-import com.sprint.mission.discodeit.exception.user.InvalidCredentialsException;
+import com.sprint.mission.discodeit.exception.auth.PasswordNotMatchException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.service.AuthService;
 import java.util.UUID;
@@ -75,7 +74,7 @@ class AuthControllerTest {
     );
 
     given(authService.login(any(LoginRequest.class)))
-        .willThrow(UserNotFoundException.withUsername("nonexistentuser"));
+        .willThrow(UserNotFoundException.fromUsername("nonexistentuser"));
 
     // When & Then
     mockMvc.perform(post("/api/auth/login")
@@ -94,7 +93,7 @@ class AuthControllerTest {
     );
 
     given(authService.login(any(LoginRequest.class)))
-        .willThrow(InvalidCredentialsException.wrongPassword());
+        .willThrow(new PasswordNotMatchException());
 
     // When & Then
     mockMvc.perform(post("/api/auth/login")

@@ -10,11 +10,14 @@ public interface ReadStatusService {
 
   ReadStatusDto create(ReadStatusCreateRequest request);
 
-  ReadStatusDto find(UUID readStatusId);
+  ReadStatusDto find(UUID id);
 
+  List<ReadStatusDto> findAll();
+
+  //    List<ReadStatus> findAllByChannelId(UUID channelId);
   List<ReadStatusDto> findAllByUserId(UUID userId);
 
-  ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request);
+  ReadStatusDto update(UUID id, ReadStatusUpdateRequest request);
 
-  void delete(UUID readStatusId);
+  void delete(UUID id);
 }
