@@ -111,7 +111,7 @@ jobs:
             SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}
             AWS_S3_ACCESS_KEY=${{ secrets.AWS_S3_ACCESS_KEY }}
             AWS_S3_SECRET_KEY=${{ secrets.AWS_S3_SECRET_KEY }}
-            AWS_S3_REGION=${{ vars.AWS_S3_REGION }}
+            AWS_S3_REGION=${{ secrets.AWS_S3_REGION }}
             AWS_S3_BUCKET=${{ vars.AWS_S3_BUCKET }}
             STORAGE_TYPE=s3
 
