@@ -14,10 +14,12 @@ build/
 *.iml
 *.ipr
 out/
-!**/src/main/**/out/
+**/src/main/**/out/
 !**/src/test/**/out/
 file-data-map/
 /answer/
+.logs/
+storage/
 
 ### Eclipse ###
 .apt_generated

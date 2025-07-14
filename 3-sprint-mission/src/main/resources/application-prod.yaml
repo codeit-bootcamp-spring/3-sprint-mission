@@ -1,0 +1,13 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/discodeit
+    username: ${{DB_USERNAME}}
+    password: ${{DB_PASSWORD}}
+
+logging:
+  level:
+    org.hibernate.sql: info
+    org.hibernate.orm.jdbc.bind: trace

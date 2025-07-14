@@ -1,14 +1,16 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ChannelAPI;
-import com.sprint.mission.discodeit.dto.data.ChannelDTO;
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.service.ChannelService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/channels")
 @RestController
+@Slf4j
 public class ChannelController implements ChannelAPI {
 
   private final ChannelService channelService;
@@ -34,11 +37,13 @@ public class ChannelController implements ChannelAPI {
       value = "/public"
       , consumes = MediaType.APPLICATION_JSON_VALUE
   )
-  public ResponseEntity<ChannelDTO> create(
-      @RequestBody PublicChannelCreateRequest publicChannelCreateDTO
+  public ResponseEntity<ChannelDto> create(
+      @RequestBody @Valid PublicChannelCreateRequest publicChannelCreateDto
   ) {
+    log.info("공개 채팅방 개설 요청 request={}", publicChannelCreateDto);
 
-    ChannelDTO createdChannel = channelService.create(publicChannelCreateDTO);
+    ChannelDto createdChannel = channelService.create(publicChannelCreateDto);
+    log.info("공개 채팅방 개설 완료 createdChannelId={}", createdChannel.id());
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -49,11 +54,13 @@ public class ChannelController implements ChannelAPI {
   @PostMapping(
       value = "/private"
       , consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<ChannelDTO> create(
-      @RequestBody PrivateChannelCreateRequest privateChannelCreateDTO
+  public ResponseEntity<ChannelDto> create(
+      @RequestBody @Valid PrivateChannelCreateRequest privateChannelCreateDto
   ) {
+    log.info("비공개 채팅방 개설 요청 request={}", privateChannelCreateDto);
 
-    ChannelDTO createdChannel = channelService.create(privateChannelCreateDTO);
+    ChannelDto createdChannel = channelService.create(privateChannelCreateDto);
+    log.info("비공개 채팅방 개설 완료 createdChannelId={}", createdChannel.id());
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -65,11 +72,15 @@ public class ChannelController implements ChannelAPI {
       value = "/{channelId}",
       produces = MediaType.APPLICATION_JSON_VALUE
   )
-  public ResponseEntity<ChannelDTO> update(
+  public ResponseEntity<ChannelDto> update(
       @PathVariable UUID channelId,
-      @RequestBody PublicChannelUpdateRequest publicChannelUpdateDTO
+      @RequestBody @Valid PublicChannelUpdateRequest publicChannelUpdateDto
   ) {
-    ChannelDTO channel = channelService.update(channelId, publicChannelUpdateDTO);
+    log.info("공개 채널 정보 수정 요청 channelId={}, request={}", channelId, publicChannelUpdateDto);
+
+    ChannelDto channel = channelService.update(channelId, publicChannelUpdateDto);
+    log.info("공개 채널 정보 수정 완료 channelId={}", channelId);
+
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(channel);
@@ -82,10 +93,13 @@ public class ChannelController implements ChannelAPI {
   public ResponseEntity<String> delete(
       @PathVariable UUID channelId
   ) {
-    ChannelDTO channel = channelService.find(channelId);
+    log.info("채팅방 삭제 요청 channelId={}", channelId);
+
+    ChannelDto channel = channelService.find(channelId);
     String channelName = channel.name();
 
     channelService.delete(channelId);
+    log.info("채팅방 삭제 완료 channelId={}", channel.id());
 
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
@@ -94,10 +108,10 @@ public class ChannelController implements ChannelAPI {
 
   // 특정 유저가 볼 수 있는 채널 목록 조회
   @GetMapping()
-  public ResponseEntity<List<ChannelDTO>> findAll(
+  public ResponseEntity<List<ChannelDto>> findAll(
       @RequestParam("userId") UUID userId
   ) {
-    List<ChannelDTO> channels = channelService.findAllByUserId(userId);
+    List<ChannelDto> channels = channelService.findAllByUserId(userId);
 
     return ResponseEntity
         .status(HttpStatus.OK)

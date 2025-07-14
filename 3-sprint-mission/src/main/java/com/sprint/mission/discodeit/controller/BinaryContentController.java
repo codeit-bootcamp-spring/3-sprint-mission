@@ -1,12 +1,13 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.BinaryContentAPI;
-import com.sprint.mission.discodeit.dto.data.BinaryContentDTO;
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,44 +19,49 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/binaryContents")
 @RestController
+@Slf4j
 public class BinaryContentController implements BinaryContentAPI {
 
   private final BinaryContentService binaryContentService;
   private final BinaryContentStorage binaryContentStorage;
 
   @GetMapping
-  public ResponseEntity<List<BinaryContentDTO>> findAllByIdIn(
-      @RequestParam List<UUID> binaryContentIds
+  public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
+      @RequestParam("binaryContentIds") List<UUID> binaryContentIds
   ) {
 
-    List<BinaryContentDTO> result =
+    List<BinaryContentDto> binaryContents =
         binaryContentService.findAllByIdIn(binaryContentIds);
 
-    return ResponseEntity.status(HttpStatus.OK).body(result);
+    return ResponseEntity.status(HttpStatus.OK).body(binaryContents);
   }
 
   @GetMapping(
-      path = "/{binaryContentId}"
+      path = "{binaryContentId}"
   )
-  public ResponseEntity<BinaryContentDTO> find(
+  public ResponseEntity<BinaryContentDto> find(
       @PathVariable("binaryContentId") UUID binaryContentId
   ) {
 
-    BinaryContentDTO result =
+    BinaryContentDto binaryContent =
         binaryContentService.find(binaryContentId);
 
-    return ResponseEntity.status(HttpStatus.OK).body(result);
+    return ResponseEntity.status(HttpStatus.OK).body(binaryContent);
   }
 
   @GetMapping(
-      path = "/{binaryContentId}/download"
+      path = "{binaryContentId}/download"
   )
   public ResponseEntity<?> download(
       @PathVariable("binaryContentId") UUID binaryContentId
   ) {
-    BinaryContentDTO binaryContentDTO = binaryContentService.find(binaryContentId);
-    return ResponseEntity.status(HttpStatus.OK).body(
-        binaryContentStorage.download(binaryContentDTO)
-    );
+    log.info("파일 다운로드 요청 binaryContentId={}", binaryContentId);
+    BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
+
+    log.info("파일 다운로드 진행 request={}", binaryContentDto);
+    ResponseEntity<?> response = binaryContentStorage.download(binaryContentDto);
+    log.info("파일 다운로드 완료 response={}", response);
+
+    return response;
   }
 }

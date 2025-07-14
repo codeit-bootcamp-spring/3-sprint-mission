@@ -1,13 +1,15 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ReadStatusAPI;
-import com.sprint.mission.discodeit.dto.data.ReadStatusDTO;
+import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,15 +24,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/readStatuses")
 @RestController
+@Slf4j
 public class ReadStatusController implements ReadStatusAPI {
 
   private final ReadStatusService readStatusService;
 
   @PostMapping
-  public ResponseEntity<ReadStatusDTO> create(
-      @RequestBody ReadStatusCreateRequest request
+  public ResponseEntity<ReadStatusDto> create(
+      @RequestBody @Valid ReadStatusCreateRequest request
   ) {
-    ReadStatusDTO readStatus = readStatusService.create(request);
+    log.info("메시지 읽음 상태 생성 요청 userId={}, channelId={}", request.userId(), request.channelId());
+    ReadStatusDto readStatus = readStatusService.create(request);
+    log.info("메시지 읽음 상태 생성 완료 readStatusId={}", readStatus.id());
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
@@ -40,11 +45,13 @@ public class ReadStatusController implements ReadStatusAPI {
   @PatchMapping(
       value = "/{readStatusId}"
   )
-  public ResponseEntity<ReadStatusDTO> update(
+  public ResponseEntity<ReadStatusDto> update(
       @PathVariable UUID readStatusId,
-      @RequestBody ReadStatusUpdateRequest readStatusUpdateDTO
+      @RequestBody @Valid ReadStatusUpdateRequest readStatusUpdateDto
   ) {
-    ReadStatusDTO readStatusUpdate = readStatusService.update(readStatusId, readStatusUpdateDTO);
+    log.info("메시지 읽음 상태 수정 요청 readStatusId={}, request={}", readStatusId, readStatusUpdateDto);
+    ReadStatusDto readStatusUpdate = readStatusService.update(readStatusId, readStatusUpdateDto);
+    log.info("메시지 읽음 상태 수정 완료 readStatusId={}", readStatusUpdate.id());
 
     return ResponseEntity
         .status(HttpStatus.OK)
@@ -52,14 +59,15 @@ public class ReadStatusController implements ReadStatusAPI {
   }
 
   @GetMapping
-  public ResponseEntity<List<ReadStatusDTO>> findAllByUserId(
+  public ResponseEntity<List<ReadStatusDto>> findAllByUserId(
       @RequestParam("userId") UUID userId
   ) {
-//        List<ReadStatus> readStatus = readStatusService.findAll();
-    List<ReadStatusDTO> readStatusDTO = readStatusService.findAllByUserId(userId);
+    log.info("메시지 읽음 상태 목록 조회 요청 userId={}", userId);
+    List<ReadStatusDto> readStatusDto = readStatusService.findAllByUserId(userId);
+    log.info("메시지 읽음 상태 목록 조회 완료 count={}", readStatusDto.size());
 
     return ResponseEntity
         .status(HttpStatus.OK)
-        .body(readStatusDTO);
+        .body(readStatusDto);
   }
 }
