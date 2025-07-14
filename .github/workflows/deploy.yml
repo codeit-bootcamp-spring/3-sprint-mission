@@ -105,9 +105,15 @@ jobs:
           image: ${{ steps.build-image.outputs.image }}
           # (보안!) GitHub Secrets에서 정의한 애플리케이션 레벨의 환경변수들을 동적으로 주입
           environment-variables: |
-            AWS_ACCESS_KEY_ID=${{ secrets.APP_AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY=${{ secrets.APP_AWS_SECRET_ACCESS_KEY }}
-            RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
+            SPRING_PROFILES_ACTIVE=prod
+            SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}
+            SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}
+            SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+            AWS_S3_ACCESS_KEY=${{ secrets.AWS_S3_ACCESS_KEY }}
+            AWS_S3_SECRET_KEY=${{ secrets.AWS_S3_SECRET_KEY }}
+            AWS_S3_REGION=${{ vars.AWS_S3_REGION }}
+            AWS_S3_BUCKET=${{ vars.AWS_S3_BUCKET }}
+            STORAGE_TYPE=s3
 
       # 7단계: 업데이트된 태스크 정의로 ECS 서비스 배포 실행
       - name: Deploy Amazon ECS task definition
