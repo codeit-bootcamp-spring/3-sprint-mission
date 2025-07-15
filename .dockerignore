@@ -1,0 +1,37 @@
+# Build output
+build/
+!build/libs/
+
+# IDE files
+.idea/
+*.iml
+*.iws
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Version control
+.git/
+.gitignore
+
+# Documentation
+README.md
+HELP.md
+
+# Other directories
+admin/
+.github/
+
+# Gradle cache
+.gradle/
+
+# Test results
+test-results/
+
+# Temporary files
+*.tmp
+*.log
+
+.env
+discodeit.env
