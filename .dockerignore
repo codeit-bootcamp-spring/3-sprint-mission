@@ -1,0 +1,50 @@
+# Git 관련
+.git
+.gitignore
+.gitattributes
+.github
+
+# IDE 관련
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# 빌드 출력물
+build/
+out/
+target/
+
+# Gradle 관련
+.gradle/
+gradle-wrapper.jar
+
+# 로그 파일
+*.log
+logs/
+
+# 임시 파일
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# 문서 파일
+README.md
+*.md
+docs/
+
+# Docker 관련
+Dockerfile*
+.dockerignore
+docker-compose.yml
+
+# 테스트 관련
+**/test-results/
+**/coverage/
+
+# 백업 파일
+*.bak
+*.backup
+
