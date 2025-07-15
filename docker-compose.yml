@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 데이터베이스 서비스
+  postgres:
+    image: postgres:17-alpine
+    container_name: discodeit-db
+    restart: unless-stopped
+    
+    # 환경변수 설정
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    
+    # 포트 매핑 (호스트:컨테이너)
+    ports:
+      - "54321:5432"
+    
+    # 볼륨 마운트 (데이터 영속화)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # 초기 스크립트 실행 (선택사항)
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-init-data.sql:ro
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  # Spring Boot 애플리케이션 서비스
+  app:
+    # 로컬 Dockerfile 빌드 또는 이미지 지정
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: discodeit-app
+    restart: unless-stopped
+    
+    # PostgreSQL 서비스가 건강한 상태가 된 후 시작
+    depends_on:
+      postgres:
+        condition: service_healthy
+    
+    # 환경변수 설정
+    environment:
+      # Spring 프로파일
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      PROJECT_NAME: ${PROJECT_NAME}
+      PROJECT_VERSION: ${PROJECT_VERSION}
+      JVM_OPTS: ${JVM_OPTS}
+
+    # 포트 매핑 (호스트:컨테이너)
+    ports:
+      - "8081:80"
+    
+    # 볼륨 마운트
+    volumes:
+      - ./data/binaryContent:/app/data/binaryContent
+
+volumes:
+  # PostgreSQL 데이터 볼륨
+  postgres_data:

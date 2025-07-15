@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Message;
-import java.util.List;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
@@ -15,15 +15,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-    Message save(Message message);
+    @Query("SELECT m FROM Message m "
+        + "LEFT JOIN FETCH m.author a "
+        + "JOIN FETCH a.status "
+        + "LEFT JOIN FETCH a.profile "
+        + "WHERE m.channel.id=:channelId AND m.createdAt < :createdAt")
+    Slice<Message> findAllByChannelIdWithAuthor(@Param("channelId") UUID channelId,
+        @Param("createdAt") Instant createdAt,
+        Pageable pageable);
 
-    Optional<Message> findById(UUID messageId);
-
-    List<Message> findByChannelId(UUID channelId);
-
-    Slice<Message> findByChannelIdOrderByCreatedAtDesc(UUID channelId, Pageable pageable);
-
-    void deleteById(UUID messageId);
+    @Query("SELECT MAX(m.createdAt) FROM Message m WHERE m.channel.id = :channelId")
+    Optional<Instant> findLastMessageAtByChannelId(@Param("channelId") UUID channelId);
 
     @Modifying
     @Query("DELETE FROM Message m WHERE m.channel.id = :channelId")

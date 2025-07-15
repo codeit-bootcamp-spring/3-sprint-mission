@@ -9,12 +9,16 @@ import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import jakarta.validation.Valid;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/messages")
+@Slf4j
 public class MessageController implements MessageApi {
 
     private final MessageService messageService;
@@ -43,6 +48,9 @@ public class MessageController implements MessageApi {
         @Valid @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
         @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
+        log.info("메시지 생성 요청 - 채널ID: {}, 작성자ID: {}", messageCreateRequest.channelId(),
+            messageCreateRequest.authorId());
+
         List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
             .map(files -> files.stream()
                 .map(file -> {
@@ -54,14 +62,17 @@ public class MessageController implements MessageApi {
                             file.getBytes()
                         );
                     } catch (IOException e) {
+                        log.error("첨부파일 변환 실패 - 파일명: {}", file.getOriginalFilename(), e);
                         throw new RuntimeException(e);
                     }
                 })
                 .toList())
             .orElse(new ArrayList<>());
+
         MessageDto newMessage = messageService.createMessage(messageCreateRequest,
             attachmentRequests);
 
+        log.info("메시지 생성 완료 - 메시지ID: {}", newMessage.id());
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(newMessage);
@@ -71,8 +82,10 @@ public class MessageController implements MessageApi {
     @Override
     public ResponseEntity<MessageDto> updateMessage(@PathVariable("messageId") UUID messageId,
         @Valid @RequestBody MessageUpdateRequest request) {
+        log.info("메시지 수정 요청 - 메시지ID: {}, 신규 내용: {}", messageId, request.newContent());
         MessageDto updatedMessage = messageService.updateMessage(messageId, request);
 
+        log.info("메시지 수정 완료 - 메시지ID: {}", updatedMessage.id());
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(updatedMessage);
@@ -82,7 +95,10 @@ public class MessageController implements MessageApi {
     @Override
     public ResponseEntity<Void> deleteMessage(@PathVariable("messageId") UUID messageId,
         @RequestParam("senderId") UUID senderId) {
+        log.info("메시지 삭제 요청 - 메시지ID: {}, 요청자ID: {}", messageId, senderId);
         messageService.deleteMessage(messageId, senderId);
+
+        log.info("메시지 삭제 완료 - 메시지ID: {}", messageId);
         return ResponseEntity
             .status(HttpStatus.NO_CONTENT)
             .build();
@@ -91,8 +107,16 @@ public class MessageController implements MessageApi {
     @GetMapping
     @Override
     public ResponseEntity<PageResponse<MessageDto>> findAllMessageInChannel(
-        @RequestParam("channelId") UUID channelId, Pageable pageable) {
-        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, pageable);
+        @RequestParam("channelId") UUID channelId,
+        @RequestParam(value = "cursor", required = false) Instant cursor,
+        @PageableDefault(
+            size = 50,
+            page = 0,
+            sort = "createdAt",
+            direction = Direction.DESC
+        ) Pageable pageable) {
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor,
+            pageable);
 
         return ResponseEntity
             .status(HttpStatus.OK)

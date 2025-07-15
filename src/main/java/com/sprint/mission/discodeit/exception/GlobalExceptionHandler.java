@@ -1,29 +1,70 @@
 package com.sprint.mission.discodeit.exception;
 
-import org.springframework.http.HttpStatus;
+import com.sprint.mission.discodeit.dto.response.ErrorResponse;
+import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.NoSuchElementException;
-
-@ControllerAdvice
-@ResponseBody
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-  }
+    @ExceptionHandler(DiscodeitException.class)
+    public ResponseEntity<ErrorResponse> handleCommonException(DiscodeitException e) {
+        ErrorCode error = e.getErrorCode();
 
-  @ExceptionHandler(NoSuchElementException.class)
-  public ResponseEntity<String> handleNoSuchElementException(NoSuchElementException e) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-  }
+        ErrorResponse response = ErrorResponse.builder()
+            .timestamp(Instant.now())
+            .code(error.getCode())
+            .message(error.getMessage())
+            .status(error.getStatus().value())
+            .exceptionType(e.getClass().getSimpleName())
+            .details(e.getDetails())
+            .build();
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<String> handleGeneralException(Exception e) {
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-  }
+        return ResponseEntity
+            .status(error.getStatus())
+            .body(response);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception e) {
+        ErrorCode error = ErrorCode.UNKNOWN_ERROR;
+
+        return ResponseEntity
+            .status(error.getStatus())
+            .body(ErrorResponse.of(error));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(
+        MethodArgumentNotValidException e) {
+        Map<String, Object> details = e.getBindingResult()
+            .getFieldErrors().stream()
+            .collect(Collectors.toMap(
+                FieldError::getField,
+                err -> Optional.ofNullable(err.getDefaultMessage()).orElse("유효성 오류"),
+                (existing, replacement) -> existing
+            ));
+
+        ErrorCode error = ErrorCode.VALIDATION_FAILED;
+
+        ErrorResponse response = ErrorResponse.builder()
+            .timestamp(Instant.now())
+            .code(error.getCode())
+            .message(error.getMessage())
+            .status(error.getStatus().value())
+            .exceptionType(e.getClass().getSimpleName())
+            .details(details)
+            .build();
+
+        return ResponseEntity
+            .status(error.getStatus())
+            .body(response);
+    }
 }

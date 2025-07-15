@@ -1,0 +1,82 @@
+name: Deploy to ECS
+
+on:
+  push:
+    branches:
+      - release
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY_URI: ${{ secrets.ECR_REPOSITORY_URI }}
+  ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
+  ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
+  ECS_TASK_DEFINITION: ${{ secrets.ECS_TASK_DEFINITION }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  deploy:
+    name: Build and Push Docker Image to ECR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bootJar
+          docker build -t ${{ secrets.ECR_REPOSITORY_URI }}:${{ env.IMAGE_TAG }} -t ${{ secrets.ECR_REPOSITORY_URI }}:latest .
+          docker push ${{ secrets.ECR_REPOSITORY_URI }}:${{ env.IMAGE_TAG }}
+          docker push ${{ secrets.ECR_REPOSITORY_URI }}:latest
+          echo "image=${{ secrets.ECR_REPOSITORY_URI }}:${{ env.IMAGE_TAG }}" >> $GITHUB_OUTPUT
+
+      - name: Get current task definition
+        id: get-task-def
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_TASK_DEFINITION }} \
+            --query "taskDefinition" > task-def.json
+
+      - name: Create new task definition with updated image
+        id: register-task-def
+        run: |
+          NEW_IMAGE="${{ secrets.ECR_REPOSITORY_URI }}:${{ env.IMAGE_TAG }}"
+          cat task-def.json | \
+            jq --arg IMAGE "$NEW_IMAGE" '.containerDefinitions[0].image=$IMAGE' | \
+            jq 'del(.status, .revision, .taskDefinitionArn, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' \
+            > new-task-def.json
+
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://new-task-def.json \
+            --query "taskDefinition.taskDefinitionArn" \
+            --output text)
+
+          echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+
+      - name: Stop old tasks (reduce to 0)
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --desired-count 0
+
+      - name: Update ECS service with new task definition
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --task-definition ${{ env.TASK_DEF_ARN }} \
+            --desired-count 1

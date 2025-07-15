@@ -30,22 +30,14 @@ public class ReadStatus extends BaseUpdatableEntity {
     private Instant lastReadAt;
 
     public ReadStatus(User user, Channel channel, Instant lastReadAt) {
-        super();
         this.user = user;
         this.channel = channel;
         this.lastReadAt = lastReadAt;
     }
 
     public void updateLastReadAt(Instant newLastReadAt) {
-        boolean anyValueUpdated = false;
         if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
             this.lastReadAt = newLastReadAt;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            update();
         }
     }
 }
-

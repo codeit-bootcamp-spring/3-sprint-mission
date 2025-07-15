@@ -44,3 +44,11 @@ out/
 
 /data/
 /src/main/resources/test.sql
+/.logs/
+
+.env
+
+admin/*
+!admin/src/
+!admin/src/main/
+admin/src/test/
