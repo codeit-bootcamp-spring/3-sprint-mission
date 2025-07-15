@@ -9,7 +9,7 @@ on:
 # 워크플로우 전체에서 사용할 환경 변수 정의
 env:
   # AWS 리전 (서울)
-  AWS_REGION: us-east-1
+  AWS_REGION: ap-northeast-2
   # ECR 저장소 이름
   ECR_REPOSITORY: c3z7a2c3/discodeit
   # ECS 서비스 이름
@@ -59,6 +59,8 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
         with:
           registry-type: public
+        env:
+          AWS_REGION: us-east-1
 
       # 5단계: Docker 이미지 빌드 및 ECR에 업로드
       - name: Build, tag, and push image to Amazon ECR
