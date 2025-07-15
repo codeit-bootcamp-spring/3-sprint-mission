@@ -10,26 +10,28 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Component
 public class MDCLoggingInterceptor implements HandlerInterceptor {
 
+    private static final String REQUEST_ID = "requestId";
+    private static final String REQUEST_METHOD = "requestMethod";
+    private static final String REQUEST_URI = "requestURI";
+    private static final String REQUEST_ID_HEADER = "Discodeit-Request-ID";
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
-        Object handler) throws Exception {
-        String requestId = UUID.randomUUID().toString();
+        Object handler) {
+        String requestId = UUID.randomUUID().toString().substring(0, 8);
 
-        MDC.put("requestId", requestId);
-        MDC.put("method", request.getMethod());
-        MDC.put("url", request.getRequestURI());
+        MDC.put(REQUEST_ID, requestId);
+        MDC.put(REQUEST_METHOD, request.getMethod());
+        MDC.put(REQUEST_URI, request.getRequestURI());
 
-        response.setHeader("Discodeit-Request-ID", requestId);
+        response.setHeader(REQUEST_ID_HEADER, requestId);
 
         return true;
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
-        Object handler, Exception ex) throws Exception {
-        // 요청 처리 후 MDC 값 제거
-        MDC.remove("requestId");
-        MDC.remove("method");
-        MDC.remove("url");
+        Object handler, Exception ex) {
+        MDC.clear();
     }
 }
