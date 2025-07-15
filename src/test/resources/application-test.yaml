@@ -1,0 +1,63 @@
+server:
+  port: 8080
+  tomcat:
+    uri-encoding: UTF-8
+spring:
+  logging:
+    level:
+      root: INFO
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:discodeit;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        default_schema: DISCODEIT
+        format_sql: true
+        use_sql_comments: false
+        dialect: org.hibernate.dialect.H2Dialect
+  sql:
+    init:
+      mode: always
+      platform: h2
+      schema-locations:
+        - classpath:schema-h2-test.sql
+
+
+discodeit:
+  storage:
+    type: ${STORAGE_TYPE:local}
+    local:
+      root-path: ${STORAGE_LOCAL_ROOT:.discodeit/storage}
+    s3:
+      access-key: ${AWS_S3_ACCESS_KEY}
+      secret-key: ${AWS_S3_SECRET_KEY}
+      region: ${AWS_S3_REGION}
+      bucket: ${AWS_S3_BUCKET}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
+  repository:
+    type: jcf  # jcf | file
+    file-directory: data/
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  mvc:
+    static-path-pattern: /**
+
+
+file:
+  upload:
+    all:
+      path: ./files

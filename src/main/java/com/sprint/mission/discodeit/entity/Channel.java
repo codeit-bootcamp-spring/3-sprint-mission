@@ -20,7 +20,6 @@ import java.util.UUID;
  * 2025. 4. 17.        doungukkim       최초 생성
  */
 @Getter
-@Setter
 @Entity
 @Builder
 @AllArgsConstructor
@@ -50,5 +49,10 @@ public class Channel extends BaseUpdatableEntity implements Serializable {
         this.name = name;
         this.description = description;
         this.type = ChannelType.PUBLIC;
+    }
+
+    public void changeChannelInformation(String name, String description) {
+        this.name = name;
+        this.description = description;
     }
 }

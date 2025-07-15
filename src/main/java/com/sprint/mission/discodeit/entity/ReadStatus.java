@@ -51,12 +51,7 @@ public class ReadStatus extends BaseUpdatableEntity {
         this.lastReadAt = lastReadAt;
     }
 
-    @Override
-    public void setUpdatedAt(Instant updatedAt) {
-        super.setUpdatedAt(updatedAt);
-    }
-
-    public void setLastReadAt(Instant lastReadAt) {
+    public void changeLastReadAt(Instant lastReadAt) {
         this.lastReadAt = lastReadAt;
     }
 }

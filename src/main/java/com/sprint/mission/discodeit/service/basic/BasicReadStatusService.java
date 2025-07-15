@@ -6,7 +6,7 @@ import com.sprint.mission.discodeit.dto.readStatus.request.ReadStatusUpdateReque
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.mapper.advanced.AdvancedReadStatusMapper;
+import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
@@ -36,16 +36,16 @@ public class BasicReadStatusService implements ReadStatusService {
     private final JpaReadStatusRepository readStatusRepository;
     private final JpaUserRepository userRepository;
     private final JpaChannelRepository channelRepository;
-    private final AdvancedReadStatusMapper readStatusMapper;
+    private final ReadStatusMapper readStatusMapper;
 
 
     @Override
-    public List<JpaReadStatusResponse> findAllByUserId(UUID userId) {
+    public List<ReadStatusResponse> findAllByUserId(UUID userId) {
         List<ReadStatus> readStatusList = Optional.ofNullable(readStatusRepository.findAllByUserId(userId))
                 .orElseThrow(() -> new IllegalStateException("userId로 찾을 수 없음: BasicReadStatusService.findAllByUserId"));
 
 
-        List<JpaReadStatusResponse> responses = new ArrayList<>();
+        List<ReadStatusResponse> responses = new ArrayList<>();
         for (ReadStatus readStatus : readStatusList) {
             responses.add(
                     readStatusMapper.toDto(readStatus)
@@ -56,7 +56,7 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public JpaReadStatusResponse create(ReadStatusCreateRequest request) {
+    public ReadStatusResponse create(ReadStatusCreateRequest request) {
         UUID userId = request.userId();
         UUID channelId = request.channelId();
 
@@ -75,19 +75,18 @@ public class BasicReadStatusService implements ReadStatusService {
                 .build();
         readStatusRepository.save(readStatus);
 
-        JpaReadStatusResponse response = readStatusMapper.toDto(readStatus);
-        JpaReadStatusResponse response = readStatusMapper.toDto(readStatus);
+        ReadStatusResponse response = readStatusMapper.toDto(readStatus);
         return response;
     }
 
 
     @Override
-    public JpaReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest request) {
+    public ReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest request) {
 
         ReadStatus readStatus = readStatusRepository.findById(readStatusId).orElseThrow(() -> new NoSuchElementException("readStatus with id " + readStatusId + " not found"));
-        readStatus.setLastReadAt(request.newLastReadAt());
+        readStatus.changeLastReadAt(request.newLastReadAt());
 
-        JpaReadStatusResponse response = new JpaReadStatusResponse(
+        ReadStatusResponse response = new ReadStatusResponse(
                 readStatus.getId(),
                 readStatus.getUser().getId(),
                 readStatus.getChannel().getId(),

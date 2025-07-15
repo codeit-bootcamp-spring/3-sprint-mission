@@ -1,15 +1,16 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.MessageApi;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse;
-import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
+import com.sprint.mission.discodeit.dto.message.response.PageResponse;
+import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,51 +31,39 @@ import java.util.UUID;
  * -----------------------------------------------------------
  * 2025. 5. 11.        doungukkim       최초 생성
  */
-@Tag(name = "Message 컨트롤러", description = "스프린트 미션5 메세지 컨트롤러 엔트포인트들 입니다.")
 @RestController
 @RequestMapping("api/messages")
 @RequiredArgsConstructor
-public class MessageController {
+public class MessageController implements MessageApi {
     private final MessageService messageService;
 
 
-    @Operation(summary = "심화 채널 메세지 목록 조회", description = "메세지를 수정 합니다.")
     @GetMapping
-    public ResponseEntity<?> findMessagesInChannel(@RequestParam UUID channelId,
-                                                   @RequestParam(required = false) Instant cursor,
-                                                   Pageable pageable) {
-        AdvancedJpaPageResponse response = messageService.findAllByChannelIdAndCursor(channelId, cursor, pageable);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<PageResponse> findMessagesInChannel(
+        @RequestParam UUID channelId,
+        @RequestParam(required = false) Instant cursor,
+        Pageable pageable) {
+        return ResponseEntity.ok(messageService.findAllByChannelIdAndCursor(channelId, cursor, pageable));
     }
 
-    @Operation(summary = "메세지 생성", description = "메세지를 생성 합니다.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> creatMessage(
-            @RequestPart("messageCreateRequest") MessageCreateRequest request,
+    public ResponseEntity<MessageResponse> creatMessage(
+            @Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachmentFiles
     ) {
-        JpaMessageResponse message = messageService.createMessage(request, attachmentFiles);
-        return ResponseEntity.status(201).body(message);
+        return ResponseEntity.status(HttpStatus.CREATED).body(messageService.createMessage(request, attachmentFiles));
     }
 
-    @Operation(summary = "메세지 삭제", description = "메세지를 삭제 합니다.")
     @DeleteMapping(path = "/{messageId}")
-    public ResponseEntity<?> deleteMessage(@PathVariable UUID messageId) {
-        boolean deleted = messageService.deleteMessage(messageId);
-        if (deleted) {
-            return ResponseEntity.status(204).build();
-        }
-        return ResponseEntity.status(500).body("unexpected error");
+    public ResponseEntity<?> deleteMessage(@PathVariable @NotNull UUID messageId) {
+        messageService.deleteMessage(messageId);
+        return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "메세지 수정", description = "메세지를 수정 합니다.")
     @PatchMapping(path = "/{messageId}")
-    public ResponseEntity<?> updateMessage(
+    public ResponseEntity<MessageResponse> updateMessage(
             @PathVariable UUID messageId,
             @Valid @RequestBody MessageUpdateRequest request) {
-        JpaMessageResponse response = messageService.updateMessage(messageId, request);
-        return ResponseEntity.status(200).body(response);
+        return ResponseEntity.ok(messageService.updateMessage(messageId, request));
     }
-
-
 }

@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.storage;
 
-import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
@@ -14,7 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,6 +30,7 @@ import java.util.UUID;
  * Author       : dounguk
  * Date         : 2025. 5. 30.
  */
+
 @Transactional
 @Service
 @ConditionalOnProperty(
@@ -36,8 +41,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class LocalBinaryContentStorage implements BinaryContentStorage {
     private static final String PROFILE_PATH = "img";
+    private static final Logger log = LoggerFactory.getLogger(LocalBinaryContentStorage.class);
+
+
     private final JpaBinaryContentRepository binaryContentRepository;
-//    private final FileUploadUtils fileUploadUtils;
 
     private Path root;
 
@@ -56,21 +63,18 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         this.root = Paths.get(uploadPath);
     }
 
-
     @Override
     public UUID put(UUID binaryContentId, byte[] bytes) {
-//        String uploadPath = fileUploadUtils.getUploadPath(PROFILE_PATH);
+        log.info("upload profile image is {}",binaryContentId);
+        //0+ new exception
         BinaryContent attachment = binaryContentRepository.findById(binaryContentId).orElseThrow(() -> new IllegalStateException("image information is not saved"));
-
-//        String filename = attachment.getFileName();
-//        String extension = filename.substring(filename.lastIndexOf(".") + 1);
-
         Path path = resolvePath(binaryContentId, attachment.getExtension());
 
         // 사진 저장
         try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
             fos.write(bytes);
         } catch (IOException e) {
+            //0+ new exception
             throw new RuntimeException("image not saved", e);
         }
         return attachment.getId();
@@ -79,6 +83,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     @Transactional(readOnly = true)
     @Override
     public InputStream get(UUID binaryContentId) {
+        //0+ new exception
         BinaryContent attachment = binaryContentRepository.findById(binaryContentId).orElseThrow(() -> new IllegalStateException("image information not found"));
 
         Path path = resolvePath(binaryContentId, attachment.getExtension());
@@ -95,7 +100,8 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     }
 
     @Override
-    public ResponseEntity<?> download(JpaBinaryContentResponse response) {
+    public ResponseEntity<?> download(BinaryContentResponse response) {
+        log.info("downloading image {}", response.fileName());
         try {
             byte[] bytes = get(response.id()).readAllBytes();
             return ResponseEntity.ok()

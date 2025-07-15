@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.storage;
 
-import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 import org.springframework.http.ResponseEntity;
 
 import java.io.InputStream;
@@ -14,10 +14,10 @@ import java.util.UUID;
  */
 public interface BinaryContentStorage {
 
-    UUID put(UUID BinaryContentId, byte[] bytes);
+    UUID put(UUID binaryContentId, byte[] bytes);
 
-    InputStream get(UUID BinaryContentId);
+    InputStream get(UUID binaryContentId);
 
-    ResponseEntity<?> download(JpaBinaryContentResponse response);
+    ResponseEntity<?> download(BinaryContentResponse response);
 
 }

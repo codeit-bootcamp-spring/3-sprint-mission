@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binaryContent.JpaBinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.mapper.advanced.AdvancedBinaryContentMapper;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
@@ -25,11 +25,11 @@ import java.util.*;
 @RequiredArgsConstructor
 public class BasicBinaryContentService implements BinaryContentService {
     private final JpaBinaryContentRepository binaryContentRepository;
-    private final AdvancedBinaryContentMapper binaryContentMapper;
+    private final BinaryContentMapper binaryContentMapper;
 
     @Override
-    public List<JpaBinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds) {
-        List<JpaBinaryContentResponse> responses = new ArrayList<>();
+    public List<BinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds) {
+        List<BinaryContentResponse> responses = new ArrayList<>();
 
         if (binaryContentIds.isEmpty()) {
             throw new RuntimeException("no ids in param");
@@ -48,11 +48,10 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public JpaBinaryContentResponse find(UUID binaryContentId) {
+    public BinaryContentResponse find(UUID binaryContentId) {
         BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
                 .orElseThrow(() -> new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found"));
 
         return binaryContentMapper.toDto(binaryContent);
     }
-
 }

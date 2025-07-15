@@ -1,18 +1,22 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.userStatus.JpaUserStatusResponse;
+import com.sprint.mission.discodeit.dto.userStatus.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.mapper.advanced.AdvancedUserStatusMapper;
+import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic fileName       :
@@ -24,20 +28,22 @@ import java.util.*;
 @RequiredArgsConstructor
 public class BasicUserStatusService implements UserStatusService {
   private final JpaUserRepository userRepository;
-  private final AdvancedUserStatusMapper userStatusMapper;
+  private final UserStatusMapper userStatusMapper;
+
+  private static final Logger log = LoggerFactory.getLogger(BasicUserStatusService.class);
 
   @Transactional
   @Override
-  public JpaUserStatusResponse updateByUserId(UUID userId, Instant newLastActiveAt) {
+  public UserStatusResponse updateByUserId(UUID userId, Instant newLastActiveAt) {
     Objects.requireNonNull(userId, "no userId in param");
-    Objects.requireNonNull(newLastActiveAt, "no userId in param");
 
-    User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("UserStatus with userId " + userId + " not found"));
+    if (userRepository.count() < 1) log.warn("any user exists");
+
+    User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
     UserStatus userStatus = user.getStatus();
-    userStatus.setLastActiveAt(newLastActiveAt);
+    userStatus.changeLastActiveAt(newLastActiveAt);
 
-    JpaUserStatusResponse response = userStatusMapper.toDto(userStatus);
-    return response;
+    return userStatusMapper.toDto(userStatus);
   }
 
 }

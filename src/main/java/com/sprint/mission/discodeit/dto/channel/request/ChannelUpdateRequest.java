@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto.channel.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -15,6 +16,6 @@ import jakarta.validation.constraints.NotNull;
  */
 
 public record ChannelUpdateRequest(
-        @NotNull String newName,
-        @NotNull String newDescription
+        @NotBlank String newName,
+        String newDescription
         ) { }

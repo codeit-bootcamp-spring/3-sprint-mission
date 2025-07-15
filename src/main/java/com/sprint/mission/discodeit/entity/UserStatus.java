@@ -23,6 +23,7 @@ import java.time.Instant;
 @Table(name = "user_statuses", schema = "discodeit")
 @Setter
 @Getter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -42,25 +43,7 @@ public class UserStatus extends BaseUpdatableEntity implements Serializable {
         this.user = user;
         this.lastActiveAt = Instant.now();
     }
-
-    @Override
-    public void setUpdatedAt(Instant updatedAt) {
-        super.setUpdatedAt(updatedAt);
-    }
-
-    public void setLastActiveAt() {
-        this.lastActiveAt = Instant.now();
-    }
-
-    @Override
-    public String toString() {
-        return "UserStatus{" +
-                "user=" + user +
-                ", lastActiveAt=" + lastActiveAt +
-                ", updatedAt(updatable)=" + updatedAt +
-                ", id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
+    public void changeLastActiveAt(Instant lastActiveAt) {
+        this.lastActiveAt = lastActiveAt;
     }
 }

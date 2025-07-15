@@ -3,9 +3,8 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.message.response.AdvancedJpaPageResponse;
-import com.sprint.mission.discodeit.dto.message.response.JpaMessageResponse;
-import com.sprint.mission.discodeit.dto.message.response.JpaPageResponse;
+import com.sprint.mission.discodeit.dto.message.response.PageResponse;
+import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,14 +26,11 @@ import java.util.UUID;
  */
 public interface MessageService {
 
-    //page 방식
-//    JpaPageResponse findAllByChannelId(UUID channelId, Pageable pageable);
+    MessageResponse createMessage(MessageCreateRequest MessageAttachmentRequest, List<MultipartFile> multipartFiles);
 
-    JpaMessageResponse createMessage(MessageCreateRequest MessageAttachmentRequest, List<MultipartFile> multipartFiles);
+    MessageResponse updateMessage(UUID messageId, MessageUpdateRequest request);
 
-    JpaMessageResponse updateMessage(UUID messageId, MessageUpdateRequest request);
+    void deleteMessage(UUID messageId);
 
-    boolean deleteMessage(UUID messageId);
-
-    AdvancedJpaPageResponse findAllByChannelIdAndCursor(UUID channelId, Instant cursor, Pageable pageable);
+    PageResponse findAllByChannelIdAndCursor(UUID channelId, Instant cursor, Pageable pageable);
 }

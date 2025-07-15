@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.dto.channel.request;
 
-import java.util.*;
+import jakarta.validation.constraints.NotEmpty;
+
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.Dto.user
@@ -14,13 +17,9 @@ import java.util.*;
  * 2025. 4. 25.        doungukkim       최초 생성
  */
 
-public record PrivateChannelCreateRequest(Set<String> participantIds) {
-    public PrivateChannelCreateRequest {
-        if ((participantIds == null) || (participantIds.isEmpty())) {
-            throw new RuntimeException("request must need one or more ids");
-        }
-    }
-}
+public record PrivateChannelCreateRequest(
+    @NotEmpty (message = "request must need one or more ids") Set<UUID> participantIds
+) { }
 
 
 

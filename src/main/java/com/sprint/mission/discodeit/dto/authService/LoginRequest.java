@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto.authService;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -16,7 +17,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record LoginRequest
     (
-            @NotNull(message = "아이디가 반드시 필요합니다.") String username,
-            @NotNull(message = "비밀번호가 반드시 필요합니다.") String password
+            @NotBlank(message = "아이디가 반드시 필요합니다.") String username,
+            @NotBlank(message = "비밀번호가 반드시 필요합니다.") String password
     )
 { }

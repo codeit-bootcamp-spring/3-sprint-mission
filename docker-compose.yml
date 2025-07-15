@@ -1,0 +1,40 @@
+version: "3.8"
+
+# postgresql - 17
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres-container
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - psql-discodeit-prod-data:/var/lib/postgresql/data
+
+
+# spring boot - discodeit
+  app:
+    build:
+      context: .
+    image: discodeit:local
+    env_file:
+      - .env
+    container_name: spring-discodeit-app
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      PROJECT_NAME: discodeit
+      PROJECT_VERSION: 1.2-M8
+      JVM_OPTS: ""
+    ports:
+      - "8081:80"
+    depends_on:
+      - postgres
+    volumes:
+      - binary-content-volume:/app/files
+
+volumes:
+  psql-discodeit-prod-data:
+  binary-content-volume:

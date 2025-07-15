@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.repository.jpa;
 
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.MessageRepositoryCustom;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.time.Instant;
 import java.util.List;
@@ -15,22 +17,12 @@ import java.util.UUID;
  * Author       : dounguk
  * Date         : 2025. 5. 28.
  */
-public interface JpaMessageRepository extends JpaRepository<Message, UUID> {
+public interface JpaMessageRepository extends JpaRepository<Message, UUID>, MessageRepositoryCustom {
     List<Message> findAllByChannelId(UUID channelId);
-    List<Message> findAllById(UUID messageId);
 
     boolean existsById(UUID messageId);
 
-//    List<Message> findAllByChannelIdOrderByCreatedAt(UUID channelId, Pageable pageable);
-
     Message findTopByChannelIdOrderByCreatedAtDesc(UUID channelId);
 
-//    List<Message> findAllByChannelIdOrderByCreatedAt(UUID channelId, Pageable pageable);
-    List<Message> findAllByChannelId(UUID channelId, Pageable pageable);
-    Page<Message> findAllPageByChannelIdOrderByCreatedAt(UUID channelId, Pageable pageable);
-
-    List<Message> findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(UUID channelId, Instant cursor, Pageable pageable);
-
     Long countByChannelId(UUID channelId);
-
 }
