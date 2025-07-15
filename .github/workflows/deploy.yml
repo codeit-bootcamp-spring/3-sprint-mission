@@ -11,7 +11,7 @@ env:
   # AWS 리전 (서울)
   AWS_REGION: us-east-1
   # ECR 저장소 이름
-  ECR_REPOSITORY: discodeit
+  ECR_REPOSITORY: c3z7a2c3/discodeit
   # ECS 서비스 이름
   ECS_SERVICE: discodeit-service
   # ECS 클러스터 이름
