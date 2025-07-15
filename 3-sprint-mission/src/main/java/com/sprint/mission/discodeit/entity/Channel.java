@@ -6,48 +6,36 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import java.time.Instant;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
 @Entity
-@Table(name = "channels", schema = "discodeit")
+@Table(name = "channels")
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Channel extends BaseUpdatableEntity {
 
-  @Column(name = "type")
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   private ChannelType type;
-  @Column(name = "name")
+  @Column(length = 100)
   private String name;
-  @Column(name = "description")
+  @Column(length = 500)
   private String description;
 
-  @Builder
-  public Channel(String name, String description, ChannelType type) {
+  public Channel(ChannelType type, String name, String description) {
+    this.type = type;
     this.name = name;
     this.description = description;
-    this.type = type;
   }
 
-  public void update(String newName, String newDescripton) {
-    boolean anyValueUpdated = false;
+  public void update(String newName, String newDescription) {
     if (newName != null && !newName.equals(this.name)) {
       this.name = newName;
-      anyValueUpdated = true;
     }
-
-    if (newDescripton != null && !newDescripton.equals(this.description)) {
-      this.description = newDescripton;
-      anyValueUpdated = true;
-    }
-
-    if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
+    if (newDescription != null && !newDescription.equals(this.description)) {
+      this.description = newDescription;
     }
   }
-
 }

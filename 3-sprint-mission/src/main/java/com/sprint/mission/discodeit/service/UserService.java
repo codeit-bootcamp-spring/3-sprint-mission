@@ -8,22 +8,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-
 public interface UserService {
 
-  UserDto create(UserCreateRequest userCreateDto,
-      Optional<BinaryContentCreateRequest> profileCreateDto);
+  UserDto create(UserCreateRequest userCreateRequest,
+      Optional<BinaryContentCreateRequest> profileCreateRequest);
 
-  UserDto find(UUID id);
-
-  UserDto findByUsername(String username);
-
-  UserDto findByEmail(String email);
+  UserDto find(UUID userId);
 
   List<UserDto> findAll();
 
-  UserDto update(UUID id, UserUpdateRequest userUpdateDto,
-      Optional<BinaryContentCreateRequest> profileCreateDto);
+  UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
+      Optional<BinaryContentCreateRequest> profileCreateRequest);
 
-  void delete(UUID id);
+  void delete(UUID userId);
 }

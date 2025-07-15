@@ -9,27 +9,22 @@ import org.springframework.data.domain.Slice;
 public interface PageResponseMapper {
 
   default <T> PageResponse<T> fromSlice(Slice<T> slice, Object nextCursor) {
-    PageResponse<T> pageResponse =
-        new PageResponse<>(
-            slice.getContent(),
-            nextCursor,
-            slice.getSize(),
-            slice.hasNext(),
-            null
-        );
-    return pageResponse;
+    return new PageResponse<>(
+        slice.getContent(),
+        nextCursor,
+        slice.getSize(),
+        slice.hasNext(),
+        null
+    );
   }
 
   default <T> PageResponse<T> fromPage(Page<T> page, Object nextCursor) {
-    PageResponse<T> pageResponse =
-        new PageResponse<>(
-            page.getContent(),
-            nextCursor,
-            page.getSize(),
-            page.hasNext(),
-            page.getTotalElements()
-        );
-    return pageResponse;
+    return new PageResponse<>(
+        page.getContent(),
+        nextCursor,
+        page.getSize(),
+        page.hasNext(),
+        page.getTotalElements()
+    );
   }
-
 }

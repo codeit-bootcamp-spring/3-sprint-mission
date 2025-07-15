@@ -79,9 +79,9 @@ class MessageApiIntegrationTest {
 
     // 메시지 생성 요청
     MessageCreateRequest createRequest = new MessageCreateRequest(
-        user.id(),
+        "테스트 메시지 내용입니다.",
         channel.id(),
-        "테스트 메시지 내용입니다."
+        user.id()
     );
 
     MockMultipartFile messageCreateRequestPart = new MockMultipartFile(
@@ -116,9 +116,9 @@ class MessageApiIntegrationTest {
   void createMessage_Failure_InvalidRequest() throws Exception {
     // Given
     MessageCreateRequest invalidRequest = new MessageCreateRequest(
+        "", // 내용이 비어있음
         UUID.randomUUID(),
-        UUID.randomUUID(),
-        "" // 내용이 비어있음
+        UUID.randomUUID()
     );
 
     MockMultipartFile messageCreateRequestPart = new MockMultipartFile(
@@ -157,15 +157,15 @@ class MessageApiIntegrationTest {
 
     // 메시지 생성
     MessageCreateRequest messageRequest1 = new MessageCreateRequest(
-        user.id(),
+        "첫 번째 메시지 내용입니다.",
         channel.id(),
-        "첫 번째 메시지 내용입니다."
+        user.id()
     );
 
     MessageCreateRequest messageRequest2 = new MessageCreateRequest(
-        user.id(),
+        "두 번째 메시지 내용입니다.",
         channel.id(),
-        "두 번째 메시지 내용입니다."
+        user.id()
     );
 
     messageService.create(messageRequest1, new ArrayList<>());
@@ -207,9 +207,9 @@ class MessageApiIntegrationTest {
 
     // 메시지 생성
     MessageCreateRequest createRequest = new MessageCreateRequest(
-        user.id(),
+        "원본 메시지 내용입니다.",
         channel.id(),
-        "원본 메시지 내용입니다."
+        user.id()
     );
 
     MessageDto createdMessage = messageService.create(createRequest, new ArrayList<>());
@@ -274,9 +274,9 @@ class MessageApiIntegrationTest {
 
     // 메시지 생성
     MessageCreateRequest createRequest = new MessageCreateRequest(
-        user.id(),
+        "삭제할 메시지 내용입니다.",
         channel.id(),
-        "삭제할 메시지 내용입니다."
+        user.id()
     );
 
     MessageDto createdMessage = messageService.create(createRequest, new ArrayList<>());

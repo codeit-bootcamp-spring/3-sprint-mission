@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.integration;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -104,6 +105,37 @@ class UserApiIntegrationTest {
             .file(userCreateRequestPart)
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @DisplayName("모든 사용자 조회 API 통합 테스트")
+  void findAllUsers_Success() throws Exception {
+    // Given
+    // 테스트 사용자 생성 - Service를 통해 초기화
+    UserCreateRequest userRequest1 = new UserCreateRequest(
+        "user1",
+        "user1@example.com",
+        "Password1!"
+    );
+
+    UserCreateRequest userRequest2 = new UserCreateRequest(
+        "user2",
+        "user2@example.com",
+        "Password1!"
+    );
+
+    userService.create(userRequest1, Optional.empty());
+    userService.create(userRequest2, Optional.empty());
+
+    // When & Then
+    mockMvc.perform(get("/api/users")
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(2)))
+        .andExpect(jsonPath("$[0].username", is("user1")))
+        .andExpect(jsonPath("$[0].email", is("user1@example.com")))
+        .andExpect(jsonPath("$[1].username", is("user2")))
+        .andExpect(jsonPath("$[1].email", is("user2@example.com")));
   }
 
   @Test
