@@ -54,11 +54,12 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       # 4단계: Amazon ECR에 로그인
-      - name: Login to Amazon ECR
-        # 이 단계의 출력값을 다른 단계에서 사용하기 위한 ID 설정(일종의 변수화)
+      - name: Login to Public ECR
         id: login-ecr
-        # AWS에서 제공하는 ECR 로그인 액션 사용
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
+          region: us-east-1
 
       # 5단계: Docker 이미지 빌드 및 ECR에 업로드
       - name: Build, tag, and push image to Amazon ECR
