@@ -1,0 +1,27 @@
+server:
+  port: 80
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${RDS_ENDPOINT}:5432/${RDS_DATABASE}
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-init-sql: SET SESSION hibernate.jdbc.lob.non_contextual_creation=true
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        default_schema: discodeit
+
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+
+logging:
+  level:
+    root: info
