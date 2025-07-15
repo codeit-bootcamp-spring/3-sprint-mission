@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository;
 
+import static com.sprint.mission.discodeit.fixture.MessageFixture.createMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.mission.discodeit.entity.Channel;
@@ -7,15 +8,20 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.TimeZone;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.test.context.ActiveProfiles;
@@ -38,6 +44,9 @@ public class MessageRepositoryTest {
     @Autowired
     private UserStatusRepository userStatusRepository;
 
+    @Autowired
+    private TestEntityManager em;
+
     private User user;
     private Channel channel;
     private Message message;
@@ -56,11 +65,11 @@ public class MessageRepositoryTest {
         messageRepository.save(message);
     }
 
-    private Message createMessage(String content, Channel channel, User author, Instant createdAt) {
-        Message msg = new Message(content, channel, author, new ArrayList<>());
-        ReflectionTestUtils.setField(msg, "createdAt", createdAt);
-        return msg;
+    @BeforeAll
+    static void beforeAll() {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     }
+
 
     @Test
     @DisplayName("채널의 가장 최근에 생성된 메시지를 조회한다.")
@@ -106,37 +115,45 @@ public class MessageRepositoryTest {
 
     @Test
     @DisplayName("채널의 기준 시간 이전 메시지들을 조회한다.")
-    void shouldReturnMessagesBeforeCursorTime_whenGivenChannelId() {
+    void shouldReturnMessagesBeforeCursorTime_whenGivenChannelId() throws InterruptedException {
 
         // given
-        Instant cursorTime = Instant.parse("2025-01-01T01:00:00Z");
-        Instant beforeCursorTime = cursorTime.minusSeconds(60);
-        Instant afterCursorTime = cursorTime.plusSeconds(60);
+        messageRepository.deleteAll();
 
-        UserStatus userStatus = new UserStatus(user, cursorTime);
-        ReflectionTestUtils.setField(userStatus, "createdAt", cursorTime);
+        UserStatus userStatus = new UserStatus(user, Instant.now());
+        ReflectionTestUtils.setField(userStatus, "createdAt", Instant.now());
         userStatusRepository.save(userStatus);
         user.setStatus(userStatus);
         userRepository.save(user);
 
-        Message oldMessage = createMessage("이전 메시지", channel, user, beforeCursorTime);
-        Message recentMessage = createMessage("최근 메시지", channel, user, afterCursorTime);
+        Message oldMessage = createMessage("이전 메시지", channel, user, Instant.now());
+        messageRepository.save(oldMessage);
 
-        messageRepository.saveAll(List.of(oldMessage, recentMessage));
+        Thread.sleep(3000);
+
+        // 메세지 2 - 이후 시간
+        Message recentMessage = createMessage("이후 메시지", channel, user, Instant.now());
+        messageRepository.save(recentMessage);
+
+        // flush & clear로 반영 강제
+        em.flush();
+        em.clear();
+
+        Instant cursorTime = oldMessage.getCreatedAt().plusMillis(1500);
 
         // when
         Slice<Message> result = messageRepository.findAllByChannelIdWithAuthor(channel.getId(),
                 cursorTime, PageRequest.of(0, 10));
 
         // then
-        //assertThat(result.getContent()).hasSize(1);
-        //assertThat(result.getContent().get(0).getContent()).isEqualTo("이전 메시지");
+        assertThat(result.getContent()).hasSize(1);
+        Message resultMessage = result.getContent().get(0);
+        assertThat(resultMessage.getContent()).isEqualTo("이전 메시지");
 
         // 유저 확인
-//        User author = result.getContent().get(0).getAuthor();
-//        assertThat(author.getUsername()).isEqualTo("테스트유저");
-//        assertThat(author.getEmail()).isEqualTo("test@codeit.com");
-//        assertThat(author.getStatus()).isEqualTo(userStatus);
+        User author = result.getContent().get(0).getAuthor();
+        assertThat(author.getUsername()).isEqualTo("테스트유저");
+        assertThat(author.getEmail()).isEqualTo("test@codeit.com");
     }
 
     @Test
@@ -149,6 +166,9 @@ public class MessageRepositoryTest {
 
         Message recentMessage = createMessage("기준 이후 메시지", channel, user, afterCursorTime);
         messageRepository.save(recentMessage);
+
+        em.flush();
+        em.clear();
 
         // when
         Slice<Message> result = messageRepository.findAllByChannelIdWithAuthor(channel.getId(),

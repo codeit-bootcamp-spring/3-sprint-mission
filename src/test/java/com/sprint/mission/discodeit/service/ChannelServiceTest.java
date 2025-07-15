@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
+import static com.sprint.mission.discodeit.fixture.ChannelFixture.createPrivateChannel;
+import static com.sprint.mission.discodeit.fixture.ChannelFixture.createPublicChannel;
+import static com.sprint.mission.discodeit.fixture.UserFixture.createUser;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -14,7 +17,6 @@ import com.sprint.mission.discodeit.dto.Channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.Channel.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.User.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.Channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.Channel.PrivateChannelUpdateException;
@@ -35,7 +37,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ChannelService 단위 테스트")
@@ -60,24 +61,6 @@ public class ChannelServiceTest {
     @BeforeEach
     void setUp() {
         fixedTime = Instant.parse("2025-01-01T00:00:00Z");
-    }
-
-    private User createUser(String userName, String email, String password) {
-        User user = new User(userName, email, password, null, null);
-        ReflectionTestUtils.setField(user, "id", UUID.randomUUID());
-        return user;
-    }
-
-    private Channel createPublicChannel(String channelName, String description) {
-        Channel publicChannel = new Channel(ChannelType.PUBLIC, channelName, description);
-        ReflectionTestUtils.setField(publicChannel, "id", UUID.randomUUID());
-        return publicChannel;
-    }
-
-    private Channel createPrivateChannel() {
-        Channel privateChannel = new Channel(ChannelType.PRIVATE, null, null);
-        ReflectionTestUtils.setField(privateChannel, "id", UUID.randomUUID());
-        return privateChannel;
     }
 
     @Test

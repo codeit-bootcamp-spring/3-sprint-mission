@@ -1,0 +1,14 @@
+# IDE 관련
+*.iml
+.idea/
+*.log
+
+# OS, 시스템
+.DS_Store
+
+# 빌드 결과물
+/build
+/out
+
+# 환경 파일
+.env

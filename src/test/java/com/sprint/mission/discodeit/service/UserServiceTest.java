@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
+import static com.sprint.mission.discodeit.fixture.BinaryContentFixture.createBinaryContent;
+import static com.sprint.mission.discodeit.fixture.UserFixture.createUser;
+import static com.sprint.mission.discodeit.fixture.UserFixture.createUserDto;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -10,7 +13,6 @@ import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.never;
 
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.User.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.User.UserDto;
 import com.sprint.mission.discodeit.dto.User.UserUpdateRequest;
@@ -32,7 +34,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserService 단위 테스트")
@@ -50,28 +51,6 @@ public class UserServiceTest {
     @InjectMocks
     private BasicUserService userService;
 
-    private User createUser(String userName, String email, String password) {
-        User user = new User(userName, email, password, null, null);
-        ReflectionTestUtils.setField(user, "id", UUID.randomUUID());
-        return user;
-    }
-
-    private BinaryContent createProfile(String fileName, Long size, String contentType) {
-        BinaryContent profile = new BinaryContent(fileName, size, contentType);
-        ReflectionTestUtils.setField(profile, "id", UUID.randomUUID());
-        return profile;
-    }
-
-    private UserDto createUserDto(User user, BinaryContent profile) {
-        BinaryContentDto profileDto = new BinaryContentDto(profile.getId(), profile.getFileName(),
-                profile.getSize(), profile.getContentType());
-        return new UserDto(user.getId(), user.getUsername(), user.getEmail(), profileDto, true);
-    }
-
-    private UserDto createUserDto(User user) {
-        return new UserDto(user.getId(), user.getUsername(), user.getEmail(), null, true);
-    }
-
     @Test
     @DisplayName("유효한 생성 요청으로 프로필이 포함된 유저를 생성할 수 있다.")
     void shouldCreateUserWithProfile_whenValidRequest() {
@@ -83,7 +62,7 @@ public class UserServiceTest {
         byte[] testBytes = "테스트 이미지".getBytes(StandardCharsets.UTF_8);
 
         UserCreateRequest userCreateRequest = new UserCreateRequest(name, email, password);
-        BinaryContent profile = createProfile("테스트 프로필", 1024L, "image/png");
+        BinaryContent profile = createBinaryContent("테스트 프로필", 1024L, "image/png");
         BinaryContentCreateRequest profileCreateRequest = new BinaryContentCreateRequest(
                 profile.getFileName(), profile.getContentType(), testBytes);
         User user = createUser(name, email, password);
@@ -188,7 +167,7 @@ public class UserServiceTest {
 
         // given
         User user = createUser("테스터", "tester@codeit.com", "tester1234");
-        BinaryContent profile = createProfile("테스트 프로필", 1024L, "image/png");
+        BinaryContent profile = createBinaryContent("테스트 프로필", 1024L, "image/png");
         UUID userId = user.getId();
         String newName = "(*수정)김코드";
         String newEmail = "kimkim@codeit.com";
