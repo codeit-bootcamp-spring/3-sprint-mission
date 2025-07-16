@@ -3,14 +3,14 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.exception.ErrorCode;
-import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentException;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +25,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
     private final BinaryContentStorage binaryContentStorage;
+    private final UserRepository userRepository;
 
     @Transactional
     @Override
@@ -38,7 +39,12 @@ public class BasicBinaryContentService implements BinaryContentService {
             request.contentType()
         );
         binaryContentRepository.save(binaryContent);
-        binaryContentStorage.put(binaryContent.getId(), request.bytes());
+
+        binaryContentStorage.put(
+            binaryContent.getId(),
+            request.bytes(),
+            request.contentType()
+        );
 
         log.info("파일 저장 완료: id={}", binaryContent.getId());
         return binaryContentMapper.toDto(binaryContent);
@@ -52,10 +58,7 @@ public class BasicBinaryContentService implements BinaryContentService {
             .map(binaryContentMapper::toDto)
             .orElseThrow(() -> {
                 log.warn("파일 조회 실패: 존재하지 않는 ID={}", binaryContentId);
-                return new BinaryContentException(
-                    ErrorCode.BINARY_CONTENT_NOT_FOUND,
-                    Map.of("binaryContentId", binaryContentId)
-                );
+                return new BinaryContentNotFoundException(binaryContentId);
             });
     }
 
@@ -75,13 +78,21 @@ public class BasicBinaryContentService implements BinaryContentService {
 
         if (!binaryContentRepository.existsById(binaryContentId)) {
             log.error("삭제 실패: 존재하지 않는 파일 id={}", binaryContentId);
-            throw new BinaryContentException(
-                ErrorCode.BINARY_CONTENT_NOT_FOUND,
-                Map.of("binaryContentId", binaryContentId)
-            );
+            throw new BinaryContentNotFoundException(binaryContentId);
+        }
+
+        BinaryContent profile = binaryContentRepository.findById(binaryContentId)
+            .orElseThrow(() -> new BinaryContentNotFoundException(binaryContentId));
+
+        List<User> usersWithProfile = userRepository.findAllByProfile(profile);
+
+        for (User user : usersWithProfile) {
+            user.clearProfile();
+            userRepository.save(user);
         }
 
         binaryContentRepository.deleteById(binaryContentId);
+
         log.info("파일 삭제 완료: id={}", binaryContentId);
     }
 }

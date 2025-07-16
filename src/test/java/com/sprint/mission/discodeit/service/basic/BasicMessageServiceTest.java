@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -66,21 +67,34 @@ class BasicMessageServiceTest {
         UUID authorId = UUID.randomUUID();
 
         MessageCreateRequest request = new MessageCreateRequest("hello", channelId, authorId);
-        BinaryContentCreateRequest binaryReq = new BinaryContentCreateRequest("test.txt",
-            "text/plain", new byte[]{1});
+        BinaryContentCreateRequest binaryReq = new BinaryContentCreateRequest(
+            "test.txt", "text/plain", new byte[]{1});
         List<BinaryContentCreateRequest> binaryList = List.of(binaryReq);
 
-        given(channelRepository.findById(channelId)).willReturn(Optional.of(mock(Channel.class)));
-        given(userRepository.findById(authorId)).willReturn(Optional.of(mock(User.class)));
-        given(messageRepository.save(any())).willReturn(mock(Message.class));
-        given(messageMapper.toDto(any(Message.class))).willReturn(mock(MessageDto.class));
+        // 모든 mock 객체 미리 선언 (중요!)
+        Channel mockChannel = mock(Channel.class);
+        User mockUser = mock(User.class);
+        BinaryContent mockBinaryContent = mock(BinaryContent.class);
+        Message savedMessage = mock(Message.class);
+        MessageDto expectedDto = mock(MessageDto.class);
+
+        // mock 동작 정의
+        given(channelRepository.findById(channelId)).willReturn(Optional.of(mockChannel));
+        given(userRepository.findById(authorId)).willReturn(Optional.of(mockUser));
+        given(binaryContentRepository.save(any())).willReturn(mockBinaryContent);
+        given(messageRepository.save(any())).willReturn(savedMessage);
+        given(messageMapper.toDto(any(Message.class))).willReturn(expectedDto);
 
         // when
         MessageDto result = messageService.create(request, binaryList);
 
         // then
-        assertThat(result).isEqualTo(mock(MessageDto.class));
+        then(channelRepository).should().findById(channelId);
+        then(userRepository).should().findById(authorId);
         then(messageRepository).should().save(any(Message.class));
+        then(messageMapper).should().toDto(any(Message.class));
+
+        assertThat(result).isEqualTo(expectedDto);
     }
 
     @Test
@@ -88,15 +102,17 @@ class BasicMessageServiceTest {
     void find_success() {
         // given
         UUID id = UUID.randomUUID();
+        Message message = mock(Message.class);
+        MessageDto dto = mock(MessageDto.class);
 
-        given(messageRepository.findById(id)).willReturn(Optional.of(mock(Message.class)));
-        given(messageMapper.toDto(mock(Message.class))).willReturn(mock(MessageDto.class));
+        given(messageRepository.findById(id)).willReturn(Optional.of(message));
+        given(messageMapper.toDto(message)).willReturn(dto);
 
         // when
         MessageDto result = messageService.find(id);
 
         // then
-        assertThat(result).isEqualTo(mock(MessageDto.class));
+        assertThat(result).isEqualTo(dto);
     }
 
     @Test
@@ -118,15 +134,18 @@ class BasicMessageServiceTest {
         UUID id = UUID.randomUUID();
         MessageUpdateRequest request = new MessageUpdateRequest("new content");
 
-        given(messageRepository.findById(id)).willReturn(Optional.of(mock(Message.class)));
-        given(messageMapper.toDto(mock(Message.class))).willReturn(mock(MessageDto.class));
+        Message message = mock(Message.class);
+        MessageDto messageDto = mock(MessageDto.class);
+
+        given(messageRepository.findById(id)).willReturn(Optional.of(message));
+        given(messageMapper.toDto(message)).willReturn(messageDto);
 
         // when
         MessageDto result = messageService.update(id, request);
 
         // then
-        verify(mock(Message.class)).update("new content");
-        assertThat(result).isEqualTo(mock(MessageDto.class));
+        verify(message).update("new content");
+        assertThat(result).isEqualTo(messageDto);
     }
 
     @Test

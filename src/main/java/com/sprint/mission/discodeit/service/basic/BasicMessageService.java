@@ -48,6 +48,8 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageDto create(MessageCreateRequest messageCreateRequest,
         List<BinaryContentCreateRequest> binaryContentCreateRequests) {
+        //테스트 용
+        log.info("S3 버킷 이름 = {}", System.getenv("AWS_S3_BUCKET"));
 
         log.info("메시지 생성 요청: channelId={}, authorId={}, 첨부파일 개수={}",
             messageCreateRequest.channelId(),
@@ -78,7 +80,8 @@ public class BasicMessageService implements MessageService {
                 BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
                     contentType);
                 binaryContentRepository.save(binaryContent);
-                binaryContentStorage.put(binaryContent.getId(), bytes);
+
+                binaryContentStorage.put(binaryContent.getId(), bytes, contentType);
 
                 log.debug("첨부파일 저장 완료: id={}, fileName={}", binaryContent.getId(), fileName);
                 return binaryContent;
@@ -112,7 +115,7 @@ public class BasicMessageService implements MessageService {
         Pageable pageable) {
         log.debug("채널 메시지 목록 조회 요청: channelId={}, createAt={}", channelId, createAt);
 
-        Slice<MessageDto> slice = messageRepository.findAllByChannelIdWithAuthor(
+        Slice<MessageDto> slice = messageRepository.findByChannelIdAndCreatedAtBefore(
             channelId,
             Optional.ofNullable(createAt).orElse(Instant.now()),
             pageable
@@ -152,7 +155,6 @@ public class BasicMessageService implements MessageService {
             log.error("삭제 실패: 메시지 없음 - id={}", messageId);
             throw new MessageNotFoundException(messageId);
         }
-
         messageRepository.deleteById(messageId);
         log.info("메시지 삭제 완료: id={}", messageId);
     }

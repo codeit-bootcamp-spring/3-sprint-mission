@@ -1,0 +1,83 @@
+{
+  "family": "discodeit-task",
+  "executionRoleArn": "arn:aws:iam::774518280109:role/ecsTaskExecutionRole",
+  "networkMode": "bridge",
+  "containerDefinitions": [
+    {
+      "name": "discodeit-container",
+      "image": "<IMAGE_PLACEHOLDER>",
+      "cpu": 256,
+      "memory": 512,
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "hostPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "STORAGE_TYPE",
+          "value": "s3"
+        },
+        {
+          "name": "AWS_S3_BUCKET",
+          "value": "discodeit-binary-content-storage-barrackkk"
+        },
+        {
+          "name": "AWS_S3_REGION",
+          "value": "ap-northeast-2"
+        },
+        {
+          "name": "AWS_S3_ACCESS_KEY",
+          "value": "REPLACE_IN_GITHUB_ACTION"
+        },
+        {
+          "name": "AWS_S3_SECRET_KEY",
+          "value": "REPLACE_IN_GITHUB_ACTION"
+        },
+        {
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://discodeit-db.c3yywoykmmko.ap-northeast-2.rds.amazonaws.com:5432/discodeit"
+        },
+        {
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "discodeit_user"
+        },
+        {
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "REPLACE_IN_GITHUB_ACTION"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/discodeit-task",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:80/actuator/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 120
+      }
+    }
+  ],
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "cpu": "256",
+  "memory": "512"
+}

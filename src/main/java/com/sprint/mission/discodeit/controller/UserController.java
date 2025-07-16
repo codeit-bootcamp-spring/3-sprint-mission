@@ -126,7 +126,7 @@ public class UserController implements UserApi {
     }
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
-        if (profileFile.isEmpty()) {
+        if (profileFile == null || profileFile.isEmpty()) {
             return Optional.empty();
         } else {
             try {
