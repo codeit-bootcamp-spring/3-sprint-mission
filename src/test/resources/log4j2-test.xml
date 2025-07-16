@@ -10,24 +10,24 @@
 
     <!-- 콘솔 색상 로그 -->
     <Property name="CONSOLE_LOG_PATTERN">
-      <![CDATA[%d{yy-MM-dd HH:mm:ss.SSS} [%t] %highlight{%-5level} %style{%logger{36}}{yellow} %style{[%equals{%X{requestId}}{}{startup} | %X{requestMethod}{}{-} | %X{requestUrl}{}{-}]}{cyan} - %msg%n]]></Property>
+      <![CDATA[%d{yy-MM-dd HH:mm:ss.SSS} [%t] %highlight{%-5level} %style{%logger{36}}{yellow} %style{[%equals{%X{traceId}}{}{startup} | %X{requestMethod}{}{-} | %X{requestUrl}{}{-}]}{cyan} - %msg%n]]></Property>
 
     <!-- 파일 로그 -->
     <Property name="FILE_LOG_PATTERN">
-      <![CDATA[%d{yy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} [%equals{%X{requestId}}{}{startup} | %X{requestMethod}{}{-} | %X{requestUrl}{}{-}] - %msg%n]]></Property>
+      <![CDATA[%d{yy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} [%equals{%X{traceId}}{}{startup} | %X{requestMethod}{}{-} | %X{requestUrl}{}{-}] - %msg%n]]></Property>
   </Properties>
 
   <!-- 로그 출력 위치 설정 -->
   <Appenders>
     <!-- 콘솔 로그 -->
     <Console name="CONSOLE">
-      <PatternLayout disableAnsi="false" pattern="${CONSOLE_LOG_PATTERN}"/>
+      <PatternLayout pattern="${CONSOLE_LOG_PATTERN}"/>
     </Console>
 
     <!-- JSON 로그 -->
     <RollingFile name="JSON_FILE_LOG"
-      fileName="${logDir}/main.log"
-      filePattern="${logDir}/main-%d{yyyy-MM-dd}-%i.log.gz">
+      fileName="${logDir}/test/main-test.log"
+      filePattern="${logDir}/test/main-test-%d{yyyy-MM-dd}-%i.log.gz">
       <JsonTemplateLayout/>
       <Policies>
         <TimeBasedTriggeringPolicy interval="1"/>
@@ -38,8 +38,8 @@
 
     <!-- 디버그 로그 -->
     <RollingFile name="DEBUG_FILE_LOG"
-      fileName="${logDir}/debug.log"
-      filePattern="${logDir}/debug-%d{yyyy-MM-dd}-%i.log.gz">
+      fileName="${logDir}/test/debug-test.log"
+      filePattern="${logDir}/test/debug-test-%d{yyyy-MM-dd}-%i.log.gz">
       <PatternLayout pattern="${FILE_LOG_PATTERN}"/>
       <Policies>
         <TimeBasedTriggeringPolicy interval="1"/>
