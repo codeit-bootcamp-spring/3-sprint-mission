@@ -88,17 +88,19 @@ public class GlobalExceptionHandler {
             details.put("globalErrors", globalErrors);
         }
 
+        ErrorCode errorCode = ErrorCode.VALIDATION_FAILED;
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(Instant.now())
-                .code("VALIDATION_FAILED")
-                .message("입력값 검증에 실패했습니다.")
+                .code(errorCode.name())
+                .message(errorCode.getMessage())
                 .details(details)
                 .exceptionType("MethodArgumentNotValidException")
-                .status(400)
+                .status(errorCode.getStatus())
                 .build();
 
         return ResponseEntity
-                .badRequest()
+                .status(errorCode.getHttpStatus())
                 .body(errorResponse);
     }
 

@@ -1,48 +1,38 @@
 # 운영 환경 설정
 server:
-  port: 0
+  port: 80
 
 spring:
   servlet:
     multipart:
-      max-file-size: 5MB
+      max-file-size: 10MB
       max-request-size: 20MB
-  datasource:
-    url: jdbc:h2:file:./data/discodeit_prod;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE
-    username: discodeit_prod
-    password: discodeit1234
-    driver-class-name: org.h2.Driver
 
-  # H2 콘솔 설정
-  h2:
-    console:
-      enabled: false
-#      path: /h2-console
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
 
   jpa:
-    database: h2
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update
-    show-sql: false
+      ddl-auto: none
+    show-sql: true
 
 logging:
   level:
     com.sprint.mission.discodeit: INFO
-    org.springframework: WARN
-    org.springframework.boot: WARN
-    org.hibernate: WARN
+    org.springframework: INFO
+    org.springframework.boot: INFO
+    org.hibernate: INFO
     org.hibernate.SQL: INFO
-    org.hibernate.orm.jdbc.bind: WARN
-    org.apache.tomcat: WARN
-
-
+    org.hibernate.orm.jdbc.bind: INFO
+    org.apache.tomcat: INFO
 
 info:
   # 최소한의 정보만 (선택사항)
   datasource:
-    type: "H2 Database"
-    driver: "H2"
+    type: Postgres Database"
+    driver: "PostgreSQL"
 
   storage:
-    type: "local"
+    type: "s3"
