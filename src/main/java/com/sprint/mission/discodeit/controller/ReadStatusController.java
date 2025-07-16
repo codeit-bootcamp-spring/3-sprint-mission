@@ -35,19 +35,29 @@ public class ReadStatusController {
      */
     @PostMapping
     public ResponseEntity<ReadStatusDto> create(@RequestBody @Valid ReadStatusCreateRequest request) {
+        log.info("읽음 상태 생성 요청: {}", request);
+
         ReadStatusDto createdReadStatus = readStatusService.create(request);
+
+        log.debug("읽음 상태 생성 응답: {}", createdReadStatus);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(createdReadStatus);
     }
 
     /**
      * 특정 채널의 메시지 수신 정보 수정
      */
-    @PatchMapping(path = "{readStatusId}")
+    @PatchMapping(path = "/{readStatusId}")
     public ResponseEntity<ReadStatusDto> update(
             @PathVariable("readStatusId") UUID readStatusId,
-            @RequestBody ReadStatusUpdateRequest request
+            @RequestBody @Valid ReadStatusUpdateRequest request
     ) {
+        log.info("읽음 상태 수정 요청: id={}, request={}", readStatusId, request);
+
         ReadStatusDto updatedReadStatus = readStatusService.update(readStatusId, request);
+
+        log.debug("읽음 상태 수정 응답: {}", updatedReadStatus);
+
         return ResponseEntity.ok(updatedReadStatus);
     }
 
@@ -56,7 +66,12 @@ public class ReadStatusController {
      */
     @GetMapping
     public ResponseEntity<List<ReadStatusDto>> findAllByUserId(@RequestParam("userId") UUID userId) {
+        log.info("사용자별 읽음 상태 목록 조회 요청: userId={}", userId);
+
         List<ReadStatusDto> readStatuses = readStatusService.findAllByUserId(userId);
+
+        log.debug("사용자별 읽음 상태 목록 조회 응답: count={}", readStatuses.size());
+
         return ResponseEntity.ok(readStatuses);
     }
 }

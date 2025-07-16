@@ -18,6 +18,13 @@ public class DiscodeitException extends RuntimeException {
         this.details = new HashMap<>();
     }
 
+    public DiscodeitException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode.getMessage(), cause);
+        this.timestamp = Instant.now();
+        this.errorCode = errorCode;
+        this.details = new HashMap<>();
+    }
+
     public void addDetail(String key, Object value) {
         this.details.put(key, value);
     }

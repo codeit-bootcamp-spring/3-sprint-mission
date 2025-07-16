@@ -17,25 +17,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException e) {
-        return error(HttpStatus.BAD_REQUEST, e.getMessage());
-    }
-
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Map<String, String>> handleNotFound(NoSuchElementException e) {
-        return error(HttpStatus.NOT_FOUND, e.getMessage());
-    }
-
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleAll(Exception e) {
-        return error(HttpStatus.INTERNAL_SERVER_ERROR, "서버에 오류가 발생했습니다.");
-    }
-
-    private ResponseEntity<Map<String, String>> error(HttpStatus status, String message) {
-        Map<String, String> body = new HashMap<>();
-        body.put("error", message);
-        return new ResponseEntity<>(body, status);
+    public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        log.error("예상치 못한 오류 발생: {}", e.getMessage(), e);
+        ErrorResponse errorResponse = new ErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR.value());
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(errorResponse);
     }
 
     @ExceptionHandler(DiscodeitException.class)
@@ -46,15 +34,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(status)
             .body(response);
-    }
-
-    private HttpStatus determineHttpStatus(DiscodeitException exception) {
-        ErrorCode errorCode = exception.getErrorCode();
-        return switch (errorCode) {
-            case USER_NOT_FOUND, CHANNEL_NOT_FOUND -> HttpStatus.NOT_FOUND;
-            case DUPLICATE_USER -> HttpStatus.CONFLICT;
-            case PRIVATE_CHANNEL_UPDATE -> HttpStatus.BAD_REQUEST;
-        };
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -78,5 +57,17 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    private HttpStatus determineHttpStatus(DiscodeitException exception) {
+        ErrorCode errorCode = exception.getErrorCode();
+        return switch (errorCode) {
+            case USER_NOT_FOUND, CHANNEL_NOT_FOUND, MESSAGE_NOT_FOUND, BINARY_CONTENT_NOT_FOUND,
+                 READ_STATUS_NOT_FOUND, USER_STATUS_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case DUPLICATE_USER, DUPLICATE_READ_STATUS, DUPLICATE_USER_STATUS -> HttpStatus.CONFLICT;
+            case INVALID_USER_CREDENTIALS -> HttpStatus.UNAUTHORIZED;
+            case PRIVATE_CHANNEL_UPDATE, INVALID_REQUEST -> HttpStatus.BAD_REQUEST;
+            case INTERNAL_SERVER_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
+        };
     }
 }

@@ -16,7 +16,6 @@ build/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
-**/src/main/resources/application-dev.yaml
 
 ### Eclipse ###
 .apt_generated
@@ -45,4 +44,9 @@ bin/
 
 ### file
 file-data-map/
+.discodeit/
 **/resources/static/
+
+logs/
+.env
+**/src/main/resources/application-dev.yaml

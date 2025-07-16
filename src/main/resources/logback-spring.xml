@@ -1,34 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+  <!-- 로그 레벨별 색상 설정 -->
+  <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
 
-  <!-- 변수 정의 -->
-  <property name="LOG_PATTERN" value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
-  <property name="LOG_PATH" value="./logs"/>
+  <property name="LOG_PATTERN" value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %clr(%-5level) %-36logger{36} - %msg%n"/>
+  <property name="LOG_FILE_PATH" value=".logs"/>
+  <property name="LOG_FILE_NAME" value="application"/>
 
-  <!-- Console Appender -->
+  <!-- 콘솔 출력 설정 -->
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>${LOG_PATTERN}</pattern>
     </encoder>
   </appender>
 
-  <!-- 시간 기반 롤링 (일별) -->
-  <appender name="TIME_BASED_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>./logs/application.log</file>
+  <!-- 파일 출력 설정 -->
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_FILE_PATH}/${LOG_FILE_NAME}.log</file>
     <encoder>
-      <pattern>%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+      <pattern>${LOG_PATTERN}</pattern>
     </encoder>
-
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>./logs/application.%d{yy-MM-dd}.log</fileNamePattern>
+      <fileNamePattern>${LOG_FILE_PATH}/${LOG_FILE_NAME}.%d{yyyy-MM-dd}.log</fileNamePattern>
       <!-- 30일간 보관 -->
       <maxHistory>30</maxHistory>
-      <!-- 전체 로그 크기 제한 -->
-      <totalSizeCap>10GB</totalSizeCap>
     </rollingPolicy>
   </appender>
 
+  <!-- 루트 로거 설정 - 레벨은 application.yaml에서 관리 -->
   <root>
     <appender-ref ref="CONSOLE"/>
-    <appender-ref ref="TIME_BASED_FILE"/>
+    <appender-ref ref="FILE"/>
   </root>
 </configuration>

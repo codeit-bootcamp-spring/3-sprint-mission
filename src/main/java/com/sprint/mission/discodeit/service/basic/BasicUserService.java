@@ -6,6 +6,9 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -13,6 +16,8 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.transaction.Transactional;
+
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -36,10 +41,7 @@ public class BasicUserService implements UserService {
     @Transactional
     @Override
     public UserDto create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-
-        if (userCreateRequest.username() == null || userCreateRequest.email() == null || userCreateRequest.password() == null) {
-            throw new IllegalArgumentException("Missing required fields");
-        }
+        log.debug("사용자 생성 시작: {}", userCreateRequest);
 
         // 중복 유저 확인
         validateUserUniqueness(userCreateRequest.email(), userCreateRequest.username());
@@ -49,19 +51,22 @@ public class BasicUserService implements UserService {
 
         // 유저 생성 및 저장
         User user = new User(userCreateRequest.username(), userCreateRequest.email(), userCreateRequest.password(), nullableProfile);
+        Instant now = Instant.now();
+        UserStatus userStatus = new UserStatus(user, now);
 
         userRepository.save(user);
-        log.info("User creation complete: id={}, username={}", user.getId(), user.getUsername());
+
+        log.info("사용자 생성 완료: id={}, username={}", user.getId(), user.getUsername());
 
         return userMapper.toDto(user);
     }
 
     private void validateUserUniqueness(String email, String username) {
         if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("User with email " + email + " already exists");
+            throw UserAlreadyExistsException.withEmail(email);
         }
         if (userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("User with username " + username + " already exists");
+            throw UserAlreadyExistsException.withUsername(username);
         }
     }
 
@@ -85,7 +90,7 @@ public class BasicUserService implements UserService {
     public UserDto find(UUID userId) {
         return userRepository.findById(userId)
                 .map(userMapper::toDto)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+                .orElseThrow(() -> UserNotFoundException.withId(userId));
     }
 
     @Override
@@ -99,8 +104,13 @@ public class BasicUserService implements UserService {
     @Transactional
     @Override
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+        log.debug("사용자 수정 시작: id={}, request={}", userId, userUpdateRequest);
+
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+                .orElseThrow(() -> {
+                    UserNotFoundException exception = UserNotFoundException.withId(userId);
+                    return exception;
+                });
 
         String newUsername = userUpdateRequest.newUsername();
         String newEmail = userUpdateRequest.newEmail();
@@ -119,7 +129,8 @@ public class BasicUserService implements UserService {
 
         String newPassword = userUpdateRequest.newPassword();
         user.update(newUsername, newEmail, newPassword, nullableProfile);
-        log.info("User modification complete: id={}", userId);
+
+        log.info("사용자 수정 완료: id={}", userId);
 
         return userMapper.toDto(user);
     }
@@ -127,11 +138,14 @@ public class BasicUserService implements UserService {
     @Transactional
     @Override
     public void delete(UUID userId) {
+        log.debug("사용자 삭제 시작: id={}", userId);
+
         if (!userRepository.existsById(userId)) {
-            throw new NoSuchElementException("User with id " + userId + " not found");
+            throw UserNotFoundException.withId(userId);
         }
 
         userRepository.deleteById(userId);
-        log.info("User deletion complete: id={}", userId);
+
+        log.info("사용자 삭제 완료: id={}", userId);
     }
 }

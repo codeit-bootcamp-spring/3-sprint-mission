@@ -1,0 +1,151 @@
+services:
+  # PostgreSQL 데이터베이스 서비스
+  postgres:
+    image: postgres:17
+    container_name: discodeit-postgres
+    environment:
+      POSTGRES_DB: discodeit
+      POSTGRES_USER: discodeit_user
+      POSTGRES_PASSWORD: discodeit1234
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+      TZ: "Asia/Seoul"
+    
+    # 포트 매핑 (호스트:컨테이너)
+    # 로컬 PostgreSQL과의 포트 충돌 방지를 위해 54321 포트 사용
+    ports:
+      - "54321:5432"
+    
+    # 볼륨 마운트 (데이터 영속화)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # 초기 스크립트 실행
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/02-init-data.sql:ro
+    
+    # 헬스체크 설정
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-discodeit_user} -d ${POSTGRES_DB:-discodeit}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Spring Boot 애플리케이션 서비스
+  app:
+    # 로컬 Dockerfile 빌드 또는 이미지 지정
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discodeit-app
+    
+    # PostgreSQL 서비스가 건강한 상태가 된 후 시작
+    depends_on:
+      postgres:
+        condition: service_healthy
+    
+    # 환경변수 설정
+    environment:
+      # Spring 프로파일
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      
+      # 데이터베이스 연결 정보
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/discodeit
+      SPRING_DATASOURCE_USERNAME: discodeit_user
+      SPRING_DATASOURCE_PASSWORD: discodeit1234
+      
+      # 서버 설정
+      SERVER_PORT: 8080
+
+      # 기타 설정
+      TZ: "Asia/Seoul"
+    
+    # 포트 매핑 (호스트:컨테이너)
+    # 로컬 Spring Boot 애플리케이션과의 포트 충돌 방지를 위해 8888 포트 사용
+    ports:
+      - "8888:8080"
+    
+    # 볼륨 마운트
+    volumes:
+      # 로그 디렉토리 마운트
+      - app_logs:/app/logs
+      # 데이터 디렉토리
+      - app_data:/app/data
+    
+    # 헬스체크 설정
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${SERVER_PORT:-8080}/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # 로그 설정
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# ====================================================================
+# 볼륨 정의 (데이터 영속화)
+# ====================================================================
+volumes:
+  # PostgreSQL 데이터 볼륨
+  postgres_data:
+    driver: local
+    name: discodeit-postgres-data
+  
+  # 애플리케이션 로그 볼륨
+  app_logs:
+    driver: local
+    name: discodeit-app-logs
+  
+  # 애플리케이션 데이터 볼륨
+  app_data:
+    driver: local
+    name: discodeit-app-data
+
+# ====================================================================
+# 네트워크 정의
+# ====================================================================
+networks:
+  default:
+    name: discodeit-network
+
+# =====================================================================
+# Docker Compose 사용법:
+# 
+# === 기본 사용법 (Apple Silicon Mac 호환) ===
+# 1. 전체 서비스 시작:
+#    docker-compose up -d
+# 
+# 2. 로그 확인:
+#    docker-compose logs -f
+#    docker-compose logs -f app
+#    docker-compose logs -f postgres
+# 
+# 3. 서비스 상태 확인:
+#    docker-compose ps
+# 
+# === Alpine 이미지 사용 시 (Intel/AMD 최적화) ===
+# PostgreSQL: postgres:17 → postgres:17-alpine
+# Spring Boot: Dockerfile.multistage의 FROM 명령어 주석 변경
+# 
+# 4. 환경변수 파일(.env) 사용:
+#    SPRING_PROFILES_ACTIVE=dev
+#    POSTGRES_PASSWORD=mysecretpassword
+#    JVM_OPTS=-Xms512m -Xmx1024m
+#    LOG_LEVEL=debug
+# 
+# 5. 특정 환경별 실행:
+#    # 개발 환경
+#    SPRING_PROFILES_ACTIVE=dev docker-compose up -d
+#    # 프로덕션 환경
+#    SPRING_PROFILES_ACTIVE=prod docker-compose up -d
+# 
+# 6. 서비스 재시작:
+#    docker-compose restart app
+# 
+# 7. 전체 종료 및 정리:
+#    docker-compose down
+#    docker-compose down -v  # 볼륨도 함께 삭제
+# ===================================================================== 
