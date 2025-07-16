@@ -1,13 +1,23 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "users")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseUpdatableEntity {
 
     @Column(length = 50, nullable = false, unique = true)
@@ -19,16 +29,14 @@ public class User extends BaseUpdatableEntity {
     @Column(length = 60, nullable = false)
     private String password;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "profile_id", referencedColumnName = "id")
-    private BinaryContent profile;     // BinaryContent
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_id", columnDefinition = "uuid")
+    private BinaryContent profile;
 
+    @JsonManagedReference
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Setter
-    private UserStatus userStatus;
-
-    public User() {
-    }
+    @Setter(AccessLevel.PROTECTED)
+    private UserStatus status;
 
     public User(String username, String email, String password, BinaryContent profile) {
         this.username = username;
@@ -38,7 +46,7 @@ public class User extends BaseUpdatableEntity {
     }
 
     public void update(String newUsername, String newEmail, String newPassword,
-                       BinaryContent newProfile) {
+        BinaryContent newProfile) {
         if (newUsername != null && !newUsername.equals(this.username)) {
             this.username = newUsername;
         }

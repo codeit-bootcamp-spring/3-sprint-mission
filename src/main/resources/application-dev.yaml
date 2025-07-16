@@ -1,0 +1,44 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:discodeit;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+  jpa:
+    generate-ddl: true
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: false
+    # OSIV 비활성화
+    open-in-view: false
+
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+    description: Discord-like messaging application
+    environment: production
+  java:
+    version: 17
+  spring:
+    boot:
+      version: 3.4.0
+
+logging:
+  level:
+    # 프로젝트 로그는 DEBUG 레벨
+    com.sprint.mission.discodeit: DEBUG
+    # SQL 로그를 위한 설정
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
+    # Spring 웹 관련 로그
+    org.springframework.web: DEBUG

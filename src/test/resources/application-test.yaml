@@ -1,0 +1,44 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  application:
+    name: discodeit
+  servlet:
+    multipart:
+      maxFileSize: 10MB # 파일 하나의 최대 크기
+      maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
+
+  # H2 데이터베이스 설정 (PostgreSQL 호환 모드)
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1;
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop  # 테스트 시작 시 스키마 새로 생성
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        generate_statistics: true
+        default_batch_fetch_size: 1000
+        format_sql: false
+        show_sql: false
+  # H2 콘솔 활성화 (테스트 디버깅용)
+  h2:
+    console:
+      enabled: true
+
+# 로깅 설정 (테스트 시 간소화)
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    org.springframework.test: debug
+    com.ohgiraffers.springintegrationtdd: debug
+
+# 서버 포트 (테스트 시 랜덤 포트 사용)
+server:
+  port: 0

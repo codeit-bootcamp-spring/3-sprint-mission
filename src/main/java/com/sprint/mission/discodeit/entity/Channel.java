@@ -1,12 +1,19 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "channels")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Channel extends BaseUpdatableEntity {
 
     @Column(nullable = false)
@@ -18,9 +25,6 @@ public class Channel extends BaseUpdatableEntity {
 
     @Column(length = 500)
     private String description;
-
-    public Channel() {
-    }
 
     public Channel(ChannelType type) {
         this.type = type;

@@ -36,6 +36,14 @@ out/
 ### VS Code ###
 .vscode/
 
+# 파일 저장소 (사용자가 업로드한 파일들)
+.discodeit/storage/
 /binary-contents/
-*.ser
 
+# 로그 파일들
+logs/
+.logs/
+*.log
+
+# 기타
+*.ser

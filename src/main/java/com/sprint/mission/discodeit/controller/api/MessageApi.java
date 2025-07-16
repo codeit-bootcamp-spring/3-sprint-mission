@@ -12,16 +12,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Message", description = "Message API")
 public interface MessageApi {
@@ -50,17 +47,9 @@ public interface MessageApi {
         content = @Content(schema = @Schema(implementation = PageResponse.class))
     )
     ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
-        @Parameter(description = "조회할 Channel ID")
-        @RequestParam UUID channelId,
-
-        @Parameter(description = "페이징 커서 정보")
-        @RequestParam(required = false) Instant cursor,
-
-        @Parameter(
-            name = "pageable",
-            example = "{\"size\": 50, \"sort\": \"createdAt,desc\"}"
-        )
-        @ParameterObject Pageable pageable
+        @Parameter(description = "조회할 Channel ID") UUID channelId,
+        @Parameter(description = "페이징 커서 정보") Instant cursor,
+        @Parameter(description = "페이징 정보", example = "{\"size\": 50, \"sort\": \"createdAt,desc\"}") Pageable pageable
     );
 
     @Operation(summary = "Message 내용 수정")
@@ -75,7 +64,7 @@ public interface MessageApi {
     })
     ResponseEntity<MessageDto> update(
         @Parameter(description = "수정할 Message ID") UUID messageId,
-        MessageUpdateRequest request
+        @Parameter(description = "수정할 Message 내용") MessageUpdateRequest request
     );
 
     @Operation(summary = "Message 삭제")
