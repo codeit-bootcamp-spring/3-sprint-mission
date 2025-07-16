@@ -42,7 +42,6 @@ public class MessageRepositoryTest {
     Optional<Instant> lastMessageAt = messageRepository.findLastMessageAtByChannelId(channelId);
 
     // Then
-
     assertNotNull(lastMessageAt);
 
   }

@@ -37,7 +37,6 @@ public class UserRepositoryTest {
     List<User> users = userRepository.findAllWithProfileAndStatus();
 
     // Then
-
     assertEquals(2, users.size());
     assertNotNull(users.get(0).getProfile().getFileName());
     assertNotNull(users.get(1).getStatus().getLastActiveAt());
@@ -57,7 +56,6 @@ public class UserRepositoryTest {
     Optional<User> user = userRepository.findByUsername("admin");
 
     // Then
-
     assertNotNull(user);
     assertNotNull(user.get().getProfile().getFileName());
   }
@@ -70,7 +68,6 @@ public class UserRepositoryTest {
 
     // When
     Optional<User> result = userRepository.findByUsername(invalidUsername);
-
     // Then
     assertTrue(result.isEmpty(), "존재하지 않는 사용자명일 경우 Optional.empty() 반환해야 함");
   }

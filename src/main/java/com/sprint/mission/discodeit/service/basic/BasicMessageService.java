@@ -60,8 +60,7 @@ public class BasicMessageService implements MessageService {
             () -> new ResourceNotFoundException("channelId = " + createRequest.channelId()));
 
     /* 비공개 채널이면 -> 유저가 해당 채널에 있는지 validation check */
-    if (this.channelRepository.findById(createRequest.channelId()).get().getType()
-        == ChannelType.PRIVATE) {
+    if (channel.getType() == ChannelType.PRIVATE) {
       if (!this.readStatusRepository.existsByUserIdAndChannelId(createRequest.authorId(),
           createRequest.channelId())) {
         throw new AccessDeniedMessageException(user, channel);

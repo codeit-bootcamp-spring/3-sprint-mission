@@ -38,3 +38,5 @@ logging:
     root: trace
     org.hibernate: debug
     org.hibernate.sql: debug            #  = spring.jpa.show-sql: true  +  sql 이 실행된 시간 정보
+    org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener: off # @ConditionalOnClass did not find required class 로그 숨기기
+    org.springframework.boot.autoconfigure: warn

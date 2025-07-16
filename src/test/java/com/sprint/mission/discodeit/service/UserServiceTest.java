@@ -31,6 +31,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.function.Executable;
 
 @TestMethodOrder(MethodOrderer.MethodName.class)
 public class UserServiceTest {
@@ -60,7 +61,6 @@ public class UserServiceTest {
     @DisplayName("프로필 이미지 없는 사용자 생성 성공 후 dto를 반환한다")
     @Test
     void whenCreateUserwithoutProfileImage_thenReturnUserDto() {
-
       //given
       UserCreateRequest userCreateRequest = new UserCreateRequest("test", "test@naver.com", "1234");
       User user = new User(userCreateRequest.username(), userCreateRequest.email(),
@@ -91,7 +91,6 @@ public class UserServiceTest {
     @DisplayName("이미 존재하는 이름과 아이디로 사용자 생성을 시도하여 실패 후 에러를 반환한다")
     @Test
     void whenCreateUserwithExistNameAndEmail_thenThrowUserAlreadyExistException() {
-
       //given
       UserCreateRequest userCreateRequest = new UserCreateRequest("test", "test@naver.com", "1234");
       User user = new User(userCreateRequest.username(), userCreateRequest.email(),
@@ -99,10 +98,10 @@ public class UserServiceTest {
       given(userRepository.existsByUsernameOrEmail(anyString(), anyString())).willReturn(true);
 
       //when & then
-      assertThrows(UserAlreadyExistException.class,
-          () -> userService.create(userCreateRequest, Optional.empty()));
+      Executable executable = () -> userService.create(userCreateRequest, Optional.empty());
 
       // then: 해당 메서드가 특정 인자로 호출되었는지를 검증
+      assertThrows(UserAlreadyExistException.class, executable);
       then(userRepository).should().existsByUsernameOrEmail("test", "test@naver.com");
       then(binaryContentRepository).shouldHaveNoInteractions();
       then(binaryContentStorage).shouldHaveNoInteractions();
@@ -119,7 +118,6 @@ public class UserServiceTest {
     @DisplayName("Id값으로 유저 정보를 업데이트 성공한다")
     @Test
     void whenUpdateUserWithId_thenReturnUserDto() {
-
       //given
       UUID userId = UUID.randomUUID();
       UserUpdateRequest userUpdateRequest = new UserUpdateRequest("newTest", "newTest@naver.com",
@@ -130,7 +128,6 @@ public class UserServiceTest {
           userUpdateRequest.newEmail(),
           null, true,
           Instant.now(), Instant.now());
-
       given(userRepository.existsByUsernameOrEmail(userUpdateRequest.newUsername(),
           userUpdateRequest.newEmail())).willReturn(false);
       given(userRepository.findById(userId)).willReturn((Optional.of(user)));
@@ -157,7 +154,6 @@ public class UserServiceTest {
     @DisplayName("Id값으로 유저 정보를 업데이트 실패한다")
     @Test
     void whenUpdateUserWithId_thenThrowUserAlreadyExistException() {
-
       //given
       UUID userId = UUID.randomUUID();
       UserUpdateRequest userUpdateRequest = new UserUpdateRequest("newTest", "newTest@naver.com",
@@ -168,18 +164,15 @@ public class UserServiceTest {
           userUpdateRequest.newEmail(),
           null, true,
           Instant.now(), Instant.now());
-
       given(userRepository.existsByUsernameOrEmail(userUpdateRequest.newUsername(),
           userUpdateRequest.newEmail())).willReturn(true);
 
-      //when&then
-      assertThrows(UserAlreadyExistException.class, () -> {
-        userService.update(userId, userUpdateRequest, Optional.empty());
-      });
+      //when
+      Executable executable = () -> userService.update(userId, userUpdateRequest, Optional.empty());
 
+      //Then
+      assertThrows(UserAlreadyExistException.class, executable);
     }
-
-
   }
 
   @Nested
@@ -189,8 +182,8 @@ public class UserServiceTest {
     @DisplayName("유저 id로 유저 삭제를 성공한다")
     @Test
     void whenDeleteUser() {
-      UUID UserId = UUID.fromString("a1b42ab8-5d3e-4571-af57-422064cb39ff");
       //given
+      UUID UserId = UUID.fromString("a1b42ab8-5d3e-4571-af57-422064cb39ff");
       given(userRepository.existsById(UserId)).willReturn(true);
 
       //when
@@ -203,15 +196,15 @@ public class UserServiceTest {
     @DisplayName("유저 id로 유저를 삭제할때, 존재하지 않은 id이므로 실패한다")
     @Test
     void whenDeleteUserwithNotExistId_thenThrowUserAlreadyExistException() {
-      UUID UserId = UUID.fromString("a1b42ab8-5d3e-4571-af57-422064cb39ff");
       //given
+      UUID UserId = UUID.fromString("a1b42ab8-5d3e-4571-af57-422064cb39ff");
       given(userRepository.existsById(UserId)).willReturn(false);
 
-      //when&then
-      assertThrows(ResourceNotFoundException.class, () -> {
-        userService.delete(UserId);
-      });
+      //when
+      Executable executable = () -> userService.delete(UserId);
+      assertThrows(ResourceNotFoundException.class, executable);
 
+      //then
       then(userRepository).should(never()).deleteById(any());
     }
   }
