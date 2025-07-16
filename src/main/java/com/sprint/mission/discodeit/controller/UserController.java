@@ -1,19 +1,22 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.User.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.User.UserFindRequest;
-import com.sprint.mission.discodeit.dto.User.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.UserDto;
-import com.sprint.mission.discodeit.dto.UserStatus.UserStatusUpdateRequest;
-import com.sprint.mission.discodeit.dto.UserStatusDto;
+import com.sprint.mission.discodeit.controller.api.UserApi;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.data.UserStatusDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,80 +30,115 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-@RestController
 @RequiredArgsConstructor
+@RestController
 @RequestMapping("/api/users")
-public class UserController {
+@Slf4j
+public class UserController implements UserApi {
 
     private final UserService userService;
     private final UserStatusService userStatusService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @Override
     public ResponseEntity<UserDto> create(
-            @RequestPart("userCreateRequest") UserCreateRequest request,
-            @RequestPart(value = "profile", required = false) MultipartFile profile
-    ) throws IOException {
-        Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
-                .flatMap(this::resolveProfileRequest);
+        @Valid @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
+        @RequestPart(value = "profile", required = false) MultipartFile profile
+    ) {
+        log.info("사용자 생성 요청: username={}, email={}",
+            userCreateRequest.username(), userCreateRequest.email());
 
-        UserDto created = userService.create(request, profileRequest);
-        return ResponseEntity.ok().body(created);
+        Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
+            .flatMap(this::resolveProfileRequest);
+
+        UserDto createdUser = userService.create(userCreateRequest, profileRequest);
+
+        log.info("사용자 생성 완료: userId={}", createdUser.id());
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(createdUser);
     }
 
+    @PatchMapping(
+        path = "{userId}",
+        consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
+    )
+    @Override
+    public ResponseEntity<UserDto> update(
+        @PathVariable("userId") UUID userId,
+        @Valid @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
+        @RequestPart(value = "profile", required = false) MultipartFile profile
+    ) {
+        log.info("사용자 정보 수정 요청: userId={}, newUsername={}, newEmail={}",
+            userId, userUpdateRequest.newUsername(), userUpdateRequest.newEmail());
 
-    @GetMapping(path = "/{id}")
-    public ResponseEntity<UserDto> find(@PathVariable("id") UUID id) {
-        UserFindRequest request = UserFindRequest.builder().userId(id).build();
-        return ResponseEntity.ok(userService.find(request));
+        Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
+            .flatMap(this::resolveProfileRequest);
+
+        UserDto updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
+
+        log.info("사용자 정보 수정 완료: userId={}", updatedUser.id());
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(updatedUser);
+    }
+
+    @DeleteMapping(path = "{userId}")
+    @Override
+    public ResponseEntity<Void> delete(@PathVariable("userId") UUID userId) {
+        log.info("사용자 삭제 요청: userId={}", userId);
+
+        userService.delete(userId);
+
+        log.info("사용자 삭제 완료: userId={}", userId);
+        return ResponseEntity
+            .status(HttpStatus.NO_CONTENT)
+            .build();
     }
 
     @GetMapping
+    @Override
     public ResponseEntity<List<UserDto>> findAll() {
-        return ResponseEntity.ok(userService.findAll());
-    }
+        log.info("전체 사용자 조회 요청");
 
-    @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserDto> update(
-            @PathVariable("userId") UUID id,
-            @RequestPart("userUpdateRequest") UserUpdateRequest updateRequest,
-            @RequestPart(value = "profile", required = false) MultipartFile profile
-    ) {
-        Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
-                .flatMap(this::resolveProfileRequest);
+        List<UserDto> users = userService.findAll();
 
-        return ResponseEntity.ok(userService.update(id, updateRequest, profileRequest));
-    }
-
-    @DeleteMapping(path = "/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") UUID id) {
-        userService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profile) {
-        if (profile == null || profile.isEmpty()) {
-            return Optional.empty();
-        }
-        try {
-            return Optional.of(BinaryContentCreateRequest.builder()
-                    .fileName(profile.getOriginalFilename())
-                    .contentType(profile.getContentType())
-                    .bytes(profile.getBytes())
-                    .build()
-            );
-        } catch (IOException e) {
-            throw new RuntimeException("파일 처리 중 오류 발생", e);
-        }
+        log.info("조회된 사용자 수: {}", users.size());
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(users);
     }
 
     @PatchMapping(path = "{userId}/userStatus")
-    public ResponseEntity<UserStatusDto> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
-                                                                  @RequestBody UserStatusUpdateRequest request) {
-        UserStatusDto updatedUserStatus = userStatusService.updateByUserId(userId, request);
-        return ResponseEntity
-                .ok(updatedUserStatus);
+    @Override
+    public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
+        @PathVariable("userId") UUID userId,
+        @Valid @RequestBody UserStatusUpdateRequest request) {
+        log.info("사용자 상태 업데이트 요청: userId={}, newLastActiveAt={}",
+            userId, request.newLastActiveAt());
 
+        UserStatusDto updatedUserStatus = userStatusService.updateByUserId(userId, request);
+
+        log.info("사용자 상태 업데이트 완료: userStatusId={}", updatedUserStatus.id());
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(updatedUserStatus);
     }
 
-
+    private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
+        if (profileFile.isEmpty()) {
+            return Optional.empty();
+        } else {
+            try {
+                return Optional.of(new BinaryContentCreateRequest(
+                    profileFile.getOriginalFilename(),
+                    profileFile.getContentType(),
+                    profileFile.getBytes()
+                ));
+            } catch (IOException e) {
+                log.error("프로필 파일 파싱 중 오류 발생", e);
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }
