@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+
+    <property name="LOG_PATH" value="./.logs"/>
+    <property name="LOG_FILE_NAME" value="discodeit"/>
+    <property name="FILE_LOG_PATTERN"
+              value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId} %X{method} %X{url}] - %msg%n"/>
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%d{yy-MM-dd HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %cyan(%logger{36}) %green[%X{requestId} %X{method} %X{url}] - %msg%n"/>
+
+    <!-- Hibernate SQL 로그 -->
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+
+    <!-- 콘솔 출력 with 색상 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 일반 파일 로그 (application.log) -->
+    <appender name="APP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE_NAME}-application.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}-application-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 비즈니스 파일 로그 (business.log) -->
+    <appender name="BUSINESS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE_NAME}-business.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}-business-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 에러 파일 로그 (error.log) -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE_NAME}-error.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}-error-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 성능 파일 로그 (performance.log) -->
+    <appender name="PERFORMANCE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE_NAME}-performance.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}-performance-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- dev/prod 프로파일별 로깅 수준 -->
+    <springProfile name="dev">
+        <logger name="com.sprint.mission.discodeit" level="DEBUG"/>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="APP_FILE"/>
+        </root>
+
+        <!-- 비즈니스 로직 전용 로거 -->
+        <logger name="com.sprint.mission.discodeit.service.basic" level="INFO" additivity="false">
+            <appender-ref ref="BUSINESS_FILE"/>
+        </logger>
+
+        <!-- AOP 로깅 전용 로거 -->
+        <logger name="com.sprint.mission.discodeit.aspect.LoggingAspect" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="PERFORMANCE_FILE"/>
+        </logger>
+
+        <!-- Spring Framework 로그 레벨 조정 -->
+        <logger name="org.springframework" level="INFO"/>
+        <logger name="org.springframework.web" level="DEBUG"/>
+        <logger name="org.springframework.transaction" level="DEBUG"/>
+
+        <!-- Hibernate 로그 레벨 조정 -->
+        <logger name="org.hibernate" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="DEBUG"/>
+        <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+
+    </springProfile>
+
+    <springProfile name="prod">
+        <logger name="com.sprint.mission.discodeit" level="INFO"/>
+
+        <!-- 루트 로거 설정 -->
+        <root level="WARN">
+            <appender-ref ref="APP_FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
+
+        <!-- 애플리케이션 패키지 로그 레벨 설정 -->
+        <logger name="com.sprint.mission.discodeit" level="INFO" additivity="false">
+            <appender-ref ref="APP_FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </logger>
+
+        <!-- 비즈니스 로직 전용 로거 -->
+        <logger name="com.sprint.mission.discodeit.service.basic" level="INFO" additivity="false">
+            <appender-ref ref="BUSINESS_FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </logger>
+
+        <!-- AOP 로깅 전용 로거 -->
+        <logger name="com.sprint.mission.discodeit.aspect.LoggingAspect" level="WARN" additivity="false">
+            <appender-ref ref="PERFORMANCE_FILE"/>
+        </logger>
+
+        <!-- 외부 라이브러리 로그 레벨 최소화 -->
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
+        <logger name="com.zaxxer.hikari" level="WARN"/>
+    </springProfile>
+
+</configuration>

@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.dto.message.MessageUpdateDto;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.util.FileConverter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -31,7 +32,7 @@ public class MessageController implements MessageApi {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MessageResponseDto> create(
-            @RequestPart("messageCreateRequest") MessageRequestDto messageRequestDTO,
+            @Valid @RequestPart("messageCreateRequest") MessageRequestDto messageRequestDTO,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachedFiles) {
         List<BinaryContentDto> binaryContentDtos = FileConverter.resolveFileRequest(attachedFiles);
 

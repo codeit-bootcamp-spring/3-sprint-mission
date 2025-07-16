@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class ChannelController implements ChannelApi {
 
     @PostMapping(path = "/public")
     public ResponseEntity<ChannelResponseDto> createPublicChannel(
-            @RequestBody PublicChannelDto publicChannelDTO) {
+            @Valid @RequestBody PublicChannelDto publicChannelDTO) {
         ChannelResponseDto createdChannel = channelService.createPublicChannel(publicChannelDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdChannel);
