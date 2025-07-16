@@ -1,21 +1,25 @@
+server:
+  port: 80
+
 spring:
-    datasource:
-        url: ${PROD_DB_URL}
-        driver-class-name: org.postgresql.Driver
-        username: ${PROD_DB_USER}
-        password: ${PROD_DB_PASSWORD}
-    jpa:
-        hibernate:
-            ddl-auto: validate
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        format_sql: false
 
 logging:
-    level:
-        com.sprint.mission.discodeit: info
+  level:
+    com.sprint.mission.discodeit: info
+    org.hibernate.SQL: info
 
-discodeit:
-    storage:
-        local:
-            root-path: /var/discodeit/uploads
-
-server:
-    port: 8081
+management:
+  endpoint:
+    health:
+      show-details: never
+  info:
+    env:
+      enabled: false
