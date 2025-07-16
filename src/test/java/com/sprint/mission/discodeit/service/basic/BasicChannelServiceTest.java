@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -130,8 +132,6 @@ class BasicChannelServiceTest {
         assertNotNull(result);
         assertEquals(channelId, result.id());
         assertEquals(ChannelType.PRIVATE, result.type());
-
-        // verify
         verify(channelRepository).save(any(Channel.class));
         verify(readStatusRepository).saveAll(anyList());
         verify(channelMapper).toDto(channel);
@@ -178,9 +178,12 @@ class BasicChannelServiceTest {
         given(channelRepository.findById(notExistId)).willReturn(Optional.empty());
 
         // when
-        assertThrows(NotFoundChannelException.class, () -> channelService.findById(notExistId));
+        Throwable thrown = catchThrowable(() -> channelService.findById(notExistId));
 
         // then
+        assertThat(thrown)
+                .isInstanceOf(NotFoundChannelException.class)
+                .hasMessageContaining("채널");
         verify(channelRepository).findById(notExistId);
     }
 
@@ -247,7 +250,6 @@ class BasicChannelServiceTest {
         assertTrue(result.contains(publicChannelDto));
         assertTrue(result.contains(privateChannelDto));
         assertFalse(result.stream().anyMatch(dto -> dto.id().equals(notRelatedChannelId)));
-
         verify(readStatusRepository).findAllByUserId(userId);
         verify(channelRepository).findAll();
         verify(channelMapper).toDto(publicChannel);
@@ -293,7 +295,6 @@ class BasicChannelServiceTest {
         assertEquals(1, result.size());
         assertTrue(result.contains(publicChannelDto));
         assertFalse(result.stream().anyMatch(dto -> dto.id().equals(privateChannelId)));
-
         verify(readStatusRepository).findAllByUserId(notExistId);
         verify(channelRepository).findAll();
         verify(channelMapper).toDto(publicChannel);
@@ -333,7 +334,6 @@ class BasicChannelServiceTest {
         assertNotNull(result);
         assertEquals(newName, result.name());
         assertEquals(newDescription, result.description());
-
         verify(channelRepository).save(any(Channel.class));
     }
 
@@ -354,8 +354,12 @@ class BasicChannelServiceTest {
         given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
 
         // when
-        assertThrows(PrivateChannelUpdateException.class, () -> channelService.update(channelId, updateRequest));
+        Throwable thrown = catchThrowable(() -> channelService.update(channelId, updateRequest));
+
         // then
+        assertThat(thrown)
+                .isInstanceOf(PrivateChannelUpdateException.class)
+                .hasMessageContaining("Private");
         verify(channelRepository).findById(channelId);
         verify(userRepository, never()).save(any());
     }
@@ -394,9 +398,12 @@ class BasicChannelServiceTest {
         given(channelRepository.findById(notExistId)).willReturn(Optional.empty());
 
         // when
-        assertThrows(NotFoundChannelException.class, () -> channelService.deleteById(notExistId));
+        Throwable thrown = catchThrowable(() -> channelService.deleteById(notExistId));
 
         // then
+        assertThat(thrown)
+                .isInstanceOf(NotFoundChannelException.class)
+                .hasMessageContaining("채널");
         verify(channelRepository).findById(notExistId);
     }
 }

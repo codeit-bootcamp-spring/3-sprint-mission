@@ -65,7 +65,6 @@ public class MessageServiceIntegrationTest {
     private BinaryContentStorage binaryContentStorage;
 
     private User savedAuthor;
-    ;
     private Channel savedChannel1;
     private Channel savedChannel2;
 
@@ -123,16 +122,12 @@ public class MessageServiceIntegrationTest {
         assertEquals("Hello", result.content());
         assertEquals(savedChannel1.getId(), result.channelId());
         assertEquals(savedAuthor.getId(), result.author().id());
-
         UUID messageId = result.id();
-
         Optional<Message> foundMessage = messageRepository.findById(messageId);
-        assertTrue(foundMessage.isPresent());
-
+        assertTrue(foundMessage.isPresent(), "메시지가 저장되어 있어야 한다.");
         List<BinaryContent> attachments = foundMessage.get().getAttachments();
         assertEquals(1, attachments.size());
         assertEquals("attachment.png", attachments.get(0).getFileName());
-
         byte[] data = binaryContentStorage.get(attachments.get(0).getId()).readAllBytes();
         assertArrayEquals(imageBytes, data);
     }
@@ -166,20 +161,18 @@ public class MessageServiceIntegrationTest {
         messageRepository.save(message1);
         messageRepository.save(message2);
         messageRepository.save(message3);
+        Pageable pageable = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         // when
-        Pageable pageable = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "createdAt"));
         PageResponse<MessageResponseDto> result = messageService.findAllByChannelId(savedChannel2.getId(),
                 null, pageable);
 
         // then
         List<MessageResponseDto> content = result.content();
-
         assertEquals(2, content.size());
         assertEquals("Nice", content.get(0).content());
         assertEquals("Hi", content.get(1).content());
-
-        assertFalse(result.hasNext());
+        assertFalse(result.hasNext(), "채널에 있는 메시지를 모두 조회했기 때문에 다음 메시지는 없어야한다.");
         assertNull(result.nextCursor());
     }
 
@@ -209,9 +202,8 @@ public class MessageServiceIntegrationTest {
         // then
         Optional<Message> foundMessage = messageRepository.findById(messageId);
         assertTrue(foundMessage.isEmpty());
-
         Optional<BinaryContent> foundAttachment = binaryContentRepository.findById(attachmentId);
-        assertTrue(foundAttachment.isEmpty());
+        assertTrue(foundAttachment.isEmpty(), "메시지의 첨부 파일도 삭제되어야 한다.");
     }
 
     @AfterEach

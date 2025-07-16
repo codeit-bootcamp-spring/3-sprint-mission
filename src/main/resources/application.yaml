@@ -1,20 +1,19 @@
-discodeit:
-  storage:
-    type: local
-    local:
-      root-path: ./binaries
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 
-springdoc:
-  api-docs:
-    # OpenAPI 명세서 경로(JSON)
-    path: /v3/api-docs
-  swagger-ui:
-    # OpenAPI 명세서 경로(HTML)
-    path: /swagger-ui.html
-    # 요청 응답 시간 표시
-    display-request-duration: true
-    # HTTP 메서드 기준으로 정렬
-    operations-sorter: method
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+    open-in-view: false
 
 management:
   endpoints:
@@ -34,6 +33,26 @@ management:
     os:
       enabled: true
 
+discodeit:
+  storage:
+    type: ${STORAGE_TYPE:local}
+    local:
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:./binaries}
+    s3:
+      access-key: ${AWS_S3_ACCESS_KEY}
+      secret-key: ${AWS_S3_SECRET_KEY}
+      region: ${AWS_S3_REGION}
+      bucket: ${AWS_S3_BUCKET}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+    operations-sorter: method
+
 info:
   app:
     name: Discodeit
@@ -42,38 +61,7 @@ info:
       version: 17
     spring-boot:
       version: 3.4.0
-    config:
-      storage:
-        type: local
-        path: ./binaries
-      profile: ${spring.profiles.active}
-      datasource:
-        url: ${spring.datasource.url}
-        driver-class-name: ${spring.datasource.driver-class-name}
-      multipart:
-        max-file-size: 10MB
-        max-request-size: 50MB
-      jpa:
-        ddl-auto: create
 
-spring:
-  boot:
-    admin:
-      client:
-        instance:
-          name: discodeit
-  jpa:
-    hibernate:
-      ddl-auto: create
-    show-sql: true
-    properties:
-      hibernate:
-        use_sql_comments: true
-        format_sql: true
-      org.hibernate.options.HIGHLIGHT_SQL: false
-    open-in-view: false
-
-# logging 설정
 logging:
   level:
     com.sprint.mission.discodeit: INFO

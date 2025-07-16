@@ -29,6 +29,9 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.not;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -114,7 +117,6 @@ class BasicUserServiceTest {
         assertEquals(username, result.username());
         assertEquals(email, result.email());
         assertEquals(profile, result.profile());
-
         verify(userStatusRepository).save(any(UserStatus.class));
         verify(binaryContentRepository).save(binaryContent);
         verify(binaryContentStorage).put(profileId, imageBytes);
@@ -133,8 +135,12 @@ class BasicUserServiceTest {
         given(userRepository.existsByUsername(username)).willReturn(true);
 
         // when
-        assertThrows(DuplicateNameException.class, () -> userService.create(request, null));
+        Throwable thrown = catchThrowable(() -> userService.create(request, null));
+
         // then
+        assertThat(thrown)
+                .isInstanceOf(DuplicateNameException.class)
+                .hasMessageContaining("존재");
         verify(userRepository, never()).save(any());
     }
 
@@ -151,8 +157,12 @@ class BasicUserServiceTest {
         given(userRepository.existsByEmail(email)).willReturn(true);
 
         // when
-        assertThrows(DuplicateEmailException.class, () -> userService.create(request, null));
+        Throwable thrown = catchThrowable(() -> userService.create(request, null));
+
         // then
+        assertThat(thrown)
+                .isInstanceOf(DuplicateEmailException.class)
+                .hasMessageContaining("존재");
         verify(userRepository, never()).save(any());
     }
 
@@ -205,9 +215,12 @@ class BasicUserServiceTest {
         given(userRepository.findById(notExistId)).willReturn(Optional.empty());
 
         // when
-        assertThrows(NotFoundUserException.class, () -> userService.findById(notExistId));
+        Throwable thrown = catchThrowable(() -> userService.findById(notExistId));
 
         // then
+        assertThat(thrown)
+                .isInstanceOf(NotFoundUserException.class)
+                .hasMessageContaining("사용자");
         verify(userRepository).findById(notExistId);
         verifyNoInteractions(userStatusRepository, userMapper); // 사용자 없으면 이후 로직 없어야 함
     }
@@ -261,9 +274,8 @@ class BasicUserServiceTest {
         // then
         assertNotNull(result);
         assertEquals(expectedResponse, result);
-
         verify(userRepository).save(any(User.class));
-        verify(binaryContentRepository).deleteById(oldProfileId);
+        verify(binaryContentRepository).deleteById(oldProfileId); // 기존 프로필 사진 정보 삭제
     }
 
     @Test
@@ -295,10 +307,12 @@ class BasicUserServiceTest {
         given(userRepository.findByUsername(existName)).willReturn(Optional.of(existingUser));
 
         // when
-        assertThrows(DuplicateNameException.class, () -> userService.update(userId, updateRequest,
-                null));
+        Throwable thrown = catchThrowable(() -> userService.update(userId, updateRequest, null));
 
         // then
+        assertThat(thrown)
+                .isInstanceOf(DuplicateNameException.class)
+                .hasMessageContaining("존재");
         verify(userRepository).findById(userId);
         verify(userRepository).findByUsername(existName);
         verify(userRepository, never()).save(any());
@@ -334,10 +348,12 @@ class BasicUserServiceTest {
         given(userRepository.findByEmail(existEmail)).willReturn(Optional.of(existingUser));
 
         // when
-        assertThrows(DuplicateEmailException.class, () -> userService.update(userId, updateRequest,
-                null));
+        Throwable thrown = catchThrowable(() -> userService.update(userId, updateRequest, null));
 
         // then
+        assertThat(thrown)
+                .isInstanceOf(DuplicateEmailException.class)
+                .hasMessageContaining("존재");
         verify(userRepository).findById(userId);
         verify(userRepository).findByEmail(existEmail);
         verify(userRepository, never()).save(any());
@@ -382,9 +398,12 @@ class BasicUserServiceTest {
         given(userRepository.findById(notExistId)).willReturn(Optional.empty());
 
         // when
-        assertThrows(NotFoundUserException.class, () -> userService.deleteById(notExistId));
+        Throwable thrown = catchThrowable(() -> userService.deleteById(notExistId));
 
         // then
+        assertThat(thrown)
+                .isInstanceOf(NotFoundUserException.class)
+                .hasMessageContaining("사용자");
         verify(userRepository).findById(notExistId);
         verifyNoMoreInteractions(userStatusRepository, binaryContentRepository);
     }

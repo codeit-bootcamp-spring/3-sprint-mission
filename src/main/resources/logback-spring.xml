@@ -23,9 +23,11 @@
     <!-- 일반 파일 로그 (application.log) -->
     <appender name="APP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/${LOG_FILE_NAME}-application.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}-application-%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}-application-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize> <!-- 파일 하나가 100MB 넘으면 새로 만듦 -->
+            <maxHistory>30</maxHistory>  <!-- 최대 30일 보관 -->
+            <totalSizeCap>5GB</totalSizeCap> <!-- 전체 합이 5GB 넘으면 오래된 것부터 삭제 -->
         </rollingPolicy>
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
@@ -36,9 +38,11 @@
     <!-- 비즈니스 파일 로그 (business.log) -->
     <appender name="BUSINESS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/${LOG_FILE_NAME}-business.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}-business-%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}-business-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize> <!-- 파일 하나가 100MB 넘으면 새로 만듦 -->
+            <maxHistory>30</maxHistory>  <!-- 최대 30일 보관 -->
+            <totalSizeCap>5GB</totalSizeCap> <!-- 전체 합이 5GB 넘으면 오래된 것부터 삭제 -->
         </rollingPolicy>
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
@@ -54,9 +58,11 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}-error-%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}-error-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize> <!-- 파일 하나가 100MB 넘으면 새로 만듦 -->
+            <maxHistory>30</maxHistory>  <!-- 최대 30일 보관 -->
+            <totalSizeCap>5GB</totalSizeCap> <!-- 전체 합이 5GB 넘으면 오래된 것부터 삭제 -->
         </rollingPolicy>
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
@@ -67,9 +73,11 @@
     <!-- 성능 파일 로그 (performance.log) -->
     <appender name="PERFORMANCE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/${LOG_FILE_NAME}-performance.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}-performance-%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}-performance-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize> <!-- 파일 하나가 100MB 넘으면 새로 만듦 -->
+            <maxHistory>30</maxHistory>  <!-- 최대 30일 보관 -->
+            <totalSizeCap>5GB</totalSizeCap> <!-- 전체 합이 5GB 넘으면 오래된 것부터 삭제 -->
         </rollingPolicy>
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
