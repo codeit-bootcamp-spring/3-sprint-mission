@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    hikari:
+      maximum-pool-size: 4
+      connection-init-sql: SET TIME ZONE 'Asia/Seoul'
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: ${SERVER_PORT:8080}
+
+  logging: # 운영 환경에서는 info 수준으로 맞춰 불필요한 디버그 제거
+    level:
+      root: warn
+      org.hibernate.SQL: warn
+      org.hibernate.orm.jdbc.bind: warn
+      com.sprint.mission.discodeit: info
