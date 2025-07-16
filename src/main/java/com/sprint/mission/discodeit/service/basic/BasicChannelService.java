@@ -43,9 +43,9 @@ public class BasicChannelService implements ChannelService {
         List<UUID> requestParticipantIds = new ArrayList<>(request.participantIds());
         log.info("[channel] 생성 요청: 참여자 수={}", requestParticipantIds.size());
 
-        Channel privateChannel = channelRepository.save(new Channel(ChannelType.PRIVATE));
-        log.info("[channel] 생성 완료: id={}, type={}", privateChannel.getId(),
-            privateChannel.getType());
+        Channel savedPrivateChannel = channelRepository.save(new Channel(ChannelType.PRIVATE));
+        log.info("[channel] 생성 완료: id={}, type={}", savedPrivateChannel.getId(),
+            savedPrivateChannel.getType());
 
         List<User> users = userRepository.findAllById(requestParticipantIds);
 
@@ -54,19 +54,19 @@ public class BasicChannelService implements ChannelService {
             requestParticipantIds.removeAll(found);
 
             log.warn("[channel] 참여자 추출 오류 - 유효하지 않은 Id 포함: {}", requestParticipantIds);
-            throw new InvalidChannelParticipantException(privateChannel.getId(),
+            throw new InvalidChannelParticipantException(savedPrivateChannel.getId(),
                 requestParticipantIds);
         }
 
         List<ReadStatus> readStatuses = users.stream()
-            .map(user -> new ReadStatus(user, privateChannel,
-                privateChannel.getCreatedAt()))
+            .map(user -> new ReadStatus(user, savedPrivateChannel,
+                savedPrivateChannel.getCreatedAt()))
             .toList();
 
         readStatusRepository.saveAll(readStatuses);
         log.info("[channel] ReadStatus 저장 완료: count={}", readStatuses.size());
 
-        return channelMapper.toDto(privateChannel);
+        return channelMapper.toDto(savedPrivateChannel);
     }
 
     //public 채널생성
@@ -77,11 +77,11 @@ public class BasicChannelService implements ChannelService {
         String description = request.description();
         log.info("[channel] 생성 요청: name={}, description={}", name, description);
 
-        Channel channel = channelRepository.save(
+        Channel savedPublicChannel = channelRepository.save(
             new Channel(ChannelType.PUBLIC, name, description));
-        log.info("[channel] 저장 완료: id={}", channel.getId());
+        log.info("[channel] 저장 완료: id={}", savedPublicChannel.getId());
 
-        return channelMapper.toDto(channel);
+        return channelMapper.toDto(savedPublicChannel);
     }
 
     @Transactional(readOnly = true)

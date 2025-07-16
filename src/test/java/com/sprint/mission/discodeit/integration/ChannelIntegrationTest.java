@@ -21,7 +21,6 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +32,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -44,14 +44,19 @@ public class ChannelIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
     @Autowired
     private ObjectMapper objectMapper;
+
     @Autowired
     private ChannelService channelService;
+
     @Autowired
     private ChannelRepository channelRepository;
+
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private UserStatusRepository userStatusRepository;
 
@@ -75,7 +80,7 @@ public class ChannelIntegrationTest {
 
         // 유저가 참여한 비공개 채널 생성
         PrivateChannelCreateRequest createRequest = new PrivateChannelCreateRequest(
-                List.of(savedUser.getId()));
+            List.of(savedUser.getId()));
         ChannelDto savedPrivateChannelDto = channelService.create(createRequest);
         savedPrivateChannel = channelRepository.findById(savedPrivateChannelDto.id()).orElse(null);
     }
@@ -83,92 +88,97 @@ public class ChannelIntegrationTest {
     @Test
     @DisplayName("공개 채널 생성")
     void createPublicChannel_Success() throws Exception {
-
-        // given
+        // Given
         String name = "공개 채널 생성 테스트";
         String description = "공개 채널 생성 테스트 채널입니다.";
-
         PublicChannelCreateRequest createRequest = new PublicChannelCreateRequest(name,
-                description);
+            description);
 
-        // when & then - controller단에서 수행 후 올바른 요청이 오는지 검증
-        mockMvc.perform(post("/api/channels/public")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.type").value(ChannelType.PUBLIC.toString()))
-                .andExpect(jsonPath("$.name").value(name))
-                .andExpect(jsonPath("$.description").value(description));
+        // When
+        ResultActions result = mockMvc.perform(post("/api/channels/public")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(createRequest)));
+
+        // Then
+        result.andExpect(status().isCreated())
+            .andExpect(jsonPath("$.type").value(ChannelType.PUBLIC.toString()))
+            .andExpect(jsonPath("$.name").value(name))
+            .andExpect(jsonPath("$.description").value(description));
     }
 
     @Test
     @DisplayName("비공개 채널 생성")
     void createPrivateChannel_Success() throws Exception {
-
-        // given
+        // Given
         ChannelType channelType = ChannelType.PRIVATE;
         PrivateChannelCreateRequest createRequest = new PrivateChannelCreateRequest(
-                List.of(savedUser.getId()));
+            List.of(savedUser.getId()));
 
-        // when & then
-        mockMvc.perform(post("/api/channels/private")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.type").value(channelType.toString()))
-                .andExpect(jsonPath("$.participants[0].id").value(savedUser.getId().toString()))
-                .andExpect(jsonPath("$.participants[0].username").value(savedUser.getUsername()))
-                .andExpect(jsonPath("$.participants[0].email").value(savedUser.getEmail()));
+        // When
+        ResultActions result = mockMvc.perform(post("/api/channels/private")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(createRequest)));
+
+        // Then
+        result.andExpect(status().isCreated())
+            .andExpect(jsonPath("$.type").value(channelType.toString()))
+            .andExpect(jsonPath("$.participants[0].id").value(savedUser.getId().toString()))
+            .andExpect(jsonPath("$.participants[0].username").value(savedUser.getUsername()))
+            .andExpect(jsonPath("$.participants[0].email").value(savedUser.getEmail()));
     }
 
     @Test
     @DisplayName("공개 채널 수정")
     void updatePublicChannel_Success() throws Exception {
-
-        // given
+        // Given
         String newName = "공개 채널 수정 테스트";
         String newDescription = "공개 채널 수정 테스트 채널입니다.";
-
         PublicChannelUpdateRequest updateRequest = new PublicChannelUpdateRequest(newName,
-                newDescription);
+            newDescription);
 
-        // when & then
-        mockMvc.perform(patch("/api/channels/{channelId}", savedPublicChannel.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.type").value(ChannelType.PUBLIC.toString()))
-                .andExpect(jsonPath("$.name").value(newName))
-                .andExpect(jsonPath("$.description").value(newDescription));
+        // When
+        ResultActions result = mockMvc.perform(
+            patch("/api/channels/{channelId}", savedPublicChannel.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)));
+
+        // Then
+        result.andExpect(status().isOk())
+            .andExpect(jsonPath("$.type").value(ChannelType.PUBLIC.toString()))
+            .andExpect(jsonPath("$.name").value(newName))
+            .andExpect(jsonPath("$.description").value(newDescription));
     }
 
     @Test
     @DisplayName("채널 삭제")
     void deleteChannel_Success() throws Exception {
-
-        // given
+        // Given
         UUID channelId = savedPublicChannel.getId();
 
-        // when & then
-        mockMvc.perform(delete("/api/channels/{channelId}", channelId))
-                .andExpect(status().isNoContent());
+        // When
+        ResultActions result = mockMvc.perform(delete("/api/channels/{channelId}", channelId));
+
+        // Then
+        result.andExpect(status().isNoContent());
         assertThat(channelRepository.findById(channelId).isPresent()).isFalse();
     }
 
     @Test
     @DisplayName("유저가 속한 채널 전체 조회")
     void findAll_Success() throws Exception {
-
-        // given
+        // Given
         UUID userId = savedUser.getId();
 
-        // when & then
-        mockMvc.perform(get("/api/channels").param("userId", userId.toString()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].type").value(ChannelType.PUBLIC.toString()))
-                .andExpect(jsonPath("$[0].name").value("공개채널테스트"))
-                .andExpect(jsonPath("$[0].description").value("공개 채널 테스트입니다."))
-                .andExpect(jsonPath("$[1].type").value(ChannelType.PRIVATE.toString()))
-                .andExpect(jsonPath("$[1].participants[0].id").value(userId.toString()));
+        // When
+        ResultActions result = mockMvc.perform(
+            get("/api/channels").param("userId", userId.toString()));
+
+        // Then
+        result.andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].type").value(ChannelType.PUBLIC.toString()))
+            .andExpect(jsonPath("$[0].name").value("공개채널테스트"))
+            .andExpect(jsonPath("$[0].description").value("공개 채널 테스트입니다."))
+            .andExpect(jsonPath("$[1].type").value(ChannelType.PRIVATE.toString()))
+            .andExpect(jsonPath("$[1].participants[0].id").value(userId.toString()));
     }
 }

@@ -29,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 @WebMvcTest(ChannelController.class)
 @ActiveProfiles("test")
@@ -52,15 +53,16 @@ class ChannelControllerTest {
         PublicChannelCreateRequest request = new PublicChannelCreateRequest("채널1", "테스트 채널입니다.");
         ChannelDto channelDto = new ChannelDto(UUID.randomUUID(), ChannelType.PUBLIC,
             request.name(), request.description(), null, null);
-
         String requestJson = objectMapper.writeValueAsString(request);
         given(channelService.create(request)).willReturn(channelDto);
 
-        // When & Then
-        mockMvc.perform(post("/api/channels/public")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson))
-            .andExpect(status().isCreated())
+        // When
+        ResultActions result = mockMvc.perform(post("/api/channels/public")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson));
+
+        // Then
+        result.andExpect(status().isCreated())
             .andExpect(jsonPath("$.type").value(ChannelType.PUBLIC.name()))
             .andExpect(jsonPath("$.name").value("채널1"))
             .andExpect(jsonPath("$.description").value("테스트 채널입니다."))
@@ -75,15 +77,16 @@ class ChannelControllerTest {
         PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(participantIds);
         ChannelDto channelDto = new ChannelDto(UUID.randomUUID(), ChannelType.PRIVATE, null, null,
             null, null);
-
         String requestJson = objectMapper.writeValueAsString(request);
         given(channelService.create(request)).willReturn(channelDto);
 
-        // When & Then
-        mockMvc.perform(post("/api/channels/private")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson))
-            .andExpect(status().isCreated())
+        // When
+        ResultActions result = mockMvc.perform(post("/api/channels/private")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson));
+
+        // Then
+        result.andExpect(status().isCreated())
             .andExpect(jsonPath("$.type").value(ChannelType.PRIVATE.name()))
             .andDo(print());
     }
@@ -93,16 +96,15 @@ class ChannelControllerTest {
     void createPrivate_Fail() throws Exception {
         // Given
         PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(null);
-        ChannelDto channelDto = new ChannelDto(UUID.randomUUID(), ChannelType.PRIVATE, null, null,
-            null, null);
-
         String requestJson = objectMapper.writeValueAsString(request);
 
-        // When & Then
-        mockMvc.perform(post("/api/channels/private")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson))
-            .andExpect(status().isBadRequest())
+        // When
+        ResultActions result = mockMvc.perform(post("/api/channels/private")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson));
+
+        // Then
+        result.andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
             .andDo(print());
     }
@@ -113,10 +115,12 @@ class ChannelControllerTest {
         // Given
         UUID userId = UUID.randomUUID();
 
-        // When & Then
-        mockMvc.perform(get("/api/channels")
-                .param("userId", userId.toString()))
-            .andExpect(status().isOk())
+        // When
+        ResultActions result = mockMvc.perform(get("/api/channels")
+            .param("userId", userId.toString()));
+
+        // Then
+        result.andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(0))
             .andDo(print());
     }
@@ -129,15 +133,16 @@ class ChannelControllerTest {
         PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("새채널", "새채널입니다.");
         ChannelDto channelDto = new ChannelDto(UUID.randomUUID(), ChannelType.PUBLIC,
             request.newName(), request.newDescription(), null, null);
-
         String requestJson = objectMapper.writeValueAsString(request);
         given(channelService.update(channelId, request)).willReturn(channelDto);
 
-        // When & Then
-        mockMvc.perform(patch("/api/channels/{channelId}", channelId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson))
-            .andExpect(status().isOk())
+        // When
+        ResultActions result = mockMvc.perform(patch("/api/channels/{channelId}", channelId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson));
+
+        // Then
+        result.andExpect(status().isOk())
             .andExpect(jsonPath("$.type").value(ChannelType.PUBLIC.name()))
             .andExpect(jsonPath("$.name").value("새채널"))
             .andExpect(jsonPath("$.description").value("새채널입니다."))
@@ -151,15 +156,16 @@ class ChannelControllerTest {
         UUID channelId = UUID.randomUUID();
         PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("새채널", "설명");
         String requestJson = objectMapper.writeValueAsString(request);
-
         given(channelService.update(channelId, request))
             .willThrow(new PrivateChannelUpdateException(channelId));
 
-        // When & Then
-        mockMvc.perform(patch("/api/channels/{channelId}", channelId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson))
-            .andExpect(status().isForbidden())
+        // When
+        ResultActions result = mockMvc.perform(patch("/api/channels/{channelId}", channelId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson));
+
+        // Then
+        result.andExpect(status().isForbidden())
             .andExpect(jsonPath("$.code").value("PRIVATE_CHANNEL_UPDATE"))
             .andDo(print());
 
@@ -171,9 +177,11 @@ class ChannelControllerTest {
         // Given
         UUID channelId = UUID.randomUUID();
 
-        // When & Then
-        mockMvc.perform(delete("/api/channels/{channelId}", channelId))
-            .andExpect(status().isNoContent())
+        // When
+        ResultActions result = mockMvc.perform(delete("/api/channels/{channelId}", channelId));
+
+        // Then
+        result.andExpect(status().isNoContent())
             .andDo(print());
     }
 }

@@ -59,7 +59,7 @@ public class BasicUserService implements UserService {
         BinaryContent nullableProfile = createProfile(profileRequest);
 
         User user = new User(username, email, password, nullableProfile);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
         Instant now = Instant.now();
         UserStatus userStatus = new UserStatus(user, now);
@@ -67,7 +67,7 @@ public class BasicUserService implements UserService {
         log.info("[user] 생성 완료: userId={}, name={}, email={}, isProfile={}",
             user.getId(), username, email, nullableProfile != null);
 
-        return userMapper.toDto(user);
+        return userMapper.toDto(savedUser);
     }
 
     @Transactional(readOnly = true)

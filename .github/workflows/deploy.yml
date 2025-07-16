@@ -1,0 +1,172 @@
+name: CD - Deploy to AWS ECS
+
+on:
+  push:
+    branches: [ release ]
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REPOSITORY_URI: ${{ vars.ECR_REPOSITORY_URI }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+  ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+  ECS_TASK_DEFINITION: ${{ vars.ECS_TASK_DEFINITION }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image-uri: ${{ steps.build.outputs.image-uri }}
+      commit-sha: ${{ steps.meta.outputs.commit-sha }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials for ECR
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-east-1  # Public ECR은 us-east-1에서만 사용 가능
+
+      - name: Login to Amazon ECR Public
+        id: login-ecr-public
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+
+      - name: Extract metadata and prepare tags
+        id: meta
+        run: |
+          COMMIT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "commit-sha=${COMMIT_SHA}" >> $GITHUB_OUTPUT
+          echo "image-latest=${{ env.ECR_REPOSITORY_URI }}:latest" >> $GITHUB_OUTPUT
+          echo "image-commit=${{ env.ECR_REPOSITORY_URI }}:${COMMIT_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        id: build
+        run: |
+          # Docker 이미지 빌드 (단일 플랫폼: linux/amd64)
+          docker build -t ${{ steps.meta.outputs.image-latest }} .
+          docker tag ${{ steps.meta.outputs.image-latest }} ${{ steps.meta.outputs.image-commit }}
+          
+          # ECR에 푸시
+          docker push ${{ steps.meta.outputs.image-latest }}
+          docker push ${{ steps.meta.outputs.image-commit }}
+          
+          # 출력 설정
+          echo "image-uri=${{ steps.meta.outputs.image-latest }}" >> $GITHUB_OUTPUT
+          
+          echo "이미지 빌드 및 푸시 완료:"
+          echo "  - ${{ steps.meta.outputs.image-latest }}"
+          echo "  - ${{ steps.meta.outputs.image-commit }}"
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials for ECS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ env.AWS_REGION }}  # ECS 클러스터 접근용 리전
+
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.ECS_TASK_DEFINITION }} \
+            > task-definition.json
+          
+          echo "현재 태스크 정의 다운로드 완료"
+
+      - name: Update task definition with new image
+        run: |
+          echo "태스크 정의에 새 이미지 적용..."
+          
+          # 새 이미지 URI로 태스크 정의 업데이트
+          NEW_IMAGE_URI="${{ needs.build-and-push.outputs.image-uri }}"
+          
+          # 기존 태스크 정의를 가져오되, 꼭 필요한 필드만 추출
+          jq \
+            --arg IMAGE "$NEW_IMAGE_URI" \
+            '.taskDefinition
+            | {
+                family,
+                taskRoleArn,
+                executionRoleArn,
+                networkMode,
+                containerDefinitions,
+                volumes,
+                placementConstraints,
+                requiresCompatibilities,
+                cpu,
+                memory
+              }
+            | .containerDefinitions[0].image = $IMAGE' \
+            task-definition.json > updated-task-definition.json
+          
+          # 새 태스크 정의 등록
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://updated-task-definition.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+          
+          echo "NEW_TASK_DEFINITION_ARN=${NEW_TASK_DEF_ARN}" >> $GITHUB_ENV
+          echo "새 태스크 정의 등록 완료: ${NEW_TASK_DEF_ARN}"
+
+      - name: Stop current ECS service (프리티어 고려)
+        run: |
+          echo "⏹현재 ECS 서비스 중단 (프리티어 리소스 고려)..."
+          
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --desired-count 0
+          
+          echo "태스크 완전 중단 대기 중..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }}
+          
+          echo "기존 서비스 중단 완료"
+
+      - name: Deploy updated task definition to ECS
+        run: |
+          echo "새 태스크 정의로 ECS 서비스 업데이트..."
+          
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --task-definition ${{ env.NEW_TASK_DEFINITION_ARN }} \
+            --desired-count 1
+          
+          echo "서비스 안정화 대기 중..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }}
+          
+          echo "ECS 서비스 업데이트 완료"
+
+      - name: Deployment notification
+        if: success()
+        run: |
+          echo "배포가 성공적으로 완료되었습니다!"
+          echo ""
+          echo "배포된 이미지:"
+          echo "  - URI: ${{ needs.build-and-push.outputs.image-uri }}"
+          echo "  - Commit: ${{ needs.build-and-push.outputs.commit-sha }}"
+          echo ""
+          echo "AWS 리소스:"
+          echo "  - ECS 클러스터: ${{ env.ECS_CLUSTER }}"
+          echo "  - ECS 서비스: ${{ env.ECS_SERVICE }}"
+          echo "  - 태스크 정의: ${{ env.NEW_TASK_DEFINITION_ARN }}"
+          echo ""
+          echo "🔗 AWS 콘솔에서 확인:"
+          echo "  - https://console.aws.amazon.com/ecs/home?region=${{ env.AWS_REGION }}#/clusters/${{ env.ECS_CLUSTER }}/services"
+
+      - name: Deployment failure notification
+        if: failure()
+        run: |
+          echo "배포 중 오류가 발생했습니다."
+          echo "AWS 콘솔에서 ECS 서비스 상태를 확인해주세요."

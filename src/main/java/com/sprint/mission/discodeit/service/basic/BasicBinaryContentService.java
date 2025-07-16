@@ -49,12 +49,12 @@ public class BasicBinaryContentService implements BinaryContentService {
 
         //2. 실제 바이너리 데이터 저장소에 따로 저장
         binaryContentStorage.put(binaryContent.getId(), bytes);
-        binaryContentRepository.save(binaryContent);
+        BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
 
         log.info("[binaryContent] 저장 완료: id={}, size={} bytes", binaryContent.getId(),
             bytes.length);
 
-        return binaryContentMapper.toDto(binaryContent);
+        return binaryContentMapper.toDto(savedBinaryContent);
     }
 
     @Transactional(readOnly = true)

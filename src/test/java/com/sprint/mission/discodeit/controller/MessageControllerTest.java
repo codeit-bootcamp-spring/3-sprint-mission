@@ -22,6 +22,7 @@ import com.sprint.mission.discodeit.exception.message.MessageEmptyException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -35,6 +36,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 @WebMvcTest(MessageController.class)
 @ActiveProfiles("test")
@@ -63,22 +65,22 @@ class MessageControllerTest {
         );
         MessageDto messageDto = new MessageDto(UUID.randomUUID(), Instant.now(), null,
             request.content(), request.channelId(), null, null);
-
-        given(messageService.create(request, List.of())).willReturn(messageDto);
-
         String requestJson = objectMapper.writeValueAsString(request);
         MockMultipartFile messagePart = new MockMultipartFile(
             "messageCreateRequest",
             "",
             MediaType.APPLICATION_JSON_VALUE,
-            requestJson.getBytes()
+            requestJson.getBytes(StandardCharsets.UTF_8)
         );
+        given(messageService.create(request, List.of())).willReturn(messageDto);
 
-        // When & Then
-        mockMvc.perform(multipart("/api/messages")
-                .file(messagePart)
-                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
-            .andExpect(status().isCreated())
+        // When
+        ResultActions result = mockMvc.perform(multipart("/api/messages")
+            .file(messagePart)
+            .contentType(MediaType.MULTIPART_FORM_DATA_VALUE));
+
+        // Then
+        result.andExpect(status().isCreated())
             .andExpect(jsonPath("$.content").value("테스트메시지"))
             .andDo(print());
     }
@@ -89,24 +91,22 @@ class MessageControllerTest {
         // Given
         MessageCreateRequest request = new MessageCreateRequest("", UUID.randomUUID(),
             UUID.randomUUID());
-
         String requestJson = objectMapper.writeValueAsString(request);
-
-        given(messageService.create(request, List.of()))
-            .willThrow(new MessageEmptyException());
-
         MockMultipartFile messagePart = new MockMultipartFile(
             "messageCreateRequest",
             "",
             MediaType.APPLICATION_JSON_VALUE,
             requestJson.getBytes()
         );
+        given(messageService.create(request, List.of())).willThrow(new MessageEmptyException());
 
-        // When & Then
-        mockMvc.perform(multipart("/api/messages")
-                .file(messagePart)
-                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
-            .andExpect(status().isBadRequest())
+        // When
+        ResultActions result = mockMvc.perform(multipart("/api/messages")
+            .file(messagePart)
+            .contentType(MediaType.MULTIPART_FORM_DATA_VALUE));
+
+        // Then
+        result.andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("MESSAGE_EMPTY"))
             .andExpect(jsonPath("$.message").value("메시지 내용과 첨부파일이 모두 비어있습니다."))
             .andDo(print());
@@ -123,13 +123,14 @@ class MessageControllerTest {
             channelId, null, null);
         PageResponse<MessageDto> response = new PageResponse<>(List.of(message1, message2), null,
             2, false, null);
-
         given(messageService.findAllByChannelId(eq(channelId), any(), any())).willReturn(response);
 
-        // When & Then
-        mockMvc.perform(get("/api/messages")
-                .param("channelId", channelId.toString()))
-            .andExpect(status().isOk())
+        // When
+        ResultActions result = mockMvc.perform(get("/api/messages")
+            .param("channelId", channelId.toString()));
+
+        // Then
+        result.andExpect(status().isOk())
             .andExpect(jsonPath("$.content.length()").value(2))
             .andExpect(jsonPath("$.content[0].content").value("메시지1"))
             .andDo(print());
@@ -143,16 +144,16 @@ class MessageControllerTest {
         MessageUpdateRequest request = new MessageUpdateRequest("수정된 메시지");
         MessageDto updatedMessage = new MessageDto(messageId, Instant.now(), null, "수정된 메시지",
             UUID.randomUUID(), null, null);
-
+        String json = objectMapper.writeValueAsString(request);
         given(messageService.update(messageId, request)).willReturn(updatedMessage);
 
-        String json = objectMapper.writeValueAsString(request);
+        // When
+        ResultActions result = mockMvc.perform(patch("/api/messages/{messageId}", messageId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json));
 
-        // When & Then
-        mockMvc.perform(patch("/api/messages/{messageId}", messageId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-            .andExpect(status().isOk())
+        // Then
+        result.andExpect(status().isOk())
             .andExpect(jsonPath("$.content").value("수정된 메시지"))
             .andDo(print());
     }
@@ -164,15 +165,16 @@ class MessageControllerTest {
         UUID messageId = UUID.randomUUID();
         MessageUpdateRequest request = new MessageUpdateRequest("업데이트 시도");
         String json = objectMapper.writeValueAsString(request);
-
         given(messageService.update(messageId, request)).willThrow(
             new MessageNotFoundException(messageId));
 
-        // When & Then
-        mockMvc.perform(patch("/api/messages/{messageId}", messageId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-            .andExpect(status().isNotFound())
+        // When
+        ResultActions result = mockMvc.perform(patch("/api/messages/{messageId}", messageId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json));
+
+        // Then
+        result.andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("MESSAGE_NOT_FOUND"))
             .andDo(print());
     }
@@ -185,9 +187,11 @@ class MessageControllerTest {
         UUID messageId = UUID.randomUUID();
         willDoNothing().given(messageService).delete(messageId);
 
-        // When & Then
-        mockMvc.perform(delete("/api/messages/{messageId}", messageId))
-            .andExpect(status().isNoContent())
+        // When
+        ResultActions result = mockMvc.perform(delete("/api/messages/{messageId}", messageId));
+
+        // Then
+        result.andExpect(status().isNoContent())
             .andDo(print());
     }
 }
