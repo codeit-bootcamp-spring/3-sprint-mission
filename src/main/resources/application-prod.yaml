@@ -21,6 +21,14 @@ logging:
     com.sprint.mission.discodeit: INFO
     org.hibernate.sql: INFO
 
+management:
+  endpoint:
+    health:
+      show-details: never
+  info:
+    env:
+      enabled: false
+
 discodeit:
   storage:
     type: s3
