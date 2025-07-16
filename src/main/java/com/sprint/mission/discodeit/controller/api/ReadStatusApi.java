@@ -12,11 +12,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 
 @Tag(name = "ReadStatus", description = "Message 읽음 상태 API")
+@Validated
 public interface ReadStatusApi {
 
   @Operation(summary = "Message 읽음 상태 생성")
@@ -35,7 +38,7 @@ public interface ReadStatusApi {
       )
   })
   ResponseEntity<ReadStatusDto> create(
-      @Parameter(description = "Message 읽음 상태 생성 정보") ReadStatusCreateRequest request
+      @Parameter(description = "Message 읽음 상태 생성 정보") @Valid ReadStatusCreateRequest request
   );
 
   @Operation(summary = "Message 읽음 상태 수정")

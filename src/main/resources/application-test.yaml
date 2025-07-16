@@ -1,0 +1,40 @@
+# server 설정
+server:
+  port: 8080
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  # DB config
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.h2.Driver
+  # JPA + h2 설정
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true     # 쿼리 로그 포맷 (정렬)
+        highlight_sql: true  # 쿼리 로그 출력
+  # H2 Console 설정
+  h2:
+    console:
+      enabled: true      # H2 Console 사용 여부
+      path: /h2-console  # H2 Console 접속 주소
+  # SQL 스크립트 실행 여부 (script-based 기반 sql문)
+  sql:
+    init:
+      mode: always  # 외부 DB도 실행
+
+# ─────────────────────────────────────────────
+# 로깅 설정
+logging:
+  level:
+    root: trace
+    org.hibernate: debug
+    org.hibernate.sql: debug            #  = spring.jpa.show-sql: true  +  sql 이 실행된 시간 정보

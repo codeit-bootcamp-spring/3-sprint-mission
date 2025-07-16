@@ -7,6 +7,8 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.Channel.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.Common.ResourceNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -14,7 +16,6 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,7 @@ public class BasicChannelService implements ChannelService {
         publicChannelCreateRequest.name(), publicChannelCreateRequest.description(),
         publicChannelCreateRequest.ownerId());
     this.channelRepository.save(channel);
+
     return channelMapper.toDto(channel);
   }
 
@@ -46,10 +48,7 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   public ChannelDto create(PrivateChannelCreateRequest privateCreateRequest) {
     Channel channel = new Channel(ChannelType.PRIVATE, null, null, privateCreateRequest.ownerId());
-
     this.channelRepository.save(channel);
-
-
 
     /* participantIds 에 있는 유저들 ReadStatus 생성 */
     List<ReadStatus> readStatuses = userRepository.findAllById(
@@ -70,11 +69,12 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public ChannelDto find(UUID channelId) {
+
     return this.channelRepository
         .findById(channelId)
         .map(channelMapper::toDto)
         .orElseThrow(
-            () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+            () -> new ResourceNotFoundException("channelId = " + channelId));
   }
 
   @Override
@@ -98,16 +98,14 @@ public class BasicChannelService implements ChannelService {
   public ChannelDto update(UUID channelId, PublicChannelUpdateRequest updateRequest) {
     Channel channel = this.channelRepository.findById(channelId)
         .orElseThrow(
-            () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+            () -> new ResourceNotFoundException("channelId = " + channelId));
 
     if (channel.getType().equals(ChannelType.PRIVATE)) {
-      throw new IllegalArgumentException("private 채널은 수정이 불가능합니다.");
+      throw new PrivateChannelUpdateException(channel);
     }
-
     channel.update(updateRequest.newName(), updateRequest.newDescription());
 
     return channelMapper.toDto(channel);
-
   }
 
   @Transactional
@@ -115,13 +113,12 @@ public class BasicChannelService implements ChannelService {
   public void delete(UUID channelId) {
     Channel channel = this.channelRepository.findById(channelId).
         orElseThrow(
-            () -> new NoSuchElementException("Channel with channelId " + channelId + " not found"));
+            () -> new ResourceNotFoundException("channelId = " + channelId));
 
     /* 해당 채널과 관련된 모든 Message 삭제 */
     this.messageRepository.deleteAllByChannelId(channel.getId());
     /* 해당 채널과 관련된 모든 ReadStatus 삭제 */
     this.readStatusRepository.deleteAllByChannelId(channel.getId());
-
     this.channelRepository.deleteById(channel.getId());
   }
 

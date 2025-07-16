@@ -7,32 +7,29 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.DuplicateUserException;
+import com.sprint.mission.discodeit.exception.Common.ResourceNotFoundException;
+import com.sprint.mission.discodeit.exception.User.UserAlreadyExistException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  //만약 binaryContentService를 쓰지 않는다면 binaryContentService의 코드가 여기서도 반복되는데
-  // 이때는 그냥 의존하는것이 낫나? vs 중복된 코드를 써도 분리가 좋나? -> binaryContentService를 사용할것.
-  private final BinaryContentService binaryContentService;
-
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
 
@@ -45,7 +42,7 @@ public class BasicUserService implements UserService {
     // 1. validation (name, email이 유니크 해야함)
     if (userRepository.existsByUsernameOrEmail(userCreateRequest.username(),
         userCreateRequest.email())) {
-      throw new DuplicateUserException();
+      throw new UserAlreadyExistException();
     }
 
     // 2. 프로필 이미지 id 생성( 없으면 null 반환)
@@ -74,7 +71,7 @@ public class BasicUserService implements UserService {
   public UserDto find(UUID userId) {
     User user = this.userRepository
         .findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+        .orElseThrow(() -> new ResourceNotFoundException(("UserId = " + userId)));
 
     return userMapper.toDto(user);
   }
@@ -102,11 +99,11 @@ public class BasicUserService implements UserService {
     // 0. validation (username, email이 유니크 해야함)
     if (userRepository.existsByUsernameOrEmail(updateRequest.newUsername(),
         updateRequest.newEmail())) {
-      throw new DuplicateUserException();
+      throw new UserAlreadyExistException();
     }
 
     User user = this.userRepository.findById(userId).
-        orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+        orElseThrow(() -> new ResourceNotFoundException(("UserId = " + userId)));
 
     // 1. 프로필 이미지 id 생성( 없으면 null 반환)
     BinaryContent nullableProfile = optionalProfileCreateRequest.map(
@@ -131,8 +128,8 @@ public class BasicUserService implements UserService {
   @Transactional
   @Override
   public void delete(UUID userId) {
-    if (this.userRepository.existsById(userId)) {
-      throw new NoSuchElementException("User with userId " + userId + " not found");
+    if (!this.userRepository.existsById(userId)) {
+      throw new ResourceNotFoundException(("UserId = " + userId));
     }
 
     /* UserRepository에서 해당 객체 삭제 */

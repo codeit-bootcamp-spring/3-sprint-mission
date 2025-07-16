@@ -1,0 +1,41 @@
+name: Run Tests and Upload Coverage to Codecov
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_call: # <- 다른 워크플로우에서 재사용 가능하도록 설정
+    inputs:
+      java-version:
+        required: false
+        type: string
+        default: '17'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest # 실행 환경 (GitHub가 제공하는 가상머신임)
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3 # 1단계 : GitHub에 푸쉬된 우리의 소스코드를 가상머신에 다운로드하여 준다.
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v3    # 2단계 : Java 설치 액션
+        # with: 액션에 전달할 매개변수들
+        with:
+          java-version: '17'           # 2-1단계 : Java 버전
+          distribution: 'temurin'      # 2-2단계 : OpenJDK 배포판
+
+      - name: Grant execute permission for Gradle
+        run: chmod +x gradlew
+
+      - name: Run tests with coverage
+        run: ./gradlew clean test jacocoTestReport
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          name: codecov-report # optional
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: build/reports/jacoco/test/jacocoTestReport.xml
+          flags: unittests # optional
+          fail_ci_if_error: true # optional
+          verbose: true # optional (default = false)

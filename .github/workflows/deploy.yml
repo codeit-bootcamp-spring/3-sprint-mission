@@ -1,0 +1,97 @@
+name: Run Tests and Upload Coverage to Codecov
+
+on:
+  push:
+    branches: [ release ]
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: discodeit
+  ECS_SERVICE: discodeit-service
+  ECS_CLUSTER: discodeit-cluster
+  ECS_TASK_DEFINITION: discodeit-task
+  PROJECT_NAME: discodeit
+  PROJECT_VERSION: 1.2-M8
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      # step 1
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      # step 2
+      - name: Setup JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      # step 3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      # step 4
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      # step 5
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bootJar
+          
+          docker build \
+          --build-arg PROJECT_NAME=$PROJECT_NAME \
+          --build-arg PROJECT_VERSION=$PROJECT_VERSION \
+          -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+          .
+          
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      # step 6
+      - name: Stop currently running ECS service tasks (set desiredCount to 0)
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $ECS_SERVICE \
+            --desired-count 0
+
+      # step 7
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: discodeit-app
+          image: ${{ steps.build-image.outputs.image }}
+          environment-variables: |
+            AWS_ACCESS_KEY_ID=${{ secrets.APP_AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.APP_AWS_SECRET_ACCESS_KEY }}
+            RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
+
+      # step 7
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          desired-count: 1
+          wait-for-service-stability: true
+
+#  test:
+#    uses: ./github/workflows/test.yml
+#    with:
+#      java-version : '17'

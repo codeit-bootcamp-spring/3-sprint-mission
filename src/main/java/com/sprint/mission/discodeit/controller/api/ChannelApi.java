@@ -13,11 +13,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 
 @Tag(name = "Channel", description = "Channel API")
+@Validated
 public interface ChannelApi {
 
   @Operation(summary = "Public Channel 생성")
@@ -28,7 +31,7 @@ public interface ChannelApi {
       )
   })
   ResponseEntity<ChannelDto> create(
-      @Parameter(description = "Public Channel 생성 정보") PublicChannelCreateRequest request
+      @Parameter(description = "Public Channel 생성 정보") @Valid PublicChannelCreateRequest request
   );
 
   @Operation(summary = "Private Channel 생성")
@@ -39,7 +42,7 @@ public interface ChannelApi {
       )
   })
   ResponseEntity<ChannelDto> create(
-      @Parameter(description = "Private Channel 생성 정보") PrivateChannelCreateRequest request
+      @Parameter(description = "Private Channel 생성 정보") @Valid PrivateChannelCreateRequest request
   );
 
   @Operation(summary = "Channel 정보 수정")
