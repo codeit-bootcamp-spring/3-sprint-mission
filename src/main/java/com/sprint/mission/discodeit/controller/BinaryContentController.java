@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/binaryContents")
-public class BinaryContentController {
+public class BinaryContentController implements BinaryContentApi {
 
     private final BinaryContentService binaryContentService;
     private final BinaryContentStorage binaryContentStorage;
@@ -27,6 +28,7 @@ public class BinaryContentController {
      * 바이너리 파일 단건 조회
      */
     @GetMapping(path = "/{binaryContentId}")
+    @Override
     public ResponseEntity<BinaryContentDto> find(@PathVariable("binaryContentId") UUID binaryContentId) {
         log.info("바이너리 컨텐츠 조회 요청: id={}", binaryContentId);
 
@@ -41,6 +43,7 @@ public class BinaryContentController {
      * 바이너리 파일 다건 조회
      */
     @GetMapping
+    @Override
     public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(@RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
         log.info("바이너리 컨텐츠 목록 조회 요청: ids={}", binaryContentIds);
 
@@ -55,6 +58,7 @@ public class BinaryContentController {
      * 바이너리 파일 다운로드
      */
     @GetMapping(path = "/{binaryContentId}/download")
+    @Override
     public ResponseEntity<?> download(
         @PathVariable("binaryContentId") UUID binaryContentId) {
         log.info("바이너리 컨텐츠 다운로드 요청: id={}", binaryContentId);

@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
 import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.ReadStatusService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -25,8 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/readStatuses")
 @RestController
-@Tag(name = "ReadStatuses")
-public class ReadStatusController {
+public class ReadStatusController implements ReadStatusApi {
 
     private final ReadStatusService readStatusService;
 
@@ -34,6 +33,7 @@ public class ReadStatusController {
      * 특정 채널의 메시지 수신 정보 생성
      */
     @PostMapping
+    @Override
     public ResponseEntity<ReadStatusDto> create(@RequestBody @Valid ReadStatusCreateRequest request) {
         log.info("읽음 상태 생성 요청: {}", request);
 
@@ -48,6 +48,7 @@ public class ReadStatusController {
      * 특정 채널의 메시지 수신 정보 수정
      */
     @PatchMapping(path = "/{readStatusId}")
+    @Override
     public ResponseEntity<ReadStatusDto> update(
             @PathVariable("readStatusId") UUID readStatusId,
             @RequestBody @Valid ReadStatusUpdateRequest request
@@ -65,6 +66,7 @@ public class ReadStatusController {
      * 특정 사용자의 메시지 수신 정보 조회
      */
     @GetMapping
+    @Override
     public ResponseEntity<List<ReadStatusDto>> findAllByUserId(@RequestParam("userId") UUID userId) {
         log.info("사용자별 읽음 상태 목록 조회 요청: userId={}", userId);
 

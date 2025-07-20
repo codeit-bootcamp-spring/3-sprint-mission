@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.service.AuthService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
 @RestController
-@Tag(name = "Auth")
-public class AuthController {
+public class AuthController implements AuthApi {
 
     private final AuthService authService;
 
     @PostMapping(path = "/login")
+    @Override
     public ResponseEntity<UserDto> login(@RequestBody @Valid LoginRequest loginRequest) {
         log.info("로그인 요청: username={}", loginRequest.username());
 
