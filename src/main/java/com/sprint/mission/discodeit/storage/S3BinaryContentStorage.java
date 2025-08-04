@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,6 +31,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
+@Slf4j
 @Component
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3")
 public class S3BinaryContentStorage implements BinaryContentStorage {
@@ -87,16 +89,21 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
   @Override
   public UUID put(UUID id, byte[] content) {
+    String key = id.toString();
+    log.debug("S3 파일 업로드 시작: key={}, size={}", key, content.length);
+
     try {
       PutObjectRequest putObjectRequest = PutObjectRequest.builder()
           .bucket(bucket)
-          .key(id.toString())
+          .key(key)
           .build();
 
       s3Client.putObject(putObjectRequest, RequestBody.fromBytes(content));
+      log.info("S3 파일 업로드 성공: key={}", key);
       return id;
     } catch (Exception e) {
-      throw new RuntimeException("S3 파일 업로드 실패: ", e);
+      log.error("S3 파일 업로드 실패: key={}, error={}", key, e.getMessage());
+      throw new RuntimeException("S3 파일 업로드 실패: " + key, e);
     }
   }
 
