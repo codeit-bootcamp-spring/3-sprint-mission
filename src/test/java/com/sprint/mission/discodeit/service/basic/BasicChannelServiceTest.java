@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
@@ -193,7 +195,7 @@ class BasicChannelServiceTest {
         verify(messageRepository).deleteAllByChannelId(channelId);
         verify(readStatusRepository).deleteAllByChannelId(channelId);
         verify(channelRepository).deleteById(channelId);
-        
+
     }
 
     @Test
@@ -242,7 +244,7 @@ class BasicChannelServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result).contains(dto);
 
-        verify(channelRepository).findAll();
+        verify(channelRepository).findAllByTypeOrIdIn(eq(ChannelType.PUBLIC), anyList());
         verify(readStatusRepository).findAllByUserId(userId);
     }
 

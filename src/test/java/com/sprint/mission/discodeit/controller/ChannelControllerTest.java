@@ -30,6 +30,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 @WebMvcTest(ChannelController.class)
 @Import(GlobalExceptionHandler.class)
@@ -54,36 +55,37 @@ class ChannelControllerTest {
 
     @Test
     void createChannel_success() throws Exception {
-        // given
+        // Given
         PublicChannelCreateRequest request = new PublicChannelCreateRequest("testChannel", "test");
-
         ChannelDto channelDto = new ChannelDto(UUID.randomUUID(), ChannelType.PUBLIC, "testChannel",
-            " test", List.of(userDto), null);
-
-        // when
+            "test", List.of(userDto), null);
         when(channelService.create(request)).thenReturn(channelDto);
 
-        // then
+        // When
+        ResultActions result = mockMvc.perform(post("/api/channels/public")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)));
 
-        mockMvc.perform(post("/api/channels/public")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isCreated())
+        // Then
+        result.andExpect(status().isCreated())
             .andExpect(jsonPath("$.name").value("testChannel"));
 
     }
 
     @Test
-    @DisplayName("공개 채널 생성 실패 - 글자 수 조건")
-        //20자 초과되면 에러
+    @DisplayName("공개 채널 생성 실패 - 글자 수 조건 (20자 초과)")
     void createPublicChannelFail() throws Exception {
+        // Given
         PublicChannelCreateRequest request = new PublicChannelCreateRequest(
             "abcdefghijklmnopqrstuwxyz", "");
 
-        mockMvc.perform(post("/api/channels/public")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isBadRequest())
+        // When
+        ResultActions result = mockMvc.perform(post("/api/channels/public")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)));
+
+        // Then
+        result.andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
             .andExpect(jsonPath("$.message").value("요청 데이터가 유효하지 않습니다."));
     }
@@ -91,51 +93,56 @@ class ChannelControllerTest {
     @Test
     @DisplayName("비공개 채널 생성 성공")
     void createPrivateChannel_success() throws Exception {
-        // given
+        // Given
         PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(
             List.of(userDto.id()));
         ChannelDto channelDto = new ChannelDto(UUID.randomUUID(), ChannelType.PRIVATE, null, null,
             List.of(userDto), null);
-
-        //when
         when(channelService.create(request)).thenReturn(channelDto);
 
-        //then
-        mockMvc.perform(post("/api/channels/private")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isCreated())
+        // When
+        ResultActions result = mockMvc.perform(post("/api/channels/private")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)));
+
+        // Then
+        result.andExpect(status().isCreated())
             .andExpect(jsonPath("$.type").value("PRIVATE"));
     }
 
     @Test
     @DisplayName("채널 삭제 API 성공")
     void delete_success() throws Exception {
-        // given
+        // Given
         UUID channelId = UUID.randomUUID();
         doNothing().when(channelService).delete(channelId);
-        // when &then
-        mockMvc.perform(delete("/api/channels/{channelId}", channelId))
-            .andExpect(status().isNoContent());
 
-        // verify
+        // When
+        ResultActions result = mockMvc.perform(delete("/api/channels/{channelId}", channelId));
+
+        // Then
+        result.andExpect(status().isNoContent());
         verify(channelService).delete(channelId);
     }
-
 
     @Test
     @DisplayName("채널 삭제 실패 - 존재하지 않는 채널")
     void deleteChannelFail() throws Exception {
+        // Given
         UUID channelId = UUID.randomUUID();
         doThrow(new ChannelNotFoundException(channelId)).when(channelService).delete(channelId);
 
-        mockMvc.perform(delete("/api/channels/{channelId}", channelId))
-            .andExpect(status().isNotFound());
+        // When
+        ResultActions result = mockMvc.perform(delete("/api/channels/{channelId}", channelId));
+
+        // Then
+        result.andExpect(status().isNotFound());
     }
 
     @Test
     @DisplayName("사용자의 채널 전체 조회")
     void findAllChannelsByUserId() throws Exception {
+        // Given
         UUID userId = UUID.randomUUID();
         ChannelDto channel1 = new ChannelDto(UUID.randomUUID(), ChannelType.PUBLIC, "testChannel1",
             "description1", null, null);
@@ -143,9 +150,12 @@ class ChannelControllerTest {
             "description2", null, null);
         when(channelService.findAllByUserId(userId)).thenReturn(List.of(channel1, channel2));
 
-        mockMvc.perform(get("/api/channels")
-                .param("userId", userId.toString()))
-            .andExpect(status().isOk())
+        // When
+        ResultActions result = mockMvc.perform(get("/api/channels")
+            .param("userId", userId.toString()));
+
+        // Then
+        result.andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(2));
     }
 }

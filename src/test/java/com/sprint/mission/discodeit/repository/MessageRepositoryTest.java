@@ -58,17 +58,19 @@ class MessageRepositoryTest {
     }
 
     @Test
-    @DisplayName("채널 ID와 생성 시간으로 메시지를 페이징하여 조회할 수 있다")
-    void findAllByChannelIdWithAuthor_success() {
+    @DisplayName("채널 ID와 생성 시간 기준으로 이전 메시지를 페이징하여 조회할 수 있다")
+    void findByChannelIdAndCreatedAtBefore_success() {
         // given
         Message message1 = new Message("hello", channel, user, Collections.emptyList());
         Message message2 = new Message("world", channel, user, Collections.emptyList());
         messageRepository.saveAll(List.of(message1, message2));
 
         // when
-        Slice<Message> slice = messageRepository.findAllByChannelIdWithAuthor(channel.getId(),
+        Slice<Message> slice = messageRepository.findByChannelIdAndCreatedAtBefore(
+            channel.getId(),
             Instant.now(),
-            PageRequest.of(0, 10));
+            PageRequest.of(0, 10)
+        );
 
         // then
         assertThat(slice).isNotNull();

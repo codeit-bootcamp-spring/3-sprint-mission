@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -25,6 +26,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -47,23 +49,23 @@ class UserControllerTest {
     @Test
     @DisplayName("사용자 생성 API 성공")
     void createUser_success() throws Exception {
-        // given
+        // Given
         UserCreateRequest request = new UserCreateRequest("username", "email@test.com", "password");
-        MockMultipartFile jsonPart = new MockMultipartFile(
-            "userCreateRequest", "", "application/json", objectMapper.writeValueAsBytes(request));
-
-        MockMultipartFile profile = new MockMultipartFile(
-            "profile", "test.jpg", "image/jpeg", "file content".getBytes());
-
+        MockMultipartFile jsonPart = new MockMultipartFile("userCreateRequest", "",
+            "application/json", objectMapper.writeValueAsBytes(request));
+        MockMultipartFile profile = new MockMultipartFile("profile", "test.jpg", "image/jpeg",
+            "file content".getBytes());
         UserDto userDto = new UserDto(UUID.randomUUID(), "username", "email@test.com", null, null);
-        Mockito.when(userService.create(request, any())).thenReturn(userDto);
+        Mockito.when(userService.create(eq(request), any())).thenReturn(userDto);
 
-        // when / then
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/users")
-                .file(jsonPart)
-                .file(profile)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-            .andExpect(MockMvcResultMatchers.status().isCreated())
+        // When
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.multipart("/api/users")
+            .file(jsonPart)
+            .file(profile)
+            .contentType(MediaType.MULTIPART_FORM_DATA));
+
+        // Then
+        result.andExpect(MockMvcResultMatchers.status().isCreated())
             .andExpect(jsonPath("$.username").value("username"))
             .andExpect(jsonPath("$.email").value("email@test.com"));
     }
@@ -71,65 +73,72 @@ class UserControllerTest {
     @Test
     @DisplayName("사용자 생성 API 실패 - 유효성 검증 오류")
     void createUser_validationFail() throws Exception {
-        // given
+        // Given
         UserCreateRequest request = new UserCreateRequest("", "invalid-email", "");
-        MockMultipartFile jsonPart = new MockMultipartFile(
-            "userCreateRequest", "", "application/json", objectMapper.writeValueAsBytes(request));
+        MockMultipartFile jsonPart = new MockMultipartFile("userCreateRequest", "",
+            "application/json", objectMapper.writeValueAsBytes(request));
 
-        // when & then
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/users")
-                .file(jsonPart)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-            .andExpect(MockMvcResultMatchers.status().isBadRequest());
+        // When
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.multipart("/api/users")
+            .file(jsonPart)
+            .contentType(MediaType.MULTIPART_FORM_DATA));
+
+        // Then
+        result.andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
     @DisplayName("사용자 상태 수정 API 성공")
     void updateUserStatus_success() throws Exception {
-        // given
+        // Given
         UUID userId = UUID.randomUUID();
         UserStatusUpdateRequest updateRequest = new UserStatusUpdateRequest(Instant.now());
         UserStatusDto statusDto = new UserStatusDto(UUID.randomUUID(), userId,
             updateRequest.newLastActiveAt());
-
         Mockito.when(userStatusService.updateByUserId(any(), any())).thenReturn(statusDto);
 
-        // when & then
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/users/" + userId + "/userStatus")
+        // When
+        ResultActions result = mockMvc.perform(
+            MockMvcRequestBuilders.patch("/api/users/" + userId + "/userStatus")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsBytes(updateRequest)))
-            .andExpect(MockMvcResultMatchers.status().isOk())
+                .content(objectMapper.writeValueAsBytes(updateRequest)));
+
+        // Then
+        result.andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(jsonPath("$.userId").value(userId.toString()));
     }
-
 
     @Test
     @DisplayName("전체 사용자 조회 API 성공")
     void findAllUsers_success() throws Exception {
-        // given
+        // Given
         UserDto user1 = new UserDto(UUID.randomUUID(), "user1", "u1@test.com", null, null);
         UserDto user2 = new UserDto(UUID.randomUUID(), "user2", "u2@test.com", null, null);
-
         Mockito.when(userService.findAll()).thenReturn(List.of(user1, user2));
 
-        // when & then
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/users"))
-            .andExpect(MockMvcResultMatchers.status().isOk())
+        // When
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get("/api/users"));
+
+        // Then
+        result.andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(jsonPath("$.length()").value(2));
     }
 
     @Test
     @DisplayName("사용자 삭제 성공")
     void deleteUser_success() throws Exception {
-        // given
+        // Given
         UUID userId = UUID.randomUUID();
-        doNothing().when(userService).delete(userId); //doNothing -> 정상적으로 호출되었다는 것만 검증하고 싶을 때 사용
+        doNothing().when(userService).delete(userId);
 
-        // when & then
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/{userId}", userId))
-            .andExpect(MockMvcResultMatchers.status().isNoContent());
+        // When
+        ResultActions result = mockMvc.perform(
+            MockMvcRequestBuilders.delete("/api/users/{userId}", userId));
 
-        // verify
+        // Then
+        result.andExpect(MockMvcResultMatchers.status().isNoContent());
+
+        // Verify
         verify(userService).delete(userId);
     }
 }

@@ -13,13 +13,15 @@
 
   <!-- 파일 로그 -->
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>${LOG_PATH}/discodeit.log</file>
-    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>${LOG_PATH}/discodeit.%d{yyyy-MM-dd}.log</fileNamePattern>
-      <maxHistory>30</maxHistory> <!-- 30일 보관 -->
+    <file>./logs/app.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>./logs/app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <maxFileSize>100MB</maxFileSize> <!-- 파일 하나가 100MB 넘으면 새로 만듦 -->
+      <maxHistory>30</maxHistory>       <!-- 최대 30일 보관 -->
+      <totalSizeCap>5GB</totalSizeCap>  <!-- 전체 합이 5GB 넘으면 오래된 것부터 삭제 -->
     </rollingPolicy>
     <encoder>
-      <pattern>${LOG_PATTERN}</pattern>
+      <pattern>${ROLLING_PATTERN}</pattern>
     </encoder>
   </appender>
 

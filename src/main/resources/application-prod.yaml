@@ -6,13 +6,9 @@ spring:
     name: discodeit
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://prod-db-host:5432/discodeit_prod
-    username: prod_user
-    password: prod_pass
-  boot:
-    admin:
-      client:
-        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
 
   jpa:
     hibernate:
@@ -26,3 +22,12 @@ logging:
     com.sprint.mission.discodeit: INFO
     org.hibernate.SQL: INFO
     org.hibernate.orm.jdbc.bind: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, loggers
+  endpoint:
+    health:
+      show-details: always

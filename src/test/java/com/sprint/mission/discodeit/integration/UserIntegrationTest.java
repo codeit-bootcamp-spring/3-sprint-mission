@@ -29,6 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -51,7 +52,6 @@ public class UserIntegrationTest {
     @Autowired
     private UserStatusRepository ReadStatusRepository;
 
-
     @BeforeEach
     void setup() {
         userRepository.deleteAll();
@@ -62,28 +62,23 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("사용자 생성 API 통합 테스트 - 첨부파일 포함")
     void createUser_withProfileImage_success() throws Exception {
-        // given
-        UserCreateRequest request = new UserCreateRequest(
-            "testUser", "test@example.com", "password"
-        );
+        // Given
+        UserCreateRequest request = new UserCreateRequest("testUser", "test@example.com",
+            "password");
+        MockMultipartFile userPart = new MockMultipartFile("userCreateRequest", "",
+            MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(request));
+        MockMultipartFile profilePart = new MockMultipartFile("profile", "test.jpg",
+            MediaType.IMAGE_JPEG_VALUE, "image-bytes".getBytes());
 
-        MockMultipartFile userPart = new MockMultipartFile(
-            "userCreateRequest", "", MediaType.APPLICATION_JSON_VALUE,
-            objectMapper.writeValueAsBytes(request)
-        );
+        // When
+        ResultActions result = mockMvc.perform(multipart("/api/users")
+            .file(userPart)
+            .file(profilePart)
+            .contentType(MediaType.MULTIPART_FORM_DATA)
+            .accept(MediaType.APPLICATION_JSON));
 
-        MockMultipartFile profilePart = new MockMultipartFile(
-            "profile", "test.jpg", MediaType.IMAGE_JPEG_VALUE,
-            "image-bytes".getBytes()
-        );
-
-        // when & then
-        mockMvc.perform(multipart("/api/users")
-                .file(userPart)
-                .file(profilePart)
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isCreated())
+        // Then
+        result.andExpect(status().isCreated())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.username").value("testUser"))
             .andExpect(jsonPath("$.email").value("test@example.com"))
@@ -94,20 +89,19 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("사용자 생성 API 통합 테스트")
     void createUser_success() throws Exception {
-        // given
+        // Given
         UserCreateRequest request = new UserCreateRequest("testUser", "test@example.com",
             "password");
+        MockMultipartFile userPart = new MockMultipartFile("userCreateRequest", "",
+            "application/json", objectMapper.writeValueAsBytes(request));
 
-        MockMultipartFile userPart = new MockMultipartFile(
-            "userCreateRequest", "", "application/json",
-            objectMapper.writeValueAsBytes(request)
-        );
+        // When
+        ResultActions result = mockMvc.perform(multipart("/api/users")
+            .file(userPart)
+            .contentType(MediaType.MULTIPART_FORM_DATA));
 
-        // when & then
-        mockMvc.perform(multipart("/api/users")
-                .file(userPart)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-            .andExpect(status().isCreated())
+        // Then
+        result.andExpect(status().isCreated())
             .andExpect(jsonPath("$.username").value("testUser"))
             .andExpect(jsonPath("$.email").value("test@example.com"));
     }
@@ -115,47 +109,45 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("사용자 목록 조회 API 통합 테스트")
     void findAllUsers_success() throws Exception {
-        // given
+        // Given
         User user = new User("username", "test@example.com", "password", null);
         userRepository.saveAndFlush(user);
-
         UserStatus status = new UserStatus(user, Instant.now());
         userStatusRepository.saveAndFlush(status);
 
-        mockMvc.perform(get("/api/users"))
-            .andExpect(status().isOk())
+        // When
+        ResultActions result = mockMvc.perform(get("/api/users"));
+
+        // Then
+        result.andExpect(status().isOk())
             .andExpect(jsonPath("$[0].username").value("username"));
     }
 
     @Test
     @DisplayName("사용자 수정 API 통합 테스트")
     void updateUser_success() throws Exception {
-        // given
+        // Given
         User user = new User("oldName", "old@email.com", "password", null);
         userRepository.save(user);
-
         UserStatus status = new UserStatus(user, Instant.now());
         userStatusRepository.save(status);
 
-        UserUpdateRequest updateRequest = new UserUpdateRequest(
-            "newName", "new@email.com", "newPassword"
-        );
+        UserUpdateRequest updateRequest = new UserUpdateRequest("newName", "new@email.com",
+            "newPassword");
+        MockMultipartFile updatePart = new MockMultipartFile("userUpdateRequest", "",
+            "application/json", objectMapper.writeValueAsBytes(updateRequest));
 
-        MockMultipartFile updatePart = new MockMultipartFile(
-            "userUpdateRequest", "", "application/json",
-            objectMapper.writeValueAsBytes(updateRequest)
-        );
+        // When
+        ResultActions result = mockMvc.perform(multipart("/api/users/" + user.getId())
+            .file(updatePart)
+            .with(req -> {
+                req.setMethod("PATCH");
+                return req;
+            })
+            .contentType(MediaType.MULTIPART_FORM_DATA));
 
-        // when & then
-
-        mockMvc.perform(multipart("/api/users/" + user.getId())
-                .file(updatePart)
-                .with(req -> {
-                    req.setMethod("PATCH");
-                    return req;
-                })
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-            .andDo(print())
+        // Then
+        result.andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username").value("newName"))
             .andExpect(jsonPath("$.email").value("new@email.com"));
@@ -164,40 +156,39 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("사용자 삭제 API 통합 테스트")
     void deleteUser_success() throws Exception {
-        // given
+        // Given
         User user = new User("username", "email@test.com", "password", null);
         userRepository.save(user);
-
         UserStatus status = new UserStatus(user, Instant.now());
         userStatusRepository.save(status);
 
-        // when & then
-        mockMvc.perform(delete("/api/users/" + user.getId()))
-            .andExpect(status().isNoContent());
+        // When
+        ResultActions result = mockMvc.perform(delete("/api/users/" + user.getId()));
 
+        // Then
+        result.andExpect(status().isNoContent());
         assertThat(userRepository.findById(user.getId())).isEmpty();
         assertThat(userStatusRepository.findById(user.getId())).isEmpty();
         assertThat(ReadStatusRepository.findById(user.getId())).isEmpty();
-
-
     }
 
     @Test
     @DisplayName("사용자 상태 수정 API 통합 테스트")
     void updateUserStatus_success() throws Exception {
-        // given
+        // Given
         User user = new User("username", "email@test.com", "password", null);
         userRepository.save(user);
-
         UserStatus status = new UserStatus(user, Instant.now());
         userStatusRepository.save(status);
-
         UserStatusUpdateRequest request = new UserStatusUpdateRequest(Instant.now());
 
-        mockMvc.perform(patch("/api/users/" + user.getId() + "/userStatus")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isOk())
+        // When
+        ResultActions result = mockMvc.perform(patch("/api/users/" + user.getId() + "/userStatus")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)));
+
+        // Then
+        result.andExpect(status().isOk())
             .andExpect(jsonPath("$.id").exists());
     }
 }
