@@ -14,10 +14,11 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-        
+
 server:
   port: 8081
 
 logging:
   level:
     com.sprint.mission.discodeit: DEBUG
+    org.springframework.security: TRACE
