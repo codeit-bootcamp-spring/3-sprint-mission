@@ -1,0 +1,97 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  deploy:
+    name: Deploy to ECS
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. GitHub Actions 체크아웃
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      # 2. AWS 인증 (Public ECR은 us-east-1로 로그인해야 함)
+      - name: Configure AWS credentials for Public ECR
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-east-1
+
+      # 3. ECR 로그인 (Public ECR용)
+      - name: Login to Public Amazon ECR
+        run: aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+
+      # 4. Docker 이미지 빌드 & 푸시
+      - name: Build and push Docker image
+        env:
+          ECR_REPOSITORY_URI: ${{ vars.ECR_REPOSITORY_URI }}
+        run: |
+          COMMIT_HASH=$(echo $GITHUB_SHA | cut -c1-7)
+          docker build -t $ECR_REPOSITORY_URI:latest -t $ECR_REPOSITORY_URI:$COMMIT_HASH .
+          docker push $ECR_REPOSITORY_URI:latest
+          docker push $ECR_REPOSITORY_URI:$COMMIT_HASH
+
+      # 5. AWS CLI 설정 (이제는 클러스터 리전에 맞춰 ap-northeast-2로)
+      - name: Configure AWS credentials for ECS update
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # 6. jq 설치 (task definition JSON 수정용)
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      # 7. 기존 서비스 중단 (프리티어 배려)
+      - name: Stop current ECS service temporarily
+        run: |
+          aws ecs update-service \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --service ${{ vars.ECS_SERVICE }} \
+            --desired-count 0
+
+      # 8. 태스크 정의 복사 및 이미지 URI 갱신 → 재등록
+      - name: Register new task definition with updated image
+        env:
+          ECR_REPOSITORY_URI: ${{ vars.ECR_REPOSITORY_URI }}
+          TASK_DEF_NAME: ${{ vars.ECS_TASK_DEFINITION }}
+        run: |
+          # 기존 태스크 정의 JSON 가져오기
+          TASK_DEF_JSON=$(aws ecs describe-task-definition \
+            --task-definition $TASK_DEF_NAME \
+            --query 'taskDefinition' \
+            --output json)
+
+          # 이미지 업데이트
+          UPDATED_JSON=$(echo "$TASK_DEF_JSON" | jq \
+            --arg IMAGE "$ECR_REPOSITORY_URI:latest" \
+            '.containerDefinitions[0].image = $IMAGE | {
+              family,
+              executionRoleArn,
+              networkMode,
+              containerDefinitions,
+              requiresCompatibilities,
+              cpu,
+              memory
+            }')
+
+          echo "$UPDATED_JSON" > new-task-def.json
+
+          # 새 태스크 정의 등록
+          aws ecs register-task-definition --cli-input-json file://new-task-def.json
+
+      # 9. 서비스 재시작 및 새 태스크 반영
+      - name: Update ECS service to use new task definition
+        run: |
+          aws ecs update-service \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --service ${{ vars.ECS_SERVICE }} \
+            --force-new-deployment \
+            --desired-count 1
