@@ -14,7 +14,7 @@ import com.sprint.mission.discodeit.exception.userException.UserNotFoundExceptio
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
 import com.sprint.mission.discodeit.storage.LocalBinaryContentStorage;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
@@ -51,7 +51,7 @@ public class UserServiceTest {
     private FileUploadUtils fileUploadUtils;
 
     @Mock
-    private JpaUserRepository userRepository;
+    private UserRepository userRepository;
 
     @Mock
     private JpaUserStatusRepository userStatusRepository;

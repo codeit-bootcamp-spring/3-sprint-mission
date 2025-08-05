@@ -5,7 +5,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ import java.util.UUID;
 @Service("basicUserStatusService")
 @RequiredArgsConstructor
 public class BasicUserStatusService implements UserStatusService {
-  private final JpaUserRepository userRepository;
+  private final UserRepository userRepository;
   private final UserStatusMapper userStatusMapper;
 
   private static final Logger log = LoggerFactory.getLogger(BasicUserStatusService.class);

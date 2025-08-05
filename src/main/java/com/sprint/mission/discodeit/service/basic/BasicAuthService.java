@@ -6,7 +6,7 @@ import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
@@ -27,43 +27,44 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 @Service("basicAuthService")
 public class BasicAuthService implements AuthService {
-    private final JpaUserRepository userRepository;
+    private final UserRepository userRepository;
 
     public LoginResponse login(LoginRequest request) {
 
         String username = request.username();
         String password = request.password();
 
-        //0+new exception
-//        User user = userRepository.findByUsername(username).orElseThrow(() -> new NoSuchElementException("User with username " + username + " not found"));
         User user = userRepository.findByUsernameWithProfileAndStatus(username).orElseThrow(() -> new NoSuchElementException("User with username " + username + " not found"));
 
         BinaryContent profile = user.getProfile();
         BinaryContentResponse profileDto = null;
-        if(profile != null) {
+        if (profile != null) {
             profileDto = new BinaryContentResponse(
-                    profile.getId(),
-                    profile.getFileName(),
-                    profile.getSize(),
-                    profile.getContentType()
+                profile.getId(),
+                profile.getFileName(),
+                profile.getSize(),
+                profile.getContentType()
             );
         }
 
-        if(user.getPassword().equals(password)) {
+        if (user.getPassword().equals(password)) {
             LoginResponse loginResponse = new LoginResponse(
-                    user.getId(),
-                    user.getUsername(),
-                    user.getEmail(),
-                    profileDto,
-                    isOnline(user.getStatus())
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                profileDto,
+                isOnline(user.getStatus())
             );
             return loginResponse;
         }
         throw new IllegalArgumentException("wrong password");
     }
-    
+
+
     private static boolean isOnline(UserStatus userStatus) {
         Instant now = Instant.now();
         return Duration.between(userStatus.getLastActiveAt(), now).toMinutes() < 5;
     }
 }
+
+

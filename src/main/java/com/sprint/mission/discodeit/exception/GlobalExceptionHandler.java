@@ -36,6 +36,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
+//    @ExceptionHandler(BadCredentialsException.class) // 401
+//    public ResponseEntity<?> BadCredentialsException(RuntimeException e) {
+//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+//    }
+//
+//    @ExceptionHandler(DisabledException.class)
+//    public ResponseEntity<?> DisabledException(RuntimeException e) {
+//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+//    }
+
     @ExceptionHandler(NoSuchElementException.class) // 404
     public ResponseEntity<?> NoSuchElementExceptionHandler(RuntimeException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

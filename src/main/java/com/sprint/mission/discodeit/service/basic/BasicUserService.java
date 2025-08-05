@@ -12,7 +12,7 @@ import com.sprint.mission.discodeit.exception.userException.UserNotFoundExceptio
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,12 +42,13 @@ import java.util.*;
 public class BasicUserService implements UserService {
 
     private static final String PROFILE_PATH = "img";
-    private final JpaUserRepository userRepository;
+    private final UserRepository userRepository;
     private final JpaBinaryContentRepository binaryContentRepository;
     private final JpaUserStatusRepository userStatusRepository;
     private final FileUploadUtils fileUploadUtils;
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
+    private final PasswordEncoder passwordEncoder;
 
     private static final Logger log= LoggerFactory.getLogger(BasicUserService.class);
 
@@ -99,14 +101,14 @@ public class BasicUserService implements UserService {
 
         User user;
         if (nullableProfile == null) {
-            user = new User(userCreateRequest.username(), userCreateRequest.email(), userCreateRequest.password());
+            user = new User(userCreateRequest.username(), userCreateRequest.email(), passwordEncoder.encode(userCreateRequest.password()));
             userRepository.save(user);
         } else {
             // USER 객체 생성
             user = User.builder()
                 .username(userCreateRequest.username())
                 .email(userCreateRequest.email())
-                .password(userCreateRequest.password())
+                .password(passwordEncoder.encode(userCreateRequest.password()))
                 .profile(nullableProfile)
                 .build();
             userRepository.save(user);

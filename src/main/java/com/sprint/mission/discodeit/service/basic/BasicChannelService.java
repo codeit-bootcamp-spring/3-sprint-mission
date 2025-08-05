@@ -13,7 +13,7 @@ import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
 import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
@@ -41,7 +41,7 @@ import java.util.*;
 public class BasicChannelService implements ChannelService {
     private final JpaChannelRepository channelRepository;
     private final JpaReadStatusRepository readStatusRepository;
-    private final JpaUserRepository userRepository;
+    private final UserRepository userRepository;
     private final JpaMessageRepository messageRepository;
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
