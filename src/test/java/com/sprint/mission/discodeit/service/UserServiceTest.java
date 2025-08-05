@@ -13,9 +13,9 @@ import com.sprint.mission.discodeit.exception.userException.UserAlreadyExistsExc
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserStatusRepository;
 import com.sprint.mission.discodeit.storage.LocalBinaryContentStorage;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import org.junit.jupiter.api.DisplayName;
@@ -54,10 +54,10 @@ public class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private JpaUserStatusRepository userStatusRepository;
+    private UserStatusRepository userStatusRepository;
 
     @Mock
-    private JpaBinaryContentRepository binaryContentRepository;
+    private BinaryContentRepository binaryContentRepository;
 
     @Mock
     private LocalBinaryContentStorage binaryContentStorage;

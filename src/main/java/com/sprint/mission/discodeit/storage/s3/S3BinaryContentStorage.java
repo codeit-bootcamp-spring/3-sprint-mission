@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -41,7 +41,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class S3BinaryContentStorage implements BinaryContentStorage {
     public final S3Values s3Values;
-    public final JpaBinaryContentRepository binaryContentRepository;
+    public final BinaryContentRepository binaryContentRepository;
     private static final Logger log = LoggerFactory.getLogger(S3BinaryContentStorage.class);
 
     @Override

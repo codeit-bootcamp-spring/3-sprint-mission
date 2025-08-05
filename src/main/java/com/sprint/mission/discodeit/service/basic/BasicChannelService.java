@@ -10,9 +10,9 @@ import com.sprint.mission.discodeit.exception.channelException.PrivateChannelUpd
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
-import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.ChannelRepository;
+import com.sprint.mission.discodeit.repository.jpa.MessageRepository;
+import com.sprint.mission.discodeit.repository.jpa.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
@@ -39,10 +39,10 @@ import java.util.*;
 @RequiredArgsConstructor
 @Transactional
 public class BasicChannelService implements ChannelService {
-    private final JpaChannelRepository channelRepository;
-    private final JpaReadStatusRepository readStatusRepository;
+    private final ChannelRepository channelRepository;
+    private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
-    private final JpaMessageRepository messageRepository;
+    private final MessageRepository messageRepository;
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
 

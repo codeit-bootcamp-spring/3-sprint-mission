@@ -4,9 +4,9 @@ import com.sprint.mission.discodeit.config.QuerydslConfig;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserStatusRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,10 +43,10 @@ public class UserRepositoryTest {
     private UserRepository userRepository;
 
     @Autowired
-    private JpaBinaryContentRepository binaryContentRepository;
+    private BinaryContentRepository binaryContentRepository;
 
     @Autowired
-    private JpaUserStatusRepository userStatusRepository;
+    private UserStatusRepository userStatusRepository;
 
     private BinaryContent binaryContent;
     private User user;

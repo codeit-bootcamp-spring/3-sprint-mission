@@ -11,9 +11,9 @@ import com.sprint.mission.discodeit.exception.userException.UserAlreadyExistsExc
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -43,8 +43,8 @@ public class BasicUserService implements UserService {
 
     private static final String PROFILE_PATH = "img";
     private final UserRepository userRepository;
-    private final JpaBinaryContentRepository binaryContentRepository;
-    private final JpaUserStatusRepository userStatusRepository;
+    private final BinaryContentRepository binaryContentRepository;
+    private final UserStatusRepository userStatusRepository;
     private final FileUploadUtils fileUploadUtils;
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;

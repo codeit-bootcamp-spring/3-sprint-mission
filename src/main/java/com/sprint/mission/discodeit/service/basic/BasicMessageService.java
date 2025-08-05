@@ -12,9 +12,9 @@ import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundEx
 import com.sprint.mission.discodeit.exception.messageException.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
-import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
+import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.ChannelRepository;
+import com.sprint.mission.discodeit.repository.jpa.MessageRepository;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -48,10 +48,10 @@ import java.util.UUID;
 @Service("basicMessageService")
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
-    private final JpaMessageRepository messageRepository;
-    private final JpaChannelRepository channelRepository;
+    private final MessageRepository messageRepository;
+    private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
-    private final JpaBinaryContentRepository binaryContentRepository;
+    private final BinaryContentRepository binaryContentRepository;
     private final MessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
 

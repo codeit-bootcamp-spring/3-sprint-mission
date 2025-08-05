@@ -2,11 +2,9 @@ package com.sprint.mission.discodeit.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.authService.LoginResponse;
-import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.service.basic.CustomUserDetails;
+import com.sprint.mission.discodeit.service.basic.DiscodeitUserDetails;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,27 +41,37 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         log.info("isAuthenticated: " + authentication.isAuthenticated());
         log.info("Username: " + authentication.getPrincipal());
 
-        if (authentication.getPrincipal() instanceof CustomUserDetails customUserDetails) {
-            User user = customUserDetails.getUser();
-
-            BinaryContent profile = user.getProfile();
-            BinaryContentResponse profileDto = null;
-            if (profile != null) {
-                profileDto = new BinaryContentResponse(
-                    profile.getId(),
-                    profile.getFileName(),
-                    profile.getSize(),
-                    profile.getContentType()
-                );
-            }
+        if (authentication.getPrincipal() instanceof DiscodeitUserDetails customUserDetails) {
+            UserResponse userResponse = customUserDetails.getUser();
 
             LoginResponse loginResponse = new LoginResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                profileDto,
-                isOnline(user.getStatus())
+                userResponse.id(),
+                userResponse.username(),
+                userResponse.email(),
+                userResponse.profile(),
+                userResponse.online()
             );
+
+//            User user = customUserDetails.getUser();
+//
+//            BinaryContent profile = user.getProfile();
+//            BinaryContentResponse profileDto = null;
+//            if (profile != null) {
+//                profileDto = new BinaryContentResponse(
+//                    profile.getId(),
+//                    profile.getFileName(),
+//                    profile.getSize(),
+//                    profile.getContentType()
+//                );
+//            }
+//
+//            LoginResponse loginResponse = new LoginResponse(
+//                user.getId(),
+//                user.getUsername(),
+//                user.getEmail(),
+//                profileDto,
+//                isOnline(user.getStatus())
+//            );
 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
@@ -72,7 +80,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
             String responseBody = objectMapper.writeValueAsString(loginResponse);
             response.getWriter().write(responseBody);
 
-            log.info("[LoginSuccessHandler] 로그인 성공 응답 완료: " + user.getUsername());
+            log.info("[LoginSuccessHandler] 로그인 성공 응답 완료: " + userResponse.username());
 
         } else {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

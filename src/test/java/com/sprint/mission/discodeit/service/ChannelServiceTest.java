@@ -10,9 +10,9 @@ import com.sprint.mission.discodeit.exception.channelException.PrivateChannelUpd
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.ChannelRepository;
+import com.sprint.mission.discodeit.repository.jpa.MessageRepository;
+import com.sprint.mission.discodeit.repository.jpa.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import org.junit.jupiter.api.DisplayName;
@@ -46,10 +46,10 @@ public class ChannelServiceTest {
     private BasicChannelService channelService;
 
     @Mock
-    private JpaChannelRepository channelRepository;
+    private ChannelRepository channelRepository;
 
     @Mock
-    private JpaMessageRepository messageRepository;
+    private MessageRepository messageRepository;
 
     @Mock
     private UserRepository userRepository;
@@ -61,7 +61,7 @@ public class ChannelServiceTest {
     private UserMapper userMapper;
 
     @Mock
-    private JpaReadStatusRepository readStatusRepository;
+    private ReadStatusRepository readStatusRepository;
 
     private Channel channel;
 

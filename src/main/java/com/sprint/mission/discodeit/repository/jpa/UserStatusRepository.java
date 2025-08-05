@@ -11,5 +11,5 @@ import java.util.UUID;
  * Author       : dounguk
  * Date         : 2025. 5. 28.
  */
-public interface JpaUserStatusRepository extends JpaRepository<UserStatus, UUID> {
+public interface UserStatusRepository extends JpaRepository<UserStatus, UUID> {
 }

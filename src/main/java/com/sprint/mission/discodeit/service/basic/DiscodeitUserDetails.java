@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,14 +17,14 @@ import java.util.List;
  * Date         : 2025. 8. 5.
  */
 
-public class CustomUserDetails implements UserDetails {
+@Getter
+@RequiredArgsConstructor
+public class DiscodeitUserDetails implements UserDetails {
 
     private static final String ROLE = "ROLE_";
-    private final User user;
 
-    public CustomUserDetails(User user) {
-        this.user = user;
-    }
+    private final UserResponse userResponse;
+    private final String password;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -32,16 +34,16 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return user.getUsername();
+        return userResponse.username();
     }
 
-    public User getUser() {
-        return user;
+    public UserResponse getUser() {
+        return userResponse;
     }
 
     @Override

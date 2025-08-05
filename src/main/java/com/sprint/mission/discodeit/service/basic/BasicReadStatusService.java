@@ -7,8 +7,8 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
-import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.ChannelRepository;
+import com.sprint.mission.discodeit.repository.jpa.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +33,9 @@ import java.util.*;
 @Transactional
 public class BasicReadStatusService implements ReadStatusService {
 
-    private final JpaReadStatusRepository readStatusRepository;
+    private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
-    private final JpaChannelRepository channelRepository;
+    private final ChannelRepository channelRepository;
     private final ReadStatusMapper readStatusMapper;
 
 

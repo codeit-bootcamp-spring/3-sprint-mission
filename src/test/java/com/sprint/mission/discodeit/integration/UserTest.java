@@ -8,9 +8,9 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
-import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,10 +60,10 @@ public class UserTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private JpaBinaryContentRepository binaryContentRepository;
+    private BinaryContentRepository binaryContentRepository;
 
     @Autowired
-    private JpaUserStatusRepository userStatusRepository;
+    private UserStatusRepository userStatusRepository;
 
     @Autowired
     private UserRepository userRepository;
