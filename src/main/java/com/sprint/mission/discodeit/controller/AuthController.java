@@ -36,6 +36,6 @@ public class AuthController implements AuthApi {
         String tokenValue = csrfToken.getToken();
         log.debug("CSRF 토큰 요청: {}", tokenValue);
 
-        return ResponseEntity.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

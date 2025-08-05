@@ -6,9 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -18,6 +23,22 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 @EnableMethodSecurity
 @Slf4j
 public class SecurityConfig {
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> web.ignoring()
+            .requestMatchers(
+                "/favicon.ico", "/error",
+                "/assets/**", "/static/**", "/index.html", "/user-list.html", "/script.js",
+                "/styles.css"
+            );
+    }
+
 
     @Bean
     public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
@@ -44,7 +65,24 @@ public class SecurityConfig {
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 // CSRF 토큰 요청 처리 핸들러 설정
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-            );
+                .ignoringRequestMatchers("/h2-console/**") // CSRF 비활성화
+            )
+            .authorizeHttpRequests(auth -> auth
+                // 메인 페이지, h2 데이터베이스 콘솔, 개발 도구는 인증 불필요
+                .requestMatchers("/h2-console/**").permitAll()
+                .requestMatchers("/").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+
+                // 인증 없이 접근 가능한 API
+                .requestMatchers("/api/auth/csrf-token").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()     // 회원가입
+                .requestMatchers("/api/auth/login").permitAll()
+
+                .anyRequest().authenticated()
+            )
+            .headers(headers -> headers
+                .frameOptions(FrameOptionsConfig::sameOrigin));
 
         log.debug("[SecurityConfig] FilterChain 구성 완료");
 

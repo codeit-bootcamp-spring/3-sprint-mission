@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.util.FileConverter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,7 @@ import java.util.UUID;
  *      - 응답 데이터 정의
  *      - (옵션) 응답 헤더 정의
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
@@ -44,9 +46,11 @@ public class UserController implements UserApi {
     // 신규 유저 생성 요청
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserResponseDto> create(
-            @Valid @RequestPart("userCreateRequest") UserRequestDto userRequestDTO,
-            @RequestPart(value = "profile", required = false) MultipartFile profile) {
+        @Valid @RequestPart("userCreateRequest") UserRequestDto userRequestDTO,
+        @RequestPart(value = "profile", required = false) MultipartFile profile) {
 
+        log.info("[UserController] 유저 생성 요청- {}", userRequestDTO);
+        
         BinaryContentDto profileRequest = FileConverter.resolveFileRequest(profile);
 
         UserResponseDto createdUser = userService.create(userRequestDTO, profileRequest);
@@ -63,8 +67,8 @@ public class UserController implements UserApi {
 
     @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserResponseDto> update(@PathVariable UUID userId,
-                                                  @RequestPart("userUpdateRequest") UserUpdateDto userUpdateDTO,
-                                                  @RequestPart(value = "profile", required = false) MultipartFile profile) {
+        @RequestPart("userUpdateRequest") UserUpdateDto userUpdateDTO,
+        @RequestPart(value = "profile", required = false) MultipartFile profile) {
         BinaryContentDto profileImg = FileConverter.resolveFileRequest(profile);
 
         UserResponseDto updatedUser = userService.update(userId, userUpdateDTO, profileImg);
@@ -81,9 +85,9 @@ public class UserController implements UserApi {
 
     @PatchMapping(path = "/{userId}/userStatus")
     public ResponseEntity<UserStatusResponseDto> updateUserStatus(@PathVariable UUID userId,
-                                                                  @RequestBody UserStatusUpdateDto userStatusUpdateDTO) {
+        @RequestBody UserStatusUpdateDto userStatusUpdateDTO) {
         UserStatusResponseDto userStatusResponseDTO = userStatusService.updateByUserId(userId,
-                userStatusUpdateDTO);
+            userStatusUpdateDTO);
 
         return ResponseEntity.status(HttpStatus.OK).body(userStatusResponseDTO);
     }

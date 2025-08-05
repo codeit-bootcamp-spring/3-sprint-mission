@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,10 +41,12 @@ public class BasicUserService implements UserService {
     private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
     private final BinaryContentStructMapper binaryContentMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
-    public UserResponseDto create(UserRequestDto userRequestDto, BinaryContentDto binaryContentDto) {
+    public UserResponseDto create(UserRequestDto userRequestDto,
+        BinaryContentDto binaryContentDto) {
         String username = userRequestDto.username();
         String email = userRequestDto.email();
 
@@ -57,14 +60,16 @@ public class BasicUserService implements UserService {
             throw new DuplicateEmailException(email);
         }
 
-        String password = userRequestDto.password();
+        // 비밀번호 암호화
+        String encodedPassword = passwordEncoder.encode(userRequestDto.password());
+
         User user = User.builder()
-                .username(username)
-                .email(email)
-                .password(password)
-                .profile(null)
-                .status(null)
-                .build();
+            .username(username)
+            .email(email)
+            .password(encodedPassword)
+            .profile(null)
+            .status(null)
+            .build();
 
         // 프로필 이미지를 등록한 경우
         if (binaryContentDto != null) {
@@ -79,9 +84,9 @@ public class BasicUserService implements UserService {
         }
 
         UserStatus userStatus = UserStatus.builder()
-                .user(user)
-                .lastActiveAt(Instant.now())
-                .build();
+            .user(user)
+            .lastActiveAt(Instant.now())
+            .build();
 
         user.updateStatus(userStatus);
 
@@ -89,7 +94,7 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(userStatus);
 
         log.info("[BasicUserService] 사용자 등록 성공 - id: {}, username: {}, email: {}",
-                savedUser.getId(), username, email);
+            savedUser.getId(), username, email);
 
         return userMapper.toDto(savedUser);
     }
@@ -109,12 +114,12 @@ public class BasicUserService implements UserService {
     @Override
     public List<UserResponseDto> findAll() {
         List<UserResponseDto> users = userRepository.findAll().stream()
-                .map(user -> {
-                    UserStatus userStatus = findUserStatus(user.getId());
-                    user.updateStatus(userStatus);
-                    return userMapper.toDto(user);
-                })
-                .toList();
+            .map(user -> {
+                UserStatus userStatus = findUserStatus(user.getId());
+                user.updateStatus(userStatus);
+                return userMapper.toDto(user);
+            })
+            .toList();
 
         return users;
     }
@@ -122,30 +127,30 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional
     public UserResponseDto update(UUID id, UserUpdateDto userUpdateDto,
-                                  BinaryContentDto binaryContentDto) {
+        BinaryContentDto binaryContentDto) {
         User user = findUser(id);
 
         String newUsername = userUpdateDto.newUsername();
         String newEmail = userUpdateDto.newEmail();
 
         log.info("[BasicUserService] 사용자 수정 요청: id: {}, newUsername: {}, newEmail: {}",
-                id, newUsername, newEmail);
+            id, newUsername, newEmail);
 
         if (newUsername != null) {
             userRepository.findByUsername(newUsername)
-                    .filter(u -> !u.getId().equals(user.getId()))
-                    .ifPresent(u -> {
-                        throw new DuplicateNameException(newUsername);
-                    });
+                .filter(u -> !u.getId().equals(user.getId()))
+                .ifPresent(u -> {
+                    throw new DuplicateNameException(newUsername);
+                });
             user.updateName(newUsername);
         }
 
         if (newEmail != null) {
             userRepository.findByEmail(newEmail)
-                    .filter(u -> !u.getId().equals(user.getId()))
-                    .ifPresent(u -> {
-                        throw new DuplicateEmailException(newEmail);
-                    });
+                .filter(u -> !u.getId().equals(user.getId()))
+                .ifPresent(u -> {
+                    throw new DuplicateEmailException(newEmail);
+                });
             user.updateEmail(newEmail);
         }
 
@@ -175,7 +180,7 @@ public class BasicUserService implements UserService {
         User updatedUser = userRepository.save(user);
 
         log.info("[BasicUserService] 사용자 수정 성공! id: {}, username: {}, email: {}",
-                updatedUser.getId(), updatedUser.getUsername(), updatedUser.getEmail());
+            updatedUser.getId(), updatedUser.getUsername(), updatedUser.getEmail());
 
         return userMapper.toDto(updatedUser);
     }
@@ -186,7 +191,8 @@ public class BasicUserService implements UserService {
         log.info("[BasicUserService] 사용자 삭제 요청: id: {}", id);
 
         User user = findUser(id);
-        log.debug("[BasicUserService] 사용자 조회 완료- id: {}, username: {}", user.getId(), user.getUsername());
+        log.debug("[BasicUserService] 사용자 조회 완료- id: {}, username: {}", user.getId(),
+            user.getUsername());
 
         userRepository.deleteById(id);
         log.debug("[BasicUserService] userRepository 삭제 완료 - userId: {}", id);
@@ -202,11 +208,11 @@ public class BasicUserService implements UserService {
 
     private User findUser(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundUserException(id));
+            .orElseThrow(() -> new NotFoundUserException(id));
     }
 
     private UserStatus findUserStatus(UUID id) {
         return userStatusRepository.findByUserId(id)
-                .orElseThrow(() -> new NotFoundUserStatusException(id));
+            .orElseThrow(() -> new NotFoundUserStatusException(id));
     }
 }
