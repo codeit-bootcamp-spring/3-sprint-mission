@@ -31,9 +31,9 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     private final String bucket;
 
     public S3BinaryContentStorage(@Value("${discodeit.storage.s3.access-key}") String accessKey,
-                                  @Value("${discodeit.storage.s3.secret-key}") String secretKey,
-                                  @Value("${discodeit.storage.s3.region}") String region,
-                                  @Value("${discodeit.storage.s3.bucket}") String bucket) {
+        @Value("${discodeit.storage.s3.secret-key}") String secretKey,
+        @Value("${discodeit.storage.s3.region}") String region,
+        @Value("${discodeit.storage.s3.bucket}") String bucket) {
         this.accessKey = accessKey;
         this.secretKey = secretKey;
         this.region = region;
@@ -46,9 +46,9 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         String key = id.toString();
 
         PutObjectRequest putRequest = PutObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .build();
+            .bucket(bucket)
+            .key(key)
+            .build();
 
         s3Client.putObject(putRequest, RequestBody.fromBytes(bytes));
 
@@ -61,9 +61,9 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         String key = id.toString();
 
         return s3Client.getObject(GetObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .build());
+            .bucket(bucket)
+            .key(key)
+            .build());
     }
 
     @Override
@@ -75,45 +75,45 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
             UrlResource url = new UrlResource(presignedUrl);
 
             return ResponseEntity
-                    .status(302)
-                    .location(url.getURL().toURI())
-                    .build();
+                .status(302)
+                .location(url.getURL().toURI())
+                .build();
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to create redirect for presigned URL", e);
         }
     }
 
-    S3Client getS3Client() {
+    protected S3Client getS3Client() {
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, secretKey);
 
         return S3Client.builder()
-                .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
-                .build();
+            .region(Region.of(region))
+            .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
+            .build();
     }
 
     String generatePresignedUrl(String key, String contentType) {
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, secretKey);
 
         S3Presigner s3Presigner = S3Presigner.builder()
-                .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
-                .build();
+            .region(Region.of(region))
+            .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
+            .build();
 
         GetObjectRequest getRequest = GetObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .responseContentType(contentType)
-                .build();
+            .bucket(bucket)
+            .key(key)
+            .responseContentType(contentType)
+            .build();
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10))
-                .getObjectRequest(getRequest)
-                .build();
+            .signatureDuration(Duration.ofMinutes(10))
+            .getObjectRequest(getRequest)
+            .build();
 
         return s3Presigner.presignGetObject(presignRequest)
-                .url()
-                .toString();
+            .url()
+            .toString();
     }
 }
