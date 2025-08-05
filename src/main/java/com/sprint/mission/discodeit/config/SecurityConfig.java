@@ -81,7 +81,6 @@ public class SecurityConfig {
                 // 인증 없이 접근 가능한 API
                 .requestMatchers("/api/auth/csrf-token").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()     // 회원가입
-                .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers(("/api/auth/**")).permitAll()
 
                 .anyRequest().authenticated()
