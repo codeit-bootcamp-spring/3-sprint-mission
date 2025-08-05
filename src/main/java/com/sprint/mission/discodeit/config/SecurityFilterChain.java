@@ -28,14 +28,15 @@ public class SecurityFilterChain {
                 .loginProcessingUrl("/api/auth/login")
                 .successHandler(loginSuccessHandler)
                 .failureHandler(loginFailureHandler)
+                .permitAll()
             )
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/login", "/api/auth/me").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/api/auth/login").permitAll()
+                .anyRequest().permitAll()
             );
 
         return http.build();
