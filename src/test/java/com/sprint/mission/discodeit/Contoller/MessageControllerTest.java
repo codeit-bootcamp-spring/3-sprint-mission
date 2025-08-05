@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -29,6 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 @WebMvcTest(MessageController.class)
 class MessageControllerTest {
@@ -49,8 +49,8 @@ class MessageControllerTest {
     @Test
     @DisplayName("첨부파일 없이 메시지 생성 성공")
     void whenCreateMessageWithoutAttachments_thenReturnCreated() throws Exception {
+      // Given
       UUID channelId = UUID.randomUUID();
-
       MessageCreateRequest request = new MessageCreateRequest(
           "hello!", UUID.randomUUID(), channelId);
       UserDto userDto = new UserDto(UUID.randomUUID(), "test", "test@mail.com",
@@ -59,41 +59,43 @@ class MessageControllerTest {
       MessageDto createdDto = new MessageDto(UUID.randomUUID(), Instant.now(), Instant.now(),
           request.content(),
           channelId, userDto, List.of());
-
       MockMultipartFile messagePart = new MockMultipartFile(
           "messageCreateRequest", null,
           MediaType.APPLICATION_JSON_VALUE,
           objectMapper.writeValueAsBytes(request)
       );
-
       given(messageService.create(eq(request), any())).willReturn(createdDto);
 
-      mockMvc.perform(multipart("/api/messages")
-              .file(messagePart)
-              .contentType(MediaType.MULTIPART_FORM_DATA))
-          .andDo(print())
-          .andExpect(status().isCreated())
+      // When
+      ResultActions result = mockMvc.perform(multipart("/api/messages")
+          .file(messagePart)
+          .contentType(MediaType.MULTIPART_FORM_DATA));
+
+      // Then
+      result.andExpect(status().isCreated())
           .andExpect(jsonPath("$.content").value("hello!"));
     }
 
     @Test
     @DisplayName("첨부파일 포함 메시지 생성 실패 시 500 반환")
     void whenCreateMessageFails_thenReturnError() throws Exception {
+      // Given
       MessageCreateRequest request = new MessageCreateRequest(
           "hello!", UUID.randomUUID(), UUID.randomUUID());
-
       MockMultipartFile messagePart = new MockMultipartFile(
           "messageCreateRequest", null,
           MediaType.APPLICATION_JSON_VALUE,
           objectMapper.writeValueAsBytes(request)
       );
-
       given(messageService.create(eq(request), any())).willThrow(new RuntimeException("error"));
 
-      mockMvc.perform(multipart("/api/messages")
-              .file(messagePart)
-              .contentType(MediaType.MULTIPART_FORM_DATA))
-          .andExpect(status().isInternalServerError());
+      // When
+      ResultActions result = mockMvc.perform(multipart("/api/messages")
+          .file(messagePart)
+          .contentType(MediaType.MULTIPART_FORM_DATA));
+
+      // Then
+      result.andExpect(status().isInternalServerError());
     }
   }
 
@@ -104,6 +106,7 @@ class MessageControllerTest {
     @Test
     @DisplayName("메시지 수정 성공")
     void whenUpdateMessage_thenReturnUpdatedDto() throws Exception {
+      // Given
       UUID messageId = UUID.randomUUID();
       MessageUpdateRequest request = new MessageUpdateRequest("updated content");
       UserDto userDto = new UserDto(UUID.randomUUID(), "test", "test@mail.com",
@@ -112,12 +115,15 @@ class MessageControllerTest {
       MessageDto updatedDto = new MessageDto(messageId, Instant.now(), Instant.now(),
           request.newContent(), UUID.randomUUID(),
           userDto, null);
-
       given(messageService.update(messageId, request)).willReturn(updatedDto);
 
-      mockMvc.perform(patch("/api/messages/{messageId}", messageId)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsBytes(request)))
+      // When
+      ResultActions result = mockMvc.perform(patch("/api/messages/{messageId}", messageId)
+          .contentType(MediaType.APPLICATION_JSON)
+          .content(objectMapper.writeValueAsBytes(request)));
+
+      // Then
+      result
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.content").value("updated content"));
     }
@@ -125,15 +131,19 @@ class MessageControllerTest {
     @Test
     @DisplayName("존재하지 않는 메시지 수정 시 404 반환")
     void whenUpdateMessageFails_thenReturnNotFound() throws Exception {
+      // Given
       UUID messageId = UUID.randomUUID();
       MessageUpdateRequest request = new MessageUpdateRequest("any");
-
       given(messageService.update(messageId, request))
           .willThrow(new ResourceNotFoundException("messageId = " + messageId));
 
-      mockMvc.perform(patch("/api/messages/{messageId}", messageId)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsBytes(request)))
+      //When
+      ResultActions result = mockMvc.perform(patch("/api/messages/{messageId}", messageId)
+          .contentType(MediaType.APPLICATION_JSON)
+          .content(objectMapper.writeValueAsBytes(request)));
+
+      //Then
+      result
           .andExpect(status().isNotFound());
     }
   }

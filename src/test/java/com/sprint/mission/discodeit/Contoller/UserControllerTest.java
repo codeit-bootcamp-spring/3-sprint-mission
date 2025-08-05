@@ -26,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 @WebMvcTest(UserController.class)
 public class UserControllerTest {
@@ -49,16 +50,13 @@ public class UserControllerTest {
     @Test
     @DisplayName("유효한 요청으로 유저 생성 성공")
     void whenCreateUser_thenReturnCreatedUser() throws Exception {
-      //given
+      // Given
       UserCreateRequest userCreateRequest = new UserCreateRequest("test", "test@mail.com",
           "pw1234");
       UserDto createdDto = new UserDto(UUID.randomUUID(), userCreateRequest.username(),
           userCreateRequest.email(), null,
           true, Instant.now(), Instant.now());
-
       given(userService.create(userCreateRequest, Optional.empty())).willReturn(createdDto);
-
-      //when&then
       MockMultipartFile userPart = new MockMultipartFile(
           "userCreateRequest",            // @RequestPart 이름과 정확히 일치해야 함
           null,
@@ -66,10 +64,13 @@ public class UserControllerTest {
           objectMapper.writeValueAsBytes(userCreateRequest)
       );
 
-      mockMvc.perform(multipart("/api/users")
-              .file(userPart)
-              .contentType(MediaType.MULTIPART_FORM_DATA))
-          .andExpect(status().isCreated())
+      // When
+      ResultActions result = mockMvc.perform(multipart("/api/users")
+          .file(userPart)
+          .contentType(MediaType.MULTIPART_FORM_DATA));
+
+      // Then
+      result.andExpect(status().isCreated())
           .andExpect(jsonPath("$.username").value("test"))
           .andExpect(jsonPath("$.email").value("test@mail.com"));
     }
@@ -77,24 +78,25 @@ public class UserControllerTest {
     @Test
     @DisplayName("유저 생성 중 예외 발생 시 500 반환")
     void whenCreateUserFails_thenReturnError() throws Exception {
-      //given
+      // Given
       UserCreateRequest userCreateRequest = new UserCreateRequest("fail", "fail@mail.com",
           "pw1234");
-
       given(userService.create(userCreateRequest, Optional.empty())).willThrow(
           new RuntimeException("error"));
-
-      //when&then
       MockMultipartFile userPart = new MockMultipartFile(
           "userCreateRequest",            // @RequestPart 이름과 정확히 일치해야 함
           null,
           MediaType.APPLICATION_JSON_VALUE,
           objectMapper.writeValueAsBytes(userCreateRequest)
       );
-      mockMvc.perform(multipart("/api/users")
-              .file(userPart)
-              .contentType(MediaType.MULTIPART_FORM_DATA))
-          .andExpect(status().isInternalServerError());
+
+      //When
+      ResultActions result = mockMvc.perform(multipart("/api/users")
+          .file(userPart)
+          .contentType(MediaType.MULTIPART_FORM_DATA));
+
+      //Then
+      result.andExpect(status().isInternalServerError());
     }
   }
 
@@ -105,7 +107,7 @@ public class UserControllerTest {
     @Test
     @DisplayName("유효한 요청으로 유저 수정 성공")
     void whenUpdateUser_thenReturnUpdatedUser() throws Exception {
-      // given
+      // Given
       UUID userId = UUID.randomUUID();
       UserUpdateRequest updateRequest = new UserUpdateRequest("updated", "update@mail.com",
           "newpass");
@@ -118,10 +120,8 @@ public class UserControllerTest {
           Instant.now(),
           Instant.now()
       );
-
       given(userService.update(userId, updateRequest, Optional.empty()))
           .willReturn(updatedDto);
-
       MockMultipartFile requestPart = new MockMultipartFile(
           "userUpdateRequest",
           null,
@@ -129,14 +129,17 @@ public class UserControllerTest {
           objectMapper.writeValueAsBytes(updateRequest)
       );
 
-      // when & then
-      mockMvc.perform(multipart("/api/users/{userId}", userId)
-              .file(requestPart)
-              .with(req -> {
-                req.setMethod("PATCH");
-                return req;
-              })
-              .contentType(MediaType.MULTIPART_FORM_DATA))
+      //When
+      ResultActions result = mockMvc.perform(multipart("/api/users/{userId}", userId)
+          .file(requestPart)
+          .with(req -> {
+            req.setMethod("PATCH");
+            return req;
+          })
+          .contentType(MediaType.MULTIPART_FORM_DATA));
+
+      //Then
+      result
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.username").value("updated"))
           .andExpect(jsonPath("$.email").value("update@mail.com"));
@@ -145,13 +148,11 @@ public class UserControllerTest {
     @Test
     @DisplayName("유저 수정 중 예외 발생 시 500 반환")
     void whenUpdateUserFails_thenReturnError() throws Exception {
-      // given
+      // Given
       UUID userId = UUID.randomUUID();
       UserUpdateRequest updateRequest = new UserUpdateRequest("fail", "fail@mail.com", "failpass");
-
       given(userService.update(userId, updateRequest, Optional.empty()))
           .willThrow(new RuntimeException("error"));
-
       MockMultipartFile requestPart = new MockMultipartFile(
           "userUpdateRequest",
           null,
@@ -159,22 +160,24 @@ public class UserControllerTest {
           objectMapper.writeValueAsBytes(updateRequest)
       );
 
-      // when & then
-      mockMvc.perform(multipart("/api/users/{userId}", userId)
-              .file(requestPart)
-              .with(req -> {
-                req.setMethod("PATCH");
-                return req;
-              })
-              .contentType(MediaType.MULTIPART_FORM_DATA))
-          .andExpect(status().isInternalServerError());
+      // When
+      ResultActions result = mockMvc.perform(multipart("/api/users/{userId}", userId)
+          .file(requestPart)
+          .with(req -> {
+            req.setMethod("PATCH");
+            return req;
+          })
+          .contentType(MediaType.MULTIPART_FORM_DATA));
+
+      // Then
+      result.andExpect(status().isInternalServerError());
     }
   }
 
   @DisplayName("저장된 모든 유저리스트 반환")
   @Test
   void getAllUser_returnsUserDtoLists() throws Exception {
-    //given
+    //Given
     UUID userIdOne = UUID.randomUUID();
     UUID userIdTwo = UUID.randomUUID();
     UserDto userOneDto = new UserDto(userIdOne, "one",
@@ -187,8 +190,11 @@ public class UserControllerTest {
         Instant.now(), Instant.now());
     given(userService.findAll()).willReturn(List.of(userOneDto, userTwoDto));
 
-    //when&then
-    mockMvc.perform(get("/api/users"))
+    // When
+    ResultActions result = mockMvc.perform(get("/api/users"));
+
+    // Then
+    result
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.size()").value(2))
         .andExpect(jsonPath("$[0].username").value("one"))

@@ -24,6 +24,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 @WebMvcTest(ChannelController.class)
 public class ChannelControllerTest {
@@ -47,7 +48,6 @@ public class ChannelControllerTest {
       // given
       List<UUID> memberIds = List.of(UUID.randomUUID());
       PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(memberIds);
-
       ChannelDto createdDto = new ChannelDto(
           UUID.randomUUID(),
           ChannelType.PRIVATE,
@@ -56,14 +56,15 @@ public class ChannelControllerTest {
           List.of(), // 참여자 정보 생략
           Instant.now()
       );
-
       given(channelService.create(request)).willReturn(createdDto);
 
-      // when & then
-      mockMvc.perform(post("/api/channels/private")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsBytes(request)))
-          .andExpect(status().isCreated())
+      // When
+      ResultActions result = mockMvc.perform(post("/api/channels/private")
+          .contentType(MediaType.APPLICATION_JSON)
+          .content(objectMapper.writeValueAsBytes(request)));
+
+      // Then
+      result.andExpect(status().isCreated())
           .andExpect(jsonPath("$.type").value("PRIVATE"));
     }
 
@@ -72,14 +73,15 @@ public class ChannelControllerTest {
     void whenCreatePrivateChannelFails_thenReturnError() throws Exception {
       // given
       PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(List.of());
-
       given(channelService.create(request)).willThrow(new RuntimeException("creation error"));
 
-      // when & then
-      mockMvc.perform(post("/api/channels/private")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsBytes(request)))
-          .andExpect(status().isInternalServerError());
+      // When
+      ResultActions result = mockMvc.perform(post("/api/channels/private")
+          .contentType(MediaType.APPLICATION_JSON)
+          .content(objectMapper.writeValueAsBytes(request)));
+
+      // Then
+      result.andExpect(status().isInternalServerError());
     }
   }
 
@@ -94,7 +96,6 @@ public class ChannelControllerTest {
       UUID channelId = UUID.fromString("00000000-0000-0000-0000-000000000030");
       PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("updated name",
           "updated desc");
-
       ChannelDto updatedDto = new ChannelDto(
           channelId,
           ChannelType.PUBLIC,
@@ -103,13 +104,15 @@ public class ChannelControllerTest {
           List.of(),
           Instant.now()
       );
-
       given(channelService.update(channelId, request)).willReturn(updatedDto);
 
-      // when & then
-      mockMvc.perform(patch("/api/channels/{channelId}", channelId)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsBytes(request)))
+      // When
+      ResultActions result = mockMvc.perform(patch("/api/channels/{channelId}", channelId)
+          .contentType(MediaType.APPLICATION_JSON)
+          .content(objectMapper.writeValueAsBytes(request)));
+
+      // Then
+      result
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.name").value("updated name"))
           .andExpect(jsonPath("$.description").value("updated desc"));
@@ -121,14 +124,16 @@ public class ChannelControllerTest {
       // given
       UUID channelId = UUID.randomUUID();
       PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("fail", "desc");
-
       given(channelService.update(channelId, request))
           .willThrow(new RuntimeException("update error"));
 
-      // when & then
-      mockMvc.perform(patch("/api/channels/{channelId}", channelId)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsBytes(request)))
+      // When
+      ResultActions result = mockMvc.perform(patch("/api/channels/{channelId}", channelId)
+          .contentType(MediaType.APPLICATION_JSON)
+          .content(objectMapper.writeValueAsBytes(request)));
+
+      // Then
+      result
           .andExpect(status().isInternalServerError());
     }
   }

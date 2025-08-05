@@ -35,6 +35,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.function.Executable;
 
 @TestMethodOrder(MethodOrderer.MethodName.class)
 public class MessageServiceTest {
@@ -66,6 +67,7 @@ public class MessageServiceTest {
     @Test
     @DisplayName("유효한 요청으로 메시지 생성에 성공한다")
     void whenCreateMessage_thenReturnMessageDto() {
+      // Given
       UUID authorId = UUID.randomUUID();
       UUID channelId = UUID.randomUUID();
       MessageCreateRequest request = new MessageCreateRequest("hello", authorId, channelId);
@@ -77,15 +79,16 @@ public class MessageServiceTest {
       Message message = new Message(user, channel, request.content(), List.of());
       MessageDto expected = new MessageDto(UUID.randomUUID(), Instant.now(), Instant.now(),
           request.content(), channelId, userDto, List.of());
-
       given(userRepository.findById(authorId)).willReturn(Optional.of(user));
       given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
       given(readStatusRepository.existsByUserIdAndChannelId(authorId, channelId)).willReturn(true);
       given(messageRepository.save(any())).willReturn(message);
       given(messageMapper.toDto(any())).willReturn(expected);
 
+      // When
       MessageDto result = messageService.create(request, List.of());
 
+      // Then
       then(messageRepository).should().save(any());
       then(messageMapper).should().toDto(any());
       assertEquals(expected, result);
@@ -94,18 +97,20 @@ public class MessageServiceTest {
     @Test
     @DisplayName("채널에 속하지 않은 유저는 메시지 생성에 실패한다")
     void whenUserNotInChannel_thenThrowAccessDenied() {
+      // Given
       UUID authorId = UUID.randomUUID();
       UUID channelId = UUID.randomUUID();
       MessageCreateRequest request = new MessageCreateRequest("fail", authorId, channelId);
       User user = new User("test", "test@mail.com", "pw", null);
       Channel channel = new Channel();
-
       given(userRepository.findById(authorId)).willReturn(Optional.of(user));
       given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
       given(readStatusRepository.existsByUserIdAndChannelId(authorId, channelId)).willReturn(false);
+      // When
+      Executable executable = () -> messageService.create(request, List.of());
 
-      assertThrows(AccessDeniedMessageException.class,
-          () -> messageService.create(request, List.of()));
+      // Then
+      assertThrows(AccessDeniedMessageException.class, executable);
       then(messageRepository).shouldHaveNoInteractions();
     }
   }
@@ -117,21 +122,22 @@ public class MessageServiceTest {
     @Test
     @DisplayName("ID로 메시지 조회 성공")
     void whenFindById_thenReturnDto() {
+      // Given
       UUID messageId = UUID.randomUUID();
       Message message = new Message();
       UserDto userDto = new UserDto(UUID.randomUUID(), "test", "test@mail.com",
           null, true,
           Instant.now(), Instant.now());
-
       MessageDto expected = new MessageDto(messageId, Instant.now(), Instant.now(), "msg",
           UUID.randomUUID(), userDto,
           List.of());
-
       given(messageRepository.findById(messageId)).willReturn(Optional.of(message));
       given(messageMapper.toDto(message)).willReturn(expected);
 
+      // When
       MessageDto result = messageService.findById(messageId);
 
+      // Then
       then(messageRepository).should().findById(messageId);
       assertEquals(expected, result);
     }
@@ -139,10 +145,15 @@ public class MessageServiceTest {
     @Test
     @DisplayName("존재하지 않는 메시지 ID 조회 시 예외 발생")
     void whenFindByIdNotFound_thenThrowException() {
+      // Given
       UUID messageId = UUID.randomUUID();
       given(messageRepository.findById(messageId)).willReturn(Optional.empty());
 
-      assertThrows(ResourceNotFoundException.class, () -> messageService.findById(messageId));
+      // When
+      Executable executable = () -> messageService.findById(messageId);
+
+      // Then
+      assertThrows(ResourceNotFoundException.class, executable);
     }
   }
 
@@ -153,6 +164,7 @@ public class MessageServiceTest {
     @Test
     @DisplayName("메시지 내용 수정 성공")
     void whenUpdate_thenReturnUpdatedDto() {
+      // Given
       UUID messageId = UUID.randomUUID();
       MessageUpdateRequest request = new MessageUpdateRequest("updated");
       Message message = new Message();
@@ -163,12 +175,13 @@ public class MessageServiceTest {
       MessageDto expected = new MessageDto(messageId, Instant.now(), Instant.now(),
           request.newContent(), UUID.randomUUID(),
           userDto, List.of());
-
       given(messageRepository.findById(messageId)).willReturn(Optional.of(message));
       given(messageMapper.toDto(message)).willReturn(expected);
 
+      // When
       MessageDto result = messageService.update(messageId, request);
 
+      // Then
       then(messageRepository).should().findById(messageId);
       assertEquals(expected, result);
     }
@@ -176,12 +189,16 @@ public class MessageServiceTest {
     @Test
     @DisplayName("존재하지 않는 메시지 수정 시 예외 발생")
     void whenUpdateNonexistent_thenThrowException() {
+      // Given
       UUID messageId = UUID.randomUUID();
       MessageUpdateRequest request = new MessageUpdateRequest("fail");
       given(messageRepository.findById(messageId)).willReturn(Optional.empty());
 
-      assertThrows(ResourceNotFoundException.class,
-          () -> messageService.update(messageId, request));
+      // When
+      Executable executable = () -> messageService.update(messageId, request);
+
+      // Then
+      assertThrows(ResourceNotFoundException.class, executable);
     }
   }
 
@@ -192,24 +209,31 @@ public class MessageServiceTest {
     @Test
     @DisplayName("메시지 삭제 성공")
     void whenDelete_thenSuccess() {
+      // Given
       UUID messageId = UUID.randomUUID();
       Message message = new Message();
-
       given(messageRepository.findById(messageId)).willReturn(Optional.of(message));
       given(messageRepository.findById(messageId)).willReturn(Optional.of(message));
 
+      // When
       messageService.delete(messageId);
 
+      // Then
       then(messageRepository).should().deleteById(messageId);
     }
 
     @Test
     @DisplayName("존재하지 않는 메시지 삭제 시 예외 발생")
     void whenDeleteNonexistent_thenThrowException() {
+      // Given
       UUID messageId = UUID.randomUUID();
       given(messageRepository.findById(messageId)).willReturn(Optional.empty());
 
-      assertThrows(ResourceNotFoundException.class, () -> messageService.delete(messageId));
+      // When
+      Executable executable = () -> messageService.delete(messageId);
+
+      // Then
+      assertThrows(ResourceNotFoundException.class, executable);
     }
   }
 }
