@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.config;
 
 
+import com.sprint.mission.discodeit.handler.LoginFailureHandler;
+import com.sprint.mission.discodeit.handler.LoginSuccessHandler;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -43,7 +44,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           LoginSuccessHandler loginSuccessHandler,
+                                           LoginFailureHandler loginFailureHandler) throws Exception {
         return
                 http
                         .csrf(csrf -> csrf
@@ -51,7 +54,9 @@ public class SecurityConfig {
                                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
 
                         .formLogin(login -> login
-                                .loginProcessingUrl("/api/auth/login"))
+                                .loginProcessingUrl("/api/auth/login")
+                                .successHandler(loginSuccessHandler)
+                                .failureHandler(loginFailureHandler))
 
                         .build();
     }
