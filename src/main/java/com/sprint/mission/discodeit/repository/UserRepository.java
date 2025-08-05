@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 import java.util.Optional;
@@ -22,4 +23,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     List<User> findAllWithProfileAndStatus();
 
     List<User> findAllByProfile(BinaryContent profile);
+
+    long countByRole(Role role);
 }

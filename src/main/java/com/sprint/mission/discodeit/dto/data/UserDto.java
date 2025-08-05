@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto.data;
 
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.UUID;
 
@@ -8,7 +9,8 @@ public record UserDto(
     String username,
     String email,
     BinaryContentDto profile,
-    Boolean online
+    Boolean online,
+    Role role
 ) {
 
     public static UserDto from(User user) {
@@ -17,7 +19,9 @@ public record UserDto(
             user.getUsername(),
             user.getEmail(),
             user.getProfile() != null ? BinaryContentDto.from(user.getProfile()) : null,
-            true
+            user.getStatus() != null && user.getStatus().isOnline(),
+            
+            user.getRole()
         );
     }
 }
