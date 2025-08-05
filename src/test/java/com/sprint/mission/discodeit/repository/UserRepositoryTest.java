@@ -82,7 +82,12 @@ class UserRepositoryTest {
     @Test
     @DisplayName("존재하지 않는 사용자명 여부를 확인할 수 있어야 한다.")
     void givenNonexistentUsername_whenExistsByUsername_thenReturnFalse() {
-        assertFalse(userRepository.existsByUsername("notExist"));
+
+        // when
+        boolean exist = userRepository.existsByUsername("notExistName");
+
+        // then
+        assertFalse(exist);
     }
 
     @Test

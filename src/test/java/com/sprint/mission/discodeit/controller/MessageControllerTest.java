@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.config.JpaConfig;
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.message.MessageRequestDto;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
@@ -16,13 +15,12 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
@@ -82,11 +80,13 @@ class MessageControllerTest {
                 .willReturn(expectedResponse);
 
         // when
-        mockMvc.perform(multipart("/api/messages")
-                        .file(messageCreateRequest)
-                        .file(attachment)
-                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
-                .andExpect(status().isCreated())
+        ResultActions result = mockMvc.perform(multipart("/api/messages")
+                .file(messageCreateRequest)
+                .file(attachment)
+                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE));
+
+        // then
+        result.andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(messageId.toString()))
                 .andExpect(jsonPath("$.content").value("Hello"))
                 .andExpect(jsonPath("$.author.id").value(authorId.toString()))
@@ -94,7 +94,6 @@ class MessageControllerTest {
                 .andExpect(jsonPath("$.attachments[0].fileName").value("image.png"))
                 .andExpect(jsonPath("$.attachments[0].contentType").value("image/png"))
                 .andExpect(jsonPath("$.attachments[0].size").value(3));
-        // then
         verify(messageService).create(argThat(req ->
                 req.authorId().equals(authorId) &&
                         req.channelId().equals(channelId)
@@ -117,10 +116,12 @@ class MessageControllerTest {
         );
 
         // when
-        mockMvc.perform(multipart("/api/messages")
-                        .file(messageCreateRequest)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isBadRequest())
+        ResultActions result = mockMvc.perform(multipart("/api/messages")
+                .file(messageCreateRequest)
+                .contentType(MediaType.MULTIPART_FORM_DATA));
+
+        // then
+        result.andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
                 .andExpect(jsonPath("$.message").value("유효성 검사 실패"));
     }

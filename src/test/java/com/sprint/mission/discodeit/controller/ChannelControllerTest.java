@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
 import java.util.UUID;
@@ -56,15 +57,15 @@ class ChannelControllerTest {
                 .willReturn(expectedResponse);
 
         // when
-        mockMvc.perform(post("/api/channels/public")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
+        ResultActions result = mockMvc.perform(post("/api/channels/public")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(request)));
+
+        // then
+        result.andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(channelId.toString()))
                 .andExpect(jsonPath("$.name").value("public"))
                 .andExpect(jsonPath("$.description").value("test channel"));
-
-        // then
         verify(channelService).createPublicChannel(argThat(req ->
                 req.name().equals("public") &&
                         req.description().equals("test channel")
@@ -88,13 +89,13 @@ class ChannelControllerTest {
                 .willReturn(expectedResponse);
 
         // when
-        mockMvc.perform(post("/api/channels/private")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.type").value(ChannelType.PRIVATE.toString()));
+        ResultActions result = mockMvc.perform(post("/api/channels/private")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(request)));
 
         // then
+        result.andExpect(status().isCreated())
+                .andExpect(jsonPath("$.type").value(ChannelType.PRIVATE.toString()));
         verify(channelService).createPrivateChannel(request);
     }
 
@@ -107,14 +108,15 @@ class ChannelControllerTest {
         PublicChannelDto request = new PublicChannelDto(null, "test channel");
 
         // when
-        mockMvc.perform(post("/api/channels/public")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
-                .andExpect(jsonPath("$.message").value("유효성 검사 실패"));
+        ResultActions result = mockMvc.perform(post("/api/channels/public")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(request)));
+
 
         // then
+        result.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.message").value("유효성 검사 실패"));
         verify(channelService, never()).createPublicChannel(request);
     }
 }

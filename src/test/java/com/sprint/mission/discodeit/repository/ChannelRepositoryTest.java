@@ -34,10 +34,10 @@ class ChannelRepositoryTest {
 
         // when
         Channel savedChannel = channelRepository.save(channel);
-        Optional<Channel> foundChannel = channelRepository.findById(savedChannel.getId());
 
         // then
-        assertTrue(foundChannel.isPresent());
+        Optional<Channel> foundChannel = channelRepository.findById(savedChannel.getId());
+        assertTrue(foundChannel.isPresent(), "채널이 등록되어야 한다.");
         assertEquals("public", foundChannel.get().getName());
         assertEquals("test channel", foundChannel.get().getDescription());
     }

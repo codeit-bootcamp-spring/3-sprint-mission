@@ -102,20 +102,15 @@ public class ChannelServiceIntegrationTest {
         // when
         ChannelResponseDto result = channelService.createPrivateChannel(request);
 
-        UUID channelId = result.id();
-
         // then
-        Optional<Channel> foundChannel = channelRepository.findById(channelId);
-        assertTrue(foundChannel.isPresent());
-
+        Optional<Channel> foundChannel = channelRepository.findById(result.id());
+        assertTrue(foundChannel.isPresent(), "채널이 저장되어 있어야 한다.");
         assertNotNull(result);
         assertEquals(ChannelType.PRIVATE, result.type());
         assertEquals(result.participants().get(0).id(), userId1);
-        // 채널에 메시지가 없기때문에 lastMessageAt은 null
-        assertNull(result.lastMessageAt());
-
+        assertNull(result.lastMessageAt(), "초기에는 메시지가 없어야 하므로 lastMessageAt은 null이어야 한다.");
         List<ReadStatus> foundReadStatus1 = readStatusRepository.findAllByUserId(userId1);
-        assertEquals(1, foundReadStatus1.size());
+        assertEquals(1, foundReadStatus1.size(), "유저 1명의 ReadStatus가 정확히 하나 생성되어야 한다.");
     }
 
     @Test
@@ -147,9 +142,8 @@ public class ChannelServiceIntegrationTest {
         List<ChannelResponseDto> channels = channelService.findAllByUserId(userId1);
 
         // then
-        assertEquals(2, channels.size());
+        assertEquals(2, channels.size(), "Public 채널과 참여한 Private 채널이 조회되어야 한다.");
         List<UUID> resultIds = channels.stream().map(ChannelResponseDto::id).toList();
-
         assertTrue(resultIds.contains(channelId1));
         assertTrue(resultIds.contains(channelId2));
         assertFalse(resultIds.contains(channelId3));
