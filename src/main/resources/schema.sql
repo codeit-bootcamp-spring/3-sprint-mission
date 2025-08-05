@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS users
     email      VARCHAR(100)             NOT NULL UNIQUE,
     password   VARCHAR(60)              NOT NULL,
     profile_id UUID,
+    role       VARCHAR(20)              NOT NULL CHECK ( role IN ('ADMIN', 'CHANNEL_MANAGER', 'USER')),
+
     PRIMARY KEY (id),
     FOREIGN KEY (profile_id)
         REFERENCES binary_contents (id)

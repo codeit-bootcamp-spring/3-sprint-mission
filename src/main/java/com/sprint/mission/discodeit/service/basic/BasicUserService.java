@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.user.UserRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
@@ -70,6 +71,9 @@ public class BasicUserService implements UserService {
             .profile(null)
             .status(null)
             .build();
+
+        // 회원가입 시 기본 권한은 USER
+        user.updateRole(Role.USER);
 
         // 프로필 이미지를 등록한 경우
         if (binaryContentDto != null) {
