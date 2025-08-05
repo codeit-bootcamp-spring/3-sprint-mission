@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.auth.handler.LoginFailureHandler;
+import com.sprint.mission.discodeit.auth.handler.LoginSuccessHandler;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +13,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,7 +42,6 @@ public class SecurityConfig {
             );
     }
 
-
     @Bean
     public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
         return args -> {
@@ -56,7 +58,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+        LoginSuccessHandler loginSuccessHandler,
+        LoginFailureHandler loginFailureHandler) throws Exception {
         log.debug("[SecurityConfig] FilterChain 구성 시작");
 
         http
@@ -78,11 +82,19 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/csrf-token").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()     // 회원가입
                 .requestMatchers("/api/auth/login").permitAll()
+                .requestMatchers(("/api/auth/**")).permitAll()
 
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers
-                .frameOptions(FrameOptionsConfig::sameOrigin));
+                .frameOptions(FrameOptionsConfig::sameOrigin))
+            .formLogin(login -> login
+                .loginProcessingUrl("/api/auth/login")
+                .successHandler(loginSuccessHandler) // 로그인 성공 핸들러
+                .failureHandler(loginFailureHandler) // 로그인 실패 핸들러
+                .permitAll()
+            )
+            .httpBasic(AbstractHttpConfigurer::disable);
 
         log.debug("[SecurityConfig] FilterChain 구성 완료");
 
