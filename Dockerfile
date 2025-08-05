@@ -6,10 +6,6 @@ FROM amazoncorretto:17 AS build
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# 프로젝트 정보를 환경 변수로 설정
-ENV PROJECT_NAME=discodeit
-ENV PROJECT_VERSION=1.2-M8
-
 # Gradle Wrapper와 설정 파일들을 먼저 복사 (Docker 레이어 캐싱 최적화)
 COPY gradlew gradlew.bat build.gradle settings.gradle ./
 COPY gradle/ gradle/
@@ -34,8 +30,8 @@ WORKDIR /app
 RUN apk add --no-cache curl
 
 # 프로젝트 정보를 환경 변수로 설정
-ENV PROJECT_NAME=discodeit
-ENV PROJECT_VERSION=1.2-M8
+ENV PROJECT_NAME=discodeit \
+    PROJECT_VERSION=1.2-M8
 
 # 빌드 결과물만 복사 (최종 JAR 파일만 포함)
 COPY --from=build /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar ./app.jar
