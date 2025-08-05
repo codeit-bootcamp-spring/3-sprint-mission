@@ -79,6 +79,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserDto find(UUID userId) {
         log.debug("사용자 조회 요청: id={}", userId);
 
@@ -91,6 +92,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserDto> findAll() {
         log.debug("모든 사용자 조회 요청");
         return userRepository.findAllWithProfileAndStatus().stream()
