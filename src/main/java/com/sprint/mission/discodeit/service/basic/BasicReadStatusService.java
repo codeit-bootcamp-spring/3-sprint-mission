@@ -29,10 +29,12 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   public ReadStatusResponse create(UUID userId, UUID channelId) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new InvalidUserOrChannelException(userId.toString(), channelId.toString()));
+        .orElseThrow(
+            () -> new InvalidUserOrChannelException(userId.toString(), channelId.toString()));
 
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new InvalidUserOrChannelException(userId.toString(), channelId.toString()));
+        .orElseThrow(
+            () -> new InvalidUserOrChannelException(userId.toString(), channelId.toString()));
 
     readStatusRepository.findByUserIdAndChannelId(userId, channelId)
         .ifPresent(existingStatus -> {
@@ -45,6 +47,7 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public ReadStatusResponse find(UUID readStatusId) {
     return readStatusRepository.findById(readStatusId)
         .map(ReadStatusResponse::from)
@@ -52,6 +55,7 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<ReadStatusResponse> findAllByUserId(UUID userId) {
     return readStatusRepository.findAllByUserId(userId).stream()
         .map(ReadStatusResponse::from).toList();

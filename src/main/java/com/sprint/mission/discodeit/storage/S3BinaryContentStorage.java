@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.storage;
 
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.UUID;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,9 +15,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import com.sprint.mission.discodeit.entity.BinaryContent;
-
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -115,9 +112,9 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
           .key(id.toString())
           .build();
 
-      ResponseInputStream<GetObjectResponse> responseInputStream = s3Client.getObject(getObjectRequest);
+      ResponseInputStream<GetObjectResponse> responseInputStream = s3Client.getObject(
+          getObjectRequest);
 
-      // ResponseInputStream을 byte array로 읽어서 ByteArrayInputStream으로 변환
       byte[] content = responseInputStream.readAllBytes();
       responseInputStream.close();
 

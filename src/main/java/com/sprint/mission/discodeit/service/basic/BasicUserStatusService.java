@@ -1,12 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -17,8 +10,12 @@ import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
-
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +40,7 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserStatusResponse find(UUID userStatusId) {
     return userStatusRepository.findById(userStatusId)
         .map(userStatusMapper::toResponse)
@@ -50,6 +48,7 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserStatusResponse findByUserId(UUID userId) {
     return userStatusRepository.findByUserId(userId)
         .map(userStatusMapper::toResponse)
@@ -57,6 +56,7 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<UserStatusResponse> findAll() {
     return userStatusRepository.findAll().stream()
         .map(userStatusMapper::toResponse)

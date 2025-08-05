@@ -56,6 +56,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public ChannelResponse findById(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(channelId.toString()));
@@ -63,6 +64,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<ChannelResponse> findAllByUserId(UUID userId) {
     return channelRepository.findAllByUserId(userId).stream()
         .map(channelAssembler::toResponse)

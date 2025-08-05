@@ -1,15 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import java.time.Instant;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.sprint.mission.discodeit.assembler.MessageAssembler;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
@@ -28,8 +18,15 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -66,6 +63,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public MessageResponse findById(UUID messageId) {
     return messageRepository.findById(messageId)
         .map(messageAssembler::toResponse)
@@ -73,6 +71,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<MessageResponse> findAllByChannelId(UUID channelId) {
     return messageRepository.findAllByChannelId(channelId).stream()
         .sorted(Comparator.comparing(Message::getCreatedAt))
@@ -81,6 +80,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public PageResponse<MessageResponse> findAllByChannelIdWithCursor(
       UUID channelId, Instant nextCursor, Pageable pageable) {
     Instant cursor = nextCursor != null ? nextCursor : Instant.now();
@@ -92,7 +92,8 @@ public class BasicMessageService implements MessageService {
             pageable);
     List<MessageResponse> responses = messageMapper.fromEntityList(messages.getContent());
 
-    Instant newNextCursor = responses.isEmpty() ? null : responses.get(responses.size() - 1).createdAt();
+    Instant newNextCursor =
+        responses.isEmpty() ? null : responses.get(responses.size() - 1).createdAt();
 
     return new PageResponse<>(
         responses,

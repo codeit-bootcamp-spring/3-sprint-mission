@@ -80,24 +80,28 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserResponse findById(UUID userId) {
     return userRepository.findById(userId).map(this::toUserResponse)
         .orElseThrow(() -> new UserNotFoundException(userId.toString()));
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserResponse findByName(String name) {
     return userRepository.findByUsername(name).map(this::toUserResponse)
         .orElseThrow(UserNotFoundException::new);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserResponse findByEmail(String email) {
     return userRepository.findByEmail(email).map(this::toUserResponse)
         .orElseThrow(UserNotFoundException::new);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<UserResponse> findAll() {
     return userRepository.findAll().stream().map(this::toUserResponse).toList();
   }
