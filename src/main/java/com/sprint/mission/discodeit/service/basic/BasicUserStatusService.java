@@ -48,10 +48,10 @@ public class BasicUserStatusService implements UserStatusService {
 
         Instant lastActiveAt = request.lastActiveAt();
         UserStatus status = new UserStatus(user, lastActiveAt);
-        userStatusRepository.save(status);
+        UserStatus savedUserStatus = userStatusRepository.save(status);
         log.info("[userStatus] 생성 완료: userStatusId={}, userId={}", status.getId(), userId);
 
-        return userStatusMapper.toDto(status);
+        return userStatusMapper.toDto(savedUserStatus);
     }
 
     @Transactional(readOnly = true)

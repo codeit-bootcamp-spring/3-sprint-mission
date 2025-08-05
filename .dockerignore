@@ -1,0 +1,57 @@
+# .dockerignore - 이미지 최적화를 위한 설정
+
+# Build artifacts
+build/
+target/
+*.jar
+*.war
+
+.gradle/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Logs
+*.logs
+*.logs.*
+
+# Temporary files
+tmp/
+temp/
+
+# Node modules (if any)
+node_modules/
+
+# Environment files
+.env*
+
+# Test files (빌드 시에만 필요)
+src/test/
+
+# Gradle wrapper jar는 포함 (빌드에 필요)
+!gradle/wrapper/gradle-wrapper.jar
+
+.discodeit/storage/
+/binary-contents/

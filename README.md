@@ -3,6 +3,8 @@
 ---
 Spring Boot 기반의 메시징 시스템 프로젝트
 
+[![codecov](https://codecov.io/gh/hyohyo-zz/3-sprint-mission/branch/main/graph/badge.svg?token=OU6EN7ZCG3)](https://codecov.io/gh/hyohyo-zz/3-sprint-mission)
+
 ## 📌 프로젝트 개요
 
 Discodeit은 채널 기반의 커뮤니케이션 서비스를 제공하는 백엔드 서버입니다.
@@ -14,7 +16,8 @@ Public / Private 채널 생성, 메시지 전송, 사용자 상태 추적 등의
 
 - **Language**: Java 17
 - **Framework**: Spring Boot 3.4.4
-- **Database**: H2 (dev), PostgreSQL (prod)
+- **Database**: PostgreSQL (dev, prod), H2 (test)
+- **Storage**: Local File System, AWS S3
 - **ORM**: Spring Data JPA (Hibernate)
 - **API Docs**: Springdoc OpenAPI (Swagger UI)
 - **빌드 도구**: Gradle
@@ -24,18 +27,26 @@ Public / Private 채널 생성, 메시지 전송, 사용자 상태 추적 등의
 
 ## 🧩 프로파일 기반 설정
 
-- `application-dev.yaml`: H2 DB, 서버 포트 8080
-- `application-prod.yaml`: PostgreSQL, 서버 포트 8080
+### Development (`dev`)
 
-모든 프로파일은 공통 설정을 `application.yaml`에서 상속합니다.
+- **Database**: PostgreSQL (localhost:5432)
+- **Port**: 8080
+- **Storage**: Local file system
+- **Logging**: Debug level, SQL 쿼리 출력
 
----
+### Production (`prod`)
 
-## 🚀 실행 방법
+- **Database**: PostgreSQL (AWS RDS)
+- **Port**: 80
+- **Storage**: AWS S3
+- **Logging**: Info level, SQL 로깅 비활성화
 
-### 1. 개발 환경 (H2 사용)
+### Test (`test`)
 
-### 2. 운영 환경 (PostgreSql 사용)
+- **Database**: H2 in-memory (PostgreSQL 호환 모드)
+- **JPA**: `ddl-auto: create` (테이블 자동 생성)
+- **Storage**: 테스트용 Mock/Local
+- **Logging**: Debug level, 상세 SQL 로깅
 
 ---
 
@@ -72,7 +83,26 @@ com.sprint.mission.discodeit
 │   ├── basic
 ├── storage
 │   └── local               # 파일 저장소 구현체 (로컬)
+│   └── s3                  # AWS S3 구현체
 └── DiscodeitApplication    # 스프링 부트 메인 애플리케이션
+```
+
+---
+
+## 🔧 환경 설정
+
+```yaml
+  discodeit:
+  storage:
+  type: ${STORAGE_TYPE:local}  # local | s3
+  local:
+  root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
+  s3:
+  access-key: ${AWS_S3_ACCESS_KEY}
+  secret-key: ${AWS_S3_SECRET_KEY}
+  region: ${AWS_S3_REGION}
+  bucket: ${AWS_S3_BUCKET}
+  presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPI
 ```
 
 ---

@@ -1,57 +1,78 @@
 spring:
-  profiles:
-    active: dev
-
   application:
     name: discodeit
+
+  profiles:
+    active: prod
+
   servlet:
     multipart:
       maxFileSize: 10MB # 파일 하나의 최대 크기
       maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
 
-info:
-  app:
-    name: Discodeit
-    version: 1.7.0
-    description: Discord-like messaging application
-  java:
-    version: 17
-  spring:
-    boot:
-      version: 3.4.0
   datasource:
-    url: ${spring.datasource.url:jdbc:h2:mem:testdb}
-    driver-class-name: ${spring.datasource.driver-class-name:org.h2.Driver}
-  jpa:
-    ddl-auto: ${spring.jpa.hibernate.ddl-auto:create}
-  storage:
-    type: ${app.storage.type:local}
-    path: ${app.storage.local.path:binary-contents}
-  multipart:
-    max-file-size: ${spring.servlet.multipart.max-file-size:10MB}
-    max-request-size: ${spring.servlet.multipart.max-request-size:50MB}
+    driver-class-name: org.postgresql.Driver
 
-# Actuator 설정
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    generate-ddl: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
+
 management:
-  info:
-    env:
-      enabled: true
-    java:
-      enabled: true
-    os:
-      enabled: true
   endpoints:
     web:
       exposure:
         include: health,info,metrics,loggers
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+info:
+  name: Discodeit
+  description: 실시간 커뮤니케이션 시스템
+  version: 1.7.0
+  encoding: UTF-8
+  java:
+    version: 17
+  spring-boot:
+    version: 3.4.4
+  config:
+    datasource:
+      url: ${spring.datasource.url}
+      driver-class-name: ${spring.datasource.driver-class-name}
+    jpa:
+      ddl-auto: ${spring.jpa.hibernate.ddl-auto}
+    storage:
+      type: ${discodeit.storage.type}
+      path: ${discodeit.storage.local.root-path}
+    multipart:
+      max-file-size: ${spring.servlet.multipart.maxFileSize}
+      max-request-size: ${spring.servlet.multipart.maxRequestSize}
 
-# 기본 로깅 레벨 설정
+discodeit:
+  storage:
+    type: ${STORAGE_TYPE:local}
+    local:
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
+    s3:
+      access-key: ${AWS_S3_ACCESS_KEY}
+      secret-key: ${AWS_S3_SECRET_KEY}
+      region: ${AWS_S3_REGION}
+      bucket: ${AWS_S3_BUCKET}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
+
 logging:
   level:
     root: info
 
-discodeit:
-  storage:
-    type: local
-    local:
-      root-path: .discodeit/storage
+server:
+  port: 8080

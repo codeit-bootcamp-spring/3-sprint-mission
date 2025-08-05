@@ -41,9 +41,12 @@ out/
 /binary-contents/
 
 # 로그 파일들
-logs/
-.logs/
-*.log
+*.logs
+*.logs.*
 
 # 기타
 *.ser
+
+.env
+
+discodeit.env

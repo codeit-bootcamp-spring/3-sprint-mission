@@ -1,89 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration scan="true">
-
-  <!-- 변수 정의 -->
+<configuration>
+  <!-- 로그 레벨별 색상 설정 -->
   <appender class="ch.qos.logback.core.ConsoleAppender" name="CONSOLE">
     <encoder>
-      <pattern>%d{yy-MM-dd HH:mm:ss.SSS} %cyan([%thread]) %highlight(%-5level) %yellow(%logger{36}) - %msg%n
-      </pattern>
+      <pattern>${LOG_PATTERN}</pattern>
     </encoder>
   </appender>
+
+  <!-- 파일 크기 + 시간 기반 롤링 정책 적용 -->
   <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="FILE">
     <encoder>
       <pattern>${LOG_PATTERN}</pattern>
     </encoder>
-    <file>${LOG_PATH}/${APP_NAME}.log</file>
-    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>${LOG_PATH}/${APP_NAME}.%d{yyyy-MM-dd}.log</fileNamePattern>
-      <maxHistory>30</maxHistory> <!-- 30일 보관 -->
+    <file>${LOG_FILE_PATH}/${LOG_FILE_NAME}.log</file>
+
+    <!-- SizeAndTimeBasedRollingPolicy로 변경 -->
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_FILE_PATH}/${LOG_FILE_NAME}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <maxFileSize>100MB</maxFileSize>   <!-- 파일 하나가 100MB 넘으면 새로 만듦 -->
+      <maxHistory>30</maxHistory>        <!-- 최대 30일 보관 -->
+      <totalSizeCap>5GB</totalSizeCap>   <!-- 전체 합이 5GB 넘으면 오래된 것부터 삭제 -->
     </rollingPolicy>
   </appender>
 
-  <!-- 로그 패턴 정의 -->
-  <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="ERROR_FILE">
-    <encoder>
-      <pattern>${LOG_PATTERN}</pattern>
-    </encoder>
-    <file>${LOG_PATH}/${APP_NAME}-error.log</file>
-    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-      <level>ERROR</level>
-    </filter>
-    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>${LOG_PATH}/${APP_NAME}-error.%d{yyyy-MM-dd}.log</fileNamePattern>
-      <maxHistory>30</maxHistory>
-    </rollingPolicy>
-  </appender>
+  <conversionRule conversionWord="clr"
+    converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+  <property name="LOG_FILE_NAME" value="application"/>
 
-  <!-- 콘솔 출력 Appender (색상 포함) -->
-  <property name="APP_NAME" value="discodeit"/>
-
-  <!-- 파일 출력 Appender -->
-  <property name="LOG_PATH" value=".logs"/>
-
-  <!-- 에러 전용 Appender -->
+  <!-- 콘솔 출력 설정 -->
   <property name="LOG_PATTERN"
-    value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+    value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %clr(%-5level) %-36logger{36} [%X{requestId} | %X{requestMethod} | %X{requestUri}] - %msg%n"/>
 
-  <!-- 프로파일: 개발용(dev) -->
-  <springProfile name="dev">
-    <!-- 프로젝트 로그는 DEBUG 레벨 -->
-    <logger level="DEBUG" name="com.sprint.mission.discodeit"/>
+  <!-- 파일 출력 설정 -->
+  <property name="LOG_FILE_PATH" value=".logs"/>
 
-    <!-- SQL 로그를 위한 설정 (유지) -->
-    <logger level="DEBUG" name="org.hibernate.SQL"/>
-    <logger level="TRACE" name="org.hibernate.type.descriptor.sql"/>
-
-    <!-- Spring 웹 관련 로그 -->
-    <logger level="DEBUG" name="org.springframework.web"/>
-    <logger level="DEBUG" name="org.springframework.transaction"/>
-
-    <!-- 기타 Spring 로그 -->
-    <logger level="INFO" name="org.springframework"/>
-    <logger level="INFO" name="org.hibernate"/>
-
-    <root level="INFO">
-      <appender-ref ref="CONSOLE"/>
-      <appender-ref ref="FILE"/>
-      <appender-ref ref="ERROR_FILE"/>
-    </root>
-  </springProfile>
-
-  <!-- 프로파일: 운영용(prod) -->
-  <springProfile name="prod">
-    <!-- 프로젝트 로그는 INFO 레벨 -->
-    <logger level="INFO" name="com.sprint.mission.discodeit"/>
-
-    <!-- 외부 라이브러리 로그 최소화 -->
-    <logger level="WARN" name="org.springframework"/>
-    <logger level="WARN" name="org.hibernate"/>
-    <logger level="WARN" name="com.zaxxer.hikari"/>
-    <logger level="WARN" name="org.apache.tomcat"/>
-
-    <root level="INFO">
-      <appender-ref ref="CONSOLE"/>
-      <appender-ref ref="FILE"/>
-      <appender-ref ref="ERROR_FILE"/>
-    </root>
-  </springProfile>
-
+  <!-- 루트 로거 설정 - 레벨은 application.yaml에서 관리 -->
+  <root>
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="FILE"/>
+  </root>
 </configuration>

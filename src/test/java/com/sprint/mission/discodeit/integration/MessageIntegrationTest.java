@@ -24,9 +24,8 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +38,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -128,19 +128,19 @@ public class MessageIntegrationTest {
         // Given
         UUID channelId = savedPublicChannel.getId();
         UUID authorId = savedUser1.getId();
-
         MessageCreateRequest request = new MessageCreateRequest("통합 테스트 내용", channelId, authorId);
         String json = objectMapper.writeValueAsString(request);
-
         MockMultipartFile messagePart = new MockMultipartFile(
-            "messageCreateRequest", "", "application/json", json.getBytes()
+            "messageCreateRequest", "", "application/json", json.getBytes(StandardCharsets.UTF_8)
         );
 
-        // When & Then
-        mockMvc.perform(multipart("/api/messages")
-                .file(messagePart)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-            .andExpect(status().isCreated())
+        // When
+        ResultActions result = mockMvc.perform(multipart("/api/messages")
+            .file(messagePart)
+            .contentType(MediaType.MULTIPART_FORM_DATA));
+
+        // Then
+        result.andExpect(status().isCreated())
             .andExpect(jsonPath("$.content").value("통합 테스트 내용"))
             .andDo(print());
     }
@@ -151,12 +151,14 @@ public class MessageIntegrationTest {
         // Given
         UUID channelId = savedPublicChannel.getId();
 
-        // When & Then
-        mockMvc.perform(get("/api/messages")
-                .param("channelId", channelId.toString())
-                .param("page", "0")     // 페이지 번호
-                .param("size", "10"))   // 페이지 당 항목 수
-            .andExpect(status().isOk())
+        // When
+        ResultActions result = mockMvc.perform(get("/api/messages")
+            .param("channelId", channelId.toString())
+            .param("page", "0")     // 페이지 번호
+            .param("size", "10"));   // 페이지 당 항목 수
+
+        // Then
+        result.andExpect(status().isOk())
             .andExpect(jsonPath("$.content").isArray())
             .andDo(print());
     }
@@ -166,15 +168,16 @@ public class MessageIntegrationTest {
     void updateMessage() throws Exception {
         // Given
         UUID messageId = savedMessage.getId();
-
         MessageUpdateRequest request = new MessageUpdateRequest("수정된 내용");
         String json = objectMapper.writeValueAsString(request);
 
-        // When & Then
-        mockMvc.perform(patch("/api/messages/{messageId}", messageId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-            .andExpect(status().isOk())
+        // When
+        ResultActions result = mockMvc.perform(patch("/api/messages/{messageId}", messageId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json));
+
+        // Then
+        result.andExpect(status().isOk())
             .andExpect(jsonPath("$.content").value("수정된 내용"))
             .andDo(print());
     }
@@ -185,8 +188,10 @@ public class MessageIntegrationTest {
         // Given
         UUID messageId = savedMessage.getId();
 
-        // When & Then
-        mockMvc.perform(delete("/api/messages/{messageId}", messageId))
-            .andExpect(status().isNoContent());
+        // When
+        ResultActions result = mockMvc.perform(delete("/api/messages/{messageId}", messageId));
+
+        // Then
+        result.andExpect(status().isNoContent());
     }
 }

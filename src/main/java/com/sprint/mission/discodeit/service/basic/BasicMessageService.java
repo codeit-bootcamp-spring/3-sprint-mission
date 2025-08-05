@@ -77,11 +77,11 @@ public class BasicMessageService implements MessageService {
         );
 
         validateContent(request.content(), attachments);
-        messageRepository.save(message);
+        Message savedMessage = messageRepository.save(message);
         log.info("[message] 생성 완료: messageId={}, authorId={}, channelId={}",
             message.getId(), authorId, channelId);
 
-        return messageMapper.toDto(message);
+        return messageMapper.toDto(savedMessage);
     }
 
     @Transactional(readOnly = true)

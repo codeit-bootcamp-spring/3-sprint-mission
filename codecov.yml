@@ -1,0 +1,25 @@
+coverage:
+  precision: 2
+  round: down
+  range: 50..90
+
+  status:
+    project:
+      default:
+        target: 70%
+        threshold: 5%
+    patch:
+      default:
+        target: 70%
+
+ignore:
+  - "src/test/**/*"
+  - "**/*Application.java"
+  - "**/config/**"
+  - "**/dto/**"
+  - "**/entity/**"
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false

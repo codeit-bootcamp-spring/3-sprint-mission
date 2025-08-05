@@ -61,11 +61,11 @@ public class BasicReadStatusService implements ReadStatusService {
 
         Instant lastReadAt = request.lastReadAt();
         ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
-        readStatusRepository.save(readStatus);
+        ReadStatus savedReadStatus = readStatusRepository.save(readStatus);
         log.info("[readStatus] 생성 완료: readStatusId={}, userId={}, channelId={}, lastReadAt={}",
             readStatus.getId(), userId, channelId, lastReadAt != null ? lastReadAt : "(null)");
 
-        return readStatusMapper.toDto(readStatus);
+        return readStatusMapper.toDto(savedReadStatus);
     }
 
     @Transactional(readOnly = true)
