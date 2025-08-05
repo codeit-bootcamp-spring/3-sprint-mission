@@ -8,7 +8,8 @@ CREATE TABLE users
     username   varchar(50) UNIQUE       NOT NULL,
     email      varchar(100) UNIQUE      NOT NULL,
     password   varchar(60)              NOT NULL,
-    profile_id uuid
+    profile_id uuid,
+    role       varchar(20)              NOT NULL
 );
 
 -- BinaryContent
@@ -82,6 +83,9 @@ ALTER TABLE users
         FOREIGN KEY (profile_id)
             REFERENCES binary_contents (id)
             ON DELETE SET NULL;
+
+ALTER TABLE users
+    ADD role varchar(20) NOT NULL;
 
 -- UserStatus (1) -> User (1)
 ALTER TABLE user_statuses

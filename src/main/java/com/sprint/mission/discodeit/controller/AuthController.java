@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,15 +38,23 @@ public class AuthController implements AuthApi {
   public ResponseEntity<UserDto> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
 
     if(userDetails==null){
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
     }
 
     UserDto userResponse= authService.getCurrentUserInfo(userDetails);
 
     if(userResponse==null){
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
     }
 
     return ResponseEntity.ok(userResponse);
+  }
+
+  @Override
+  public ResponseEntity<UserDto> updateUserRole(RoleUpdateRequest roleUpdateRequest) {
+
+    UserDto user = authService.updateUserRole(roleUpdateRequest);
+
+    return ResponseEntity.ok(user);
   }
 }
