@@ -57,13 +57,13 @@ public class User extends BaseUpdatableEntity implements Serializable {
         this.role = Role.USER;
     }
 
-//    public User(String username, String email, String password, BinaryContent profile) {
-//        super();
-//        this.username = username;
-//        this.email = email;
-//        this.password = password;
-//        this.profile = profile;
-//    }
+    public User(String username, String email, String password, BinaryContent profile) {
+        super();
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.profile = profile;
+    }
 
     // 프로필 있음
     public User(String username, String email, String password, UserStatus status, BinaryContent profile) {

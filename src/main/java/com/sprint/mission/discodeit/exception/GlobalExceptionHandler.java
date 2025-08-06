@@ -83,6 +83,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(ErrorCode.VALIDATION_FAILED.getStatus()).body(response);
     }
 
+
     private ResponseEntity<ErrorResponse> buildDiscodeitException(DiscodeitException e) {
         ErrorCode errorCode = e.getErrorCode();
         ErrorResponse response = ErrorResponse.builder()

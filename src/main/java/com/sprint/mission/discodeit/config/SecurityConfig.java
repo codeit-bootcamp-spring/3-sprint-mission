@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.handler.CustomAccessDeniedHandler;
+import com.sprint.mission.discodeit.handler.CustomSessionExpiredStrategy;
 import com.sprint.mission.discodeit.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.handler.LoginSuccessHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,9 @@ import org.springframework.security.access.expression.method.MethodSecurityExpre
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -21,6 +25,7 @@ import org.springframework.security.web.authentication.Http403ForbiddenEntryPoin
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -45,7 +50,8 @@ public class SecurityConfig {
         HttpSecurity http,
         LoginSuccessHandler loginSuccessHandler,
         LoginFailureHandler loginFailureHandler,
-        CustomAccessDeniedHandler customAccessDeniedHandler
+        CustomAccessDeniedHandler customAccessDeniedHandler,
+        SessionRegistry sessionRegistry
     ) throws Exception {
 
         System.out.println("[SecurityConfig] FilterChain 구성 시작 - Form 기반 로그인 사용");
@@ -77,10 +83,19 @@ public class SecurityConfig {
                 .requestMatchers("/api/**").authenticated()
             )
 
+            .sessionManagement(management -> management
+                .sessionFixation().migrateSession()
+                .sessionConcurrency(concurrency -> concurrency
+                    .maximumSessions(1)
+                    .maxSessionsPreventsLogin(false)
+                    .sessionRegistry(sessionRegistry) // 세션 추적
+                    .expiredSessionStrategy(new CustomSessionExpiredStrategy())
+                )
+            )
+
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
                 .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
-
             )
 
             .exceptionHandling(ex -> ex
@@ -89,6 +104,32 @@ public class SecurityConfig {
             );
 
         return http.build();
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        SessionRegistryImpl sessionRegistry = new SessionRegistryImpl() {
+            /**
+             * 동시 세션 제어
+             * 세션 만료 확인
+             * 개발자 직접 조회
+             * 시점에 호출
+             */
+            @Override
+            public SessionInformation getSessionInformation(String sessionId) {
+                SessionInformation information = super.getSessionInformation(sessionId);
+                if(information != null) {
+                    System.out.println("[SessionRegistry] 세션 정보 조회 - 세션ID: " + sessionId + ", 만료됨: " + information.isExpired());
+                }
+                return information;
+            }
+        };
+        return sessionRegistry;
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
     }
 
     @Bean
@@ -110,7 +151,6 @@ public class SecurityConfig {
 
     @Bean
     public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
-
         return args -> {
             int filterSize = filterChain.getFilters().size();
 
