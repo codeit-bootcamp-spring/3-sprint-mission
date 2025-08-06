@@ -1,7 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.user.*;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,5 +26,7 @@ public interface UserService {
     UserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file);
 
     void deleteUser(UUID userId);
+
+    UserResponse updateRole(UserRoleUpdateRequest request);
 
 }

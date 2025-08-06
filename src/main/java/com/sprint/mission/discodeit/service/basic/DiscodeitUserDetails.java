@@ -28,8 +28,7 @@ public class DiscodeitUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // TODO role 설정 추가하면 수정해야함
-        return List.of(new SimpleGrantedAuthority(ROLE));
+        return List.of(new SimpleGrantedAuthority(ROLE + userResponse.role()));
     }
 
     @Override

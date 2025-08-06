@@ -31,20 +31,16 @@ import java.util.NoSuchElementException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+
     @ExceptionHandler(IllegalArgumentException.class) // 400
     public ResponseEntity<?> IllegalArgumentExceptionHandler(RuntimeException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
-
-//    @ExceptionHandler(BadCredentialsException.class) // 401
-//    public ResponseEntity<?> BadCredentialsException(RuntimeException e) {
-//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-//    }
-//
-//    @ExceptionHandler(DisabledException.class)
-//    public ResponseEntity<?> DisabledException(RuntimeException e) {
-//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-//    }
 
     @ExceptionHandler(NoSuchElementException.class) // 404
     public ResponseEntity<?> NoSuchElementExceptionHandler(RuntimeException e) {

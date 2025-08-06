@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.userException.UserAlreadyExistsException;
@@ -41,6 +43,7 @@ import java.util.*;
 @Transactional
 public class BasicUserService implements UserService {
 
+    private static final Role DEFAULT_ROLE = Role.USER;
     private static final String PROFILE_PATH = "img";
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
@@ -110,6 +113,7 @@ public class BasicUserService implements UserService {
                 .email(userCreateRequest.email())
                 .password(passwordEncoder.encode(userCreateRequest.password()))
                 .profile(nullableProfile)
+                .role(DEFAULT_ROLE)
                 .build();
             userRepository.save(user);
         }
@@ -230,6 +234,15 @@ public class BasicUserService implements UserService {
 //        // 파일 확인(있음) -> 파일 삭제 -> binary content 삭제 -> binary content 추가 -> 파일 생성 -> user 업데이트
 //        // 파일 확인(없음) ->                                  -> binary content 추가 -> 파일 생성 -> user 업데이트
 
+    }
+
+    @Override
+    public UserResponse updateRole(UserRoleUpdateRequest request) {
+        User user = userRepository.findById(request.userId()).orElseThrow(() -> new UserNotFoundException(Map.of("userId ", request.userId())));
+
+        user.updateRole(request.newRole());
+
+        return  userMapper.toDto(user);
     }
 
     private boolean hasValue(MultipartFile attachmentFiles) {

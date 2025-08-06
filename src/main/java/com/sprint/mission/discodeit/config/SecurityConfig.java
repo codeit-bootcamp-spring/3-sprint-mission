@@ -1,15 +1,23 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.handler.CustomAccessDeniedHandler;
 import com.sprint.mission.discodeit.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.handler.LoginSuccessHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -23,6 +31,7 @@ import java.util.stream.IntStream;
  * Author       : dounguk
  * Date         : 2025. 8. 5.
  */
+@Slf4j
 @Configuration
 public class SecurityConfig {
 
@@ -35,7 +44,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(
         HttpSecurity http,
         LoginSuccessHandler loginSuccessHandler,
-        LoginFailureHandler loginFailureHandler
+        LoginFailureHandler loginFailureHandler,
+        CustomAccessDeniedHandler accessDeniedHandler
     ) throws Exception {
 
         System.out.println("[SecurityConfig] FilterChain 구성 시작 - Form 기반 로그인 사용");
@@ -50,18 +60,55 @@ public class SecurityConfig {
                 .successHandler(loginSuccessHandler)
                 .failureHandler(loginFailureHandler)
             )
+
             .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll()
+                .requestMatchers("/", "/index.html", "/favicon.ico","/assets/**").permitAll()
+//                .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+
+                .requestMatchers("/api/auth/csrf-token").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                .requestMatchers("/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/logout").permitAll()
+
+
+                .requestMatchers("/api/channels/public").hasRole("CHANNEL_MANAGER")
+
+                .requestMatchers("/api/auth/role").hasRole("ADMIN")
+                .requestMatchers("/api/**").authenticated()
             )
 
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
                 .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
 
+            )
+
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
+                .accessDeniedHandler(accessDeniedHandler)
             );
 
         return http.build();
     }
+
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        RoleHierarchy hierarchy = RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_CHANNEL_MANAGER > ROLE_USER");
+        log.info("[roleHierarchy]: {}", hierarchy);
+
+        return hierarchy;
+    }
+
+    @Bean
+    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
+        DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+        handler.setRoleHierarchy(roleHierarchy);
+        log.info("[SecurityConfig] MethodSecurityExpressionHandler 설정 완료");
+        return handler;
+    }
+
 
     @Bean
     public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
