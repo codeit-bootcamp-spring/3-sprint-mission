@@ -44,50 +44,23 @@ public class User extends BaseUpdatableEntity implements Serializable {
     @JoinColumn(name = "profile_id")
     private BinaryContent profile;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserStatus status;
-
+    // 프로필 있음
+    public User(String username, String email, String password, BinaryContent profile) {
+        super();
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.profile = profile;
+        this.role = Role.USER;
+    }
 
     // 프로필 없음
     public User(String username, String email, String password) {
         super();
         this.username = username;
-        this.email = email;
         this.password = password;
+        this.email = email;
         this.role = Role.USER;
-    }
-
-    public User(String username, String email, String password, BinaryContent profile) {
-        super();
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.profile = profile;
-    }
-
-    // 프로필 있음
-    public User(String username, String email, String password, UserStatus status, BinaryContent profile) {
-        super();
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.status = status;
-        this.profile = profile;
-        this.role = Role.USER;
-    }
-
-    // 프로필 없음
-    public User(String username, String email, String password, UserStatus status) {
-        super();
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.status = status;
-        this.role = Role.USER;
-    }
-
-    public void changeUserStatus(UserStatus status) {
-        this.status = status;
     }
 
     public void changeUsername(String username) {
@@ -102,7 +75,7 @@ public class User extends BaseUpdatableEntity implements Serializable {
     public void changeProfile(BinaryContent profile) {
         this.profile = profile;
     }
-    public void updateRole(Role role) {
+    public void changeRole(Role role) {
         this.role = role;
     }
 }

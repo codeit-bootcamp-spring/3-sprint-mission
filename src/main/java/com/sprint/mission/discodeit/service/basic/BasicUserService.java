@@ -8,14 +8,13 @@ import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.userException.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
-import com.sprint.mission.discodeit.repository.jpa.UserStatusRepository;
+//import com.sprint.mission.discodeit.repository.jpa.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +46,7 @@ public class BasicUserService implements UserService {
     private static final String PROFILE_PATH = "img";
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final UserStatusRepository userStatusRepository;
+//    private final UserStatusRepository userStatusRepository;
     private final FileUploadUtils fileUploadUtils;
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
@@ -59,7 +58,8 @@ public class BasicUserService implements UserService {
 
     @Transactional(readOnly = true)
     public List<UserResponse> findAllUsers() {
-        List<User> users = userRepository.findAllWithBinaryContentAndUserStatus();
+//        List<User> users = userRepository.findAllWithBinaryContentAndUserStatus();
+        List<User> users = userRepository.findAllWithBinaryContent();
 
         List<UserResponse> responses = new ArrayList<>();
         for (User user : users) {
@@ -118,9 +118,9 @@ public class BasicUserService implements UserService {
             userRepository.save(user);
         }
         // USER STATUS
-        UserStatus userStatus = new UserStatus(user);
-        userStatusRepository.save(userStatus);
-        user.changeUserStatus(userStatus); // 양방향성을 위한 주입
+//        UserStatus userStatus = new UserStatus(user);
+//        userStatusRepository.save(userStatus);
+//        user.changeUserStatus(userStatus); // 양방향성을 위한 주입
 
         UserResponse response = userMapper.toDto(user);
         return response;
@@ -240,7 +240,7 @@ public class BasicUserService implements UserService {
     public UserResponse updateRole(UserRoleUpdateRequest request) {
         User user = userRepository.findById(request.userId()).orElseThrow(() -> new UserNotFoundException(Map.of("userId ", request.userId())));
 
-        user.updateRole(request.newRole());
+        user.changeRole(request.newRole());
 
         return  userMapper.toDto(user);
     }

@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
@@ -139,8 +138,8 @@ public class UserTest {
 
         assertThat(fileName).isEqualTo("avatar.png");
 
-        assertThat(savedUser.getStatus()).isNotNull();
-        assertThat(savedUser.getStatus().getUser().getId()).isEqualTo(userId);
+//        assertThat(savedUser.getStatus()).isNotNull();
+//        assertThat(savedUser.getStatus().getUser().getId()).isEqualTo(userId);
     }
 
     @Test
@@ -215,7 +214,7 @@ public class UserTest {
         userRepository.save(user);
         UUID userId = user.getId();
 
-        userStatusRepository.save(new UserStatus(user));
+//        userStatusRepository.save(new UserStatus(user));
 
         // when
         userService.deleteUser(userId);
@@ -224,7 +223,7 @@ public class UserTest {
         // binaryContent + userStatus 삭제
         assertThat(userRepository.findById(userId)).isEmpty();
         assertThat(binaryContentRepository.findById(profile.getId())).isEmpty();
-        assertThat(userStatusRepository.findById(userId)).isEmpty();
+//        assertThat(userStatusRepository.findById(userId)).isEmpty();
 
         assertThat(Files.exists(profileFile)).isFalse();
     }
@@ -241,14 +240,14 @@ public class UserTest {
         userRepository.save(user);
         UUID userId = user.getId();
 
-        userStatusRepository.save(new UserStatus(user));
+//        userStatusRepository.save(new UserStatus(user));
 
         // when
         userService.deleteUser(userId);
 
         // then
         assertThat(userRepository.findById(userId)).isEmpty();
-        assertThat(userStatusRepository.findById(userId)).isEmpty();
+//        assertThat(userStatusRepository.findById(userId)).isEmpty();
     }
 
     @Test
