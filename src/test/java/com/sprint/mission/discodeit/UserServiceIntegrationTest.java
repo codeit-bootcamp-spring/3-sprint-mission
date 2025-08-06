@@ -5,10 +5,8 @@ import com.sprint.mission.discodeit.dto.user.UserRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import org.junit.jupiter.api.AfterEach;
@@ -34,8 +32,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-        "discodeit.storage.type=local",
-        "discodeit.storage.local.root-path=./binaryTest"
+    "discodeit.storage.type=local",
+    "discodeit.storage.local.root-path=./binaryTest"
 })
 @DisplayName("UserService 통합 테스트")
 @Transactional
@@ -89,16 +87,16 @@ public class UserServiceIntegrationTest {
         // given
         BinaryContent profile = new BinaryContent("profile.png", 3L, "image/png");
         User user = User.builder()
-                .username("test")
-                .email("test@test.com")
-                .password("pwd1234")
-                .profile(profile)
-                .build();
+            .username("test")
+            .email("test@test.com")
+            .password("pwd1234")
+            .profile(profile)
+            .build();
 
         UserStatus userStatus = UserStatus.builder()
-                .user(user)
-                .lastActiveAt(Instant.now())
-                .build();
+            .user(user)
+            .lastActiveAt(Instant.now())
+            .build();
 
         user.updateStatus(userStatus);
 
@@ -129,14 +127,14 @@ public class UserServiceIntegrationTest {
         Path testRoot = Paths.get("./binaryTest");
         if (Files.exists(testRoot)) {
             Files.walk(testRoot)
-                    .sorted((a, b) -> b.compareTo(a)) // 파일 먼저, 그 다음 디렉토리 삭제
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                        } catch (IOException e) {
-                            // 무시 또는 로깅
-                        }
-                    });
+                .sorted((a, b) -> b.compareTo(a)) // 파일 먼저, 그 다음 디렉토리 삭제
+                .forEach(path -> {
+                    try {
+                        Files.delete(path);
+                    } catch (IOException e) {
+                        // 무시 또는 로깅
+                    }
+                });
         }
     }
 }

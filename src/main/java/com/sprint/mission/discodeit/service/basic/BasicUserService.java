@@ -8,18 +8,18 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
 import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
-import com.sprint.mission.discodeit.exception.userstatus.NotFoundUserStatusException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.mapper.struct.BinaryContentStructMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.session.SessionInformation;
@@ -29,11 +29,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 @Slf4j
 @Service("basicUserService")
 @RequiredArgsConstructor
@@ -42,7 +37,6 @@ public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final UserStatusRepository userStatusRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
     private final BinaryContentStructMapper binaryContentMapper;
@@ -74,7 +68,6 @@ public class BasicUserService implements UserService {
             .email(email)
             .password(encodedPassword)
             .profile(null)
-            .status(null)
             .build();
 
         // 회원가입 시 기본 권한은 USER
@@ -92,15 +85,7 @@ public class BasicUserService implements UserService {
             binaryContentStorage.put(profileImage.getId(), bytes);
         }
 
-        UserStatus userStatus = UserStatus.builder()
-            .user(user)
-            .lastActiveAt(Instant.now())
-            .build();
-
-        user.updateStatus(userStatus);
-
         User savedUser = userRepository.save(user);
-        userStatusRepository.save(userStatus);
 
         log.info("[BasicUserService] 사용자 등록 성공 - id: {}, username: {}, email: {}",
             savedUser.getId(), username, email);
@@ -112,22 +97,13 @@ public class BasicUserService implements UserService {
     public UserResponseDto findById(UUID id) {
         User user = findUser(id);
 
-        UserStatus userStatus = findUserStatus(id);
-
-        // 마지막 접속 시간 확인
-        user.updateStatus(userStatus);
-
         return userMapper.toDto(user);
     }
 
     @Override
     public List<UserResponseDto> findAll() {
         List<UserResponseDto> users = userRepository.findAll().stream()
-            .map(user -> {
-                UserStatus userStatus = findUserStatus(user.getId());
-                user.updateStatus(userStatus);
-                return userMapper.toDto(user);
-            })
+            .map(userMapper::toDto)
             .toList();
 
         return users;
@@ -206,8 +182,6 @@ public class BasicUserService implements UserService {
         userRepository.deleteById(id);
         log.debug("[BasicUserService] userRepository 삭제 완료 - userId: {}", id);
 
-        userStatusRepository.deleteByUserId(id);
-
         if (user.getProfile() != null) {
             binaryContentRepository.deleteById(user.getProfile().getId());
         }
@@ -237,11 +211,6 @@ public class BasicUserService implements UserService {
     private User findUser(UUID id) {
         return userRepository.findById(id)
             .orElseThrow(() -> new NotFoundUserException(id));
-    }
-
-    private UserStatus findUserStatus(UUID id) {
-        return userStatusRepository.findByUserId(id)
-            .orElseThrow(() -> new NotFoundUserStatusException(id));
     }
 
     /**

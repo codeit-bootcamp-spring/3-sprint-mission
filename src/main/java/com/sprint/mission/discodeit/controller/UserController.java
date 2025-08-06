@@ -8,7 +8,6 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDto;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.util.FileConverter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +40,6 @@ import java.util.UUID;
 public class UserController implements UserApi {
 
     private final UserService userService;
-    private final UserStatusService userStatusService;
 
     // 신규 유저 생성 요청
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -50,7 +48,7 @@ public class UserController implements UserApi {
         @RequestPart(value = "profile", required = false) MultipartFile profile) {
 
         log.info("[UserController] 유저 생성 요청- {}", userRequestDTO);
-        
+
         BinaryContentDto profileRequest = FileConverter.resolveFileRequest(profile);
 
         UserResponseDto createdUser = userService.create(userRequestDTO, profileRequest);
@@ -81,14 +79,5 @@ public class UserController implements UserApi {
         userService.deleteById(userId);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    @PatchMapping(path = "/{userId}/userStatus")
-    public ResponseEntity<UserStatusResponseDto> updateUserStatus(@PathVariable UUID userId,
-        @RequestBody UserStatusUpdateDto userStatusUpdateDTO) {
-        UserStatusResponseDto userStatusResponseDTO = userStatusService.updateByUserId(userId,
-            userStatusUpdateDTO);
-
-        return ResponseEntity.status(HttpStatus.OK).body(userStatusResponseDTO);
     }
 }
