@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.auth.handler.CustomAccessDeniedHandler;
+import com.sprint.mission.discodeit.auth.handler.CustomSessionExpiredStrategy;
 import com.sprint.mission.discodeit.auth.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.auth.handler.LoginSuccessHandler;
 import java.util.List;
@@ -21,6 +23,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -28,6 +33,7 @@ import org.springframework.security.web.authentication.Http403ForbiddenEntryPoin
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
@@ -65,7 +71,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http,
         LoginSuccessHandler loginSuccessHandler,
         LoginFailureHandler loginFailureHandler,
-        CustomAccessDeniedHandler customAccessDeniedHandler)
+        CustomAccessDeniedHandler customAccessDeniedHandler,
+        SessionRegistry sessionRegistry)
         throws Exception {
         log.debug("[SecurityConfig] FilterChain 구성 시작");
 
@@ -108,6 +115,10 @@ public class SecurityConfig {
                 .maximumSessions(1)
                 // 새 로그인 시 기존 세션 무효화(false: 기존 세션 무효화, true: 무효화 안함)
                 .maxSessionsPreventsLogin(false)
+                // 동시 세션 제어 처리
+                .sessionRegistry(sessionRegistry)
+                // 세션 만료 처리 전략
+                .expiredSessionStrategy(new CustomSessionExpiredStrategy(new ObjectMapper()))
             )
             .headers(headers -> headers
                 .frameOptions(FrameOptionsConfig::sameOrigin))
@@ -135,6 +146,48 @@ public class SecurityConfig {
         return http.build();
     }
 
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        SessionRegistry sessionRegistry = new SessionRegistryImpl() {
+
+            @Override
+            public SessionInformation getSessionInformation(String sessionId) {
+                SessionInformation information = super.getSessionInformation(sessionId);
+
+                if (information != null) {
+                    log.debug("[SessionRegistry] 세션 정보- 세션 ID: {} 만료됨: {}", sessionId,
+                        information.isExpired());
+                }
+
+                return information;
+            }
+
+            @Override
+            public void removeSessionInformation(String sessionId) {
+                log.debug("[SessionRegistry] 세션 제거- sessionId: {}", sessionId);
+
+                super.removeSessionInformation(sessionId);
+            }
+
+            @Override
+            public void registerNewSession(String sessionId, Object principal) {
+                log.debug("[SessionRegistry] 새 세션 등록- 사용자: {} 세션 ID: {}", principal, sessionId);
+
+                super.registerNewSession(sessionId, principal);
+
+                log.debug("[SessionRegistry] 현재 활성 세션 수: {}",
+                    getAllSessions(principal, false).size());
+            }
+        };
+
+        return sessionRegistry;
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+    
     @Bean
     public RoleHierarchy roleHierarchy() {
         RoleHierarchy roleHierarchy = RoleHierarchyImpl.fromHierarchy(
