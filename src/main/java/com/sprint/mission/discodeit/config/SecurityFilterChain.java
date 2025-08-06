@@ -55,16 +55,22 @@ public class SecurityFilterChain {
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/api/auth/csrf-token",
-                    "/api/users",
+                    "/",
+                    "/index.html",
+                    "/favicon.ico",
+                    "/index-*.js",
+                    "/index-*.css",
+                    "/assets/**",
+
                     "/api/auth/login",
                     "/api/auth/logout",
-                    "/swagger-ui/**",
-                    "/v3/api-docs/**",
-                    "/actuator/**"
-                ).permitAll()
-                .anyRequest().permitAll()
+                    "/api/auth/csrf-token",
+                    "/api/users",
 
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**"
+                ).permitAll()
+                .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(authenticationEntryPoint())
@@ -98,4 +104,5 @@ public class SecurityFilterChain {
             );
         };
     }
+
 }

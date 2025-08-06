@@ -2,12 +2,14 @@ package com.sprint.mission.discodeit.exception;
 
 import com.sprint.mission.discodeit.dto.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -82,5 +84,21 @@ public class GlobalExceptionHandler {
             HttpStatus.BAD_REQUEST.value()
         );
         return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+        AccessDeniedException e,
+        HttpServletRequest request
+    ) {
+        ErrorResponse response = new ErrorResponse(
+            Instant.now(),
+            "ACCESS_DENIED",
+            "접근 권한이 없습니다.",
+            Map.of("requestUri", request.getRequestURI()),
+            e.getClass().getSimpleName(),
+            HttpServletResponse.SC_FORBIDDEN
+        );
+        return ResponseEntity.status(HttpServletResponse.SC_FORBIDDEN).body(response);
     }
 }
