@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.config;
 
 
 import com.sprint.mission.discodeit.handler.CustomAccessDeniedHandler;
-import com.sprint.mission.discodeit.handler.CustomAuthenticationEntryPoint;
 import com.sprint.mission.discodeit.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.handler.LoginSuccessHandler;
 import org.springframework.boot.CommandLineRunner;
@@ -19,6 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -55,7 +55,6 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            LoginSuccessHandler loginSuccessHandler,
                                            LoginFailureHandler loginFailureHandler,
-                                           CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
                                            CustomAccessDeniedHandler customAccessDeniedHandler) throws Exception {
         return
                 http
@@ -87,7 +86,7 @@ public class SecurityConfig {
 
 
                         .exceptionHandling(ex -> ex
-                                .authenticationEntryPoint(customAuthenticationEntryPoint)
+                                .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
                                 .accessDeniedHandler(customAccessDeniedHandler))
                         .build();
     }
