@@ -100,6 +100,15 @@ public class SecurityConfig {
 
                 .anyRequest().authenticated())
 
+            // 세션 관리 설정
+            .sessionManagement(session -> session
+                //세션 고정 공격 방지를 위해 세션 마이그레이션 설정(새 세션을 생성하고 기존 세션의 모든 속성을 복사)
+                .sessionFixation().migrateSession()
+                // 동시 로그인 제한(하나의 계정 당 세션 1개만 허용
+                .maximumSessions(1)
+                // 새 로그인 시 기존 세션 무효화(false: 기존 세션 무효화, true: 무효화 안함)
+                .maxSessionsPreventsLogin(false)
+            )
             .headers(headers -> headers
                 .frameOptions(FrameOptionsConfig::sameOrigin))
 
