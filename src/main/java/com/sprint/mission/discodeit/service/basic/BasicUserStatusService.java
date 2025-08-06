@@ -73,7 +73,7 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     @Transactional(readOnly = true)
-    
+
     public List<UserStatusDto> findAll() {
         log.debug("모든 UserStatus 조회 요청");
         return userStatusRepository.findAll().stream()
@@ -129,5 +129,20 @@ public class BasicUserStatusService implements UserStatusService {
 
         userStatusRepository.deleteById(userStatusId);
         log.info("UserStatus 삭제 완료: id={}", userStatusId);
+    }
+
+    @Transactional
+    public void updateLastActiveNow(UUID userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException(userId));
+
+        UserStatus userStatus = userStatusRepository.findByUserId(userId)
+            .orElseGet(() -> {
+                UserStatus newStatus = new UserStatus(user, Instant.now());
+                return userStatusRepository.save(newStatus);
+            });
+
+        userStatus.update(Instant.now());
+        log.info("UserStatus 갱신 or 생성 완료: userId={}", userId);
     }
 }
