@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.authService.LoginRequest;
-import com.sprint.mission.discodeit.dto.authService.LoginResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic
@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.dto.authService.LoginResponse;
  * 2025. 4. 25.        doungukkim       최초 생성
  */
 public interface AuthService {
-    LoginResponse login(LoginRequest request);
+
+    UserResponse getCurrentUserInfo(UserDetails userDetails);
 
 }

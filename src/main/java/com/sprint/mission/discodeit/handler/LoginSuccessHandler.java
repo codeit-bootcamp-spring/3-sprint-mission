@@ -1,9 +1,8 @@
 package com.sprint.mission.discodeit.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.dto.authService.LoginResponse;
+import com.sprint.mission.discodeit.dto.auth.LoginResponse;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.basic.DiscodeitUserDetails;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,8 +14,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
 
 /**
  * PackageName  : com.sprint.mission.discodeit.handler
@@ -52,27 +49,6 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
                 userResponse.online()
             );
 
-//            User user = customUserDetails.getUser();
-//
-//            BinaryContent profile = user.getProfile();
-//            BinaryContentResponse profileDto = null;
-//            if (profile != null) {
-//                profileDto = new BinaryContentResponse(
-//                    profile.getId(),
-//                    profile.getFileName(),
-//                    profile.getSize(),
-//                    profile.getContentType()
-//                );
-//            }
-//
-//            LoginResponse loginResponse = new LoginResponse(
-//                user.getId(),
-//                user.getUsername(),
-//                user.getEmail(),
-//                profileDto,
-//                isOnline(user.getStatus())
-//            );
-
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             response.setStatus(HttpServletResponse.SC_OK);
@@ -90,9 +66,9 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
 
     }
-
-    private static boolean isOnline(UserStatus userStatus) {
-        Instant now = Instant.now();
-        return Duration.between(userStatus.getLastActiveAt(), now).toMinutes() < 5;
-    }
+//
+//    private static boolean isOnline(UserStatus userStatus) {
+//        Instant now = Instant.now();
+//        return Duration.between(userStatus.getLastActiveAt(), now).toMinutes() < 5;
+//    }
 }
