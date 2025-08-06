@@ -27,7 +27,6 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
 public class UserStatus extends BaseUpdatableEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -45,5 +44,9 @@ public class UserStatus extends BaseUpdatableEntity implements Serializable {
     }
     public void changeLastActiveAt(Instant lastActiveAt) {
         this.lastActiveAt = lastActiveAt;
+    }
+
+    public void changeLastActiveAt() {
+        this.lastActiveAt = Instant.now();
     }
 }

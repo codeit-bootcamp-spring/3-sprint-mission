@@ -45,7 +45,7 @@ public class SecurityConfig {
         HttpSecurity http,
         LoginSuccessHandler loginSuccessHandler,
         LoginFailureHandler loginFailureHandler,
-        CustomAccessDeniedHandler accessDeniedHandler
+        CustomAccessDeniedHandler customAccessDeniedHandler
     ) throws Exception {
 
         System.out.println("[SecurityConfig] FilterChain 구성 시작 - Form 기반 로그인 사용");
@@ -63,7 +63,6 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/index.html", "/favicon.ico","/assets/**").permitAll()
-//                .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
 
@@ -71,7 +70,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/logout").permitAll()
-
 
                 .requestMatchers("/api/channels/public").hasRole("CHANNEL_MANAGER")
 
@@ -87,7 +85,7 @@ public class SecurityConfig {
 
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
-                .accessDeniedHandler(accessDeniedHandler)
+                .accessDeniedHandler(customAccessDeniedHandler)
             );
 
         return http.build();

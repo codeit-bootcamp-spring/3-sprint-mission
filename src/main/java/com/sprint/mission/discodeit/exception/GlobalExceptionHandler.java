@@ -31,12 +31,6 @@ import java.util.NoSuchElementException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException e) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-    }
-
-
     @ExceptionHandler(IllegalArgumentException.class) // 400
     public ResponseEntity<?> IllegalArgumentExceptionHandler(RuntimeException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

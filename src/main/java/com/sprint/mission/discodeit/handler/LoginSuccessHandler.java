@@ -66,9 +66,4 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
 
     }
-//
-//    private static boolean isOnline(UserStatus userStatus) {
-//        Instant now = Instant.now();
-//        return Duration.between(userStatus.getLastActiveAt(), now).toMinutes() < 5;
-//    }
 }
