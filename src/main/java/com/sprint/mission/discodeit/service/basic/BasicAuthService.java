@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class BasicAuthService implements AuthService {
   }
 
   @Override
+  @PreAuthorize("hasRole('ADMIN')")
   public UserDto updateUserRole(RoleUpdateRequest roleUpdateRequest) {
     User user = userRepository.findById(roleUpdateRequest.userId()).orElseThrow(UserNotFoundException::new);
     user.updateRole(roleUpdateRequest.newRole());
