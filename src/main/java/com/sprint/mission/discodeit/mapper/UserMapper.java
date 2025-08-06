@@ -21,6 +21,6 @@ public class UserMapper {
         Boolean online = user.getStatus().isLogin();
 
         return new UserResponseDto(user.getId(), user.getUsername(), user.getEmail(),
-                profileDto, online);
+            profileDto, online, user.getRole());
     }
 }
