@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
@@ -23,6 +24,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +41,8 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
+
+    private final SessionRegistry sessionRegistry;
 
     @Transactional
     @Override
@@ -172,6 +177,36 @@ public class BasicUserService implements UserService {
         user.updateRole(newRole);
         log.info("사용자 권한 변경: id={}, newRole={}", userId, newRole);
 
+        // 세션 만료 처리
+        expireSessionsForUsername(user.getUsername());
+
         return userMapper.toDto(user);
     }
+
+    private void expireSessionsForUsername(String username) {
+        log.info("세션 무효화 시작");
+
+        List<Object> allPrincipals = sessionRegistry.getAllPrincipals();
+
+        for (Object principal : allPrincipals) {
+            if (principal instanceof DiscodeitUserDetails userDetails) {
+                String principalName = userDetails.getUsername();
+
+                if (username.equals(principalName)) {
+                    List<SessionInformation> sessions = sessionRegistry.getAllSessions(principal,
+                        false);
+
+                    for (SessionInformation session : sessions) {
+                        session.expireNow();
+                        log.info("세션 만료 처리: sessionId={}, 만료됨={}",
+                            session.getSessionId(), session.isExpired());
+                    }
+                }
+            }
+        }
+
+        log.info("세션 무효화 완료");
+    }
+
+
 }
