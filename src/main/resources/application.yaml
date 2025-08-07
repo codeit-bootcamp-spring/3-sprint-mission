@@ -28,6 +28,9 @@ discodeit:
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
 
+remember-me:
+  key: ${REMEMBER_ME_KEY:remember-me}
+
 springdoc:
   api-docs:
     path: /v3/api-docs

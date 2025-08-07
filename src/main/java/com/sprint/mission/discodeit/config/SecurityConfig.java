@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.auth.handler.LoginSuccessHandler;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,17 +21,18 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -41,16 +43,12 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 @Slf4j
 public class SecurityConfig {
 
+    @Value("${remember-me.key}")
+    private String rememberMeKey;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring()
-            .requestMatchers("/favicon.ico", "/error", "/assets/**", "/static/**", "/index.html",
-                "/user-list.html", "/script.js", "/styles.css");
     }
 
     @Bean
@@ -68,11 +66,29 @@ public class SecurityConfig {
     }
 
     @Bean
+    public TokenBasedRememberMeServices rememberMeServices(UserDetailsService userDetailsService) {
+
+        TokenBasedRememberMeServices rememberMeServices = new TokenBasedRememberMeServices(
+            rememberMeKey,
+            userDetailsService);
+
+        // Remember-Me 토큰 유효 기간 설정
+        rememberMeServices.setTokenValiditySeconds(60 * 60 * 24 * 7); // 7일
+        rememberMeServices.setCookieName("remember-me");
+        rememberMeServices.setParameter("remember-me");
+
+        log.debug("[SecurityConfig] Remember-Me 설정 완료");
+
+        return rememberMeServices;
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
         LoginSuccessHandler loginSuccessHandler,
         LoginFailureHandler loginFailureHandler,
         CustomAccessDeniedHandler customAccessDeniedHandler,
-        SessionRegistry sessionRegistry)
+        SessionRegistry sessionRegistry,
+        TokenBasedRememberMeServices rememberMeServices)
         throws Exception {
         log.debug("[SecurityConfig] FilterChain 구성 시작");
 
@@ -84,11 +100,13 @@ public class SecurityConfig {
                 .ignoringRequestMatchers("/h2-console/**")) // CSRF 비활성화
             .authorizeHttpRequests(auth -> auth
                 // API가 아닌 요청
-                .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/", "/favicon.ico", "/error", "/assets/**", "/static/**")
+                .requestMatchers("/h2-console/**", "/",
+                    "/favicon.ico", "/error",
+                    "/assets/**", "/static/**",
+                    "/index.html",
+                    "/swagger-ui/**", "/v3/api-docs/**",
+                    "/actuator/**")
                 .permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/actuator/**").permitAll()
 
                 // 인증 없이 접근 가능한 API
                 .requestMatchers("/api/auth/csrf-token").permitAll()
@@ -122,6 +140,11 @@ public class SecurityConfig {
             )
             .headers(headers -> headers
                 .frameOptions(FrameOptionsConfig::sameOrigin))
+
+            // Remember-me 설정
+            .rememberMe(remember -> remember
+                .rememberMeServices(rememberMeServices)
+            )
 
             // Form 기반 로그인 활성화
             .formLogin(login -> login
@@ -187,7 +210,7 @@ public class SecurityConfig {
     public HttpSessionEventPublisher httpSessionEventPublisher() {
         return new HttpSessionEventPublisher();
     }
-    
+
     @Bean
     public RoleHierarchy roleHierarchy() {
         RoleHierarchy roleHierarchy = RoleHierarchyImpl.fromHierarchy(
