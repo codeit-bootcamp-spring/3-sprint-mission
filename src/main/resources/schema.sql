@@ -28,19 +28,6 @@ CREATE TABLE IF NOT EXISTS users
         ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS user_statuses
-(
-    id             UUID,
-    created_at     TIMESTAMP with time zone NOT NULL,
-    updated_at     TIMESTAMP with time zone,
-    user_id        UUID                     NOT NULL UNIQUE,
-    last_active_at TIMESTAMP with time zone NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (user_id)
-        REFERENCES users (id)
-        ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS channels
 (
     id          UUID,
