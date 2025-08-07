@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +49,7 @@ public class BasicMessageService implements MessageService {
     @Override
     @Transactional
     public MessageResponseDto create(MessageRequestDto messageRequestDto,
-                                     List<BinaryContentDto> binaryContentDtos) {
+        List<BinaryContentDto> binaryContentDtos) {
         User author = findUser(messageRequestDto.authorId());
         Channel channel = findChannel(messageRequestDto.channelId());
 
@@ -66,22 +67,24 @@ public class BasicMessageService implements MessageService {
         String content = messageRequestDto.content();
 
         log.info("[BasicMessageService] 메시지 생성 요청- authorId: {}, channelId: {}, content: {}",
-                author.getId(), channel.getId(), messageRequestDto.content());
+            author.getId(), channel.getId(), messageRequestDto.content());
 
         Message message = Message.builder()
-                .content(content)
-                .author(author)
-                .channel(channel)
-                .attachments(new ArrayList<>())
-                .build();
+            .content(content)
+            .author(author)
+            .channel(channel)
+            .attachments(new ArrayList<>())
+            .build();
 
         message.updateAttachments(binaryContents);
 
         Message savedMessage = messageRepository.save(message);
 
-        log.info("[BasicMessageService] 메시지 생성 성공- id: {}, authorId: {}, channelId: {}, content: {}",
-                savedMessage.getId(), savedMessage.getAuthor().getId(), savedMessage.getChannel().getId(),
-                savedMessage.getContent());
+        log.info(
+            "[BasicMessageService] 메시지 생성 성공- id: {}, authorId: {}, channelId: {}, content: {}",
+            savedMessage.getId(), savedMessage.getAuthor().getId(),
+            savedMessage.getChannel().getId(),
+            savedMessage.getContent());
 
         return messageMapper.toDto(message);
     }
@@ -94,13 +97,14 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public PageResponse<MessageResponseDto> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable) {
+    public PageResponse<MessageResponseDto> findAllByChannelId(UUID channelId, Instant cursor,
+        Pageable pageable) {
         int size = pageable.getPageSize();
 
         Pageable extendedPageable = PageRequest.of(
-                pageable.getPageNumber(),
-                size + 1,
-                pageable.getSort()
+            pageable.getPageNumber(),
+            size + 1,
+            pageable.getSort()
         );
 
         List<Message> messages;
@@ -109,23 +113,25 @@ public class BasicMessageService implements MessageService {
             messages = messageRepository.findPageByChannelId(channelId, extendedPageable);
         } else {
             messages = messageRepository.findByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(
-                    channelId, cursor, extendedPageable);
+                channelId, cursor, extendedPageable);
         }
 
         boolean hasNext = messages.size() > size;
 
         List<Message> contentMessages = hasNext ? messages.subList(0, size) : messages;
 
-        Instant nextCursor = hasNext ? contentMessages.get(contentMessages.size() - 1).getCreatedAt() : null;
+        Instant nextCursor =
+            hasNext ? contentMessages.get(contentMessages.size() - 1).getCreatedAt() : null;
 
         List<MessageResponseDto> content = contentMessages.stream()
-                .map(messageMapper::toDto)
-                .toList();
+            .map(messageMapper::toDto)
+            .toList();
 
         return new PageResponse<>(content, nextCursor, size, hasNext, null);
     }
 
     @Override
+    @PreAuthorize("@messageSecurity.isOwner(#messageId, authentication.principal.id)")
     @Transactional
     public MessageResponseDto updateContent(UUID messageId, String content) {
         log.info("[BasicMessageService] 메시지 내용 수정 요청- id: {} content: {}", messageId, content);
@@ -136,13 +142,15 @@ public class BasicMessageService implements MessageService {
 
         Message updatedMessage = messageRepository.save(message);
 
-        log.info("[BasicMessageService] 메시지 내용 수정 성공- id: {}, newContent: {}", updatedMessage.getId(),
-                updatedMessage.getContent());
+        log.info("[BasicMessageService] 메시지 내용 수정 성공- id: {}, newContent: {}",
+            updatedMessage.getId(),
+            updatedMessage.getContent());
 
         return messageMapper.toDto(updatedMessage);
     }
 
     @Override
+    @PreAuthorize("@messageSecurity.isOwner(#messageId, authentication.principal.id)")
     @Transactional
     public void deleteById(UUID messageId) {
         log.info("[BasicMessageService] 메시지 삭제 요청: id: {}", messageId);
@@ -161,22 +169,22 @@ public class BasicMessageService implements MessageService {
 
     private List<BinaryContent> convertBinaryContentDtos(List<BinaryContentDto> binaryContentDtos) {
         return binaryContentDtos.stream()
-                .map(binaryContentMapper::toEntity)
-                .toList();
+            .map(binaryContentMapper::toEntity)
+            .toList();
     }
 
     private Message findMessage(UUID id) {
         return messageRepository.findById(id)
-                .orElseThrow(() -> new NotFoundMessageException(id));
+            .orElseThrow(() -> new NotFoundMessageException(id));
     }
 
     private Channel findChannel(UUID id) {
         return channelRepository.findById(id)
-                .orElseThrow(() -> new NotFoundChannelException(id));
+            .orElseThrow(() -> new NotFoundChannelException(id));
     }
 
     private User findUser(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundUserException(id));
+            .orElseThrow(() -> new NotFoundUserException(id));
     }
 }
