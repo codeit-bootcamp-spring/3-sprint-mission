@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -23,6 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,9 +44,7 @@ class UserControllerTest {
     @MockitoBean
     private BasicUserService userService;
 
-    @MockitoBean
-    private BasicUserStatusService userStatusService;
-
+    @WithMockUser
     @Test
     @DisplayName("사용자 생성 요청이 올바르게 처리되어야 한다.")
     void givenValidUserRequest_whenCreateUser_thenReturnCreatedUserResponse()
@@ -57,7 +58,7 @@ class UserControllerTest {
             "image/png");
 
         UserResponseDto expectedResponse = new UserResponseDto(userId, "test", "test@test.com",
-            profileImage, null);
+            profileImage, null, Role.USER);
 
         MockMultipartFile userCreateRequest = new MockMultipartFile(
             "userCreateRequest",
@@ -80,7 +81,9 @@ class UserControllerTest {
         ResultActions result = mockMvc.perform(multipart("/api/users")
             .file(userCreateRequest)
             .file(profile)
-            .contentType(MediaType.MULTIPART_FORM_DATA));
+            .contentType(MediaType.MULTIPART_FORM_DATA)
+            .with(csrf())
+        );
 
         // then
         result.andExpect(status().isCreated())
@@ -93,6 +96,7 @@ class UserControllerTest {
         ), any());
     }
 
+    @WithMockUser
     @Test
     @DisplayName("필수 항목이 누락되면 400 Bad Request가 발생해야 한다.")
     void givenMissingRequiredField_whenCreateUser_thenReturnBadRequestWithValidationError()
@@ -111,7 +115,9 @@ class UserControllerTest {
         // when
         ResultActions result = mockMvc.perform(multipart("/api/users")
             .file(userCreateRequest)
-            .contentType(MediaType.MULTIPART_FORM_DATA));
+            .contentType(MediaType.MULTIPART_FORM_DATA)
+            .with(csrf())
+        );
 
         // then
         result.andExpect(status().isBadRequest())

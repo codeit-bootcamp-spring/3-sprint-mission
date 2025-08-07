@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.config.JpaConfig;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,16 +30,18 @@ class UserRepositoryTest {
 
         // given
         User user1 = User.builder()
-                .username("test1")
-                .email("test1@test.com")
-                .password("pwd1234")
-                .build();
+            .username("test1")
+            .email("test1@test.com")
+            .password("pwd1234")
+            .role(Role.USER)
+            .build();
 
         User user2 = User.builder()
-                .username("test2")
-                .email("test2@test.com")
-                .password("pwd12345")
-                .build();
+            .username("test2")
+            .email("test2@test.com")
+            .password("pwd12345")
+            .role(Role.USER)
+            .build();
 
         userRepository.save(user1);
         userRepository.save(user2);

@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.message.MessageRequestDto;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -20,6 +22,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,10 +43,10 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-        "discodeit.storage.type=local",
-        "discodeit.storage.local.root-path=./binaryTest"
+    "discodeit.storage.type=local",
+    "discodeit.storage.local.root-path=./binaryTest"
 })
-@DisplayName("UserService 통합 테스트")
+@DisplayName("MessageService 통합 테스트")
 @Transactional
 public class MessageServiceIntegrationTest {
 
@@ -71,33 +75,27 @@ public class MessageServiceIntegrationTest {
     @BeforeEach
     void setUp() {
         User author = User.builder()
-                .username("test")
-                .email("test@test.com")
-                .password("pwd1234")
-                .build();
-
-        UserStatus userStatus = UserStatus.builder()
-                .user(author)
-                .lastActiveAt(Instant.now())
-                .build();
-
-        author.updateStatus(userStatus);
+            .username("test")
+            .email("test@test.com")
+            .password("pwd1234")
+            .role(Role.USER)
+            .build();
 
         savedAuthor = userRepository.save(author);
 
         Channel channel1 = Channel.builder()
-                .name("public")
-                .description("test channel")
-                .type(ChannelType.PUBLIC)
-                .build();
+            .name("public")
+            .description("test channel")
+            .type(ChannelType.PUBLIC)
+            .build();
 
         savedChannel1 = channelRepository.save(channel1);
 
         Channel channel2 = Channel.builder()
-                .name("public2")
-                .description("test channel2")
-                .type(ChannelType.PUBLIC)
-                .build();
+            .name("public2")
+            .description("test channel2")
+            .type(ChannelType.PUBLIC)
+            .build();
 
         savedChannel2 = channelRepository.save(channel2);
     }
@@ -109,10 +107,10 @@ public class MessageServiceIntegrationTest {
         // given
         byte[] imageBytes = "test".getBytes(StandardCharsets.UTF_8);
         BinaryContentDto attachment = new BinaryContentDto("attachment.png", 3L,
-                "image/png", imageBytes);
+            "image/png", imageBytes);
 
         MessageRequestDto request = new MessageRequestDto("Hello", savedChannel1.getId(),
-                savedAuthor.getId());
+            savedAuthor.getId());
 
         // when
         MessageResponseDto result = messageService.create(request, List.of(attachment));
@@ -138,25 +136,25 @@ public class MessageServiceIntegrationTest {
 
         // given
         Message message1 = Message.builder()
-                .author(savedAuthor)
-                .channel(savedChannel1)
-                .content("Hello")
-                .attachments(List.of())
-                .build();
+            .author(savedAuthor)
+            .channel(savedChannel1)
+            .content("Hello")
+            .attachments(List.of())
+            .build();
 
         Message message2 = Message.builder()
-                .author(savedAuthor)
-                .channel(savedChannel2)
-                .content("Hi")
-                .attachments(List.of())
-                .build();
+            .author(savedAuthor)
+            .channel(savedChannel2)
+            .content("Hi")
+            .attachments(List.of())
+            .build();
 
         Message message3 = Message.builder()
-                .author(savedAuthor)
-                .channel(savedChannel2)
-                .content("Nice")
-                .attachments(List.of())
-                .build();
+            .author(savedAuthor)
+            .channel(savedChannel2)
+            .content("Nice")
+            .attachments(List.of())
+            .build();
 
         messageRepository.save(message1);
         messageRepository.save(message2);
@@ -164,8 +162,9 @@ public class MessageServiceIntegrationTest {
         Pageable pageable = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         // when
-        PageResponse<MessageResponseDto> result = messageService.findAllByChannelId(savedChannel2.getId(),
-                null, pageable);
+        PageResponse<MessageResponseDto> result = messageService.findAllByChannelId(
+            savedChannel2.getId(),
+            null, pageable);
 
         // then
         List<MessageResponseDto> content = result.content();
@@ -184,11 +183,11 @@ public class MessageServiceIntegrationTest {
         BinaryContent attachment = new BinaryContent("attachment.png", 3L, "image/png");
 
         Message message = Message.builder()
-                .author(savedAuthor)
-                .channel(savedChannel1)
-                .content("Hello")
-                .attachments(List.of(attachment))
-                .build();
+            .author(savedAuthor)
+            .channel(savedChannel1)
+            .content("Hello")
+            .attachments(List.of(attachment))
+            .build();
 
         BinaryContent savedAttachment = binaryContentRepository.save(attachment);
         Message savedMessage = messageRepository.save(message);
@@ -196,6 +195,16 @@ public class MessageServiceIntegrationTest {
         UUID messageId = savedMessage.getId();
         UUID attachmentId = savedAttachment.getId();
 
+        UserResponseDto userResponseDto = new UserResponseDto(savedAuthor.getId(), "test",
+            "test.com", null,
+            true, Role.USER);
+        DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userResponseDto, "pwd1234");
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            userDetails, null, List.of()
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        
         // when
         messageService.deleteById(messageId);
 
@@ -211,14 +220,14 @@ public class MessageServiceIntegrationTest {
         Path testRoot = Paths.get("./binaryTest");
         if (Files.exists(testRoot)) {
             Files.walk(testRoot)
-                    .sorted((a, b) -> b.compareTo(a)) // 파일 먼저, 그 다음 디렉토리 삭제
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                        } catch (IOException e) {
-                            // 무시 또는 로깅
-                        }
-                    });
+                .sorted((a, b) -> b.compareTo(a)) // 파일 먼저, 그 다음 디렉토리 삭제
+                .forEach(path -> {
+                    try {
+                        Files.delete(path);
+                    } catch (IOException e) {
+                        // 무시 또는 로깅
+                    }
+                });
         }
     }
 }

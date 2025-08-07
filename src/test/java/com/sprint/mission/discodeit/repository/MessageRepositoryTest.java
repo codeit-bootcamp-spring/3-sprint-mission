@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.config.JpaConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -40,42 +41,43 @@ class MessageRepositoryTest {
     void setUp() {
         // given
         Channel channel = Channel.builder()
-                .name("public")
-                .type(ChannelType.PUBLIC)
-                .build();
+            .name("public")
+            .type(ChannelType.PUBLIC)
+            .build();
 
         User user = User.builder()
-                .username("test")
-                .email("test@test.com")
-                .password("pwd1234")
-                .build();
+            .username("test")
+            .email("test@test.com")
+            .password("pwd1234")
+            .role(Role.USER)
+            .build();
 
         savedChannel = channelRepository.save(channel);
         User savedUser = userRepository.save(user);
 
         Message message1 = Message.builder()
-                .channel(channel)
-                .author(user)
-                .content("Hello")
-                .build();
+            .channel(channel)
+            .author(user)
+            .content("Hello")
+            .build();
 
         Message message2 = Message.builder()
-                .channel(channel)
-                .author(user)
-                .content("Hi")
-                .build();
+            .channel(channel)
+            .author(user)
+            .content("Hi")
+            .build();
 
         Message message3 = Message.builder()
-                .channel(channel)
-                .author(user)
-                .content("Nice")
-                .build();
+            .channel(channel)
+            .author(user)
+            .content("Nice")
+            .build();
 
         Message message4 = Message.builder()
-                .channel(channel)
-                .author(user)
-                .content("Wow")
-                .build();
+            .channel(channel)
+            .author(user)
+            .content("Wow")
+            .build();
 
         messageRepository.saveAll(List.of(message1, message2, message3, message4));
     }
@@ -86,7 +88,7 @@ class MessageRepositoryTest {
 
         // when
         List<Message> result = messageRepository.findByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(
-                savedChannel.getId(), Instant.now(), PageRequest.of(0, 2)
+            savedChannel.getId(), Instant.now(), PageRequest.of(0, 2)
         );
 
         // then
@@ -100,7 +102,8 @@ class MessageRepositoryTest {
     void testFindPageByChannelId() {
 
         // when
-        List<Message> page1 = messageRepository.findPageByChannelId(savedChannel.getId(), PageRequest.of(0, 2));
+        List<Message> page1 = messageRepository.findPageByChannelId(savedChannel.getId(),
+            PageRequest.of(0, 2));
 
         // then
         assertEquals(2, page1.size());
