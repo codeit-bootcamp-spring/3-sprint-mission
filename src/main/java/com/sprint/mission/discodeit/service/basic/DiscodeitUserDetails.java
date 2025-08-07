@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * PackageName  : com.sprint.mission.discodeit.service.basic
@@ -63,5 +64,18 @@ public class DiscodeitUserDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return UserDetails.super.isEnabled();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DiscodeitUserDetails that)) return false;
+        // 사용자 이름 비교
+        return Objects.equals(userResponse.username(), that.userResponse.username());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userResponse.username());
     }
 }

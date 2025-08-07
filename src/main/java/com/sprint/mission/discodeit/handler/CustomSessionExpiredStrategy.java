@@ -4,11 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.ErrorResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.web.session.SessionInformationExpiredEvent;
 import org.springframework.security.web.session.SessionInformationExpiredStrategy;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -19,11 +17,10 @@ import java.time.Instant;
  * Author       : dounguk
  * Date         : 2025. 8. 6.
  */
-@Component
-@RequiredArgsConstructor
+
 public class CustomSessionExpiredStrategy implements SessionInformationExpiredStrategy {
 
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper=new ObjectMapper();
 
     @Override
     public void onExpiredSessionDetected(SessionInformationExpiredEvent event) throws IOException, ServletException {

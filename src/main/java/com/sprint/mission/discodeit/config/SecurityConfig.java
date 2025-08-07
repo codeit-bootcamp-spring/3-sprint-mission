@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.handler.CustomAccessDeniedHandler;
 import com.sprint.mission.discodeit.handler.CustomSessionExpiredStrategy;
 import com.sprint.mission.discodeit.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.handler.LoginSuccessHandler;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -37,7 +37,7 @@ import java.util.stream.IntStream;
  * Author       : dounguk
  * Date         : 2025. 8. 5.
  */
-@Slf4j
+
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
@@ -87,7 +87,7 @@ public class SecurityConfig {
 
             .sessionManagement(management -> management
                 .sessionFixation().migrateSession()
-                .sessionConcurrency(concurrency -> concurrency
+                .sessionConcurrency( concurrency -> concurrency
                     .maximumSessions(1)
                     .maxSessionsPreventsLogin(false)
                     .sessionRegistry(sessionRegistry) // 세션 추적
@@ -115,6 +115,16 @@ public class SecurityConfig {
     }
 
     @Bean
+    public RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy(SessionRegistry sessionRegistry) {
+        return new RegisterSessionAuthenticationStrategy(sessionRegistry);
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+
+    @Bean
     public SessionRegistry sessionRegistry() {
         SessionRegistryImpl sessionRegistry = new SessionRegistryImpl() {
             /**
@@ -136,14 +146,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public HttpSessionEventPublisher httpSessionEventPublisher() {
-        return new HttpSessionEventPublisher();
-    }
-
-    @Bean
     public RoleHierarchy roleHierarchy() {
         RoleHierarchy hierarchy = RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_CHANNEL_MANAGER > ROLE_USER");
-        log.info("[roleHierarchy]: {}", hierarchy);
+        System.out.println("[roleHierarchy]:" + hierarchy);
 
         return hierarchy;
     }
@@ -152,7 +157,7 @@ public class SecurityConfig {
     static MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
         handler.setRoleHierarchy(roleHierarchy);
-        log.info("[SecurityConfig] MethodSecurityExpressionHandler 설정 완료");
+        System.out.println("[SecurityConfig] MethodSecurityExpressionHandler 설정 완료");
         return handler;
     }
 

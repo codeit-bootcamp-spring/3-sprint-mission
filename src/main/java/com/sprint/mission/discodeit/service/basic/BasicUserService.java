@@ -14,7 +14,6 @@ import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
-//import com.sprint.mission.discodeit.repository.jpa.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,12 +46,14 @@ public class BasicUserService implements UserService {
 
     private static final Role DEFAULT_ROLE = Role.USER;
     private static final String PROFILE_PATH = "img";
+
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final FileUploadUtils fileUploadUtils;
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
+    private final SessionRegistry sessionRegistry;
 
     private static final Logger log= LoggerFactory.getLogger(BasicUserService.class);
 
@@ -235,11 +238,28 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserResponse updateRole(UserRoleUpdateRequest request) {
+        System.out.println("[updateRole]-------------");
         User user = userRepository.findById(request.userId()).orElseThrow(() -> new UserNotFoundException(Map.of("userId ", request.userId())));
 
         user.changeRole(request.newRole());
 
+        invalidateSessionByUsername(user.getUsername());
+
         return  userMapper.toDto(user);
+    }
+
+    private void invalidateSessionByUsername(String username) {
+        System.out.println("[invalidateSessionByUsername]-------------");
+        sessionRegistry.getAllPrincipals().forEach(principal -> {
+            if (principal instanceof UserDetails userDetails
+                && userDetails.getUsername().equals(username)) {
+                System.out.println(userDetails.getUsername()+" invalidate");
+                sessionRegistry.getAllSessions(principal, false).forEach(sessionInfo -> {
+                    sessionInfo.expireNow();
+                    System.out.println("[BasicUserService.invalidateSessionByUsername] 세션 만료됨: \n" + sessionInfo.getSessionId());
+                });
+            }
+        });
     }
 
     private boolean hasValue(MultipartFile attachmentFiles) {
