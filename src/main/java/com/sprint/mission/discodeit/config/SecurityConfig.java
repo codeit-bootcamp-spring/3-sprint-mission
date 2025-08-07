@@ -18,11 +18,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -58,6 +60,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            SessionRegistry sessionRegistry,
+                                           TokenBasedRememberMeServices rememberMeServices,
                                            LoginSuccessHandler loginSuccessHandler,
                                            LoginFailureHandler loginFailureHandler,
                                            CustomAccessDeniedHandler customAccessDeniedHandler) throws Exception {
@@ -83,6 +86,10 @@ public class SecurityConfig {
                                         .maximumSessions(1)
                                         .maxSessionsPreventsLogin(false)
                                         .sessionRegistry(sessionRegistry)))
+
+                        .rememberMe(remember-> remember
+                                .rememberMeServices(rememberMeServices)
+                                .key("discodeit-token"))
 
                         .formLogin(login -> login
                                 .loginProcessingUrl("/api/auth/login")
@@ -135,6 +142,21 @@ public class SecurityConfig {
         return web -> web.ignoring()
                 .requestMatchers("/favicon.ico", "/error")
                 .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**","/index.html","assets/**");
+
+    }
+
+    @Bean
+    public TokenBasedRememberMeServices rememberMeServices(
+            UserDetailsService userDetailsService
+    ){
+        TokenBasedRememberMeServices rememberMeServices = new TokenBasedRememberMeServices(
+                "discodeit-token", userDetailsService
+        );
+
+        rememberMeServices.setCookieName("remember-me");
+        rememberMeServices.setTokenValiditySeconds(60);
+        rememberMeServices.setParameter("remember-me");
+        return rememberMeServices;
 
     }
 }
