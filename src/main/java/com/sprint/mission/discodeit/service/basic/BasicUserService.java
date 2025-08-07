@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.auth.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.user.UserRequestDto;
@@ -22,6 +23,10 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -110,6 +115,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @PreAuthorize("#id == authentication.principal.id")
     @Transactional
     public UserResponseDto update(UUID id, UserUpdateDto userUpdateDto,
         BinaryContentDto binaryContentDto) {
@@ -163,14 +169,28 @@ public class BasicUserService implements UserService {
         Optional.ofNullable(userUpdateDto.newPassword()).ifPresent(user::updatePassword);
 
         User updatedUser = userRepository.save(user);
+        UserResponseDto updatedUserDto = userMapper.toDto(updatedUser);
+
+        // 사용자 정보 기반으로 새 UserDetails 생성
+        DiscodeitUserDetails newUserDetails = new DiscodeitUserDetails(updatedUserDto,
+            updatedUser.getPassword());
+
+        // 인증 정보 갱신
+        Authentication newAuth = new UsernamePasswordAuthenticationToken(
+            newUserDetails,
+            null,
+            newUserDetails.getAuthorities()
+        );
+        SecurityContextHolder.getContext().setAuthentication(newAuth);
 
         log.info("[BasicUserService] 사용자 수정 성공! id: {}, username: {}, email: {}",
             updatedUser.getId(), updatedUser.getUsername(), updatedUser.getEmail());
 
-        return userMapper.toDto(updatedUser);
+        return updatedUserDto;
     }
 
     @Override
+    @PreAuthorize("#id == authentication.principal.id")
     @Transactional
     public void deleteById(UUID id) {
         log.info("[BasicUserService] 사용자 삭제 요청: id: {}", id);
@@ -190,6 +210,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Transactional
     public UserResponseDto updateRole(RoleUpdateRequest request) {
         User user = findUser(request.userId());
 

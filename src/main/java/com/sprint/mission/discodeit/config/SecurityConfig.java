@@ -113,7 +113,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()     // 회원가입
                 .requestMatchers(("/api/auth/login")).permitAll() // 로그인
                 .requestMatchers(("/api/auth/logout")).permitAll() // 로그아웃
-                .requestMatchers(("/api/auth/me")).permitAll()
 
                 // 퍼블릭 채널 생성, 수정, 삭제는 CHANNEL_MANAGER 권한을 가져야함
                 .requestMatchers(HttpMethod.POST, "/api/channels/public").hasRole("CHANNEL_MANAGER")
