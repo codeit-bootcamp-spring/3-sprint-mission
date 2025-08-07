@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -17,6 +19,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+	// FilterChain 정의
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
@@ -31,6 +34,7 @@ public class SecurityConfig {
 		return http.build();
 	}
 
+	// 디버깅을 위한 FilterChain 확인
 	@Bean
 	public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
 
@@ -45,6 +49,12 @@ public class SecurityConfig {
 			System.out.println("현재 적용된 필터 체인 목록:");
 			filterNames.forEach(System.out::println);
 		};
+	}
+
+	// PasswordEncoder Bcrypt로 설정
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
 	}
 
 }
