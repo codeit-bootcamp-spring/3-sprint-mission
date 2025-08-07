@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.auth.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.exception.ErrorResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -8,7 +9,6 @@ import java.io.IOException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
-import com.sprint.mission.discodeit.exception.ErrorResponse;
 
 @Component
 public class LoginFailureHandler implements AuthenticationFailureHandler {
