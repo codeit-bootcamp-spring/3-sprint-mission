@@ -68,7 +68,7 @@ public class SecurityConfig {
             )
 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/index.html", "/favicon.ico","/assets/**").permitAll()
+                .requestMatchers("/", "/index.html", "/favicon.ico", "/assets/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
 
@@ -91,6 +91,12 @@ public class SecurityConfig {
                     .sessionRegistry(sessionRegistry) // 세션 추적
                     .expiredSessionStrategy(new CustomSessionExpiredStrategy())
                 )
+            )
+
+            .rememberMe(rememberMe -> rememberMe
+                .key("default-key")
+                .rememberMeParameter("remember-me")
+                .tokenValiditySeconds(60 * 60 * 24 * 30) // 30일
             )
 
             .logout(logout -> logout
