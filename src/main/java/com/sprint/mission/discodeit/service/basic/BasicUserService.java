@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +36,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final UserMapper userMapper;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   public UserResponse create(CreateUserCommand command) {
@@ -42,11 +44,12 @@ public class BasicUserService implements UserService {
     validateUserName(command.username());
 
     // 유저 생성
+    String encodedPassword = passwordEncoder.encode(command.password());
     User newUser = User.create(
         command.email(),
         command.username(),
-        command.password(),
-        null // 일단 profileId 없음
+        encodedPassword,
+        null
     );
     User savedUser = userRepository.save(newUser);
 
@@ -55,13 +58,12 @@ public class BasicUserService implements UserService {
 
     BinaryContent savedProfile = null;
     if (command.profile() != null) {
-      // 프로필 이미지 첨부 시 저장 및 유저 업데이트
       savedProfile = saveProfileImage(command.profile());
     }
 
     if (savedProfile != null) {
       savedUser.updateProfile(savedProfile);
-      userRepository.save(savedUser); // 프로필 반영 후 다시 저장
+      userRepository.save(savedUser);
     }
 
     return toUserResponse(savedUser);
@@ -119,7 +121,8 @@ public class BasicUserService implements UserService {
             user.updateEmail(command.newEmail());
           }
           if (command.newPassword() != null) {
-            user.updatePassword(command.newPassword());
+            String encoded = passwordEncoder.encode(command.newPassword());
+            user.updatePassword(encoded);
           }
 
           BinaryContent savedProfile = null;

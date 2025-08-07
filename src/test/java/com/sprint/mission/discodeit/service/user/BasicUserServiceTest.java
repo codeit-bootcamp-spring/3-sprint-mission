@@ -1,22 +1,14 @@
 package com.sprint.mission.discodeit.service.user;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.times;
 
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
@@ -39,6 +31,18 @@ import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.vo.BinaryContentData;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class BasicUserServiceTest {
@@ -58,6 +62,9 @@ class BasicUserServiceTest {
   @Mock
   private BinaryContentStorage binaryContentStorage;
 
+  @Mock
+  private PasswordEncoder passwordEncoder;
+
   @InjectMocks
   private BasicUserService basicUserService;
 
@@ -67,8 +74,7 @@ class BasicUserServiceTest {
         .thenAnswer(invocation -> {
           User u = invocation.getArgument(0);
 
-          // user의 profile 엔티티를 DTO로 변환하거나 null 처리
-          var profileEntity = u.getProfile(); // BinaryContent or null
+          var profileEntity = u.getProfile();
           var profileResponse = (profileEntity == null) ? null
               : new BinaryContentResponse(
                   profileEntity.getId(),
@@ -83,6 +89,7 @@ class BasicUserServiceTest {
               profileResponse,
               false);
         });
+    Mockito.lenient().when(passwordEncoder.encode(anyString())).thenReturn("encodedPwd");
   }
 
   @Nested
@@ -96,7 +103,7 @@ class BasicUserServiceTest {
       CreateUserCommand command = new CreateUserCommand(email, name,
           password, null);
 
-      User savedUser = UserFixture.createCustomUserWithId(email, name, password, null);
+      User savedUser = UserFixture.createCustomUserWithId(email, name, "encodedPwd", null);
       UserStatus savedUserStatus = UserStatusFixture.createWithId(savedUser);
 
       given(userRepository.findByEmail(email)).willReturn(Optional.empty());
@@ -113,6 +120,7 @@ class BasicUserServiceTest {
 
       then(userRepository).should().findByEmail(email);
       then(userRepository).should().findByUsername(name);
+      then(passwordEncoder).should().encode(password);
       then(userRepository).should().save(any(User.class));
       then(userStatusRepository).should().save(any(UserStatus.class));
     }
@@ -132,7 +140,7 @@ class BasicUserServiceTest {
       binaryContent.assignIdForTest(binaryContent.getId());
       CreateUserCommand command = new CreateUserCommand(email, name, password, profile);
 
-      User savedUser = UserFixture.createCustomUserWithId(email, name, password, binaryContent);
+      User savedUser = UserFixture.createCustomUserWithId(email, name, "encodedPwd", binaryContent);
       savedUser.updateProfile(binaryContent);
       UserStatus savedUserStatus = UserStatusFixture.createWithId(savedUser);
 
@@ -155,6 +163,7 @@ class BasicUserServiceTest {
       then(userRepository).should().findByEmail(email);
       then(userRepository).should().findByUsername(name);
       then(userRepository).should(times(2)).save(userCaptor.capture());
+      then(passwordEncoder).should().encode(password);
       then(userStatusRepository).should().save(any(UserStatus.class));
     }
 
@@ -188,7 +197,8 @@ class BasicUserServiceTest {
       User existingUser = User.create("다른@test.com", "길동쓰", "pwd123", null);
 
       given(userRepository.findByEmail(request.email())).willReturn(Optional.empty());
-      given(userRepository.findByUsername(request.username())).willReturn(Optional.of(existingUser));
+      given(userRepository.findByUsername(request.username())).willReturn(
+          Optional.of(existingUser));
 
       DuplicateNameException exception = assertThrows(DuplicateNameException.class,
           () -> basicUserService.create(command));

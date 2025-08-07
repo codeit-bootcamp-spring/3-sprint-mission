@@ -1,19 +1,11 @@
 package com.sprint.mission.discodeit.service.auth;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
-
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.then;
 
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
@@ -27,6 +19,14 @@ import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicAuthService;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class BasicAuthServiceTest {
@@ -37,25 +37,30 @@ class BasicAuthServiceTest {
   @Mock
   private UserMapper userMapper;
 
+  @Mock
+  private PasswordEncoder passwordEncoder;
+
   @InjectMocks
   private BasicAuthService authService;
 
   private static User user;
   private static UserStatus userStatus;
   private static LoginRequest loginRequest;
+  private static String rawPassword;
 
   @BeforeEach
   void setUp() {
     BinaryContent profile = BinaryContentFixture.createValid();
+    rawPassword = "pwd123";
     user = UserFixture.createCustomUserWithId(
         "test@test.com",
         "길동쓰",
-        "pwd123",
+        "encodedPwd",
         profile);
     userStatus = mock(UserStatus.class);
     user.updateUserStatus(userStatus);
 
-    loginRequest = new LoginRequest(user.getUsername(), user.getPassword());
+    loginRequest = new LoginRequest(user.getUsername(), rawPassword);
   }
 
   @Test
@@ -78,6 +83,7 @@ class BasicAuthServiceTest {
               user.getUserStatus().isOnline());
         });
     given(userRepository.findByUsername(user.getUsername())).willReturn(Optional.of(user));
+    given(passwordEncoder.matches(rawPassword, user.getPassword())).willReturn(true);
 
     // when
     UserResponse response = authService.login(loginRequest.username(), loginRequest.password());
@@ -90,6 +96,7 @@ class BasicAuthServiceTest {
 
     then(userRepository).should().findByUsername(loginRequest.username());
     then(userStatus).should().updateLastActiveAt();
+    then(passwordEncoder).should().matches(rawPassword, user.getPassword());
   }
 
   @Test
