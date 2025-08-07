@@ -15,6 +15,10 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,6 +102,7 @@ public class BasicUserService implements UserService {
   }
 
   @Transactional
+  @PreAuthorize("@basicUserService.isCurrentUser(#userId)")
   @Override
   public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
@@ -143,6 +148,7 @@ public class BasicUserService implements UserService {
 
   @Transactional
   @Override
+  @PreAuthorize("@basicUserService.isCurrentUser(#userId)")
   public void delete(UUID userId) {
     log.debug("사용자 삭제 시작: id={}", userId);
 
@@ -153,4 +159,18 @@ public class BasicUserService implements UserService {
     userRepository.deleteById(userId);
     log.info("사용자 삭제 완료: id={}", userId);
   }
+
+    public boolean isCurrentUser(UUID userId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String currentUsername = userDetails.getUsername();
+        return userRepository.findById(userId)
+                .map(User::getUsername)
+                .filter(username -> username.equals(currentUsername))
+                .isPresent();
+    }
 }

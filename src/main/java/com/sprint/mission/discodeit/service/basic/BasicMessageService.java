@@ -27,6 +27,10 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -111,6 +115,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Transactional
+  @PreAuthorize("@basicMessageService.isCurrentUser(#messageId)")
   @Override
   public MessageDto update(UUID messageId, MessageUpdateRequest request) {
     log.debug("메시지 수정 시작: id={}, request={}", messageId, request);
@@ -123,6 +128,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Transactional
+  @PreAuthorize("@basicMessageService.isCurrentUser(#messageId)")
   @Override
   public void delete(UUID messageId) {
     log.debug("메시지 삭제 시작: id={}", messageId);
@@ -131,5 +137,20 @@ public class BasicMessageService implements MessageService {
     }
     messageRepository.deleteById(messageId);
     log.info("메시지 삭제 완료: id={}", messageId);
+  }
+
+  public boolean isCurrentUser(UUID messageId) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if(authentication == null || !authentication.isAuthenticated()) {
+      return false;
+    }
+    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    String currentUsername = userDetails.getUsername();
+    return messageRepository.findById(messageId)
+            .map(Message::getAuthor)
+            .map(User::getUsername)
+            .filter(username -> username.equals(currentUsername))
+            .isPresent();
+
   }
 }
