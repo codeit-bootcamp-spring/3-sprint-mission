@@ -15,6 +15,9 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -22,6 +25,7 @@ import org.springframework.security.web.authentication.Http403ForbiddenEntryPoin
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -53,6 +57,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
+                                           SessionRegistry sessionRegistry,
                                            LoginSuccessHandler loginSuccessHandler,
                                            LoginFailureHandler loginFailureHandler,
                                            CustomAccessDeniedHandler customAccessDeniedHandler) throws Exception {
@@ -63,6 +68,7 @@ public class SecurityConfig {
                                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
 
                         .authorizeHttpRequests(auth-> auth
+                                .requestMatchers("/").permitAll()
                                 .requestMatchers("/api/auth/csrf-token").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/api/users").permitAll()
                                 .requestMatchers("/api/auth/login").permitAll()
@@ -70,6 +76,13 @@ public class SecurityConfig {
                                 .requestMatchers("/swagger-ui/**","/v3/api-docs/**").permitAll()
                                 .requestMatchers("/actuator/**").permitAll()
                                 .anyRequest().authenticated())
+
+
+                        .sessionManagement(management ->  management
+                                .sessionConcurrency(concurrency -> concurrency
+                                        .maximumSessions(1)
+                                        .maxSessionsPreventsLogin(false)
+                                        .sessionRegistry(sessionRegistry)))
 
                         .formLogin(login -> login
                                 .loginProcessingUrl("/api/auth/login")
@@ -101,10 +114,27 @@ public class SecurityConfig {
     }
 
     @Bean
-    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy){
+    public MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy){
         DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
         expressionHandler.setRoleHierarchy(roleHierarchy);
         return expressionHandler;
     }
 
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> web.ignoring()
+                .requestMatchers("/favicon.ico", "/error")
+                .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**","/index.html","assets/**");
+
+    }
 }

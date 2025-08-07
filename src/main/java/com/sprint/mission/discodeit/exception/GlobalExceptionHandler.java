@@ -18,14 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GlobalExceptionHandler {
 
 
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
-    log.error("Validation 실패: {}", ex.getMessage(), ex);
-    ErrorResponse errorResponse = new ErrorResponse(ex, HttpStatus.BAD_REQUEST.value());
-    return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(errorResponse);
-  }
+
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleException(Exception e) {

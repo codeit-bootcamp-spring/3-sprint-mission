@@ -4,10 +4,30 @@ import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.userdetails.UserDetails;
 
-@Mapper(componentModel = "spring", uses = {BinaryContentMapper.class, UserStatusMapper.class})
-public interface UserMapper {
+import java.util.List;
 
-  @Mapping(target = "online", expression = "java(user.getStatus().isOnline())")
-  UserDto toDto(User user);
+@Mapper(componentModel = "spring", uses = {BinaryContentMapper.class})
+public abstract class UserMapper {
+
+  @Autowired
+  private SessionRegistry sessionRegistry;
+
+  @Mapping(target = "online", expression = "java(isOnline(user))")
+  abstract public UserDto toDto(User user);
+
+
+  protected boolean isOnline(User user) {
+    List<Object> allPrincipals = sessionRegistry.getAllPrincipals();
+    for(Object principal : allPrincipals) {
+      UserDetails userDetail = (UserDetails) principal;
+      if(userDetail.getUsername().equals(user.getUsername())) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
