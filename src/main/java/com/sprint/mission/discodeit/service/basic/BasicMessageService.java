@@ -21,6 +21,7 @@ import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -142,14 +143,16 @@ public class BasicMessageService implements MessageService {
         // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
     }
 
+    @PreAuthorize("hasRole('ADMIN') or @MessagePostSecurityService.isAuthor(#messageId)")
     @Override
     public void deleteMessage(UUID messageId) {
-        if(!messageRepository.existsById(messageId)) {
-            throw new MessageNotFoundException(Map.of("messageId",messageId));
+        if (!messageRepository.existsById(messageId)) {
+            throw new MessageNotFoundException(Map.of("messageId", messageId));
         }
         messageRepository.deleteById(messageId);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or @MessagePostSecurityService.isAuthor(#messageId)")
     @Override
     public MessageResponse updateMessage(UUID messageId, MessageUpdateRequest request) {
         Message message = messageRepository.findById(messageId).orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));

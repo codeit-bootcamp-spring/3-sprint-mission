@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +47,6 @@ public class BasicUserService implements UserService {
     private static final String PROFILE_PATH = "img";
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-//    private final UserStatusRepository userStatusRepository;
     private final FileUploadUtils fileUploadUtils;
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
@@ -58,7 +58,6 @@ public class BasicUserService implements UserService {
 
     @Transactional(readOnly = true)
     public List<UserResponse> findAllUsers() {
-//        List<User> users = userRepository.findAllWithBinaryContentAndUserStatus();
         List<User> users = userRepository.findAllWithBinaryContent();
 
         List<UserResponse> responses = new ArrayList<>();
@@ -117,10 +116,6 @@ public class BasicUserService implements UserService {
                 .build();
             userRepository.save(user);
         }
-        // USER STATUS
-//        UserStatus userStatus = new UserStatus(user);
-//        userStatusRepository.save(userStatus);
-//        user.changeUserStatus(userStatus); // 양방향성을 위한 주입
 
         UserResponse response = userMapper.toDto(user);
         return response;
@@ -128,6 +123,7 @@ public class BasicUserService implements UserService {
 //                           -> (분기)이미지 있을 경우 -> User 생성 -> attachment 저장 -> userStatus 생성 -> return response
     }
 
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.id")
     @Override
     public void deleteUser(UUID userId) {
         Objects.requireNonNull(userId, "no user Id: BasicUserService.deleteUser");
@@ -154,6 +150,7 @@ public class BasicUserService implements UserService {
     }
 
     // name, email, password 수정 image는 optional
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.id")
     @Transactional
     @Override
     public UserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file) {
@@ -173,12 +170,12 @@ public class BasicUserService implements UserService {
         }
 
         if (userRepository.existsByUsername(newName) && (!oldName.equals(newName))) { // 있고 내 이름도 아닌경우
-            throw new  UserAlreadyExistsException(Map.of("username", newName));
+            throw new UserAlreadyExistsException(Map.of("username", newName));
         }
         user.changeUsername(newName);
 
         if (userRepository.existsByEmail(newEmail) && (!oldEmail.equals(newEmail))) { // 있고 내 이메일이 아닌경우
-            throw new  UserAlreadyExistsException(Map.of("email", newEmail));
+            throw new UserAlreadyExistsException(Map.of("email", newEmail));
         }
         user.changeEmail(newEmail);
 

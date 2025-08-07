@@ -53,6 +53,7 @@ public class UserController implements UserApi {
         return ResponseEntity.noContent().build();
     }
 
+
     @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserResponse> update(
             @PathVariable UUID userId,
