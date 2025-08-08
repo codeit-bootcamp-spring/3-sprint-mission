@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.security.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.entity.Role;
 import java.util.Collection;
 import java.util.List;
 import lombok.Getter;
@@ -26,9 +27,10 @@ public class DiscodeitUserDetails implements UserDetails, CredentialsContainer {
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		// roles()가 null인 경우 기본값 ROLE_USER로 간주
-		List<String> roles = userDto.roles() == null ? List.of("ROLE_USER") : userDto.roles();
-		return roles.stream().map(SimpleGrantedAuthority::new).toList();
+		// role이 null이면 기본값 USER
+		Role role = userDto.role() == null ? Role.USER : userDto.role();
+		// Spring Security에서는 권한 앞에 ROLE_ prefix 붙이는 것이 관례
+		return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
 	}
 
 	@Override
