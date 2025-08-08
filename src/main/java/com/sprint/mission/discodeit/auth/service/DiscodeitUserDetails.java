@@ -18,8 +18,8 @@ public class DiscodeitUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        String authority = "ROLE_" + userDto.role().name();
-        return List.of(new SimpleGrantedAuthority(authority));
+        String authorities = "ROLE_" + userDto.role().name();
+        return List.of(new SimpleGrantedAuthority(authorities));
     }
 
     @Override
