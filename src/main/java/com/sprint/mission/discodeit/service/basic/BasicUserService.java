@@ -157,4 +157,18 @@ public class BasicUserService implements UserService {
     userRepository.deleteById(userId);
     log.info("사용자 삭제 완료: id={}", userId);
   }
+
+  @Transactional
+  @Override
+  public UserDto updateRole(UUID userId, Role role) {
+      log.debug("사용자 권한 수정 시작: id={}, role={}", userId, role);
+
+      User user = userRepository.findById(userId)
+          .orElseThrow(() -> UserNotFoundException.withId(userId));
+
+      user.updateRole(role);
+      log.info("사용자 권한 수정 완료: id={}, role={}", userId, role);
+
+      return userMapper.toDto(user);
+  }
 }
