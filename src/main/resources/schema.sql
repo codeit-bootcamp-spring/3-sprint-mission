@@ -8,6 +8,7 @@ CREATE TABLE users
     username   varchar(50) UNIQUE       NOT NULL,
     email      varchar(100) UNIQUE      NOT NULL,
     password   varchar(60)              NOT NULL,
+    role       varchar(20)              NOT NULL,
     profile_id uuid
 );
 
@@ -124,3 +125,8 @@ ALTER TABLE read_statuses
         FOREIGN KEY (channel_id)
             REFERENCES channels (id)
             ON DELETE CASCADE;
+
+-- 기존 테이블에 role 컬럼 추가 및 데이터 채우기
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20);
+UPDATE users SET role = 'USER' WHERE role IS NULL;
+ALTER TABLE users ALTER COLUMN role SET NOT NULL;
