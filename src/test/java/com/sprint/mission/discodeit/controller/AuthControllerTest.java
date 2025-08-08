@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
+import org.springframework.mock.web.MockHttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,29 @@ class AuthControllerTest {
             .param("password", "wrong"))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.errorCode").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  void 세션으로_현재_사용자_정보를_조회한다() throws Exception {
+    User user = User.create("test@test.com", "tester", passwordEncoder.encode("password"), null);
+    userRepository.save(user);
+
+    String token = fetchCsrfToken();
+
+    MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
+            .cookie(new Cookie("XSRF-TOKEN", token))
+            .header("X-XSRF-TOKEN", token)
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .param("username", "tester")
+            .param("password", "password"))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    mockMvc.perform(get("/api/auth/me").session((MockHttpSession) loginResult.getRequest().getSession(false)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(user.getId().toString()))
+        .andExpect(jsonPath("$.username").value("tester"))
+        .andExpect(jsonPath("$.email").value("test@test.com"));
   }
 
   private String fetchCsrfToken() throws Exception {

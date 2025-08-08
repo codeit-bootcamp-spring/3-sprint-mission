@@ -34,7 +34,7 @@ public class SecurityConfig {
             .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
         )
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers("/api/auth/csrf-token", "/api/auth/login").permitAll()
             .anyRequest().authenticated())
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
