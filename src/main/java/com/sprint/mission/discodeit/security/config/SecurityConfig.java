@@ -7,6 +7,8 @@ import java.util.stream.IntStream;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -16,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
@@ -40,13 +43,24 @@ public class SecurityConfig {
 			)
 			.formLogin(login -> login
 				.loginProcessingUrl("/api/auth/login")
-				.permitAll()
 				.successHandler(loginSuccessHandler)
 				.failureHandler(loginFailureHandler)
+				.permitAll()
 			)
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/api/auth/**").permitAll()
+				// 로그인과 CSRF발급만 허용함
+				.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/auth/csrf-token").permitAll()
 				.anyRequest().authenticated()
+			)
+			// 로그아웃 설정
+			.logout(logout -> logout
+				.logoutUrl("/api/auth/logout")  // 로그아웃 엔드포인트 지정
+				.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(
+					HttpStatus.NO_CONTENT)) // 응답을 204 NO_CONTENT로 설정
+				.invalidateHttpSession(true) // 세션 종료
+				.deleteCookies("JSESSIONID") // 쿠키 제거
+				.permitAll()
 			)
 		;
 		return http.build();
