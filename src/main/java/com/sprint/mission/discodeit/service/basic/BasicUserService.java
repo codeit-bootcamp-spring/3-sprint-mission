@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
@@ -22,6 +23,8 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +41,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final PasswordEncoder passwordEncoder;
+  private final SessionRegistry sessionRegistry;
 
   @Transactional
   @Override
@@ -169,7 +173,18 @@ public class BasicUserService implements UserService {
           .orElseThrow(() -> UserNotFoundException.withId(userId));
 
       user.updateRole(role);
-      log.info("사용자 권한 수정 완료: id={}, role={}", userId, role);
+
+      sessionRegistry.getAllPrincipals().forEach(principal -> {
+          if (principal instanceof DiscodeitUserDetails dud
+            && dud.getUserDto().id().equals(userId)) {
+              List<SessionInformation> sessions = sessionRegistry.getAllSessions(principal, false);
+              for (SessionInformation session : sessions) {
+                  session.expireNow();
+              }
+          }
+      });
+
+      log.info("사용자 권한 수정 완료 및 세션 만료: id={}, role={}", userId, role);
 
       return userMapper.toDto(user);
   }
