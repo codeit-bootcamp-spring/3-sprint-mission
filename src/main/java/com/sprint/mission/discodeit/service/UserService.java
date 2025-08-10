@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
+import com.sprint.mission.discodeit.service.command.UpdateUserRoleCommand;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,6 +55,14 @@ public interface UserService {
    * @return 업데이트된 사용자 객체
    */
   UserResponse update(UpdateUserCommand command);
+
+  /**
+   * 사용자 권한을 수정한다
+   *
+   * @param command UpdateUserRoleCommand
+   * @return 업데이트된 사용자 객체
+   */
+  UserResponse updateRole(UpdateUserRoleCommand command);
 
   /**
    * 사용자를 삭제한다

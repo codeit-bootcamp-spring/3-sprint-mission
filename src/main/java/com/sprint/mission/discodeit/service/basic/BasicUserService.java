@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
+import com.sprint.mission.discodeit.service.command.UpdateUserRoleCommand;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.List;
@@ -140,6 +141,16 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  public UserResponse updateRole(UpdateUserRoleCommand command) {
+    return userRepository.findById(command.userId())
+        .map(user -> {
+          user.updateRole(command.newRole());
+          User savedUser = userRepository.save(user);
+          return toUserResponse(savedUser);
+        }).orElseThrow(() -> new UserNotFoundException(command.userId().toString()));
+  }
+
+  @Override
   public void delete(UUID userId) {
     userRepository.findById(userId).ifPresentOrElse(user -> {
       userRepository.deleteById(userId);
@@ -183,6 +194,7 @@ public class BasicUserService implements UserService {
         base.username(),
         base.email(),
         base.profile(),
-        isOnline);
+        isOnline,
+        base.role());
   }
 }
