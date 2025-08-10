@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.security.config;
 
 import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
+import com.sprint.mission.discodeit.security.handler.RestAccessDeniedHandler;
+import com.sprint.mission.discodeit.security.handler.RestAuthEntryPoint;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.springframework.boot.CommandLineRunner;
@@ -9,6 +11,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -29,8 +35,13 @@ public class SecurityConfig {
 
 	// FilterChain 정의
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http,
-		LoginSuccessHandler loginSuccessHandler, LoginFailureHandler loginFailureHandler)
+	public SecurityFilterChain filterChain(
+		HttpSecurity http,
+		LoginSuccessHandler loginSuccessHandler,
+		LoginFailureHandler loginFailureHandler,
+		RestAuthEntryPoint restAuthEntryPoint,
+		RestAccessDeniedHandler restAccessDeniedHandler
+	)
 		throws Exception {
 		http
 			// Csrf 설정
@@ -48,10 +59,18 @@ public class SecurityConfig {
 				.permitAll()
 			)
 			.authorizeHttpRequests(auth -> auth
-				// 로그인과 CSRF발급만 허용함
+				// 회원가입 모두허용
+				.requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+				// 로그인 모두허용
 				.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+				// 로그아웃 모두허용
+				.requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
+				// CSRF 발급 모두허용
 				.requestMatchers(HttpMethod.GET, "/api/auth/csrf-token").permitAll()
-				.anyRequest().authenticated()
+				//"/api/아래의 모든 요청에 대해 검증
+				.requestMatchers("/api/**").authenticated()
+				// 그 이외는 모두허용
+				.anyRequest().permitAll()
 			)
 			// 로그아웃 설정
 			.logout(logout -> logout
@@ -62,7 +81,11 @@ public class SecurityConfig {
 				.deleteCookies("JSESSIONID") // 쿠키 제거
 				.permitAll()
 			)
-		;
+			// 권한 미확인시 예외처리
+			.exceptionHandling(ex -> ex
+				.authenticationEntryPoint(restAuthEntryPoint) // 401 JSON
+				.accessDeniedHandler(restAccessDeniedHandler) // 403 JSON
+			);
 		return http.build();
 	}
 
@@ -99,6 +122,23 @@ public class SecurityConfig {
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	public RoleHierarchy roleHierarchy() {
+		return RoleHierarchyImpl.fromHierarchy("""
+			    ROLE_ADMIN > ROLE_CHANNEL_MANAGER
+			    ROLE_CHANNEL_MANAGER > ROLE_USER
+			""");
+	}
+
+	@Bean
+	public MethodSecurityExpressionHandler methodSecurityExpressionHandler(
+		RoleHierarchy roleHierarchy) {
+		DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+		handler.setRoleHierarchy(roleHierarchy);
+		System.out.println("[SecurityConfig] MethodSecurityExpressionHandler 설정 완료");
+		return handler;
 	}
 
 }

@@ -29,7 +29,7 @@ public class DiscodeitUserDetails implements UserDetails, CredentialsContainer {
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		// role이 null이면 기본값 USER
 		Role role = userDto.role() == null ? Role.USER : userDto.role();
-		// Spring Security에서는 권한 앞에 ROLE_ prefix 붙이는 것이 관례
+		// Spring 표준 'ROLE_*' 형태로 String변환
 		return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
 	}
 

@@ -24,7 +24,7 @@ public record UserDto(
 			user.getEmail(),
 			BinaryContentDto.fromEntity(user.getProfile()),
 			user.getStatus() != null && Boolean.TRUE.equals(user.getStatus().isOnline()),
-			Role.USER
+			user.getRole()
 		);
 	}
 
@@ -36,7 +36,7 @@ public record UserDto(
 			user.getEmail(),
 			null,                 // profile 건드리지 않음 (LAZY 안전)
 			false,                // online 계산 안 함
-			Role.USER  // 권한 기본값
+			user.getRole()
 		);
 	}
 }
