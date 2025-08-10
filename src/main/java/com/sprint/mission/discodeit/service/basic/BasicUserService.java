@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     //
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
@@ -49,8 +51,11 @@ public class BasicUserService implements UserService {
         // 프로필 처리
         BinaryContent nullableProfile = createProfile(optionalProfileCreateRequest);
 
+        // 비밀번호 암호화
+        String encodedPassword = passwordEncoder.encode(userCreateRequest.password());
+
         // 유저 생성 및 저장
-        User user = new User(userCreateRequest.username(), userCreateRequest.email(), userCreateRequest.password(), nullableProfile);
+        User user = new User(userCreateRequest.username(), userCreateRequest.email(), encodedPassword, nullableProfile);
         Instant now = Instant.now();
         UserStatus userStatus = new UserStatus(user, now);
 
