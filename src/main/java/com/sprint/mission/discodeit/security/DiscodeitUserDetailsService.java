@@ -33,7 +33,8 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
         user.getUsername(),
         user.getEmail(),
         profile,
-        online
+        online,
+        user.getRole()
     );
 
     UserDetails userDetails = new DiscodeitUserDetails(userResponse, user.getPassword());

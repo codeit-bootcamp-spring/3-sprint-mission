@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.config.TestSecurityConfig;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.List;
@@ -40,9 +41,9 @@ class UserControllerTest {
 
   @Test
   void 전체_사용자_목록_조회() throws Exception {
-    UserResponse user1 = new UserResponse(UUID.randomUUID(), "user1", "user1@test.com", null, true);
-    UserResponse user2 = new UserResponse(UUID.randomUUID(), "user2", "user2@test.com", null,
-        false);
+      UserResponse user1 = new UserResponse(UUID.randomUUID(), "user1", "user1@test.com", null, true, Role.USER);
+      UserResponse user2 = new UserResponse(UUID.randomUUID(), "user2", "user2@test.com", null,
+          false, Role.USER);
     when(userService.findAll()).thenReturn(List.of(user1, user2));
 
     mockMvc.perform(MockMvcRequestBuilders.get("/api/users"))
@@ -75,12 +76,13 @@ class UserControllerTest {
         "profile.jpg",
         "image/jpeg",
         new byte[0]);
-    UserResponse expected = new UserResponse(
-        java.util.UUID.randomUUID(),
-        "tester",
-        "test@test.com",
-        null,
-        true);
+      UserResponse expected = new UserResponse(
+          java.util.UUID.randomUUID(),
+          "tester",
+          "test@test.com",
+          null,
+          true,
+          Role.USER);
     when(userService.create(any())).thenReturn(expected);
 
     // when & then

@@ -13,6 +13,7 @@ import static org.mockito.BDDMockito.times;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -87,7 +88,8 @@ class BasicUserServiceTest {
               u.getUsername(),
               u.getEmail(),
               profileResponse,
-              false);
+              false,
+              Role.USER);
         });
     Mockito.lenient().when(passwordEncoder.encode(anyString())).thenReturn("encodedPwd");
   }

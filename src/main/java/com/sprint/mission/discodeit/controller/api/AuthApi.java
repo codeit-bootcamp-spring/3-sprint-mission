@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller.api;
 
+import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,4 +33,13 @@ public interface AuthApi {
   ResponseEntity<UserResponse> me(
       @AuthenticationPrincipal DiscodeitUserDetails userDetails
   );
+
+  @Operation(summary = "사용자 권한 수정")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "200",
+          description = "권한 수정 성공"
+      )
+  })
+  ResponseEntity<UserResponse> updateRole(UserRoleUpdateRequest request);
 }
