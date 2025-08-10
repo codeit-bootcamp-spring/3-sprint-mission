@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.config;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import jakarta.servlet.http.Cookie;
+import java.util.Objects;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -12,6 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+
+import jakarta.servlet.http.Cookie;
 
 @ActiveProfiles("security-test")
 @SpringBootTest
@@ -22,9 +25,9 @@ class SecurityConfigTest {
   private MockMvc mockMvc;
 
   @Test
-  void 인증_없이_요청하면_리다이렉트된다() throws Exception {
-    mockMvc.perform(get("/"))
-        .andExpect(status().is3xxRedirection());
+  void 인증_없이_API_요청하면_401이_반환된다() throws Exception {
+    mockMvc.perform(get("/api/channels"))
+        .andExpect(status().isUnauthorized());
   }
 
   @Test
@@ -33,8 +36,7 @@ class SecurityConfigTest {
         .andExpect(status().isNonAuthoritativeInformation())
         .andReturn();
 
-    Cookie cookie = result.getResponse().getCookie("XSRF-TOKEN");
-    assertThat(cookie).isNotNull();
+  Cookie cookie = Objects.requireNonNull(result.getResponse().getCookie("XSRF-TOKEN"), "XSRF-TOKEN 쿠키가 없습니다");
     assertThat(cookie.isHttpOnly()).isFalse();
   }
 }

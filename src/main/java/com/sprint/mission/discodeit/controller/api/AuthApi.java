@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.AuthSessionResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,7 +31,7 @@ public interface AuthApi {
           description = "사용자 정보 조회 성공"
       )
   })
-  ResponseEntity<UserResponse> me(
+  ResponseEntity<AuthSessionResponse> me(
       @AuthenticationPrincipal DiscodeitUserDetails userDetails
   );
 

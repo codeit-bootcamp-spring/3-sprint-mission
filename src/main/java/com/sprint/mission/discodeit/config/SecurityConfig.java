@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.security.ForbiddenAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import java.util.List;
@@ -10,23 +11,32 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
 @Slf4j
 @Configuration
+@EnableMethodSecurity
 @RequiredArgsConstructor
 @Profile({"!test", "security-test"})
 public class SecurityConfig {
 
   private final LoginSuccessHandler loginSuccessHandler;
   private final LoginFailureHandler loginFailureHandler;
+  private final ForbiddenAccessDeniedHandler accessDeniedHandler;
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -36,8 +46,18 @@ public class SecurityConfig {
             .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
         )
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/csrf-token", "/api/auth/login").permitAll()
+            .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
+            .requestMatchers("/api/auth/csrf-token", "/api/auth/login", "/api/auth/logout",
+                "/api/auth/me")
+            .permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
             .anyRequest().authenticated())
+        .exceptionHandling(ex -> ex
+            // 미인증(anonymous) 401, 권한 부족 403 (accessDeniedHandler)
+            .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+            .accessDeniedHandler(accessDeniedHandler)
+        )
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
             .successHandler(loginSuccessHandler)
@@ -77,5 +97,26 @@ public class SecurityConfig {
       log.debug("LoginSuccessHandler 기본 구현체: {}", loginSuccessHandler.getClass());
       log.debug("LoginFailureHandler 기본 구현체: {}", loginFailureHandler.getClass());
     };
+  }
+
+  /**
+   * 역할 계층 정의: ADMIN > CHANNEL_MANAGER > USER
+   */
+  @Bean
+  public RoleHierarchy roleHierarchy() {
+    RoleHierarchy hierarchy = RoleHierarchyImpl.fromHierarchy(
+        "ROLE_ADMIN > ROLE_CHANNEL_MANAGER > ROLE_USER");
+    return hierarchy;
+  }
+
+  /**
+   * Method Security 에 RoleHierarchy 적용.
+   */
+  @Bean
+  static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
+      RoleHierarchy roleHierarchy) {
+    DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+    handler.setRoleHierarchy(roleHierarchy);
+    return handler;
   }
 }

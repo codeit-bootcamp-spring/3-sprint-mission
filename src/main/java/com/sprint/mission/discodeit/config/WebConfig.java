@@ -1,19 +1,22 @@
 package com.sprint.mission.discodeit.config;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOriginPatterns("*")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization")
-                .allowCredentials(true);
-    }
+
+  @Override
+  public void addCorsMappings(CorsRegistry registry) {
+    registry.addMapping("/**")
+        .allowedOriginPatterns("*")
+        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        .allowedHeaders("Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization",
+            "X-XSRF-TOKEN")
+        .exposedHeaders("X-XSRF-TOKEN")
+        .allowCredentials(true)
+        .maxAge(3600);
+  }
 }
 

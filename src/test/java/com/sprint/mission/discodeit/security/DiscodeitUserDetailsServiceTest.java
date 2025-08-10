@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @ExtendWith(MockitoExtension.class)
-class DiscodeitUserDetailsServiceMockTest {
+class DiscodeitUserDetailsServiceTest {
 
   @Mock
   private UserRepository userRepository;
