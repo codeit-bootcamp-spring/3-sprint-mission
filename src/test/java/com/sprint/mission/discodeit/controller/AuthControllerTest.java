@@ -98,6 +98,29 @@ class AuthControllerTest {
         .andExpect(jsonPath("$.email").value("test@test.com"));
   }
 
+  @Test
+  void 로그아웃_성공() throws Exception {
+    User user = User.create("test@test.com", "tester", passwordEncoder.encode("password"), null);
+    userRepository.save(user);
+
+    String token = fetchCsrfToken();
+
+    MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
+            .cookie(new Cookie("XSRF-TOKEN", token))
+            .header("X-XSRF-TOKEN", token)
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .param("username", "tester")
+            .param("password", "password"))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    mockMvc.perform(post("/api/auth/logout")
+            .session((MockHttpSession) loginResult.getRequest().getSession(false))
+            .cookie(new Cookie("XSRF-TOKEN", token))
+            .header("X-XSRF-TOKEN", token))
+        .andExpect(status().isNoContent());
+  }
+
   private String fetchCsrfToken() throws Exception {
     MvcResult result = mockMvc.perform(get("/api/auth/csrf-token"))
         .andExpect(status().isNonAuthoritativeInformation())
