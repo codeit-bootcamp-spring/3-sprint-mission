@@ -32,7 +32,8 @@ public class MessageAssembler {
         base.username(),
         base.email(),
         base.profile(),
-        isOnline
+        isOnline,
+        base.role()
     );
 
     var attachments = message.getAttachments().stream()

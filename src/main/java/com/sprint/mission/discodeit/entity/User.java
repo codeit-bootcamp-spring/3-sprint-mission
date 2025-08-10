@@ -8,6 +8,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import java.util.Objects;
 import java.util.UUID;
@@ -37,13 +39,18 @@ public class User extends BaseUpdatableEntity {
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private UserStatus userStatus;
 
-  private User(String email, String username, String password, BinaryContent profile) {
+  @Enumerated(EnumType.STRING)
+  @Column(name = "role", nullable = false)
+  private Role role;
+
+  private User(String email, String username, String password, BinaryContent profile, Role role) {
     validate(email, username, password);
 
     this.email = email;
     this.username = username;
     this.password = password;
     this.profile = profile;
+    this.role = role;
   }
 
   private static void validate(String email, String name, String password) {
@@ -59,7 +66,11 @@ public class User extends BaseUpdatableEntity {
   }
 
   public static User create(String email, String name, String password, BinaryContent profile) {
-    return new User(email, name, password, profile);
+    return new User(email, name, password, profile, Role.USER);
+  }
+
+  public static User create(String email, String name, String password, BinaryContent profile, Role role) {
+    return new User(email, name, password, profile, role);
   }
 
   public void assignIdForTest(UUID id) {
@@ -93,6 +104,10 @@ public class User extends BaseUpdatableEntity {
 
   public void updateUserStatus(UserStatus userStatus) {
     this.userStatus = userStatus;
+  }
+
+  public void updateRole(Role role) {
+    this.role = role;
   }
 
   @Override

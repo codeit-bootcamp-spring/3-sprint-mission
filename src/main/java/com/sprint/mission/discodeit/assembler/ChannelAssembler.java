@@ -91,7 +91,8 @@ public class ChannelAssembler {
         base.username(),
         base.email(),
         base.profile(),
-        isOnline
+        isOnline,
+        base.role()
     );
   }
 }
