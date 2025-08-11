@@ -43,6 +43,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()     // 회원가입
                 .requestMatchers("/api/auth/login").permitAll()                 // 로그인
                 .requestMatchers("/api/auth/logout").permitAll()                // 로그아웃
+                // 메소드 별 권한
+                .requestMatchers(HttpMethod.POST, "/api/channels/public").hasRole("CHANNEL_MANAGER")
+                .requestMatchers(HttpMethod.PATCH, "/api/channels/{channelId}").hasRole("CHANNEL_MANAGER")
+                .requestMatchers(HttpMethod.DELETE, "/api/channels/{channelId}").hasRole("CHANNEL_MANAGER")
+                .requestMatchers(HttpMethod.PUT, "/api/auth/role").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             // Form 기반 로그인 활성화
