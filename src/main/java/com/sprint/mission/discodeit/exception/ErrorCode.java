@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
   UNAUTHORIZED("인증이 필요합니다.", HttpStatus.UNAUTHORIZED),
+  FORBIDDEN("접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
   INVALID_INPUT("입력값이 유효하지 않습니다.", HttpStatus.BAD_REQUEST),
 
   USER_NOT_FOUND("해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),

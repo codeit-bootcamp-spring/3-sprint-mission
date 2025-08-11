@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.AuthSessionResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.command.UpdateUserRoleCommand;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +34,7 @@ public class AuthController implements AuthApi {
     return ResponseEntity.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).build();
   }
 
+  @Override
   @GetMapping("/me")
   public ResponseEntity<AuthSessionResponse> me(
       @AuthenticationPrincipal DiscodeitUserDetails userDetails) {

@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.config;
 
-import com.sprint.mission.discodeit.security.ForbiddenAccessDeniedHandler;
-import com.sprint.mission.discodeit.security.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.LoginSuccessHandler;
+import com.sprint.mission.discodeit.security.handler.ForbiddenAccessDeniedHandler;
+import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
+import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
