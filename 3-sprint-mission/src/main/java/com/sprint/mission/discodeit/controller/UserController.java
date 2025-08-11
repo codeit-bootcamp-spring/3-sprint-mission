@@ -29,7 +29,6 @@ public class UserController implements UserApi {
 
     private final UserService userService;
     private final SessionStatusService sessionStatusService;
-//    private final UserStatusService userStatusService;
 
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @Override
@@ -101,5 +100,12 @@ public class UserController implements UserApi {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    @GetMapping("/{userId}/login-status")
+    public ResponseEntity<Boolean> checkLogin(
+            @PathVariable UUID userId) {
+        boolean loggedIn = sessionStatusService.isUserLoggedIn(username);
+        return ResponseEntity.ok(loggedIn);
     }
 }
