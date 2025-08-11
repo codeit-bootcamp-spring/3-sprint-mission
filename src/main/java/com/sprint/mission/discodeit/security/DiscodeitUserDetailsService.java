@@ -19,9 +19,10 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final SessionUtils sessionUtils;
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.debug("로그인 시도한 사용자: {}", username);
 
@@ -35,9 +36,7 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
             user.getProfile().getFileName();
         }
 
-        UserDto userDto = userMapper.toDto(user);
+        UserDto userDto = userMapper.toDto(user, sessionUtils);
         return new DiscodeitUserDetails(userDto, user.getPassword());
     }
-
-
 }

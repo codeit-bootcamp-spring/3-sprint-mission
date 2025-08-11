@@ -13,14 +13,13 @@ public record UserDto(
     Role role
 ) {
 
-    public static UserDto from(User user) {
+    public static UserDto from(User user, boolean online) {
         return new UserDto(
             user.getId(),
             user.getUsername(),
             user.getEmail(),
             user.getProfile() != null ? BinaryContentDto.from(user.getProfile()) : null,
-            user.getStatus() != null && user.getStatus().isOnline(),
-            
+            online,
             user.getRole()
         );
     }
