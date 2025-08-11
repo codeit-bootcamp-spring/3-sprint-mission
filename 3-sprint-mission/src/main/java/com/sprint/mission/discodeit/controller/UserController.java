@@ -2,13 +2,11 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
+import com.sprint.mission.discodeit.service.basic.SessionStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +28,8 @@ import java.util.UUID;
 public class UserController implements UserApi {
 
     private final UserService userService;
-    private final UserStatusService userStatusService;
+    private final SessionStatusService sessionStatusService;
+//    private final UserStatusService userStatusService;
 
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @Override
@@ -86,16 +85,6 @@ public class UserController implements UserApi {
                 .body(users);
     }
 
-    @PatchMapping(path = "{userId}/userStatus")
-    @Override
-    public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
-            @PathVariable("userId") UUID userId,
-            @RequestBody @Valid UserStatusUpdateRequest request) {
-        UserStatusDto updatedUserStatus = userStatusService.updateByUserId(userId, request);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(updatedUserStatus);
-    }
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
         if (profileFile.isEmpty()) {
