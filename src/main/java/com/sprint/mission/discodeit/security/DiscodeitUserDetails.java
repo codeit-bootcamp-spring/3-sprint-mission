@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.security;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,6 +15,10 @@ public class DiscodeitUserDetails implements UserDetails {
 
     private final UserDto userDto;
     private final String password;
+
+    public UUID getId() {
+        return userDto.id();
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

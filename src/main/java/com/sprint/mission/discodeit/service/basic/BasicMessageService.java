@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -132,6 +133,8 @@ public class BasicMessageService implements MessageService {
 
     @Transactional
     @Override
+    @PreAuthorize("@messageSecurity.isOwner(#messageId, authentication.principal.id)")
+
     public MessageDto update(UUID messageId, MessageUpdateRequest request) {
         log.info("메시지 수정 요청: id={}, newContent={}", messageId, request.newContent());
 
@@ -148,6 +151,8 @@ public class BasicMessageService implements MessageService {
 
     @Transactional
     @Override
+    @PreAuthorize("@messageSecurity.isOwner(#messageId, authentication.principal.id)")
+
     public void delete(UUID messageId) {
         log.info("메시지 삭제 요청: id={}", messageId);
 

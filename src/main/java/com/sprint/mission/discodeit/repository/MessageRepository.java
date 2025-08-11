@@ -25,4 +25,6 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     // 채널 ID 기준 메시지 전체 삭제
     void deleteAllByChannelId(UUID channelId);
+
+    boolean existsByIdAndAuthorId(UUID id, UUID authorId);
 }
