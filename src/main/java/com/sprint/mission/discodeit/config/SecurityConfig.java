@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -29,6 +30,18 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+            )
+            .authorizeHttpRequests(auth -> auth
+                // 메인 페이지 및 개발 도구는 인증 불필요 (정적 리소스는 webSecurityCustomizer에서 처리)
+                .requestMatchers("/").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+                // 인증 없이 접근 가능한 API
+                .requestMatchers("/api/auth/csrf-token").permitAll()            // CSRF 토큰 발급
+                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()     // 회원가입
+                .requestMatchers("/api/auth/login").permitAll()                 // 로그인
+                .requestMatchers("/api/auth/logout").permitAll()                // 로그아웃
+                .anyRequest().authenticated()
             )
             // Form 기반 로그인 활성화
             .formLogin(login -> login
