@@ -48,9 +48,9 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
             .requestMatchers("/api/auth/csrf-token", "/api/auth/login", "/api/auth/logout",
-                "/api/auth/me")
-            .permitAll()
+                "/api/auth/me").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+            .requestMatchers(HttpMethod.POST, "/actuator/loggers/**").hasRole("ADMIN")
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
             .anyRequest().authenticated())
         .exceptionHandling(ex -> ex

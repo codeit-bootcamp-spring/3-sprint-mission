@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration xmlns="https://logging.apache.org/xml/ns"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="https://logging.apache.org/xml/ns https://logging.apache.org/xml/ns/log4j-config-2.xsd">
+
+<Configuration status="WARN">
 
   <!-- 공통 속성 정의 -->
   <Properties>
-    <Property name="logDir">logs</Property>
-    <Property name="maxFileSize">50 MB</Property>
-
+    <Property name="logDir" value="logs"/>
+    <Property name="maxFileSize" value="50 MB"/>
     <!-- 콘솔 색상 로그 -->
     <Property name="CONSOLE_LOG_PATTERN">
-      <![CDATA[%d{yy-MM-dd HH:mm:ss.SSS} [%t] %highlight{%-5level} %style{%logger{36}}{yellow} %style{[%equals{%X{requestId}}{}{startup} | %X{requestMethod}{}{-} | %X{requestUrl}{}{-}]}{cyan} - %msg%n]]></Property>
-
+      <![CDATA[%d{yy-MM-dd HH:mm:ss.SSS} [%t] %highlight{%-5level} %style{%logger{36}}{yellow} %style{[%equals{%X{traceId}}{}{anonymous} | %equals{%X{requestMethod}}{}{-} | %equals{%X{requestUrl}}{}{-}]}{cyan} - %msg%n]]></Property>
     <!-- 파일 로그 -->
     <Property name="FILE_LOG_PATTERN">
-      <![CDATA[%d{yy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} [%equals{%X{requestId}}{}{startup} | %X{requestMethod}{}{-} | %X{requestUrl}{}{-}] - %msg%n]]></Property>
+      <![CDATA[%d{yy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} [%equals{%X{traceId}}{}{anonymous} | %equals{%X{requestMethod}}{}{-} | %equals{%X{requestUrl}}{}{-}] - %msg%n]]></Property>
   </Properties>
 
   <!-- 로그 출력 위치 설정 -->
@@ -25,9 +22,9 @@
     </Console>
 
     <!-- JSON 로그 -->
-    <RollingFile name="JSON_FILE_LOG"
-      fileName="${logDir}/main.log"
+    <RollingFile name="JSON_FILE_LOG" fileName="${logDir}/main.log"
       filePattern="${logDir}/main-%d{yyyy-MM-dd}-%i.log.gz">
+      <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
       <JsonTemplateLayout/>
       <Policies>
         <TimeBasedTriggeringPolicy interval="1"/>
@@ -37,9 +34,10 @@
     </RollingFile>
 
     <!-- 디버그 로그 -->
-    <RollingFile name="DEBUG_FILE_LOG"
-      fileName="${logDir}/debug.log"
+    <RollingFile name="DEBUG_FILE_LOG" fileName="${logDir}/debug.log"
       filePattern="${logDir}/debug-%d{yyyy-MM-dd}-%i.log.gz">
+      <!-- INFO 이상은 거부 (DEBUG/TRACE만 기록) -->
+      <ThresholdFilter level="INFO" onMatch="DENY" onMismatch="NEUTRAL"/>
       <PatternLayout pattern="${FILE_LOG_PATTERN}"/>
       <Policies>
         <TimeBasedTriggeringPolicy interval="1"/>
@@ -50,22 +48,26 @@
   </Appenders>
 
 
-  <!-- 로그 레벨 및 Logger 설정 -->
+  <!--
+    로그 레벨 및 Logger 설정
+    프로필 설정(application*.yaml)에서 적용되는 로그 레벨을 받을 수 있는 레벨 정의.
+  -->
   <Loggers>
     <Root level="INFO">
-      <AppenderRef ref="CONSOLE" level="DEBUG"/>
+      <AppenderRef ref="CONSOLE"/>
       <AppenderRef ref="JSON_FILE_LOG"/>
     </Root>
 
-    <Logger name="com.sprint" level="DEBUG">
+    <Logger name="com.sprint" level="INFO">
       <AppenderRef ref="DEBUG_FILE_LOG"/>
     </Logger>
 
     <Logger name="org.hibernate" level="WARN"/>
 
-    <Logger name="p6spy" level="DEBUG" additivity="false">
+    <!-- p6spy: 콘솔 제거, 기본 INFO. DEBUG 필요 시 동적 전환 -->
+    <Logger name="p6spy" level="INFO">
       <AppenderRef ref="CONSOLE"/>
-      <AppenderRef ref="DEBUG_FILE_LOG"/>
+      <AppenderRef ref="DEBUG_FILE_LOG" level="DEBUG"/>
     </Logger>
   </Loggers>
 
