@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
 import java.util.Map;
+import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -24,11 +25,16 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -45,7 +51,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-        SessionRegistry sessionRegistry) throws Exception {
+        SessionRegistry sessionRegistry,
+        RememberMeServices rememberMeServices) throws Exception {
         http
             .formLogin(login -> login
                 .loginProcessingUrl("/api/auth/login")
@@ -86,8 +93,11 @@ public class SecurityConfig {
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(authenticationEntryPoint())
                 .accessDeniedHandler(accessDeniedHandler)
+            ).rememberMe(remember -> remember
+                .rememberMeServices(rememberMeServices)
+                .key("discodeit-remember-me-key")
+                .rememberMeParameter("remember-me")
             )
-
             .sessionManagement(session -> session
                 // 세션 고정 공격 방지를 위해 세션 마이그레이션 설정(새 세션을 생성하고 기존 세션의 모든 속성을 복사)
                 .sessionFixation().migrateSession()
@@ -187,6 +197,31 @@ public class SecurityConfig {
     @Bean
     public ServletListenerRegistrationBean<HttpSessionEventPublisher> httpSessionEventPublisher() {
         return new ServletListenerRegistrationBean<>(new HttpSessionEventPublisher());
+    }
+
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository(DataSource dataSource) {
+        JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+        tokenRepository.setDataSource(dataSource);
+
+        return tokenRepository;
+    }
+
+
+    @Bean
+    public RememberMeServices rememberMeServices(PersistentTokenRepository repo,
+
+        UserDetailsService userDetailsService) {
+        PersistentTokenBasedRememberMeServices svc =
+            new PersistentTokenBasedRememberMeServices(
+                "discodeit-remember-me-key",
+                userDetailsService,
+                repo
+            );
+        svc.setParameter("remember-me");
+        svc.setTokenValiditySeconds(24 * 60 * 60);
+        svc.setAlwaysRemember(false);
+        return svc;
     }
 }
 
