@@ -67,6 +67,12 @@ public class User extends BaseUpdatableEntity {
         }
     }
 
+    public void updateRole(Role newRole) {
+        if (newRole != null && !newRole.equals(this.role)) {
+            this.role = newRole;
+        }
+    }
+
     @Override
     public String toString() {
         return "User{" +
