@@ -31,7 +31,7 @@ public class BasicAuthService implements AuthService {
 
   @Override
   @Transactional(readOnly = true)
-  public UserDto getCurrentUserInfo(@AuthenticationPrincipal UserDetails userDetails) {
+  public UserDto getCurrentUserInfo( UserDetails userDetails) {
     String username = userDetails.getUsername();
     User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
