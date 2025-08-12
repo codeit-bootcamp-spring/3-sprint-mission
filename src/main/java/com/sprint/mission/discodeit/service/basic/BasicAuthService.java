@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,7 +31,7 @@ public class BasicAuthService implements AuthService {
 
   @Override
   @Transactional(readOnly = true)
-  public UserDto getCurrentUserInfo(UserDetails userDetails) {
+  public UserDto getCurrentUserInfo(@AuthenticationPrincipal UserDetails userDetails) {
     String username = userDetails.getUsername();
     User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
