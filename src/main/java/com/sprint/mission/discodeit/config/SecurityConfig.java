@@ -60,7 +60,7 @@ public class SecurityConfig {
         .sessionManagement(management -> management
             .sessionConcurrency(concurrency -> concurrency
                 .maximumSessions(1)
-                .maxSessionsPreventsLogin(true)
+                .maxSessionsPreventsLogin(false)
                 .sessionRegistry(sessionRegistry)
             )
         )
@@ -74,8 +74,7 @@ public class SecurityConfig {
             .requestMatchers(
                 "/api/auth/csrf-token",
                 "/api/auth/login",
-                "/api/auth/logout",
-                "/api/auth/me"
+                "/api/auth/logout"
             ).permitAll()
             .requestMatchers(
                 "/swagger-ui/**",

@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.AuthSessionResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
@@ -36,12 +35,9 @@ public class AuthController implements AuthApi {
 
   @Override
   @GetMapping("/me")
-  public ResponseEntity<AuthSessionResponse> me(
+  public ResponseEntity<UserResponse> me(
       @AuthenticationPrincipal DiscodeitUserDetails userDetails) {
-    if (userDetails == null) {
-      return ResponseEntity.ok(AuthSessionResponse.guest());
-    }
-    return ResponseEntity.ok(AuthSessionResponse.of(userDetails.getUser()));
+    return ResponseEntity.ok(userDetails.getUser());
   }
 
   @Override

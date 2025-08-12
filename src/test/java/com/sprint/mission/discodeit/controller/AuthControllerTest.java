@@ -1,10 +1,14 @@
 package com.sprint.mission.discodeit.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import jakarta.servlet.http.Cookie;
 import java.util.Objects;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.UserRepository;
-
-import jakarta.servlet.http.Cookie;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -93,22 +92,18 @@ class AuthControllerTest {
         .andExpect(status().isOk())
         .andReturn();
 
-  MockHttpSession session = (MockHttpSession) Objects.requireNonNull(
-    loginResult.getRequest().getSession(false), "세션이 생성되지 않았습니다");
-    mockMvc.perform(get("/api/auth/me").session(session))
-    .andExpect(status().isOk())
-    .andExpect(jsonPath("$.authenticated").value(true))
-    .andExpect(jsonPath("$.user.id").value(user.getId().toString()))
-    .andExpect(jsonPath("$.user.username").value("tester"))
-    .andExpect(jsonPath("$.user.email").value("test@test.com"));
+    mockMvc.perform(
+            get("/api/auth/me").session((MockHttpSession) loginResult.getRequest().getSession(false)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(user.getId().toString()))
+        .andExpect(jsonPath("$.username").value("tester"))
+        .andExpect(jsonPath("$.email").value("test@test.com"));
   }
 
   @Test
-  void 로그인_없이_me_조회하면_guest_정보를_반환한다() throws Exception {
-  mockMvc.perform(get("/api/auth/me"))
-    .andExpect(status().isOk())
-    .andExpect(jsonPath("$.authenticated").value(false))
-    .andExpect(jsonPath("$.user").doesNotExist());
+  void 로그인_없이_me_조회하면_401() throws Exception {
+    mockMvc.perform(get("/api/auth/me"))
+        .andExpect(status().isUnauthorized());
   }
 
   @Test
@@ -127,10 +122,10 @@ class AuthControllerTest {
         .andExpect(status().isOk())
         .andReturn();
 
-  MockHttpSession session = (MockHttpSession) Objects.requireNonNull(
-    loginResult.getRequest().getSession(false), "세션이 생성되지 않았습니다");
+    MockHttpSession session = (MockHttpSession) Objects.requireNonNull(
+        loginResult.getRequest().getSession(false), "세션이 생성되지 않았습니다");
     mockMvc.perform(post("/api/auth/logout")
-        .session(session)
+            .session(session)
             .cookie(new Cookie("XSRF-TOKEN", token))
             .header("X-XSRF-TOKEN", token))
         .andExpect(status().isNoContent());
@@ -140,7 +135,7 @@ class AuthControllerTest {
     MvcResult result = mockMvc.perform(get("/api/auth/csrf-token"))
         .andExpect(status().isNonAuthoritativeInformation())
         .andReturn();
-  Cookie cookie = result.getResponse().getCookie("XSRF-TOKEN");
-  return Objects.requireNonNull(cookie, "CSRF 토큰 쿠키가 없습니다").getValue();
+    Cookie cookie = result.getResponse().getCookie("XSRF-TOKEN");
+    return Objects.requireNonNull(cookie, "CSRF 토큰 쿠키가 없습니다").getValue();
   }
 }
