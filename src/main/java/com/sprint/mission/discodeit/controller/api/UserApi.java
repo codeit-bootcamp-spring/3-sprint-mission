@@ -3,8 +3,6 @@ package com.sprint.mission.discodeit.controller.api;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -79,14 +77,6 @@ public interface UserApi {
       )
       MultipartFile profile
   );
-
-  @Operation(summary = "User 온라인 상태 업데이트")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "User 온라인 상태가 성공적으로 업데이트 됨",
-          content = @Content(schema = @Schema(implementation = UserStatus.class))),
-      @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음")
-  })
-  ResponseEntity<UserStatusResponse> userStatusUpdate(UUID userId);
 
   @Operation(summary = "Email로 사용자 조회")
   @ApiResponse(responseCode = "200", description = "User 조회 성공")

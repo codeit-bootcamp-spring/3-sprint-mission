@@ -2,7 +2,6 @@
 DROP TABLE IF EXISTS message_attachments CASCADE;
 DROP TABLE IF EXISTS messages CASCADE;
 DROP TABLE IF EXISTS read_statuses CASCADE;
-DROP TABLE IF EXISTS user_statuses CASCADE;
 DROP TABLE IF EXISTS binary_contents CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS channels CASCADE;
@@ -59,14 +58,6 @@ CREATE TABLE read_statuses
     last_read_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
-CREATE TABLE user_statuses
-(
-    id             UUID PRIMARY KEY,
-    user_id        UUID                     NOT NULL,
-    created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at     TIMESTAMP WITH TIME ZONE,
-    last_active_at TIMESTAMP WITH TIME ZONE NOT NULL
-);
 
 CREATE TABLE message_attachments
 (
@@ -86,8 +77,6 @@ ALTER TABLE read_statuses
     ADD CONSTRAINT fk_read_user FOREIGN KEY (user_id) REFERENCES users (id);
 ALTER TABLE read_statuses
     ADD CONSTRAINT fk_read_channel FOREIGN KEY (channel_id) REFERENCES channels (id);
-ALTER TABLE user_statuses
-    ADD CONSTRAINT fk_user_status_user FOREIGN KEY (user_id) REFERENCES users (id);
 ALTER TABLE message_attachments
     ADD CONSTRAINT fk_attachment_message FOREIGN KEY (message_id) REFERENCES messages (id);
 ALTER TABLE message_attachments

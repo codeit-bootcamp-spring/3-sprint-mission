@@ -1,10 +1,20 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.UserApi;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentProcessingException;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.command.CreateUserCommand;
+import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
+import com.sprint.mission.discodeit.vo.BinaryContentData;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,28 +28,12 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.sprint.mission.discodeit.controller.api.UserApi;
-import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
-import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentProcessingException;
-import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
-import com.sprint.mission.discodeit.service.command.CreateUserCommand;
-import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
-import com.sprint.mission.discodeit.vo.BinaryContentData;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 public class UserController implements UserApi {
 
   private final UserService userService;
-  private final UserStatusService userStatusService;
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserResponse> create(
@@ -60,12 +54,6 @@ public class UserController implements UserApi {
 
     UserResponse updated = userService.update(command);
     return ResponseEntity.ok(updated);
-  }
-
-  @PatchMapping("/{userId}/userStatus")
-  public ResponseEntity<UserStatusResponse> userStatusUpdate(@PathVariable UUID userId) {
-    UserStatusResponse userStatus = userStatusService.updateByUserId(userId);
-    return ResponseEntity.ok(userStatus);
   }
 
   @GetMapping("/email")

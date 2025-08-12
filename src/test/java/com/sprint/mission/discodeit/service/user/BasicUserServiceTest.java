@@ -103,7 +103,7 @@ class BasicUserServiceTest {
   class Create {
 
     @Test
-    void 새로운_사용자를_생성하고_UserStatus를_함께_생성한다() {
+    void 새로운_사용자를_생성한다() {
       String email = "test@test.com";
       String name = "길동쓰";
       String password = "pwd123";
@@ -228,7 +228,7 @@ class BasicUserServiceTest {
     }
 
     @Test
-    void 프로필_이미지가_없는_사용자를_삭제해도_UserStatus는_삭제해야_한다() {
+    void 프로필_이미지가_없는_사용자를_삭제한다() {
       User userToDelete = UserFixture.createValidUser();
       UUID userId = userToDelete.getId();
       given(userRepository.findById(userId)).willReturn(Optional.of(userToDelete));

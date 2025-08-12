@@ -10,10 +10,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-  @EntityGraph(attributePaths = {"profile", "userStatus"})
+  @EntityGraph(attributePaths = {"profile"})
   Optional<User> findByUsername(String username);
 
-  @EntityGraph(attributePaths = {"profile", "userStatus"})
+  @EntityGraph(attributePaths = {"profile"})
   Optional<User> findByEmail(String email);
 
   void deleteById(@NonNull UUID id);

@@ -5,11 +5,11 @@ import com.sprint.mission.discodeit.exception.InvalidInputException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import java.util.Objects;
 import java.util.UUID;
@@ -35,9 +35,6 @@ public class User extends BaseUpdatableEntity {
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "profile_id")
   private BinaryContent profile;
-
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-  private UserStatus userStatus;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "role", nullable = false)
@@ -69,7 +66,8 @@ public class User extends BaseUpdatableEntity {
     return new User(email, name, password, profile, Role.USER);
   }
 
-  public static User create(String email, String name, String password, BinaryContent profile, Role role) {
+  public static User create(String email, String name, String password, BinaryContent profile,
+      Role role) {
     return new User(email, name, password, profile, role);
   }
 
@@ -100,10 +98,6 @@ public class User extends BaseUpdatableEntity {
 
   public void updateProfile(BinaryContent profile) {
     this.profile = profile;
-  }
-
-  public void updateUserStatus(UserStatus userStatus) {
-    this.userStatus = userStatus;
   }
 
   public void updateRole(Role role) {
