@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,7 +45,7 @@ public class BasicAuthService implements AuthService {
         UserDto userDto = userMapper.toDto(user);
         log.debug(SERVICE_NAME + "DTO 변환 완료: {}", userDto);
 
-        boolean online = isOnline(userDto.username());
+        boolean online = isOnline(userDto.id());
 
         log.debug(SERVICE_NAME + "온라인 상태 계산 완료: username={}, online={}", userDto.username(), online);
 
@@ -104,18 +103,20 @@ public class BasicAuthService implements AuthService {
         }
     }
 
-    private boolean isOnline(String username) {
-        if (username == null) {
+    private boolean isOnline(UUID userId) {
+        if (userId == null) {
             return false;
         }
 
         return sessionRegistry.getAllPrincipals().stream()
                 .anyMatch(principal -> {
-                    String principalUsername =  getPrincipalUsername(principal);
+                    if (principal instanceof DiscodeitUserDetails userDetails) {
+                        boolean sameUser = userId.equals(userDetails.getUserDto().id());
+                        if (!sameUser) return false;
+                        return !sessionRegistry.getAllSessions(principal, false).isEmpty();
+                    }
 
-                    if (!username.equals(principalUsername)) return false;
-
-                    return !sessionRegistry.getAllSessions(principal, false).isEmpty();
+                    return false;
         });
     }
 

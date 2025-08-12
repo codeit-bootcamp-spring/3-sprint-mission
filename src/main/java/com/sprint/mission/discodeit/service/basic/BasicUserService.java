@@ -17,6 +17,7 @@ import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -104,7 +105,7 @@ public class BasicUserService implements UserService {
         log.info(SERVICE_NAME + "유저 조회 시도: userId={}", userId);
         return userRepository.findById(userId)
             .map(userMapper::toDto)
-            .map(userDto -> UserDto.withOnlineStatus(userDto, isOnline(userDto.username())))
+            .map(userDto -> UserDto.withOnlineStatus(userDto, isOnline(userDto.id())))
             .orElseThrow(() -> {
                 log.error(SERVICE_NAME + "유저 없음: userId={}", userId);
                 return new UserNotFoundException("해당 사용자를 찾을 수 없습니다.");
@@ -122,7 +123,7 @@ public class BasicUserService implements UserService {
         List<UserDto> result = userRepository.findAllWithProfile()
             .stream()
             .map(userMapper::toDto)
-            .map(userDto -> UserDto.withOnlineStatus(userDto, isOnline(userDto.username())))
+            .map(userDto -> UserDto.withOnlineStatus(userDto, isOnline(userDto.id())))
             .toList();
         log.info(SERVICE_NAME + "전체 유저 목록 조회 성공: 건수={}", result.size());
         return result;
@@ -195,7 +196,11 @@ public class BasicUserService implements UserService {
 
         user.update(newUsername, newEmail, newPassword, nullableProfile);
         log.info(SERVICE_NAME + "유저 정보 수정 성공: userId={}", userId);
-        return userMapper.toDto(user);
+
+        UserDto userDto = userMapper.toDto(user);
+        log.info(SERVICE_NAME + "유저 접속 상태 반영 시작");
+
+        return UserDto.withOnlineStatus(userDto, isOnline(userDto.id()));
     }
 
     /**
@@ -214,34 +219,21 @@ public class BasicUserService implements UserService {
         log.info(SERVICE_NAME + "유저 삭제 성공: userId={}", userId);
     }
 
-    private boolean isOnline(String username) {
-        if (username == null) {
+    private boolean isOnline(UUID userId) {
+        if (userId == null) {
             return false;
         }
 
         return sessionRegistry.getAllPrincipals().stream()
                 .anyMatch(principal -> {
-                    String principalUsername =  getPrincipalUsername(principal);
+                    if (principal instanceof DiscodeitUserDetails userDetails) {
+                        boolean sameUser = userId.equals(userDetails.getUserDto().id());
+                        if (!sameUser) return false;
+                        return !sessionRegistry.getAllSessions(principal, false).isEmpty();
+                    }
 
-                    if (!username.equals(principalUsername)) return false;
-
-                    return !sessionRegistry.getAllSessions(principal, false).isEmpty();
+                    return false;
                 });
-    }
-
-    private String getPrincipalUsername(Object principal) {
-        if (principal instanceof DiscodeitUserDetails userDetails) {
-            return userDetails.getUsername();
-        } else if (principal instanceof org.springframework.security.core.userdetails.User user) {
-            return user.getUsername();
-        } else if (principal instanceof String name) {
-            return name;
-        }
-
-        log.warn(SERVICE_NAME + "예상치 못한 principal 타입: {}",
-                principal != null ? principal.getClass().getName() : "null");
-
-        return null;
     }
 
     @Override
