@@ -41,6 +41,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
@@ -63,6 +64,9 @@ class BasicUserServiceTest {
 
   @Mock
   private PasswordEncoder passwordEncoder;
+
+  @Mock
+  private SessionRegistry sessionRegistry;
 
   @InjectMocks
   private BasicUserService basicUserService;
@@ -91,6 +95,8 @@ class BasicUserServiceTest {
         });
     Mockito.lenient().when(passwordEncoder.encode(anyString())).thenReturn("encodedPwd");
     Mockito.lenient().when(userOnlineService.isOnline(any(UUID.class))).thenReturn(false);
+    Mockito.lenient().when(sessionRegistry.getAllPrincipals())
+        .thenReturn(java.util.Collections.emptyList());
   }
 
   @Nested
