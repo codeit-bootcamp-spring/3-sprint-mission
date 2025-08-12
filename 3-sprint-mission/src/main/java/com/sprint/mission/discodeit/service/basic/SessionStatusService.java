@@ -17,6 +17,8 @@ public class SessionStatusService {
         return sessionRegistry.getAllPrincipals().stream()
                 .filter(DiscodeitUserDetails.class::isInstance)
                 .map(DiscodeitUserDetails.class::cast)
-                .anyMatch(userDetails -> userDetails.getUserDto().id().equals(userId));
+                .anyMatch(userDetails ->
+                        userDetails.getUserDto().id().equals(userId)
+                                && !sessionRegistry.getAllSessions(userDetails, false).isEmpty());
     }
 }

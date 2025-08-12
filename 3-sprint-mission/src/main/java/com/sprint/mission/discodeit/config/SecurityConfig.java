@@ -3,9 +3,11 @@ package com.sprint.mission.discodeit.config;
 import com.sprint.mission.discodeit.handler.HttpStatusReturningLogoutSuccessHandler;
 import com.sprint.mission.discodeit.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.handler.LoginSuccessHandler;
+import com.sprint.mission.discodeit.service.basic.DiscodeitUserDetailsService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
@@ -73,7 +75,9 @@ public class SecurityConfig {
                                            LoginSuccessHandler loginSuccessHandler,
                                            LoginFailureHandler loginFailureHandler,
                                            HttpStatusReturningLogoutSuccessHandler logoutSuccessHandler,
-                                           SessionRegistry sessionRegistry
+                                           SessionRegistry sessionRegistry,
+                                           DiscodeitUserDetailsService userDetailsService,
+                                           HttpSessionEventPublisher httpSessionEventPublisher
     ) throws Exception {
 
         http
@@ -85,6 +89,7 @@ public class SecurityConfig {
 
                 // Form 로그인 설정
                 .formLogin(form -> form
+                        .loginPage("/login")
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(loginSuccessHandler)
                         .failureHandler(loginFailureHandler)
@@ -100,19 +105,27 @@ public class SecurityConfig {
 
                 // 인가 설정
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().authenticated()
                         // 인증 불필요
                         .requestMatchers(
+                                "/",
+                                "/login",
+                                "/error",
+                                "/index.html",
+                                "/assets/**",
+                                "/static/**",
+                                "/favicon.ico",
                                 "/api/auth/csrf-token",
-                                "/api/users",
                                 "/api/auth/login",
-                                "/api/auth/logout",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/actuator/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers("/api/auth/me").authenticated()
+                        .anyRequest().authenticated()
                 )
 
+                // 세션 관리 설정
                 .sessionManagement(management -> management
                         .sessionConcurrency(concurrency -> concurrency
                                 .maximumSessions(1)
@@ -121,8 +134,13 @@ public class SecurityConfig {
                         )
                 )
 
-        ;
-
+                // Rememeber-Me 설정
+                .rememberMe(remember -> remember
+                        .key("hello-its-me-remember-me")
+                        .rememberMeParameter("remember-me")
+                        .tokenValiditySeconds(60 * 60 * 24 * 7)
+                        .userDetailsService(userDetailsService)
+                );
 
         return http.build();
     }

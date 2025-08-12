@@ -49,8 +49,7 @@ public class BasicChannelService implements ChannelService {
         log.info("채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
         return channelMapper.toDto(channel);
     }
-
-    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+    
     @Transactional
     @Override
     public ChannelDto create(PrivateChannelCreateRequest request) {

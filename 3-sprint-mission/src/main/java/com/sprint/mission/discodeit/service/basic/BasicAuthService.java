@@ -41,15 +41,15 @@ public class BasicAuthService implements AuthService {
         User updatedUser = userRepository.save(user);
 
         // 권한 변경 후 해당 사용자 세션 강제 만료
-        expireUserSessions(user.getUsername());
+        expireUserSessions(userId);
 
         return userMapper.toDto(updatedUser);
     }
 
-    public void expireUserSessions(String username) {
+    public void expireUserSessions(UUID userId) {
         sessionRegistry.getAllPrincipals().forEach(principal -> {
             if (principal instanceof DiscodeitUserDetails usreDetails &&
-                    usreDetails.getUsername().equals(username)) {
+                    usreDetails.getUserDto().id().equals(userId)) {
 
                 sessionRegistry.getAllSessions(principal, false)
                         .forEach(sessionInfo -> sessionInfo.expireNow());

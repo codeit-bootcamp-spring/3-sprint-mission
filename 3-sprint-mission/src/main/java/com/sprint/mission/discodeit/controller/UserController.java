@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.basic.SessionStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +27,6 @@ import java.util.UUID;
 public class UserController implements UserApi {
 
     private final UserService userService;
-    private final SessionStatusService sessionStatusService;
 
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @Override
@@ -100,12 +98,5 @@ public class UserController implements UserApi {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    @GetMapping("/{userId}/login-status")
-    public ResponseEntity<Boolean> checkLogin(
-            @PathVariable UUID userId) {
-        boolean loggedIn = sessionStatusService.isUserLoggedIn(username);
-        return ResponseEntity.ok(loggedIn);
     }
 }
