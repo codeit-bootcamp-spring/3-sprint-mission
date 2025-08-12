@@ -92,4 +92,29 @@ public class AcceptanceFixture {
     return restTemplate.postForEntity(
         "/api/messages", new HttpEntity<>(body, headers), MessageResponse.class);
   }
+
+  public static ResponseEntity<MessageResponse> createMessageAuthenticated(
+      TestRestTemplate restTemplate,
+      UUID userId,
+      UUID channelId,
+      HttpHeaders sessionHeaders
+  ) {
+    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+    body.add("messageCreateRequest", new HttpEntity<>(json("""
+        {
+          "content": "첨부 메시지 테스트",
+          "authorId": "%s",
+          "channelId": "%s"
+        }
+        """.formatted(userId, channelId)), jsonHeader()));
+    body.add("attachments", new ClassPathResource("images/img_01.png"));
+    body.add("attachments", new ClassPathResource("images/img_02.png"));
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+    headers.addAll(sessionHeaders);
+
+    return restTemplate.postForEntity(
+        "/api/messages", new HttpEntity<>(body, headers), MessageResponse.class);
+  }
 }

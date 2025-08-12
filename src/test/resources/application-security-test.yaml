@@ -37,5 +37,5 @@ decorator:
 
 logging:
   level:
-    root: debug
+    root: info
     com.sprint.mission: debug

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,15 +41,22 @@ public class SecurityConfig {
   private final LoginSuccessHandler loginSuccessHandler;
   private final LoginFailureHandler loginFailureHandler;
   private final ForbiddenAccessDeniedHandler accessDeniedHandler;
+  @Value("${discodeit.security.disable-csrf:false}")
+  private boolean disableCsrf;
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry)
       throws Exception {
     http
-        .csrf(csrf -> csrf
-            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-            .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-        )
+        .csrf(csrf -> {
+          if (disableCsrf) {
+            csrf.disable();
+          } else {
+            csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler());
+          }
+        })
         .sessionManagement(management -> management
             .sessionConcurrency(concurrency -> concurrency
                 .maximumSessions(1)
@@ -57,13 +65,27 @@ public class SecurityConfig {
             )
         )
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
-            .requestMatchers("/api/auth/csrf-token", "/api/auth/login", "/api/auth/logout",
-                "/api/auth/me").permitAll()
+            .requestMatchers(
+                "/",
+                "/index.html",
+                "/assets/**",
+                "/favicon.ico"
+            ).permitAll()
+            .requestMatchers(
+                "/api/auth/csrf-token",
+                "/api/auth/login",
+                "/api/auth/logout",
+                "/api/auth/me"
+            ).permitAll()
+            .requestMatchers(
+                "/swagger-ui/**",
+                "/v3/api-docs/**",
+                "/actuator/**"
+            ).permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
             .requestMatchers(HttpMethod.POST, "/actuator/loggers/**").hasRole("ADMIN")
-            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
-            .anyRequest().authenticated())
+            .anyRequest().authenticated()
+        )
         .exceptionHandling(ex -> ex
             // 미인증(anonymous) 401, 권한 부족 403 (accessDeniedHandler)
             .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))

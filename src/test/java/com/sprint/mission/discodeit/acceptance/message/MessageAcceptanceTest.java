@@ -1,17 +1,24 @@
 package com.sprint.mission.discodeit.acceptance.message;
 
-import static com.sprint.mission.discodeit.support.TestUtils.*;
-import static org.assertj.core.api.Assertions.*;
+import static com.sprint.mission.discodeit.support.TestUtils.jsonHeader;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.sprint.mission.discodeit.dto.response.ChannelResponse;
+import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
+import com.sprint.mission.discodeit.support.AuthTestUtils;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
-
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,43 +35,27 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sprint.mission.discodeit.dto.response.ChannelResponse;
-import com.sprint.mission.discodeit.dto.response.MessageResponse;
-import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
-
-/**
- * Message API에 대한 인수 테스트
- * <p>
- * `test` 프로필로 실행됩니다.
- *
- * <ol>
- * <li>사용자_1_생성</li>
- * <li>사용자_2_생성</li>
- * <li>공개_채널_생성</li>
- * <li>비공개_채널_생성</li>
- * <li>메시지_생성</li>
- * <li>메시지_수정</li>
- * <li>특정_채널_메시지_조회</li>
- * <li>메시지_삭제</li>
- * </ol>
- */
-@ActiveProfiles("test")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("security-test")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {"discodeit.security.disable-csrf=true"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-
+@TestInstance(Lifecycle.PER_CLASS)
 @Transactional
 public class MessageAcceptanceTest {
 
   @Autowired
   TestRestTemplate restTemplate;
 
-  static UUID userId1;
-  static UUID userId2;
+  static UUID userId;        // 기존 userId1
+  static UUID otherUserId;   // 기존 userId2
   static UUID publicChannelId;
   static UUID privateChannelId;
   static UUID messageId;
+
+  private final HttpHeaders userSessionHeaders = new HttpHeaders();
+  private final HttpHeaders adminSessionHeaders = new HttpHeaders();
+  private String username;
+  private static final String TEST_PASSWORD = "pw123";
 
   @TempDir
   static Path tempDir;
@@ -83,9 +74,9 @@ public class MessageAcceptanceTest {
         "길동쓰",
         "test@test.com",
         "images/img_01.png");
-
-    Assertions.assertNotNull(response.getBody());
-    userId1 = response.getBody().id();
+    var createdUser1 = Objects.requireNonNull(response.getBody());
+    userId = createdUser1.id();
+    username = createdUser1.username();
   }
 
   @Test
@@ -96,16 +87,21 @@ public class MessageAcceptanceTest {
         "길동쓰2",
         "test2@test.com",
         "images/img_02.png");
-
-    Assertions.assertNotNull(response.getBody());
-    userId2 = response.getBody().id();
+    var createdUser2 = Objects.requireNonNull(response.getBody());
+    otherUserId = createdUser2.id();
   }
 
   @Test
   @Order(3)
   void 공개_채널_생성() {
+    // 권한 부여, 로그인
+    AuthTestUtils.grantRole(restTemplate, adminSessionHeaders, userId, "CHANNEL_MANAGER");
+    HttpHeaders loggedIn = AuthTestUtils.formLogin(restTemplate, username, TEST_PASSWORD);
+    userSessionHeaders.set(HttpHeaders.COOKIE, loggedIn.getFirst(HttpHeaders.COOKIE));
+
     var request = Map.of("name", "general", "description", "공개 채널입니다");
     var headers = jsonHeader();
+    headers.addAll(userSessionHeaders);
 
     var response = restTemplate.postForEntity(
         "/api/channels/public",
@@ -113,15 +109,16 @@ public class MessageAcceptanceTest {
         ChannelResponse.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-    Assertions.assertNotNull(response.getBody());
-    publicChannelId = response.getBody().id();
+    var createdPublicChannel = Objects.requireNonNull(response.getBody());
+    publicChannelId = createdPublicChannel.id();
   }
 
   @Test
   @Order(4)
   void 비공개_채널_생성() {
-    var request = Map.of("participantIds", List.of(userId1, userId2));
+    var request = Map.of("participantIds", List.of(userId, otherUserId));
     var headers = jsonHeader();
+    headers.addAll(userSessionHeaders);
 
     var response = restTemplate.postForEntity(
         "/api/channels/private",
@@ -129,20 +126,21 @@ public class MessageAcceptanceTest {
         ChannelResponse.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-    Assertions.assertNotNull(response.getBody());
-    privateChannelId = response.getBody().id();
+    var createdPrivateChannel = Objects.requireNonNull(response.getBody());
+    privateChannelId = createdPrivateChannel.id();
   }
 
   @Test
   @Order(5)
   void 메시지_생성() {
-    ResponseEntity<MessageResponse> response = AcceptanceFixture.createMessage(
+    ResponseEntity<MessageResponse> response = AcceptanceFixture.createMessageAuthenticated(
         restTemplate,
-        userId1,
-        publicChannelId);
+        userId,
+        publicChannelId,
+        userSessionHeaders);
 
-    Assertions.assertNotNull(response.getBody());
-    messageId = response.getBody().id();
+    var createdMessage = Objects.requireNonNull(response.getBody());
+    messageId = createdMessage.id();
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     assertThat(response.getBody()).isNotNull();
@@ -152,8 +150,8 @@ public class MessageAcceptanceTest {
   @Order(6)
   void 메시지_수정() {
     var updateRequest = Map.of("newContent", "수정된 메시지입니다.");
-
     HttpHeaders headers = jsonHeader();
+    headers.addAll(userSessionHeaders);
 
     ResponseEntity<MessageResponse> response = restTemplate.exchange(
         "/api/messages/" + messageId,
@@ -162,8 +160,8 @@ public class MessageAcceptanceTest {
         MessageResponse.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().content()).isEqualTo("수정된 메시지입니다.");
+    var updated = Objects.requireNonNull(response.getBody());
+    assertThat(updated.content()).isEqualTo("수정된 메시지입니다.");
   }
 
   @Test
@@ -172,15 +170,16 @@ public class MessageAcceptanceTest {
     ResponseEntity<PageResponse<MessageResponse>> response = restTemplate.exchange(
         "/api/messages?channelId=" + publicChannelId,
         HttpMethod.GET,
-        null,
+        new HttpEntity<Void>(userSessionHeaders),
         new ParameterizedTypeReference<>() {
         });
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().content()).isNotEmpty();
+    var page = Objects.requireNonNull(response.getBody());
+    assertThat(page.content()).isNotEmpty();
 
-    boolean containsMessage = response.getBody().content().stream()
+    var pageResult = Objects.requireNonNull(response.getBody());
+    boolean containsMessage = pageResult.content().stream()
         .map(MessageResponse::id)
         .anyMatch(id -> id.equals(messageId));
 
@@ -193,7 +192,7 @@ public class MessageAcceptanceTest {
     ResponseEntity<Void> response = restTemplate.exchange(
         "/api/messages/" + messageId,
         HttpMethod.DELETE,
-        null,
+        new HttpEntity<Void>(userSessionHeaders),
         Void.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);

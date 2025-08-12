@@ -3,14 +3,13 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.UserOnlineService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
@@ -34,8 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
+  private final UserOnlineService userOnlineService;
   private final BinaryContentStorage binaryContentStorage;
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
@@ -45,7 +44,6 @@ public class BasicUserService implements UserService {
     validateUserEmail(command.email());
     validateUserName(command.username());
 
-    // 유저 생성
     String encodedPassword = passwordEncoder.encode(command.password());
     User newUser = User.create(
         command.email(),
@@ -54,9 +52,6 @@ public class BasicUserService implements UserService {
         null
     );
     User savedUser = userRepository.save(newUser);
-
-    // 유저 상태 초기화
-    userStatusRepository.save(UserStatus.create(savedUser));
 
     BinaryContent savedProfile = null;
     if (command.profile() != null) {
@@ -160,8 +155,6 @@ public class BasicUserService implements UserService {
       Optional.ofNullable(user.getProfile())
           .ifPresent(profile -> binaryContentRepository.deleteById(profile.getId()));
 
-      userStatusRepository.findByUserId(userId)
-          .ifPresent(status -> userStatusRepository.deleteById(status.getId()));
     }, () -> {
       throw new UserNotFoundException(userId.toString());
     });
@@ -186,9 +179,7 @@ public class BasicUserService implements UserService {
   }
 
   private UserResponse toUserResponse(User user) {
-    boolean isOnline = userStatusRepository.findByUserId(user.getId())
-        .map(UserStatus::isOnline)
-        .orElse(false);
+    boolean isOnline = userOnlineService.isOnline(user.getId());
 
     UserResponse base = userMapper.toResponse(user);
     return new UserResponse(
