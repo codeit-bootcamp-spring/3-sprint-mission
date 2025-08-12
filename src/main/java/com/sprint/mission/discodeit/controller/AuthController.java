@@ -11,9 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -51,7 +49,8 @@ public class AuthController implements AuthApi {
   }
 
   @Override
-  public ResponseEntity<UserDto> updateUserRole(RoleUpdateRequest roleUpdateRequest) {
+  @PutMapping("/role")
+  public ResponseEntity<UserDto> updateUserRole(@RequestBody RoleUpdateRequest roleUpdateRequest) {
 
     UserDto user = authService.updateUserRole(roleUpdateRequest);
 
