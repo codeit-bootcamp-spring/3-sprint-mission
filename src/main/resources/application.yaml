@@ -72,3 +72,11 @@ management:
       exposure:
         include: health,info,metrics,loggers
 # 기본값 외 실제 또는 추가 설정은 프로필 설정에서 오버라이드.
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      force-request: true
+      force-response: true
