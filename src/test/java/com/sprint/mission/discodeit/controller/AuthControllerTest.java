@@ -107,6 +107,33 @@ class AuthControllerTest {
   }
 
   @Test
+  void remember_me_쿠키로_로그인_유지() throws Exception {
+    User user = User.create("test@test.com", "tester", passwordEncoder.encode("password"), null);
+    userRepository.save(user);
+
+    String token = fetchCsrfToken();
+
+    MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
+            .cookie(new Cookie("XSRF-TOKEN", token))
+            .header("X-XSRF-TOKEN", token)
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .param("username", "tester")
+            .param("password", "password")
+            .param("remember-me", "true"))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    Cookie rememberMe = Objects.requireNonNull(
+        loginResult.getResponse().getCookie("remember-me"), "remember-me 쿠키가 없습니다");
+
+    mockMvc.perform(get("/api/auth/me").cookie(rememberMe))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(user.getId().toString()))
+        .andExpect(jsonPath("$.username").value("tester"))
+        .andExpect(jsonPath("$.email").value("test@test.com"));
+  }
+
+  @Test
   void 로그아웃_성공() throws Exception {
     User user = User.create("test@test.com", "tester", passwordEncoder.encode("password"), null);
     userRepository.save(user);

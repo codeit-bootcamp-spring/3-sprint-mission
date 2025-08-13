@@ -30,6 +30,7 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.config.Customizer;
 
 @Slf4j
 @Configuration
@@ -90,6 +91,7 @@ public class SecurityConfig {
             .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             .accessDeniedHandler(accessDeniedHandler)
         )
+        .rememberMe(Customizer.withDefaults())
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
             .successHandler(loginSuccessHandler)
@@ -117,6 +119,7 @@ public class SecurityConfig {
   }
 
   @Bean
+  @Profile("!prod")
   public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
 
     return args -> {
@@ -133,6 +136,7 @@ public class SecurityConfig {
   }
 
   @Bean
+  @Profile("!prod")
   public CommandLineRunner debugSecurityBeans(UserDetailsService userDetailsService,
       PasswordEncoder passwordEncoder,
       LoginSuccessHandler loginSuccessHandler, LoginFailureHandler loginFailureHandler) {
