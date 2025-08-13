@@ -13,20 +13,15 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -67,11 +62,10 @@ public class BasicUserService implements UserService {
           return binaryContent;
         })
         .orElse(null);
+    String password = userCreateRequest.password();
+    String encodedPassword = passwordEncoder.encode(password);
 
-    String password = passwordEncoder.encode(userCreateRequest.password());
-
-    User user = new User(username, email, password, nullableProfile);
-    Instant now = Instant.now();
+    User user = new User(username, email, encodedPassword, nullableProfile);
 
     userRepository.save(user);
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
@@ -101,8 +95,8 @@ public class BasicUserService implements UserService {
     return userDtos;
   }
 
+  @PreAuthorize("principal.userDto.id == #userId")
   @Transactional
-  @PreAuthorize("@basicUserService.isCurrentUser(#userId)")
   @Override
   public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
@@ -140,15 +134,17 @@ public class BasicUserService implements UserService {
         .orElse(null);
 
     String newPassword = userUpdateRequest.newPassword();
-    user.update(newUsername, newEmail, newPassword, nullableProfile);
+    String encodedPassword = Optional.ofNullable(newPassword).map(passwordEncoder::encode)
+        .orElse(user.getPassword());
+    user.update(newUsername, newEmail, encodedPassword, nullableProfile);
 
     log.info("사용자 수정 완료: id={}", userId);
     return userMapper.toDto(user);
   }
 
+  @PreAuthorize("principal.userDto.id == #userId")
   @Transactional
   @Override
-  @PreAuthorize("@basicUserService.isCurrentUser(#userId)")
   public void delete(UUID userId) {
     log.debug("사용자 삭제 시작: id={}", userId);
 
@@ -159,18 +155,4 @@ public class BasicUserService implements UserService {
     userRepository.deleteById(userId);
     log.info("사용자 삭제 완료: id={}", userId);
   }
-
-    public boolean isCurrentUser(UUID userId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return false;
-        }
-
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String currentUsername = userDetails.getUsername();
-        return userRepository.findById(userId)
-                .map(User::getUsername)
-                .filter(username -> username.equals(currentUsername))
-                .isPresent();
-    }
 }
