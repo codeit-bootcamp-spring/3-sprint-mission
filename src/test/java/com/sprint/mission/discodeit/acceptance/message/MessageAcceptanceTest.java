@@ -46,14 +46,15 @@ public class MessageAcceptanceTest {
   @Autowired
   TestRestTemplate restTemplate;
 
-  static UUID userId;        // 기존 userId1
-  static UUID otherUserId;   // 기존 userId2
+  static UUID userId;
+  static UUID otherUserId;
   static UUID publicChannelId;
   static UUID privateChannelId;
   static UUID messageId;
 
   private final HttpHeaders userSessionHeaders = new HttpHeaders();
   private final HttpHeaders adminSessionHeaders = new HttpHeaders();
+  private final HttpHeaders otherSessionHeaders = new HttpHeaders();
   private String username;
   private static final String TEST_PASSWORD = "pw123";
 
@@ -89,6 +90,10 @@ public class MessageAcceptanceTest {
         "images/img_02.png");
     var createdUser2 = Objects.requireNonNull(response.getBody());
     otherUserId = createdUser2.id();
+
+    HttpHeaders loggedIn = AuthTestUtils.formLogin(restTemplate,
+        createdUser2.username(), TEST_PASSWORD);
+    otherSessionHeaders.set(HttpHeaders.COOKIE, loggedIn.getFirst(HttpHeaders.COOKIE));
   }
 
   @Test
@@ -148,6 +153,22 @@ public class MessageAcceptanceTest {
 
   @Test
   @Order(6)
+  void 다른_사용자_메시지_수정_실패() {
+    var updateRequest = Map.of("newContent", "해커 수정");
+    HttpHeaders headers = jsonHeader();
+    headers.addAll(otherSessionHeaders);
+
+    ResponseEntity<MessageResponse> response = restTemplate.exchange(
+        "/api/messages/" + messageId,
+        HttpMethod.PATCH,
+        new HttpEntity<>(updateRequest, headers),
+        MessageResponse.class);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+  }
+
+  @Test
+  @Order(7)
   void 메시지_수정() {
     var updateRequest = Map.of("newContent", "수정된 메시지입니다.");
     HttpHeaders headers = jsonHeader();
@@ -165,7 +186,7 @@ public class MessageAcceptanceTest {
   }
 
   @Test
-  @Order(7)
+  @Order(8)
   void 특정_채널_메시지_조회() {
     ResponseEntity<PageResponse<MessageResponse>> response = restTemplate.exchange(
         "/api/messages?channelId=" + publicChannelId,
@@ -187,7 +208,19 @@ public class MessageAcceptanceTest {
   }
 
   @Test
-  @Order(8)
+  @Order(9)
+  void 다른_사용자_메시지_삭제_실패() {
+    ResponseEntity<Void> response = restTemplate.exchange(
+        "/api/messages/" + messageId,
+        HttpMethod.DELETE,
+        new HttpEntity<Void>(otherSessionHeaders),
+        Void.class);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+  }
+
+  @Test
+  @Order(10)
   void 메시지_삭제() {
     ResponseEntity<Void> response = restTemplate.exchange(
         "/api/messages/" + messageId,

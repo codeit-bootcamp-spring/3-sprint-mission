@@ -46,7 +46,9 @@ public class UserAcceptanceTest {
   TestRestTemplate restTemplate;
 
   static UUID userId;
+  static UUID otherUserId;
   static HttpHeaders userSessionHeaders = new HttpHeaders();
+  static HttpHeaders otherSessionHeaders = new HttpHeaders();
   private static final String TEST_PASSWORD = "pw123";
 
   @TempDir
@@ -60,7 +62,7 @@ public class UserAcceptanceTest {
 
   @Test
   @Order(1)
-  void 사용자_생성() {
+  void 사용자_1_생성() {
     ResponseEntity<UserResponse> response = AcceptanceFixture.createUser(
         restTemplate,
         "길동쓰",
@@ -77,6 +79,23 @@ public class UserAcceptanceTest {
 
   @Test
   @Order(2)
+  void 사용자_2_생성() {
+    ResponseEntity<UserResponse> response = AcceptanceFixture.createUser(
+        restTemplate,
+        "길동쓰2",
+        "test2@test.com",
+        "images/img_02.png");
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    final UserResponse body = Objects.requireNonNull(response.getBody());
+    otherUserId = body.id();
+
+    HttpHeaders loggedIn = AuthTestUtils.formLogin(restTemplate, body.username(), TEST_PASSWORD);
+    otherSessionHeaders.set(HttpHeaders.COOKIE, loggedIn.getFirst(HttpHeaders.COOKIE));
+  }
+
+  @Test
+  @Order(3)
   void 사용자_수정() {
     MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
     body.add("userUpdateRequest", new HttpEntity<>("""
@@ -104,7 +123,32 @@ public class UserAcceptanceTest {
   }
 
   @Test
-  @Order(3)
+  @Order(4)
+  void 다른_사용자_수정_시_실패() {
+    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+    body.add("userUpdateRequest", new HttpEntity<>("""
+        {
+          "newUsername": "hacker",
+          "newEmail": "hack@test.com",
+          "newPassword": "pwd123"
+        }
+        """.stripIndent(), jsonHeader()));
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+    headers.addAll(otherSessionHeaders);
+
+    ResponseEntity<UserResponse> response = restTemplate.exchange(
+        "/api/users/" + userId,
+        HttpMethod.PATCH,
+        new HttpEntity<>(body, headers),
+        UserResponse.class);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+  }
+
+  @Test
+  @Order(5)
   void 사용자_전체_조회() {
     ResponseEntity<List<UserResponse>> response = restTemplate.exchange(
         "/api/users", HttpMethod.GET, new HttpEntity<Void>(userSessionHeaders),
@@ -116,7 +160,18 @@ public class UserAcceptanceTest {
   }
 
   @Test
-  @Order(4)
+  @Order(6)
+  void 다른_사용자_삭제_시_실패() {
+    ResponseEntity<Void> response = restTemplate.exchange(
+        "/api/users/" + userId,
+        HttpMethod.DELETE,
+        new HttpEntity<Void>(otherSessionHeaders),
+        Void.class);
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+  }
+
+  @Test
+  @Order(7)
   void 사용자_삭제() {
     ResponseEntity<Void> response = restTemplate.exchange(
         "/api/users/" + userId, HttpMethod.DELETE, new HttpEntity<Void>(userSessionHeaders),
