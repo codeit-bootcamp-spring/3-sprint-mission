@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
@@ -11,15 +13,15 @@ import org.springframework.http.ResponseEntity;
 
 public interface BinaryContentService {
 
-  BinaryContent create(BinaryContentCreateRequest request);
+  BinaryContent create(@Valid BinaryContentCreateRequest request);
 
-  BinaryContentDto find(UUID binaryContentId);
+  BinaryContentDto find(@NotNull UUID binaryContentId);
 
-  List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds);
+  List<BinaryContentDto> findAllByIdIn(@NotNull List<UUID> binaryContentIds);
 
-  void delete(UUID binaryContentId);
+  void delete(@NotNull UUID binaryContentId);
 
-  InputStream getRawData(UUID binaryContentId);
+  InputStream getRawData(@NotNull UUID binaryContentId);
 
-  ResponseEntity<?> download(BinaryContentDto dto);
+  ResponseEntity<?> download(@NotNull BinaryContentDto dto);
 }

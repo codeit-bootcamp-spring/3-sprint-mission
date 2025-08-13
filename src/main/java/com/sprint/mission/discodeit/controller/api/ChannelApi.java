@@ -13,9 +13,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Channel", description = "Channel API")
 public interface ChannelApi {
@@ -28,7 +33,8 @@ public interface ChannelApi {
       )
   })
   ResponseEntity<ChannelDto> create(
-      @Parameter(description = "Public Channel 생성 정보") PublicChannelCreateRequest request
+      @Parameter(description = "Public Channel 생성 정보")
+      @Valid @RequestBody PublicChannelCreateRequest request
   );
 
   @Operation(summary = "Private Channel 생성")
@@ -39,7 +45,8 @@ public interface ChannelApi {
       )
   })
   ResponseEntity<ChannelDto> create(
-      @Parameter(description = "Private Channel 생성 정보") PrivateChannelCreateRequest request
+      @Parameter(description = "Private Channel 생성 정보")
+      @Valid @RequestBody PrivateChannelCreateRequest request
   );
 
   @Operation(summary = "Channel 정보 수정")
@@ -58,8 +65,10 @@ public interface ChannelApi {
       )
   })
   ResponseEntity<ChannelDto> update(
-      @Parameter(description = "수정할 Channel ID") UUID channelId,
-      @Parameter(description = "수정할 Channel 정보") PublicChannelUpdateRequest request
+      @Parameter(description = "수정할 Channel ID")
+      @NotNull @PathVariable("channelId") UUID channelId,
+      @Parameter(description = "수정할 Channel 정보")
+      @RequestBody PublicChannelUpdateRequest request
   );
 
   @Operation(summary = "Channel 삭제")
@@ -73,7 +82,8 @@ public interface ChannelApi {
       )
   })
   ResponseEntity<Void> delete(
-      @Parameter(description = "삭제할 Channel ID") UUID channelId
+      @Parameter(description = "삭제할 Channel ID")
+      @NotNull @PathVariable("channelId") UUID channelId
   );
 
   @Operation(summary = "User가 참여 중인 Channel 목록 조회")
@@ -84,6 +94,7 @@ public interface ChannelApi {
       )
   })
   ResponseEntity<List<ChannelDto>> findAll(
-      @Parameter(description = "조회할 User ID") UUID userId
+      @Parameter(description = "조회할 User ID")
+      @NotNull @RequestParam("userId") UUID userId
   );
 } 

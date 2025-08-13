@@ -4,20 +4,22 @@ import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
 
-  ChannelDto create(PublicChannelCreateRequest request);
+  ChannelDto create(@Valid PublicChannelCreateRequest request);
 
-  ChannelDto create(PrivateChannelCreateRequest request);
+  ChannelDto create(@Valid PrivateChannelCreateRequest request);
 
-  ChannelDto find(UUID channelId);
+  ChannelDto find(@NotNull UUID channelId);
 
-  List<ChannelDto> findAllByUserId(UUID userId);
+  List<ChannelDto> findAllByUserId(@NotNull UUID userId);
 
-  ChannelDto update(UUID channelId, PublicChannelUpdateRequest request);
+  ChannelDto update(@NotNull UUID channelId, @Valid PublicChannelUpdateRequest request);
 
-  void delete(UUID channelId);
+  void delete(@NotNull UUID channelId);
 }

@@ -64,4 +64,15 @@ public class Channel extends BaseUpdatableEntity {
       setUpdatedAt();
     }
   }
+
+  @Override
+  public String toString() {
+    return "Channel{" +
+        "type=" + type +
+        ", name='" + name + '\'' +
+        ", description='" + description + '\'' +
+        ", messages=" + messages +
+        ", readStatuses=" + readStatuses +
+        '}';
+  }
 }

@@ -14,10 +14,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "User", description = "User API")
@@ -38,11 +43,11 @@ public interface UserApi {
       @Parameter(
           description = "User 생성 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
-      ) UserCreateRequest userCreateRequest,
+      ) @Valid @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
       @Parameter(
           description = "User 프로필 이미지",
           content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
-      ) MultipartFile profile
+      ) @RequestPart(value = "profile", required = false) MultipartFile profile
   );
 
   @Operation(summary = "User 정보 수정")
@@ -61,9 +66,12 @@ public interface UserApi {
       )
   })
   ResponseEntity<UserDto> update(
-      @Parameter(description = "수정할 User ID") UUID userId,
-      @Parameter(description = "수정할 User 정보") UserUpdateRequest userUpdateRequest,
-      @Parameter(description = "수정할 User 프로필 이미지") MultipartFile profile
+      @Parameter(description = "수정할 User ID")
+      @NotNull @PathVariable("userId") UUID userId,
+      @Parameter(description = "수정할 User 정보")
+      @Valid @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
+      @Parameter(description = "수정할 User 프로필 이미지")
+      @RequestPart(value = "profile", required = false) MultipartFile profile
   );
 
   @Operation(summary = "User 삭제")
@@ -79,7 +87,7 @@ public interface UserApi {
       )
   })
   ResponseEntity<Void> delete(
-      @Parameter(description = "삭제할 User ID") UUID userId
+      @Parameter(description = "삭제할 User ID") @NotNull @PathVariable("userId") UUID userId
   );
 
   @Operation(summary = "전체 User 목록 조회")
@@ -103,7 +111,9 @@ public interface UserApi {
       )
   })
   ResponseEntity<UserStatusDto> updateUserStatusByUserId(
-      @Parameter(description = "상태를 변경할 User ID") UUID userId,
-      @Parameter(description = "변경할 User 온라인 상태 정보") UserStatusUpdateRequest request
+      @Parameter(description = "상태를 변경할 User ID")
+      @Valid @PathVariable("userId") UUID userId,
+      @Parameter(description = "변경할 User 온라인 상태 정보")
+      @Valid @RequestBody UserStatusUpdateRequest request
   );
 }
