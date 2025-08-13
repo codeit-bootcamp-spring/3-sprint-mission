@@ -4,7 +4,9 @@ import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.CustomException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.DuplicateUserStatusException;
+import com.sprint.mission.discodeit.exception.userstatus.InvalidUserStatusException;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -29,10 +31,10 @@ public class BasicUserStatusService implements UserStatusService {
     UUID userId = request.userId();
 
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new CustomException.UserNotFoundException("User with id " + userId + " does not exist"));
+        .orElseThrow(() -> UserNotFoundException.withUserId(userId));
 
     if (userStatusRepository.findByUserId(userId).isPresent()) {
-      throw new CustomException.DuplicateUserStatusException("UserStatus with userId " + userId + " already exists");
+      throw DuplicateUserStatusException.withUserId(userId);
     }
 
     Instant lastActiveAt = request.lastActiveAt();
@@ -44,8 +46,7 @@ public class BasicUserStatusService implements UserStatusService {
   @Transactional(readOnly = true)
   public UserStatus find(UUID userStatusId) {
     return userStatusRepository.findById(userStatusId)
-        .orElseThrow(
-            () -> new CustomException.InvalidUserStatusException("UserStatus with id " + userStatusId + " not found"));
+        .orElseThrow(() -> InvalidUserStatusException.withUserStatusId(userStatusId));
   }
 
   @Override
@@ -59,8 +60,7 @@ public class BasicUserStatusService implements UserStatusService {
     Instant newLastActiveAt = request.newLastActiveAt();
 
     UserStatus userStatus = userStatusRepository.findById(userStatusId)
-        .orElseThrow(
-            () -> new CustomException.InvalidUserStatusException("UserStatus with id " + userStatusId + " not found"));
+        .orElseThrow(() -> InvalidUserStatusException.withUserStatusId(userStatusId));
     userStatus.update(newLastActiveAt);
 
     return userStatus;
@@ -71,8 +71,7 @@ public class BasicUserStatusService implements UserStatusService {
     Instant newLastActiveAt = request.newLastActiveAt();
 
     UserStatus userStatus = userStatusRepository.findByUserId(userId)
-        .orElseThrow(
-            () -> new CustomException.InvalidUserStatusException("UserStatus with userId " + userId + " not found"));
+        .orElseThrow(() -> InvalidUserStatusException.withUserId(userId));
     userStatus.update(newLastActiveAt);
 
     return userStatus;
@@ -81,7 +80,7 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public void delete(UUID userStatusId) {
     if (!userStatusRepository.existsById(userStatusId)) {
-      throw new CustomException.InvalidUserStatusException("UserStatus with id " + userStatusId + " not found");
+      throw InvalidUserStatusException.withUserStatusId(userStatusId);
     }
     userStatusRepository.deleteById(userStatusId);
   }

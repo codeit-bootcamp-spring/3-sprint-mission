@@ -4,6 +4,12 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 file-data
+storage
+
+### Logs ###
+.logs/
+*.log
+
 ### IntelliJ IDEA ###
 .idea
 .idea/modules.xml

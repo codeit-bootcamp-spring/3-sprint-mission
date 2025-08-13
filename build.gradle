@@ -30,16 +30,16 @@ dependencies {
 	implementation 'org.springframework.data:spring-data-commons'
 	implementation 'org.postgresql:postgresql'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
-	
-	// MapStruct
-	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
-	
+	implementation 'org.mapstruct:mapstruct:1.5.5.Final'	// MapStruct
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'	// Actuator
+
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'com.h2database:h2'
 }
 
 tasks.named('test') {
