@@ -1,5 +1,16 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.sprint.mission.discodeit.assembler.MessageAssembler;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
@@ -18,15 +29,8 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import java.time.Instant;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -104,6 +108,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @PreAuthorize("@messageSecurity.isAuthor(#messageId)")
   public MessageResponse updateContent(UUID messageId, String newContent) {
     return messageRepository.findById(messageId)
         .map(message -> {
@@ -114,6 +119,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @PreAuthorize("@messageSecurity.isAuthor(#messageId)")
   public void delete(UUID messageId) {
     messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(messageId.toString()));

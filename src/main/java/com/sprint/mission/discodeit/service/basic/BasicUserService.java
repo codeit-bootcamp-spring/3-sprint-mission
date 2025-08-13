@@ -1,5 +1,16 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
@@ -17,17 +28,9 @@ import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserRoleCommand;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.vo.BinaryContentData;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -110,6 +113,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @PreAuthorize("@userSecurity.isSelf(#command.userId)")
   public UserResponse update(UpdateUserCommand command) {
     return userRepository.findById(command.userId())
         .map(user -> {
@@ -153,6 +157,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @PreAuthorize("@userSecurity.isSelf(#userId)")
   public void delete(UUID userId) {
     userRepository.findById(userId).ifPresentOrElse(user -> {
       userRepository.deleteById(userId);
