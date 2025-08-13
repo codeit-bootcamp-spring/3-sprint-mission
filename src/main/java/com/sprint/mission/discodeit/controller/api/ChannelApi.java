@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.controller.api;
 import com.sprint.mission.discodeit.dto.request.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.channel.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.serviceDto.ChannelDto;
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,13 +26,13 @@ public interface ChannelApi {
     @Operation(summary = "Public Channel 생성")
     @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨",
         content = @Content(schema = @Schema(implementation = ChannelDto.class)))
-    ResponseEntity<Channel> create(
+    ResponseEntity<ChannelDto> create(
         @RequestBody PublicChannelCreateRequest publicChannelCreateRequest);
 
     @Operation(summary = "Private Channel 생성")
     @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨",
         content = @Content(schema = @Schema(implementation = ChannelDto.class)))
-    ResponseEntity<Channel> create(
+    ResponseEntity<ChannelDto> create(
         @RequestBody PrivateChannelCreateRequest privateChannelCreateRequest);
 
     @Operation(summary = "Channel 정보 수정")
@@ -44,7 +44,7 @@ public interface ChannelApi {
         @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음",
             content = @Content(examples = @ExampleObject(value = "Channel with id {channelId} not found")))
     })
-    ResponseEntity<Channel> update(
+    ResponseEntity<ChannelDto> update(
         @Parameter(description = "수정할 Channel ID") UUID channelId,
         @Parameter(description = "수정할 Channel 정보") PublicChannelUpdateRequest publicChannelUpdateRequest);
 

@@ -1,0 +1,147 @@
+# 프로덕션 배포용 워크플로우 이름
+name: Deploy to AWS ECS - discodeit
+
+# 트리거 조건: release 브랜치에 푸쉬 시 자동 실행
+on:
+  push:
+    branches: [release]
+
+# 작업 목록 정의
+jobs:
+  build-and-push:
+    # Job 이름 (UI에 표시)
+    name: Build and Push Docker Image
+    # GitHub Actions가 사용하는 가상 머신 환경
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 소스 코드 체크아웃
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      # 2. Java 17 환경 설정 (Spring Boot 프로젝트 빌드용)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 3. AWS 자격 증명 구성 (AWS CLI)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1 # Public ECR은 반드시 us-east-1 리전 사용
+
+      # 4. Public ECR에 로그인
+      - name: Login to Amazon Public ECR
+        run: aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+
+      # 5. Docker 이미지 빌드 및 푸시
+      - name: Build and Push Docker Image to Public ECR
+        env:
+          ECR_REGISTRY: ${{ vars.ECR_REPOSITORY_URI }} # ex) public.ecr.aws/abc123/discodeit
+          IMAGE_TAG: ${{ github.sha }} # 커밋 해시 기반 태그
+        run: |
+          # 1. 명령어 실패 시 워크플로우 종료
+          set -e
+          
+          # 2. 현재 레지스트리와 태그 확인 로그
+          echo "ECR_REGISTRY = $ECR_REGISTRY"
+          echo "IMAGE_TAG = $IMAGE_TAG"
+          
+          # 3. gradlew 빌드 권한 부여 및 JAR 생성
+            # gradlew 파일에 실행 권한 부여
+          chmod +x ./gradlew
+          echo "Building Spring Boot app..."
+            # Spring Boot 애플리케이션 빌드 (JAR 생성)
+          ./gradlew bootJar
+
+          # 4. Docker 이미지 빌드 (두 개의 태그: 해시 + latest)
+          echo "Building Docker image..."
+          docker build -t $ECR_REGISTRY:$IMAGE_TAG -t $ECR_REGISTRY:latest .
+
+          # Public ECR에 이미지 푸시
+          echo "Pushing Docker image to ECR..."
+          # ECR에 이미지 푸쉬 (커밋 해시 태그) - 실제 이미지 업로드
+          docker push $ECR_REGISTRY:$IMAGE_TAG
+          # ECR에 이미지 푸쉬 (latest 태그) - 태그만 추가로 푸쉬 (용량 추가 없음)
+          docker push $ECR_REGISTRY:latest
+          
+          # 다음 단계에서 사용할 수 있도록 빌드된 이미지 정보를 출력
+          # 이 단계의 출력값을 다른 단계에서 사용하기 위한 ID 설정 (GITHUB_OUTPUT가 변수화됨)
+          echo "image=$ECR_REGISTRY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  deploy:
+    name: Update ECS Service
+    runs-on: ubuntu-latest
+    needs: build-and-push  # [요구사항] build 후 실행되도록 연결
+
+    steps:
+      # 1. AWS 자격 증명 설정 (AWS CLI)
+      - name: Configure AWS credentials for ECS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}  # [요구사항] ECS 클러스터 접근에 필요한 리전 사용
+
+      # 2. 기존 태스크 정의 다운로드 (JSON 포맷)
+      - name: Download existing task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ vars.ECS_TASK_DEFINITION }} \
+            --query "taskDefinition" > task-definition.json
+
+      # 3. 최신 커밋 해시 기반 이미지로 태스크 정의의 image 필드 수정
+      - name: Replace image tag with latest commit SHA
+        env:
+          IMAGE_URI: ${{ vars.ECR_REPOSITORY_URI }}:${{ github.sha }}
+        run: |
+          jq --arg IMAGE "$IMAGE_URI" '
+          .containerDefinitions |= map(
+            if .name == "discodeit-app" then
+            .image = $IMAGE
+            else .
+            end
+          )
+          ' task-definition.json > updated-task-def.json
+
+
+      # 4. 기존 ECS 서비스 중지 (스케일 0)
+      - name: Deregister previous ECS service (scale down to 0)
+        run: |
+          aws ecs update-service \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --service ${{ vars.ECS_SERVICE }} \
+            --desired-count 0  # [요구사항] 프리티어 고려해 실행 중지
+
+      # 4.5 등록 가능한 필드만 남기기 (불필요한 필드 제거)
+      - name: Clean task definition JSON for registration
+        run: |
+          jq 'del(
+            .taskDefinitionArn,
+            .revision,
+            .status,
+            .requiresAttributes,
+            .compatibilities,
+            .registeredAt,
+            .registeredBy
+          )' updated-task-def.json > clean-task-def.json
+
+      # 5. 새 태스크 정의 등록 (업데이트된 이미지 포함)
+      - name: Register new task definition
+        run: |
+          aws ecs register-task-definition \
+            --cli-input-json file://clean-task-def.json > new-task-def.json
+          echo "TASK_DEF_ARN=$(jq -r '.taskDefinition.taskDefinitionArn' new-task-def.json)" >> $GITHUB_ENV
+
+      # 6. 새 태스크 정의로 ECS 서비스 업데이트 및 재시작
+      - name: Update ECS service with new task definition
+        run: |
+          aws ecs update-service \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --service ${{ vars.ECS_SERVICE }} \
+            --task-definition ${{ env.TASK_DEF_ARN }} \
+            --desired-count 1  # 🔹 [요구사항] 서비스 재실행

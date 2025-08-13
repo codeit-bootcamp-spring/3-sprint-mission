@@ -1,0 +1,28 @@
+server:
+  port: ${PORT:9090}
+  address: 0.0.0.0
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+      default_schema: discodeit
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+logging:
+  level:
+    com.sprint.mission.discodeit: info
+    org.hibernate.boot.SQL: info
+    # 실행되는 SQL 출력
+    org.hibernate.SQL: info
+    # 바인딩되는 파라미터 출력
+    org.hibernate.orm.jdbc.bind: info
