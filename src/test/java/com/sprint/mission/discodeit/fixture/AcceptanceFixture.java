@@ -2,16 +2,20 @@ package com.sprint.mission.discodeit.fixture;
 
 import static com.sprint.mission.discodeit.support.TestUtils.json;
 import static com.sprint.mission.discodeit.support.TestUtils.jsonHeader;
+import static com.sprint.mission.discodeit.support.TestUtils.multipartHeader;
 
+import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.support.AuthTestUtils;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -34,8 +38,7 @@ public class AcceptanceFixture {
         """.formatted(username, email)), jsonHeader()));
     body.add("profile", new ClassPathResource(profileImagePath));
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+    HttpHeaders headers = multipartHeader();
 
     return restTemplate.postForEntity(
         "/api/users", new HttpEntity<>(body, headers), UserResponse.class
@@ -47,7 +50,8 @@ public class AcceptanceFixture {
       UUID userId,
       String newUsername,
       String newEmail,
-      String newProfileImagePath
+      String newProfileImagePath,
+      HttpHeaders sessionHeaders
   ) {
     MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
     body.add("userUpdateRequest", new HttpEntity<>(json("""
@@ -58,10 +62,8 @@ public class AcceptanceFixture {
         }
         """.formatted(newUsername, newEmail)), jsonHeader()));
     body.add("profile", new ClassPathResource(newProfileImagePath));
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
+    HttpHeaders headers = multipartHeader();
+    headers.addAll(sessionHeaders);
     return restTemplate.exchange(
         "/api/users/" + userId,
         HttpMethod.PATCH,
@@ -85,10 +87,7 @@ public class AcceptanceFixture {
         """.formatted(userId, channelId)), jsonHeader()));
     body.add("attachments", new ClassPathResource("images/img_01.png"));
     body.add("attachments", new ClassPathResource("images/img_02.png"));
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
+    HttpHeaders headers = multipartHeader();
     return restTemplate.postForEntity(
         "/api/messages", new HttpEntity<>(body, headers), MessageResponse.class);
   }
@@ -109,12 +108,75 @@ public class AcceptanceFixture {
         """.formatted(userId, channelId)), jsonHeader()));
     body.add("attachments", new ClassPathResource("images/img_01.png"));
     body.add("attachments", new ClassPathResource("images/img_02.png"));
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+    HttpHeaders headers = multipartHeader();
     headers.addAll(sessionHeaders);
-
     return restTemplate.postForEntity(
         "/api/messages", new HttpEntity<>(body, headers), MessageResponse.class);
+  }
+
+  public static HttpHeaders login(TestRestTemplate restTemplate, String username, String password) {
+    return AuthTestUtils.formLogin(restTemplate, username, password);
+  }
+
+  public static ResponseEntity<ChannelResponse> createPublicChannel(
+      TestRestTemplate restTemplate,
+      HttpHeaders sessionHeaders,
+      String name,
+      String description
+  ) {
+    var request = Map.of("name", name, "description", description);
+    HttpHeaders headers = jsonHeader();
+    headers.addAll(sessionHeaders);
+    return restTemplate.postForEntity(
+        "/api/channels/public",
+        new HttpEntity<>(request, headers),
+        ChannelResponse.class);
+  }
+
+  public static ResponseEntity<ChannelResponse> createPrivateChannel(
+      TestRestTemplate restTemplate,
+      HttpHeaders sessionHeaders,
+      List<UUID> participantIds
+  ) {
+    var request = Map.of("participantIds", participantIds);
+    HttpHeaders headers = jsonHeader();
+    headers.addAll(sessionHeaders);
+    return restTemplate.postForEntity(
+        "/api/channels/private",
+        new HttpEntity<>(request, headers),
+        ChannelResponse.class);
+  }
+
+  public static ResponseEntity<ChannelResponse> updateChannel(
+      TestRestTemplate restTemplate,
+      UUID channelId,
+      String newName,
+      String newDescription,
+      HttpHeaders sessionHeaders
+  ) {
+    var request = Map.of("newName", newName, "newDescription", newDescription);
+    HttpHeaders headers = jsonHeader();
+    headers.addAll(sessionHeaders);
+    return restTemplate.exchange(
+        "/api/channels/" + channelId,
+        HttpMethod.PATCH,
+        new HttpEntity<>(request, headers),
+        ChannelResponse.class);
+  }
+
+  public static ResponseEntity<MessageResponse> updateMessage(
+      TestRestTemplate restTemplate,
+      UUID messageId,
+      String newContent,
+      HttpHeaders sessionHeaders
+  ) {
+    var request = Map.of("newContent", newContent);
+    HttpHeaders headers = jsonHeader();
+    headers.addAll(sessionHeaders);
+    return restTemplate.exchange(
+        "/api/messages/" + messageId,
+        HttpMethod.PATCH,
+        new HttpEntity<>(request, headers),
+        MessageResponse.class);
   }
 }

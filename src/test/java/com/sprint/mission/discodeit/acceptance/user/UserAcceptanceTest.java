@@ -1,11 +1,9 @@
 package com.sprint.mission.discodeit.acceptance.user;
 
-import static com.sprint.mission.discodeit.support.TestUtils.jsonHeader;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
-import com.sprint.mission.discodeit.support.AuthTestUtils;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
@@ -19,19 +17,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 @ActiveProfiles("security-test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -47,8 +41,8 @@ public class UserAcceptanceTest {
 
   static UUID userId;
   static UUID otherUserId;
-  static HttpHeaders userSessionHeaders = new HttpHeaders();
-  static HttpHeaders otherSessionHeaders = new HttpHeaders();
+  static HttpHeaders userSessionHeaders;
+  static HttpHeaders otherSessionHeaders;
   private static final String TEST_PASSWORD = "pw123";
 
   @TempDir
@@ -73,8 +67,7 @@ public class UserAcceptanceTest {
     final UserResponse body = Objects.requireNonNull(response.getBody());
     userId = body.id();
 
-    HttpHeaders loggedIn = AuthTestUtils.formLogin(restTemplate, body.username(), TEST_PASSWORD);
-    userSessionHeaders.set(HttpHeaders.COOKIE, loggedIn.getFirst(HttpHeaders.COOKIE));
+    userSessionHeaders = AcceptanceFixture.login(restTemplate, body.username(), TEST_PASSWORD);
   }
 
   @Test
@@ -90,32 +83,19 @@ public class UserAcceptanceTest {
     final UserResponse body = Objects.requireNonNull(response.getBody());
     otherUserId = body.id();
 
-    HttpHeaders loggedIn = AuthTestUtils.formLogin(restTemplate, body.username(), TEST_PASSWORD);
-    otherSessionHeaders.set(HttpHeaders.COOKIE, loggedIn.getFirst(HttpHeaders.COOKIE));
+    otherSessionHeaders = AcceptanceFixture.login(restTemplate, body.username(), TEST_PASSWORD);
   }
 
   @Test
   @Order(3)
   void 사용자_수정() {
-    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add("userUpdateRequest", new HttpEntity<>("""
-        {
-          "newUsername": "updatedName",
-          "newEmail": "updated@test.com",
-          "newPassword": "pwd123"
-        }
-        """.stripIndent(), jsonHeader()));
-    body.add("profile", new ClassPathResource("images/img_02.png"));
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-    headers.addAll(userSessionHeaders);
-
-    ResponseEntity<UserResponse> response = restTemplate.exchange(
-        "/api/users/" + userId,
-        HttpMethod.PATCH,
-        new HttpEntity<>(body, headers),
-        UserResponse.class);
+    ResponseEntity<UserResponse> response = AcceptanceFixture.updateUser(
+        restTemplate,
+        userId,
+        "updatedName",
+        "updated@test.com",
+        "images/img_02.png",
+        userSessionHeaders);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     final UserResponse updated = Objects.requireNonNull(response.getBody());
@@ -125,24 +105,13 @@ public class UserAcceptanceTest {
   @Test
   @Order(4)
   void 다른_사용자_수정_시_실패() {
-    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add("userUpdateRequest", new HttpEntity<>("""
-        {
-          "newUsername": "hacker",
-          "newEmail": "hack@test.com",
-          "newPassword": "pwd123"
-        }
-        """.stripIndent(), jsonHeader()));
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-    headers.addAll(otherSessionHeaders);
-
-    ResponseEntity<UserResponse> response = restTemplate.exchange(
-        "/api/users/" + userId,
-        HttpMethod.PATCH,
-        new HttpEntity<>(body, headers),
-        UserResponse.class);
+    ResponseEntity<UserResponse> response = AcceptanceFixture.updateUser(
+        restTemplate,
+        userId,
+        "hacker",
+        "hack@test.com",
+        "images/img_02.png",
+        otherSessionHeaders);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
   }

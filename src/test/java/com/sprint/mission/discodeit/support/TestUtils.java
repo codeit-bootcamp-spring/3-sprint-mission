@@ -16,6 +16,12 @@ public class TestUtils {
     return headers;
   }
 
+  public static HttpHeaders multipartHeader() {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+    return headers;
+  }
+
   public static String json(String textBlock) {
     return textBlock.stripIndent(); // Java 15+ 텍스트 블록 지원
   }

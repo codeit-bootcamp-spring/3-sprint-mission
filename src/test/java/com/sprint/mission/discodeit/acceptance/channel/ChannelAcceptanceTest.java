@@ -1,15 +1,13 @@
 package com.sprint.mission.discodeit.acceptance.channel;
 
-import static com.sprint.mission.discodeit.support.TestUtils.json;
-import static com.sprint.mission.discodeit.support.TestUtils.jsonHeader;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
 import com.sprint.mission.discodeit.support.AuthTestUtils;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.MethodOrderer;
@@ -23,18 +21,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 @ActiveProfiles("security-test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -42,7 +36,6 @@ import org.springframework.util.MultiValueMap;
         "discodeit.security.disable-csrf=true"
     })
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-// 테스트 인스턴스를 재사용하여 JSESSIONID 쿠키 값(HttpHeaders) 유지
 @TestInstance(Lifecycle.PER_CLASS)
 class ChannelAcceptanceTest {
 
@@ -53,7 +46,7 @@ class ChannelAcceptanceTest {
   static UUID publicChannelId;
   static UUID privateChannelId;
 
-  private final HttpHeaders userSessionHeaders = new HttpHeaders();
+  private HttpHeaders userSessionHeaders;
   private final HttpHeaders adminSessionHeaders = new HttpHeaders();
 
   private String username;
@@ -71,21 +64,11 @@ class ChannelAcceptanceTest {
   @Test
   @Order(1)
   void 사용자_생성() {
-    MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-    body.add("userCreateRequest", new HttpEntity<>(json("""
-            {
-              "username": "길동쓰",
-              "email": "test@test.com",
-              "password": "pw123"
-            }
-        """), jsonHeader()));
-    body.add("profile", new ClassPathResource("images/img_02.png"));
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-    ResponseEntity<UserResponse> response = restTemplate.postForEntity(
-        "/api/users", new HttpEntity<>(body, headers), UserResponse.class);
+    ResponseEntity<UserResponse> response = AcceptanceFixture.createUser(
+        restTemplate,
+        "길동쓰",
+        "test@test.com",
+        "images/img_02.png");
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     var created = Objects.requireNonNull(response.getBody());
@@ -99,19 +82,14 @@ class ChannelAcceptanceTest {
   void 공개_채널_생성() {
     // CHANNEL_MANAGER 권한 부여 (사용자 세션 아직 없음)
     AuthTestUtils.grantRole(restTemplate, adminSessionHeaders, userId, "CHANNEL_MANAGER");
-    HttpHeaders loggedIn = AuthTestUtils.formLogin(restTemplate, username,
-        TEST_PASSWORD);
-    userSessionHeaders.set(HttpHeaders.COOKIE, loggedIn.getFirst(HttpHeaders.COOKIE));
+    userSessionHeaders = AcceptanceFixture.login(restTemplate, username, TEST_PASSWORD);
     assertThat(userSessionHeaders.getFirst(HttpHeaders.COOKIE)).isNotBlank();
 
-    var headers = jsonHeader();
-    headers.addAll(userSessionHeaders);
-
-    var request = Map.of("name", "general", "description", "공개 채널입니다");
-    var response = restTemplate.postForEntity(
-        "/api/channels/public",
-        new HttpEntity<>(request, headers),
-        com.sprint.mission.discodeit.dto.response.ChannelResponse.class);
+    var response = AcceptanceFixture.createPublicChannel(
+        restTemplate,
+        userSessionHeaders,
+        "general",
+        "공개 채널입니다");
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     var createdPublicChannel = Objects.requireNonNull(response.getBody());
@@ -123,14 +101,10 @@ class ChannelAcceptanceTest {
   void 비공개_채널_생성() {
     System.out.println(
         "[DEBUG] 비공개_채널_생성 직전 세션 쿠키=" + userSessionHeaders.getFirst(HttpHeaders.COOKIE));
-    var request = Map.of("participantIds", List.of(userId));
-    var headers = jsonHeader();
-    headers.addAll(userSessionHeaders);
-
-    var response = restTemplate.postForEntity(
-        "/api/channels/private",
-        new HttpEntity<>(request, headers),
-        ChannelResponse.class);
+    var response = AcceptanceFixture.createPrivateChannel(
+        restTemplate,
+        userSessionHeaders,
+        List.of(userId));
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     var createdPrivateChannel = Objects.requireNonNull(response.getBody());
@@ -158,15 +132,12 @@ class ChannelAcceptanceTest {
   void 공개_채널_수정() {
     System.out.println(
         "[DEBUG] 공개_채널_수정 직전 세션 쿠키=" + userSessionHeaders.getFirst(HttpHeaders.COOKIE));
-    var request = Map.of("newName", "updated-channel", "newDescription", "수정된 설명");
-    var headers = jsonHeader();
-    headers.addAll(userSessionHeaders);
-
-    var response = restTemplate.exchange(
-        "/api/channels/" + publicChannelId,
-        HttpMethod.PATCH,
-        new HttpEntity<>(request, headers),
-        com.sprint.mission.discodeit.dto.response.ChannelResponse.class);
+    var response = AcceptanceFixture.updateChannel(
+        restTemplate,
+        publicChannelId,
+        "updated-channel",
+        "수정된 설명",
+        userSessionHeaders);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     var updatedChannel = Objects.requireNonNull(response.getBody());

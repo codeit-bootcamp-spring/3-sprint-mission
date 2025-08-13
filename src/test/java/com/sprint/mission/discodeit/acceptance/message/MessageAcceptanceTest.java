@@ -1,9 +1,7 @@
 package com.sprint.mission.discodeit.acceptance.message;
 
-import static com.sprint.mission.discodeit.support.TestUtils.jsonHeader;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
@@ -11,7 +9,6 @@ import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
 import com.sprint.mission.discodeit.support.AuthTestUtils;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.MethodOrderer;
@@ -52,9 +49,9 @@ public class MessageAcceptanceTest {
   static UUID privateChannelId;
   static UUID messageId;
 
-  private final HttpHeaders userSessionHeaders = new HttpHeaders();
-  private final HttpHeaders adminSessionHeaders = new HttpHeaders();
-  private final HttpHeaders otherSessionHeaders = new HttpHeaders();
+  private HttpHeaders userSessionHeaders;
+  private HttpHeaders adminSessionHeaders = new HttpHeaders();
+  private HttpHeaders otherSessionHeaders;
   private String username;
   private static final String TEST_PASSWORD = "pw123";
 
@@ -91,9 +88,8 @@ public class MessageAcceptanceTest {
     var createdUser2 = Objects.requireNonNull(response.getBody());
     otherUserId = createdUser2.id();
 
-    HttpHeaders loggedIn = AuthTestUtils.formLogin(restTemplate,
+    otherSessionHeaders = AcceptanceFixture.login(restTemplate,
         createdUser2.username(), TEST_PASSWORD);
-    otherSessionHeaders.set(HttpHeaders.COOKIE, loggedIn.getFirst(HttpHeaders.COOKIE));
   }
 
   @Test
@@ -101,17 +97,13 @@ public class MessageAcceptanceTest {
   void 공개_채널_생성() {
     // 권한 부여, 로그인
     AuthTestUtils.grantRole(restTemplate, adminSessionHeaders, userId, "CHANNEL_MANAGER");
-    HttpHeaders loggedIn = AuthTestUtils.formLogin(restTemplate, username, TEST_PASSWORD);
-    userSessionHeaders.set(HttpHeaders.COOKIE, loggedIn.getFirst(HttpHeaders.COOKIE));
+    userSessionHeaders = AcceptanceFixture.login(restTemplate, username, TEST_PASSWORD);
 
-    var request = Map.of("name", "general", "description", "공개 채널입니다");
-    var headers = jsonHeader();
-    headers.addAll(userSessionHeaders);
-
-    var response = restTemplate.postForEntity(
-        "/api/channels/public",
-        new HttpEntity<>(request, headers),
-        ChannelResponse.class);
+    var response = AcceptanceFixture.createPublicChannel(
+        restTemplate,
+        userSessionHeaders,
+        "general",
+        "공개 채널입니다");
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     var createdPublicChannel = Objects.requireNonNull(response.getBody());
@@ -121,14 +113,10 @@ public class MessageAcceptanceTest {
   @Test
   @Order(4)
   void 비공개_채널_생성() {
-    var request = Map.of("participantIds", List.of(userId, otherUserId));
-    var headers = jsonHeader();
-    headers.addAll(userSessionHeaders);
-
-    var response = restTemplate.postForEntity(
-        "/api/channels/private",
-        new HttpEntity<>(request, headers),
-        ChannelResponse.class);
+    var response = AcceptanceFixture.createPrivateChannel(
+        restTemplate,
+        userSessionHeaders,
+        List.of(userId, otherUserId));
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     var createdPrivateChannel = Objects.requireNonNull(response.getBody());
@@ -154,15 +142,11 @@ public class MessageAcceptanceTest {
   @Test
   @Order(6)
   void 다른_사용자_메시지_수정_실패() {
-    var updateRequest = Map.of("newContent", "해커 수정");
-    HttpHeaders headers = jsonHeader();
-    headers.addAll(otherSessionHeaders);
-
-    ResponseEntity<MessageResponse> response = restTemplate.exchange(
-        "/api/messages/" + messageId,
-        HttpMethod.PATCH,
-        new HttpEntity<>(updateRequest, headers),
-        MessageResponse.class);
+    ResponseEntity<MessageResponse> response = AcceptanceFixture.updateMessage(
+        restTemplate,
+        messageId,
+        "해커 수정",
+        otherSessionHeaders);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
   }
@@ -170,15 +154,11 @@ public class MessageAcceptanceTest {
   @Test
   @Order(7)
   void 메시지_수정() {
-    var updateRequest = Map.of("newContent", "수정된 메시지입니다.");
-    HttpHeaders headers = jsonHeader();
-    headers.addAll(userSessionHeaders);
-
-    ResponseEntity<MessageResponse> response = restTemplate.exchange(
-        "/api/messages/" + messageId,
-        HttpMethod.PATCH,
-        new HttpEntity<>(updateRequest, headers),
-        MessageResponse.class);
+    ResponseEntity<MessageResponse> response = AcceptanceFixture.updateMessage(
+        restTemplate,
+        messageId,
+        "수정된 메시지입니다.",
+        userSessionHeaders);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     var updated = Objects.requireNonNull(response.getBody());
