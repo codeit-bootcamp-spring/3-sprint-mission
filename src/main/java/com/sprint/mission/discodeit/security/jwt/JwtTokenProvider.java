@@ -112,6 +112,15 @@ public class JwtTokenProvider {
         return verifyToken(token, refreshTokenVerifier, "refresh");
     }
 
+    public void expireRefreshTokenCookie(HttpServletResponse response){
+        Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, "");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+    }
+
     public String extractUsername(String token) {
         try {
             SignedJWT signedJwt = SignedJWT.parse(token);

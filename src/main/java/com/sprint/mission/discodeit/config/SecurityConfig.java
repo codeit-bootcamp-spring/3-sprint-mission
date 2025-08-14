@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +54,8 @@ public class SecurityConfig {
       JwtLoginSuccessHandler jwtloginSuccessHandler,
       LoginFailureHandler loginFailureHandler,
       ObjectMapper objectMapper,
-      SessionRegistry sessionRegistry
+      SessionRegistry sessionRegistry,
+      JwtLogoutHandler jwtLogoutHandler
   )
       throws Exception {
     http
@@ -74,6 +76,7 @@ public class SecurityConfig {
         )
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
+                .addLogoutHandler(jwtLogoutHandler)
             .logoutSuccessHandler(
                 new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
         )
