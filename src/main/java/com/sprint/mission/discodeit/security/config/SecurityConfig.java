@@ -44,7 +44,8 @@ public class SecurityConfig {
 		LoginSuccessHandler loginSuccessHandler,
 		LoginFailureHandler loginFailureHandler,
 		RestAccessDeniedHandler restAccessDeniedHandler,
-		SessionRegistry sessionRegistry
+		SessionRegistry sessionRegistry,
+		UserDetailsService userDetailsService
 	)
 		throws Exception {
 		http
@@ -61,6 +62,12 @@ public class SecurityConfig {
 				.successHandler(loginSuccessHandler)
 				.failureHandler(loginFailureHandler)
 				.permitAll()
+			)
+			.rememberMe(rm -> rm
+				.rememberMeParameter("remember-me")
+				.key("rainDrops-are-falling-on-my-head")  // 키값
+				.tokenValiditySeconds(60 * 60 * 24 * 7) // 7일
+				.userDetailsService(userDetailsService)  // ★ 추가
 			)
 			.authorizeHttpRequests(auth -> auth
 				// 회원가입 모두허용
@@ -82,7 +89,7 @@ public class SecurityConfig {
 				.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(
 					HttpStatus.NO_CONTENT)) // 응답을 204 NO_CONTENT로 설정
 				.invalidateHttpSession(true) // 세션 종료
-				.deleteCookies("JSESSIONID") // 쿠키 제거
+				.deleteCookies("JSESSIONID", "remember-me") // 쿠키 제거
 				.permitAll()
 			)
 			// 권한 미확인시 예외처리
@@ -94,7 +101,7 @@ public class SecurityConfig {
 			.sessionManagement(management -> management
 				.sessionConcurrency(concurrency -> concurrency
 					.maximumSessions(1) // 동일 사용자 동시 세션 최대 1개
-					.maxSessionsPreventsLogin(true) // 새로운 로그인을 통한 세션 생성 거부
+					.maxSessionsPreventsLogin(false) // 새로운 로그인을 통한 세션 생성 거부
 					// 기존 세션이 만료될 때의 응답
 					.expiredSessionStrategy(event -> {
 						var response = event.getResponse();
