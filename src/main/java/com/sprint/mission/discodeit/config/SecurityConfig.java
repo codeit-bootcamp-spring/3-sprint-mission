@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.auth.handler.CustomAccessDeniedHandler;
-import com.sprint.mission.discodeit.auth.handler.CustomSessionExpiredStrategy;
+import com.sprint.mission.discodeit.auth.handler.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.auth.handler.LoginFailureHandler;
-import com.sprint.mission.discodeit.auth.handler.LoginSuccessHandler;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
@@ -34,6 +36,7 @@ import org.springframework.security.web.authentication.Http403ForbiddenEntryPoin
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
@@ -84,11 +87,9 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-        LoginSuccessHandler loginSuccessHandler,
+        JwtLoginSuccessHandler jwtLoginSuccessHandler,
         LoginFailureHandler loginFailureHandler,
-        CustomAccessDeniedHandler customAccessDeniedHandler,
-        SessionRegistry sessionRegistry,
-        TokenBasedRememberMeServices rememberMeServices)
+        CustomAccessDeniedHandler customAccessDeniedHandler)
         throws Exception {
         log.debug("[SecurityConfig] FilterChain 구성 시작");
 
@@ -96,7 +97,14 @@ public class SecurityConfig {
             // CSRF 설정 - 쿠키 기반 CSRF 토큰 사용
             .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 // CSRF 토큰 요청 처리 핸들러 설정
-                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler() {
+                    @Override
+                    public void handle(HttpServletRequest request, HttpServletResponse response,
+                        Supplier<CsrfToken> csrfToken) {
+                        super.handle(request, response, csrfToken);
+                        csrfToken.get();
+                    }
+                })
                 .ignoringRequestMatchers("/h2-console/**")) // CSRF 비활성화
             .authorizeHttpRequests(auth -> auth
                 // API가 아닌 요청
@@ -126,29 +134,15 @@ public class SecurityConfig {
 
             // 세션 관리 설정
             .sessionManagement(session -> session
-                //세션 고정 공격 방지를 위해 세션 마이그레이션 설정(새 세션을 생성하고 기존 세션의 모든 속성을 복사)
-                .sessionFixation().migrateSession()
-                // 동시 로그인 제한(하나의 계정 당 세션 1개만 허용
-                .maximumSessions(1)
-                // 새 로그인 시 기존 세션 무효화(false: 기존 세션 무효화, true: 무효화 안함)
-                .maxSessionsPreventsLogin(false)
-                // 동시 세션 제어 처리
-                .sessionRegistry(sessionRegistry)
-                // 세션 만료 처리 전략
-                .expiredSessionStrategy(new CustomSessionExpiredStrategy(new ObjectMapper()))
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .headers(headers -> headers
                 .frameOptions(FrameOptionsConfig::sameOrigin))
 
-            // Remember-me 설정
-            .rememberMe(remember -> remember
-                .rememberMeServices(rememberMeServices)
-            )
-
             // Form 기반 로그인 활성화
             .formLogin(login -> login
                 .loginProcessingUrl("/api/auth/login")
-                .successHandler(loginSuccessHandler) // 로그인 성공 핸들러
+                .successHandler(jwtLoginSuccessHandler) // 로그인 성공 핸들러
                 .failureHandler(loginFailureHandler) // 로그인 실패 핸들러
                 .permitAll())
             .httpBasic(AbstractHttpConfigurer::disable)
