@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.config;
 import com.sprint.mission.discodeit.auth.handler.CustomAccessDeniedHandler;
 import com.sprint.mission.discodeit.auth.handler.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.auth.handler.LoginFailureHandler;
+import com.sprint.mission.discodeit.security.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -88,6 +90,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
         JwtLoginSuccessHandler jwtLoginSuccessHandler,
+        JwtAuthenticationFilter jwtAuthenticationFilter,
         LoginFailureHandler loginFailureHandler,
         CustomAccessDeniedHandler customAccessDeniedHandler)
         throws Exception {
@@ -155,7 +158,9 @@ public class SecurityConfig {
             // 예외 처리 (적절한 권한이 없는 경우)
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
-                .accessDeniedHandler(customAccessDeniedHandler));
+                .accessDeniedHandler(customAccessDeniedHandler)
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         log.debug("[SecurityConfig] FilterChain 구성 완료");
 
