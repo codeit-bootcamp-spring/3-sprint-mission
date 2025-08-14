@@ -11,6 +11,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,17 +35,18 @@ import org.springframework.transaction.annotation.Transactional;
         "discodeit.security.disable-csrf=true"
     })
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@TestInstance(Lifecycle.PER_CLASS)
 @Transactional
 public class UserAcceptanceTest {
 
   @Autowired
   TestRestTemplate restTemplate;
 
-  static UUID userId;
-  static UUID otherUserId;
-  static HttpHeaders userSessionHeaders;
-  static HttpHeaders otherSessionHeaders;
-  private static final String TEST_PASSWORD = "pw123";
+  UUID userId;
+  UUID otherUserId;
+  HttpHeaders userSessionHeaders;
+  HttpHeaders otherSessionHeaders;
+  private final String TEST_PASSWORD = "pw123";
 
   @TempDir
   static Path tempDir;

@@ -42,15 +42,15 @@ class ChannelAcceptanceTest {
   @Autowired
   TestRestTemplate restTemplate;
 
-  static UUID userId;
-  static UUID publicChannelId;
-  static UUID privateChannelId;
+  UUID userId;
+  UUID publicChannelId;
+  UUID privateChannelId;
 
   private HttpHeaders userSessionHeaders;
   private final HttpHeaders adminSessionHeaders = new HttpHeaders();
 
   private String username;
-  private static final String TEST_PASSWORD = "pw123";
+  private final String TEST_PASSWORD = "pw123";
 
   @TempDir
   static Path tempDir;
@@ -99,8 +99,6 @@ class ChannelAcceptanceTest {
   @Test
   @Order(3)
   void 비공개_채널_생성() {
-    System.out.println(
-        "[DEBUG] 비공개_채널_생성 직전 세션 쿠키=" + userSessionHeaders.getFirst(HttpHeaders.COOKIE));
     var response = AcceptanceFixture.createPrivateChannel(
         restTemplate,
         userSessionHeaders,
@@ -114,8 +112,6 @@ class ChannelAcceptanceTest {
   @Test
   @Order(4)
   void 특정_유저의_채널_조회() {
-    System.out.println(
-        "[DEBUG] 특정_유저의_채널_조회 직전 세션 쿠키=" + userSessionHeaders.getFirst(HttpHeaders.COOKIE));
     var response = restTemplate.exchange(
         "/api/channels?userId=" + userId,
         HttpMethod.GET,
@@ -130,8 +126,6 @@ class ChannelAcceptanceTest {
   @Test
   @Order(5)
   void 공개_채널_수정() {
-    System.out.println(
-        "[DEBUG] 공개_채널_수정 직전 세션 쿠키=" + userSessionHeaders.getFirst(HttpHeaders.COOKIE));
     var response = AcceptanceFixture.updateChannel(
         restTemplate,
         publicChannelId,

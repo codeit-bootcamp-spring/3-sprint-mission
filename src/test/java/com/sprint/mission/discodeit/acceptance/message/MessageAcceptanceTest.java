@@ -43,17 +43,17 @@ public class MessageAcceptanceTest {
   @Autowired
   TestRestTemplate restTemplate;
 
-  static UUID userId;
-  static UUID otherUserId;
-  static UUID publicChannelId;
-  static UUID privateChannelId;
-  static UUID messageId;
+  UUID userId;
+  UUID otherUserId;
+  UUID publicChannelId;
+  UUID privateChannelId;
+  UUID messageId;
 
   private HttpHeaders userSessionHeaders;
   private HttpHeaders adminSessionHeaders = new HttpHeaders();
   private HttpHeaders otherSessionHeaders;
   private String username;
-  private static final String TEST_PASSWORD = "pw123";
+  private final String TEST_PASSWORD = "pw123";
 
   @TempDir
   static Path tempDir;
