@@ -80,11 +80,21 @@ tasks.withType(JavaCompile) {
 }
 
 tasks.named('test') {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags 'integration'
+    }
+    finalizedBy jacocoTestReport
 }
 
-test {
-    finalizedBy jacocoTestReport
+tasks.register('integrationTest', Test) {
+    group = 'verification'
+    description = 'Runs integration tests with @Tag("integration")'
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    shouldRunAfter test
 }
 
 jacocoTestReport {
