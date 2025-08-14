@@ -46,7 +46,7 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(
       HttpSecurity http,
-      JwtLoginSuccessHandler loginSuccessHandler,
+      JwtLoginSuccessHandler jwtloginSuccessHandler,
       LoginFailureHandler loginFailureHandler,
       ObjectMapper objectMapper,
       SessionRegistry sessionRegistry
@@ -59,7 +59,7 @@ public class SecurityConfig {
         )
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
-            .successHandler(loginSuccessHandler)
+            .successHandler(jwtloginSuccessHandler)
             .failureHandler(loginFailureHandler)
         )
         .logout(logout -> logout
