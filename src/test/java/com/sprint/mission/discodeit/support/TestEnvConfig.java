@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.support;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
  * 존재할 경우, 시스템 환경 변수 값이 우선 적용됩니다.<br>
  * </p>
  */
+@Profile("test | security-test")
 @Component
 public class TestEnvConfig {
 
@@ -20,8 +22,19 @@ public class TestEnvConfig {
       .systemProperties()
       .load();
 
-  public final String awsS3AccessKey = dotenv.get("AWS_S3_ACCESS_KEY");
-  public final String awsS3SecretKey = dotenv.get("AWS_S3_SECRET_KEY");
-  public final String awsS3Bucket = dotenv.get("AWS_S3_BUCKET");
-  public final String awsS3Region = dotenv.get("AWS_S3_REGION");
+  private String getEnv(String key) {
+    String value = System.getenv(key);
+    if (value != null && !value.isEmpty()) {
+      return value;
+    }
+    return dotenv.get(key, "");
+  }
+
+  public final String awsS3AccessKey = getEnv("AWS_S3_ACCESS_KEY");
+  public final String awsS3SecretKey = getEnv("AWS_S3_SECRET_KEY");
+  public final String awsS3Bucket = getEnv("AWS_S3_BUCKET");
+  public final String awsS3Region = getEnv("AWS_S3_REGION");
+  public final String discodeitAdminUsername = getEnv("DISCODEIT_ADMIN_USERNAME");
+  public final String discodeitAdminEmail = getEnv("DISCODEIT_ADMIN_EMAIL");
+  public final String discodeitAdminPassword = getEnv("DISCODEIT_ADMIN_PASSWORD");
 }

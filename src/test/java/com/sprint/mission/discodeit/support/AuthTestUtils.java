@@ -46,14 +46,17 @@ public final class AuthTestUtils {
   }
 
   /**
-   * admin 세션 확보 (AdminInitializer: admin/admin).
+   * admin 세션 확보 (AdminInitializer: 환경 변수 기반).
    */
   public static void ensureAdminSession(TestRestTemplate restTemplate,
       HttpHeaders adminSessionHeaders) {
     if (adminSessionHeaders.getFirst(HttpHeaders.COOKIE) != null) {
       return;
     }
-    HttpHeaders admin = formLogin(restTemplate, "admin", "admin");
+    TestEnvConfig env = new TestEnvConfig();
+    String adminName = env.discodeitAdminUsername;
+    String adminPassword = env.discodeitAdminPassword;
+    HttpHeaders admin = formLogin(restTemplate, adminName, adminPassword);
     adminSessionHeaders.set(HttpHeaders.COOKIE, admin.getFirst(HttpHeaders.COOKIE));
   }
 

@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -39,6 +40,7 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
 @Tag("integration")
+@ActiveProfiles("security-test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
 class AWSS3Test {
@@ -95,12 +97,12 @@ class AWSS3Test {
 
   @Test
   void 환경변수_로드_확인() {
-    log.info("=== 환경변수 로드 확인 ===");
-    log.info("AWS_S3_ACCESS_KEY: {}", TestUtils.maskSensitiveValue(testEnvConfig.awsS3AccessKey));
-    log.info("AWS_S3_SECRET_KEY: {}", TestUtils.maskSensitiveValue(testEnvConfig.awsS3SecretKey));
-    log.info("AWS_S3_REGION: {}", testEnvConfig.awsS3Region);
-    log.info("AWS_S3_BUCKET: {}", testEnvConfig.awsS3Bucket);
-    log.info("=======================");
+    log.debug("=== 환경변수 로드 확인 ===");
+    log.debug("AWS_S3_ACCESS_KEY: {}", TestUtils.maskSensitiveValue(testEnvConfig.awsS3AccessKey));
+    log.debug("AWS_S3_SECRET_KEY: {}", TestUtils.maskSensitiveValue(testEnvConfig.awsS3SecretKey));
+    log.debug("AWS_S3_REGION: {}", testEnvConfig.awsS3Region);
+    log.debug("AWS_S3_BUCKET: {}", testEnvConfig.awsS3Bucket);
+    log.debug("=======================");
 
     // 기본 검증
     assertFalse(testEnvConfig.awsS3AccessKey.isEmpty(), "AWS_S3_ACCESS_KEY가 설정되어야 합니다");
@@ -165,7 +167,7 @@ class AWSS3Test {
     assertTrue(presignedUrl.contains(testObjectKey), "URL에 객체 키가 포함되어야 합니다.");
     assertTrue(presignedUrl.contains("X-Amz-Signature"), "URL에 서명이 포함되어야 합니다.");
 
-    log.info("생성된 Presigned URL: {}", presignedUrl);
+    log.debug("생성된 Presigned URL: {}", presignedUrl);
   }
 
   private Path createTempFile(String content) throws IOException {

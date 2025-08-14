@@ -106,8 +106,11 @@ tasks.register('integrationTest', Test) {
 }
 
 tasks.register('jacocoMergedReport', JacocoReport) {
+    group = 'verification'
+    description = 'Create a report by merging test and integrated test coverage'
+
     dependsOn tasks.test, tasks.integrationTest
-    executionData fileTree(dir: "$buildDir/jacoco", include: ["test.exec", "integrationTest.exec"])
+    executionData fileTree(dir: layout.buildDirectory.dir("jacoco"), include: ["test.exec", "integrationTest.exec"])
 
     sourceDirectories.setFrom(files(sourceSets.main.allSource.srcDirs))
     classDirectories.setFrom(files(sourceSets.main.output))
