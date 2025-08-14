@@ -22,3 +22,12 @@ logging:
   level:
     com.sprint.mission.discodeit: DEBUG
     org.springframework.security: TRACE
+
+# JWT 설정
+jwt:
+  access-token:
+    secret: 5mB1dfWfn8ygrUjaY31ZFhZi6KzfX_7uOj6ae9IubC0
+    exp: 900000 # 15분
+  refresh-token:
+    secret: lqmmP_B1CxhpP4g-z5y5Rco34uYbY0is4nJRdYRRtHk
+    exp: 3600000 # 1시간
