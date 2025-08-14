@@ -103,6 +103,23 @@ public class JwtTokenProvider {
         return generateToken(userDetails, accessTokenSigner, accessTokenExpirationMs, "access");
     }
 
+    public boolean verifyAccessToken(String token){
+        return verifyToken(token, accessTokenVerifier, "access");
+    }
+
+    public boolean verifyRefreshToken(String token){
+        return verifyToken(token, refreshTokenVerifier, "refresh");
+    }
+
+    public String extractUsername(String token) {
+        try {
+            SignedJWT signedJwt = SignedJWT.parse(token);
+            return signedJwt.getJWTClaimsSet().getSubject();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid JWT Token",e);
+        }
+    }
+
 
 
 }
