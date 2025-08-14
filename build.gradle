@@ -67,11 +67,11 @@ dependencies {
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'com.h2database:h2'
-    testImplementation 'io.github.cdimascio:dotenv-java:3.0.2' // .env 파일 로드용
+    testImplementation 'io.github.cdimascio:dotenv-java:3.0.2'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
+    testImplementation 'jakarta.servlet:jakarta.servlet-api'
 }
 
 tasks.withType(JavaCompile) {

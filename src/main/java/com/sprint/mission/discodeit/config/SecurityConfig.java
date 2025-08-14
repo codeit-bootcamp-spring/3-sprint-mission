@@ -36,7 +36,7 @@ import org.springframework.security.config.Customizer;
 @Configuration
 @EnableMethodSecurity
 @RequiredArgsConstructor
-@Profile({"!test", "security-test"})
+@Profile("!test | security-test")
 public class SecurityConfig {
 
   private final LoginSuccessHandler loginSuccessHandler;
