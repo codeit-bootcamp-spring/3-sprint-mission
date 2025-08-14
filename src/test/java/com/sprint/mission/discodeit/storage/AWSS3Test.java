@@ -1,14 +1,20 @@
 package com.sprint.mission.discodeit.storage;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.sprint.mission.discodeit.support.TestEnvConfig;
+import com.sprint.mission.discodeit.support.TestUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
-
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -17,21 +23,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import com.sprint.mission.discodeit.support.TestEnvConfig;
-import com.sprint.mission.discodeit.support.TestUtils;
-
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
@@ -55,6 +57,20 @@ class AWSS3Test {
   void setUp() {
     initializeS3Client();
     testObjectKey = "test-files/test-" + System.currentTimeMillis() + ".txt";
+  }
+
+  @AfterAll
+  void cleanUpAllUploadedFiles() {
+    for (String key : uploadedKeys) {
+      if (isObjectExists(key)) {
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+            .bucket(bucketName)
+            .key(key)
+            .build();
+        s3Client.deleteObject(deleteObjectRequest);
+      }
+    }
+    uploadedKeys.clear();
   }
 
   private void initializeS3Client() {
@@ -104,26 +120,10 @@ class AWSS3Test {
 
   @Test
   void 파일_업로드와_삭제_테스트() throws IOException {
-    // given
     String testContent = "테스트 파일 내용 - " + System.currentTimeMillis();
-    Path tempFile = createTempFile(testContent);
+    uploadTestContent(testObjectKey, testContent);
 
-    try {
-      PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-          .bucket(bucketName)
-          .key(testObjectKey)
-          .contentType("text/plain")
-          .build();
-      PutObjectResponse response = s3Client.putObject(
-          putObjectRequest,
-          RequestBody.fromFile(tempFile));
-
-      assertNotNull(response.eTag(), "업로드된 파일의 ETag가 존재해야 합니다.");
-      assertTrue(isObjectExists(testObjectKey), "업로드된 객체가 S3에 존재해야 합니다.");
-      uploadedKeys.add(testObjectKey);
-    } finally {
-      Files.deleteIfExists(tempFile);
-    }
+    assertTrue(isObjectExists(testObjectKey), "업로드된 객체가 S3에 존재해야 합니다.");
   }
 
   @Test
@@ -140,7 +140,6 @@ class AWSS3Test {
     String downloadedText = new String(downloadedContent);
 
     assertEquals(testContent, downloadedText);
-    uploadedKeys.add(testObjectKey);
   }
 
   @Test
@@ -165,7 +164,6 @@ class AWSS3Test {
     assertTrue(presignedUrl.contains(bucketName), "URL에 버킷 이름이 포함되어야 합니다.");
     assertTrue(presignedUrl.contains(testObjectKey), "URL에 객체 키가 포함되어야 합니다.");
     assertTrue(presignedUrl.contains("X-Amz-Signature"), "URL에 서명이 포함되어야 합니다.");
-    uploadedKeys.add(testObjectKey);
 
     log.info("생성된 Presigned URL: {}", presignedUrl);
   }

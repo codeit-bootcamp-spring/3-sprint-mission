@@ -74,6 +74,14 @@ dependencies {
     testImplementation 'jakarta.servlet:jakarta.servlet-api'
 }
 
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
 tasks.withType(JavaCompile) {
     options.compilerArgs += ["-parameters"]
     options.compilerArgs += ['--add-modules', 'java.logging']
@@ -97,8 +105,12 @@ tasks.register('integrationTest', Test) {
     shouldRunAfter test
 }
 
-jacocoTestReport {
-    dependsOn test
+tasks.register('jacocoMergedReport', JacocoReport) {
+    dependsOn tasks.test, tasks.integrationTest
+    executionData fileTree(dir: "$buildDir/jacoco", include: ["test.exec", "integrationTest.exec"])
+
+    sourceDirectories.setFrom(files(sourceSets.main.allSource.srcDirs))
+    classDirectories.setFrom(files(sourceSets.main.output))
     reports {
         xml.required = true
         html.required = true

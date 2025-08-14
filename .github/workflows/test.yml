@@ -34,18 +34,14 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # 일반 테스트 및 커버리지 리포트 생성
-      - name: Run unit tests with coverage
-        run: ./gradlew test jacocoTestReport
-
-      # 통합 테스트 실행
-      - name: Run integration tests
-        run: ./gradlew integrationTest
+      # 일반 테스트 및 통합 테스트 실행
+      - name: Run unit tests and integration tests with coverage
+        run: ./gradlew test integrationTest jacocoMergedReport
 
       # Codecov에 커버리지 업로드
-      - name: Upload coverage to Codecov
+      - name: Upload merged coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: build/reports/jacoco/test/jacocoTestReport.xml
+          files: build/reports/jacoco/jacocoMergedReport/jacocoMergedReport.xml
           fail_ci_if_error: true
