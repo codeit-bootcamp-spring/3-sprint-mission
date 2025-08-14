@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.service.SessionInvalidationService;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicAuthService implements AuthService {
 
 	private final UserRepository userRepository;
+	private final SessionInvalidationService sessionInvalidationService;
 
 	@Transactional
 	@PreAuthorize("hasRole('ADMIN')")
@@ -33,7 +35,9 @@ public class BasicAuthService implements AuthService {
 		// Role 변경
 		user.updateRole(request.newRole());
 		userRepository.save(user);
-		log.info("사용자 권한 수정 완료: id={}, 권한={}", request.userId(), request.newRole());
+		int expired = sessionInvalidationService.expireUserSessionsByUserId(user.getId());
+		log.info("사용자 권한 수정 완료: id={}, 권한={}, 만료된세션={}", request.userId(), request.newRole(),
+			expired);
 
 		return UserDto.fromEntity(user);
 	}
