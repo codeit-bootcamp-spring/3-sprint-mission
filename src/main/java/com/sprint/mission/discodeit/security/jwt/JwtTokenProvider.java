@@ -89,7 +89,7 @@ public class JwtTokenProvider {
         }
     }
 
-    public void generateRefreshToken(DiscodeitUserDetails userDetails, HttpServletResponse response) throws JOSEException {
+    public String generateRefreshToken(DiscodeitUserDetails userDetails, HttpServletResponse response) throws JOSEException {
         String refreshToken = generateToken(userDetails, refreshTokenSigner, refreshTokenExpirationMs, "refresh");
         Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken);
         cookie.setHttpOnly(true);
@@ -97,6 +97,7 @@ public class JwtTokenProvider {
         cookie.setPath("/");
         cookie.setMaxAge(refreshTokenExpirationMs/1000);
         response.addCookie(cookie);
+        return refreshToken;
     }
 
     public String generateAccessToken(DiscodeitUserDetails userDetails, HttpServletResponse response) throws JOSEException {
@@ -116,6 +117,15 @@ public class JwtTokenProvider {
             SignedJWT signedJwt = SignedJWT.parse(token);
             return signedJwt.getJWTClaimsSet().getSubject();
         } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid JWT Token",e);
+        }
+    }
+
+    public String extractTokenId(String token) {
+        try {
+            SignedJWT signedJwt = SignedJWT.parse(token);
+            return signedJwt.getJWTClaimsSet().getJWTID();
+        } catch (ParseException e) {
             throw new IllegalArgumentException("Invalid JWT Token",e);
         }
     }
