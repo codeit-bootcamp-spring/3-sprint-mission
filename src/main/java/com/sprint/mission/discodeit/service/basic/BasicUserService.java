@@ -6,18 +6,17 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.security.service.SessionCheckService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,11 +30,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicUserService implements UserService {
 
 	private final UserRepository userRepository;
-	private final UserStatusRepository userStatusRepository;
 	private final UserMapper userMapper;
 	private final BinaryContentRepository binaryContentRepository;
 	private final BinaryContentStorage binaryContentStorage;
 	private final PasswordEncoder passwordEncoder;
+	private final SessionCheckService sessionCheckService;
 
 	@Transactional
 	@Override
@@ -70,8 +69,6 @@ public class BasicUserService implements UserService {
 		String encodedPassword = passwordEncoder.encode(userCreateRequest.password());
 
 		User user = new User(username, email, encodedPassword, nullableProfile);
-		Instant now = Instant.now();
-		UserStatus userStatus = new UserStatus(user, now);
 
 		userRepository.save(user);
 		log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
@@ -84,16 +81,19 @@ public class BasicUserService implements UserService {
 		UserDto userDto = userRepository.findById(userId)
 			.map(userMapper::toDto)
 			.orElseThrow(() -> UserNotFoundException.withId(userId));
+		boolean online = sessionCheckService.isUserLoggedIn(userId);
 		log.info("사용자 조회 완료: id={}", userId);
-		return userDto;
+		return userDto.withOnline(online);
 	}
 
 	@Override
 	public List<UserDto> findAll() {
 		log.debug("모든 사용자 조회 시작");
+		Set<UUID> onlineUserIds = sessionCheckService.getOnlineUserIds();
 		List<UserDto> userDtos = userRepository.findAllWithProfileAndStatus()
 			.stream()
 			.map(userMapper::toDto)
+			.map(dto -> dto.withOnline(onlineUserIds.contains(dto.id())))
 			.toList();
 		log.info("모든 사용자 조회 완료: 총 {}명", userDtos.size());
 		return userDtos;

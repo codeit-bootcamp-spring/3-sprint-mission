@@ -23,7 +23,7 @@ public record UserDto(
 			user.getUsername(),
 			user.getEmail(),
 			BinaryContentDto.fromEntity(user.getProfile()),
-			user.getStatus() != null && Boolean.TRUE.equals(user.getStatus().isOnline()),
+			false,
 			user.getRole()
 		);
 	}
@@ -38,5 +38,10 @@ public record UserDto(
 			false,                // online 계산 안 함
 			user.getRole()
 		);
+	}
+
+	// 유저 온라인 확인용 메서드
+	public UserDto withOnline(Boolean online) {
+		return new UserDto(id, username, email, profile, online, role);
 	}
 }
