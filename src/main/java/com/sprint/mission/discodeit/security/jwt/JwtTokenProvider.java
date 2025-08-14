@@ -11,6 +11,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -36,10 +37,10 @@ public class JwtTokenProvider {
     private final JWSVerifier refreshTokenVerifier;
 
     public JwtTokenProvider(
-        @Value("${jwt.access-token.secret}") String accessTokenSecret,
-        @Value("${jwt.access-token.exp}") long accessTokenExpirationMs,
-        @Value("${jwt.refresh-token.secret}") String refreshTokenSecret,
-        @Value("${jwt.refresh-token.exp}") long refreshTokenExpirationMs
+            @Value("${jwt.access-token.secret}") String accessTokenSecret,
+            @Value("${jwt.access-token.exp}") long accessTokenExpirationMs,
+            @Value("${jwt.refresh-token.secret}") String refreshTokenSecret,
+            @Value("${jwt.refresh-token.exp}") long refreshTokenExpirationMs
     ) throws JOSEException {
 
         byte[] a = accessTokenSecret.getBytes(StandardCharsets.UTF_8);
@@ -67,25 +68,25 @@ public class JwtTokenProvider {
     }
 
     private String generateToken(DiscodeitUserDetails user, long expMs, JWSSigner signer,
-        String type)
-        throws JOSEException {
+                                 String type)
+            throws JOSEException {
 
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expMs);
 
         List<String> roles = user.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .toList();
+                .map(GrantedAuthority::getAuthority)
+                .toList();
 
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-            .subject(user.getUsername())                      // username
-            .jwtID(UUID.randomUUID().toString())              // jti
-            .claim("uid", user.getUserDto().id().toString())  // 사용자 UUID
-            .claim("roles", roles)
-            .claim("type", type)                              // access | refresh
-            .issueTime(now)
-            .expirationTime(expiry)
-            .build();
+                .subject(user.getUsername())                      // username
+                .jwtID(UUID.randomUUID().toString())              // jti
+                .claim("uid", user.getUserDto().id().toString())  // 사용자 UUID
+                .claim("roles", roles)
+                .claim("type", type)                              // access | refresh
+                .issueTime(now)
+                .expirationTime(expiry)
+                .build();
 
         SignedJWT jwt = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claims);
         jwt.sign(signer);
@@ -162,5 +163,17 @@ public class JwtTokenProvider {
 
     public void expireRefreshCookie(HttpServletResponse res) {
         res.addCookie(buildExpireRefreshCookie());
+    }
+
+    public String resolveRefreshToken(HttpServletRequest request) {
+        if (request.getCookies() == null) {
+            return null;
+        }
+        for (Cookie c : request.getCookies()) {
+            if (REFRESH_TOKEN_COOKIE_NAME.equals(c.getName())) {
+                return c.getValue();
+            }
+        }
+        return null;
     }
 }

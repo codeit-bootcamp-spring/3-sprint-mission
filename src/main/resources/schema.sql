@@ -126,3 +126,10 @@ ALTER TABLE read_statuses
             REFERENCES channels (id)
             ON DELETE CASCADE;
 
+
+
+ALTER TABLE message_attachments
+    ADD CONSTRAINT fk_message_attachment_message
+        FOREIGN KEY (message_id)
+            REFERENCES messages (id)
+            ON DELETE CASCADE;
