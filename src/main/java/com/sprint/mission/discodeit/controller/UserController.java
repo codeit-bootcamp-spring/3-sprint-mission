@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -54,6 +55,7 @@ public class UserController implements UserApi {
 		path = "{userId}",
 		consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
 	)
+	@PreAuthorize("#userId == authentication.principal.userDto.id")
 	@Override
 	public ResponseEntity<UserDto> update(
 		@PathVariable("userId") UUID userId,
@@ -71,6 +73,7 @@ public class UserController implements UserApi {
 	}
 
 	@DeleteMapping(path = "{userId}")
+	@PreAuthorize("#userId == authentication.principal.userDto.id")
 	@Override
 	public ResponseEntity<Void> delete(@PathVariable("userId") UUID userId) {
 		userService.delete(userId);
