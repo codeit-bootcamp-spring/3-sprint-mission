@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.security.config;
 import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.handler.RestAccessDeniedHandler;
-import com.sprint.mission.discodeit.security.handler.RestAuthEntryPoint;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.springframework.boot.CommandLineRunner;
@@ -20,13 +20,17 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
@@ -39,8 +43,8 @@ public class SecurityConfig {
 		HttpSecurity http,
 		LoginSuccessHandler loginSuccessHandler,
 		LoginFailureHandler loginFailureHandler,
-		RestAuthEntryPoint restAuthEntryPoint,
-		RestAccessDeniedHandler restAccessDeniedHandler
+		RestAccessDeniedHandler restAccessDeniedHandler,
+		SessionRegistry sessionRegistry
 	)
 		throws Exception {
 		http
@@ -83,9 +87,28 @@ public class SecurityConfig {
 			)
 			// 권한 미확인시 예외처리
 			.exceptionHandling(ex -> ex
-				.authenticationEntryPoint(restAuthEntryPoint) // 401 JSON
+				.authenticationEntryPoint(new Http403ForbiddenEntryPoint()) // 403 응답
 				.accessDeniedHandler(restAccessDeniedHandler) // 403 JSON
-			);
+			)
+			// ★★★ 세션 동시성 제어 핵심 블록 ★★★
+			.sessionManagement(management -> management
+				.sessionConcurrency(concurrency -> concurrency
+					.maximumSessions(1) // 동일 사용자 동시 세션 최대 1개
+					.maxSessionsPreventsLogin(true) // 새로운 로그인을 통한 세션 생성 거부
+					// 기존 세션이 만료될 때의 응답
+					.expiredSessionStrategy(event -> {
+						var response = event.getResponse();
+						response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+						response.setContentType("application/json;charset=UTF-8");
+						response.getWriter().write("""
+							    {"error":"SESSION_EXPIRED","message":"동일 계정의 다른 로그인으로 세션이 만료되었습니다."}
+							""");
+					})
+					// (4) 누가 어디서 로그인했는지 추적하는 저장소
+					.sessionRegistry(sessionRegistry)
+				)
+			)
+		;
 		return http.build();
 	}
 
@@ -127,8 +150,8 @@ public class SecurityConfig {
 	@Bean
 	public RoleHierarchy roleHierarchy() {
 		return RoleHierarchyImpl.fromHierarchy("""
-			    ROLE_ADMIN > ROLE_CHANNEL_MANAGER
-			    ROLE_CHANNEL_MANAGER > ROLE_USER
+			ROLE_ADMIN > ROLE_CHANNEL_MANAGER
+			ROLE_CHANNEL_MANAGER > ROLE_USER
 			""");
 	}
 
@@ -141,4 +164,16 @@ public class SecurityConfig {
 		return handler;
 	}
 
+
+	// 세션 등록소: 동시 세션 수를 세고 사용자별 세션을 구분
+	@Bean
+	public SessionRegistry sessionRegistry() {
+		return new SessionRegistryImpl();
+	}
+
+	// 세션 생성/소멸 이벤트를 스프링으로 전달
+	@Bean
+	public HttpSessionEventPublisher httpSessionEventPublisher() {
+		return new HttpSessionEventPublisher();
+	}
 }
