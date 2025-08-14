@@ -43,8 +43,20 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 response.setStatus(HttpServletResponse.SC_OK);
 
             } catch (JOSEException e) {
-                throw new RuntimeException(e);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write(objectMapper.createObjectNode()
+                        .put("success", false)
+                        .put("message", "Token generation failed")
+                        .toString());
             }
+        }
+        else{
+            // 인증 실패 시 처리(401)
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write(objectMapper.createObjectNode()
+                    .put("success", false)
+                    .put("message", "Invalid principal")
+                    .toString());
         }
 
     }
