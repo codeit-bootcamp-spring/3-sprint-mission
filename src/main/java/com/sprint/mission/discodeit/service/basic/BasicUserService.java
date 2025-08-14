@@ -157,7 +157,7 @@ public class BasicUserService implements UserService {
     @Transactional
     @Override
     public UserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file) {
-
+        System.out.println("BasicUserService.update");
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(Map.of("userId ", userId)));
 
         String oldName = user.getUsername();
@@ -167,9 +167,11 @@ public class BasicUserService implements UserService {
 
         if (newName == null || newName.isBlank()) {
             newName = oldName;
+            System.out.println(newName);
         }
         if (newEmail == null || newEmail.isBlank()) {
             newEmail = oldEmail;
+            System.out.println(newEmail);
         }
 
         if (userRepository.existsByUsername(newName) && (!oldName.equals(newName))) { // 있고 내 이름도 아닌경우
@@ -233,12 +235,10 @@ public class BasicUserService implements UserService {
         return response;
 //        // 파일 확인(있음) -> 파일 삭제 -> binary content 삭제 -> binary content 추가 -> 파일 생성 -> user 업데이트
 //        // 파일 확인(없음) ->                                  -> binary content 추가 -> 파일 생성 -> user 업데이트
-
     }
 
     @Override
     public UserResponse updateRole(UserRoleUpdateRequest request) {
-        System.out.println("[updateRole]-------------");
         User user = userRepository.findById(request.userId()).orElseThrow(() -> new UserNotFoundException(Map.of("userId ", request.userId())));
 
         user.changeRole(request.newRole());
@@ -249,11 +249,9 @@ public class BasicUserService implements UserService {
     }
 
     private void invalidateSessionByUsername(String username) {
-        System.out.println("[invalidateSessionByUsername]-------------");
         sessionRegistry.getAllPrincipals().forEach(principal -> {
             if (principal instanceof UserDetails userDetails
                 && userDetails.getUsername().equals(username)) {
-                System.out.println(userDetails.getUsername()+" invalidate");
                 sessionRegistry.getAllSessions(principal, false).forEach(sessionInfo -> {
                     sessionInfo.expireNow();
                     System.out.println("[BasicUserService.invalidateSessionByUsername] 세션 만료됨: \n" + sessionInfo.getSessionId());

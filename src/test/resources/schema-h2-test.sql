@@ -4,7 +4,6 @@ SET SCHEMA DISCODEIT;
 DROP TABLE IF EXISTS message_attachments;
 DROP TABLE IF EXISTS messages;
 DROP TABLE IF EXISTS read_statuses;
-DROP TABLE IF EXISTS user_statuses;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS binary_contents;
 DROP TABLE IF EXISTS channels;
@@ -32,18 +31,6 @@ CREATE TABLE IF NOT EXISTS users (
     FOREIGN KEY (profile_id)
     REFERENCES binary_contents(id)
     ON DELETE SET NULL
-    );
-
-CREATE TABLE IF NOT EXISTS user_statuses (
-    id             UUID PRIMARY KEY,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone,
-    user_id        UUID        NOT NULL UNIQUE,
-    last_active_at TIMESTAMP with time zone NOT NULL,
-    CONSTRAINT fk_user
-    FOREIGN KEY (user_id)
-    REFERENCES users(id)
-    ON DELETE CASCADE
     );
 
 

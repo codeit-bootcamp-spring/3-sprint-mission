@@ -15,8 +15,8 @@ import java.util.UUID;
  * Date         : 2025. 5. 27.
  */
 public interface UserRepository extends JpaRepository<User, UUID> {
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.profile WHERE u.username = :username")
-    Optional<User> findByUsernameWithProfile(String username);
+//    @Query("SELECT u FROM User u LEFT JOIN FETCH u.profile WHERE u.username = :username")
+//    Optional<User> findByUsernameWithProfile(String username);
 
     boolean existsByUsername(String username);
 

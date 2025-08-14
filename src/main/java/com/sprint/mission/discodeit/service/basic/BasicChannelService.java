@@ -44,7 +44,6 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
     private final ChannelMapper channelMapper;
-    private final UserMapper userMapper;
 
     @Override
     public ChannelResponse createChannel(PublicChannelCreateRequest request) {

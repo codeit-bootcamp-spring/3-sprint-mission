@@ -9,7 +9,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
-import com.sprint.mission.discodeit.repository.jpa.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,8 +60,6 @@ public class UserTest {
     @Autowired
     private BinaryContentRepository binaryContentRepository;
 
-    @Autowired
-    private UserStatusRepository userStatusRepository;
 
     @Autowired
     private UserRepository userRepository;

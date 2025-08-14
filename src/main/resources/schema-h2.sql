@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS users (
     password      VARCHAR(60)     NOT NULL,
     profile_id    UUID,
     role varchar(20) NOT NULL,
+
     CONSTRAINT fk_profile
     FOREIGN KEY (profile_id)
     REFERENCES binary_contents(id)
