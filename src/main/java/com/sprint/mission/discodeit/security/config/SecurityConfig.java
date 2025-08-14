@@ -73,7 +73,6 @@ public class SecurityConfig {
 				// 회원가입 모두허용
 				.requestMatchers(HttpMethod.POST, "/api/users").permitAll()
 				// 로그인 모두허용
-				.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/auth/me").permitAll()
 				// 로그아웃 모두허용
 				.requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
