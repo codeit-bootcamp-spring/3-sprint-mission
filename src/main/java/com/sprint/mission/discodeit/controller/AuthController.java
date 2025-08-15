@@ -28,8 +28,8 @@ public class AuthController implements AuthApi {
 
   @GetMapping("/csrf-token")
   public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
-    String tokenValue = csrfToken.getToken();
-    log.debug("CSRF 토큰 요청: {}", tokenValue);
+    csrfToken.getToken();
+    log.debug("CSRF 토큰 요청 처리됨");
     return ResponseEntity.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).build();
   }
 

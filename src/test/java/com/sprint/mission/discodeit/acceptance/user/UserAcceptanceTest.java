@@ -32,10 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Tag("integration")
 @ActiveProfiles("security-test")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-        "discodeit.security.disable-csrf=true"
-    })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(Lifecycle.PER_CLASS)
 @Transactional

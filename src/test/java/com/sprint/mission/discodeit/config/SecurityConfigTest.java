@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.config;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import jakarta.servlet.http.Cookie;
 import java.util.Objects;
-
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,8 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import jakarta.servlet.http.Cookie;
-
+@Tag("integration")
 @ActiveProfiles("security-test")
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -36,7 +36,8 @@ class SecurityConfigTest {
         .andExpect(status().isNonAuthoritativeInformation())
         .andReturn();
 
-  Cookie cookie = Objects.requireNonNull(result.getResponse().getCookie("XSRF-TOKEN"), "XSRF-TOKEN 쿠키가 없습니다");
+    Cookie cookie = Objects.requireNonNull(result.getResponse().getCookie("XSRF-TOKEN"),
+        "XSRF-TOKEN 쿠키가 없습니다");
     assertThat(cookie.isHttpOnly()).isFalse();
   }
 }
