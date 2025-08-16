@@ -1,3 +1,11 @@
+DROP TABLE IF EXISTS binary_contents CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS user_statuses CASCADE;
+DROP TABLE IF EXISTS read_statuses CASCADE;
+DROP TABLE IF EXISTS channels CASCADE;
+DROP TABLE IF EXISTS messages CASCADE;
+DROP TABLE IF EXISTS message_attachments CASCADE;
+
 CREATE TABLE binary_contents
 (
     id           UUID PRIMARY KEY,
@@ -16,7 +24,8 @@ CREATE TABLE users
     username   VARCHAR(50) UNIQUE  NOT NULL,
     email      VARCHAR(100) UNIQUE NOT NULL,
     password   VARCHAR(60)         NOT NULL,
-    profile_id UUID                REFERENCES binary_contents (id) ON DELETE SET NULL
+    profile_id UUID                REFERENCES binary_contents (id) ON DELETE SET NULL,
+    role       varchar(20)         NOT NULL
 );
 
 CREATE TABLE user_statuses

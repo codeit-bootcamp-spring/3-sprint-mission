@@ -30,6 +30,11 @@ spring:
         instance:
           name: discodeit
 
+admin:
+  email: admin@abc.com
+  username: admin
+  password: admin1234
+
 logging:
   level:
     root: info

@@ -1,16 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import java.time.Instant;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.Instant;
 
 @Entity
 @Table(name = "users")
@@ -34,16 +30,21 @@ public class User extends BaseUpdatableEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 20, nullable = false)
+    private Role role;
+
     public User(String username, String email, String password, BinaryContent profile) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.profile = profile;
         this.status = new UserStatus(this, Instant.now());
+        this.role = Role.USER;
     }
 
     public void update(String newUsername, String newEmail, String newPassword,
-        BinaryContent newProfile) {
+                       BinaryContent newProfile) {
         if (newUsername != null && !newUsername.equals(this.username)) {
             this.username = newUsername;
         }
@@ -55,6 +56,12 @@ public class User extends BaseUpdatableEntity {
         }
         if (newProfile != null && !newProfile.equals(this.profile)) {
             this.profile = newProfile;
+        }
+    }
+
+    public void updateRole(Role newRole) {
+        if (this.role != newRole) {
+            this.role = newRole;
         }
     }
 }
