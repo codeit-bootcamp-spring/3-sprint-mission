@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 public class JwtTokenProvider {
 
     // Refresh 토큰을 저장할 HTTP 쿠키의 이름
-    public static final String REFRESH_TOKEN_COOKIE_NAME = "REFRESH-TOKEN";
+    public static final String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
 
     // Access 토큰의 만료 시간(ms 단위)
     private final int accessTokenExpirationMs;

@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,30 +25,21 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
-import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @Slf4j
 public class SecurityConfig {
-
-    @Value("${remember-me.key}")
-    private String rememberMeKey;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -68,23 +58,6 @@ public class SecurityConfig {
             System.out.println("현재 적용된 필터 체인 목록:");
             filterNames.forEach(System.out::println);
         };
-    }
-
-    @Bean
-    public TokenBasedRememberMeServices rememberMeServices(UserDetailsService userDetailsService) {
-
-        TokenBasedRememberMeServices rememberMeServices = new TokenBasedRememberMeServices(
-            rememberMeKey,
-            userDetailsService);
-
-        // Remember-Me 토큰 유효 기간 설정
-        rememberMeServices.setTokenValiditySeconds(60 * 60 * 24 * 7); // 7일
-        rememberMeServices.setCookieName("remember-me");
-        rememberMeServices.setParameter("remember-me");
-
-        log.debug("[SecurityConfig] Remember-Me 설정 완료");
-
-        return rememberMeServices;
     }
 
     @Bean
@@ -124,6 +97,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()     // 회원가입
                 .requestMatchers(("/api/auth/login")).permitAll() // 로그인
                 .requestMatchers(("/api/auth/logout")).permitAll() // 로그아웃
+                .requestMatchers(("/api/auth/refresh")).permitAll() // Refresh 토큰 재발급
 
                 // 퍼블릭 채널 생성, 수정, 삭제는 CHANNEL_MANAGER 권한을 가져야함
                 .requestMatchers(HttpMethod.POST, "/api/channels/public").hasRole("CHANNEL_MANAGER")
@@ -166,49 +140,7 @@ public class SecurityConfig {
 
         return http.build();
     }
-
-    @Bean
-    public SessionRegistry sessionRegistry() {
-        SessionRegistry sessionRegistry = new SessionRegistryImpl() {
-
-            @Override
-            public SessionInformation getSessionInformation(String sessionId) {
-                SessionInformation information = super.getSessionInformation(sessionId);
-
-                if (information != null) {
-                    log.debug("[SessionRegistry] 세션 정보- 세션 ID: {} 만료됨: {}", sessionId,
-                        information.isExpired());
-                }
-
-                return information;
-            }
-
-            @Override
-            public void removeSessionInformation(String sessionId) {
-                log.debug("[SessionRegistry] 세션 제거- sessionId: {}", sessionId);
-
-                super.removeSessionInformation(sessionId);
-            }
-
-            @Override
-            public void registerNewSession(String sessionId, Object principal) {
-                log.debug("[SessionRegistry] 새 세션 등록- 사용자: {} 세션 ID: {}", principal, sessionId);
-
-                super.registerNewSession(sessionId, principal);
-
-                log.debug("[SessionRegistry] 현재 활성 세션 수: {}",
-                    getAllSessions(principal, false).size());
-            }
-        };
-
-        return sessionRegistry;
-    }
-
-    @Bean
-    public HttpSessionEventPublisher httpSessionEventPublisher() {
-        return new HttpSessionEventPublisher();
-    }
-
+    
     @Bean
     public RoleHierarchy roleHierarchy() {
         RoleHierarchy roleHierarchy = RoleHierarchyImpl.fromHierarchy(
