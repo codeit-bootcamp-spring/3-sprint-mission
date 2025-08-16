@@ -125,7 +125,3 @@ ALTER TABLE read_statuses
         FOREIGN KEY (channel_id)
             REFERENCES channels (id)
             ON DELETE CASCADE;
-
-
-INSERT INTO tbl_user (username, email, password, role) VALUES
-    ('okodee', 'okodee@email.com', '$2a$10$lRWFwrncgAnbiI6IngsfkebcMZsDii7q/CmRNA.xOpsS46C0NrAUi', 'ADMIN');
