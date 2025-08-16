@@ -22,6 +22,8 @@ import org.springframework.security.web.authentication.Http403ForbiddenEntryPoin
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -46,20 +48,13 @@ public class SecurityConfig {
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
             )
             .authorizeHttpRequests(auth -> auth
-                // 메인 페이지 및 개발 도구는 인증 불필요 (정적 리소스는 webSecurityCustomizer에서 처리)
-                .requestMatchers("/").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/actuator/**").permitAll()
-                // 인증 없이 접근 가능한 API
-                .requestMatchers("/api/auth/csrf-token").permitAll()            // CSRF 토큰 발급
-                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()     // 회원가입
-                .requestMatchers("/api/auth/login").permitAll()                 // 로그인
-                .requestMatchers("/api/auth/logout").permitAll()                // 로그아웃
-                // 메소드 별 권한
-                .requestMatchers(HttpMethod.POST, "/api/channels/public").hasRole("CHANNEL_MANAGER")
-                .requestMatchers(HttpMethod.PATCH, "/api/channels/{channelId}").hasRole("CHANNEL_MANAGER")
-                .requestMatchers(HttpMethod.DELETE, "/api/channels/{channelId}").hasRole("CHANNEL_MANAGER")
-                .requestMatchers(HttpMethod.PUT, "/api/auth/role").hasRole("ADMIN")
+                .requestMatchers(
+                    AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
+                    AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
+                    AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
+                    AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
+                    new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             // Form 기반 로그인 활성화
