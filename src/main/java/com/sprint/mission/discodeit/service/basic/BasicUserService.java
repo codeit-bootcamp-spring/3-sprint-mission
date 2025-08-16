@@ -16,13 +16,15 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,13 +37,14 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
     private final MessageRepository messageRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public UserDto createUser(UserCreateRequest userRequest,
-        Optional<BinaryContentCreateRequest> profileRequest) {
+                              Optional<BinaryContentCreateRequest> profileRequest) {
         log.debug("createUser 호출 - username: {}, email: {}", userRequest.username(),
-            userRequest.email());
+                userRequest.email());
 
         String username = userRequest.username();
         String email = userRequest.email();
@@ -58,16 +61,17 @@ public class BasicUserService implements UserService {
         }
 
         BinaryContent profile = profileRequest
-            .filter(BinaryContentCreateRequest::isValid)
-            .map(req -> {
-                BinaryContent newFile = binaryContentRepository.save(
-                    new BinaryContent(req.fileName(), req.size(), req.contentType()));
-                binaryContentStorage.put(newFile.getId(), req.bytes());
-                return newFile;
-            })
-            .orElse(null);
+                .filter(BinaryContentCreateRequest::isValid)
+                .map(req -> {
+                    BinaryContent newFile = binaryContentRepository.save(
+                            new BinaryContent(req.fileName(), req.size(), req.contentType()));
+                    binaryContentStorage.put(newFile.getId(), req.bytes());
+                    return newFile;
+                })
+                .orElse(null);
 
-        User user = new User(username, email, password, profile);
+        String encodedPassword = passwordEncoder.encode(userRequest.password());
+        User user = new User(username, email, encodedPassword, profile);
         User newUser = userRepository.save(user);
         userStatusRepository.save(newUser.getStatus());
 
@@ -78,26 +82,26 @@ public class BasicUserService implements UserService {
     @Transactional(readOnly = true)
     public List<UserDto> findAll() {
         return userRepository.findAll().stream()
-            .map(userMapper::toDto)
-            .toList();
+                .map(userMapper::toDto)
+                .toList();
     }
 
     @Override
     @Transactional
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
-        Optional<BinaryContentCreateRequest> profileRequest) {
+                          Optional<BinaryContentCreateRequest> profileRequest) {
 
         String newUsername = userUpdateRequest.newUsername();
         String newEmail = userUpdateRequest.newEmail();
         String newPassword = userUpdateRequest.newPassword();
 
         log.debug("사용자 업데이트 요청 - userId: {}, newUsername: {}, newEmail: {}", userId, newUsername,
-            newEmail);
+                newEmail);
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> {
-                log.error("업데이트 실패 - 존재하지 않는 사용자 ID: {}", userId);
-                return UserNotFoundException.withId(userId);
-            });
+                .orElseThrow(() -> {
+                    log.error("업데이트 실패 - 존재하지 않는 사용자 ID: {}", userId);
+                    return UserNotFoundException.withId(userId);
+                });
 
         if (userRepository.existsByEmail(newEmail)) {
             log.warn("업데이트 실패 - 중복 이메일: {}", newEmail);
@@ -109,15 +113,15 @@ public class BasicUserService implements UserService {
         }
 
         BinaryContent newProfile = profileRequest
-            .filter(BinaryContentCreateRequest::isValid)
-            .map(req -> {
-                BinaryContent newFile = binaryContentRepository.save(
-                    new BinaryContent(req.fileName(), req.size(), req.contentType()));
-                binaryContentStorage.put(newFile.getId(), req.bytes());
-                log.info("프로필 이미지 저장 완료 - 파일 ID: {}", newFile.getId());
-                return newFile;
-            })
-            .orElse(null);
+                .filter(BinaryContentCreateRequest::isValid)
+                .map(req -> {
+                    BinaryContent newFile = binaryContentRepository.save(
+                            new BinaryContent(req.fileName(), req.size(), req.contentType()));
+                    binaryContentStorage.put(newFile.getId(), req.bytes());
+                    log.info("프로필 이미지 저장 완료 - 파일 ID: {}", newFile.getId());
+                    return newFile;
+                })
+                .orElse(null);
 
         user.update(newUsername, newEmail, newPassword, newProfile);
         User updatedUser = userRepository.save(user);
@@ -129,10 +133,10 @@ public class BasicUserService implements UserService {
     public void delete(UUID id) {
         log.debug("delete 호출 - userId: {}", id);
         User user = userRepository.findById(id)
-            .orElseThrow(() -> {
-                log.error("삭제 실패 - 존재하지 않는 userId: {}", id);
-                return UserNotFoundException.withId(id);
-            });
+                .orElseThrow(() -> {
+                    log.error("삭제 실패 - 존재하지 않는 userId: {}", id);
+                    return UserNotFoundException.withId(id);
+                });
 
         messageRepository.deleteByAuthorId(id);
         userRepository.deleteById(id);
