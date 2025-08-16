@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.auth.handler.CustomAccessDeniedHandler;
 import com.sprint.mission.discodeit.auth.handler.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.auth.handler.JwtLogoutHandler;
 import com.sprint.mission.discodeit.auth.handler.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -64,17 +64,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
-
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-
-        return authProvider;
-    }
-
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-        DaoAuthenticationProvider authenticationProvider,
         JwtLoginSuccessHandler jwtLoginSuccessHandler,
         JwtLogoutHandler jwtLogoutHandler,
         JwtAuthenticationFilter jwtAuthenticationFilter,
@@ -111,7 +101,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()     // 회원가입
                 .requestMatchers(("/api/auth/login")).permitAll() // 로그인
                 .requestMatchers(("/api/auth/logout")).permitAll() // 로그아웃
-                .requestMatchers(("/api/auth/refresh")).permitAll() // Refresh 토큰 재발급
+                .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll() // Refresh 토큰 재발급
 
                 // 퍼블릭 채널 생성, 수정, 삭제는 CHANNEL_MANAGER 권한을 가져야함
                 .requestMatchers(HttpMethod.POST, "/api/channels/public").hasRole("CHANNEL_MANAGER")
@@ -144,13 +134,13 @@ public class SecurityConfig {
                     .logoutSuccessHandler(
                         new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
                     .addLogoutHandler(jwtLogoutHandler)
-                    .permitAll())
+                    .permitAll()
+            )
             // 예외 처리 (적절한 권한이 없는 경우)
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
                 .accessDeniedHandler(customAccessDeniedHandler)
             )
-            .authenticationProvider(authenticationProvider)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         log.debug("[SecurityConfig] FilterChain 구성 완료");

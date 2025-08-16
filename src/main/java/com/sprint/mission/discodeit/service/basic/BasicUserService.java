@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.mapper.struct.BinaryContentStructMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
@@ -46,6 +47,7 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final BinaryContentStructMapper binaryContentMapper;
     private final PasswordEncoder passwordEncoder;
+    private final JwtRegistry jwtRegistry;
 
     @Override
     @Transactional
@@ -213,13 +215,13 @@ public class BasicUserService implements UserService {
     public UserResponseDto updateRole(RoleUpdateRequest request) {
         User user = findUser(request.userId());
 
-        String username = user.getUsername();
-
         log.debug("[BasicUserService] 사용자: {}", user);
 
         user.updateRole(request.newRole());
         User updatedUser = userRepository.save(user);
-        
+
+        jwtRegistry.invalidateJwtInformationByUserId(user.getId());
+
         log.info("[BasicUserService] 사용자 권한 변경 완료: {}", updatedUser);
 
         return userMapper.toDto(user);

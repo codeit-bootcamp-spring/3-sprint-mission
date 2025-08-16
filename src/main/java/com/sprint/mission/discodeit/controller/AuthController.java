@@ -32,8 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final UserService userService;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final DiscodeitUserDetailsService userDetailsService;
+    private final AuthService authService;
 
     @GetMapping("csrf-token")
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
@@ -52,36 +51,10 @@ public class AuthController {
         String refreshToken,
         HttpServletResponse response
     ) {
+        log.debug("[AuthController] Refresh 토큰 재발급 요청");
+        JwtDto jwtDto = authService.refresh(refreshToken, response);
 
-        if (refreshToken == null || !jwtTokenProvider.validateRefreshToken(refreshToken)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
-
-        DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailsService.loadUserByUsername(
-            username);
-
-        try {
-            // 새 토큰 발급
-            String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails);
-            String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
-
-            // Refresh 토큰 Rotation
-            //String newRefreshJti = jwtTokenProvider.getTokenId(newRefreshToken);
-
-            // 리프레시 쿠키 교체
-            // HTTP 응답 헤더(Set-Cookie)에 Refresh Cookie를 추가한다.
-            jwtTokenProvider.addRefreshCookie(response, newRefreshToken);
-
-            // 응답 바디
-            UserResponseDto userResponseDto = userDetails.getUserResponseDto();
-            JwtDto body = new JwtDto(userResponseDto, newAccessToken);
-
-            return ResponseEntity.status(HttpStatus.OK).body(body);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(jwtDto);
     }
 
     @PutMapping("/role")

@@ -3,7 +3,9 @@ package com.sprint.mission.discodeit.auth.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.jwt.JwtDto;
+import com.sprint.mission.discodeit.dto.jwt.JwtInformation;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +25,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final ObjectMapper objectMapper;
     private final JwtTokenProvider tokenProvider;
+    private final JwtRegistry jwtRegistry;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -36,10 +39,23 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         // UserDetails에서 사용자 정보 추출
         if (authentication.getPrincipal() instanceof DiscodeitUserDetails userDetails) {
             try {
+                log.debug("[JwtLoginSuccessHandler] Jwt 토큰 발급 시작- username: {}",
+                    userDetails.getUsername());
+
+                jwtRegistry.invalidateJwtInformationByUserId(userDetails.getId());
+
                 log.debug("[JwtLoginSuccessHandler] 새 토큰 발급 시작");
                 String accessToken = tokenProvider.generateAccessToken(userDetails);
                 String refreshToken = tokenProvider.generateRefreshToken(userDetails);
 
+                JwtInformation jwtInformation = new JwtInformation(
+                    userDetails.getUserResponseDto(),
+                    accessToken,
+                    refreshToken
+                );
+
+                jwtRegistry.registerJwtInformation(jwtInformation);
+                
                 // Refresh 쿠키 설정
                 log.debug("[JwtLoginSuccessHandler] Refresh 쿠키 설정 시작");
                 tokenProvider.addRefreshCookie(response, refreshToken);

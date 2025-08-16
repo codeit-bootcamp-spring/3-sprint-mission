@@ -16,7 +16,8 @@ public enum ErrorCode {
     USER_STATUS_NOT_FOUND("사용자 상태를 찾을 수 없습니다."),
     READ_STATUS_ALREADY_EXIST("이미 존재하는 읽음 상태입니다."),
     USER_STATUS_ALREADY_EXIST("이미 존재하는 사용자 상태입니다."),
-    INTERNAL_SERVER_ERROR("서버 내부 오류가 발생했습니다.");
+    INTERNAL_SERVER_ERROR("서버 내부 오류가 발생했습니다."),
+    INVALID_TOKEN("유효하지 않은 토큰입니다.");
 
     private final String message;
 

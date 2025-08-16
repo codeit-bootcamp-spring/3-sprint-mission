@@ -1,8 +1,7 @@
-package com.sprint.mission.discodeit.security;
+package com.sprint.mission.discodeit.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetailsService;
-import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,6 +29,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final ObjectMapper objectMapper;
 
+    private final JwtRegistry jwtRegistry;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
@@ -44,6 +45,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 토큰이 존재하는지 확인
             if (StringUtils.hasText(token)) {
                 log.debug("[JwtAuthenticationFilter] Bearer 토큰 추출 성공");
+
+                if (!jwtRegistry.hasActiveJwtInformationByAccessToken(token)) {
+                    log.warn("[JwtAuthenticationFilter] 토큰 유효성 검사 실패");
+                    sendUnauthorized(response, "Invalid Jwt Token");
+                    return;
+                }
 
                 if (jwtTokenProvider.validateAccessToken(token)) {
 
