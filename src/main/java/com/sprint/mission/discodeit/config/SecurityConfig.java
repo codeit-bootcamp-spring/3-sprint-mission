@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
@@ -69,7 +70,7 @@ public class SecurityConfig {
             )
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
-                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
+                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
             )
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
