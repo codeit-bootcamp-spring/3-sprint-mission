@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class AuthController implements AuthApi {
 
+    private final AuthService authService;
     private final UserService userService;
 
     /**
@@ -54,7 +56,7 @@ public class AuthController implements AuthApi {
     @PutMapping("/role")
     public ResponseEntity<UserDto> role(@RequestBody RoleUpdateRequest request) {
         log.info("권한 수정 요청");
-        UserDto userDto = userService.updateRole(request);
+        UserDto userDto = authService.updateRole(request);
         return ResponseEntity.ok(userDto);
     }
 }
