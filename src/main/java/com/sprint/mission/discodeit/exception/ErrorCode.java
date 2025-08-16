@@ -30,7 +30,8 @@ public enum ErrorCode {
 
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "V001", "요청 데이터 유효성 검증에 실패하였습니다."),
 
-    UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "UA001", "사용자 로그인 인증에 실패했습니다.");
+    UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "UA001", "사용자 로그인 인증에 실패했습니다."),
+    FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "F001", "접근 권한이 없습니다.");
 
     private final HttpStatus status;
     private final String code;

@@ -17,12 +17,14 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -35,11 +37,12 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final ChannelMapper channelMapper;
 
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     @Transactional
     public ChannelDto create(PublicChannelCreateRequest request) {
         log.debug("public 채널 생성 로직 시작 - name: {}, description: {}", request.name(),
-            request.description());
+                request.description());
 
         String name = request.name();
         String description = request.description();
@@ -59,12 +62,12 @@ public class BasicChannelService implements ChannelService {
 
         for (UUID userId : request.participantIds()) {
             User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.error("private 채널 생성 실패 - 존재하지 않는 사용자 ID: {}", userId);
-                    return UserNotFoundException.withId(userId);
-                });
+                    .orElseThrow(() -> {
+                        log.error("private 채널 생성 실패 - 존재하지 않는 사용자 ID: {}", userId);
+                        return UserNotFoundException.withId(userId);
+                    });
             ReadStatus readStatus = new ReadStatus(user, createdChannel,
-                createdChannel.getCreatedAt());
+                    createdChannel.getCreatedAt());
             readStatusRepository.save(readStatus);
         }
 
@@ -76,21 +79,22 @@ public class BasicChannelService implements ChannelService {
     @Transactional(readOnly = true)
     public List<ChannelDto> findAllByUserId(UUID userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> {
-                log.error("채널 조회 실패 - 존재하지 않는 사용자 ID: {}", userId);
-                return UserNotFoundException.withId(userId);
-            });
+                .orElseThrow(() -> {
+                    log.error("채널 조회 실패 - 존재하지 않는 사용자 ID: {}", userId);
+                    return UserNotFoundException.withId(userId);
+                });
 
         List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
-            .map(readStatus -> readStatus.getChannel().getId())
-            .toList();
+                .map(readStatus -> readStatus.getChannel().getId())
+                .toList();
 
         return channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC, mySubscribedChannelIds)
-            .stream()
-            .map(channelMapper::toDto)
-            .toList();
+                .stream()
+                .map(channelMapper::toDto)
+                .toList();
     }
 
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     @Transactional
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
@@ -99,10 +103,10 @@ public class BasicChannelService implements ChannelService {
         String newDescription = request.newDescription();
 
         Channel channel = channelRepository.findById(channelId)
-            .orElseThrow(() -> {
-                log.error("채널 수정 실패 - 존재하지 않는 채널 ID: {}", channelId);
-                return ChannelNotFoundException.withId(channelId);
-            });
+                .orElseThrow(() -> {
+                    log.error("채널 수정 실패 - 존재하지 않는 채널 ID: {}", channelId);
+                    return ChannelNotFoundException.withId(channelId);
+                });
 
         if (channel.isPrivate()) {
             log.warn("private 채널 수정 시도 차단 - channelId: {}", channelId);
@@ -114,15 +118,16 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toDto(updatedChannel);
     }
 
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     @Transactional
     public void deleteChannel(UUID channelId) {
         log.debug("채널 삭제 로직 시작 - channelId: {}", channelId);
         Channel channel = channelRepository.findById(channelId)
-            .orElseThrow(() -> {
-                log.error("채널 삭제 실패 - 존재하지 않는 채널 ID: {}", channelId);
-                return ChannelNotFoundException.withId(channelId);
-            });
+                .orElseThrow(() -> {
+                    log.error("채널 삭제 실패 - 존재하지 않는 채널 ID: {}", channelId);
+                    return ChannelNotFoundException.withId(channelId);
+                });
 
         messageRepository.deleteByChannelId(channelId);
         readStatusRepository.deleteByChannelId(channelId);
