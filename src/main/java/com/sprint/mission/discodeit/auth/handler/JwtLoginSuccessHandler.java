@@ -28,7 +28,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
         Authentication authentication) throws IOException, ServletException {
 
-        log.debug("[JwtLoginSuccessHandler] onAuthenticationSuccess 시작: 응답 구정 준비");
+        log.debug("[JwtLoginSuccessHandler] onAuthenticationSuccess 시작: 응답 구성 준비");
 
         response.setCharacterEncoding("UTF-8");
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

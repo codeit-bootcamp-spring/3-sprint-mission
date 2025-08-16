@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.auth.handler.CustomAccessDeniedHandler;
 import com.sprint.mission.discodeit.auth.handler.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.auth.handler.JwtLogoutHandler;
 import com.sprint.mission.discodeit.auth.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,12 +20,14 @@ import org.springframework.security.access.expression.method.DefaultMethodSecuri
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -61,8 +64,19 @@ public class SecurityConfig {
     }
 
     @Bean
+    public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
+
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+
+        return authProvider;
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
+        DaoAuthenticationProvider authenticationProvider,
         JwtLoginSuccessHandler jwtLoginSuccessHandler,
+        JwtLogoutHandler jwtLogoutHandler,
         JwtAuthenticationFilter jwtAuthenticationFilter,
         LoginFailureHandler loginFailureHandler,
         CustomAccessDeniedHandler customAccessDeniedHandler)
@@ -126,21 +140,24 @@ public class SecurityConfig {
             // 로그 아웃 설정
             .logout(
                 logout -> logout
-                    .logoutUrl("/api/auth/logout").logoutSuccessHandler(
+                    .logoutUrl("/api/auth/logout")
+                    .logoutSuccessHandler(
                         new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+                    .addLogoutHandler(jwtLogoutHandler)
                     .permitAll())
             // 예외 처리 (적절한 권한이 없는 경우)
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
                 .accessDeniedHandler(customAccessDeniedHandler)
             )
+            .authenticationProvider(authenticationProvider)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         log.debug("[SecurityConfig] FilterChain 구성 완료");
 
         return http.build();
     }
-    
+
     @Bean
     public RoleHierarchy roleHierarchy() {
         RoleHierarchy roleHierarchy = RoleHierarchyImpl.fromHierarchy(
