@@ -27,6 +27,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -111,8 +113,9 @@ public class BasicMessageService implements MessageService {
   }
 
   @Transactional
+  @PreAuthorize("@authz.isMessageAuthor(#messageId)")
   @Override
-  public MessageDto update(UUID messageId, MessageUpdateRequest request) {
+  public MessageDto update(@P("messageId") UUID messageId, MessageUpdateRequest request) {
     log.debug("메시지 수정 시작: id={}, request={}", messageId, request);
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> MessageNotFoundException.withId(messageId));
@@ -123,8 +126,9 @@ public class BasicMessageService implements MessageService {
   }
 
   @Transactional
+  @PreAuthorize("@authz.isMessageAuthor(#messageId)")
   @Override
-  public void delete(UUID messageId) {
+  public void delete(@P("messageId") UUID messageId) {
     log.debug("메시지 삭제 시작: id={}", messageId);
     if (!messageRepository.existsById(messageId)) {
       throw MessageNotFoundException.withId(messageId);

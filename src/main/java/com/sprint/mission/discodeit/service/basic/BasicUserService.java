@@ -21,6 +21,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -101,8 +102,9 @@ public class BasicUserService implements UserService {
   }
 
   @Transactional
+  @PreAuthorize("@authz.isMe(#userId)")
   @Override
-  public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
+  public UserDto update(@P("userId") UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     log.debug("사용자 수정 시작: id={}, request={}", userId, userUpdateRequest);
 
@@ -145,8 +147,9 @@ public class BasicUserService implements UserService {
   }
 
   @Transactional
+  @PreAuthorize("@authz.isMe(#userId)")
   @Override
-  public void delete(UUID userId) {
+  public void delete(@P("userId") UUID userId) {
     log.debug("사용자 삭제 시작: id={}", userId);
 
     if (!userRepository.existsById(userId)) {
