@@ -96,12 +96,12 @@ public class BasicUserService implements UserService {
     @PreAuthorize("principal.userId == #userId")
     @Override
     @Transactional
-    public UserDto update(@P("userId") UUID userId, UserUpdateRequest userUpdateRequest,
+    public UserDto update(@P("userId") UUID userId, UserUpdateRequest request,
                           Optional<BinaryContentCreateRequest> profileRequest) {
 
-        String newUsername = userUpdateRequest.newUsername();
-        String newEmail = userUpdateRequest.newEmail();
-        String newPassword = userUpdateRequest.newPassword();
+        String newUsername = request.newUsername();
+        String newEmail = request.newEmail();
+        String newPassword = request.newPassword();
 
         log.debug("사용자 업데이트 요청 - userId: {}, newUsername: {}, newEmail: {}", userId, newUsername,
                 newEmail);
@@ -131,7 +131,8 @@ public class BasicUserService implements UserService {
                 })
                 .orElse(null);
 
-        user.update(newUsername, newEmail, newPassword, newProfile);
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.update(newUsername, newEmail, encodedPassword, newProfile);
         User updatedUser = userRepository.save(user);
         return userMapper.toDto(updatedUser);
     }
