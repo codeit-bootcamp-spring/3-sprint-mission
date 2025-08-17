@@ -34,4 +34,6 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     @Modifying
     @Query("DELETE FROM Message m WHERE m.author.id = :authorId")
     void deleteByAuthorId(@Param("authorId") UUID authorId);
+
+    boolean existsByIdAndAuthorId(UUID id, UUID authorId);
 }

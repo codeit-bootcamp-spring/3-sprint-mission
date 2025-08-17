@@ -17,6 +17,8 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -91,9 +93,10 @@ public class BasicUserService implements UserService {
                 .toList();
     }
 
+    @PreAuthorize("principal.userId == #userId")
     @Override
     @Transactional
-    public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
+    public UserDto update(@P("userId") UUID userId, UserUpdateRequest userUpdateRequest,
                           Optional<BinaryContentCreateRequest> profileRequest) {
 
         String newUsername = userUpdateRequest.newUsername();
@@ -133,9 +136,10 @@ public class BasicUserService implements UserService {
         return userMapper.toDto(updatedUser);
     }
 
+    @PreAuthorize("principal.userId == #userId")
     @Override
     @Transactional
-    public void delete(UUID id) {
+    public void delete(@P("userId") UUID id) {
         log.debug("delete 호출 - userId: {}", id);
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {

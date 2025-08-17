@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
@@ -44,5 +45,9 @@ public class DiscodeitUserDetails implements UserDetails {
     @Override
     public String getPassword() {
         return password;
+    }
+
+    public UUID getUserId() {
+        return userDto.id();
     }
 }
