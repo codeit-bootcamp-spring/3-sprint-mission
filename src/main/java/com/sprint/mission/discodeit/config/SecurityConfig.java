@@ -1,11 +1,9 @@
 package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.entity.Role;
-import com.sprint.mission.discodeit.security.CustomAccessDeniedHandler;
-import com.sprint.mission.discodeit.security.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.LoginSuccessHandler;
-import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
+import com.sprint.mission.discodeit.security.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,13 +35,17 @@ import java.util.stream.IntStream;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    @Value("${remember-me.key}")
+    private String rememberMeKey;
+
     @Bean
     public SecurityFilterChain filterChain(
             HttpSecurity http,
             LoginSuccessHandler loginSuccessHandler,
             LoginFailureHandler loginFailureHandler,
             CustomAccessDeniedHandler customAccessDeniedHandler,
-            SessionRegistry sessionRegistry
+            SessionRegistry sessionRegistry,
+            DiscodeitUserDetailsService discodeitUserDetailsService
     ) throws Exception {
         http
                 .csrf(csrf -> csrf
@@ -79,6 +81,13 @@ public class SecurityConfig {
                                 .maximumSessions(1)
                                 .sessionRegistry(sessionRegistry)
                         )
+                )
+                .rememberMe(remember -> remember
+                        .key(rememberMeKey)
+                        .tokenValiditySeconds(7 * 24 * 60 * 60)
+                        .rememberMeCookieName("remember-me")
+                        .rememberMeParameter("remember-me")
+                        .userDetailsService(discodeitUserDetailsService)
                 );
         return http.build();
     }

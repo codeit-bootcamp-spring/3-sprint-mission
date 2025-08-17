@@ -35,6 +35,9 @@ admin:
   username: admin
   password: admin1234
 
+remember-me:
+  key: discodeit-remember-me-key
+
 logging:
   level:
     root: info
