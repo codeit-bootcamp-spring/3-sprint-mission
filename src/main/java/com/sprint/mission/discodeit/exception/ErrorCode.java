@@ -22,9 +22,6 @@ public enum ErrorCode {
     READ_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "R001", "읽기 상태을 찾을 수 없습니다."),
     READ_STATUS_ALREADY_EXISTS(HttpStatus.CONFLICT, "R002", "해당 유저와 채널에 대한 읽기 상태가 이미 존재합니다."),
 
-    USER_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "US001", "사용자 상태를 찾을 수 없습니다."),
-    USER_STATUS_ALREADY_EXISTS(HttpStatus.CONFLICT, "US002", "이미 존재하는 사용자 상태입니다."),
-
     BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "B001", "첨부파일을 찾을 수 없습니다."),
     BINARY_CONTENT_INVALID(HttpStatus.BAD_REQUEST, "B002", "유효하지 않은 첨부파일입니다."),
 

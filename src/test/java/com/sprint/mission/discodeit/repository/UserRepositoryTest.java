@@ -1,13 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @EnableJpaAuditing
@@ -30,7 +29,6 @@ class UserRepositoryTest {
     void setUp() {
         BinaryContent profile = new BinaryContent("이미지", 1024L, "image/png");
         User user = new User("testuser", "test@abc.com", "1234", profile);
-        UserStatus status = new UserStatus(user, Instant.now());
         savedUser = userRepository.save(user);
     }
 
@@ -108,7 +106,6 @@ class UserRepositoryTest {
 
         //then
         assertThat(all).contains(savedUser);
-        assertThat(all.get(0).getStatus()).isNotNull();
         assertThat(all.get(0).getProfile()).isNotNull();
     }
 }

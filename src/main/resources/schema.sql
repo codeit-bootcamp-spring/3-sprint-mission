@@ -1,6 +1,5 @@
 DROP TABLE IF EXISTS binary_contents CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS user_statuses CASCADE;
 DROP TABLE IF EXISTS read_statuses CASCADE;
 DROP TABLE IF EXISTS channels CASCADE;
 DROP TABLE IF EXISTS messages CASCADE;
@@ -12,8 +11,7 @@ CREATE TABLE binary_contents
     created_at   TIMESTAMPTZ  NOT NULL,
     file_name    VARCHAR(255) NOT NULL,
     size         BIGINT       NOT NULL,
-    content_type VARCHAR(100) NOT NULL,
-    bytes        bytea        NOT NULL
+    content_type VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE users
@@ -26,15 +24,6 @@ CREATE TABLE users
     password   VARCHAR(60)         NOT NULL,
     profile_id UUID                REFERENCES binary_contents (id) ON DELETE SET NULL,
     role       varchar(20)         NOT NULL
-);
-
-CREATE TABLE user_statuses
-(
-    id             UUID PRIMARY KEY,
-    created_at     TIMESTAMPTZ NOT NULL,
-    updated_at     TIMESTAMPTZ,
-    user_id        UUID        NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,
-    last_active_at TIMESTAMPTZ NOT NULL
 );
 
 CREATE TABLE channels
@@ -74,6 +63,3 @@ CREATE TABLE message_attachments
     attachment_id UUID REFERENCES binary_contents (id) ON DELETE CASCADE,
     PRIMARY KEY (message_id, attachment_id)
 );
-
-ALTER TABLE binary_contents
-    DROP COLUMN bytes;

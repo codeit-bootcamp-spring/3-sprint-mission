@@ -1,15 +1,9 @@
 package com.sprint.mission.discodeit.repository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Optional;
-import java.util.UUID;
 import org.hibernate.Hibernate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +18,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @EnableJpaAuditing
@@ -82,7 +83,7 @@ class MessageRepositoryTest {
 
         //when
         Slice<Message> slice = messageRepository.findAllByChannelIdWithAuthor(
-            testChannel.getId(), cursor, pageable);
+                testChannel.getId(), cursor, pageable);
 
         //then
         assertThat(slice).isNotNull();
@@ -90,11 +91,10 @@ class MessageRepositoryTest {
         assertThat(slice.hasNext()).isTrue();
 
         assertThat(slice.getContent().get(0).getCreatedAt())
-            .isAfterOrEqualTo(slice.getContent().get(1).getCreatedAt());
+                .isAfterOrEqualTo(slice.getContent().get(1).getCreatedAt());
 
         Message firstMessage = slice.getContent().get(0);
         assertThat(Hibernate.isInitialized(firstMessage.getAuthor())).isTrue();
-        assertThat(Hibernate.isInitialized(firstMessage.getAuthor().getStatus())).isTrue();
         assertThat(Hibernate.isInitialized(firstMessage.getAuthor().getProfile())).isTrue();
     }
 
@@ -108,7 +108,7 @@ class MessageRepositoryTest {
 
         //when
         Slice<Message> result = messageRepository.findAllByChannelIdWithAuthor(
-            invalidChannelId, cursor, pageable);
+                invalidChannelId, cursor, pageable);
 
         //then
         assertThat(result).isNotNull();
@@ -121,12 +121,12 @@ class MessageRepositoryTest {
     void findLastMessageAtByChannelId_success() {
         //when
         Optional<Instant> last = messageRepository.findLastMessageAtByChannelId(
-            testChannel.getId());
+                testChannel.getId());
 
         //then
         assertThat(last).isPresent();
         assertThat(last.get().truncatedTo(ChronoUnit.SECONDS))
-            .isEqualTo(t3.truncatedTo(ChronoUnit.SECONDS));
+                .isEqualTo(t3.truncatedTo(ChronoUnit.SECONDS));
     }
 
     @Test

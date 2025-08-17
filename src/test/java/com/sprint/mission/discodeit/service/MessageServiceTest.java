@@ -1,12 +1,5 @@
 package com.sprint.mission.discodeit.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.dto.UserDto;
@@ -14,11 +7,7 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -30,11 +19,6 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,6 +30,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("BasicMessageService 단위 테스트")
@@ -97,13 +92,13 @@ public class MessageServiceTest {
 
         binaryContentDto = new BinaryContentDto(attachment.getId(), "이미지", 1024L, "image/png");
         messageDto = new MessageDto(
-            messageId,
-            Instant.now(),
-            Instant.now(),
-            content,
-            channelId,
-            new UserDto(userId, "testuser", "test@abc.com", null, true),
-            List.of(binaryContentDto)
+                messageId,
+                Instant.now(),
+                Instant.now(),
+                content,
+                channelId,
+                new UserDto(userId, "testuser", "test@abc.com", null, true, Role.USER),
+                List.of(binaryContentDto)
         );
     }
 
@@ -130,7 +125,7 @@ public class MessageServiceTest {
         //given
         byte[] testBytes = "file".getBytes();
         BinaryContentCreateRequest fileReq = new BinaryContentCreateRequest("이미지", 1024L,
-            "image/png", testBytes);
+                "image/png", testBytes);
         List<BinaryContentCreateRequest> attachments = List.of(fileReq);
         MessageCreateRequest request = new MessageCreateRequest(content, channelId, userId);
 
@@ -158,7 +153,7 @@ public class MessageServiceTest {
 
         //when, then
         assertThatThrownBy(() -> messageService.createMessage(request, null))
-            .isInstanceOf(ChannelNotFoundException.class);
+                .isInstanceOf(ChannelNotFoundException.class);
     }
 
     @Test
@@ -171,7 +166,7 @@ public class MessageServiceTest {
 
         //when, then
         assertThatThrownBy(() -> messageService.createMessage(request, null))
-            .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class);
     }
 
     @Test
@@ -199,7 +194,7 @@ public class MessageServiceTest {
 
         //when, then
         assertThatThrownBy(() -> messageService.updateMessage(messageId, request))
-            .isInstanceOf(MessageNotFoundException.class);
+                .isInstanceOf(MessageNotFoundException.class);
     }
 
     @Test
@@ -224,7 +219,7 @@ public class MessageServiceTest {
 
         //when, then
         assertThatThrownBy(() -> messageService.deleteMessage(messageId, userId))
-            .isInstanceOf(MessageNotFoundException.class);
+                .isInstanceOf(MessageNotFoundException.class);
     }
 
     @Test
@@ -248,22 +243,22 @@ public class MessageServiceTest {
         ReflectionTestUtils.setField(message2, "createdAt", message2CreatedAt);
 
         MessageDto messageDto1 = new MessageDto(
-            message1.getId(),
-            message1CreatedAt,
-            message1CreatedAt,
-            content,
-            channelId,
-            new UserDto(userId, "testuser", "test@abc.com", null, true),
-            List.of(binaryContentDto)
+                message1.getId(),
+                message1CreatedAt,
+                message1CreatedAt,
+                content,
+                channelId,
+                new UserDto(userId, "testuser", "test@abc.com", null, true, Role.USER),
+                List.of(binaryContentDto)
         );
 
         MessageDto messageDto2 = new MessageDto(
-            message2.getId(),
-            message2CreatedAt,
-            message2CreatedAt,
-            content,
-            channelId,
-            new UserDto(userId, "testuser", "test@abc.com", null, true), null
+                message2.getId(),
+                message2CreatedAt,
+                message2CreatedAt,
+                content,
+                channelId,
+                new UserDto(userId, "testuser", "test@abc.com", null, true, Role.USER), null
         );
 
         List<Message> PageMessages = List.of(message1, message2);
@@ -271,25 +266,25 @@ public class MessageServiceTest {
 
         SliceImpl<Message> firstPageSlice = new SliceImpl<>(PageMessages, pageable, true);
         PageResponse<MessageDto> firstPageResponse = new PageResponse<>(
-            PageDtos,
-            message2CreatedAt,
-            pageSize,
-            true,
-            null
+                PageDtos,
+                message2CreatedAt,
+                pageSize,
+                true,
+                null
         );
 
         given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
         given(messageRepository.findAllByChannelIdWithAuthor(eq(channelId), eq(createdAt),
-            eq(pageable)))
-            .willReturn(firstPageSlice);
+                eq(pageable)))
+                .willReturn(firstPageSlice);
         given(messageMapper.toDto(eq(message1))).willReturn(messageDto1);
         given(messageMapper.toDto(eq(message2))).willReturn(messageDto2);
         given(pageResponseMapper.<MessageDto>fromSlice(any(), eq(message2CreatedAt)))
-            .willReturn(firstPageResponse);
+                .willReturn(firstPageResponse);
 
         //when
         PageResponse<MessageDto> result = messageService.findAllByChannelId(channelId, createdAt,
-            pageable);
+                pageable);
 
         //then
         assertThat(result).isEqualTo(firstPageResponse);

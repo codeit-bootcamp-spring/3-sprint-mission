@@ -6,8 +6,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
-
 @Entity
 @Table(name = "users")
 @Getter
@@ -27,9 +25,6 @@ public class User extends BaseUpdatableEntity {
     @JoinColumn(name = "profile_id")
     private BinaryContent profile;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserStatus status;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "role", length = 20, nullable = false)
     private Role role;
@@ -39,7 +34,6 @@ public class User extends BaseUpdatableEntity {
         this.email = email;
         this.password = password;
         this.profile = profile;
-        this.status = new UserStatus(this, Instant.now());
         this.role = Role.USER;
     }
 

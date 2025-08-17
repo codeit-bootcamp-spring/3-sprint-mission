@@ -13,7 +13,6 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +31,6 @@ import java.util.UUID;
 public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
@@ -70,10 +68,9 @@ public class BasicUserService implements UserService {
                 })
                 .orElse(null);
 
-        String encodedPassword = passwordEncoder.encode(userRequest.password());
+        String encodedPassword = passwordEncoder.encode(password);
         User user = new User(username, email, encodedPassword, profile);
         User newUser = userRepository.save(user);
-        userStatusRepository.save(newUser.getStatus());
 
         return userMapper.toDto(newUser);
     }
