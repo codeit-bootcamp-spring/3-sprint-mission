@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -25,6 +26,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -75,6 +77,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("사용자 생성 성공")
     void createUser_Success() throws Exception {
         given(userService.createUser(any(UserCreateRequest.class), any(Optional.class))).willReturn(
@@ -83,7 +86,8 @@ class UserControllerTest {
         mockMvc.perform(multipart("/api/users")
                         .file(toMultipartJson("userCreateRequest", userCreateRequest))
                         .file(profileFile)
-                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(userId.toString()))
                 .andExpect(jsonPath("$.username").value("testuser"))
@@ -91,17 +95,20 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("사용자 생성 실패")
     void createUser_Failure() throws Exception {
         UserCreateRequest invalidRequest = new UserCreateRequest("a", "b", "c");
 
         mockMvc.perform(multipart("/api/users")
                         .file(toMultipartJson("userCreateRequest", invalidRequest))
-                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .with(csrf()))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
+    @WithMockUser
     @DisplayName("사용자 전체 조회 성공")
     void findAllUsers_Success() throws Exception {
         UUID userId = UUID.randomUUID();
@@ -118,7 +125,8 @@ class UserControllerTest {
         given(userService.findAll()).willReturn(users);
 
         mockMvc.perform(get("/api/users")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(userDto.id().toString()))
                 .andExpect(jsonPath("$[0].username").value("testuser"))
@@ -129,6 +137,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("사용자 수정 성공")
     void updateUser_Success() throws Exception {
         UserDto updatedUser = new UserDto(
@@ -149,7 +158,8 @@ class UserControllerTest {
                         .with(req -> {
                             req.setMethod("PATCH");
                             return req;
-                        }))
+                        })
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId.toString()))
                 .andExpect(jsonPath("$.username").value("updateduser"))
@@ -159,6 +169,7 @@ class UserControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("사용자 수정 실패")
     void updateUser_Failure() throws Exception {
         UUID nonExistentId = UUID.randomUUID();
@@ -174,27 +185,32 @@ class UserControllerTest {
                         .with(req -> {
                             req.setMethod("PATCH");
                             return req;
-                        }))
+                        })
+                        .with(csrf()))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    @WithMockUser
     @DisplayName("사용자 삭제 성공")
     void deleteUser_Success() throws Exception {
         willDoNothing().given(userService).delete(userId);
 
-        mockMvc.perform(delete("/api/users/{userId}", userId))
+        mockMvc.perform(delete("/api/users/{userId}", userId)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
     }
 
     @Test
+    @WithMockUser
     @DisplayName("사용자 삭제 실패")
     void deleteUser_Failure() throws Exception {
         UUID nonExistentId = UUID.randomUUID();
         willThrow(UserNotFoundException.withId(nonExistentId)).given(userService)
                 .delete(nonExistentId);
 
-        mockMvc.perform(delete("/api/users/{userId}", nonExistentId))
+        mockMvc.perform(delete("/api/users/{userId}", nonExistentId)
+                        .with(csrf()))
                 .andExpect(status().isNotFound());
     }
 

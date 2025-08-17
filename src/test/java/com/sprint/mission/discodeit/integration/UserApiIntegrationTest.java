@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -54,6 +56,7 @@ class UserApiIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     @DisplayName("사용자 생성 성공")
     void createUser_Success() throws Exception {
         MockMultipartFile userCreateRequestPart = new MockMultipartFile(
@@ -64,7 +67,8 @@ class UserApiIntegrationTest {
         mockMvc.perform(multipart("/api/users")
                         .file(userCreateRequestPart)
                         .file(profileImage)
-                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.email").value("test@abc.com"))
@@ -73,6 +77,7 @@ class UserApiIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     @DisplayName("사용자 생성 실패")
     void createUser_Failure() throws Exception {
         UserCreateRequest invalidRequest = new UserCreateRequest("a", "b", "c");
@@ -84,11 +89,13 @@ class UserApiIntegrationTest {
 
         mockMvc.perform(multipart("/api/users")
                         .file(userCreateRequestPart)
-                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .with(csrf()))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     @DisplayName("전체 사용자 조회 성공")
     void findAllUsers_Success() throws Exception {
         UserCreateRequest userCreateRequest2 = new UserCreateRequest("user2", "user2@abc.com",
@@ -100,14 +107,15 @@ class UserApiIntegrationTest {
         mockMvc.perform(get("/api/users")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].username").value("testuser"))
-                .andExpect(jsonPath("$[0].email").value("test@abc.com"))
-                .andExpect(jsonPath("$[1].username").value("user2"))
-                .andExpect(jsonPath("$[1].email").value("user2@abc.com"));
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[1].username").value("testuser"))
+                .andExpect(jsonPath("$[1].email").value("test@abc.com"))
+                .andExpect(jsonPath("$[2].username").value("user2"))
+                .andExpect(jsonPath("$[2].email").value("user2@abc.com"));
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("사용자 수정 성공")
     void updateUser_Success() throws Exception {
         UserDto createdUser = userService.createUser(userCreateRequest, Optional.empty());
@@ -158,6 +166,7 @@ class UserApiIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("사용자 삭제 성공")
     void deleteUser_Success() throws Exception {
         UserDto createdUser = userService.createUser(userCreateRequest, Optional.empty());

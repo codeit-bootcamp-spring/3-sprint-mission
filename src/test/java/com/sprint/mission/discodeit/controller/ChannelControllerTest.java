@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,6 +29,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -63,7 +65,7 @@ class ChannelControllerTest {
                 ChannelType.PRIVATE,
                 null,
                 null,
-                List.of(new UserDto(userId, "user1", "user1@abc.com", null, true, Role.USER)),
+                List.of(new UserDto(userId, "user1", "user1@abc.com", null, true, Role.ADMIN)),
                 Instant.now()
         );
 
@@ -72,6 +74,7 @@ class ChannelControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("공개 채널 생성 성공")
     void createPublicChannel_Success() throws Exception {
         PublicChannelCreateRequest request = new PublicChannelCreateRequest("공개채널", "공개채널입니다.");
@@ -81,7 +84,8 @@ class ChannelControllerTest {
 
         mockMvc.perform(post("/api/channels/public")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(publicChannel.id().toString()))
                 .andExpect(jsonPath("$.type").value("PUBLIC"))
@@ -90,17 +94,20 @@ class ChannelControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("공개 채널 생성 실패")
     void createPublicChannel_Failure() throws Exception {
         PublicChannelCreateRequest invalidRequest = new PublicChannelCreateRequest("Q", "공개채널입니다.");
 
         mockMvc.perform(post("/api/channels/public")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                        .content(objectMapper.writeValueAsString(invalidRequest))
+                        .with(csrf()))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
+    @WithMockUser
     @DisplayName("비공개 채널 생성 성공")
     void createPrivateChannel_Success() throws Exception {
         List<UUID> participantIds = List.of(userId, UUID.randomUUID());
@@ -111,7 +118,8 @@ class ChannelControllerTest {
 
         mockMvc.perform(post("/api/channels/private")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(privateChannel.id().toString()))
                 .andExpect(jsonPath("$.type").value("PRIVATE"))
@@ -119,6 +127,7 @@ class ChannelControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("공개채널 수정 성공")
     void updateChannel_Success() throws Exception {
         ChannelDto updatedChannel = new ChannelDto(
@@ -136,13 +145,15 @@ class ChannelControllerTest {
 
         mockMvc.perform(patch("/api/channels/{channelId}", channelId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateChannelRequest)))
+                        .content(objectMapper.writeValueAsString(updateChannelRequest))
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(channelId.toString()))
                 .andExpect(jsonPath("$.name").value("new 공개채널"));
     }
 
     @Test
+    @WithMockUser
     @DisplayName("비공개채널 수정 실패")
     void updateChannel_Failure() throws Exception {
         UUID privateChannelId = UUID.randomUUID();
@@ -152,20 +163,24 @@ class ChannelControllerTest {
 
         mockMvc.perform(patch("/api/channels/{channelId}", privateChannelId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateChannelRequest)))
+                        .content(objectMapper.writeValueAsString(updateChannelRequest))
+                        .with(csrf()))
                 .andExpect(status().isForbidden());
     }
 
     @Test
+    @WithMockUser
     @DisplayName("채널 삭제 성공")
     void deleteChannel_Success() throws Exception {
         willDoNothing().given(channelService).deleteChannel(channelId);
 
-        mockMvc.perform(delete("/api/channels/{channelId}", channelId))
+        mockMvc.perform(delete("/api/channels/{channelId}", channelId)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
     }
 
     @Test
+    @WithMockUser
     @DisplayName("채널 삭제 실패")
     void deleteChannel_Failure() throws Exception {
         UUID nonExistentChannelId = UUID.randomUUID();
@@ -174,11 +189,13 @@ class ChannelControllerTest {
                 .given(channelService).deleteChannel(nonExistentChannelId);
 
         mockMvc.perform(delete("/api/channels/{channelId}", nonExistentChannelId)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    @WithMockUser
     @DisplayName("사용자의 채널 목록 조회 성공")
     void findAllChannels_Success() throws Exception {
         given(channelService.findAllByUserId(userId)).willReturn(

@@ -17,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,6 +29,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -83,6 +85,7 @@ class MessageControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("메시지 생성 성공")
     void createMessage_Success() throws Exception {
         given(messageService.createMessage(any(MessageCreateRequest.class),
@@ -91,7 +94,8 @@ class MessageControllerTest {
         mockMvc.perform(multipart("/api/messages")
                         .file(toMultipartJson("messageCreateRequest", messageCreateRequest))
                         .file(attachmentFile)
-                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(message1.id().toString()))
                 .andExpect(jsonPath("$.content").value("hello"))
@@ -100,17 +104,20 @@ class MessageControllerTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("메시지 생성 실패")
     void createMessage_Failure() throws Exception {
         MessageCreateRequest invalidRequest = new MessageCreateRequest("", channelId, authorId);
 
         mockMvc.perform(multipart("/api/messages")
                         .file(toMultipartJson("messageCreateRequest", invalidRequest))
-                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .with(csrf()))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
+    @WithMockUser
     @DisplayName("메시지 수정 성공")
     void updateMessage_Success() throws Exception {
         MessageDto updatedMessage = new MessageDto(messageId, Instant.now(), Instant.now(),
@@ -121,13 +128,15 @@ class MessageControllerTest {
 
         mockMvc.perform(patch("/api/messages/{messageId}", messageId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(messageUpdateRequest)))
+                        .content(objectMapper.writeValueAsString(messageUpdateRequest))
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(messageId.toString()))
                 .andExpect(jsonPath("$.content").value("updated content"));
     }
 
     @Test
+    @WithMockUser
     @DisplayName("메시지 수정 실패")
     void updateMessage_Failure() throws Exception {
         UUID nonExistentMessageId = UUID.randomUUID();
@@ -138,22 +147,26 @@ class MessageControllerTest {
 
         mockMvc.perform(patch("/api/messages/{messageId}", nonExistentMessageId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(messageUpdateRequest)))
+                        .content(objectMapper.writeValueAsString(messageUpdateRequest))
+                        .with(csrf()))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    @WithMockUser
     @DisplayName("메시지 삭제 성공")
     void deleteMessage_Success() throws Exception {
         willDoNothing().given(messageService).deleteMessage(UUID.randomUUID(), authorId);
 
         mockMvc.perform(delete("/api/messages/{messageId}", messageId)
                         .param("senderId", authorId.toString())
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
     }
 
     @Test
+    @WithMockUser
     @DisplayName("메시지 삭제 실패")
     void deleteMessage_Failure() throws Exception {
         UUID nonExistentMessageId = UUID.randomUUID();
@@ -162,11 +175,13 @@ class MessageControllerTest {
 
         mockMvc.perform(delete("/api/messages/{messageId}", nonExistentMessageId)
                         .param("senderId", authorId.toString())
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    @WithMockUser
     @DisplayName("채널 내 메시지 목록 조회 성공")
     void findAllMessagesInChannel_Success() throws Exception {
         Instant now = Instant.now();
