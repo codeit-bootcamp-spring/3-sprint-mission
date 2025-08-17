@@ -2,9 +2,7 @@ package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,7 +47,7 @@ public class AdminInitializer implements ApplicationRunner {
             null
         );
         admin.updateRole(Role.ADMIN);
-        new UserStatus(admin, Instant.now());
+
 
         userRepository.save(admin);
         log.warn("기본 ADMIN 계정 생성 완료 - username={}, email={}", adminUsername, adminEmail);
