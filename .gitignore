@@ -45,7 +45,6 @@ bin/
 ### file
 file-data-map/
 .discodeit/
-**/resources/static/
 
 .logs/
 .env
