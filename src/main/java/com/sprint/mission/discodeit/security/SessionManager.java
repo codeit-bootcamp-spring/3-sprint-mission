@@ -32,4 +32,8 @@ public class SessionManager {
             log.debug("{}개의 세션이 무효화되었습니다.", activeSessionInfos.size());
         }
     }
+
+    public boolean hasActiveSessions(UUID userId) {
+        return !getActiveSessionsByUserId(userId).isEmpty();
+    }
 }
