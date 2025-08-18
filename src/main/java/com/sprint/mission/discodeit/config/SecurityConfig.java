@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
-import com.sprint.mission.discodeit.handler.CustomAccessDeniedHandler;
-import com.sprint.mission.discodeit.handler.CustomAuthenticationEntryPoint;
-import com.sprint.mission.discodeit.handler.LoginFailureHandler;
-import com.sprint.mission.discodeit.handler.LoginSuccessHandler;
+import com.sprint.mission.discodeit.handler.*;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -79,7 +76,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
