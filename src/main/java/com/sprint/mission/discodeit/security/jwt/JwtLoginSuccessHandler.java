@@ -19,7 +19,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final JwtTokenProvider jwtTokenProvider; // 네가 만든 Provider (HS256)
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtRegistry jwtRegistry;          // ✅ 토큰 상태 레지스트리
     private final ObjectMapper objectMapper;
 
     @Override
@@ -35,10 +36,18 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
             String accessToken = jwtTokenProvider.generateAccessToken(principal);
             String refreshToken = jwtTokenProvider.generateRefreshToken(principal);
 
+            jwtRegistry.invalidateJwtInformationByUserId(userDto.id());
+            jwtRegistry.registerJwtInformation(
+                    JwtInformation.builder()
+                            .userDto(userDto)
+                            .accessToken(accessToken)
+                            .refreshToken(refreshToken)
+                            .build()
+            );
+
             jwtTokenProvider.addRefreshCookie(response, refreshToken);
 
             JwtDto body = new JwtDto(userDto, accessToken);
-
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding("UTF-8");

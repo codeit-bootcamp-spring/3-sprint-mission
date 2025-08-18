@@ -25,6 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final DiscodeitUserDetailsService discodeitUserDetailsService;
     private final ObjectMapper objectMapper;
+    private final JwtRegistry jwtRegistry;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -36,6 +37,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String token = resolverBearer(request);
 
                 if (StringUtils.hasText(token) && jwtTokenProvider.validateAccessToken(token)) {
+                    if (!jwtRegistry.hasActiveJwtInformationByAccessToken(token)) {
+                        sendUnauthorized(response, "만료되었거나 무효화된 토큰입니다.");
+                        return;
+                    }
+
                     String username = jwtTokenProvider.getUsername(token);
                     if (StringUtils.hasText(username)) {
                         UserDetails user = discodeitUserDetailsService.loadUserByUsername(username);
@@ -48,7 +54,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (Exception ex) {
             SecurityContextHolder.clearContext();
-            // 여기서 바로 401 응답X. 엔트리포인트에 맡깁니다.
+            sendUnauthorized(response, "인증 처리 중 오류가 발생했습니다.");
+            return;
         }
         filterChain.doFilter(request, response);
     }
