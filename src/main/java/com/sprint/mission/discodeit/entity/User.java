@@ -35,11 +35,6 @@ public class User extends BaseUpdatableEntity {
     @JoinColumn(name = "profile_id", columnDefinition = "uuid")
     private BinaryContent profile;
 
-    @JsonManagedReference   // Jackson을 통해 직렬화하는 경우 발생하는 순환 참조를 방지
-    @Setter(AccessLevel.PROTECTED)
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserStatus status;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
