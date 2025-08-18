@@ -74,7 +74,13 @@ public class SecurityConfig {
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
                 .accessDeniedHandler(new Http403ForbiddenAccessDeniedHandler(objectMapper))
-            );
+            )
+            .sessionManagement(session -> session
+                .sessionConcurrency(concurrency -> concurrency
+                    .maximumSessions(1)
+                )
+            )
+        ;
 
         return http.build();
     }
