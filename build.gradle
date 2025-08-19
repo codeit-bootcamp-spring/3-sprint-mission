@@ -36,6 +36,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
+    // JWT
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+
     // Hibernate
     implementation 'org.hibernate.validator:hibernate-validator:9.0.1.Final'
 
