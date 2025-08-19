@@ -6,10 +6,11 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {BinaryContentMapper.class, UserStatusMapper.class})
+@Mapper(componentModel = "spring", uses = {BinaryContentMapper.class})
 public interface UserMapper {
 
-  @Mapping(target = "online", expression = "java(user.getUserStatus() != null && user.getUserStatus().isOnline())")
+  // 온라인 여부는 서비스 계층(SessionRegistry)에서 재계산
+  @Mapping(target = "online", constant = "false")
   UserResponse toResponse(User user);
 
   List<UserResponse> toResponseList(List<User> users);

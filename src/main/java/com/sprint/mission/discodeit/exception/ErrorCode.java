@@ -6,12 +6,11 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
   UNAUTHORIZED("인증이 필요합니다.", HttpStatus.UNAUTHORIZED),
+  FORBIDDEN("접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
   INVALID_INPUT("입력값이 유효하지 않습니다.", HttpStatus.BAD_REQUEST),
 
   USER_NOT_FOUND("해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   USER_ALREADY_EXISTS("이미 존재하는 사용자입니다.", HttpStatus.CONFLICT),
-  USER_STATUS_NOT_FOUND("UserStatus를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-  USER_STATUS_ALREADY_EXISTS("이미 존재하는 UserStatus입니다.", HttpStatus.CONFLICT),
 
   CHANNEL_NOT_FOUND("해당 채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   CHANNEL_ALREADY_EXISTS("이미 존재하는 채널입니다.", HttpStatus.CONFLICT),

@@ -1,28 +1,36 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.service.UserOnlineService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
+import com.sprint.mission.discodeit.service.command.UpdateUserRoleCommand;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.vo.BinaryContentData;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -31,37 +39,35 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
+  private final UserOnlineService userOnlineService;
+  private final SessionRegistry sessionRegistry;
   private final BinaryContentStorage binaryContentStorage;
   private final UserMapper userMapper;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   public UserResponse create(CreateUserCommand command) {
     validateUserEmail(command.email());
     validateUserName(command.username());
 
-    // 유저 생성
+    String encodedPassword = passwordEncoder.encode(command.password());
     User newUser = User.create(
         command.email(),
         command.username(),
-        command.password(),
-        null // 일단 profileId 없음
+        encodedPassword,
+        null
     );
     User savedUser = userRepository.save(newUser);
 
-    // 유저 상태 초기화
-    userStatusRepository.save(UserStatus.create(savedUser));
-
     BinaryContent savedProfile = null;
     if (command.profile() != null) {
-      // 프로필 이미지 첨부 시 저장 및 유저 업데이트
       savedProfile = saveProfileImage(command.profile());
     }
 
     if (savedProfile != null) {
       savedUser.updateProfile(savedProfile);
-      userRepository.save(savedUser); // 프로필 반영 후 다시 저장
+      userRepository.save(savedUser);
     }
 
     return toUserResponse(savedUser);
@@ -80,29 +86,34 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserResponse findById(UUID userId) {
     return userRepository.findById(userId).map(this::toUserResponse)
         .orElseThrow(() -> new UserNotFoundException(userId.toString()));
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserResponse findByName(String name) {
     return userRepository.findByUsername(name).map(this::toUserResponse)
         .orElseThrow(UserNotFoundException::new);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserResponse findByEmail(String email) {
     return userRepository.findByEmail(email).map(this::toUserResponse)
         .orElseThrow(UserNotFoundException::new);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<UserResponse> findAll() {
     return userRepository.findAll().stream().map(this::toUserResponse).toList();
   }
 
   @Override
+  @PreAuthorize("@userSecurity.isSelf(#command.userId)")
   public UserResponse update(UpdateUserCommand command) {
     return userRepository.findById(command.userId())
         .map(user -> {
@@ -115,7 +126,8 @@ public class BasicUserService implements UserService {
             user.updateEmail(command.newEmail());
           }
           if (command.newPassword() != null) {
-            user.updatePassword(command.newPassword());
+            String encoded = passwordEncoder.encode(command.newPassword());
+            user.updatePassword(encoded);
           }
 
           BinaryContent savedProfile = null;
@@ -133,6 +145,19 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @PreAuthorize("hasRole('ADMIN')")
+  public UserResponse updateRole(UpdateUserRoleCommand command) {
+    return userRepository.findById(command.userId())
+        .map(user -> {
+          user.updateRole(command.newRole());
+          User savedUser = userRepository.save(user);
+          expireUserSessions(savedUser.getId());
+          return toUserResponse(savedUser);
+        }).orElseThrow(() -> new UserNotFoundException(command.userId().toString()));
+  }
+
+  @Override
+  @PreAuthorize("@userSecurity.isSelf(#userId)")
   public void delete(UUID userId) {
     userRepository.findById(userId).ifPresentOrElse(user -> {
       userRepository.deleteById(userId);
@@ -140,8 +165,7 @@ public class BasicUserService implements UserService {
       Optional.ofNullable(user.getProfile())
           .ifPresent(profile -> binaryContentRepository.deleteById(profile.getId()));
 
-      userStatusRepository.findByUserId(userId)
-          .ifPresent(status -> userStatusRepository.deleteById(status.getId()));
+      expireUserSessions(userId);
     }, () -> {
       throw new UserNotFoundException(userId.toString());
     });
@@ -166,16 +190,28 @@ public class BasicUserService implements UserService {
   }
 
   private UserResponse toUserResponse(User user) {
-    boolean isOnline = userStatusRepository.findByUserId(user.getId())
-        .map(UserStatus::isOnline)
-        .orElse(false);
-
     UserResponse base = userMapper.toResponse(user);
     return new UserResponse(
         base.id(),
         base.username(),
         base.email(),
         base.profile(),
-        isOnline);
+        isUserOnline(user.getId()),
+        base.role());
+  }
+
+  private void expireUserSessions(UUID userId) {
+    sessionRegistry.getAllPrincipals().stream()
+        .filter(p -> p instanceof DiscodeitUserDetails)
+        .map(p -> (DiscodeitUserDetails) p)
+        .filter(ud -> ud.getUser().id().equals(userId))
+        .forEach(ud -> {
+          List<SessionInformation> sessions = sessionRegistry.getAllSessions(ud, false);
+          sessions.forEach(SessionInformation::expireNow);
+        });
+  }
+
+  public boolean isUserOnline(UUID userId) {
+    return userOnlineService.isOnline(userId);
   }
 }

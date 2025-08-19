@@ -3,13 +3,16 @@ name: CI - Test new source
 on:
   # main 브랜치로 PR이 생성될 때 워크플로우 실행
   pull_request:
-    branches: [main]
+    branches: [ main ]
 
 env:
   AWS_S3_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY }}
   AWS_S3_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_KEY }}
   AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-  AWS_S3_REGION: ap-northeast-2
+  AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+  DISCODEIT_ADMIN_USERNAME: ${{ secrets.DISCODEIT_ADMIN_USERNAME}}
+  DISCODEIT_ADMIN_EMAIL: ${{ secrets.DISCODEIT_ADMIN_EMAIL }}
+  DISCODEIT_ADMIN_PASSWORD: ${{ secrets.DISCODEIT_ADMIN_PASSWORD }}
 
 jobs:
   test:
@@ -31,14 +34,14 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # 테스트 및 커버리지 리포트 생성
-      - name: Run tests with coverage
-        run: ./gradlew test jacocoTestReport
+      # 일반 테스트 및 통합 테스트 실행
+      - name: Run unit tests and integration tests with coverage
+        run: ./gradlew test integrationTest jacocoMergedReport
 
       # Codecov에 커버리지 업로드
-      - name: Upload coverage to Codecov
+      - name: Upload merged coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: build/reports/jacoco/test/jacocoTestReport.xml
+          files: build/reports/jacoco/jacocoMergedReport/jacocoMergedReport.xml
           fail_ci_if_error: true

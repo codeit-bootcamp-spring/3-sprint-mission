@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.assembler.ChannelAssembler;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
@@ -69,8 +70,8 @@ class BasicChannelServiceTest {
     Mockito.lenient().when(channelAssembler.toResponse(any(Channel.class)))
         .thenAnswer(invocation -> {
           Channel ch = invocation.getArgument(0);
-          List<UserResponse> participants = List.of(new UserResponse(
-              user.getId(), user.getUsername(), user.getEmail(), null, false));
+            List<UserResponse> participants = List.of(new UserResponse(
+                user.getId(), user.getUsername(), user.getEmail(), null, false, Role.USER));
           return new ChannelResponse(
               ch.getId(), ch.getType(), ch.getName(), ch.getDescription(),
               participants, Instant.now());

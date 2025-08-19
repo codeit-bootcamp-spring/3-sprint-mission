@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,6 +67,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public MessageResponse findById(UUID messageId) {
     return messageRepository.findById(messageId)
         .map(messageAssembler::toResponse)
@@ -73,6 +75,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<MessageResponse> findAllByChannelId(UUID channelId) {
     return messageRepository.findAllByChannelId(channelId).stream()
         .sorted(Comparator.comparing(Message::getCreatedAt))
@@ -81,6 +84,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public PageResponse<MessageResponse> findAllByChannelIdWithCursor(
       UUID channelId, Instant nextCursor, Pageable pageable) {
     Instant cursor = nextCursor != null ? nextCursor : Instant.now();
@@ -92,7 +96,8 @@ public class BasicMessageService implements MessageService {
             pageable);
     List<MessageResponse> responses = messageMapper.fromEntityList(messages.getContent());
 
-    Instant newNextCursor = responses.isEmpty() ? null : responses.get(responses.size() - 1).createdAt();
+    Instant newNextCursor =
+        responses.isEmpty() ? null : responses.get(responses.size() - 1).createdAt();
 
     return new PageResponse<>(
         responses,
@@ -103,6 +108,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @PreAuthorize("@messageSecurity.isAuthor(#messageId)")
   public MessageResponse updateContent(UUID messageId, String newContent) {
     return messageRepository.findById(messageId)
         .map(message -> {
@@ -113,6 +119,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @PreAuthorize("@messageSecurity.isAuthor(#messageId)")
   public void delete(UUID messageId) {
     messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(messageId.toString()));

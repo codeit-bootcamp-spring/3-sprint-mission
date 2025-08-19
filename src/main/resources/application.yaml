@@ -35,6 +35,10 @@ discodeit:
       region: ${AWS_S3_REGION}
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
+  admin:
+    username: ${DISCODEIT_ADMIN_USERNAME}
+    email: ${DISCODEIT_ADMIN_EMAIL}
+    password: ${DISCODEIT_ADMIN_PASSWORD}
 
 decorator:
   datasource:
@@ -72,3 +76,11 @@ management:
       exposure:
         include: health,info,metrics,loggers
 # 기본값 외 실제 또는 추가 설정은 프로필 설정에서 오버라이드.
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      force-request: true
+      force-response: true

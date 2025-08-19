@@ -2,15 +2,14 @@ package com.sprint.mission.discodeit.exception;
 
 import java.time.Instant;
 import java.util.Map;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestControllerAdvice
@@ -49,7 +48,8 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
+  public ResponseEntity<ErrorResponse> handleValidationException(
+      MethodArgumentNotValidException e) {
     Map<String, String> errors = e.getBindingResult().getFieldErrors().stream()
         .collect(java.util.stream.Collectors.toMap(
             FieldError::getField,
@@ -64,5 +64,17 @@ public class GlobalExceptionHandler {
         Instant.now(),
         errors);
     return ResponseEntity.badRequest().body(response);
+  }
+
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
+    ErrorResponse response = new ErrorResponse(
+        "FORBIDDEN",
+        "접근 권한이 없습니다.",
+        e.getClass().getSimpleName(),
+        HttpStatus.FORBIDDEN.value(),
+        Instant.now(),
+        Map.of());
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
   }
 }

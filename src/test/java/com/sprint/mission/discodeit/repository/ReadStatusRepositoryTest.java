@@ -10,12 +10,12 @@ import com.sprint.mission.discodeit.fixture.ReadStatusFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import com.sprint.mission.discodeit.support.RepositoryTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-@DataJpaTest
+@RepositoryTest
 
 public class ReadStatusRepositoryTest {
 

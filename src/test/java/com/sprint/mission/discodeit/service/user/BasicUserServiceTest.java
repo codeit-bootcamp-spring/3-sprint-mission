@@ -1,13 +1,37 @@
 package com.sprint.mission.discodeit.service.user;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.times;
 
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.response.UserResponse;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
+import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
+import com.sprint.mission.discodeit.fixture.UserFixture;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.UserOnlineService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.service.command.CreateUserCommand;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,28 +41,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
-import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.ErrorCode;
-import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
-import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
-import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
-import com.sprint.mission.discodeit.fixture.UserFixture;
-import com.sprint.mission.discodeit.fixture.UserStatusFixture;
-import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.service.basic.BasicUserService;
-import com.sprint.mission.discodeit.service.command.CreateUserCommand;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import com.sprint.mission.discodeit.vo.BinaryContentData;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class BasicUserServiceTest {
@@ -50,13 +54,19 @@ class BasicUserServiceTest {
   private BinaryContentRepository binaryContentRepository;
 
   @Mock
-  private UserStatusRepository userStatusRepository;
+  private UserOnlineService userOnlineService;
 
   @Mock
   private UserMapper userMapper;
 
   @Mock
   private BinaryContentStorage binaryContentStorage;
+
+  @Mock
+  private PasswordEncoder passwordEncoder;
+
+  @Mock
+  private SessionRegistry sessionRegistry;
 
   @InjectMocks
   private BasicUserService basicUserService;
@@ -67,8 +77,7 @@ class BasicUserServiceTest {
         .thenAnswer(invocation -> {
           User u = invocation.getArgument(0);
 
-          // user의 profile 엔티티를 DTO로 변환하거나 null 처리
-          var profileEntity = u.getProfile(); // BinaryContent or null
+          var profileEntity = u.getProfile();
           var profileResponse = (profileEntity == null) ? null
               : new BinaryContentResponse(
                   profileEntity.getId(),
@@ -81,28 +90,30 @@ class BasicUserServiceTest {
               u.getUsername(),
               u.getEmail(),
               profileResponse,
-              false);
+              false,
+              Role.USER);
         });
+    Mockito.lenient().when(passwordEncoder.encode(anyString())).thenReturn("encodedPwd");
+    Mockito.lenient().when(userOnlineService.isOnline(any(UUID.class))).thenReturn(false);
+    Mockito.lenient().when(sessionRegistry.getAllPrincipals())
+        .thenReturn(java.util.Collections.emptyList());
   }
 
   @Nested
   class Create {
 
     @Test
-    void 새로운_사용자를_생성하고_UserStatus를_함께_생성한다() {
+    void 새로운_사용자를_생성한다() {
       String email = "test@test.com";
       String name = "길동쓰";
       String password = "pwd123";
       CreateUserCommand command = new CreateUserCommand(email, name,
           password, null);
 
-      User savedUser = UserFixture.createCustomUserWithId(email, name, password, null);
-      UserStatus savedUserStatus = UserStatusFixture.createWithId(savedUser);
-
+      User savedUser = UserFixture.createCustomUserWithId(email, name, "encodedPwd", null);
       given(userRepository.findByEmail(email)).willReturn(Optional.empty());
       given(userRepository.findByUsername(name)).willReturn(Optional.empty());
       given(userRepository.save(any(User.class))).willReturn(savedUser);
-      given(userStatusRepository.save(any(UserStatus.class))).willReturn(savedUserStatus);
 
       UserResponse createdUserResponse = basicUserService.create(command);
 
@@ -113,8 +124,8 @@ class BasicUserServiceTest {
 
       then(userRepository).should().findByEmail(email);
       then(userRepository).should().findByUsername(name);
+      then(passwordEncoder).should().encode(password);
       then(userRepository).should().save(any(User.class));
-      then(userStatusRepository).should().save(any(UserStatus.class));
     }
 
     @Test
@@ -132,14 +143,11 @@ class BasicUserServiceTest {
       binaryContent.assignIdForTest(binaryContent.getId());
       CreateUserCommand command = new CreateUserCommand(email, name, password, profile);
 
-      User savedUser = UserFixture.createCustomUserWithId(email, name, password, binaryContent);
+      User savedUser = UserFixture.createCustomUserWithId(email, name, "encodedPwd", binaryContent);
       savedUser.updateProfile(binaryContent);
-      UserStatus savedUserStatus = UserStatusFixture.createWithId(savedUser);
-
       given(userRepository.findByEmail(email)).willReturn(Optional.empty());
       given(userRepository.findByUsername(name)).willReturn(Optional.empty());
       given(userRepository.save(any(User.class))).willReturn(savedUser);
-      given(userStatusRepository.save(any(UserStatus.class))).willReturn(savedUserStatus);
       given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(binaryContent);
 
       ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
@@ -155,7 +163,7 @@ class BasicUserServiceTest {
       then(userRepository).should().findByEmail(email);
       then(userRepository).should().findByUsername(name);
       then(userRepository).should(times(2)).save(userCaptor.capture());
-      then(userStatusRepository).should().save(any(UserStatus.class));
+      then(passwordEncoder).should().encode(password);
     }
 
     @Test
@@ -175,7 +183,6 @@ class BasicUserServiceTest {
       then(userRepository).should().findByEmail(request.email());
       then(userRepository).should(never()).findByUsername(anyString());
       then(userRepository).should(never()).save(any());
-      then(userStatusRepository).should(never()).save(any());
       then(binaryContentRepository).should(never()).save(any());
     }
 
@@ -188,7 +195,8 @@ class BasicUserServiceTest {
       User existingUser = User.create("다른@test.com", "길동쓰", "pwd123", null);
 
       given(userRepository.findByEmail(request.email())).willReturn(Optional.empty());
-      given(userRepository.findByUsername(request.username())).willReturn(Optional.of(existingUser));
+      given(userRepository.findByUsername(request.username())).willReturn(
+          Optional.of(existingUser));
 
       DuplicateNameException exception = assertThrows(DuplicateNameException.class,
           () -> basicUserService.create(command));
@@ -197,7 +205,6 @@ class BasicUserServiceTest {
       then(userRepository).should().findByEmail(request.email());
       then(userRepository).should().findByUsername(request.username());
       then(userRepository).should(never()).save(any());
-      then(userStatusRepository).should(never()).save(any());
       then(binaryContentRepository).should(never()).save(any());
     }
   }
@@ -210,32 +217,25 @@ class BasicUserServiceTest {
       BinaryContent profileImage = BinaryContentFixture.createValid();
       User userToDelete = UserFixture.createCustomUser("test@test.com", "길동쓰", "pwd123", null);
       UUID userId = userToDelete.getId();
-      UserStatus userStatusToDelete = UserStatusFixture.createValid(userToDelete);
       userToDelete.updateProfile(profileImage);
 
       given(userRepository.findById(userId)).willReturn(Optional.of(userToDelete));
-      given(userStatusRepository.findByUserId(userId)).willReturn(Optional.of(userStatusToDelete));
 
       basicUserService.delete(userId);
 
       then(userRepository).should().deleteById(userId);
       then(binaryContentRepository).should().deleteById(userToDelete.getProfile().getId());
-      then(userStatusRepository).should().deleteById(userStatusToDelete.getId());
     }
 
     @Test
-    void 프로필_이미지가_없는_사용자를_삭제해도_UserStatus는_삭제해야_한다() {
+    void 프로필_이미지가_없는_사용자를_삭제한다() {
       User userToDelete = UserFixture.createValidUser();
       UUID userId = userToDelete.getId();
-      UserStatus userStatusToDelete = UserStatusFixture.createValid(userToDelete);
-
       given(userRepository.findById(userId)).willReturn(Optional.of(userToDelete));
-      given(userStatusRepository.findByUserId(userId)).willReturn(Optional.of(userStatusToDelete));
 
       basicUserService.delete(userId);
 
       then(userRepository).should().deleteById(userId);
-      then(userStatusRepository).should().deleteById(userStatusToDelete.getId());
       then(binaryContentRepository).should(never()).deleteById(any());
     }
 
@@ -248,7 +248,6 @@ class BasicUserServiceTest {
 
       then(userRepository).should(never()).deleteById(any());
       then(binaryContentRepository).should(never()).deleteById(any());
-      then(userStatusRepository).should(never()).deleteById(any());
     }
   }
 }

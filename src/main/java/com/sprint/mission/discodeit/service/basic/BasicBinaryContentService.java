@@ -46,6 +46,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public BinaryContentResponse find(UUID binaryContentId) {
     return binaryContentRepository.findById(binaryContentId)
         .map(BinaryContentResponse::from)
@@ -53,6 +54,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<BinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds) {
     List<BinaryContent> contents = binaryContentRepository.findAllById(binaryContentIds);
 
@@ -66,6 +68,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public ResponseEntity<Resource> download(UUID binaryContentId) {
     log.info("파일 다운로드 요청: {}", binaryContentId);
 

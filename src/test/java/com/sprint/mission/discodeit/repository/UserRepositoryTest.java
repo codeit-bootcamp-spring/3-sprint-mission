@@ -8,12 +8,12 @@ import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import com.sprint.mission.discodeit.support.RepositoryTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-@DataJpaTest
+@RepositoryTest
 class UserRepositoryTest {
 
   @Autowired

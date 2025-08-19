@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url:
+    url: ${SPRING_DATASOURCE_URL}
     driver-class-name: org.postgresql.Driver
     username: ${SPRING_DATASOURCE_USERNAME:discodeit_user}
     password: ${SPRING_DATASOURCE_PASSWORD:discodeit1234}
@@ -8,11 +8,13 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
 server:
   port: 8081
 
 logging:
   level:
-    root: debug
+    root: info
     com.sprint.mission: debug
+    org.springframework.security: trace

@@ -1,26 +1,29 @@
 package com.sprint.mission.discodeit.controller;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.sprint.mission.discodeit.config.TestSecurityConfig;
+import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.service.MessageService;
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.sprint.mission.discodeit.dto.response.MessageResponse;
-import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.service.MessageService;
-
 @WebMvcTest(MessageController.class)
+@Import(TestSecurityConfig.class)
 class MessageControllerTest {
 
   @Autowired
@@ -52,7 +55,7 @@ class MessageControllerTest {
     when(messageService.findAllByChannelIdWithCursor(any(), any(), any())).thenReturn(page);
 
     mockMvc.perform(MockMvcRequestBuilders.get("/api/messages")
-        .param("channelId", UUID.randomUUID().toString()))
+            .param("channelId", UUID.randomUUID().toString()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[0].content").value("내용1"))
         .andExpect(jsonPath("$.content[1].content").value("내용2"));
@@ -63,8 +66,8 @@ class MessageControllerTest {
     MockMultipartFile invalidPart = new MockMultipartFile(
         "messageCreateRequest", null, "application/json", "{}".getBytes());
     mockMvc.perform(MockMvcRequestBuilders.multipart("/api/messages")
-        .file(invalidPart)
-        .contentType(MediaType.MULTIPART_FORM_DATA))
+            .file(invalidPart)
+            .contentType(MediaType.MULTIPART_FORM_DATA))
         .andExpect(status().isBadRequest());
     verifyNoInteractions(messageService);
   }

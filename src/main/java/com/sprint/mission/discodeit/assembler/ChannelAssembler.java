@@ -9,16 +9,12 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.UserOnlineService;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +25,7 @@ public class ChannelAssembler {
   private final UserMapper userMapper;
   private final MessageRepository messageRepository;
   private final ReadStatusRepository readStatusRepository;
-  private final UserStatusRepository userStatusRepository;
+  private final UserOnlineService userOnlineService;
 
   public Channel toEntity(PublicChannelCreateRequest request) {
     return Channel.createPublic(request.name(), request.description());
@@ -53,22 +49,13 @@ public class ChannelAssembler {
 
     List<UserResponse> participants = List.of();
     if (channel.getType() == ChannelType.PRIVATE) {
-      // 참여자 조회
       List<User> users = readStatusRepository.findAllByChannelId(channel.getId()).stream()
           .map(ReadStatus::getUser)
           .toList();
 
-      // userId 리스트 추출
-      List<UUID> userIds = users.stream()
-          .map(User::getId)
-          .toList();
-
-      // 온라인 상태 일괄 조회 및 Map 캐싱
-      Map<UUID, UserStatus> userStatusMap = userStatusRepository.findByUserIdIn(userIds).stream()
-          .collect(Collectors.toMap(us -> us.getUser().getId(), us -> us));
-
+      var onlineMap = userOnlineService.bulkIsOnline(users.stream().map(User::getId).toList());
       participants = users.stream()
-          .map(user -> toUserResponseWithStatus(user, userStatusMap.get(user.getId())))
+          .map(user -> toUserResponseWithOnline(user, onlineMap.getOrDefault(user.getId(), false)))
           .toList();
     }
 
@@ -82,16 +69,9 @@ public class ChannelAssembler {
     );
   }
 
-  private UserResponse toUserResponseWithStatus(User user, UserStatus userStatus) {
-    boolean isOnline = userStatus != null && userStatus.isOnline();
-
+  private UserResponse toUserResponseWithOnline(User user, boolean isOnline) {
     UserResponse base = userMapper.toResponse(user);
-    return new UserResponse(
-        base.id(),
-        base.username(),
-        base.email(),
-        base.profile(),
-        isOnline
-    );
+    return new UserResponse(base.id(), base.username(), base.email(), base.profile(), isOnline,
+        base.role());
   }
 }
