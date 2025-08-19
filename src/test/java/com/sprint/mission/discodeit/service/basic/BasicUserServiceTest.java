@@ -6,8 +6,8 @@ import com.sprint.mission.discodeit.dto.user.UserRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
 import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
@@ -15,7 +15,6 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.mapper.struct.BinaryContentStructMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Instant;
@@ -48,9 +48,6 @@ class BasicUserServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private UserStatusRepository userStatusRepository;
-
-    @Mock
     private BinaryContentRepository binaryContentRepository;
 
     @Mock
@@ -61,6 +58,9 @@ class BasicUserServiceTest {
 
     @Mock
     private BinaryContentStructMapper binaryContentMapper;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @Test
     @DisplayName("정상적인 User 생성 시 올바른 비즈니스 로직이 수행되어야 한다.")
@@ -74,7 +74,7 @@ class BasicUserServiceTest {
         byte[] imageBytes = new byte[]{1, 2, 3};
 
         BinaryContentDto binaryContentDto = new BinaryContentDto("profile.png", 3L,
-                "image/png", imageBytes);
+            "image/png", imageBytes);
 
         BinaryContent binaryContent = new BinaryContent("profile.png", 3L, "image/png");
 
@@ -82,26 +82,21 @@ class BasicUserServiceTest {
         ReflectionTestUtils.setField(binaryContent, "id", profileId);
 
         User user = User.builder()
-                .username(username)
-                .email(email)
-                .password(password)
-                .build();
-
-        UserStatus userStatus = UserStatus.builder()
-                .user(user)
-                .lastActiveAt(Instant.now())
-                .build();
+            .username(username)
+            .email(email)
+            .password(password)
+            .build();
 
         UUID userId = UUID.randomUUID();
-        UUID userStatusId = UUID.randomUUID();
 
         ReflectionTestUtils.setField(user, "id", userId);
-        ReflectionTestUtils.setField(userStatus, "id", userStatusId);
 
-        BinaryContentResponseDto profile = new BinaryContentResponseDto(profileId, "profile.png", 3L,
-                "image/png");
+        BinaryContentResponseDto profile = new BinaryContentResponseDto(profileId, "profile.png",
+            3L,
+            "image/png");
 
-        UserResponseDto response = new UserResponseDto(userId, username, email, profile, null);
+        UserResponseDto response = new UserResponseDto(userId, username, email, profile, null,
+            Role.USER);
 
         given(binaryContentMapper.toEntity(binaryContentDto)).willReturn(binaryContent);
         given(userRepository.save(any(User.class))).willReturn(user);
@@ -117,9 +112,9 @@ class BasicUserServiceTest {
         assertEquals(username, result.username());
         assertEquals(email, result.email());
         assertEquals(profile, result.profile());
-        verify(userStatusRepository).save(any(UserStatus.class));
         verify(binaryContentRepository).save(binaryContent);
         verify(binaryContentStorage).put(profileId, imageBytes);
+        verify(passwordEncoder).encode(any());
     }
 
     @Test
@@ -139,8 +134,8 @@ class BasicUserServiceTest {
 
         // then
         assertThat(thrown)
-                .isInstanceOf(DuplicateNameException.class)
-                .hasMessageContaining("존재");
+            .isInstanceOf(DuplicateNameException.class)
+            .hasMessageContaining("존재");
         verify(userRepository, never()).save(any());
     }
 
@@ -161,8 +156,8 @@ class BasicUserServiceTest {
 
         // then
         assertThat(thrown)
-                .isInstanceOf(DuplicateEmailException.class)
-                .hasMessageContaining("존재");
+            .isInstanceOf(DuplicateEmailException.class)
+            .hasMessageContaining("존재");
         verify(userRepository, never()).save(any());
     }
 
@@ -177,23 +172,17 @@ class BasicUserServiceTest {
         UUID userId = UUID.randomUUID();
 
         User user = User.builder()
-                .username(username)
-                .email(email)
-                .password(password)
-                .build();
+            .username(username)
+            .email(email)
+            .password(password)
+            .build();
 
         ReflectionTestUtils.setField(user, "id", userId);
 
-        UserStatus userStatus = UserStatus.builder()
-                .user(user)
-                .lastActiveAt(Instant.now())
-                .build();
-
         UserResponseDto expectedUser = new UserResponseDto(userId, username, email,
-                null, null);
+            null, null, Role.USER);
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
-        given(userStatusRepository.findByUserId(userId)).willReturn(Optional.of(userStatus));
         given(userMapper.toDto(user)).willReturn(expectedUser);
 
         // when
@@ -202,7 +191,6 @@ class BasicUserServiceTest {
         // then
         assertEquals(expectedUser, actualUser);
         verify(userRepository).findById(userId);
-        verify(userStatusRepository).findByUserId(userId);
         verify(userMapper).toDto(user);
     }
 
@@ -219,10 +207,9 @@ class BasicUserServiceTest {
 
         // then
         assertThat(thrown)
-                .isInstanceOf(NotFoundUserException.class)
-                .hasMessageContaining("사용자");
+            .isInstanceOf(NotFoundUserException.class)
+            .hasMessageContaining("사용자");
         verify(userRepository).findById(notExistId);
-        verifyNoInteractions(userStatusRepository, userMapper); // 사용자 없으면 이후 로직 없어야 함
     }
 
     @Test
@@ -236,31 +223,31 @@ class BasicUserServiceTest {
         String newPassword = "pwd12345";
 
         BinaryContent oldProfile = new BinaryContent("old.png", 2L,
-                "image/png");
+            "image/png");
         UUID oldProfileId = UUID.randomUUID();
         ReflectionTestUtils.setField(oldProfile, "id", oldProfileId);
 
         UserUpdateDto updateRequest = new UserUpdateDto(newUsername, newEmail, newPassword);
 
         User existingUser = User.builder()
-                .username("test")
-                .email("test@test.com")
-                .password("pwd1234")
-                .profile(oldProfile)
-                .build();
+            .username("test")
+            .email("test@test.com")
+            .password("pwd1234")
+            .profile(oldProfile)
+            .build();
 
         ReflectionTestUtils.setField(existingUser, "id", userId);
 
         User updatedUser = User.builder()
-                .username(newUsername)
-                .email(newEmail)
-                .password(newPassword)
-                .build();
+            .username(newUsername)
+            .email(newEmail)
+            .password(newPassword)
+            .build();
 
         ReflectionTestUtils.setField(updatedUser, "id", userId);
 
         UserResponseDto expectedResponse = new UserResponseDto(
-                userId, newUsername, newEmail, null, null);
+            userId, newUsername, newEmail, null, null, Role.USER);
 
         given(userRepository.findById(userId)).willReturn(Optional.of(existingUser));
         given(userRepository.findByUsername(newUsername)).willReturn(Optional.empty());
@@ -287,16 +274,16 @@ class BasicUserServiceTest {
         String existName = "existName";
 
         User targetUser = User.builder()
-                .username("test")
-                .email("test@test.com")
-                .password("pwd1234")
-                .build();
+            .username("test")
+            .email("test@test.com")
+            .password("pwd1234")
+            .build();
 
         User existingUser = User.builder()
-                .username("existName")
-                .email("exist@test.com")
-                .password("pwd12")
-                .build();
+            .username("existName")
+            .email("exist@test.com")
+            .password("pwd12")
+            .build();
 
         ReflectionTestUtils.setField(targetUser, "id", userId);
         ReflectionTestUtils.setField(existingUser, "id", UUID.randomUUID());
@@ -311,8 +298,8 @@ class BasicUserServiceTest {
 
         // then
         assertThat(thrown)
-                .isInstanceOf(DuplicateNameException.class)
-                .hasMessageContaining("존재");
+            .isInstanceOf(DuplicateNameException.class)
+            .hasMessageContaining("존재");
         verify(userRepository).findById(userId);
         verify(userRepository).findByUsername(existName);
         verify(userRepository, never()).save(any());
@@ -327,22 +314,22 @@ class BasicUserServiceTest {
         String existEmail = "exist@exist.com";
 
         User targetUser = User.builder()
-                .username("test")
-                .email("test@test.com")
-                .password("pwd1234")
-                .build();
+            .username("test")
+            .email("test@test.com")
+            .password("pwd1234")
+            .build();
 
         User existingUser = User.builder()
-                .username("existName")
-                .email("exist@exist.com")
-                .password("pwd12")
-                .build();
+            .username("existName")
+            .email("exist@exist.com")
+            .password("pwd12")
+            .build();
 
         ReflectionTestUtils.setField(targetUser, "id", userId);
         ReflectionTestUtils.setField(existingUser, "id", UUID.randomUUID());
 
         UserUpdateDto updateRequest = new UserUpdateDto("test", existEmail,
-                "pwd1234");
+            "pwd1234");
 
         given(userRepository.findById(userId)).willReturn(Optional.of(targetUser));
         given(userRepository.findByEmail(existEmail)).willReturn(Optional.of(existingUser));
@@ -352,8 +339,8 @@ class BasicUserServiceTest {
 
         // then
         assertThat(thrown)
-                .isInstanceOf(DuplicateEmailException.class)
-                .hasMessageContaining("존재");
+            .isInstanceOf(DuplicateEmailException.class)
+            .hasMessageContaining("존재");
         verify(userRepository).findById(userId);
         verify(userRepository).findByEmail(existEmail);
         verify(userRepository, never()).save(any());
@@ -366,15 +353,15 @@ class BasicUserServiceTest {
         // given
         UUID userId = UUID.randomUUID();
         BinaryContent profileImage = new BinaryContent("profile.jpg", 3L,
-                "image/jpeg");
+            "image/jpeg");
         ReflectionTestUtils.setField(profileImage, "id", UUID.randomUUID());
 
         User user = User.builder()
-                .username("test")
-                .email("test@test.com")
-                .password("pwd1234")
-                .profile(profileImage)
-                .build();
+            .username("test")
+            .email("test@test.com")
+            .password("pwd1234")
+            .profile(profileImage)
+            .build();
 
         ReflectionTestUtils.setField(user, "id", userId);
 
@@ -385,7 +372,6 @@ class BasicUserServiceTest {
 
         // then
         verify(userRepository).deleteById(userId);
-        verify(userStatusRepository).deleteByUserId(userId);
         verify(binaryContentRepository).deleteById(user.getProfile().getId());
     }
 
@@ -402,9 +388,8 @@ class BasicUserServiceTest {
 
         // then
         assertThat(thrown)
-                .isInstanceOf(NotFoundUserException.class)
-                .hasMessageContaining("사용자");
+            .isInstanceOf(NotFoundUserException.class)
+            .hasMessageContaining("사용자");
         verify(userRepository).findById(notExistId);
-        verifyNoMoreInteractions(userStatusRepository, binaryContentRepository);
     }
 }

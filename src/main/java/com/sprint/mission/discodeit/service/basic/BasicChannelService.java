@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.channel.ChannelResponseDto;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelDto;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelDto;
@@ -7,22 +8,27 @@ import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service("basicChannelService")
@@ -36,6 +42,7 @@ public class BasicChannelService implements ChannelService {
     private final ChannelMapper channelMapper;
 
     @Override
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Transactional
     public ChannelResponseDto createPublicChannel(PublicChannelDto publicChannelDto) {
 
@@ -43,18 +50,18 @@ public class BasicChannelService implements ChannelService {
         String description = publicChannelDto.description();
 
         log.info("[BasicChannelService] 공개 채널 생성 요청 - name: {}, description: {}",
-                name, description);
+            name, description);
 
         Channel channel = Channel.builder()
-                .name(name)
-                .description(description)
-                .type(ChannelType.PUBLIC)
-                .build();
+            .name(name)
+            .description(description)
+            .type(ChannelType.PUBLIC)
+            .build();
 
         Channel savedChannel = channelRepository.save(channel);
 
         log.info("[BasicChannelService] 공개 채널 생성 성공 - id: {}, name: {}, description: {}",
-                savedChannel.getId(), savedChannel.getName(), savedChannel.getDescription());
+            savedChannel.getId(), savedChannel.getName(), savedChannel.getDescription());
 
         return channelMapper.toDto(savedChannel);
     }
@@ -62,7 +69,8 @@ public class BasicChannelService implements ChannelService {
     @Override
     @Transactional
     public ChannelResponseDto createPrivateChannel(PrivateChannelDto privateChannelDto) {
-        log.info("[BasicChannelService] 개인 채널 생성 요청 participants: {}", privateChannelDto.participantIds().size());
+        log.info("[BasicChannelService] 개인 채널 생성 요청 participants: {}",
+            privateChannelDto.participantIds().size());
 
         Channel channel = new Channel();
 
@@ -70,17 +78,17 @@ public class BasicChannelService implements ChannelService {
 
         // 읽음 상태 추가
         List<ReadStatus> readStatuses = privateChannelDto.participantIds().stream()
-                .map(userId -> {
-                    User user = findUser(userId);
-                    ReadStatus readStatus = ReadStatus.builder()
-                            .user(user)
-                            .channel(channel)
-                            .lastReadAt(createdChannel.getCreatedAt())
-                            .build();
+            .map(userId -> {
+                User user = findUser(userId);
+                ReadStatus readStatus = ReadStatus.builder()
+                    .user(user)
+                    .channel(channel)
+                    .lastReadAt(createdChannel.getCreatedAt())
+                    .build();
 
-                    return readStatus;
-                })
-                .toList();
+                return readStatus;
+            })
+            .toList();
 
         readStatusRepository.saveAll(readStatuses);
 
@@ -99,27 +107,29 @@ public class BasicChannelService implements ChannelService {
     @Override
     public List<ChannelResponseDto> findAllByUserId(UUID userId) {
         List<UUID> participatedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
-                .map(readStatus -> readStatus.getChannel().getId())
-                .toList();
+            .map(readStatus -> readStatus.getChannel().getId())
+            .toList();
 
         return channelRepository.findAll().stream()
-                .filter(channel ->
-                        channel.getType().equals(ChannelType.PUBLIC)
-                                || participatedChannelIds.contains(channel.getId()))
-                .map(channelMapper::toDto)
-                .toList();
+            .filter(channel ->
+                channel.getType().equals(ChannelType.PUBLIC)
+                    || participatedChannelIds.contains(channel.getId()))
+            .map(channelMapper::toDto)
+            .toList();
     }
 
     @Override
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Transactional
-    public ChannelResponseDto update(UUID channelId, PublicChannelUpdateDto publicChannelUpdateDto) {
+    public ChannelResponseDto update(UUID channelId,
+        PublicChannelUpdateDto publicChannelUpdateDto) {
         Channel channel = findChannel(channelId);
 
         String newName = publicChannelUpdateDto.newName();
         String newDescription = publicChannelUpdateDto.newDescription();
 
         log.info("[BasicChannelService] 공개 채널 수정 요청: id: {}, newName: {}, newDescription: {}",
-                channelId, newName, newDescription);
+            channelId, newName, newDescription);
 
         // PRIVATE 채널은 수정 불가
         if (channel.getType().equals(ChannelType.PRIVATE)) {
@@ -133,12 +143,13 @@ public class BasicChannelService implements ChannelService {
         Channel updatedChannel = channelRepository.save(channel);
 
         log.info("[BasicChannelService] 공개 채널 수정 성공: id: {}, newName: {}, newDescription: {}",
-                updatedChannel.getId(), updatedChannel.getName(), updatedChannel.getDescription());
+            updatedChannel.getId(), updatedChannel.getName(), updatedChannel.getDescription());
 
         return channelMapper.toDto(updatedChannel);
     }
 
     @Override
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Transactional
     public void deleteById(UUID channelId) {
         log.info("[BasicChannelService] 채널 삭제 요청: id: {}", channelId);
@@ -152,14 +163,13 @@ public class BasicChannelService implements ChannelService {
         log.info("[BasicUserService] 채널 삭제 완료 - channelId: {}", channelId);
     }
 
-
     private Channel findChannel(UUID id) {
         return channelRepository.findById(id)
-                .orElseThrow(() -> new NotFoundChannelException(id));
+            .orElseThrow(() -> new NotFoundChannelException(id));
     }
 
     private User findUser(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundUserException(id));
+            .orElseThrow(() -> new NotFoundUserException(id));
     }
 }

@@ -59,4 +59,3 @@ discodeit.env
 aws-credentials.txt
 .aws/
 credentials
-config

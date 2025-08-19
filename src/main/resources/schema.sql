@@ -20,23 +20,12 @@ CREATE TABLE IF NOT EXISTS users
     email      VARCHAR(100)             NOT NULL UNIQUE,
     password   VARCHAR(60)              NOT NULL,
     profile_id UUID,
+    role       VARCHAR(20)              NOT NULL CHECK ( role IN ('ADMIN', 'CHANNEL_MANAGER', 'USER')),
+
     PRIMARY KEY (id),
     FOREIGN KEY (profile_id)
         REFERENCES binary_contents (id)
         ON DELETE SET NULL
-);
-
-CREATE TABLE IF NOT EXISTS user_statuses
-(
-    id             UUID,
-    created_at     TIMESTAMP with time zone NOT NULL,
-    updated_at     TIMESTAMP with time zone,
-    user_id        UUID                     NOT NULL UNIQUE,
-    last_active_at TIMESTAMP with time zone NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (user_id)
-        REFERENCES users (id)
-        ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS channels

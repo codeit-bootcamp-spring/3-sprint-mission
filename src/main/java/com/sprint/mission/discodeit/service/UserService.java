@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.auth.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.user.UserRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
@@ -19,4 +20,6 @@ public interface UserService {
     UserResponseDto update(UUID id, UserUpdateDto userUpdateDTO, BinaryContentDto binaryContentDto);
 
     void deleteById(UUID id);
+
+    UserResponseDto updateRole(RoleUpdateRequest request);
 }

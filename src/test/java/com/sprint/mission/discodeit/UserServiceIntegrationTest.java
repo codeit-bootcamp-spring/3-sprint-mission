@@ -1,21 +1,24 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.user.UserRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,8 +37,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-        "discodeit.storage.type=local",
-        "discodeit.storage.local.root-path=./binaryTest"
+    "discodeit.storage.type=local",
+    "discodeit.storage.local.root-path=./binaryTest"
 })
 @DisplayName("UserService 통합 테스트")
 @Transactional
@@ -49,9 +52,6 @@ public class UserServiceIntegrationTest {
 
     @Autowired
     private BinaryContentRepository binaryContentRepository;
-
-    @Autowired
-    private UserStatusRepository userStatusRepository;
 
     @Autowired
     private BinaryContentStorage binaryContentStorage;
@@ -73,8 +73,6 @@ public class UserServiceIntegrationTest {
         Optional<User> foundUser = userRepository.findById(result.id());
         assertTrue(foundUser.isPresent(), "유저가 저장되어야 한다.");
         assertEquals("test", foundUser.get().getUsername());
-        Optional<UserStatus> status = userStatusRepository.findByUserId(result.id());
-        assertTrue(status.isPresent(), "유저 1명의 UserStatus가 생성되어야 한다.");
         BinaryContent userProfile = foundUser.get().getProfile();
         assertNotNull(userProfile, "프로필 사진이 등록되어야 한다.");
         assertEquals("profile.png", userProfile.getFileName());
@@ -89,25 +87,26 @@ public class UserServiceIntegrationTest {
         // given
         BinaryContent profile = new BinaryContent("profile.png", 3L, "image/png");
         User user = User.builder()
-                .username("test")
-                .email("test@test.com")
-                .password("pwd1234")
-                .profile(profile)
-                .build();
-
-        UserStatus userStatus = UserStatus.builder()
-                .user(user)
-                .lastActiveAt(Instant.now())
-                .build();
-
-        user.updateStatus(userStatus);
+            .username("test")
+            .email("test@test.com")
+            .password("pwd1234")
+            .role(Role.USER)
+            .profile(profile)
+            .build();
 
         User savedUser = userRepository.save(user);
         BinaryContent savedProfile = binaryContentRepository.save(profile);
-        userStatusRepository.save(userStatus);
 
         UUID userId = savedUser.getId();
         UUID profileId = savedProfile.getId();
+
+        UserResponseDto userResponseDto = new UserResponseDto(userId, "test", "test.com", null,
+            true, Role.USER);
+        DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userResponseDto, "pwd1234");
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            userDetails, null, List.of()
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // when
         userService.deleteById(userId);
@@ -117,8 +116,6 @@ public class UserServiceIntegrationTest {
         assertTrue(foundUser.isEmpty());
         Optional<BinaryContent> foundProfile = binaryContentRepository.findById(profileId);
         assertTrue(foundProfile.isEmpty(), "삭제된 유저의 프로필 사진도 삭제되어야 한다.");
-        Optional<UserStatus> foundUserStatus = userStatusRepository.findByUserId(userId);
-        assertTrue(foundUserStatus.isEmpty(), "삭제된 유저의 UserStatus도 삭제되어야 한다.");
     }
 
     /*
@@ -129,14 +126,14 @@ public class UserServiceIntegrationTest {
         Path testRoot = Paths.get("./binaryTest");
         if (Files.exists(testRoot)) {
             Files.walk(testRoot)
-                    .sorted((a, b) -> b.compareTo(a)) // 파일 먼저, 그 다음 디렉토리 삭제
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                        } catch (IOException e) {
-                            // 무시 또는 로깅
-                        }
-                    });
+                .sorted((a, b) -> b.compareTo(a)) // 파일 먼저, 그 다음 디렉토리 삭제
+                .forEach(path -> {
+                    try {
+                        Files.delete(path);
+                    } catch (IOException e) {
+                        // 무시 또는 로깅
+                    }
+                });
         }
     }
 }

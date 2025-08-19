@@ -1,56 +1,41 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.auth.LoginDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.user.LoginFailedException;
 import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
-import com.sprint.mission.discodeit.exception.userstatus.NotFoundUserStatusException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
-
-import java.time.Instant;
-import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service("basicAuthService")
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
 
     private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
     private final UserMapper userMapper;
 
     @Override
-    @Transactional
-    public UserResponseDto login(LoginDto loginDTO) {
-        String username = loginDTO.username();
-        String password = loginDTO.password();
+    public UserResponseDto getCurrentUser(UserDetails userDetails) {
+        log.debug("[AuthService] 현재 사용자 정보 요청");
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new NotFoundUserException(username));
-
-        if (!user.getPassword().equals(password)) {
-            throw new LoginFailedException(user.getUsername());
+        if (userDetails == null) {
+            log.warn("[AuthService] UserDetails가 null입니다.");
+            return null;
         }
 
-        // User 로그인 시 User 온라인 상태 정보 변경
-        UserStatus userStatus = findUserStatus(user.getId());
-        userStatus.updatelastActiveAt(Instant.now());
-        userRepository.save(user);
-        userStatusRepository.save(userStatus);
+        String username = userDetails.getUsername();
+        log.debug("[AuthService] 조회할 사용자명: {}", username);
+
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new NotFoundUserException("사용자를 찾을 수 없습니다: " + username));
+
+        log.debug("[AuthService] 조회된 사용자 정보: {}", user);
 
         return userMapper.toDto(user);
-    }
-
-    private UserStatus findUserStatus(UUID userId) {
-        return userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NotFoundUserStatusException(userId));
     }
 }

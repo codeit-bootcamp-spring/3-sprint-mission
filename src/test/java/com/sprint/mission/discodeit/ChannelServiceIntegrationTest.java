@@ -47,41 +47,25 @@ public class ChannelServiceIntegrationTest {
     void setUp() {
         // given
         User user1 = User.builder()
-                .username("test")
-                .email("test@test.com")
-                .password("pwd1234")
-                .build();
+            .username("test")
+            .email("test@test.com")
+            .password("pwd1234")
+            .role(Role.USER)
+            .build();
 
         User user2 = User.builder()
-                .username("test2")
-                .email("test2@test.com")
-                .password("pwd12345")
-                .build();
+            .username("test2")
+            .email("test2@test.com")
+            .password("pwd12345")
+            .role(Role.USER)
+            .build();
 
         User user3 = User.builder()
-                .username("test3")
-                .email("test3@test.com")
-                .password("pwd123456")
-                .build();
-
-        UserStatus userStatus1 = UserStatus.builder()
-                .user(user1)
-                .lastActiveAt(Instant.now())
-                .build();
-
-        UserStatus userStatus2 = UserStatus.builder()
-                .user(user2)
-                .lastActiveAt(Instant.now())
-                .build();
-
-        UserStatus userStatus3 = UserStatus.builder()
-                .user(user3)
-                .lastActiveAt(Instant.now())
-                .build();
-
-        user1.updateStatus(userStatus1);
-        user2.updateStatus(userStatus2);
-        user3.updateStatus(userStatus3);
+            .username("test3")
+            .email("test3@test.com")
+            .password("pwd123456")
+            .role(Role.USER)
+            .build();
 
         User savedUser1 = userRepository.save(user1);
         User savedUser2 = userRepository.save(user2);
@@ -119,10 +103,10 @@ public class ChannelServiceIntegrationTest {
 
         // given
         Channel publicChannel = Channel.builder()
-                .name("public")
-                .description("test channel")
-                .type(ChannelType.PUBLIC)
-                .build();
+            .name("public")
+            .description("test channel")
+            .type(ChannelType.PUBLIC)
+            .build();
 
         /*
             Private 채널 요청

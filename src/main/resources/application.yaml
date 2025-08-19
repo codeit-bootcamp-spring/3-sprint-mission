@@ -1,20 +1,3 @@
-spring:
-  datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        use_sql_comments: true
-    open-in-view: false
-
 management:
   endpoints:
     web:
@@ -45,6 +28,9 @@ discodeit:
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
 
+remember-me:
+  key: ${REMEMBER_ME_KEY:remember-me}
+
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -65,5 +51,5 @@ info:
 logging:
   level:
     com.sprint.mission.discodeit: INFO
-    org.hibernate.sql: debug
-    org.hibernate.orm.jdbc.bind: trace
+    org.hibernate.sql: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
