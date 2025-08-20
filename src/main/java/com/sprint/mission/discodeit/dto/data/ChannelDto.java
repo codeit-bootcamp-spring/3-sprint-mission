@@ -17,16 +17,16 @@ import lombok.Setter;
 @Setter
 public class ChannelDto {
 
-  private UUID id;
+    private UUID id;
 
-  private ChannelType type;
+    private ChannelType type;
 
-  private String name;
+    private String name;
 
-  private String description;
+    private String description;
 
-  private List<UserDto> participants;
+    private List<UserDto> participants;
 
-  private Instant lastMessageAt;
+    private Instant lastMessageAt;
 
 }

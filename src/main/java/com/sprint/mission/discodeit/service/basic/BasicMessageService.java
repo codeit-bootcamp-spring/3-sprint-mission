@@ -38,113 +38,115 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class BasicMessageService implements MessageService {
 
-  private final MessageRepository messageRepository;
-  private final ChannelRepository channelRepository;
-  private final ReadStatusRepository readStatusRepository;
-  private final UserRepository userRepository;
-  private final BinaryContentService binaryContentService;
-  private final BinaryContentStorage binaryContentStorage;
-  private final BinaryContentRepository binaryContentRepository;
-  private final MessageMapper messageMapper;
-  private final PageResponseMapper pageResponseMapper;
+    private final MessageRepository messageRepository;
+    private final ChannelRepository channelRepository;
+    private final ReadStatusRepository readStatusRepository;
+    private final UserRepository userRepository;
+    private final BinaryContentService binaryContentService;
+    private final BinaryContentStorage binaryContentStorage;
+    private final BinaryContentRepository binaryContentRepository;
+    private final MessageMapper messageMapper;
+    private final PageResponseMapper pageResponseMapper;
 
-  @Transactional
-  @Override
-  public MessageDto create(MessageCreateRequest createRequest,
-      List<BinaryContentCreateRequest> binaryContentCreateRequests) {
-    User user = userRepository.findById(createRequest.authorId())
-        .orElseThrow(() -> new ResourceNotFoundException("userId = " + createRequest.authorId()));
+    @Transactional
+    @Override
+    public MessageDto create(MessageCreateRequest createRequest,
+        List<BinaryContentCreateRequest> binaryContentCreateRequests) {
+        User user = userRepository.findById(createRequest.authorId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("userId = " + createRequest.authorId()));
 
-    Channel channel = channelRepository.findById(createRequest.channelId())
-        .orElseThrow(
-            () -> new ResourceNotFoundException("channelId = " + createRequest.channelId()));
+        Channel channel = channelRepository.findById(createRequest.channelId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("channelId = " + createRequest.channelId()));
 
-    /* 비공개 채널이면 -> 유저가 해당 채널에 있는지 validation check */
-    if (channel.getType() == ChannelType.PRIVATE) {
-      if (!this.readStatusRepository.existsByUserIdAndChannelId(createRequest.authorId(),
-          createRequest.channelId())) {
-        throw new AccessDeniedMessageException(user, channel);
-      }
+        /* 비공개 채널이면 -> 유저가 해당 채널에 있는지 validation check */
+        if (channel.getType() == ChannelType.PRIVATE) {
+            if (!this.readStatusRepository.existsByUserIdAndChannelId(createRequest.authorId(),
+                createRequest.channelId())) {
+                throw new AccessDeniedMessageException(user, channel);
+            }
+        }
+
+        /* 첨부 파일 생성, 선택적으로 여러개의 첨부파일 같이 등록 가능 */
+        List<BinaryContent> attachments = Optional.ofNullable(binaryContentCreateRequests)
+            .orElse(Collections.emptyList())
+            .stream()
+            .map(attachmentRequest -> {
+                String fileName = attachmentRequest.fileName();
+                String contentType = attachmentRequest.contentType();
+                byte[] bytes = attachmentRequest.bytes();
+
+                BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+                    contentType);
+                binaryContentRepository.save(binaryContent);
+                binaryContentStorage.put(binaryContent.getId(), bytes);
+                return binaryContent;
+            })
+            .toList();
+
+        Message message = new Message(user, channel, createRequest.content(), attachments);
+
+        this.messageRepository.save(message);
+
+        /* 채널 lastMessageAt 업데이트 */
+        channel.setLastMessageAt(Instant.now());
+
+        return messageMapper.toDto(message);
     }
 
-    /* 첨부 파일 생성, 선택적으로 여러개의 첨부파일 같이 등록 가능 */
-    List<BinaryContent> attachments = Optional.ofNullable(binaryContentCreateRequests)
-        .orElse(Collections.emptyList())
-        .stream()
-        .map(attachmentRequest -> {
-          String fileName = attachmentRequest.fileName();
-          String contentType = attachmentRequest.contentType();
-          byte[] bytes = attachmentRequest.bytes();
+    @Override
+    public MessageDto findById(UUID messageId) {
 
-          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-              contentType);
-          binaryContentRepository.save(binaryContent);
-          binaryContentStorage.put(binaryContent.getId(), bytes);
-          return binaryContent;
-        })
-        .toList();
-
-    Message message = new Message(user, channel, createRequest.content(), attachments);
-
-    this.messageRepository.save(message);
-
-    /* 채널 lastMessageAt 업데이트 */
-    channel.setLastMessageAt(Instant.now());
-
-    return messageMapper.toDto(message);
-  }
-
-  @Override
-  public MessageDto findById(UUID messageId) {
-
-    return this.messageRepository
-        .findById(messageId)
-        .map(messageMapper::toDto)
-        .orElseThrow(
-            () -> new ResourceNotFoundException("messageId = " + messageId));
-  }
-
-  @Override
-  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createdAt,
-      Pageable pageable) {
-
-    Slice<MessageDto> slice = this.messageRepository.findAllByChannelIdWithAuthor(channelId,
-        Optional.ofNullable(createdAt).orElse(Instant.now()), pageable).map(messageMapper::toDto);
-
-    Instant nextCursor = null;
-    if (!slice.getContent().isEmpty()) {
-      nextCursor = slice.getContent().get(slice.getContent().size() - 1).createdAt();
+        return this.messageRepository
+            .findById(messageId)
+            .map(messageMapper::toDto)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("messageId = " + messageId));
     }
 
-    return pageResponseMapper.fromSlice(slice, nextCursor);
-  }
+    @Override
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createdAt,
+        Pageable pageable) {
 
-  @Transactional
-  @Override
-  public MessageDto update(UUID messageId, MessageUpdateRequest updateRequest) {
-    Message message = this.messageRepository.findById(messageId)
-        .orElseThrow(
-            () -> new ResourceNotFoundException("messageId = " + messageId));
-    message.update(updateRequest.newContent());
+        Slice<MessageDto> slice = this.messageRepository.findAllByChannelIdWithAuthor(channelId,
+                Optional.ofNullable(createdAt).orElse(Instant.now()), pageable)
+            .map(messageMapper::toDto);
 
-    return messageMapper.toDto(message);
-  }
+        Instant nextCursor = null;
+        if (!slice.getContent().isEmpty()) {
+            nextCursor = slice.getContent().get(slice.getContent().size() - 1).createdAt();
+        }
 
-  @Transactional
-  @Override
-  public void delete(UUID messageId) {
-    // Message 객체 사용해야하므로 가져옴
-    Message message = this.messageRepository.findById(messageId)
-        .orElseThrow(
-            () -> new ResourceNotFoundException("messageId = " + messageId));
-
-    if (message.getAttachments() != null && !message.getAttachments().isEmpty()) {
-      for (BinaryContent binaryContent : message.getAttachments()) {
-        this.binaryContentService.delete(binaryContent.getId());
-      }
+        return pageResponseMapper.fromSlice(slice, nextCursor);
     }
 
-    this.messageRepository.deleteById(messageId);
-  }
+    @Transactional
+    @Override
+    public MessageDto update(UUID messageId, MessageUpdateRequest updateRequest) {
+        Message message = this.messageRepository.findById(messageId)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("messageId = " + messageId));
+        message.update(updateRequest.newContent());
+
+        return messageMapper.toDto(message);
+    }
+
+    @Transactional
+    @Override
+    public void delete(UUID messageId) {
+        // Message 객체 사용해야하므로 가져옴
+        Message message = this.messageRepository.findById(messageId)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("messageId = " + messageId));
+
+        if (message.getAttachments() != null && !message.getAttachments().isEmpty()) {
+            for (BinaryContent binaryContent : message.getAttachments()) {
+                this.binaryContentService.delete(binaryContent.getId());
+            }
+        }
+
+        this.messageRepository.deleteById(messageId);
+    }
 
 }

@@ -16,7 +16,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @MappedSuperclass
 public abstract class BaseUpdatableEntity extends BaseEntity {
 
-  @LastModifiedDate
-  @Column(name = "updated_at")
-  Instant updatedAt;
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    Instant updatedAt;
 }

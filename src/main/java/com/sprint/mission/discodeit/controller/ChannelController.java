@@ -26,69 +26,69 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/channels")
 public class ChannelController implements ChannelApi {
 
-  private final ChannelService channelService;
+    private final ChannelService channelService;
 
-  /* 공개 채널 생성 */
-  @PostMapping(path = "/public")
-  @Override
-  public ResponseEntity<ChannelDto> create(
-      @RequestBody PublicChannelCreateRequest publicChannelCreateRequest
-  ) {
-    ChannelDto createdChannelDto = channelService.create(publicChannelCreateRequest);
-    return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(createdChannelDto);
-  }
+    /* 공개 채널 생성 */
+    @PostMapping(path = "/public")
+    @Override
+    public ResponseEntity<ChannelDto> create(
+        @RequestBody PublicChannelCreateRequest publicChannelCreateRequest
+    ) {
+        ChannelDto createdChannelDto = channelService.create(publicChannelCreateRequest);
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(createdChannelDto);
+    }
 
-  /* 비공개 채널 생성 */
-  @PostMapping(path = "/private")
-  @Override
-  public ResponseEntity<ChannelDto> create(
-      @RequestBody PrivateChannelCreateRequest privateChannelCreateRequest
-  ) {
-    ChannelDto createdChannelDto = channelService.create(privateChannelCreateRequest);
-    return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(createdChannelDto);
-  }
+    /* 비공개 채널 생성 */
+    @PostMapping(path = "/private")
+    @Override
+    public ResponseEntity<ChannelDto> create(
+        @RequestBody PrivateChannelCreateRequest privateChannelCreateRequest
+    ) {
+        ChannelDto createdChannelDto = channelService.create(privateChannelCreateRequest);
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(createdChannelDto);
+    }
 
-  /* 공개 채널 수정 */
-  @PatchMapping(path = "/{channelId}")
-  @Override
-  public ResponseEntity<ChannelDto> update(
-      @PathVariable("channelId") UUID channelId,
-      @RequestBody PublicChannelUpdateRequest publicChannelCreateRequest
+    /* 공개 채널 수정 */
+    @PatchMapping(path = "/{channelId}")
+    @Override
+    public ResponseEntity<ChannelDto> update(
+        @PathVariable("channelId") UUID channelId,
+        @RequestBody PublicChannelUpdateRequest publicChannelCreateRequest
 
-  ) {
-    ChannelDto updatedChannelDto = channelService.update(channelId,
-        publicChannelCreateRequest);
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(updatedChannelDto);
-  }
+    ) {
+        ChannelDto updatedChannelDto = channelService.update(channelId,
+            publicChannelCreateRequest);
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(updatedChannelDto);
+    }
 
-  /* 채널 삭제 */
-  @DeleteMapping(path = "/{channelId}")
-  @Override
-  public ResponseEntity<Void> delete(
-      @PathVariable("channelId") UUID channelId
-  ) {
-    channelService.delete(channelId);
-    return ResponseEntity
-        .status(HttpStatus.NO_CONTENT)
-        .build();
-  }
+    /* 채널 삭제 */
+    @DeleteMapping(path = "/{channelId}")
+    @Override
+    public ResponseEntity<Void> delete(
+        @PathVariable("channelId") UUID channelId
+    ) {
+        channelService.delete(channelId);
+        return ResponseEntity
+            .status(HttpStatus.NO_CONTENT)
+            .build();
+    }
 
-  /* 특정 사용자가 볼 수 있는 모든 채널 목록 조회 */
-  @GetMapping
-  @Override
-  public ResponseEntity<List<ChannelDto>> findAll(
-      @RequestParam("userId") UUID userId
-  ) {
-    List<ChannelDto> ChannelDtoList = channelService.findAllByUserId(userId);
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(ChannelDtoList);
-  }
+    /* 특정 사용자가 볼 수 있는 모든 채널 목록 조회 */
+    @GetMapping
+    @Override
+    public ResponseEntity<List<ChannelDto>> findAll(
+        @RequestParam("userId") UUID userId
+    ) {
+        List<ChannelDto> ChannelDtoList = channelService.findAllByUserId(userId);
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(ChannelDtoList);
+    }
 
 }

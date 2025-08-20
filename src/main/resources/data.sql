@@ -21,10 +21,10 @@ VALUES ('00000000-0000-0000-0000-000000000001', now(), 'default-profile.png', 10
 
 -- User 초기 데이터 (2명)
 INSERT INTO users (id, created_at, username, email, password, profile_id)
-VALUES ('00000000-0000-0000-0000-000000000010', now(), 'admin', 'admin@example.com',
-        'hashedpassword1', '00000000-0000-0000-0000-000000000001'),
+VALUES ('00000000-0000-0000-0000-000000000010', now(), 'user1', 'user1@example.com',
+        'user1', '00000000-0000-0000-0000-000000000001'),
        ('00000000-0000-0000-0000-000000000011', now(), 'user2', 'user2@example.com',
-        'hashedpassword2', null);
+        'user2', null);
 
 -- UserStatus 초기 데이터
 INSERT INTO user_statuses (id, created_at, user_id, last_active_at)

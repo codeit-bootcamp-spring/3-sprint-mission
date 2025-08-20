@@ -2,7 +2,9 @@ package com.sprint.mission.discodeit.dto.response;
 
 import java.time.Instant;
 import java.util.Map;
+import lombok.Builder;
 
+@Builder
 public record ErrorResponse(
     Instant timestamp,
     String code,

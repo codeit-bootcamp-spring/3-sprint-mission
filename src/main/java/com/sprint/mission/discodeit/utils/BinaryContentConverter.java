@@ -10,32 +10,33 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class BinaryContentConverter {
 
-  /* MultipartFile 타입 -> BinaryContentCreateRequest 타입으로 변경 */
-  public static Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profile) {
-    if (profile.isEmpty()) {
-      return Optional.empty();
-    } else {
-      try {
-        BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
-            profile.getOriginalFilename(), profile.getContentType(), profile.getBytes());
-        return Optional.of(binaryContentCreateRequest);
-      } catch (IOException e) {
-        throw new RuntimeException();
-      }
+    /* MultipartFile 타입 -> BinaryContentCreateRequest 타입으로 변경 */
+    public static Optional<BinaryContentCreateRequest> resolveProfileRequest(
+        MultipartFile profile) {
+        if (profile.isEmpty()) {
+            return Optional.empty();
+        } else {
+            try {
+                BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
+                    profile.getOriginalFilename(), profile.getContentType(), profile.getBytes());
+                return Optional.of(binaryContentCreateRequest);
+            } catch (IOException e) {
+                throw new RuntimeException();
+            }
+        }
     }
-  }
 
-  public static byte[] toByteArray(InputStream inputStream) throws IOException {
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    byte[] data = new byte[1024]; // 임시버퍼생성, 한번 읽을때 1024 바이트만큼 읽음
-    int nRead;
-    while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
-      buffer.write(data, 0, nRead);
+    public static byte[] toByteArray(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] data = new byte[1024]; // 임시버퍼생성, 한번 읽을때 1024 바이트만큼 읽음
+        int nRead;
+        while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+        return buffer.toByteArray();
     }
-    return buffer.toByteArray();
-  }
 
-  public static InputStream toInputStream(byte[] bytes) {
-    return new ByteArrayInputStream(bytes);
-  }
+    public static InputStream toInputStream(byte[] bytes) {
+        return new ByteArrayInputStream(bytes);
+    }
 }

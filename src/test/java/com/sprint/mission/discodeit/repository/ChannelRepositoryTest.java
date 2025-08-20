@@ -12,7 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 @DisplayName("ChannelRepository 슬라이스 테스트")
 public class ChannelRepositoryTest {
 
-  @Autowired
-  private ChannelRepository channelRepository;
+    @Autowired
+    private ChannelRepository channelRepository;
 
 }

@@ -28,38 +28,38 @@ import org.hibernate.annotations.BatchSize;
 @Table(name = "messages")
 public class Message extends BaseUpdatableEntity {
 
-  //
-  @Column(name = "content")
-  private String content;
+    //
+    @Column(name = "content")
+    private String content;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "author_id", nullable = false)
-  private User author;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "channel_id", nullable = false)
-  private Channel channel;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id", nullable = false)
+    private Channel channel;
 
-  // message_attachments 테이블 생성
-  @BatchSize(size = 100) // N+1 문제해결
-  @OneToMany(fetch = FetchType.LAZY)
-  @JoinTable(name = "message_attachments",
-      joinColumns = @JoinColumn(name = "message_id"),
-      inverseJoinColumns = @JoinColumn(name = "attachment_id"),
-      uniqueConstraints = {@UniqueConstraint(columnNames = {"message_id", "attachment_id"})}
-  )
-  private List<BinaryContent> attachments = new ArrayList<>(); // BinaryContent
+    // message_attachments 테이블 생성
+    @BatchSize(size = 100) // N+1 문제해결
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "message_attachments",
+        joinColumns = @JoinColumn(name = "message_id"),
+        inverseJoinColumns = @JoinColumn(name = "attachment_id"),
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"message_id", "attachment_id"})}
+    )
+    private List<BinaryContent> attachments = new ArrayList<>(); // BinaryContent
 
-  public Message(User author, Channel channel, String content, List<BinaryContent> attachments) {
-    this.author = author;
-    this.channel = channel;
-    this.content = content;
-    this.attachments = attachments;
-  }
-
-  public void update(String newContent) {
-    if (newContent != null && !newContent.equals(this.content)) {
-      this.content = newContent;
+    public Message(User author, Channel channel, String content, List<BinaryContent> attachments) {
+        this.author = author;
+        this.channel = channel;
+        this.content = content;
+        this.attachments = attachments;
     }
-  }
+
+    public void update(String newContent) {
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+        }
+    }
 }

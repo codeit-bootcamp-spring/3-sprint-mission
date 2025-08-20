@@ -21,37 +21,38 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/binaryContents")
 public class BinaryContentController implements BinaryContentApi {
 
-  private final BinaryContentService binaryContentService;
-  private final BinaryContentStorage binaryContentStorage;
+    private final BinaryContentService binaryContentService;
+    private final BinaryContentStorage binaryContentStorage;
 
-  @GetMapping(path = "/{binaryContentId}")
-  @Override
-  public ResponseEntity<BinaryContentDto> find(
-      @PathVariable("binaryContentId") UUID binaryContentId
-  ) {
-    BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(binaryContentDto);
-  }
+    @GetMapping(path = "/{binaryContentId}")
+    @Override
+    public ResponseEntity<BinaryContentDto> find(
+        @PathVariable("binaryContentId") UUID binaryContentId
+    ) {
+        BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(binaryContentDto);
+    }
 
-  @GetMapping
-  @Override
-  public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
-      @RequestParam("binaryContentIds") List<UUID> binaryContentIds
-  ) {
-    List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(binaryContents);
-  }
+    @GetMapping
+    @Override
+    public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
+        @RequestParam("binaryContentIds") List<UUID> binaryContentIds
+    ) {
+        List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(
+            binaryContentIds);
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(binaryContents);
+    }
 
-  @GetMapping(path = "/{binaryContentId}/download")
-  @Override
-  public ResponseEntity<?> download(
-      @PathVariable("binaryContentId") UUID binaryContentId) {
-    BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
-    return binaryContentStorage.download(binaryContentDto);
-  }
+    @GetMapping(path = "/{binaryContentId}/download")
+    @Override
+    public ResponseEntity<?> download(
+        @PathVariable("binaryContentId") UUID binaryContentId) {
+        BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
+        return binaryContentStorage.download(binaryContentDto);
+    }
 
 }

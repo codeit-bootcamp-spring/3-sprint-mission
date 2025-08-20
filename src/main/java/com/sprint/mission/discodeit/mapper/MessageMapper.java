@@ -9,8 +9,8 @@ import org.mapstruct.Mapping;
     BinaryContentMapper.class})
 public interface MessageMapper {
 
-  @Mapping(target = "channelId", source = "message.channel.id")
-  MessageDto toDto(Message message);
+    @Mapping(target = "channelId", source = "message.channel.id")
+    MessageDto toDto(Message message);
 
-  Message toEntity(MessageDto messageDto);
+    Message toEntity(MessageDto messageDto);
 }

@@ -10,19 +10,18 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
 
-  @EntityGraph(attributePaths = {"user"})
-  public List<ReadStatus> findAllByUserId(UUID userId);
+    @EntityGraph(attributePaths = {"user"})
+    public List<ReadStatus> findAllByUserId(UUID userId);
 
-  @Query("SELECT r FROM ReadStatus r "
-      + "JOIN FETCH r.user u "
-      + "JOIN FETCH u.status "
-      + "LEFT JOIN FETCH u.profile "
-      + "WHERE r.channel.id = :channelId")
-  List<ReadStatus> findAllByChannelIdWithUser(@Param("channelId") UUID channelId);
+    @Query("SELECT r FROM ReadStatus r "
+        + "JOIN FETCH r.user u "
+        + "LEFT JOIN FETCH u.profile "
+        + "WHERE r.channel.id = :channelId")
+    List<ReadStatus> findAllByChannelIdWithUser(@Param("channelId") UUID channelId);
 
-  public void deleteAllByChannelId(UUID channelId);
+    public void deleteAllByChannelId(UUID channelId);
 
-  public boolean existsByUserIdAndChannelId(UUID userId, UUID channelId);
+    public boolean existsByUserIdAndChannelId(UUID userId, UUID channelId);
 
 //      /* CrudRepository의 기본 메소드 */
 //    public ReadStatus save(ReadStatus readStatus);

@@ -19,53 +19,54 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class BasicBinaryContentService implements BinaryContentService {
 
-  private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
-  private final BinaryContentMapper binaryContentMapper;
+    private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentStorage binaryContentStorage;
+    private final BinaryContentMapper binaryContentMapper;
 
 
-  @Transactional
-  @Override
-  public BinaryContentDto create(BinaryContentCreateRequest createRequest) {
-    BinaryContent binaryContent = new BinaryContent(
-        createRequest.fileName(),
-        (long) createRequest.bytes().length,
-        createRequest.contentType()
-    );
+    @Transactional
+    @Override
+    public BinaryContentDto create(BinaryContentCreateRequest createRequest) {
+        BinaryContent binaryContent = new BinaryContent(
+            createRequest.fileName(),
+            (long) createRequest.bytes().length,
+            createRequest.contentType()
+        );
 
-    this.binaryContentRepository.save(binaryContent);
-    binaryContentStorage.put(binaryContent.getId(), createRequest.bytes());
+        this.binaryContentRepository.save(binaryContent);
+        binaryContentStorage.put(binaryContent.getId(), createRequest.bytes());
 
-    return binaryContentMapper.toDto(binaryContent);
-  }
-
-  @Transactional
-  @Override
-  public BinaryContentDto find(UUID binaryContentId) {
-
-    return this.binaryContentRepository
-        .findById(binaryContentId)
-        .map(binaryContentMapper::toDto)
-        .orElseThrow(() -> new ResourceNotFoundException("binaryContentId = " + binaryContentId));
-  }
-
-
-  // Reference : https://www.baeldung.com/java-filter-collection-by-list
-  @Transactional
-  @Override
-  public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
-
-    return this.binaryContentRepository.findAllById(binaryContentIds).stream()
-        .map(binaryContentMapper::toDto).toList();
-  }
-
-  @Transactional
-  @Override
-  public void delete(UUID binaryContentId) {
-    if (!this.binaryContentRepository.existsById(binaryContentId)) {
-      throw new ResourceNotFoundException("binaryContentId = " + binaryContentId);
+        return binaryContentMapper.toDto(binaryContent);
     }
 
-    this.binaryContentRepository.deleteById(binaryContentId);
-  }
+    @Transactional
+    @Override
+    public BinaryContentDto find(UUID binaryContentId) {
+
+        return this.binaryContentRepository
+            .findById(binaryContentId)
+            .map(binaryContentMapper::toDto)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("binaryContentId = " + binaryContentId));
+    }
+
+
+    // Reference : https://www.baeldung.com/java-filter-collection-by-list
+    @Transactional
+    @Override
+    public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
+
+        return this.binaryContentRepository.findAllById(binaryContentIds).stream()
+            .map(binaryContentMapper::toDto).toList();
+    }
+
+    @Transactional
+    @Override
+    public void delete(UUID binaryContentId) {
+        if (!this.binaryContentRepository.existsById(binaryContentId)) {
+            throw new ResourceNotFoundException("binaryContentId = " + binaryContentId);
+        }
+
+        this.binaryContentRepository.deleteById(binaryContentId);
+    }
 }

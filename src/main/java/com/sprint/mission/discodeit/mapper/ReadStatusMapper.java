@@ -8,10 +8,10 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = {UserMapper.class, ChannelMapper.class})
 public interface ReadStatusMapper {
 
-  @Mapping(target = "userId", source = "readStatus.user.id")
-  @Mapping(target = "channelId", source = "readStatus.channel.id")
-  ReadStatusDto toDto(ReadStatus readStatus);
+    @Mapping(target = "userId", source = "readStatus.user.id")
+    @Mapping(target = "channelId", source = "readStatus.channel.id")
+    ReadStatusDto toDto(ReadStatus readStatus);
 
-  ReadStatus toEntity(ReadStatusDto readStatusDto);
+    ReadStatus toEntity(ReadStatusDto readStatusDto);
 
 }

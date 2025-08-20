@@ -36,177 +36,185 @@ import org.junit.jupiter.api.function.Executable;
 @TestMethodOrder(MethodOrderer.MethodName.class)
 public class UserServiceTest {
 
-  private UserService userService;
-  private UserRepository userRepository = mock(UserRepository.class);
-  private BinaryContentRepository binaryContentRepository = mock(BinaryContentRepository.class);
-  private BinaryContentStorage binaryContentStorage = mock(BinaryContentStorage.class);
-  private UserMapper userMapper = mock(UserMapper.class);
+    private UserService userService;
+    private UserRepository userRepository = mock(UserRepository.class);
+    private BinaryContentRepository binaryContentRepository = mock(BinaryContentRepository.class);
+    private BinaryContentStorage binaryContentStorage = mock(BinaryContentStorage.class);
+    private UserMapper userMapper = mock(UserMapper.class);
 
-  @BeforeEach
-  void setUp() {
-    userService = new BasicUserService(userRepository, binaryContentRepository,
-        binaryContentStorage, userMapper);
-  }
-
-  @AfterEach
-  void tearDown() {
-    //로그 또는 자원 해제 처리
-  }
-
-
-  @Nested
-  @DisplayName("유저 생성 테스트")
-  class 유저생성 {
-
-    @DisplayName("프로필 이미지 없는 사용자 생성 성공 후 dto를 반환한다")
-    @Test
-    void whenCreateUserwithoutProfileImage_thenReturnUserDto() {
-      //given
-      UserCreateRequest userCreateRequest = new UserCreateRequest("test", "test@naver.com", "1234");
-      User user = new User(userCreateRequest.username(), userCreateRequest.email(),
-          userCreateRequest.password(), null);
-      given(userRepository.existsByUsernameOrEmail(anyString(), anyString())).willReturn(false);
-      given(userRepository.save(any(User.class))).willReturn(user);
-      UserDto expectedUserDto = new UserDto(UUID.randomUUID(), user.getUsername(), user.getEmail(),
-          null, true,
-          Instant.now(), Instant.now());
-      given(userMapper.toDto(any(User.class))).willReturn(expectedUserDto);
-
-      //when
-      UserDto userDto = userService.create(userCreateRequest, Optional.empty());
-
-      // then: 해당 메서드가 특정 인자로 호출되었는지를 검증
-      then(userRepository).should().existsByUsernameOrEmail("test", "test@naver.com");
-      then(userRepository).should().save(any(User.class));
-      then(binaryContentRepository).shouldHaveNoInteractions();
-      then(binaryContentStorage).shouldHaveNoInteractions();
-      assertAll(
-          "User 정보 검증",
-          () -> assertEquals(userCreateRequest.email(), userDto.getEmail()),
-          () -> assertEquals(userCreateRequest.username(), userDto.getUsername())
-      );
-
+    @BeforeEach
+    void setUp() {
+        userService = new BasicUserService(userRepository, binaryContentRepository,
+            binaryContentStorage, userMapper);
     }
 
-    @DisplayName("이미 존재하는 이름과 아이디로 사용자 생성을 시도하여 실패 후 에러를 반환한다")
-    @Test
-    void whenCreateUserwithExistNameAndEmail_thenThrowUserAlreadyExistException() {
-      //given
-      UserCreateRequest userCreateRequest = new UserCreateRequest("test", "test@naver.com", "1234");
-      User user = new User(userCreateRequest.username(), userCreateRequest.email(),
-          userCreateRequest.password(), null);
-      given(userRepository.existsByUsernameOrEmail(anyString(), anyString())).willReturn(true);
-
-      //when & then
-      Executable executable = () -> userService.create(userCreateRequest, Optional.empty());
-
-      // then: 해당 메서드가 특정 인자로 호출되었는지를 검증
-      assertThrows(UserAlreadyExistException.class, executable);
-      then(userRepository).should().existsByUsernameOrEmail("test", "test@naver.com");
-      then(binaryContentRepository).shouldHaveNoInteractions();
-      then(binaryContentStorage).shouldHaveNoInteractions();
-      then(userMapper).shouldHaveNoInteractions();
-
-
-    }
-  }
-
-  @Nested
-  @DisplayName("유저 업데이트 테스트")
-  class 유저업데이트 {
-
-    @DisplayName("Id값으로 유저 정보를 업데이트 성공한다")
-    @Test
-    void whenUpdateUserWithId_thenReturnUserDto() {
-      //given
-      UUID userId = UUID.randomUUID();
-      UserUpdateRequest userUpdateRequest = new UserUpdateRequest("newTest", "newTest@naver.com",
-          "1234");
-      User user = new User("oldName", "oldEmail@mail.com",
-          "oldpw", null);
-      UserDto expectedUserDto = new UserDto(userId, userUpdateRequest.newUsername(),
-          userUpdateRequest.newEmail(),
-          null, true,
-          Instant.now(), Instant.now());
-      given(userRepository.existsByUsernameOrEmail(userUpdateRequest.newUsername(),
-          userUpdateRequest.newEmail())).willReturn(false);
-      given(userRepository.findById(userId)).willReturn((Optional.of(user)));
-      given(userMapper.toDto(any(User.class))).willReturn(expectedUserDto);
-
-      //when
-      UserDto userDto = userService.update(userId, userUpdateRequest, Optional.empty());
-
-      // then: 해당 메서드가 특정 인자로 호출되었는지를 검증
-      then(userRepository).should().existsByUsernameOrEmail("newTest", "newTest@naver.com");
-      then(userRepository).should().findById(userId);
-      then(binaryContentRepository).shouldHaveNoInteractions();
-      then(binaryContentStorage).shouldHaveNoInteractions();
-      assertAll(
-          "User 정보 검증",
-          () -> assertEquals(userUpdateRequest.newEmail(), user.getEmail()),
-          () -> assertEquals(userUpdateRequest.newUsername(), user.getUsername()),
-          () -> assertEquals(userUpdateRequest.newEmail(), userDto.getEmail()),
-          () -> assertEquals(userUpdateRequest.newUsername(), userDto.getUsername())
-      );
-
+    @AfterEach
+    void tearDown() {
+        //로그 또는 자원 해제 처리
     }
 
-    @DisplayName("Id값으로 유저 정보를 업데이트 실패한다")
-    @Test
-    void whenUpdateUserWithId_thenThrowUserAlreadyExistException() {
-      //given
-      UUID userId = UUID.randomUUID();
-      UserUpdateRequest userUpdateRequest = new UserUpdateRequest("newTest", "newTest@naver.com",
-          "1234");
-      User user = new User("oldName", "oldEmail@mail.com",
-          "oldpw", null);
-      UserDto expectedUserDto = new UserDto(userId, userUpdateRequest.newUsername(),
-          userUpdateRequest.newEmail(),
-          null, true,
-          Instant.now(), Instant.now());
-      given(userRepository.existsByUsernameOrEmail(userUpdateRequest.newUsername(),
-          userUpdateRequest.newEmail())).willReturn(true);
 
-      //when
-      Executable executable = () -> userService.update(userId, userUpdateRequest, Optional.empty());
+    @Nested
+    @DisplayName("유저 생성 테스트")
+    class 유저생성 {
 
-      //Then
-      assertThrows(UserAlreadyExistException.class, executable);
+        @DisplayName("프로필 이미지 없는 사용자 생성 성공 후 dto를 반환한다")
+        @Test
+        void whenCreateUserwithoutProfileImage_thenReturnUserDto() {
+            //given
+            UserCreateRequest userCreateRequest = new UserCreateRequest("test", "test@naver.com",
+                "1234");
+            User user = new User(userCreateRequest.username(), userCreateRequest.email(),
+                userCreateRequest.password(), null);
+            given(userRepository.existsByUsernameOrEmail(anyString(), anyString())).willReturn(
+                false);
+            given(userRepository.save(any(User.class))).willReturn(user);
+            UserDto expectedUserDto = new UserDto(UUID.randomUUID(), user.getUsername(),
+                user.getEmail(),
+                null, true,
+                Instant.now(), Instant.now());
+            given(userMapper.toDto(any(User.class))).willReturn(expectedUserDto);
+
+            //when
+            UserDto userDto = userService.create(userCreateRequest, Optional.empty());
+
+            // then: 해당 메서드가 특정 인자로 호출되었는지를 검증
+            then(userRepository).should().existsByUsernameOrEmail("test", "test@naver.com");
+            then(userRepository).should().save(any(User.class));
+            then(binaryContentRepository).shouldHaveNoInteractions();
+            then(binaryContentStorage).shouldHaveNoInteractions();
+            assertAll(
+                "User 정보 검증",
+                () -> assertEquals(userCreateRequest.email(), userDto.getEmail()),
+                () -> assertEquals(userCreateRequest.username(), userDto.getUsername())
+            );
+
+        }
+
+        @DisplayName("이미 존재하는 이름과 아이디로 사용자 생성을 시도하여 실패 후 에러를 반환한다")
+        @Test
+        void whenCreateUserwithExistNameAndEmail_thenThrowUserAlreadyExistException() {
+            //given
+            UserCreateRequest userCreateRequest = new UserCreateRequest("test", "test@naver.com",
+                "1234");
+            User user = new User(userCreateRequest.username(), userCreateRequest.email(),
+                userCreateRequest.password(), null);
+            given(userRepository.existsByUsernameOrEmail(anyString(), anyString())).willReturn(
+                true);
+
+            //when & then
+            Executable executable = () -> userService.create(userCreateRequest, Optional.empty());
+
+            // then: 해당 메서드가 특정 인자로 호출되었는지를 검증
+            assertThrows(UserAlreadyExistException.class, executable);
+            then(userRepository).should().existsByUsernameOrEmail("test", "test@naver.com");
+            then(binaryContentRepository).shouldHaveNoInteractions();
+            then(binaryContentStorage).shouldHaveNoInteractions();
+            then(userMapper).shouldHaveNoInteractions();
+
+
+        }
     }
-  }
 
-  @Nested
-  @DisplayName("유저 삭제 테스트")
-  class 유저삭제 {
+    @Nested
+    @DisplayName("유저 업데이트 테스트")
+    class 유저업데이트 {
 
-    @DisplayName("유저 id로 유저 삭제를 성공한다")
-    @Test
-    void whenDeleteUser() {
-      //given
-      UUID UserId = UUID.fromString("a1b42ab8-5d3e-4571-af57-422064cb39ff");
-      given(userRepository.existsById(UserId)).willReturn(true);
+        @DisplayName("Id값으로 유저 정보를 업데이트 성공한다")
+        @Test
+        void whenUpdateUserWithId_thenReturnUserDto() {
+            //given
+            UUID userId = UUID.randomUUID();
+            UserUpdateRequest userUpdateRequest = new UserUpdateRequest("newTest",
+                "newTest@naver.com",
+                "1234");
+            User user = new User("oldName", "oldEmail@mail.com",
+                "oldpw", null);
+            UserDto expectedUserDto = new UserDto(userId, userUpdateRequest.newUsername(),
+                userUpdateRequest.newEmail(),
+                null, true,
+                Instant.now(), Instant.now());
+            given(userRepository.existsByUsernameOrEmail(userUpdateRequest.newUsername(),
+                userUpdateRequest.newEmail())).willReturn(false);
+            given(userRepository.findById(userId)).willReturn((Optional.of(user)));
+            given(userMapper.toDto(any(User.class))).willReturn(expectedUserDto);
 
-      //when
-      userService.delete(UserId);
+            //when
+            UserDto userDto = userService.update(userId, userUpdateRequest, Optional.empty());
 
-      // then: 해당 메서드가 특정 인자로 호출되었는지를 검증
-      then(userRepository).should().deleteById(UserId);
+            // then: 해당 메서드가 특정 인자로 호출되었는지를 검증
+            then(userRepository).should().existsByUsernameOrEmail("newTest", "newTest@naver.com");
+            then(userRepository).should().findById(userId);
+            then(binaryContentRepository).shouldHaveNoInteractions();
+            then(binaryContentStorage).shouldHaveNoInteractions();
+            assertAll(
+                "User 정보 검증",
+                () -> assertEquals(userUpdateRequest.newEmail(), user.getEmail()),
+                () -> assertEquals(userUpdateRequest.newUsername(), user.getUsername()),
+                () -> assertEquals(userUpdateRequest.newEmail(), userDto.getEmail()),
+                () -> assertEquals(userUpdateRequest.newUsername(), userDto.getUsername())
+            );
+
+        }
+
+        @DisplayName("Id값으로 유저 정보를 업데이트 실패한다")
+        @Test
+        void whenUpdateUserWithId_thenThrowUserAlreadyExistException() {
+            //given
+            UUID userId = UUID.randomUUID();
+            UserUpdateRequest userUpdateRequest = new UserUpdateRequest("newTest",
+                "newTest@naver.com",
+                "1234");
+            User user = new User("oldName", "oldEmail@mail.com",
+                "oldpw", null);
+            UserDto expectedUserDto = new UserDto(userId, userUpdateRequest.newUsername(),
+                userUpdateRequest.newEmail(),
+                null, true,
+                Instant.now(), Instant.now());
+            given(userRepository.existsByUsernameOrEmail(userUpdateRequest.newUsername(),
+                userUpdateRequest.newEmail())).willReturn(true);
+
+            //when
+            Executable executable = () -> userService.update(userId, userUpdateRequest,
+                Optional.empty());
+
+            //Then
+            assertThrows(UserAlreadyExistException.class, executable);
+        }
     }
 
-    @DisplayName("유저 id로 유저를 삭제할때, 존재하지 않은 id이므로 실패한다")
-    @Test
-    void whenDeleteUserwithNotExistId_thenThrowUserAlreadyExistException() {
-      //given
-      UUID UserId = UUID.fromString("a1b42ab8-5d3e-4571-af57-422064cb39ff");
-      given(userRepository.existsById(UserId)).willReturn(false);
+    @Nested
+    @DisplayName("유저 삭제 테스트")
+    class 유저삭제 {
 
-      //when
-      Executable executable = () -> userService.delete(UserId);
-      assertThrows(ResourceNotFoundException.class, executable);
+        @DisplayName("유저 id로 유저 삭제를 성공한다")
+        @Test
+        void whenDeleteUser() {
+            //given
+            UUID UserId = UUID.fromString("a1b42ab8-5d3e-4571-af57-422064cb39ff");
+            given(userRepository.existsById(UserId)).willReturn(true);
 
-      //then
-      then(userRepository).should(never()).deleteById(any());
+            //when
+            userService.delete(UserId);
+
+            // then: 해당 메서드가 특정 인자로 호출되었는지를 검증
+            then(userRepository).should().deleteById(UserId);
+        }
+
+        @DisplayName("유저 id로 유저를 삭제할때, 존재하지 않은 id이므로 실패한다")
+        @Test
+        void whenDeleteUserwithNotExistId_thenThrowUserAlreadyExistException() {
+            //given
+            UUID UserId = UUID.fromString("a1b42ab8-5d3e-4571-af57-422064cb39ff");
+            given(userRepository.existsById(UserId)).willReturn(false);
+
+            //when
+            Executable executable = () -> userService.delete(UserId);
+            assertThrows(ResourceNotFoundException.class, executable);
+
+            //then
+            then(userRepository).should(never()).deleteById(any());
+        }
     }
-  }
 
 }

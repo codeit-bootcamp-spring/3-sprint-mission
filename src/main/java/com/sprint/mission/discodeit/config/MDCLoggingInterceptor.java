@@ -14,20 +14,20 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class MDCLoggingInterceptor implements HandlerInterceptor {
 
-  public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
-      Object handler) {
-    final String requestId = UUID.randomUUID().toString();
-    MDC.put("request-id", requestId);
-    MDC.put("http-method", request.getMethod());
-    MDC.put("request-uri", request.getRequestURI());
-    response.setHeader("Discodeit-Request-ID", requestId);
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
+        Object handler) {
+        final String requestId = UUID.randomUUID().toString();
+        MDC.put("request-id", requestId);
+        MDC.put("http-method", request.getMethod());
+        MDC.put("request-uri", request.getRequestURI());
+        response.setHeader("Discodeit-Request-ID", requestId);
 
-    return true;
-  }
+        return true;
+    }
 
-  public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
-      Object handler, Exception e) {
-    MDC.clear();
-  }
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
+        Object handler, Exception e) {
+        MDC.clear();
+    }
 
 }

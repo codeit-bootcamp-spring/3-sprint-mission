@@ -16,17 +16,17 @@ import org.springframework.data.domain.Pageable;
 
 public interface MessageService {
 
-  //TODO: 객체 생성 후 -> create 함수.  validation과 관계없이 객체 생성을 먼저 하는데 괜찮은가? -> 생성자에서 체크할것
-  public MessageDto create(MessageCreateRequest createRequest,
-      List<BinaryContentCreateRequest> binaryContentCreateRequests);
+    //TODO: 객체 생성 후 -> create 함수.  validation과 관계없이 객체 생성을 먼저 하는데 괜찮은가? -> 생성자에서 체크할것
+    public MessageDto create(MessageCreateRequest createRequest,
+        List<BinaryContentCreateRequest> binaryContentCreateRequests);
 
-  public MessageDto findById(UUID messageId);
+    public MessageDto findById(UUID messageId);
 
-  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createdAt,
-      Pageable pageable);
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createdAt,
+        Pageable pageable);
 
-  public MessageDto update(UUID messageId, MessageUpdateRequest updateRequest);
+    public MessageDto update(UUID messageId, MessageUpdateRequest updateRequest);
 
-  public void delete(UUID messageId);
+    public void delete(UUID messageId);
 
 }

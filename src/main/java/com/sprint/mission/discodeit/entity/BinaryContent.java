@@ -20,14 +20,14 @@ import lombok.ToString;
 @Table(name = "binary_contents")
 public class BinaryContent extends BaseEntity {
 
-  //
-  @Column(name = "file_name", nullable = false)
-  private String fileName;
+    //
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
 
-  @Column(name = "size", nullable = false)
-  private Long size;
+    @Column(name = "size", nullable = false)
+    private Long size;
 
-  @Column(name = "content_type", nullable = false)
-  private String contentType;
+    @Column(name = "content_type", nullable = false)
+    private String contentType;
 
 }

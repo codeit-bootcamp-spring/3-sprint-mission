@@ -14,26 +14,25 @@ import org.springframework.data.repository.query.Param;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-  @EntityGraph(attributePaths = {"channel"})
-  public Page<Message> findAllByChannelId(UUID channelId, Pageable pageable
-  );
+    @EntityGraph(attributePaths = {"channel"})
+    public Page<Message> findAllByChannelId(UUID channelId, Pageable pageable
+    );
 
-  void deleteAllByChannelId(UUID channelId);
+    void deleteAllByChannelId(UUID channelId);
 
-  @Query("SELECT m.createdAt "
-      + "FROM Message m "
-      + "WHERE m.channel.id = :channelId "
-      + "ORDER BY m.createdAt DESC LIMIT 1")
-  Optional<Instant> findLastMessageAtByChannelId(@Param("channelId") UUID channelId);
+    @Query("SELECT m.createdAt "
+        + "FROM Message m "
+        + "WHERE m.channel.id = :channelId "
+        + "ORDER BY m.createdAt DESC LIMIT 1")
+    Optional<Instant> findLastMessageAtByChannelId(@Param("channelId") UUID channelId);
 
-  @Query("SELECT m FROM Message m "
-      + "LEFT JOIN FETCH m.author a "
-      + "JOIN FETCH a.status "
-      + "LEFT JOIN FETCH a.profile "
-      + "WHERE m.channel.id=:channelId AND m.createdAt < :createdAt")
-  Slice<Message> findAllByChannelIdWithAuthor(@Param("channelId") UUID channelId,
-      @Param("createdAt") Instant createdAt,
-      Pageable pageable);
+    @Query("SELECT m FROM Message m "
+        + "LEFT JOIN FETCH m.author a "
+        + "LEFT JOIN FETCH a.profile "
+        + "WHERE m.channel.id=:channelId AND m.createdAt < :createdAt")
+    Slice<Message> findAllByChannelIdWithAuthor(@Param("channelId") UUID channelId,
+        @Param("createdAt") Instant createdAt,
+        Pageable pageable);
 
 //      /* CrudRepository의 기본 메소드 */
 //    public Message save(Message message);

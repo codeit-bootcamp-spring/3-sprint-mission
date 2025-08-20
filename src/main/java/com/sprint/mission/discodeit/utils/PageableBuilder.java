@@ -6,12 +6,12 @@ import org.springframework.data.domain.Sort;
 
 public class PageableBuilder {
 
-  public static Pageable builder(int page, int size, String sortField, String sortDirection) {
+    public static Pageable builder(int page, int size, String sortField, String sortDirection) {
 
-    Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
-        ? Sort.Direction.DESC
-        : Sort.Direction.ASC;
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
+            ? Sort.Direction.DESC
+            : Sort.Direction.ASC;
 
-    return PageRequest.of(page, size, Sort.by(direction, sortField));
-  }
+        return PageRequest.of(page, size, Sort.by(direction, sortField));
+    }
 }
