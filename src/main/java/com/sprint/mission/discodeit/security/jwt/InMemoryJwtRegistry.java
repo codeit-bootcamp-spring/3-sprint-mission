@@ -6,13 +6,24 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class InMemoryJwtRegistry implements JwtRegistry {
 
     private final Map<UUID, Queue<JwtInformation>> origin = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> lastSeen = new ConcurrentHashMap<>();
+
     private final int maxActiveJwtCount = 1;
+
+    private final long onlineIdleWindowMs;
+
+    public InMemoryJwtRegistry(
+            @Value("${jwt.online-idle-window-ms:120000}") long onlineIdleWindowMs
+    ) {
+        this.onlineIdleWindowMs = onlineIdleWindowMs;
+    }
 
     @Override
     public void registerJwtInformation(JwtInformation jwtInformation) {
@@ -24,11 +35,14 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         while (queue.size() > maxActiveJwtCount) {
             queue.poll(); // 가장 오래된 로그인 제거
         }
+
+        lastSeen.put(userId, System.currentTimeMillis());
     }
 
     @Override
     public void invalidateJwtInformationByUserId(UUID userId) {
         origin.remove(userId);
+        lastSeen.remove(userId);
     }
 
     @Override
@@ -56,8 +70,36 @@ public class InMemoryJwtRegistry implements JwtRegistry {
             for (JwtInformation info : queue) {
                 if (info.getRefreshToken().equals(refreshToken)) {
                     info.rotate(newJwtInformation.getAccessToken(), newJwtInformation.getRefreshToken());
+                    lastSeen.put(newJwtInformation.getUserDto().id(), System.currentTimeMillis());
                     break;
                 }
+            }
+        });
+    }
+
+    @Override
+    public void markAlive(UUID userId) {
+        lastSeen.put(userId, System.currentTimeMillis());
+    }
+
+    @Override
+    public boolean isOnline(UUID userId) {
+        if (!hasActiveJwtInformationByUserId(userId)) {
+            return false;
+        }
+        Long seen = lastSeen.get(userId);
+        if (seen == null) {
+            return false;
+        }
+        return (System.currentTimeMillis() - seen) <= onlineIdleWindowMs;
+    }
+
+    @Override
+    public void invalidateJwtInformationByRefreshToken(String refreshToken) {
+        origin.forEach((userId, queue) -> {
+            queue.removeIf(info -> info.getRefreshToken().equals(refreshToken));
+            if (queue.isEmpty()) {
+                origin.remove(userId);
             }
         });
     }

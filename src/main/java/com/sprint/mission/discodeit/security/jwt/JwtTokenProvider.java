@@ -176,4 +176,14 @@ public class JwtTokenProvider {
         }
         return null;
     }
+
+    public UUID getUserId(String token) {
+        try {
+            String uid = (String) SignedJWT.parse(token).getJWTClaimsSet().getClaim("uid");
+            return uid != null ? UUID.fromString(uid) : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 }

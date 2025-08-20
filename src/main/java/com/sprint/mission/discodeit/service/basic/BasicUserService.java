@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
@@ -34,6 +35,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
+    private final JwtRegistry jwtRegistry; // ✅ 추가
 
     @Transactional
     @Override
@@ -71,7 +73,7 @@ public class BasicUserService implements UserService {
 
         userRepository.save(user);
         log.info("사용자 생성 완료: id={}", user.getId());
-        return userMapper.toDto(user);
+        return userMapper.toDto(user).withOnline(false);
     }
 
     @Override
@@ -79,12 +81,14 @@ public class BasicUserService implements UserService {
     public UserDto find(UUID userId) {
         log.debug("사용자 조회 요청: id={}", userId);
 
-        return userRepository.findById(userId)
-                .map(userMapper::toDto)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("사용자 조회 실패: id={}", userId);
                     return new UserNotFoundException(userId);
                 });
+
+        boolean online = jwtRegistry.hasActiveJwtInformationByUserId(user.getId()); // ✅ 온라인 계산
+        return userMapper.toDto(user).withOnline(online);
     }
 
     @Override
@@ -92,7 +96,8 @@ public class BasicUserService implements UserService {
     public List<UserDto> findAll() {
         log.debug("모든 사용자 조회 요청");
         return userRepository.findAll().stream()
-                .map(userMapper::toDto)
+                .map(user -> userMapper.toDto(user)
+                        .withOnline(jwtRegistry.hasActiveJwtInformationByUserId(user.getId()))) // ✅ 온라인 계산
                 .toList();
     }
 
@@ -136,11 +141,17 @@ public class BasicUserService implements UserService {
                 })
                 .orElse(null);
 
-        String newPassword = userUpdateRequest.newPassword();
-        user.update(newUsername, newEmail, newPassword, nullableProfile);
+        String newEncodedPassword = null;
+        if (userUpdateRequest.newPassword() != null && !userUpdateRequest.newPassword().isBlank()) {
+            newEncodedPassword = passwordEncoder.encode(userUpdateRequest.newPassword());
+        }
+
+        user.update(userUpdateRequest.newUsername(), userUpdateRequest.newEmail(), newEncodedPassword, nullableProfile);
 
         log.info("사용자 수정 완료: id={}", userId);
-        return userMapper.toDto(user);
+
+        boolean online = jwtRegistry.hasActiveJwtInformationByUserId(user.getId());
+        return userMapper.toDto(user).withOnline(online);
     }
 
     @Transactional
@@ -166,6 +177,7 @@ public class BasicUserService implements UserService {
         user.updateRole(newRole);
         log.info("사용자 권한 변경: id={}, newRole={}", userId, newRole);
 
-        return userMapper.toDto(user);
+        boolean online = jwtRegistry.hasActiveJwtInformationByUserId(user.getId()); // ✅ 온라인 계산
+        return userMapper.toDto(user).withOnline(online);
     }
 }
