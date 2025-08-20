@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
+import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,6 +29,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
@@ -35,6 +37,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -55,51 +58,47 @@ public class SecurityConfig {
       LoginFailureHandler loginFailureHandler,
       ObjectMapper objectMapper,
       SessionRegistry sessionRegistry,
-      JwtLogoutHandler jwtLogoutHandler
+      JwtLogoutHandler jwtLogoutHandler,
+      JwtAuthenticationFilter jwtAuthenticationFilter
   )
       throws Exception {
-    http
-        .csrf(csrf -> csrf
-            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-            .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler(){
-              @Override
-              public void handle(HttpServletRequest request, HttpServletResponse response, Supplier<CsrfToken> csrfToken) {
-                super.handle(request, response, csrfToken);
-                csrfToken.get();
-              }
-            })
-        )
-        .formLogin(login -> login
-            .loginProcessingUrl("/api/auth/login")
-            .successHandler(jwtloginSuccessHandler)
-            .failureHandler(loginFailureHandler)
-        )
-        .logout(logout -> logout
-            .logoutUrl("/api/auth/logout")
-                .addLogoutHandler(jwtLogoutHandler)
-            .logoutSuccessHandler(
-                new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
-        )
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers(
-                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/refresh"),
-                new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
-            ).permitAll()
-            .anyRequest().authenticated()
-        )
-        .exceptionHandling(ex -> ex
-            .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
-            .accessDeniedHandler(new Http403ForbiddenAccessDeniedHandler(objectMapper))
-        )
-        .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        )
-        .rememberMe(Customizer.withDefaults())
-    ;
+      http
+              .csrf(csrf -> csrf
+                      .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                      .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+              )
+              .formLogin(login -> login
+                      .loginProcessingUrl("/api/auth/login")
+                      .successHandler(jwtloginSuccessHandler)
+                      .failureHandler(loginFailureHandler)
+              )
+              .logout(logout -> logout
+                      .logoutUrl("/api/auth/logout")
+                      .addLogoutHandler(jwtLogoutHandler)
+                      .logoutSuccessHandler(
+                              new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+              )
+              .authorizeHttpRequests(auth -> auth
+                      .requestMatchers(
+                              AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
+                              AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
+                              AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
+                              AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
+                              AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/refresh"),
+                              new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
+                      ).permitAll()
+                      .anyRequest().authenticated()
+              )
+              .exceptionHandling(ex -> ex
+                      .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
+                      .accessDeniedHandler(new Http403ForbiddenAccessDeniedHandler(objectMapper))
+              )
+              .sessionManagement(session -> session
+                      .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+              )
+              .rememberMe(Customizer.withDefaults())
+              .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+      ;
     return http.build();
   }
 

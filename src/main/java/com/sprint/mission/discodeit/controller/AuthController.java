@@ -61,35 +61,10 @@ public class AuthController implements AuthApi {
           String refreshToken,
           HttpServletResponse response){
 
-    if(refreshToken == null || !jwtTokenProvider.verifyRefreshToken(refreshToken)){
-      return ResponseEntity
-              .status(HttpStatus.UNAUTHORIZED)
-              .build();
-    }
+    JwtDto jwtDto = authService.refreshToken(refreshToken, response);
 
-    String username = jwtTokenProvider.extractUsername(refreshToken);
-    String tokenId = jwtTokenProvider.extractTokenId(refreshToken);
-
-    DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailsService.loadUserByUsername(username);
-
-      try {
-        String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails, response);
-        String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails,response);
-
-        String newRefreshJti = jwtTokenProvider.extractTokenId(newRefreshToken);
-
-        UserDto userDto = userDetails.getUserDto();
-        JwtDto jwtDto = new JwtDto(userDto, newAccessToken);
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(jwtDto);
-
-      } catch (Exception e) {
-          return ResponseEntity
-                  .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                  .build();
-      }
-
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(jwtDto);
   }
 }

@@ -139,6 +139,15 @@ public class JwtTokenProvider {
         }
     }
 
+    public String extractUserId(String token) {
+        try {
+            SignedJWT signedJwt = SignedJWT.parse(token);
+            return signedJwt.getJWTClaimsSet().getClaim("userId").toString();
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Invalid JWT Token",e);
+        }
+    }
+
 
 
 }

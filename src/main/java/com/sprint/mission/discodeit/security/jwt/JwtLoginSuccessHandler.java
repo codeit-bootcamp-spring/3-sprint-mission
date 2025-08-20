@@ -22,6 +22,7 @@ import java.io.IOException;
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtRegistry jwtRegistry;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -34,8 +35,11 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
             try {
 
                 //토큰 생성
-                jwtTokenProvider.generateRefreshToken(userDetails,response);
+                String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails,response);
                 String accessToken = jwtTokenProvider.generateAccessToken(userDetails, response);
+
+                // registry에 저장
+                jwtRegistry.registerJwtInformation(new JwtInformation(userDetails.getUserDto(),accessToken,refreshToken));
 
                 //JwtDto로 변환후 저장
                 JwtDto jwtDto = new JwtDto(userDetails.getUserDto(),accessToken);

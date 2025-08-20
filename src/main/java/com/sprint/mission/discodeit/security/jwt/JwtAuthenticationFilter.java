@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,18 +27,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final DiscodeitUserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
+    private final JwtRegistry jwtRegistry;
 
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String token = resolveToken(request);
-
-
         // 토큰 존재확인
         if(StringUtils.hasText(token)){
             // 토큰 검증
-            if(jwtTokenProvider.verifyAccessToken(token)){
+            if(jwtTokenProvider.verifyAccessToken(token) && jwtRegistry.hasActiveJwtInformationByAccessToken(token)){
+
                 String username = jwtTokenProvider.extractUsername(token);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
@@ -55,22 +56,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 나중에 SecurityContextHolder.getContext().getAuthentication().getDetails() 로 꺼내서 이 사용자가 어떤 IP에서 로그인했는지" 등을 추적할 수 있습니다.
                  */
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-        }else{
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.setCharacterEncoding("UTF-8");
+            else{
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                response.setCharacterEncoding("UTF-8");
 
-            String responseBody = objectMapper.createObjectNode()
-                    .put("success",false)
-                    .put("message","JWT authentication failed")
-                    .toString();
+                String responseBody = objectMapper.createObjectNode()
+                        .put("success",false)
+                        .put("message","JWT authentication failed")
+                        .toString();
 
-            response.getWriter().write(responseBody);
-
-            return;
+                response.getWriter().write(responseBody);
+                return;
+            }
         }
         }catch (Exception e){
             SecurityContextHolder.clearContext();
