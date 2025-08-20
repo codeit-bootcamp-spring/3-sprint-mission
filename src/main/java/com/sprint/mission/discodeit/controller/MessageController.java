@@ -44,44 +44,44 @@ public class MessageController implements MessageApi {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MessageDto> create(
-        @Valid @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
-        @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
+            @Valid @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
+            @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
-        log.info("메시지 생성 요청: channelId={}, authorId={}",
-            messageCreateRequest.channelId(), messageCreateRequest.authorId());
+        log.info("메시지 생성 요청: channelId={}",
+                messageCreateRequest.channelId());
 
         List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
-            .map(files -> files.stream()
-                .map(file -> {
-                    try {
-                        return new BinaryContentCreateRequest(
-                            file.getOriginalFilename(),
-                            file.getContentType(),
-                            file.getBytes()
-                        );
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .toList())
-            .orElse(new ArrayList<>());
+                .map(files -> files.stream()
+                        .map(file -> {
+                            try {
+                                return new BinaryContentCreateRequest(
+                                        file.getOriginalFilename(),
+                                        file.getContentType(),
+                                        file.getBytes()
+                                );
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
+                        .toList())
+                .orElse(new ArrayList<>());
 
         MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
         log.info("메시지 생성 완료: messageId={}", createdMessage.id());
         return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(createdMessage);
+                .status(HttpStatus.CREATED)
+                .body(createdMessage);
     }
 
     @PatchMapping(path = "{messageId}")
     public ResponseEntity<MessageDto> update(@PathVariable("messageId") UUID messageId,
-        @Valid @RequestBody MessageUpdateRequest request) {
+                                             @Valid @RequestBody MessageUpdateRequest request) {
         log.info("메시지 수정 요청: messageId={}, newContent={}", messageId, request.newContent());
         MessageDto updatedMessage = messageService.update(messageId, request);
         log.info("메시지 수정 완료: messageId={}", updatedMessage.id());
         return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(updatedMessage);
+                .status(HttpStatus.OK)
+                .body(updatedMessage);
     }
 
     @DeleteMapping(path = "{messageId}")
@@ -90,26 +90,26 @@ public class MessageController implements MessageApi {
         messageService.delete(messageId);
         log.info("메시지 삭제 완료: messageId={}", messageId);
         return ResponseEntity
-            .status(HttpStatus.NO_CONTENT)
-            .build();
+                .status(HttpStatus.NO_CONTENT)
+                .build();
     }
 
     @GetMapping
     public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
-        @RequestParam("channelId") UUID channelId,
-        @RequestParam(value = "cursor", required = false) Instant cursor,
-        @PageableDefault(
-            size = 50,
-            page = 0,
-            sort = "createdAt",
-            direction = Direction.DESC
-        ) Pageable pageable) {
+            @RequestParam("channelId") UUID channelId,
+            @RequestParam(value = "cursor", required = false) Instant cursor,
+            @PageableDefault(
+                    size = 50,
+                    page = 0,
+                    sort = "createdAt",
+                    direction = Direction.DESC
+            ) Pageable pageable) {
         log.info("채널 메시지 목록 조회 요청: channelId={}, cursor={}", channelId, cursor);
         PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor,
-            pageable);
+                pageable);
         log.info("조회된 메시지 수: {}", messages.content().size());
         return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(messages);
+                .status(HttpStatus.OK)
+                .body(messages);
     }
 }

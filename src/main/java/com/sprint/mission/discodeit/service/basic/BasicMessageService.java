@@ -18,6 +18,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
@@ -28,7 +29,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,46 +52,45 @@ public class BasicMessageService implements MessageService {
     @Transactional
     @Override
     public MessageDto create(MessageCreateRequest messageCreateRequest,
-        List<BinaryContentCreateRequest> binaryContentCreateRequests) {
-        //테스트 용
+                             List<BinaryContentCreateRequest> binaryContentCreateRequests) {
         log.info("S3 버킷 이름 = {}", System.getenv("AWS_S3_BUCKET"));
 
-        log.info("메시지 생성 요청: channelId={}, authorId={}, 첨부파일 개수={}",
-            messageCreateRequest.channelId(),
-            messageCreateRequest.authorId(),
-            binaryContentCreateRequests.size());
-
+        UUID authorId = currentUserId();
         UUID channelId = messageCreateRequest.channelId();
-        UUID authorId = messageCreateRequest.authorId();
+
+        log.info("메시지 생성 요청: channelId={}, authorId={}, 첨부파일 개수={}",
+                channelId,
+                authorId,
+                binaryContentCreateRequests.size());
 
         Channel channel = channelRepository.findById(channelId)
-            .orElseThrow(() -> {
-                log.warn("채널 조회 실패: id={}", channelId);
-                return new ChannelNotFoundException(channelId);
-            });
+                .orElseThrow(() -> {
+                    log.warn("채널 조회 실패: id={}", channelId);
+                    return new ChannelNotFoundException(channelId);
+                });
 
         User author = userRepository.findById(authorId)
-            .orElseThrow(() -> {
-                log.warn("작성자 조회 실패: id={}", authorId);
-                return new AuthorNotFoundException(authorId);
-            });
+                .orElseThrow(() -> {
+                    log.warn("작성자 조회 실패: id={}", authorId);
+                    return new AuthorNotFoundException(authorId);
+                });
 
         List<BinaryContent> attachments = binaryContentCreateRequests.stream()
-            .map(attachmentRequest -> {
-                String fileName = attachmentRequest.fileName();
-                String contentType = attachmentRequest.contentType();
-                byte[] bytes = attachmentRequest.bytes();
+                .map(attachmentRequest -> {
+                    String fileName = attachmentRequest.fileName();
+                    String contentType = attachmentRequest.contentType();
+                    byte[] bytes = attachmentRequest.bytes();
 
-                BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-                    contentType);
-                binaryContentRepository.save(binaryContent);
+                    BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
+                            contentType);
+                    binaryContentRepository.save(binaryContent);
 
-                binaryContentStorage.put(binaryContent.getId(), bytes, contentType);
+                    binaryContentStorage.put(binaryContent.getId(), bytes, contentType);
 
-                log.debug("첨부파일 저장 완료: id={}, fileName={}", binaryContent.getId(), fileName);
-                return binaryContent;
-            })
-            .toList();
+                    log.debug("첨부파일 저장 완료: id={}, fileName={}", binaryContent.getId(), fileName);
+                    return binaryContent;
+                })
+                .toList();
 
         String content = messageCreateRequest.content();
         Message message = new Message(content, channel, author, attachments);
@@ -103,23 +106,23 @@ public class BasicMessageService implements MessageService {
         log.debug("메시지 조회 요청: id={}", messageId);
 
         return messageRepository.findById(messageId)
-            .map(messageMapper::toDto)
-            .orElseThrow(() -> {
-                log.warn("메시지 조회 실패: 존재하지 않는 ID={}", messageId);
-                return new MessageNotFoundException(messageId);
-            });
+                .map(messageMapper::toDto)
+                .orElseThrow(() -> {
+                    log.warn("메시지 조회 실패: 존재하지 않는 ID={}", messageId);
+                    return new MessageNotFoundException(messageId);
+                });
     }
 
     @Transactional(readOnly = true)
     @Override
     public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createAt,
-        Pageable pageable) {
+                                                       Pageable pageable) {
         log.debug("채널 메시지 목록 조회 요청: channelId={}, createAt={}", channelId, createAt);
 
         Slice<MessageDto> slice = messageRepository.findByChannelIdAndCreatedAtBefore(
-            channelId,
-            Optional.ofNullable(createAt).orElse(Instant.now()),
-            pageable
+                channelId,
+                Optional.ofNullable(createAt).orElse(Instant.now()),
+                pageable
         ).map(messageMapper::toDto);
 
         Instant nextCursor = null;
@@ -139,10 +142,10 @@ public class BasicMessageService implements MessageService {
         log.info("메시지 수정 요청: id={}, newContent={}", messageId, request.newContent());
 
         Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> {
-                log.warn("수정 대상 메시지 없음: id={}", messageId);
-                return new MessageNotFoundException(messageId);
-            });
+                .orElseThrow(() -> {
+                    log.warn("수정 대상 메시지 없음: id={}", messageId);
+                    return new MessageNotFoundException(messageId);
+                });
 
         message.update(request.newContent());
         log.info("메시지 수정 완료: id={}", messageId);
@@ -162,5 +165,15 @@ public class BasicMessageService implements MessageService {
         }
         messageRepository.deleteById(messageId);
         log.info("메시지 삭제 완료: id={}", messageId);
+    }
+
+    private UUID currentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("로그인이 필요합니다.");
+        }
+
+        DiscodeitUserDetails userDetails = (DiscodeitUserDetails) authentication.getPrincipal();
+        return userDetails.getUserDto().id();
     }
 }
