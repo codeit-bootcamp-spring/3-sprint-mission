@@ -1,8 +1,9 @@
-package com.sprint.mission.discodeit.storage;
+package com.sprint.mission.discodeit.storage.local;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.exception.binaryContent.FileStorageErrorException;
 import com.sprint.mission.discodeit.exception.binaryContent.ResourceUrlCreationErrorException;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +15,7 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -23,11 +25,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(
-    prefix = "discodeit.storage",
-    name = "type",
-    havingValue = "local"
-)
+@ConditionalOnProperty(prefix = "discodeit.storage", name = "type", havingValue = "local")
 public class LocalBinaryContentStorage implements BinaryContentStorage {
 
     private final Path root;

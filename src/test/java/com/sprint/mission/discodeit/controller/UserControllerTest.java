@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.times;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -17,9 +18,9 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +32,7 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -45,6 +47,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
         classes = GlobalExceptionHandler.class
     )
 )
+@WithMockUser
 @DisplayName("UserController 슬라이스 테스트")
 public class UserControllerTest {
 
@@ -52,7 +55,6 @@ public class UserControllerTest {
     @Autowired private ObjectMapper objectMapper;
 
     @MockitoBean private UserService userService;
-    @MockitoBean private UserStatusService userStatusService;
 
     @Test
     @DisplayName("사용자 생성 API 성공")
@@ -64,7 +66,8 @@ public class UserControllerTest {
             "tom",
             "tom@test.com",
             null,
-            false
+            false,
+            Role.USER
         );
         given(userService.create(userCreateRequest,Optional.empty())).willReturn(userDto);
 
@@ -78,7 +81,8 @@ public class UserControllerTest {
 
         mockMvc.perform(multipart("/api/users")
                 .file(userCreateRequestFile)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .with(csrf()))
             .andExpect(status().isCreated())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.username").value("tom"))
@@ -96,7 +100,7 @@ public class UserControllerTest {
         UUID contentId = UUID.randomUUID();
         BinaryContentDto profileDto = new BinaryContentDto(contentId, "profile.png", 1024L, "image/png");
 
-        UserDto returned = new UserDto(eq(userId), "tommy", "tommy@test.com", profileDto, false);
+        UserDto returned = new UserDto(eq(userId), "tommy", "tommy@test.com", profileDto, false, Role.USER);
         given(userService.update(userId, any(UserUpdateRequest.class), any(Optional.class))).willReturn(returned);
 
         MockMultipartFile userInfoPart = new MockMultipartFile(
@@ -113,9 +117,11 @@ public class UserControllerTest {
         );
 
         MockMultipartHttpServletRequestBuilder builder = MockMvcRequestBuilders.multipart(
-            HttpMethod.PATCH, "/api/users/" + userId);
+            HttpMethod.PATCH, "/api/users/" + userId
+        );
         builder.file(userInfoPart)
             .file(filePart)
+            .with(csrf())
             .with(request -> { request.setMethod("PATCH"); return request; });
 
         // when, then
@@ -137,7 +143,9 @@ public class UserControllerTest {
         willDoNothing().given(userService).delete(userId);
 
         // when, then
-        mockMvc.perform(delete("/api/users/{userId}", userId)).andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/users/{userId}", userId)
+                .with(csrf()))
+            .andExpect(status().isNoContent());
         then(userService).should(times(1)).delete(userId);
     }
 }

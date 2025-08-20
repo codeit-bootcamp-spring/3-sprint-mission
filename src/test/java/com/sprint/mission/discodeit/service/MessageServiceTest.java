@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
@@ -84,7 +85,7 @@ public class MessageServiceTest {
     @DisplayName("메시지 생성 성공")
     void createMessage() {
         // given
-        UserDto authorDto = new UserDto(user.getId(), user.getUsername(), user.getEmail(), null, false);
+        UserDto authorDto = new UserDto(user.getId(), user.getUsername(), user.getEmail(), null, false, Role.USER);
 
         given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
         given(userRepository.findById(authorId)).willReturn(Optional.of(user));
@@ -163,7 +164,7 @@ public class MessageServiceTest {
             new UserDto(message.getAuthor().getId(),
                 message.getAuthor().getUsername(),
                 message.getAuthor().getEmail(),
-                null, false),
+                null, false, Role.USER),
             List.of()
         );
         given(messageMapper.toDto(any(Message.class))).willReturn(messageDto);
@@ -246,10 +247,10 @@ public class MessageServiceTest {
         Instant t1 = Instant.parse("2025-06-01T00:00:00Z");
         Instant t2 = Instant.parse("2025-06-02T00:00:00Z");
         MessageDto d1 = new MessageDto(m1.getId(), t1, t1, "msg1", channelId,
-            new UserDto(user.getId(), user.getUsername(), user.getEmail(), null, false),
+            new UserDto(user.getId(), user.getUsername(), user.getEmail(), null, false, Role.USER),
             List.of());
         MessageDto d2 = new MessageDto(m2.getId(), t2, t2, "msg2", channelId,
-            new UserDto(user.getId(), user.getUsername(), user.getEmail(), null, false),
+            new UserDto(user.getId(), user.getUsername(), user.getEmail(), null, false, Role.USER),
             List.of());
         given(messageMapper.toDto(m1)).willReturn(d1);
         given(messageMapper.toDto(m2)).willReturn(d2);

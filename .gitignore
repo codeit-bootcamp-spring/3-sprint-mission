@@ -4,6 +4,35 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+### Settings ###
+.env
+application-*.yaml
+!application-dev.yml
+!application-prod.yml
+
+### AWS ###
+*.pem
+*.key
+aws-credentials.txt
+.aws/
+credentials
+config
+
+### Docker ###
+docker-compose.yml
+*.log
+
+### Spring Boot ###
+logs/
+application.properties
+application-*.properties
+
+### 파일 업로드 디렉토리 ###
+uploads/
+files/
+images/
+temp/
+
 ### IntelliJ IDEA ###
 .idea
 .idea/modules.xml
@@ -47,3 +76,8 @@ bin/
 
 ### Logs ###
 logs
+
+### OS ###
+.DS_Store          # macOS
+Thumbs.db          # Windows
+Desktop.ini        # Windows

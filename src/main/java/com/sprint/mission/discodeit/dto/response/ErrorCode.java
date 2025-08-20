@@ -10,7 +10,8 @@ public enum ErrorCode {
     USER_NOT_FOUND("U001", HttpStatus.NOT_FOUND , "사용자를 조회할 수 없습니다."),
     DUPLICATE_USER("U002", HttpStatus.BAD_REQUEST, "이미 존재하는 사용자입니다."),
 
-    AUTHENTICATION_FAILED("A001", HttpStatus.UNAUTHORIZED ,"인증에 실패했습니다."),
+    AUTHENTICATION_REQUIRED("A001", HttpStatus.UNAUTHORIZED ,"인증이 필요합니다."),
+    ACCESS_DENIED("A0012", HttpStatus.FORBIDDEN ,"접근 권한이 없습니다."),
 
     CHANNEL_NOT_FOUND("CH001", HttpStatus.NOT_FOUND, "채널을 조회할 수 없습니다."),
     PRIVATE_CHANNEL_UPDATE("CH002", HttpStatus.BAD_REQUEST, "비공개 채널은 수정할 수 없습니다."),

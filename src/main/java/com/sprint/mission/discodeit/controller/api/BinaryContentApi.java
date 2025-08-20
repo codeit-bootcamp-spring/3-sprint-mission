@@ -46,6 +46,7 @@ public interface BinaryContentApi {
       )
   })
   ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
-      @Parameter(description = "조회할 첨부 파일 ID 목록") @NotNull @RequestParam("binaryContentIds") List<UUID> binaryContentIds
+      @Parameter(description = "조회할 첨부 파일 ID 목록")
+      @NotNull @RequestParam("binaryContentIds") List<UUID> binaryContentIds
   );
 } 

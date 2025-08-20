@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.times;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -21,6 +22,7 @@ import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.time.Instant;
@@ -33,6 +35,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -45,6 +48,7 @@ import org.springframework.test.web.servlet.MockMvc;
         classes = GlobalExceptionHandler.class
     )
 )
+@WithMockUser
 @DisplayName("ChannelController 슬라이스 테스트")
 public class ChannelControllerTest {
 
@@ -68,8 +72,7 @@ public class ChannelControllerTest {
         mockMvc.perform(post("/api/channels/public")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req))
-            )
-            .andDo(print())
+                .with(csrf()))
             .andExpect(status().isCreated())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.id").value(respDto.id().toString()))
@@ -85,7 +88,7 @@ public class ChannelControllerTest {
     void createPrivateChannel() throws Exception {
         // given
         UUID userId = UUID.randomUUID();
-        UserDto userDto =  new UserDto(userId, "tom", "tom@test.com", null, false);
+        UserDto userDto =  new UserDto(userId, "tom", "tom@test.com", null, false, Role.USER);
 
         PrivateChannelCreateRequest req = new PrivateChannelCreateRequest(List.of(userId));
         ChannelDto channelDto = new ChannelDto(
@@ -102,13 +105,14 @@ public class ChannelControllerTest {
         mockMvc.perform(post("/api/channels/private")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req))
-            )
+                .with(csrf()))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").value(channelDto.id().toString()))
             .andExpect(jsonPath("$.name").value(channelDto.name()))
             .andExpect(jsonPath("$.type").value(channelDto.type().toString()));
 
-        then(channelService).should(times(1)).create(any(PrivateChannelCreateRequest.class));
+        then(channelService).should(times(1))
+            .create(any(PrivateChannelCreateRequest.class));
     }
 
     @Test
@@ -125,7 +129,7 @@ public class ChannelControllerTest {
         mockMvc.perform(patch("/api/channels/{channelId}", channelId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req))
-            )
+                .with(csrf()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(channelId.toString()))
             .andExpect(jsonPath("$.name").value(channelDto.name()))
@@ -143,7 +147,9 @@ public class ChannelControllerTest {
         willDoNothing().given(channelService).delete(channelId);
 
         // when, then
-        mockMvc.perform(delete("/api/channels/{channelId}", channelId)).andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/channels/{channelId}", channelId)
+                .with(csrf()))
+            .andExpect(status().isNoContent());
 
         then(channelService).should(times(1)).delete(channelId);
     }

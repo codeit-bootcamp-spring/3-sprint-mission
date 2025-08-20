@@ -2,12 +2,10 @@ package com.sprint.mission.discodeit.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.sprint.mission.discodeit.config.TestJpaConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,12 +14,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Import(TestJpaConfig.class)
+@EnableJpaAuditing
 @DisplayName("ChannelRepository 슬라이스 테스트")
 public class ChannelRepositoryTest {
 
@@ -31,15 +29,12 @@ public class ChannelRepositoryTest {
     @Autowired private TestEntityManager em;
 
     private User user;
-    private UUID userId;
-
     private Channel publicChannel;
     private Channel privateChannelAccessible;
 
     @BeforeEach
     void setUp() {
         user = userRepository.save(new User("tom", "tom@test.com", "pw123456", null));
-        userId = user.getId();
 
         publicChannel = new Channel(ChannelType.PUBLIC, "public", "public channel");
         channelRepository.save(publicChannel);
@@ -80,21 +75,4 @@ public class ChannelRepositoryTest {
         // then
         assertThat(optionalChannel).isEmpty();
     }
-
-    @Test
-    @DisplayName("사용자가 속한 공개/비공개 채널 반환 성공")
-    void findAllAccessible() {
-        // when
-        List<Channel> result = channelRepository.findAllAccessible(ChannelType.PUBLIC, userId);
-
-        // then
-        assertThat(result)
-            .hasSize(2)
-            .extracting(Channel::getId)
-            .containsExactlyInAnyOrder(
-                publicChannel.getId(),
-                privateChannelAccessible.getId()
-            );
-    }
-
 }

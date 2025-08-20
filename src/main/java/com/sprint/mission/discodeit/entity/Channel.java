@@ -17,62 +17,61 @@ import lombok.Getter;
 @Getter
 public class Channel extends BaseUpdatableEntity {
 
-  @Enumerated(EnumType.STRING)
-  @Column(name = "type", nullable = false)
-  private ChannelType type;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    private ChannelType type;
 
-  @Column(name = "name", length = 100)
-  private String name;
+    @Column(name = "name", length = 100)
+    private String name;
 
-  @Column(name = "description", length = 500)
-  private String description;
+    @Column(name = "description", length = 500)
+    private String description;
 
-  @OneToMany(
-      mappedBy = "channel",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true
-  )
-  private List<Message> messages = new ArrayList<>();
+    @OneToMany(
+        mappedBy = "channel",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<Message> messages = new ArrayList<>();
 
-  @OneToMany(
-      mappedBy = "channel",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true
-  )
-  private List<ReadStatus> readStatuses = new ArrayList<>();
+    @OneToMany(
+        mappedBy = "channel",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<ReadStatus> readStatuses = new ArrayList<>();
 
-  public Channel(ChannelType type, String name, String description) {
-    this.type = type;
-    this.name = name;
-    this.description = description;
-  }
-
-  public Channel() { }
-
-  public void update(String newName, String newDescription) {
-    boolean anyValueUpdated = false;
-    if (newName != null && !newName.equals(this.name)) {
-      this.name = newName;
-      anyValueUpdated = true;
-    }
-    if (newDescription != null && !newDescription.equals(this.description)) {
-      this.description = newDescription;
-      anyValueUpdated = true;
+    public Channel(ChannelType type, String name, String description) {
+        this.type = type;
+        this.name = name;
+        this.description = description;
     }
 
-    if (anyValueUpdated) {
-      setUpdatedAt();
-    }
-  }
+    public Channel() { }
 
-  @Override
-  public String toString() {
-    return "Channel{" +
-        "type=" + type +
-        ", name='" + name + '\'' +
-        ", description='" + description + '\'' +
-        ", messages=" + messages +
-        ", readStatuses=" + readStatuses +
-        '}';
-  }
+    public void update(String newName, String newDescription) {
+        boolean anyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            anyValueUpdated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            setUpdatedAt();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Channel{" +
+            "type=" + type +
+            ", name='" + name + '\'' +
+            ", description='" + description + '\'' +
+            ", readStatuses=" + readStatuses +
+            '}';
+    }
 }

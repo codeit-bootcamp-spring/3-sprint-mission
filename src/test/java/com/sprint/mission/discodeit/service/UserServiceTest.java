@@ -10,15 +10,13 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.DuplicateUserException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
-import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.Optional;
@@ -30,16 +28,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("사용자 서비스 단위 테스트")
 public class UserServiceTest {
 
     @Mock private UserRepository userRepository;
-    @Mock private UserStatusRepository userStatusRepository;
     @Mock private BinaryContentRepository binaryContentRepository;
     @Mock private BinaryContentStorage binaryContentStorage;
     @Mock private UserMapper userMapper;
+    @Mock private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private BasicUserService userService;
@@ -61,7 +60,7 @@ public class UserServiceTest {
         user = new User("tom", "tom@test.com", "pw123456", binaryContent);
         userDto = new UserDto(
             UUID.randomUUID(), "tom", "tom@test.com",
-            new BinaryContentDto(UUID.randomUUID(), "tomProfile", 16L, "png"), false);
+            new BinaryContentDto(UUID.randomUUID(), "tomProfile", 16L, "png"), false, Role.USER);
     }
 
     @Test
@@ -69,7 +68,7 @@ public class UserServiceTest {
     void createUserWithoutProfile() {
         User nullProfileUser = new User("tom", "tom@test.com", "pw123456", null);
         UserDto nullProfileUserDto = new UserDto(
-            nullProfileUser.getId(), "tom", "tom@test.com",null,false
+            nullProfileUser.getId(), "tom", "tom@test.com",null,false, Role.USER
         );
 
         // given
@@ -85,7 +84,6 @@ public class UserServiceTest {
         then(userRepository).should().existsByUsername("tom");
         then(userRepository).should().existsByEmail("tom@test.com");
         then(userRepository).should().save(any(User.class));
-        then(userStatusRepository).should().save(any(UserStatus.class));
         then(userMapper).should().toDto(nullProfileUser);
 
         assertThat(result).isNotNull();
@@ -114,7 +112,6 @@ public class UserServiceTest {
         then(binaryContentRepository).should().save(any(BinaryContent.class));
         then(binaryContentStorage).should().put(eq(binaryContent.getId()), eq(profileBytes));
         then(userRepository).should().save(any(User.class));
-        then(userStatusRepository).should().save(any(UserStatus.class));
         then(userMapper).should().toDto(user);
 
         assertThat(result).isNotNull();
@@ -141,7 +138,6 @@ public class UserServiceTest {
         then(userRepository).should(never()).save(any(User.class));
         then(binaryContentRepository).should(never()).save(any(BinaryContent.class));
         then(binaryContentStorage).should(never()).put(any(), any());
-        then(userStatusRepository).should(never()).save(any(UserStatus.class));
         then(userMapper).should(never()).toDto(any());
     }
 
@@ -154,7 +150,7 @@ public class UserServiceTest {
         given(userRepository.existsByUsername("tom2")).willReturn(false);
         given(userRepository.existsByEmail("tom2@test.com")).willReturn(false);
 
-        UserDto updatedDto = new UserDto(user.getId(), "tom2", "tom2@test.com",null, false);
+        UserDto updatedDto = new UserDto(user.getId(), "tom2", "tom2@test.com",null, false, Role.USER);
         given(userMapper.toDto(user)).willReturn(updatedDto);
 
         UserUpdateRequest userUpdateRequest = new UserUpdateRequest("tom2", "tom2@test.com", "password12");
@@ -197,7 +193,6 @@ public class UserServiceTest {
         UUID anyId = UUID.randomUUID();
         given(userRepository.findById(any(UUID.class))).willReturn(Optional.of(user));
         willDoNothing().given(binaryContentRepository).delete(any(BinaryContent.class));
-        willDoNothing().given(userStatusRepository).deleteByUserId(any(UUID.class));
         willDoNothing().given(userRepository).delete(any(User.class));
 
         // when
@@ -206,7 +201,6 @@ public class UserServiceTest {
         // then
         then(userRepository).should().findById(any(UUID.class));
         then(binaryContentRepository).should().delete(any(BinaryContent.class));
-        then(userStatusRepository).should().deleteByUserId(any(UUID.class));
         then(userRepository).should().delete(any(User.class));
     }
 
@@ -222,7 +216,6 @@ public class UserServiceTest {
 
         then(userRepository).should().findById(any(UUID.class));
         then(binaryContentRepository).should(never()).delete(any());
-        then(userStatusRepository).should(never()).deleteByUserId(any());
         then(userRepository).should(never()).delete(any());
     }
 }

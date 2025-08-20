@@ -1,0 +1,96 @@
+name: Build and Deploy to AWS ECS
+
+# on:
+#  push:
+#    branches:
+#      - main
+
+jobs:
+  build_and_push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: AWS 자격 증명 설정 (public ECR)
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-east-1
+
+      - name: Public ECR 로그인
+        run: |
+          aws ecr-public get-login-password --region us-east-1 \
+            | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY_URI }}
+
+      - name: Docker 이미지 빌드
+        run: |
+          IMAGE_TAG=${GITHUB_SHA::8}
+          docker build -t ${{ secrets.ECR_REPOSITORY_URI }}:latest \
+                        -t ${{ secrets.ECR_REPOSITORY_URI }}:$IMAGE_TAG .
+
+      - name: Docker 이미지 푸시
+        run: |
+          IMAGE_TAG=${GITHUB_SHA::8}
+          docker push ${{ secrets.ECR_REPOSITORY_URI }}:latest
+          docker push ${{ secrets.ECR_REPOSITORY_URI }}:$IMAGE_TAG
+
+  deploy:
+    name: Deploy to ECS
+    needs: build_and_push
+    runs-on: ubuntu-latest
+    steps:
+      - name: AWS 자격 증명 설정 (ECS 배포)
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: 최신 Task Definition 가져오기
+        id: get_td
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ secrets.ECS_TASK_DEFINITION }} \
+            > td.json
+
+      - name: 새 Task Definition 등록
+        id: register_td
+        run: |
+          IMAGE_TAG=${GITHUB_SHA::8}
+          # 컨테이너 정의의 image 부분만 교체
+          jq --arg img "${{ secrets.ECR_REPOSITORY_URI }}:$IMAGE_TAG" \
+             '.taskDefinition.containerDefinitions[0].image = $img
+              | { family: .taskDefinition.family
+                , containerDefinitions: .taskDefinition.containerDefinitions
+                , volumes: .taskDefinition.volumes
+                , networkMode: .taskDefinition.networkMode
+                , cpu: .taskDefinition.cpu
+                , memory: .taskDefinition.memory
+                , executionRoleArn: .taskDefinition.executionRoleArn
+                }' td.json \
+          > new-td.json
+
+          aws ecs register-task-definition \
+            --cli-input-json file://new-td.json \
+            > registered.json
+
+          echo "revision=$(jq -r '.taskDefinition.revision' registered.json)" >> $GITHUB_OUTPUT
+
+      - name: 서비스 중단 (free-tier 리소스 절약)
+        run: |
+          aws ecs update-service \
+            --cluster ${{ secrets.ECS_CLUSTER }} \
+            --service ${{ secrets.ECS_SERVICE }} \
+            --desired-count 0
+
+      - name: 새 Task 로드 & 서비스 재시작
+        run: |
+          NEW_REV=${{ steps.register_td.outputs.revision }}
+          aws ecs update-service \
+            --cluster ${{ secrets.ECS_CLUSTER }} \
+            --service ${{ secrets.ECS_SERVICE }} \
+            --task-definition ${{ secrets.ECS_TASK_DEFINITION }}:$NEW_REV \
+            --desired-count 1 \
+            --force-new-deployment

@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.local.LocalBinaryContentStorage;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,13 +19,19 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @ActiveProfiles("test")
-@SpringBootTest
+@SpringBootTest(properties = "spring.main.allow-bean-definition-overriding=true")
 @Transactional
 @DisplayName("UserService 통합 테스트")
 public class UserServiceIntegrationTest {
@@ -32,6 +39,17 @@ public class UserServiceIntegrationTest {
     @Autowired private UserService userService;
     @Autowired private UserRepository userRepository;
     @Autowired private BinaryContentRepository binaryContentRepository;
+
+    @TestConfiguration
+    static class AllowAllMethodSecurity {
+        @Bean("preAuthorizeAuthorizationMethodInterceptor")
+        @Primary
+        AuthorizationManagerBeforeMethodInterceptor preAuthorizeAllowAll() {
+            return AuthorizationManagerBeforeMethodInterceptor.preAuthorize(
+                (auth, mi) -> new AuthorizationDecision(true)
+            );
+        }
+    }
 
     @Test
     @DisplayName("모든 계층의 사용자 생성 프로세스")
