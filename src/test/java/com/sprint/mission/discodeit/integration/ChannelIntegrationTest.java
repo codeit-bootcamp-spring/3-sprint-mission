@@ -16,10 +16,8 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -37,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @Transactional
 @DisplayName("Channel API 통합 테스트")
 public class ChannelIntegrationTest {
@@ -57,9 +56,6 @@ public class ChannelIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private UserStatusRepository userStatusRepository;
-
     private Channel savedPublicChannel;
     private Channel savedPrivateChannel;
     private User savedUser;
@@ -74,10 +70,6 @@ public class ChannelIntegrationTest {
         User user = new User("테스트유저", "test@codeit.com", "test1234", null);
         savedUser = userRepository.save(user);
 
-        // UserStatus 생성 및 연결
-        UserStatus userStatus = new UserStatus(savedUser, java.time.Instant.now());
-        userStatusRepository.save(userStatus);
-
         // 유저가 참여한 비공개 채널 생성
         PrivateChannelCreateRequest createRequest = new PrivateChannelCreateRequest(
             List.of(savedUser.getId()));
@@ -87,6 +79,7 @@ public class ChannelIntegrationTest {
 
     @Test
     @DisplayName("공개 채널 생성")
+    @WithMockUser(username = "조현아", roles = {"ADMIN"})
     void createPublicChannel_Success() throws Exception {
         // Given
         String name = "공개 채널 생성 테스트";
@@ -129,6 +122,7 @@ public class ChannelIntegrationTest {
 
     @Test
     @DisplayName("공개 채널 수정")
+    @WithMockUser(username = "조현아", roles = {"ADMIN"})
     void updatePublicChannel_Success() throws Exception {
         // Given
         String newName = "공개 채널 수정 테스트";
@@ -151,6 +145,7 @@ public class ChannelIntegrationTest {
 
     @Test
     @DisplayName("채널 삭제")
+    @WithMockUser(username = "조현아", roles = {"ADMIN"})
     void deleteChannel_Success() throws Exception {
         // Given
         UUID channelId = savedPublicChannel.getId();

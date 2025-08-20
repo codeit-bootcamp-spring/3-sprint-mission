@@ -2,8 +2,9 @@ package com.sprint.mission.discodeit.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.sprint.mission.discodeit.config.AppConfig;
+import com.sprint.mission.discodeit.config.TestQuerydslConfig;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -16,7 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 @DataJpaTest
 @ActiveProfiles("test")
 @DisplayName("UserRepository 슬라이스 테스트")
-@Import(AppConfig.class)
+@Import(TestQuerydslConfig.class)
 class UserRepositoryTest {
 
     @Autowired
@@ -39,5 +40,6 @@ class UserRepositoryTest {
         assertThat(result.get().getEmail()).isEqualTo("zzo@email.com");
         assertThat(result.get().getPassword()).isEqualTo("password123!");
         assertThat(result.get().getProfile()).isEqualTo(profile);
+        assertThat(result.get().getRole()).isEqualTo(Role.USER);
     }
 }

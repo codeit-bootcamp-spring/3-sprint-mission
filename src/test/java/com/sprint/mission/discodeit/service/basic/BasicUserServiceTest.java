@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.service.basic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.then;
@@ -12,20 +11,22 @@ import static org.mockito.BDDMockito.times;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateUserException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
+import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,6 +36,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,9 +51,6 @@ class BasicUserServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private UserStatusRepository userStatusRepository;
-
-    @Mock
     private BinaryContentRepository binaryContentRepository;
 
     @Mock
@@ -56,6 +59,18 @@ class BasicUserServiceTest {
     @Mock
     private BinaryContentStorage binaryContentStorage;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private SessionRegistry sessionRegistry;
+
+    @Mock
+    private JdbcTemplate jdbcTemplate;
+
+    @Mock
+    private UserDetailsService userDetailsService;
+
     @InjectMocks
     private BasicUserService userService;
 
@@ -63,34 +78,21 @@ class BasicUserServiceTest {
     @DisplayName("사용자 생성 - 성공(프로필 이미지 있음)")
     void create_Success() {
         // Given
-        String username = "조현아";
-        String email = "zzo@gmail.com";
-        String password = "password123!";
-        UUID userId = UUID.randomUUID();
-        byte[] profileBytes = "testProfileImage".getBytes();
-        BinaryContent binaryContent = new BinaryContent("testProfileImage",
-            (long) profileBytes.length,
-            "png");
-        BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
-            "testProfileImage", "png",
-            profileBytes);
+        BinaryContent profileEntity = BinaryContentFixture.entity();
+        BinaryContentDto profileDto = BinaryContentFixture.dto();
+        BinaryContentCreateRequest binaryContentCreateRequest = BinaryContentFixture.createRequest();
         Optional<BinaryContentCreateRequest> optionalProfile = Optional.of(
             binaryContentCreateRequest);
-        BinaryContentDto testProfileDto = new BinaryContentDto(UUID.randomUUID(),
-            "testProfileImage", (long) profileBytes.length, "png");
-        UserCreateRequest request = new UserCreateRequest(username, email, password);
-        User user = new User(request.username(), request.email(), request.password(),
-            binaryContent);
-        UserDto userDto = new UserDto(userId, request.username(),
-            request.email(), testProfileDto, null);
-        UserStatus userStatus = new UserStatus(user, Instant.now());
+        User user_profile = UserFixture.entity("프로필유저", "profile@email.com", profileEntity);
+        UserDto userDto2 = UserFixture.dto("프로필유저", "profile@email.com", profileDto, Role.USER);
+        UserCreateRequest request = UserFixture.createRequest("프로필유저", "profile@email.com");
         given(userRepository.existsByEmail(request.email())).willReturn(false);
         given(userRepository.existsByUsername(request.username())).willReturn(false);
-        given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(binaryContent);
-        given(binaryContentStorage.put(any(), any())).willReturn(userDto.profile().id());
-        given(userRepository.save(any(User.class))).willReturn(user);
-        given(userStatusRepository.save(any(UserStatus.class))).willReturn(userStatus);
-        given(userMapper.toDto(any(User.class))).willReturn(userDto);
+        given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(profileEntity);
+        given(binaryContentStorage.put(any(), any())).willReturn(userDto2.profile().id());
+        given(userRepository.save(any(User.class))).willReturn(user_profile);
+        given(userMapper.toDto(any(User.class))).willReturn(userDto2);
+        given(passwordEncoder.encode(any())).willReturn("encodedPw");
 
         // When
         UserDto result = userService.create(request, optionalProfile);
@@ -99,10 +101,9 @@ class BasicUserServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.username()).isEqualTo(request.username());
         assertThat(result.email()).isEqualTo(request.email());
-        assertThat(result.profile().fileName()).isEqualTo("testProfileImage");
+        assertThat(result.profile().fileName()).isEqualTo("testImage");
         then(binaryContentRepository).should().save(any(BinaryContent.class));
-        then(binaryContentStorage).should().put(any(), eq(profileBytes));
-        then(userStatusRepository).should().save(any(UserStatus.class));
+        then(binaryContentStorage).should().put(any(), any());
         then(userRepository).should().save(any(User.class));
     }
 
@@ -110,8 +111,7 @@ class BasicUserServiceTest {
     @DisplayName("사용자 생성 - 실패(이메일 중복)")
     void create_Fail_DuplicateEmail() {
         // Given
-        UserCreateRequest userCreateRequest = new UserCreateRequest("조현아", "zzo@email.com",
-            "password123!");
+        UserCreateRequest userCreateRequest = UserFixture.createRequestZzo();
         given(userRepository.existsByEmail(userCreateRequest.email())).willReturn(true);
 
         // When
@@ -129,8 +129,7 @@ class BasicUserServiceTest {
     @DisplayName("사용자 생성 - 실패(사용자명 중복)")
     void create_Fail_DuplicateUsername() {
         // Given
-        UserCreateRequest userCreateRequest = new UserCreateRequest("조현아", "zzo@email.com",
-            "password123!");
+        UserCreateRequest userCreateRequest = UserFixture.createRequestZzo();
         given(userRepository.existsByUsername(userCreateRequest.username())).willReturn(true);
 
         // When
@@ -140,7 +139,7 @@ class BasicUserServiceTest {
         // Then
         assertThat(thrown)
             .isInstanceOf(DuplicateUserException.class);
-        then(userRepository).should().existsByUsername("조현아");
+        then(userRepository).should().existsByUsername("쪼쪼");
         then(userRepository).should(never()).save(any(User.class));
     }
 
@@ -148,10 +147,11 @@ class BasicUserServiceTest {
     @DisplayName("사용자 조회 - 성공")
     void find_Success() {
         // Given
-        UUID userId = UUID.randomUUID();
-        User user = new User("조현아", "zzo@email.com", "password123!", null);
+        UserDto userDto = UserFixture.dtoZzo();
+        UUID userId = userDto.id();
+        User user = UserFixture.entityZzo();
         ReflectionTestUtils.setField(user, "id", userId);
-        UserDto userDto = new UserDto(userId, user.getUsername(), user.getEmail(), null, null);
+
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(userMapper.toDto(user)).willReturn(userDto);
 
@@ -161,7 +161,7 @@ class BasicUserServiceTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.id()).isEqualTo(userId);
-        assertThat(result.username()).isEqualTo("조현아");
+        assertThat(result.username()).isEqualTo("쪼쪼");
         then(userRepository).should().findById(userId);
         then(userMapper).should().toDto(user);
     }
@@ -187,11 +187,11 @@ class BasicUserServiceTest {
     @DisplayName("전체 사용자 조회 - 성공")
     void findAll_Success() {
         // Given
-        User user1 = new User("조현아", "zzo@email.com", "password123!", null);
-        User user2 = new User("투현아", "2hyun@email.com", "password123!", null);
+        User user1 = UserFixture.entityZzo();
+        User user2 = UserFixture.entity("투현아", "22@email.com", null);
         List<User> users = List.of(user1, user2);
-        UserDto userDto1 = new UserDto(UUID.randomUUID(), "조현아", "zzo@email.com", null, null);
-        UserDto userDto2 = new UserDto(UUID.randomUUID(), "투현아", "2hyun@email.com", null, null);
+        UserDto userDto1 = UserFixture.dtoZzo();
+        UserDto userDto2 = UserFixture.dto("투현아", "22@email.com", null, Role.USER);
         given(userRepository.findAll()).willReturn(users);
         given(userMapper.toDto(user1)).willReturn(userDto1);
         given(userMapper.toDto(user2)).willReturn(userDto2);
@@ -210,22 +210,32 @@ class BasicUserServiceTest {
     @DisplayName("사용자 수정 - 성공")
     void update_Success() {
         // Given
-        UUID userId = UUID.randomUUID();
-        User user = new User("조현아", "zzo@email.com", "password123!", null);
+        User user = UserFixture.entityZzo();
+        UserDto userDto = UserFixture.dtoZzo();
+        UUID userId = userDto.id();
         ReflectionTestUtils.setField(user, "id", userId);
-        UserUpdateRequest testUpdateRequest = new UserUpdateRequest("뉴현아", "zzo@email.com",
-            "newPassword123");
+        UserUpdateRequest testUpdateRequest = new UserUpdateRequest(
+            "뉴현아",
+            "zzo@email.com",
+            "newPassword123!"
+        );
         User updateUser = new User("뉴현아", "zzo@email.com", "newPassword123!", null);
         UserDto testUpdateUserDto = new UserDto(
             userId,
             updateUser.getUsername(),
             updateUser.getEmail(),
-            null, null
+            null,
+            true,
+            Role.USER
         );
         given(userRepository.existsByEmail(testUpdateRequest.newEmail())).willReturn(false);
         given(userRepository.existsByUsername(testUpdateRequest.newUsername())).willReturn(false);
         given(userRepository.findById(userId)).willReturn(Optional.of(updateUser));
         given(userMapper.toDto(any(User.class))).willReturn(testUpdateUserDto);
+        given(passwordEncoder.encode(any())).willReturn("encodedPw");
+        DiscodeitUserDetails details =
+            new DiscodeitUserDetails(testUpdateUserDto, "encodedPwOrWhatever");
+        given(userDetailsService.loadUserByUsername("뉴현아")).willReturn(details);
 
         // When
         UserDto result = userService.update(userId, testUpdateRequest, Optional.empty());
@@ -238,6 +248,54 @@ class BasicUserServiceTest {
         then(userRepository).should().existsByEmail(testUpdateRequest.newEmail());
         then(userRepository).should().existsByUsername(testUpdateRequest.newUsername());
         then(userMapper).should().toDto(updateUser);
+    }
+
+    @Test
+    @DisplayName("사용자 수정 - 기존 프로필 삭제 후 새 프로필 교체")
+    void update_Success_ProfileReplace() {
+        // Given
+        BinaryContent oldProfile = BinaryContentFixture.entity();
+        User user = UserFixture.entity("프로필유저", "profile@email.com", oldProfile);
+        UUID userId = UUID.randomUUID();
+        ReflectionTestUtils.setField(user, "id", userId);
+        BinaryContentCreateRequest newProfileRequest = BinaryContentFixture.createRequest();
+        Optional<BinaryContentCreateRequest> optionalProfile = Optional.of(newProfileRequest);
+        BinaryContent newProfileEntity = BinaryContentFixture.entity();
+        UserUpdateRequest updateRequest = new UserUpdateRequest(
+            "프로필유저", // 닉네임
+            "profile@email.com",
+            "newPassword123!"
+        );
+        UserDto updatedUserDto = new UserDto(
+            userId,
+            "프로필유저",
+            "profile@email.com",
+            BinaryContentFixture.dto(),
+            true,
+            Role.USER
+        );
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(userRepository.existsByEmail(updateRequest.newEmail())).willReturn(false);
+        given(userRepository.existsByUsername(updateRequest.newUsername())).willReturn(false);
+        given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(newProfileEntity);
+        given(binaryContentStorage.put(any(), any())).willReturn(updatedUserDto.profile().id());
+        given(userMapper.toDto(any(User.class))).willReturn(updatedUserDto);
+        given(passwordEncoder.encode(any())).willReturn("encodedPw");
+        DiscodeitUserDetails details =
+            new DiscodeitUserDetails(updatedUserDto, "encodedPwOrWhatever");
+        given(userDetailsService.loadUserByUsername("프로필유저")).willReturn(details);
+
+        // When
+        UserDto result = userService.update(userId, updateRequest, optionalProfile);
+
+        // Then
+        assertThat(result.id()).isEqualTo(userId);
+        assertThat(result.username()).isEqualTo("프로필유저");
+        assertThat(result.email()).isEqualTo("profile@email.com");
+        assertThat(result.profile().fileName()).isEqualTo(newProfileRequest.fileName());
+        then(binaryContentRepository).should().delete(oldProfile);
+        then(binaryContentRepository).should().save(any(BinaryContent.class));
+        then(binaryContentStorage).should().put(any(), any());
     }
 
     @Test
@@ -324,7 +382,6 @@ class BasicUserServiceTest {
 
         // Then
         then(userRepository).should().findById(userId);
-        then(userStatusRepository).should().deleteByUserId(userId);
         then(userRepository).should().deleteById(userId);
     }
 
@@ -343,30 +400,64 @@ class BasicUserServiceTest {
             .isInstanceOf(UserNotFoundException.class);
         then(userRepository).should().findById(userId);
         then(userRepository).should(never()).deleteById(any());
-        then(userStatusRepository).should(never()).deleteByUserId(any());
     }
 
     @Test
     @DisplayName("사용자 삭제 - 성공(프로필 이미지 있음)")
     void delete_Success_WithProfile() {
         // Given
-        UUID userId = UUID.randomUUID();
-        byte[] profileBytes = "testProfileImage".getBytes();
-        BinaryContent binaryContent = new BinaryContent(
-            "testProfileImage",
-            (long) profileBytes.length,
-            "png");
-        User user = new User("조현아", "zzo@gmail.com", "password123!", binaryContent);
-        ReflectionTestUtils.setField(user, "id", userId);
-        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        BinaryContent profileEntity = BinaryContentFixture.entity();
+        BinaryContentDto profileDto = BinaryContentFixture.dto();
+        BinaryContentCreateRequest binaryContentCreateRequest = BinaryContentFixture.createRequest();
+        Optional<BinaryContentCreateRequest> optionalProfile = Optional.of(
+            binaryContentCreateRequest);
+        User user_profile = UserFixture.entity("프로필유저", "profile@email.com", profileEntity);
+        UserDto userDto2 = UserFixture.dto("프로필유저", "profile@email.com", profileDto, Role.USER);
+        UUID userId = userDto2.id();
+        ReflectionTestUtils.setField(user_profile, "id", userId);
+        given(userRepository.findById(userId)).willReturn(Optional.of(user_profile));
 
         // When
         userService.delete(userId);
 
         // Then
         then(userRepository).should().findById(userId);
-        then(binaryContentRepository).should().delete(binaryContent);
-        then(userStatusRepository).should().deleteByUserId(userId);
+        then(binaryContentRepository).should().delete(profileEntity);
         then(userRepository).should().deleteById(userId);
+    }
+
+    @Test
+    @DisplayName("사용자 권한 변경 - 일반 유저를 채널 매니저로 변경")
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void updateUserRole_UserToChannelManager() {
+        // Given
+        User normalUser = UserFixture.entityZzo();
+        UUID userId = UUID.randomUUID();
+        ReflectionTestUtils.setField(normalUser, "id", userId);
+        RoleUpdateRequest request = new RoleUpdateRequest(userId, Role.CHANNEL_MANAGER);
+        normalUser.updateRole(Role.CHANNEL_MANAGER);
+        ReflectionTestUtils.setField(normalUser, "id", userId);
+        UserDto updatedUserDto = new UserDto(
+            userId,
+            "쪼쪼",
+            "zzo@email.com",
+            null,
+            true,
+            Role.CHANNEL_MANAGER
+        );
+        given(userRepository.findById(userId)).willReturn(Optional.of(normalUser));
+        given(userRepository.save(any(User.class))).willReturn(normalUser);
+        given(userMapper.toDto(any(User.class))).willReturn(updatedUserDto);
+
+        // When
+        UserDto result = userService.updateUserRole(request);
+
+        // Then
+        assertThat(result.id()).isEqualTo(userId);
+        assertThat(result.username()).isEqualTo("쪼쪼");
+        assertThat(result.role()).isEqualTo(Role.CHANNEL_MANAGER);
+        then(userRepository).should().findById(userId);
+        then(userRepository).should().save(any(User.class));
+        then(userMapper).should().toDto(any(User.class));
     }
 }

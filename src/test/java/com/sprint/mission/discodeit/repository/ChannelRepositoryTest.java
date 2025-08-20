@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.sprint.mission.discodeit.config.AppConfig;
+import com.sprint.mission.discodeit.config.TestQuerydslConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
@@ -16,7 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 @DataJpaTest
 @ActiveProfiles("test")
 @DisplayName("ChannelRepository 슬라이스 테스트")
-@Import(AppConfig.class)
+@Import(TestQuerydslConfig.class)
 class ChannelRepositoryTest {
 
     @Autowired

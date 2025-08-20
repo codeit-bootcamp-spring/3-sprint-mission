@@ -17,13 +17,11 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
@@ -36,13 +34,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @Transactional
 @ActiveProfiles("test")
 @DisplayName("Message API 통합테스트")
@@ -69,9 +68,6 @@ public class MessageIntegrationTest {
     @Autowired
     private ReadStatusRepository readStatusRepository;
 
-    @Autowired
-    private UserStatusRepository userStatusRepository;
-
     private User savedUser1;
     private User savedUser2;
     private Channel savedPublicChannel;
@@ -95,13 +91,6 @@ public class MessageIntegrationTest {
 
         User user2 = new User("투현아", "z2@email.com", "password123!", null);
         savedUser2 = userRepository.save(user2);
-
-        // UserStatus 생성
-        UserStatus userStatus1 = new UserStatus(savedUser1, Instant.now());
-        userStatusRepository.save(userStatus1);
-
-        UserStatus userStatus2 = new UserStatus(savedUser2, Instant.now());
-        userStatusRepository.save(userStatus2);
 
         // Channel 생성
         Channel publicChannel = new Channel(ChannelType.PUBLIC, "채널1", "통합 테스트 공개채널");
@@ -165,6 +154,7 @@ public class MessageIntegrationTest {
 
     @Test
     @DisplayName("메시지 수정 - 성공")
+    @WithMockUser(username = "조현아", roles = {"USER"})
     void updateMessage() throws Exception {
         // Given
         UUID messageId = savedMessage.getId();
@@ -184,6 +174,7 @@ public class MessageIntegrationTest {
 
     @Test
     @DisplayName("메시지 삭제 - 성공")
+    @WithMockUser(username = "조현아", roles = {"USER"})
     void deleteMessage() throws Exception {
         // Given
         UUID messageId = savedMessage.getId();

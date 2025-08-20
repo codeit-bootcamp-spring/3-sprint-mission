@@ -1,20 +1,20 @@
 # src/test/resources/application-test.yaml
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
     driver-class-name: org.h2.Driver
     username: sa
     password:
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
         format_sql: true
   sql:
     init:
-      mode: never
+      schema-locations: classpath:test-schema.sql
   jackson:
     time-zone: UTC
 
@@ -23,3 +23,7 @@ logging:
     com.sprint.mission.discodeit: debug
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+
+app:
+  init:
+    admin: false

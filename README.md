@@ -44,7 +44,6 @@ Public / Private 채널 생성, 메시지 전송, 사용자 상태 추적 등의
 ### Test (`test`)
 
 - **Database**: H2 in-memory (PostgreSQL 호환 모드)
-- **JPA**: `ddl-auto: create` (테이블 자동 생성)
 - **Storage**: 테스트용 Mock/Local
 - **Logging**: Debug level, 상세 SQL 로깅
 
@@ -79,6 +78,10 @@ com.sprint.mission.discodeit
 ├── exception               # 커스텀 예외 및 예외 계층 구조
 ├── mapper                  # DTO ↔ Entity 변환 전용 매퍼
 ├── repository              # JPA Repository 인터페이스 정의
+├── security
+│   ├── handler             # Security 이벤트/에러 핸들러
+│   ├── initializer         # Security 초기화
+│   └── permission          # PermissionEvaluator 구현
 ├── service                 # 비즈니스 로직 계층
 │   ├── basic
 ├── storage
@@ -112,3 +115,16 @@ com.sprint.mission.discodeit
 - `logback-spring.xml` 설정 완료
     - `.logs` 디렉토리에 일자별 파일 로그 저장
     - 콘솔 + 파일 동시 출력
+
+## 🔐 보안 및 권한 관리
+- **세션 기반 인증** (`JSESSIONID` Cookie)
+- **커스텀 PermissionEvaluator**
+  - `UserPermissionEvaluator`
+  - `MessagePermissionEvaluator`
+- **Handler**
+  - 로그인/로그아웃 이벤트 핸들러
+  - AccessDenied / SessionExpired 처리
+- **권한 계층**
+  - `USER`
+  - `CHANNEL_MANAGER`
+  - `ADMIN`

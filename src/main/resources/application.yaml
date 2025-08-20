@@ -3,7 +3,7 @@ spring:
     name: discodeit
 
   profiles:
-    active: prod
+    active: dev
 
   servlet:
     multipart:
@@ -76,3 +76,8 @@ logging:
 
 server:
   port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true

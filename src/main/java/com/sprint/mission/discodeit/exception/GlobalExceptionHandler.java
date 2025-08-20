@@ -7,6 +7,7 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -17,6 +18,21 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
+        log.warn("[예외 처리] AuthorizationDeniedException 발생: {}", ex.getMessage(), ex);
+        
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(new ErrorResponse(
+                Instant.now(),
+                "ACCESS_DENIED",
+                "권한이 없습니다.",
+                Map.of(),
+                ex.getClass().getSimpleName(),
+                HttpStatus.FORBIDDEN.value()
+            ));
+    }
 
     @ExceptionHandler(DiscodeitException.class)
     public ResponseEntity<ErrorResponse> handleDiscodeitException(DiscodeitException ex) {
@@ -43,7 +59,6 @@ public class GlobalExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR.value()
             ));
     }
-
 
     /**
      * @Valid 유효성 검사 실패 시 발생하는 예외 처리 (@RequestBody 사용 시)

@@ -8,7 +8,8 @@ CREATE TABLE users
     username   varchar(50) UNIQUE       NOT NULL,
     email      varchar(100) UNIQUE      NOT NULL,
     password   varchar(60)              NOT NULL,
-    profile_id uuid
+    profile_id uuid,
+    role       varchar(20)              NOT NULL
 );
 
 -- BinaryContent
@@ -19,17 +20,6 @@ CREATE TABLE binary_contents
     file_name    varchar(255)             NOT NULL,
     size         bigint                   NOT NULL,
     content_type varchar(100)             NOT NULL
---     ,bytes        bytea        NOT NULL
-);
-
--- UserStatus
-CREATE TABLE user_statuses
-(
-    id             uuid PRIMARY KEY,
-    created_at     timestamp with time zone NOT NULL,
-    updated_at     timestamp with time zone,
-    user_id        uuid UNIQUE              NOT NULL,
-    last_active_at timestamp with time zone NOT NULL
 );
 
 -- Channel
@@ -74,6 +64,13 @@ CREATE TABLE read_statuses
     UNIQUE (user_id, channel_id)
 );
 
+CREATE TABLE persistent_logins
+(
+    username  VARCHAR(64) UNIQUE NOT NULL,
+    series    VARCHAR(64) PRIMARY KEY,
+    token     VARCHAR(64)        NOT NULL,
+    last_used TIMESTAMP          NOT NULL
+);
 
 -- 제약 조건
 -- User (1) -> BinaryContent (1)
@@ -82,13 +79,6 @@ ALTER TABLE users
         FOREIGN KEY (profile_id)
             REFERENCES binary_contents (id)
             ON DELETE SET NULL;
-
--- UserStatus (1) -> User (1)
-ALTER TABLE user_statuses
-    ADD CONSTRAINT fk_user_status_user
-        FOREIGN KEY (user_id)
-            REFERENCES users (id)
-            ON DELETE CASCADE;
 
 -- Message (N) -> Channel (1)
 ALTER TABLE messages
@@ -124,3 +114,5 @@ ALTER TABLE read_statuses
         FOREIGN KEY (channel_id)
             REFERENCES channels (id)
             ON DELETE CASCADE;
+
+DROP TABLE IF EXISTS persistent_logins;

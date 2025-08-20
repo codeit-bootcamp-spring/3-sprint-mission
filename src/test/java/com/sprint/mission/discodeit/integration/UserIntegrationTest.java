@@ -1,23 +1,26 @@
 package com.sprint.mission.discodeit.integration;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,7 +29,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -52,11 +57,15 @@ public class UserIntegrationTest {
     private BinaryContentRepository binaryContentRepository;
 
     @Autowired
-    private UserStatusRepository userStatusRepository;
+    private UserMapper userMapper;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     private User savedUser1;
     private User savedUser2;
     private BinaryContent savedBinaryContent;
+
 
     @BeforeEach
     void setUp() {
@@ -65,18 +74,11 @@ public class UserIntegrationTest {
         savedBinaryContent = binaryContentRepository.save(binaryContent);
 
         // User 생성
-        User user1 = new User("조현아", "zzo@email.com", "password123!", savedBinaryContent);
+        User user1 = new User("조현아", "zzo@email.com", passwordEncoder.encode("password123!"), savedBinaryContent);
         savedUser1 = userRepository.save(user1);
 
-        User user2 = new User("투현아", "z2@email.com", "password123!", null);
+        User user2 = new User("투현아", "z2@email.com", passwordEncoder.encode("password123!"), null);
         savedUser2 = userRepository.save(user2);
-
-        // UserStatus 생성
-        UserStatus userStatus1 = new UserStatus(savedUser1, Instant.now());
-        userStatusRepository.save(userStatus1);
-
-        UserStatus userStatus2 = new UserStatus(savedUser2, Instant.now());
-        userStatusRepository.save(userStatus2);
     }
 
     @Test
@@ -93,6 +95,7 @@ public class UserIntegrationTest {
         // When
         ResultActions result = mockMvc.perform(multipart("/api/users")
             .file(userPart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA));
 
         // Then
@@ -105,9 +108,12 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("유저 전체 조회 - 성공")
     void getUserAll_Success() throws Exception {
+        // Given
+        MockHttpSession session = loginAndGetSession(savedUser1.getUsername(), "password123!");
+
         // When
         ResultActions result = mockMvc.perform(get("/api/users")
-            .contentType(MediaType.APPLICATION_JSON));
+            .session(session));
 
         // Then
         result.andExpect(status().isOk())
@@ -123,6 +129,7 @@ public class UserIntegrationTest {
     @DisplayName("유저 수정 - 성공")
     void updateUser_Success() throws Exception {
         // Given
+        MockHttpSession session = loginAndGetSession(savedUser1.getUsername(), "password123!");
         String userId = savedUser1.getId().toString();
         UserUpdateRequest request = new UserUpdateRequest("뉴현아", "updated@email.com",
             "newPassword123!");
@@ -133,9 +140,10 @@ public class UserIntegrationTest {
 
         // When
         ResultActions result = mockMvc.perform(
-            multipart(HttpMethod.PATCH, "/api/users/{id}", userId)
+            multipart(HttpMethod.PATCH, "/api/users/{userId}", userId)
                 .file(userPart)
-                .contentType(MediaType.MULTIPART_FORM_DATA));
+                .with(csrf())
+                .session(session));
 
         // Then
         result.andExpect(status().isOk())
@@ -145,39 +153,45 @@ public class UserIntegrationTest {
     }
 
     @Test
-    @DisplayName("유저 수정 - 실패 (존재하지 않는 유저)")
-    void updateUser_Failure_UserNotFound() throws Exception {
+    @DisplayName("유저 수정 - 실패 (권한 없음)")
+    void updateUser_Failure_Forbidden() throws Exception {
         // Given
-        String nonExistentUserId = "99999999-9999-9999-9999-999999999999";
-        UserUpdateRequest request = new UserUpdateRequest("뉴현아", "updated@email.com",
-            "newPassword123!");
+        String targetUserId = savedUser1.getId().toString();
+        UserDto otherUserDto = userMapper.toDto(savedUser2);
+        DiscodeitUserDetails principal = new DiscodeitUserDetails(otherUserDto, "{noop}pwd");
+        UserUpdateRequest request = new UserUpdateRequest("뉴현아", "updated@email.com", "newPassword123!");
         String json = objectMapper.writeValueAsString(request);
-
         MockMultipartFile userPart = new MockMultipartFile(
-            "userUpdateRequest", "", "application/json", json.getBytes(StandardCharsets.UTF_8)
+            "userUpdateRequest", "", "application/json",
+            json.getBytes(StandardCharsets.UTF_8)
         );
 
         // When
         ResultActions result = mockMvc.perform(
-            multipart(HttpMethod.PATCH, "/api/users/{id}", nonExistentUserId)
+            multipart(HttpMethod.PATCH, "/api/users/{userId}", targetUserId)
                 .file(userPart)
-                .contentType(MediaType.MULTIPART_FORM_DATA));
+                .with(user(principal))
+                .with(csrf())
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .accept(MediaType.APPLICATION_JSON)
+        );
 
         // Then
-        result.andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.message").exists())
-            .andDo(print());
+        result.andExpect(status().isForbidden())
+        .andDo(print());
     }
 
     @Test
     @DisplayName("유저 삭제 - 성공")
     void deleteUser_Success() throws Exception {
         // Given
+        MockHttpSession session = loginAndGetSession(savedUser1.getUsername(), "password123!");
         String userId = savedUser1.getId().toString();
 
         // When
-        ResultActions result = mockMvc.perform(delete("/api/users/{id}", userId)
-            .contentType(MediaType.APPLICATION_JSON));
+        ResultActions result = mockMvc.perform(delete("/api/users/{userId}", userId)
+            .with(csrf())
+            .session(session));
 
         // Then
         result.andExpect(status().isNoContent())
@@ -185,18 +199,40 @@ public class UserIntegrationTest {
     }
 
     @Test
-    @DisplayName("유저 삭제 - 실패 (존재하지 않는 유저)")
+    @DisplayName("유저 삭제 - 실패 (권한 없는 유저)")
     void deleteUser_Fail_UserNotFound() throws Exception {
         // Given
-        String nonExistentUserId = "99999999-9999-9999-9999-999999999999";
+        MockHttpSession session = loginAndGetSession(savedUser1.getUsername(), "password123!");
+        userRepository.deleteById(savedUser2.getId());
 
         // When
-        ResultActions result = mockMvc.perform(delete("/api/users/{id}", nonExistentUserId)
-            .contentType(MediaType.APPLICATION_JSON));
+        ResultActions result = mockMvc.perform(delete("/api/users/{userId}", savedUser2.getId())
+            .with(csrf())
+            .session(session));
 
         // Then
-        result.andExpect(status().isNotFound())
+        result.andExpect(status().isForbidden())
             .andExpect(jsonPath("$.message").exists())
             .andDo(print());
     }
+
+    @Test
+    void secured_call() throws Exception {
+        MockHttpSession session = loginAndGetSession("조현아", "password123!");
+        mockMvc.perform(get("/api/users").session(session))
+            .andExpect(status().isOk());
+    }
+
+    // 로그인
+    private MockHttpSession loginAndGetSession(String username, String password) throws Exception {
+        var result = mockMvc.perform(post("/api/auth/login")
+                .param("username", username)
+                .param("password", password)
+                .with(csrf()))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andReturn();
+        return (MockHttpSession) result.getRequest().getSession(false);
+    }
+
 }

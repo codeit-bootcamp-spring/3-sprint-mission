@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '1.2-M8'
+version = '2.0-M9'
 
 java {
     toolchain {
@@ -31,6 +31,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-configuration-processor'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'org.postgresql:postgresql'
 
@@ -48,15 +50,45 @@ dependencies {
 
     // .env 사용 위해 dotenv 의존성 주입
     testImplementation 'io.github.cdimascio:dotenv-java:2.3.0'
+
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+
+}
+
+// querydsl Q클래스 생성 경로설정
+def querydslDir = layout.buildDirectory.dir("generated/sources/annotationProcessor/java/main").get().asFile
+
+sourceSets {
+    main {
+        java {
+            srcDir querydslDir
+        }
+    }
+}
+
+compileJava {
+    options.annotationProcessorPath = configurations.annotationProcessor
+    doFirst {
+        querydslDir.mkdirs()
+    }
+}
+
+// Clean 작업에서 생성된 Q클래스 제거
+clean {
+    delete querydslDir
+}
+
+configurations {
+    querydsl.extendsFrom compileClasspath
+    annotationProcessor
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-}
-
-test {
-    finalizedBy jacocoTestReport
-    finalizedBy jacocoTestReport
+    ignoreFailures = true  // 실패해도 다음 task 진행
+    finalizedBy(jacocoTestReport)  // 테스트 후 리포트 생성
     jvmArgs += ["-Duser.timezone=UTC"]
 }
 

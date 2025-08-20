@@ -2,14 +2,14 @@ package com.sprint.mission.discodeit.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.sprint.mission.discodeit.config.AppConfig;
+import com.sprint.mission.discodeit.config.TestQuerydslConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -21,16 +21,17 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @DataJpaTest
 @ActiveProfiles("test")
 @DisplayName("MessageRepository 슬라이스 테스트")
-@Import(AppConfig.class)
+@EnableJpaAuditing
+@Import(TestQuerydslConfig.class)
 class MessageRepositoryTest {
 
     @Autowired
@@ -78,100 +79,92 @@ class MessageRepositoryTest {
     }
 
     @Test
-    @DisplayName("채널 ID로 메시지 조회 - 성공")
-    void findByChannelIdAndCreatedAtLessThan_Success() {
+    @DisplayName("커서 없이 DESC 정렬 조회 시 최신순 limit만큼 반환")
+    void findByChannelIdWithCursor_Desc_NoCursor() {
         // Given
-        Instant currentTime = Instant.now();
-        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        UUID channelId = testChannel.getId();
 
         // When
-        Slice<Message> result = messageRepository.findByChannelIdAndCreatedAtLessThan(
-            testChannel.getId(), currentTime, pageable);
+        List<Message> result = messageRepository.findByChannelIdWithCursor(
+            channelId, null, Sort.Direction.DESC, 2
+        );
 
         // Then
-        assertThat(result.getContent()).hasSize(3);
-        assertThat(result.getContent())
-            .extracting(Message::getContent)
-            .containsExactly("세 번째 메시지", "두 번째 메시지", "첫 번째 메시지"); // 최신순 정렬
-        assertThat(result.hasNext()).isFalse();
-    }
-
-    @Test
-    @DisplayName("채널 ID로 메시지 조회 - 페이징 테스트(size=2로 가정)")
-    void findByChannelIdAndCreatedAtLessThan_WithPaging() {
-        // Given
-        Instant currentTime = Instant.now();
-        Pageable pageable = PageRequest.of(0, 2, Sort.by(Sort.Direction.DESC, "createdAt"));
-
-        // When
-        Slice<Message> result = messageRepository.findByChannelIdAndCreatedAtLessThan(
-            testChannel.getId(), currentTime, pageable);
-
-        // Then
-        assertThat(result.getContent()).hasSize(2);
-        assertThat(result.hasNext()).isTrue(); // 다음 페이지 존재
-        assertThat(result.getContent())
+        assertThat(result).hasSize(2);
+        assertThat(result)
             .extracting(Message::getContent)
             .containsExactly("세 번째 메시지", "두 번째 메시지");
     }
 
     @Test
-    @DisplayName("채널 ID로 메시지 조회 - 존재하지 않는 채널")
-    void findByChannelIdAndCreatedAtLessThan_ChannelNotExists() {
+    @DisplayName("커서 지정 후 DESC 정렬 조회 시 커서보다 이전 데이터만 반환")
+    void findByChannelIdWithCursor_Desc_WithCursor() {
         // Given
-        Instant currentTime = Instant.now();
+        UUID channelId = testChannel.getId();
+        Instant cursor = testMessage3.getCreatedAt();
+
+        // When
+        List<Message> result = messageRepository.findByChannelIdWithCursor(
+            channelId, cursor, Sort.Direction.DESC, 2
+        );
+
+        // Then
+        assertThat(result).hasSize(2);
+        assertThat(result)
+            .extracting(Message::getContent)
+            .containsExactly("두 번째 메시지", "첫 번째 메시지");
+    }
+
+    @Test
+    @DisplayName("커서 없이 ASC 정렬 조회 시 오래된 순으로 limit만큼 반환")
+    void findByChannelIdWithCursor_Asc_NoCursor() {
+        // Given
+        UUID channelId = testChannel.getId();
+        Instant cursor = entityManager.find(Message.class, testMessage1.getId())
+            .getCreatedAt()
+            .truncatedTo(ChronoUnit.MILLIS);
+
+        // When
+        List<Message> result = messageRepository.findByChannelIdWithCursor(
+            channelId, cursor, Sort.Direction.ASC, 2
+        );
+
+        // Then
+        assertThat(result).hasSize(2);
+        assertThat(result)
+            .extracting(Message::getContent)
+            .containsExactly("첫 번째 메시지", "두 번째 메시지");
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 채널 ID 조회 시 빈 리스트 반환")
+    void findByChannelIdWithCursor_NoChannel() {
+        // Given
         UUID nonExistentChannelId = UUID.randomUUID();
-        Pageable pageable = PageRequest.of(0, 10);
 
         // When
-        Slice<Message> result = messageRepository.findByChannelIdAndCreatedAtLessThan(
-            nonExistentChannelId, currentTime, pageable);
+        List<Message> result = messageRepository.findByChannelIdWithCursor(
+            nonExistentChannelId, null, Sort.Direction.DESC, 2
+        );
 
         // Then
-        assertThat(result.getContent()).isEmpty();
-        assertThat(result.hasNext()).isFalse();
-    }
-
-    @Test
-    @DisplayName("채널의 마지막 메시지 시간 조회 - 성공")
-    void findLastMessageTimeByChannelId_Success() {
-        // When
-        Optional<Message> lastMessage = messageRepository.findFirstByChannelIdOrderByCreatedAtDesc(
-            testChannel.getId());
-
-        // Then
-        assertThat(lastMessage).isPresent();
-        Instant actual = lastMessage.get().getCreatedAt().truncatedTo(ChronoUnit.MILLIS);
-        Instant expected = testMessage3.getCreatedAt().truncatedTo(ChronoUnit.MILLIS);
-        assertThat(actual).isEqualTo(expected);
-    }
-
-    @Test
-    @DisplayName("채널의 마지막 메시지 시간 조회 - 메시지가 없는 채널")
-    void findLastMessageTimeByChannelId_NoMessages() {
-        // Given
-        Channel emptyChannel = new Channel(ChannelType.PRIVATE, "빈 채널", null);
-        emptyChannel = entityManager.persistAndFlush(emptyChannel);
-
-        // When
-        Optional<Message> lastMessage = messageRepository.findFirstByChannelIdOrderByCreatedAtDesc(
-            emptyChannel.getId());
-
-        // Then
-        assertThat(lastMessage).isNotPresent();
+        assertThat(result).isEmpty();
     }
 
     @Test
     @DisplayName("채널의 모든 메시지 삭제 - 성공")
     void deleteAllByChannelId_Success() {
+        // Given
+        UUID channelId = testChannel.getId();
+
         // When
-        messageRepository.deleteAllByChannelId(testChannel.getId());
+        messageRepository.deleteAllByChannelId(channelId);
         entityManager.flush();
         entityManager.clear();
 
         // Then
         Slice<Message> result = messageRepository.findByChannelIdAndCreatedAtLessThan(
-            testChannel.getId(),
+            channelId,
             Instant.now(),
             PageRequest.of(0, 10)
         );

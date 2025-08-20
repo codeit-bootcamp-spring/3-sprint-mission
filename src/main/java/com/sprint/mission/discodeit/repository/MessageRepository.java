@@ -8,10 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-@Repository
-public interface MessageRepository extends JpaRepository<Message, UUID> {
+public interface MessageRepository extends JpaRepository<Message, UUID>, MessageCustomRepository {
 
     void deleteAllByChannelId(UUID channelId);
 
@@ -21,5 +21,10 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     @EntityGraph(attributePaths = {"author", "author.profile", "channel"})
     Optional<Message> findFirstByChannelIdOrderByCreatedAtDesc(UUID channelId);
+
+    @Query("SELECT m.author.username FROM Message m WHERE m.id = :messageId")
+    Optional<String> findAuthorUsernameById(@Param("messageId") UUID messageId);
+
+    long countByChannelId(UUID channelId);
 }
 

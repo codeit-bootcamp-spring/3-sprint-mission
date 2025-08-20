@@ -23,12 +23,11 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,26 +98,45 @@ public class BasicMessageService implements MessageService {
 
     @Transactional(readOnly = true)
     @Override
-    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createAt,
-        Pageable pageable) {
-        Slice<MessageDto> slice = messageRepository.findByChannelIdAndCreatedAtLessThan(channelId,
-                Optional.ofNullable(createAt).orElse(Instant.now()), pageable)
-            .map(messageMapper::toDto);
+    public PageResponse<MessageDto> findAllByChannelId(
+        UUID channelId,
+        Instant cursor,
+        String direction,
+        int limit
+    ) {
+        log.info("[MessageService] 메시지 목록 조회 시작 - channelId={}, cursor={}, direction={}, limit={}",
+            channelId, cursor, direction, limit);
 
-        log.info("[message] 전체 조회 요청: channelId={}, size={}", channelId, slice.getContent().size());
-        log.debug("[message] Slice 정보: {}", slice);
-
-        Instant nextCursor = null;
-        if (slice.hasContent()) {
-            nextCursor = slice.getContent().get(slice.getContent().size() - 1)
-                .createdAt();
+        Sort.Direction sortDirection = Sort.Direction.fromString(direction.toUpperCase());
+        List<Message> messages = messageRepository.findByChannelIdWithCursor(
+            channelId,
+            cursor,
+            sortDirection,
+            limit + 1
+        );
+        boolean hasNext = messages.size() > limit;
+        if (hasNext) {
+            messages = messages.subList(0, limit);
         }
 
-        log.info("[message] 전체 조회 응답: channelId={}, 결과 개수={}, nextCursor={}",
-            channelId, slice.getContent().size(), nextCursor);
-        return pageResponseMapper.fromSlice(slice, nextCursor);
+        List<MessageDto> dtos = messages.stream()
+            .map(messageMapper::toDto)
+            .toList();
+
+        Instant nextCursor = messages.isEmpty()
+            ? null
+            : messages.get(messages.size() - 1).getCreatedAt();
+
+        return new PageResponse<>(
+            dtos,
+            nextCursor != null ? nextCursor.toString() : null,
+            dtos.size(),
+            hasNext,
+            messageRepository.countByChannelId(channelId)
+        );
     }
 
+    @PreAuthorize("@messagePermissionEvaluator.isAuthor(#messageId, authentication.name)")
     @Override
     @Transactional
     public MessageDto update(UUID messageId, MessageUpdateRequest request) {
@@ -137,6 +155,7 @@ public class BasicMessageService implements MessageService {
         return messageMapper.toDto(message);
     }
 
+    @PreAuthorize("@messagePermissionEvaluator.isAuthor(#messageId, authentication.name)")
     @Transactional
     @Override
     public void delete(UUID messageId) {

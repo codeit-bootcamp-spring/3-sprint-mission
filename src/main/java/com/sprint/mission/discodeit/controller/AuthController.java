@@ -1,22 +1,18 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.request.LoginRequest;
-import com.sprint.mission.discodeit.service.AuthService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
+import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,29 +24,48 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Auth", description = "인증 API")
 public class AuthController {
 
-    private final AuthService authService;
+    private final UserService userService;
 
-    @PostMapping(path = "/login")
-    @Operation(summary = "로그인")
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200", description = "로그인 성공",
-            content = @Content(schema = @Schema(implementation = UserDto.class))
-        ),
-        @ApiResponse(
-            responseCode = "400", description = "비밀번호가 일치하지 않음",
-            content = @Content(examples = @ExampleObject(value = "Wrong password"))
-        ),
-        @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
-            content = @Content(examples = @ExampleObject(value = "User with username {username} not found"))
-        )
-    })
-    public ResponseEntity<UserDto> login(
-        @Parameter(description = "로그인 정보") @RequestBody @Valid LoginRequest loginRequest) {
-        UserDto user = authService.login(loginRequest);
+    @GetMapping("/csrf-token")
+    public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
+        String tokenValue = csrfToken.getToken();
+        log.debug("CSRF 토큰 요청: {}", tokenValue);
 
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(user);
+        log.debug("[AuthController] ========== CSRF 토큰 발급 요청 시작 ==========");
+        log.debug("[AuthController] 파라미터 이름: " + csrfToken.getParameterName());
+        log.debug("[AuthController] 헤더 이름: " + csrfToken.getHeaderName());
+        log.debug("[AuthController] 토큰 값: " + csrfToken.getToken());
+        log.debug("[AuthController] ========== CSRF 토큰 발급 완료 ==========");
+
+        return ResponseEntity.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDto> getCurrentUser(
+        @AuthenticationPrincipal DiscodeitUserDetails userDetails) {
+        log.debug("[AuthController] /me 요청 시작");
+        log.debug("[AuthController] userDetails = {}", userDetails);
+        log.debug("[AuthController] dto = {}", userDetails != null ? userDetails.getUserDto() : "null");
+        
+        if (userDetails == null) {
+            log.warn("[AuthController] /me 요청 실패 - 인증 정보 null");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+        
+        log.debug("[AuthController] /me 요청 성공 - 인증된 사용자 username: {}", userDetails.getUsername());
+
+        return ResponseEntity.ok(userDetails.getUserDto());
+    }
+
+    @PutMapping("/role")
+    public ResponseEntity<UserDto> updateRole(
+        @RequestBody RoleUpdateRequest roleUpdateRequest) {
+
+        log.debug("[AuthController] 사용자 권한 변경 요청");
+        log.debug("[AuthController] 요청 데이터: " + roleUpdateRequest);
+
+        UserDto updatedUser = userService.updateUserRole(roleUpdateRequest);
+        return ResponseEntity.ok(updatedUser);
+
     }
 }

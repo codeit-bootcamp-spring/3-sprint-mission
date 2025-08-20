@@ -7,6 +7,8 @@ spring:
     username: discodeit_user
     password: discodeit1234
   jpa:
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -16,6 +18,7 @@ logging:
     com.sprint.mission.discodeit: debug
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+    org.springframework.security: trace
 
 management:
   endpoint:

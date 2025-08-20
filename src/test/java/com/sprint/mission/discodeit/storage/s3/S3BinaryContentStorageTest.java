@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StreamUtils;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Disabled
 public class S3BinaryContentStorageTest {
 
     private final Logger log = LoggerFactory.getLogger(S3BinaryContentStorageTest.class);

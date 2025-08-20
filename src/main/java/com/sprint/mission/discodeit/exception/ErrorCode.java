@@ -10,9 +10,6 @@ public enum ErrorCode {
     DUPLICATE_USER("이미 존재하는 사용자입니다.", HttpStatus.CONFLICT),
     DUPLICATE_EMAIL("이미 존재하는 이메일입니다.", HttpStatus.CONFLICT),
 
-    // 로그인
-    MISSING_PASSWORD("올바른 비밀번호가 아닙니다.", HttpStatus.BAD_REQUEST),
-
     // 채널
     CHANNEL_NOT_FOUND("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     PRIVATE_CHANNEL_UPDATE("private 채널은 수정할 수 없습니다.", HttpStatus.FORBIDDEN),
@@ -28,18 +25,12 @@ public enum ErrorCode {
     DUPLICATE_FILE("파일이 이미 존재합니다.", HttpStatus.CONFLICT),
     FILE_UPLOAD_INVALID("파일 업로드 대상 또는 내용이 잘못되었습니다.", HttpStatus.BAD_REQUEST),
     FILE_SAVE_FAILED("파일 저장 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    FILE_DOWNLOAD_FAILED("파일 다운로드 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_INIT_FAILED("파일 초기화 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_READ_FAILED("파일을 불러오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // readStatus
     READSTATUS_NOT_FOUND("ReadStatus를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    READSTATUS_ALREADY_EXISTS("ReadStatus가 이미 존재합니다.", HttpStatus.CONFLICT),
-
-    // userStatus
-    USERSTATUS_NOT_FOUND("UserStatus를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    DUPLICATE_USERSTATUS("userStatus가 이미 존재합니다.", HttpStatus.CONFLICT);
-
+    READSTATUS_ALREADY_EXISTS("ReadStatus가 이미 존재합니다.", HttpStatus.CONFLICT);
     private final String message;
     private final int status;
 

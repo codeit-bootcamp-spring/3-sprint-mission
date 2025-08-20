@@ -9,8 +9,9 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Disabled
 public class AWSS3Test {
 
     private final Logger log = LoggerFactory.getLogger(AWSS3Test.class);

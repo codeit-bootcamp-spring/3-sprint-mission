@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
@@ -29,6 +31,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -42,6 +45,7 @@ import org.springframework.test.web.servlet.ResultActions;
 @ActiveProfiles("test")
 @DisplayName("MessageController 슬라이스 테스트")
 @Import({GlobalExceptionHandler.class})
+@AutoConfigureMockMvc(addFilters = false)
 class MessageControllerTest {
 
     @Autowired
@@ -117,13 +121,32 @@ class MessageControllerTest {
     void findAllByChannelId_Success() throws Exception {
         // Given
         UUID channelId = UUID.randomUUID();
-        MessageDto message1 = new MessageDto(UUID.randomUUID(), Instant.now(), null, "메시지1",
-            channelId, null, null);
-        MessageDto message2 = new MessageDto(UUID.randomUUID(), Instant.now(), null, "메시지2",
-            channelId, null, null);
-        PageResponse<MessageDto> response = new PageResponse<>(List.of(message1, message2), null,
-            2, false, null);
-        given(messageService.findAllByChannelId(eq(channelId), any(), any())).willReturn(response);
+        MessageDto message1 = new MessageDto(
+            UUID.randomUUID(),
+            Instant.now(),
+            null,
+            "메시지1",
+            channelId,
+            null,
+            null
+        );
+        MessageDto message2 = new MessageDto(
+            UUID.randomUUID(),
+            Instant.now(),
+            null,
+            "메시지2",
+            channelId,
+            null,
+            null
+        );
+        PageResponse<MessageDto> response = new PageResponse<>(
+            List.of(message1, message2),
+            null,
+            2,
+            false,
+            null
+        );
+        given(messageService.findAllByChannelId(eq(channelId), any(), anyString(), anyInt())).willReturn(response);
 
         // When
         ResultActions result = mockMvc.perform(get("/api/messages")
@@ -133,6 +156,7 @@ class MessageControllerTest {
         result.andExpect(status().isOk())
             .andExpect(jsonPath("$.content.length()").value(2))
             .andExpect(jsonPath("$.content[0].content").value("메시지1"))
+            .andExpect(jsonPath("$.content[1].content").value("메시지2"))
             .andDo(print());
     }
 

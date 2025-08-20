@@ -47,9 +47,17 @@ public interface MessageApi {
         content = @Content(schema = @Schema(implementation = PageResponse.class))
     )
     ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
-        @Parameter(description = "조회할 Channel ID") UUID channelId,
-        @Parameter(description = "페이징 커서 정보") Instant cursor,
-        @Parameter(description = "페이징 정보", example = "{\"size\": 50, \"sort\": \"createdAt,desc\"}") Pageable pageable
+        @Parameter(description = "조회할 Channel ID", required = true)
+        UUID channelId,
+
+        @Parameter(description = "커서 (마지막 메시지의 createdAt 시각)")
+        Instant cursor,
+
+        @Parameter(description = "정렬 방향 (ASC 또는 DESC)", example = "DESC")
+        String direction,
+
+        @Parameter(description = "가져올 메시지 개수", example = "50")
+        int limit
     );
 
     @Operation(summary = "Message 내용 수정")

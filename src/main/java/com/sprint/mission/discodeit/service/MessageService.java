@@ -17,8 +17,7 @@ public interface MessageService {
 
     MessageDto find(UUID id);
 
-    PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createAt,
-        Pageable pageable);
+    PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor, String direction, int limit);
 
     MessageDto update(UUID messageId, MessageUpdateRequest request);
 
