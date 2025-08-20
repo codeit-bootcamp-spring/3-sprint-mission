@@ -35,7 +35,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
-    private final JwtRegistry jwtRegistry; // ✅ 추가
+    private final JwtRegistry jwtRegistry;
 
     @Transactional
     @Override
@@ -87,7 +87,7 @@ public class BasicUserService implements UserService {
                     return new UserNotFoundException(userId);
                 });
 
-        boolean online = jwtRegistry.hasActiveJwtInformationByUserId(user.getId()); // ✅ 온라인 계산
+        boolean online = jwtRegistry.hasActiveJwtInformationByUserId(user.getId());
         return userMapper.toDto(user).withOnline(online);
     }
 
@@ -97,14 +97,15 @@ public class BasicUserService implements UserService {
         log.debug("모든 사용자 조회 요청");
         return userRepository.findAll().stream()
                 .map(user -> userMapper.toDto(user)
-                        .withOnline(jwtRegistry.hasActiveJwtInformationByUserId(user.getId()))) // ✅ 온라인 계산
+                        .withOnline(jwtRegistry.hasActiveJwtInformationByUserId(user.getId())))
                 .toList();
     }
 
     @Transactional
     @Override
     @PreAuthorize("#userId == principal.id")
-    public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
+    public UserDto update(UUID userId,
+                          UserUpdateRequest userUpdateRequest,
                           Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
 
         log.info("사용자 수정 요청: id={}, newUsername={}, newEmail={}",
@@ -118,13 +119,29 @@ public class BasicUserService implements UserService {
 
         String newUsername = userUpdateRequest.newUsername();
         String newEmail = userUpdateRequest.newEmail();
-        if (userRepository.existsByEmail(newEmail)) {
-            log.error("이메일 중복(수정): {}", newEmail);
-            throw new UserAlreadyExistException("email", newEmail);
+        String newPassword = userUpdateRequest.newPassword();
+
+        if (newUsername != null && !newUsername.isBlank() && !newUsername.equals(user.getUsername())) {
+            if (userRepository.existsByUsername(newUsername)) {
+                log.error("사용자명 중복(수정): {}", newUsername);
+                throw new UserAlreadyExistException("username", newUsername);
+            }
+        } else {
+            newUsername = user.getUsername();
         }
-        if (userRepository.existsByUsername(newUsername)) {
-            log.error("사용자명 중복(수정): {}", newUsername);
-            throw new UserAlreadyExistException("username", newUsername);
+
+        if (newEmail != null && !newEmail.isBlank() && !newEmail.equals(user.getEmail())) {
+            if (userRepository.existsByEmail(newEmail)) {
+                log.error("이메일 중복(수정): {}", newEmail);
+                throw new UserAlreadyExistException("email", newEmail);
+            }
+        } else {
+            newEmail = user.getEmail();
+        }
+
+        String newEncodedPassword = null;
+        if (newPassword != null && !newPassword.isBlank()) {
+            newEncodedPassword = passwordEncoder.encode(newPassword);
         }
 
         BinaryContent nullableProfile = optionalProfileCreateRequest
@@ -141,12 +158,7 @@ public class BasicUserService implements UserService {
                 })
                 .orElse(null);
 
-        String newEncodedPassword = null;
-        if (userUpdateRequest.newPassword() != null && !userUpdateRequest.newPassword().isBlank()) {
-            newEncodedPassword = passwordEncoder.encode(userUpdateRequest.newPassword());
-        }
-
-        user.update(userUpdateRequest.newUsername(), userUpdateRequest.newEmail(), newEncodedPassword, nullableProfile);
+        user.update(newUsername, newEmail, newEncodedPassword, nullableProfile);
 
         log.info("사용자 수정 완료: id={}", userId);
 
@@ -177,7 +189,7 @@ public class BasicUserService implements UserService {
         user.updateRole(newRole);
         log.info("사용자 권한 변경: id={}, newRole={}", userId, newRole);
 
-        boolean online = jwtRegistry.hasActiveJwtInformationByUserId(user.getId()); // ✅ 온라인 계산
+        boolean online = jwtRegistry.hasActiveJwtInformationByUserId(user.getId());
         return userMapper.toDto(user).withOnline(online);
     }
 }
