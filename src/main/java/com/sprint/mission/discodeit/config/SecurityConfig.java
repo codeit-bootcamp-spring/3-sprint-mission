@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +22,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -44,24 +44,11 @@ public class SecurityConfig {
   private final LoginFailureHandler loginFailureHandler;
   private final ForbiddenAccessDeniedHandler accessDeniedHandler;
 
-  @Autowired
-  private Environment environment;
-
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry)
+  public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry,
+      Environment environment)
       throws Exception {
-    http
-        .csrf(csrf -> {
-          if (Arrays.asList(environment.getActiveProfiles()).contains("test")) {
-            csrf.disable();
-            log.warn("CSRF protection disabled for profile: {}",
-                Arrays.toString(environment.getActiveProfiles()));
-          } else {
-            csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler());
-          }
-        })
+    http.csrf(csrfConfigurer -> configureCsrf(csrfConfigurer, environment))
         .sessionManagement(management -> management
             .sessionConcurrency(concurrency -> concurrency
                 .maximumSessions(1)
@@ -81,12 +68,12 @@ public class SecurityConfig {
                 "/api/auth/login",
                 "/api/auth/logout"
             ).permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
             .requestMatchers(
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
                 "/actuator/**"
-            ).permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+            ).hasRole("ADMIN")
             .requestMatchers(HttpMethod.POST, "/actuator/loggers/**").hasRole("ADMIN")
             .anyRequest().authenticated()
         )
@@ -106,6 +93,23 @@ public class SecurityConfig {
                 new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
         );
     return http.build();
+  }
+
+  private void configureCsrf(
+      CsrfConfigurer<HttpSecurity> csrf,
+      Environment environment) {
+    if (isTestProfile(environment)) {
+      csrf.disable();
+      log.warn("CSRF protection disabled for profile: {}",
+          Arrays.toString(environment.getActiveProfiles()));
+    } else {
+      csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+          .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler());
+    }
+  }
+
+  private boolean isTestProfile(Environment environment) {
+    return Arrays.asList(environment.getActiveProfiles()).contains("test");
   }
 
   @Bean
@@ -156,9 +160,7 @@ public class SecurityConfig {
    */
   @Bean
   public RoleHierarchy roleHierarchy() {
-    RoleHierarchy hierarchy = RoleHierarchyImpl.fromHierarchy(
-        "ROLE_ADMIN > ROLE_CHANNEL_MANAGER > ROLE_USER");
-    return hierarchy;
+    return RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_CHANNEL_MANAGER > ROLE_USER");
   }
 
   /**

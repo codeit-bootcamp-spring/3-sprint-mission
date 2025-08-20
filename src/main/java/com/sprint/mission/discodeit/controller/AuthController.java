@@ -37,7 +37,8 @@ public class AuthController implements AuthApi {
   @GetMapping("/me")
   public ResponseEntity<UserResponse> me(
       @AuthenticationPrincipal DiscodeitUserDetails userDetails) {
-    return ResponseEntity.ok(userDetails.getUser());
+    UserResponse user = userService.findById(userDetails.getUser().id());
+    return ResponseEntity.ok(user);
   }
 
   @Override
