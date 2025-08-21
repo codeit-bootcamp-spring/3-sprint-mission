@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.security.handler.ForbiddenAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.handler.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.handler.JwtLogoutHandler;
 import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestHandler;
@@ -48,6 +49,7 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(
       HttpSecurity http,
       JwtLoginSuccessHandler jwtLoginSuccessHandler,
+      JwtLogoutHandler jwtLogoutHandler,
       LoginFailureHandler loginFailureHandler,
       ForbiddenAccessDeniedHandler accessDeniedHandler,
       Environment environment,
@@ -69,8 +71,7 @@ public class SecurityConfig {
             ).permitAll()
             .requestMatchers(
                 "/api/auth/csrf-token",
-                "/api/auth/login",
-                "/api/auth/logout"
+                "/api/auth/login"
             ).permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
             .requestMatchers(
@@ -94,6 +95,7 @@ public class SecurityConfig {
         .rememberMe(Customizer.withDefaults())
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
+            .addLogoutHandler(jwtLogoutHandler)
             .logoutSuccessHandler(
                 new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
         );
