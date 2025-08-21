@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.security.handler.ForbiddenAccessDeniedHandle
 import com.sprint.mission.discodeit.security.handler.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
+import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -31,9 +33,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Slf4j
@@ -48,8 +50,12 @@ public class SecurityConfig {
       JwtLoginSuccessHandler jwtLoginSuccessHandler,
       LoginFailureHandler loginFailureHandler,
       ForbiddenAccessDeniedHandler accessDeniedHandler,
-      Environment environment)
-      throws Exception {
+      Environment environment,
+      com.sprint.mission.discodeit.security.jwt.JwtTokenProvider jwtTokenProvider,
+      org.springframework.security.core.userdetails.UserDetailsService userDetailsService
+  ) throws Exception {
+    JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider,
+        userDetailsService);
     http.csrf(csrfConfigurer -> configureCsrf(csrfConfigurer, environment))
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -79,6 +85,7 @@ public class SecurityConfig {
             .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             .accessDeniedHandler(accessDeniedHandler)
         )
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
             .successHandler(jwtLoginSuccessHandler)
@@ -102,7 +109,7 @@ public class SecurityConfig {
           Arrays.toString(environment.getActiveProfiles()));
     } else {
       csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-          .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler());
+          .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler());
     }
   }
 

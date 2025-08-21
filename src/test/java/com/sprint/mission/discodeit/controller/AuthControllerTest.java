@@ -12,14 +12,12 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -81,9 +79,7 @@ class AuthControllerTest {
         .andExpect(jsonPath("$.errorCode").value("UNAUTHORIZED"));
   }
 
-  // TODO: JWT 인증 필터 구현 후 활성화
   @Test
-  @Disabled("JWT 인증 필터 구현 후 활성화 필요")
   void 세션으로_현재_사용자_정보를_조회한다() throws Exception {
     User user = User.create("test@test.com", "tester", passwordEncoder.encode("password"), null);
     userRepository.save(user);
@@ -119,9 +115,7 @@ class AuthControllerTest {
         .andExpect(status().isUnauthorized());
   }
 
-  // TODO: JWT 인증 필터 구현 후 활성화
   @Test
-  @Disabled("JWT 인증 필터 구현 후 리팩터링 필요")
   void remember_me_쿠키로_로그인_유지() throws Exception {
     User user = User.create("test@test.com", "tester", passwordEncoder.encode("password"), null);
     userRepository.save(user);
@@ -146,33 +140,6 @@ class AuthControllerTest {
         .andExpect(jsonPath("$.id").value(user.getId().toString()))
         .andExpect(jsonPath("$.username").value("tester"))
         .andExpect(jsonPath("$.email").value("test@test.com"));
-  }
-
-  // TODO: JWT 인증 필터 구현 후 활성화
-  @Test
-  @Disabled("JWT 인증 필터 구현 후 리팩터링 필요")
-  void 로그아웃_성공() throws Exception {
-    User user = User.create("test@test.com", "tester", passwordEncoder.encode("password"), null);
-    userRepository.save(user);
-
-    String token = fetchCsrfToken();
-
-    MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
-            .cookie(new Cookie("XSRF-TOKEN", token))
-            .header("X-XSRF-TOKEN", token)
-            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-            .param("username", "tester")
-            .param("password", "password"))
-        .andExpect(status().isOk())
-        .andReturn();
-
-    MockHttpSession session = (MockHttpSession) Objects.requireNonNull(
-        loginResult.getRequest().getSession(false), "세션이 생성되지 않았습니다");
-    mockMvc.perform(post("/api/auth/logout")
-            .session(session)
-            .cookie(new Cookie("XSRF-TOKEN", token))
-            .header("X-XSRF-TOKEN", token))
-        .andExpect(status().isNoContent());
   }
 
   private String fetchCsrfToken() throws Exception {

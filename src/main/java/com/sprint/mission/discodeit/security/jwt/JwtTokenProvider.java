@@ -131,11 +131,21 @@ public class JwtTokenProvider {
     return refreshCookie;
   }
 
-  public Cookie generateRefreshTokenExpirationCookie() {
+  public Cookie genereateRefreshTokenExpirationCookie() {
     Cookie refreshCookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, "");
     refreshCookie.setHttpOnly(true);
+    refreshCookie.setSecure(true); // 운영 HTTPS 사용
     refreshCookie.setPath("/");
     refreshCookie.setMaxAge(0);
     return refreshCookie;
+  }
+
+  public String getUsernameFromToken(String token) {
+    try {
+      SignedJWT signedJWT = SignedJWT.parse(token);
+      return signedJWT.getJWTClaimsSet().getSubject();
+    } catch (Exception e) {
+      return null;
+    }
   }
 }
