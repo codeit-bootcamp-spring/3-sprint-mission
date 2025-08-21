@@ -6,7 +6,9 @@ import com.sprint.mission.discodeit.security.handler.JwtLogoutHandler;
 import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestHandler;
+import com.sprint.mission.discodeit.security.jwt.InMemoryJwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -71,6 +73,7 @@ public class SecurityConfig {
             ).permitAll()
             .requestMatchers(
                 "/api/auth/csrf-token",
+                "/api/auth/refresh",
                 "/api/auth/login"
             ).permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
@@ -179,5 +182,10 @@ public class SecurityConfig {
     DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
     handler.setRoleHierarchy(roleHierarchy);
     return handler;
+  }
+
+  @Bean
+  public JwtRegistry jwtRegistry() {
+    return new InMemoryJwtRegistry(1);
   }
 }

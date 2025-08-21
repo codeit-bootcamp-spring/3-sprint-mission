@@ -2,9 +2,11 @@ package com.sprint.mission.discodeit.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
-import com.sprint.mission.discodeit.dto.response.JwtDto;
+import com.sprint.mission.discodeit.dto.data.JwtDto;
+import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.exception.auth.InvalidCredentialsException;
 import com.sprint.mission.discodeit.exception.auth.TokenGenerationException;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
 import jakarta.servlet.http.Cookie;
@@ -25,6 +27,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
   private final ObjectMapper objectMapper;
   private final JwtTokenProvider tokenProvider;
+  private final JwtRegistry jwtRegistry;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request,
@@ -48,6 +51,13 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
           userDetails.getUser(),
           accessToken
       );
+
+      JwtInformation jwtInformation = new JwtInformation(
+          userDetails.getUser(),
+          accessToken,
+          refreshToken
+      );
+      jwtRegistry.registerJwtInformation(jwtInformation);
 
       response.setStatus(HttpServletResponse.SC_OK);
       objectMapper.writeValue(response.getWriter(), jwtDto);
