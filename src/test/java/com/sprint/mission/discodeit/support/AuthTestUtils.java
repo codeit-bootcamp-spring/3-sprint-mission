@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.support;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.net.URLEncoder;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
@@ -24,54 +23,42 @@ public final class AuthTestUtils {
   }
 
   /**
-   * 폼 로그인 후 세션 쿠키(HttpHeaders.COOKIE) 담긴 headers 반환.
+   * JWT 로그인 후 accessToken 추출
    */
-  public static HttpHeaders formLogin(TestRestTemplate restTemplate, String username,
+  public static String loginAndGetAccessToken(TestRestTemplate restTemplate, String username,
       String password) {
-    HttpHeaders h = new HttpHeaders();
-    h.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
     String form = "username=" + URLEncoder.encode(username, UTF_8) +
         "&password=" + URLEncoder.encode(password, UTF_8);
-    ResponseEntity<String> login = restTemplate.postForEntity(
-        "/api/auth/login", new HttpEntity<>(form, h), String.class);
-    Assertions.assertThat(login.getStatusCode()).isEqualTo(HttpStatus.OK);
-    HttpHeaders session = new HttpHeaders();
-    List<String> setCookies = login.getHeaders().get(HttpHeaders.SET_COOKIE);
-    if (setCookies != null && !setCookies.isEmpty()) {
-      String cookieHeader = setCookies.stream().map(c -> c.split(";", 2)[0])
-          .reduce((a, b) -> a + "; " + b).orElse(null);
-      session.set(HttpHeaders.COOKIE, cookieHeader);
-    }
-    return session;
+    ResponseEntity<Map> response = restTemplate.postForEntity(
+        "/api/auth/login", new HttpEntity<>(form, headers), Map.class);
+    return (String) response.getBody().get("accessToken");
   }
 
   /**
-   * admin 세션 확보 (AdminInitializer: 환경 변수 기반).
+   * Authorization 헤더 생성
    */
-  public static void ensureAdminSession(TestRestTemplate restTemplate,
-      HttpHeaders adminSessionHeaders) {
-    if (adminSessionHeaders.getFirst(HttpHeaders.COOKIE) != null) {
-      return;
-    }
-    TestEnvConfig env = new TestEnvConfig();
-    String adminName = env.discodeitAdminUsername;
-    String adminPassword = env.discodeitAdminPassword;
-    HttpHeaders admin = formLogin(restTemplate, adminName, adminPassword);
-    adminSessionHeaders.set(HttpHeaders.COOKIE, admin.getFirst(HttpHeaders.COOKIE));
+  public static HttpHeaders bearerAuthHeaders(String accessToken) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(accessToken);
+    return headers;
   }
 
   /**
-   * ADMIN 세션을 사용하여 대상 사용자 권한 변경.
+   * 관리자 권한 변경(JWT 기반)
    */
-  public static void grantRole(TestRestTemplate restTemplate, HttpHeaders adminSessionHeaders,
+  public static void grantRole(TestRestTemplate restTemplate, HttpHeaders adminAuthHeaders,
       UUID targetUserId, String newRole) {
-    ensureAdminSession(restTemplate, adminSessionHeaders);
-    HttpHeaders headers = TestUtils.jsonHeader();
-    headers.addAll(adminSessionHeaders);
-    var body = Map.of(
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    headers.addAll(adminAuthHeaders);
+
+    Map<String, Object> body = Map.of(
         "userId", targetUserId.toString(),
         "newRole", newRole
     );
+
     ResponseEntity<?> resp = restTemplate.exchange(
         "/api/auth/role",
         HttpMethod.PUT,

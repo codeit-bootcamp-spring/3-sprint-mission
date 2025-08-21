@@ -115,7 +115,8 @@ public class AcceptanceFixture {
   }
 
   public static HttpHeaders login(TestRestTemplate restTemplate, String username, String password) {
-    return AuthTestUtils.formLogin(restTemplate, username, password);
+    String accessToken = AuthTestUtils.loginAndGetAccessToken(restTemplate, username, password);
+    return AuthTestUtils.bearerAuthHeaders(accessToken);
   }
 
   public static ResponseEntity<ChannelResponse> createPublicChannel(

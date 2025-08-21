@@ -39,3 +39,4 @@ logging:
   level:
     root: info
     com.sprint.mission: debug
+    org.springframework.security: trace

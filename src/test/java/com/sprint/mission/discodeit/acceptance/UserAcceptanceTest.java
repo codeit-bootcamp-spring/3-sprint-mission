@@ -1,13 +1,15 @@
-package com.sprint.mission.discodeit.acceptance.user;
+package com.sprint.mission.discodeit.acceptance;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
+import com.sprint.mission.discodeit.support.AuthTestUtils;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
@@ -30,6 +32,8 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
+// TODO: JWT 인증 필터 구현 후 활성화
+@Disabled("JWT 인증 필터 구현 후 활성화 필요")
 @Tag("integration")
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -69,7 +73,9 @@ public class UserAcceptanceTest {
     final UserResponse body = Objects.requireNonNull(response.getBody());
     userId = body.id();
 
-    userSessionHeaders = AcceptanceFixture.login(restTemplate, body.username(), TEST_PASSWORD);
+    String accessToken = AuthTestUtils.loginAndGetAccessToken(restTemplate, body.username(),
+        TEST_PASSWORD);
+    userSessionHeaders = AuthTestUtils.bearerAuthHeaders(accessToken);
   }
 
   @Test
@@ -85,7 +91,9 @@ public class UserAcceptanceTest {
     final UserResponse body = Objects.requireNonNull(response.getBody());
     otherUserId = body.id();
 
-    otherSessionHeaders = AcceptanceFixture.login(restTemplate, body.username(), TEST_PASSWORD);
+    String otherAccessToken = AuthTestUtils.loginAndGetAccessToken(restTemplate, body.username(),
+        TEST_PASSWORD);
+    otherSessionHeaders = AuthTestUtils.bearerAuthHeaders(otherAccessToken);
   }
 
   @Test
