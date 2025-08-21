@@ -58,8 +58,10 @@ public class SecurityConfig {
                 idx -> String.format("\t[%s/%s] %s", idx + 1, filterSize,
                     filterChain.getFilters().get(idx).getClass())).toList();
 
-            System.out.println("현재 적용된 필터 체인 목록:");
-            filterNames.forEach(System.out::println);
+            log.debug("현재 적용된 필터 체인 목록:");
+            for (String filter : filterNames) {
+                log.debug("{}", filter);
+            }
         };
     }
 
