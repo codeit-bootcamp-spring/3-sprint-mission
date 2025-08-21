@@ -71,7 +71,8 @@ public class BasicAuthService implements AuthService {
       throw new UserNotFoundException();
     }
 
-    if(!jwtRegistry.hasActiveJwtInformationByUserId(refreshToken)){
+    String userId = jwtTokenProvider.extractUserId(refreshToken);
+    if(!jwtRegistry.hasActiveJwtInformationByUserId(userId)){
       throw new TokenAcquisitionFailedException("올바르지 않은 리프레쉬 토큰입니다.");
     }
 
