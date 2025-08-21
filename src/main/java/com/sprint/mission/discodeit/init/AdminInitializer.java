@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +19,15 @@ public class AdminInitializer implements ApplicationRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${admin.username}")
+    private String username;
+
+    @Value("${admin.email}")
+    private String email;
+
+    @Value("${admin.password}")
+    private String password;
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
         boolean hasAdmin = userRepository.existsByRole(Role.ADMIN);
@@ -25,9 +35,9 @@ public class AdminInitializer implements ApplicationRunner {
         // ADMIN 계정이 없는 경우 초기화
         if (!hasAdmin) {
             User admin = User.builder()
-                .username("admin")
-                .email("admin@admin.com")
-                .password(passwordEncoder.encode("admin1234"))
+                .username(username)
+                .email(email)
+                .password(passwordEncoder.encode(password))
                 .role(Role.ADMIN)
                 .build();
 
