@@ -1,29 +1,28 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.data.JwtDto;
+import com.nimbusds.jose.JOSEException;
+import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
-import com.sprint.mission.discodeit.security.SessionManager;
-import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
-import jakarta.servlet.http.HttpServletResponse;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import software.amazon.awssdk.retries.api.TokenAcquisitionFailedException;
-
-import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,9 +32,8 @@ public class BasicAuthService implements AuthService {
   private final UserRepository userRepository;
   private final UserMapper userMapper;
   private final JwtRegistry jwtRegistry;
-  private final JwtTokenProvider jwtTokenProvider;
+  private final JwtTokenProvider tokenProvider;
   private final UserDetailsService userDetailsService;
-  private final SessionManager sessionManager;
 
   @PreAuthorize("hasRole('ADMIN')")
   @Transactional
@@ -54,45 +52,47 @@ public class BasicAuthService implements AuthService {
     Role newRole = request.newRole();
     user.updateRole(newRole);
 
-    sessionManager.invalidateSessionsByUserId(userId);
-
-    // 로그인 상태라면 강제 로그아웃 처리
-    if (jwtRegistry.hasActiveJwtInformationByUserId(userId.toString())) {
-      jwtRegistry.invalidateJwtInformationByUserId(userId.toString());
-    }
+    jwtRegistry.invalidateJwtInformationByUserId(userId);
 
     return userMapper.toDto(user);
   }
 
   @Override
-  public JwtDto refreshToken(String refreshToken, HttpServletResponse response) {
-
-    if(refreshToken == null || !jwtTokenProvider.verifyRefreshToken(refreshToken)){
-      throw new UserNotFoundException();
+  public JwtInformation refreshToken(String refreshToken) {
+    // Validate refresh token
+    if (!tokenProvider.validateRefreshToken(refreshToken)
+        || !jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
+      log.error("Invalid or expired refresh token: {}", refreshToken);
+      throw new DiscodeitException(ErrorCode.INVALID_TOKEN);
     }
 
-    String userId = jwtTokenProvider.extractUserId(refreshToken);
-    if(!jwtRegistry.hasActiveJwtInformationByUserId(userId)){
-      throw new TokenAcquisitionFailedException("올바르지 않은 리프레쉬 토큰입니다.");
+    String username = tokenProvider.getUsernameFromToken(refreshToken);
+    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+    if (!(userDetails instanceof DiscodeitUserDetails discodeitUserDetails)) {
+      throw new DiscodeitException(ErrorCode.INVALID_USER_DETAILS);
     }
-
-    String username = jwtTokenProvider.extractUsername(refreshToken);
-
-    DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailsService.loadUserByUsername(username);
 
     try {
-      String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails, response);
-      String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails,response);
-      UserDto userDto = userDetails.getUserDto();
+      String newAccessToken = tokenProvider.generateAccessToken(discodeitUserDetails);
+      String newRefreshToken = tokenProvider.generateRefreshToken(discodeitUserDetails);
+      log.info("Access token refreshed for user: {}", username);
 
-      JwtInformation newJwtInformation = new JwtInformation(userDto, newAccessToken, newRefreshToken);
-      jwtRegistry.rotateJwtInformation(refreshToken, newJwtInformation);
+      JwtInformation newJwtInformation = new JwtInformation(
+          discodeitUserDetails.getUserDto(),
+          newAccessToken,
+          newRefreshToken
+      );
+      jwtRegistry.rotateJwtInformation(
+          refreshToken,
+          newJwtInformation
+      );
 
-      return new JwtDto(userDto, newAccessToken);
+      return newJwtInformation;
 
-    } catch (Exception e) {
-      throw new IllegalArgumentException();
+    } catch (JOSEException e) {
+      log.error("Failed to generate new tokens for user: {}", username, e);
+      throw new DiscodeitException(ErrorCode.INTERNAL_SERVER_ERROR, e);
     }
-
   }
 }
