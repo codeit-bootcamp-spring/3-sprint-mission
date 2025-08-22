@@ -26,7 +26,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import java.util.List;
@@ -64,7 +63,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(
             HttpSecurity http,
-            LoginSuccessHandler loginSuccessHandler,
+            JwtLoginSuccessHandler loginSuccessHandler,
             LoginFailureHandler loginFailureHandler,
             CustomAccessDeniedHandler accessDeniedHandler,
             CustomAuthenticationEntryPoint authenticationEntryPoint,

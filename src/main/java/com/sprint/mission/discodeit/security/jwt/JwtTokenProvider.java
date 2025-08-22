@@ -5,6 +5,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.sprint.mission.discodeit.security.jwt.store.JwtTokenEntity;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -258,7 +259,7 @@ public class JwtTokenProvider {
 
             return iat;
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid JWT token", e);
+            throw new IllegalArgumentException("유효하지 않은 JWT", e);
         }
     }
 
@@ -280,7 +281,27 @@ public class JwtTokenProvider {
 
             return exp;
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid JWT token", e);
+            throw new IllegalArgumentException("유효하지 않은 JWT", e);
+        }
+    }
+
+    public JwtTokenEntity toEntity(String accessToken) {
+        try {
+            log.info(PROVIDER_NAME + "toEntity 호출됨: 토큰 메타데이터 변환 시작");
+
+            SignedJWT signedJWT = SignedJWT.parse(accessToken);
+
+            String jti = signedJWT.getJWTClaimsSet().getJWTID();
+            String username = signedJWT.getJWTClaimsSet().getSubject();
+            String tokenType = (String) signedJWT.getJWTClaimsSet().getClaim("type");
+            OffsetDateTime issuedAt = OffsetDateTime.ofInstant(signedJWT.getJWTClaimsSet().getIssueTime().toInstant(), ZoneOffset.UTC);
+            OffsetDateTime expiresAt = OffsetDateTime.ofInstant(signedJWT.getJWTClaimsSet().getExpirationTime().toInstant(), ZoneOffset.UTC);
+
+            JwtTokenEntity entity = new JwtTokenEntity(jti, username, tokenType, issuedAt, expiresAt);
+
+            return entity;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("유효하지 않은 JWT", e);
         }
     }
 }
