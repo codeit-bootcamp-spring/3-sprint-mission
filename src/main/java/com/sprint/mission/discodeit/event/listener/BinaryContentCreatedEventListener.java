@@ -1,11 +1,15 @@
 package com.sprint.mission.discodeit.event.listener;
 
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -15,7 +19,9 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class BinaryContentCreatedEventListener {
 
     private final BinaryContentStorage storage;
+    private final BinaryContentService binaryContentService;
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onBinaryContentCreated(BinaryContentCreatedEvent event) {
 
@@ -24,9 +30,16 @@ public class BinaryContentCreatedEventListener {
             event.binaryContent().getFileName());
 
         UUID id = event.binaryContent().getId();
-        byte[] data = event.data();
+        try {
+            storage.put(id, event.data());
 
-        // 바이너리 데이터 저장
-        storage.put(id, data);
+            binaryContentService.updateStatus(id, BinaryContentStatus.SUCCESS);
+            log.info("[BinaryContentCreatedEventListener] 바이너리 데이터 저장 성공: {}", id);
+        } catch (Exception e) {
+            log.error("[BinaryContentCreatedEventListener] 바이너리 데이터 저장 성공: {}, 실패 이유: {}", id,
+                e.getMessage(), e);
+
+            binaryContentService.updateStatus(id, BinaryContentStatus.FAIL);
+        }
     }
 }

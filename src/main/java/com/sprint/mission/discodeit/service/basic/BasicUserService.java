@@ -7,7 +7,8 @@ import com.sprint.mission.discodeit.dto.user.UserRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
@@ -19,7 +20,6 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,9 +30,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,6 +86,7 @@ public class BasicUserService implements UserService {
 
             BinaryContent profileImage = binaryContentMapper.toEntity(binaryContentDto);
 
+            profileImage.updateStatus(BinaryContentStatus.PROCESSING);
             user.updateProfile(profileImage);
 
             BinaryContent savedProfile = binaryContentRepository.save(profileImage);
@@ -163,7 +161,8 @@ public class BasicUserService implements UserService {
             byte[] data = binaryContentDto.bytes();
 
             BinaryContent profileImage = binaryContentMapper.toEntity(binaryContentDto);
-
+            profileImage.updateStatus(BinaryContentStatus.PROCESSING);
+            
             // 기존 프로필 이미지 제거
             if (profile != null) {
                 binaryContentRepository.deleteById(profile.getId());

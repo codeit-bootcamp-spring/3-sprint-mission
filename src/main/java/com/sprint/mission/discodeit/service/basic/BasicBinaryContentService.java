@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.exception.binarycontent.NotFoundBinaryContentException;
 import com.sprint.mission.discodeit.mapper.struct.BinaryContentStructMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -24,7 +25,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public BinaryContentResponseDto findById(UUID id) {
         BinaryContent foundBinaryContent = binaryContentRepository.findById(id)
-                .orElseThrow(() -> new NotFoundBinaryContentException(id));
+            .orElseThrow(() -> new NotFoundBinaryContentException(id));
 
         return binaryContentMapper.toDto(foundBinaryContent);
     }
@@ -32,7 +33,20 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public List<BinaryContentResponseDto> findAllByIdIn(List<UUID> ids) {
         return binaryContentRepository.findAllByIdIn(ids).stream()
-                .map(binaryContentMapper::toDto)
-                .toList();
+            .map(binaryContentMapper::toDto)
+            .toList();
+    }
+
+    @Override
+    @Transactional
+    public BinaryContentResponseDto updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+        BinaryContent binarycontent = binaryContentRepository.findById(binaryContentId)
+            .orElseThrow(() -> new NotFoundBinaryContentException(binaryContentId));
+
+        binarycontent.updateStatus(status);
+
+        BinaryContent updatedBinaryContent = binaryContentRepository.save(binarycontent);
+
+        return binaryContentMapper.toDto(updatedBinaryContent);
     }
 }

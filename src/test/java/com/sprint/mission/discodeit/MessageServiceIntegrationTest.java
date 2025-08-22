@@ -7,6 +7,8 @@ import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -33,7 +35,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -204,7 +205,7 @@ public class MessageServiceIntegrationTest {
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        
+
         // when
         messageService.deleteById(messageId);
 

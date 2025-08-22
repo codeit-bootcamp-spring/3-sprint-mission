@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.nimbusds.jose.JOSEException;
 import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
-import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import jakarta.servlet.http.Cookie;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;

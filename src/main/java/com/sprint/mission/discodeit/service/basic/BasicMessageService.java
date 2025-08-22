@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
 import com.sprint.mission.discodeit.exception.message.NotFoundMessageException;
@@ -19,7 +20,6 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -179,6 +179,7 @@ public class BasicMessageService implements MessageService {
     private List<BinaryContent> convertBinaryContentDtos(List<BinaryContentDto> binaryContentDtos) {
         return binaryContentDtos.stream()
             .map(binaryContentMapper::toEntity)
+            .peek(binaryContent -> binaryContent.updateStatus(BinaryContentStatus.PROCESSING))
             .toList();
     }
 

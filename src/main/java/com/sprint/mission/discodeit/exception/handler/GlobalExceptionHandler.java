@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.exception.handler;
 
 import com.sprint.mission.discodeit.dto.response.ErrorResponse;
-import com.sprint.mission.discodeit.entity.ErrorCode;
+import com.sprint.mission.discodeit.entity.enums.ErrorCode;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.binarycontent.NotFoundBinaryContentException;
 import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;

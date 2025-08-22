@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.exception;
 
-import com.sprint.mission.discodeit.entity.ErrorCode;
+import com.sprint.mission.discodeit.entity.enums.ErrorCode;
 import lombok.Getter;
 
 import java.time.Instant;
