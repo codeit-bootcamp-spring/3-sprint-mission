@@ -55,3 +55,11 @@ admin:
   username: ${ADMIN_USERNAME:admin}
   email: ${ADMIN_EMAIL:admin@admin.com}
   password: ${ADMIN_PASSWORD:admin1234}
+
+async:
+  executors:
+    binary-content:
+      core-size: ${MAX_CORE_SIZE:4}
+      max-size: ${MAX_SIZE:8}
+      queue-capacity: ${QUEUE_CAPACITY:200}
+      keep-alive: ${KEEP_ALIVE:60}

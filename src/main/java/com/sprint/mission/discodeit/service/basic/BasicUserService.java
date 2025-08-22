@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
 import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
@@ -24,6 +25,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -43,11 +45,11 @@ public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
     private final BinaryContentStructMapper binaryContentMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtRegistry jwtRegistry;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -55,6 +57,8 @@ public class BasicUserService implements UserService {
         BinaryContentDto binaryContentDto) {
         String username = userRequestDto.username();
         String email = userRequestDto.email();
+
+        String currentThread = Thread.currentThread().getName();
 
         log.info("[BasicUserService] 사용자 등록 요청 - username: {}, email: {}", username, email);
 
@@ -81,14 +85,19 @@ public class BasicUserService implements UserService {
 
         // 프로필 이미지를 등록한 경우
         if (binaryContentDto != null) {
-            byte[] bytes = binaryContentDto.bytes();
+            byte[] data = binaryContentDto.bytes();
 
             BinaryContent profileImage = binaryContentMapper.toEntity(binaryContentDto);
 
             user.updateProfile(profileImage);
 
-            binaryContentRepository.save(profileImage);
-            binaryContentStorage.put(profileImage.getId(), bytes);
+            BinaryContent savedProfile = binaryContentRepository.save(profileImage);
+            // 저장 후 이벤트 발행
+            log.info("[BasicUserService] 유저 등록 프로필 메타데이터 저장 이벤트 발행 시작 - Thread : {}",
+                currentThread);
+            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(savedProfile, data);
+            eventPublisher.publishEvent(event);
+            log.info("[BasicUserService] 유저 등록 프로필 메타데이터 저장 이벤트 발행 완료 - Thread: {}", currentThread);
         }
 
         User savedUser = userRepository.save(user);
@@ -120,6 +129,8 @@ public class BasicUserService implements UserService {
     @Transactional
     public UserResponseDto update(UUID id, UserUpdateDto userUpdateDto,
         BinaryContentDto binaryContentDto) {
+
+        String currentThread = Thread.currentThread().getName();
         User user = findUser(id);
 
         String newUsername = userUpdateDto.newUsername();
@@ -149,7 +160,7 @@ public class BasicUserService implements UserService {
         // 프로필 이미지 처리
         BinaryContent profile = user.getProfile();
         if (binaryContentDto != null) {
-            byte[] bytes = binaryContentDto.bytes();
+            byte[] data = binaryContentDto.bytes();
 
             BinaryContent profileImage = binaryContentMapper.toEntity(binaryContentDto);
 
@@ -160,8 +171,13 @@ public class BasicUserService implements UserService {
 
             user.updateProfile(profileImage);
 
-            binaryContentRepository.save(profileImage);
-            binaryContentStorage.put(profileImage.getId(), bytes);
+            BinaryContent updatedProfile = binaryContentRepository.save(profileImage);
+            log.info("[BasicUserService] 유저 정보 변경 프로필 메타 데이터 저장 이벤트 발행 시작 - Thread : {}",
+                currentThread);
+            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(updatedProfile, data);
+            eventPublisher.publishEvent(event);
+            log.info("[BasicUserService] 유저 정보 변경 프로필 메타 데이터 저장 이벤트 발행 완료 - Thread: {}",
+                currentThread);
         } else if (profile != null) {
             binaryContentRepository.deleteById(profile.getId());
             user.updateProfile(null);

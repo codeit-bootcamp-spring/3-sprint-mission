@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
 import com.sprint.mission.discodeit.exception.message.NotFoundMessageException;
 import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
@@ -21,6 +22,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,9 +44,9 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
     private final MessageMapper messageMapper;
     private final BinaryContentStructMapper binaryContentMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -53,15 +55,22 @@ public class BasicMessageService implements MessageService {
         User author = findUser(messageRequestDto.authorId());
         Channel channel = findChannel(messageRequestDto.channelId());
 
+        String currentThread = Thread.currentThread().getName();
+
         // Dto -> Entity
         List<BinaryContent> binaryContents = convertBinaryContentDtos(binaryContentDtos);
 
         binaryContentRepository.saveAll(binaryContents);
 
         for (int i = 0; i < binaryContents.size(); i++) {
-            UUID id = binaryContents.get(i).getId();
-            byte[] bytes = binaryContentDtos.get(i).bytes();
-            binaryContentStorage.put(id, bytes);
+            BinaryContent attachment = binaryContents.get(i);
+            byte[] data = binaryContentDtos.get(i).bytes();
+
+            log.info("[BasicUserService] 메시지 첨부 파일 메타데이터 저장 이벤트 발행 시작 - Thread : {}",
+                currentThread);
+            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(attachment, data);
+            eventPublisher.publishEvent(event);
+            log.info("[BasicUserService] 메시지 첨부 파일 메타데이터 저장 이벤트 발행 완료 - Thread: {}", currentThread);
         }
 
         String content = messageRequestDto.content();

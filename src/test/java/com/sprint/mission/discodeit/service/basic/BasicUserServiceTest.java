@@ -1,5 +1,14 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserRequestDto;
@@ -8,6 +17,7 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
 import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
@@ -15,27 +25,17 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.mapper.struct.BinaryContentStructMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.not;
-import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("User 서비스 단위 테스트")
@@ -54,7 +54,7 @@ class BasicUserServiceTest {
     private UserMapper userMapper;
 
     @Mock
-    private BinaryContentStorage binaryContentStorage;
+    private ApplicationEventPublisher eventPublisher;
 
     @Mock
     private BinaryContentStructMapper binaryContentMapper;
@@ -103,6 +103,7 @@ class BasicUserServiceTest {
         given(userMapper.toDto(user)).willReturn(response);
         given(userRepository.existsByUsername(username)).willReturn(false);
         given(userRepository.existsByEmail(email)).willReturn(false);
+        given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(binaryContent);
 
         // when
         UserResponseDto result = userService.create(request, binaryContentDto);
@@ -113,7 +114,7 @@ class BasicUserServiceTest {
         assertEquals(email, result.email());
         assertEquals(profile, result.profile());
         verify(binaryContentRepository).save(binaryContent);
-        verify(binaryContentStorage).put(profileId, imageBytes);
+        verify(eventPublisher).publishEvent(any(BinaryContentCreatedEvent.class));
         verify(passwordEncoder).encode(any());
     }
 
