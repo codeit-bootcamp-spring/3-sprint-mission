@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.springframework.scheduling.annotation.Scheduled;
 
 public class InMemoryJwtRegistry implements JwtRegistry {
 
@@ -15,9 +16,11 @@ public class InMemoryJwtRegistry implements JwtRegistry {
   private final Set<String> refreshTokenIndexes = ConcurrentHashMap.newKeySet();
 
   private final int maxActiveJwtCount;
+  private final JwtTokenProvider tokenProvider;
 
-  public InMemoryJwtRegistry(int maxActiveJwtCount) {
+  public InMemoryJwtRegistry(int maxActiveJwtCount, JwtTokenProvider tokenProvider) {
     this.maxActiveJwtCount = maxActiveJwtCount;
+    this.tokenProvider = tokenProvider;
   }
 
   @Override
@@ -28,7 +31,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
       }
       // 최대 허용 토큰 개수를 초과하면 가장 오래된 토큰을 제거
       if (queue.size() >= maxActiveJwtCount) {
-        JwtInformation deprecatedJwtInformation = queue.poll(); // 가장 오래된 토큰 제거
+        JwtInformation deprecatedJwtInformation = queue.poll();
         if (deprecatedJwtInformation != null) {
           removeTokenIndex(
               deprecatedJwtInformation.getAccessToken(),
@@ -36,13 +39,32 @@ public class InMemoryJwtRegistry implements JwtRegistry {
           );
         }
       }
-      queue.add(jwtInformation); // 새 토큰 등록
+      queue.add(jwtInformation);
       addTokenIndex(
           jwtInformation.getAccessToken(),
           jwtInformation.getRefreshToken()
       );
       return queue;
     });
+  }
+
+  @Override
+  public void invalidateJwtInformationByUserId(UUID userId) {
+    Queue<JwtInformation> removed = origin.remove(userId);
+    if (removed != null) {
+      removed.forEach(info -> removeTokenIndex(info.getAccessToken(), info.getRefreshToken()));
+    }
+  }
+
+  @Override
+  public boolean hasActiveJwtInformationByUserId(UUID userId) {
+    Queue<JwtInformation> queue = origin.get(userId);
+    return queue != null && !queue.isEmpty();
+  }
+
+  @Override
+  public boolean hasActiveJwtInformationByAccessToken(String accessToken) {
+    return accessTokenIndexes.contains(accessToken);
   }
 
   @Override
@@ -67,6 +89,27 @@ public class InMemoryJwtRegistry implements JwtRegistry {
             );
           });
       return queue;
+    });
+  }
+
+  @Scheduled(fixedDelay = 1000 * 60 * 5)
+  @Override
+  public void clearExpiredJwtInformation() {
+    origin.entrySet().removeIf(entry -> {
+      Queue<JwtInformation> queue = entry.getValue();
+      queue.removeIf(jwtInformation -> {
+        boolean isExpired =
+            !tokenProvider.validateAccessToken(jwtInformation.getAccessToken()) ||
+                !tokenProvider.validateRefreshToken(jwtInformation.getRefreshToken());
+        if (isExpired) {
+          removeTokenIndex(
+              jwtInformation.getAccessToken(),
+              jwtInformation.getRefreshToken()
+          );
+        }
+        return isExpired;
+      });
+      return queue.isEmpty();
     });
   }
 

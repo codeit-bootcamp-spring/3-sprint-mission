@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.nimbusds.jose.JOSEException;
 import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.exception.InvalidInputException;
+import com.sprint.mission.discodeit.exception.auth.InvalidTokenException;
 import com.sprint.mission.discodeit.exception.auth.TokenGenerationException;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
@@ -32,7 +33,7 @@ public class BasicAuthService implements AuthService {
     if (!tokenProvider.validateRefreshToken(refreshToken)
         || !jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
       log.error("Invalid or expired refresh token: {}", refreshToken);
-      throw new TokenGenerationException("리프레시 토큰이 유효하지 않습니다.");
+      throw new InvalidTokenException("리프레시 토큰이 유효하지 않습니다.");
     }
 
     String username = tokenProvider.getUsernameFromToken(refreshToken);

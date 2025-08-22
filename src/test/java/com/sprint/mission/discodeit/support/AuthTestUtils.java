@@ -52,6 +52,13 @@ public final class AuthTestUtils {
       UUID targetUserId, String newRole) {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
+    if (!adminAuthHeaders.containsKey(HttpHeaders.AUTHORIZATION)) {
+      TestEnvConfig env = new TestEnvConfig();
+      String adminUsername = env.discodeitAdminUsername;
+      String adminPassword = env.discodeitAdminPassword;
+      String adminAccessToken = loginAndGetAccessToken(restTemplate, adminUsername, adminPassword);
+      adminAuthHeaders.addAll(bearerAuthHeaders(adminAccessToken));
+    }
     headers.addAll(adminAuthHeaders);
 
     Map<String, Object> body = Map.of(

@@ -26,7 +26,7 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
     BinaryContentResponse profile = user.getProfile() != null
         ? BinaryContentResponse.from(user.getProfile())
         : null;
-    // 온라인 여부는 SessionRegistry 기반 상위 서비스 계층에서 재계산
+    // 온라인 여부는 JwtRegistry 기반 상위 서비스 계층에서 재계산
     boolean online = false;
 
     UserResponse userResponse = new UserResponse(

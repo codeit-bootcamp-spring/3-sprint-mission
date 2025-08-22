@@ -4,11 +4,11 @@ import com.sprint.mission.discodeit.security.handler.ForbiddenAccessDeniedHandle
 import com.sprint.mission.discodeit.security.handler.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.handler.JwtLogoutHandler;
 import com.sprint.mission.discodeit.security.handler.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.handler.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.handler.SpaCsrfTokenRequestHandler;
 import com.sprint.mission.discodeit.security.jwt.InMemoryJwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -25,21 +25,18 @@ import org.springframework.security.access.expression.method.DefaultMethodSecuri
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Slf4j
 @Configuration
@@ -55,11 +52,12 @@ public class SecurityConfig {
       LoginFailureHandler loginFailureHandler,
       ForbiddenAccessDeniedHandler accessDeniedHandler,
       Environment environment,
-      com.sprint.mission.discodeit.security.jwt.JwtTokenProvider jwtTokenProvider,
-      org.springframework.security.core.userdetails.UserDetailsService userDetailsService
+      JwtTokenProvider jwtTokenProvider,
+      UserDetailsService userDetailsService,
+      JwtRegistry jwtRegistry
   ) throws Exception {
     JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider,
-        userDetailsService);
+        userDetailsService, jwtRegistry);
     http.csrf(csrfConfigurer -> configureCsrf(csrfConfigurer, environment))
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -95,7 +93,6 @@ public class SecurityConfig {
             .successHandler(jwtLoginSuccessHandler)
             .failureHandler(loginFailureHandler)
         )
-        .rememberMe(Customizer.withDefaults())
         .logout(logout -> logout
             .logoutUrl("/api/auth/logout")
             .addLogoutHandler(jwtLogoutHandler)
@@ -123,19 +120,6 @@ public class SecurityConfig {
   }
 
   @Bean
-  public SessionRegistry sessionRegistry() {
-    return new SessionRegistryImpl();
-  }
-
-  /**
-   * HttpSession 만료/소멸 이벤트를 SessionRegistry 에 반영하기 위해 필요.
-   */
-  @Bean
-  public HttpSessionEventPublisher httpSessionEventPublisher() {
-    return new HttpSessionEventPublisher();
-  }
-
-  @Bean
   @Profile("!prod")
   public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
 
@@ -154,9 +138,12 @@ public class SecurityConfig {
 
   @Bean
   @Profile("!prod")
-  public CommandLineRunner debugSecurityBeans(UserDetailsService userDetailsService,
+  public CommandLineRunner debugSecurityBeans(
+      UserDetailsService userDetailsService,
       PasswordEncoder passwordEncoder,
-      LoginSuccessHandler loginSuccessHandler, LoginFailureHandler loginFailureHandler) {
+      AuthenticationSuccessHandler loginSuccessHandler,
+      LoginFailureHandler loginFailureHandler
+  ) {
     return args -> {
       log.debug("UserDetailsService 기본 구현체: {}", userDetailsService.getClass());
       log.debug("PasswordEncoder 기본 구현체: {}", passwordEncoder.getClass());
@@ -185,7 +172,7 @@ public class SecurityConfig {
   }
 
   @Bean
-  public JwtRegistry jwtRegistry() {
-    return new InMemoryJwtRegistry(1);
+  public JwtRegistry jwtRegistry(JwtTokenProvider jwtTokenProvider) {
+    return new InMemoryJwtRegistry(1, jwtTokenProvider);
   }
 }

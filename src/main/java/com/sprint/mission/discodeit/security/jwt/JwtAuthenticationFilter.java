@@ -21,6 +21,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtTokenProvider jwtTokenProvider;
   private final UserDetailsService userDetailsService;
+  private final JwtRegistry jwtRegistry;
 
   @Override
   protected void doFilterInternal(
@@ -29,7 +30,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       @org.springframework.lang.NonNull FilterChain filterChain
   ) throws ServletException, IOException {
     String token = resolveToken(request);
-    if (StringUtils.hasText(token) && jwtTokenProvider.validateAccessToken(token)) {
+    if (StringUtils.hasText(token)
+        && jwtTokenProvider.validateAccessToken(token)
+        && jwtRegistry.hasActiveJwtInformationByAccessToken(token)) {
       String username = jwtTokenProvider.getUsernameFromToken(token);
       DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailsService.loadUserByUsername(
           username);

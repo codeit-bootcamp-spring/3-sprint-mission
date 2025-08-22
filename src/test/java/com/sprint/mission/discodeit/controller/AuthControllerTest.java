@@ -5,8 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
@@ -50,16 +48,21 @@ class AuthControllerTest {
 
     String token = fetchCsrfToken();
 
-    mockMvc.perform(post("/api/auth/login")
+    MvcResult result = mockMvc.perform(post("/api/auth/login")
             .cookie(new Cookie("XSRF-TOKEN", token))
             .header("X-XSRF-TOKEN", token)
             .contentType(MediaType.APPLICATION_FORM_URLENCODED)
             .param("username", "tester")
             .param("password", "password"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.user.id").value(user.getId().toString()))
-        .andExpect(jsonPath("$.user.username").value("tester"))
-        .andExpect(jsonPath("$.user.email").value("test@test.com"));
+        .andExpect(jsonPath("$.userDto.id").value(user.getId().toString()))
+        .andExpect(jsonPath("$.userDto.username").value("tester"))
+        .andExpect(jsonPath("$.userDto.email").value("test@test.com"))
+        .andExpect(jsonPath("$.accessToken").isNotEmpty())
+        .andReturn();
+
+    Cookie refreshCookie = result.getResponse().getCookie("REFRESH_TOKEN");
+    Objects.requireNonNull(refreshCookie, "리프레시 토큰 쿠키가 없습니다");
   }
 
   @Test
@@ -80,12 +83,11 @@ class AuthControllerTest {
   }
 
   @Test
-  void 세션으로_현재_사용자_정보를_조회한다() throws Exception {
+  void 리프레시_토큰으로_액세스_토큰을_재발급한다() throws Exception {
     User user = User.create("test@test.com", "tester", passwordEncoder.encode("password"), null);
     userRepository.save(user);
 
     String token = fetchCsrfToken();
-
     MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
             .cookie(new Cookie("XSRF-TOKEN", token))
             .header("X-XSRF-TOKEN", token)
@@ -95,51 +97,27 @@ class AuthControllerTest {
         .andExpect(status().isOk())
         .andReturn();
 
-    String responseBody = loginResult.getResponse().getContentAsString();
-    ObjectMapper objectMapper = new ObjectMapper();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
-    String accessToken = jsonNode.get("accessToken").asText();
+    Cookie refreshCookie = Objects.requireNonNull(
+        loginResult.getResponse().getCookie("REFRESH_TOKEN"), "REFRESH_TOKEN 쿠키가 없습니다");
 
-    mockMvc.perform(
-            get("/api/auth/me")
-                .header("Authorization", "Bearer " + accessToken))
+    String csrf = fetchCsrfToken();
+    mockMvc.perform(post("/api/auth/refresh")
+            .cookie(new Cookie("XSRF-TOKEN", csrf))
+            .header("X-XSRF-TOKEN", csrf)
+            .cookie(refreshCookie))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(user.getId().toString()))
-        .andExpect(jsonPath("$.username").value("tester"))
-        .andExpect(jsonPath("$.email").value("test@test.com"));
+        .andExpect(jsonPath("$.userDto.id").value(user.getId().toString()))
+        .andExpect(jsonPath("$.accessToken").isNotEmpty());
   }
 
   @Test
-  void 로그인_없이_me_조회하면_401() throws Exception {
-    mockMvc.perform(get("/api/auth/me"))
+  void 잘못된_리프레시_토큰으로_재발급_요청시_401() throws Exception {
+    String csrf = fetchCsrfToken();
+    mockMvc.perform(post("/api/auth/refresh")
+            .cookie(new Cookie("XSRF-TOKEN", csrf))
+            .header("X-XSRF-TOKEN", csrf)
+            .cookie(new Cookie("REFRESH_TOKEN", "invalid")))
         .andExpect(status().isUnauthorized());
-  }
-
-  @Test
-  void remember_me_쿠키로_로그인_유지() throws Exception {
-    User user = User.create("test@test.com", "tester", passwordEncoder.encode("password"), null);
-    userRepository.save(user);
-
-    String token = fetchCsrfToken();
-
-    MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
-            .cookie(new Cookie("XSRF-TOKEN", token))
-            .header("X-XSRF-TOKEN", token)
-            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-            .param("username", "tester")
-            .param("password", "password")
-            .param("remember-me", "true"))
-        .andExpect(status().isOk())
-        .andReturn();
-
-    Cookie rememberMe = Objects.requireNonNull(
-        loginResult.getResponse().getCookie("remember-me"), "remember-me 쿠키가 없습니다");
-
-    mockMvc.perform(get("/api/auth/me").cookie(rememberMe))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(user.getId().toString()))
-        .andExpect(jsonPath("$.username").value("tester"))
-        .andExpect(jsonPath("$.email").value("test@test.com"));
   }
 
   private String fetchCsrfToken() throws Exception {

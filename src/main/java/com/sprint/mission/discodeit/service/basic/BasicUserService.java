@@ -1,16 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
@@ -20,7 +9,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserOnlineService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
@@ -28,9 +17,15 @@ import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserRoleCommand;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.vo.BinaryContentData;
-
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -41,7 +36,7 @@ public class BasicUserService implements UserService {
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
   private final UserOnlineService userOnlineService;
-  private final SessionRegistry sessionRegistry;
+  private final JwtRegistry jwtRegistry;
   private final BinaryContentStorage binaryContentStorage;
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
@@ -151,7 +146,7 @@ public class BasicUserService implements UserService {
         .map(user -> {
           user.updateRole(command.newRole());
           User savedUser = userRepository.save(user);
-          expireUserSessions(savedUser.getId());
+          jwtRegistry.invalidateJwtInformationByUserId(savedUser.getId());
           return toUserResponse(savedUser);
         }).orElseThrow(() -> new UserNotFoundException(command.userId().toString()));
   }
@@ -165,7 +160,7 @@ public class BasicUserService implements UserService {
       Optional.ofNullable(user.getProfile())
           .ifPresent(profile -> binaryContentRepository.deleteById(profile.getId()));
 
-      expireUserSessions(userId);
+      jwtRegistry.invalidateJwtInformationByUserId(userId);
     }, () -> {
       throw new UserNotFoundException(userId.toString());
     });
@@ -198,17 +193,6 @@ public class BasicUserService implements UserService {
         base.profile(),
         isUserOnline(user.getId()),
         base.role());
-  }
-
-  private void expireUserSessions(UUID userId) {
-    sessionRegistry.getAllPrincipals().stream()
-        .filter(p -> p instanceof DiscodeitUserDetails)
-        .map(p -> (DiscodeitUserDetails) p)
-        .filter(ud -> ud.getUser().id().equals(userId))
-        .forEach(ud -> {
-          List<SessionInformation> sessions = sessionRegistry.getAllSessions(ud, false);
-          sessions.forEach(SessionInformation::expireNow);
-        });
   }
 
   public boolean isUserOnline(UUID userId) {
