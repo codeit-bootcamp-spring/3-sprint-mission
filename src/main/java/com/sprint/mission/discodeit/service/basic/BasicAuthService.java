@@ -24,7 +24,9 @@ public class BasicAuthService implements AuthService {
 
     public JwtDto refresh(String refreshToken, HttpServletResponse response) {
 
-        if (!jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
+        if (!jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken) ||
+            !jwtTokenProvider.validateRefreshToken(refreshToken)) {
+            log.error("유효하지 않는 RefreshToken: {}", refreshToken);
             throw new InvalidTokenException(refreshToken);
         }
 
