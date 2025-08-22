@@ -10,10 +10,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  boot:
-    admin:
-      client:
-        url: http://localhost:9090
 
 logging:
   level:

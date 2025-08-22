@@ -8,48 +8,40 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
-
-import java.time.Instant;
 import lombok.NoArgsConstructor;
 
-
-// 사용자가 해당 채널에서 마지막으로 언제 읽었는지 확인
-@Getter
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
     name = "read_statuses",
     uniqueConstraints = {
-        @UniqueConstraint(name = "uk_user_channel", columnNames = {"user_id", "channel_id"})
+        @UniqueConstraint(columnNames = {"user_id", "channel_id"})
     }
 )
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ReadStatus extends BaseUpdatableEntity {
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", columnDefinition = "uuid")
-    private User user;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "user_id", columnDefinition = "uuid")
+  private User user;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "channel_id", columnDefinition = "uuid")
+  private Channel channel;
+  @Column(columnDefinition = "timestamp with time zone", nullable = false)
+  private Instant lastReadAt;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "channel_id", columnDefinition = "uuid")
-    private Channel channel;
+  public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+    this.user = user;
+    this.channel = channel;
+    this.lastReadAt = lastReadAt;
+  }
 
-    @Column(name = "last_read_at", columnDefinition = "timestamp with time zone", nullable = false)
-    private Instant lastReadAt;
-
-    // 생성자
-    public ReadStatus(User user, Channel channel, Instant lastReadAt) {
-        this.user = user;
-        this.channel = channel;
-        this.lastReadAt = lastReadAt;
+  public void update(Instant newLastReadAt) {
+    if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
+      this.lastReadAt = newLastReadAt;
     }
-
-    // Update 메서드
-    public void update(Instant newLastReadAt) {
-        if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
-            this.lastReadAt = newLastReadAt;
-        }
-    }
-
+  }
 }

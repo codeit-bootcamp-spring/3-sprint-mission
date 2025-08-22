@@ -10,10 +10,7 @@ spring:
     properties:
       hibernate:
         format_sql: false
-  boot:
-    admin:
-      client:
-        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+
 logging:
   level:
     com.sprint.mission.discodeit: info

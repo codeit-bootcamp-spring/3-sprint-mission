@@ -8,8 +8,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = {BinaryContentMapper.class, UserMapper.class})
 public interface MessageMapper {
 
-
-    @Mapping(source = "channel.id", target = "channelId")
-    MessageDto toDto(Message message);
-
+  @Mapping(target = "channelId", source = "channel.id")
+  MessageDto toDto(Message message);
 }

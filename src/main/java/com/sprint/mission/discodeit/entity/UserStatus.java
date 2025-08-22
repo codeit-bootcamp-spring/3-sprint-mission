@@ -8,45 +8,43 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.Getter;
-
 import java.time.Duration;
 import java.time.Instant;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// 사용자별 마지막 접속 시간( last+5 : 온라인 ) / 판별 메서드 정의
-@Getter
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "user_statuses")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserStatus extends BaseUpdatableEntity {
 
-    @JsonBackReference
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;
+  @JsonBackReference
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "user_id", nullable = false, unique = true)
+  private User user;
+  @Column(columnDefinition = "timestamp with time zone", nullable = false)
+  private Instant lastActiveAt;
 
-    @Column(name = "last_active_at", columnDefinition = "timestamp with time zone", nullable = false)
-    private Instant lastActiveAt;
+  public UserStatus(User user, Instant lastActiveAt) {
+    setUser(user);
+    this.lastActiveAt = lastActiveAt;
+  }
 
-    // 생성자
-    public UserStatus(User user, Instant lastActiveAt) {
-        this.user = user;
-        this.lastActiveAt = lastActiveAt;
+  public void update(Instant lastActiveAt) {
+    if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
+      this.lastActiveAt = lastActiveAt;
     }
+  }
 
-    // Update 메서드
-    public void update(Instant lastOnlineAt) {
-        if (lastOnlineAt != null && lastOnlineAt.equals(this.lastActiveAt)) {
-            this.lastActiveAt = lastOnlineAt;
-        }
-    }
+  public Boolean isOnline() {
+    Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
+    return lastActiveAt.isAfter(instantFiveMinutesAgo);
+  }
 
-    // 온라인 상태 판별 메서드 정의
-    public boolean isOnline() {
-        Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
-
-        return lastActiveAt.isAfter(instantFiveMinutesAgo);
-    }
+  protected void setUser(User user) {
+    this.user = user;
+    user.setStatus(this);
+  }
 }

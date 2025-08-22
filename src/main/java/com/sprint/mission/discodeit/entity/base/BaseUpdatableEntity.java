@@ -8,13 +8,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.LastModifiedDate;
 
-@MappedSuperclass
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@MappedSuperclass
 public abstract class BaseUpdatableEntity extends BaseEntity {
 
-    @LastModifiedDate
-    @Column(name = "updated_at", nullable = true, columnDefinition = "timestamp with time zone")
-    private Instant updatedAt;
-
+  @LastModifiedDate
+  @Column(columnDefinition = "timestamp with time zone")
+  private Instant updatedAt;
 }

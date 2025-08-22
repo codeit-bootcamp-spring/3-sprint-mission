@@ -10,54 +10,46 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
-
-import java.util.List;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
 
-@Getter
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "messages")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Message extends BaseUpdatableEntity {
 
-    // 필드 정의
-    @Column(name = "content", nullable = false, columnDefinition = "text")
-    private String content;
+  @Column(columnDefinition = "text", nullable = false)
+  private String content;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "channel_id", columnDefinition = "uuid")
+  private Channel channel;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "author_id", columnDefinition = "uuid")
+  private User author;
+  @BatchSize(size = 100)
+  @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
+  @JoinTable(
+      name = "message_attachments",
+      joinColumns = @JoinColumn(name = "message_id"),
+      inverseJoinColumns = @JoinColumn(name = "attachment_id")
+  )
+  private List<BinaryContent> attachments = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "channel_id", columnDefinition = "uuid")
-    private Channel channel;
+  public Message(String content, Channel channel, User author, List<BinaryContent> attachments) {
+    this.channel = channel;
+    this.content = content;
+    this.author = author;
+    this.attachments = attachments;
+  }
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "author_id", columnDefinition = "uuid")
-    private User author;
-
-    // BinaryContent 모델 참조 ID
-    @BatchSize(size = 100)
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "message_attachments",
-        joinColumns = @JoinColumn(name = "message_id"),
-        inverseJoinColumns = @JoinColumn(name = "attachment_id")
-    )
-    private List<BinaryContent> attachments;
-
-    // 생성자
-    public Message(String content, Channel channel, User author, List<BinaryContent> attachments) {
-        this.content = content;
-        this.channel = channel;
-        this.author = author;
-        this.attachments = attachments;
+  public void update(String newContent) {
+    if (newContent != null && !newContent.equals(this.content)) {
+      this.content = newContent;
     }
-
-    // Update
-    public void update(String newContent) {
-        if (newContent != null && !newContent.equals(this.content)) {
-            this.content = newContent;
-        }
-    }
-
+  }
 }
