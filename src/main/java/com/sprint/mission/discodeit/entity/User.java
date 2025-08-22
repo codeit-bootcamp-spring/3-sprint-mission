@@ -31,7 +31,7 @@ public class User extends BaseUpdatableEntity {
   private BinaryContent profile;
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private Role role;
+  private Role role = Role.USER;
 
   public User(String username, String email, String password, BinaryContent profile) {
     this.username = username;
@@ -56,7 +56,9 @@ public class User extends BaseUpdatableEntity {
     }
   }
 
-  public void updateRole(Role role) {
-    this.role = role;
+  public void updateRole(Role newRole) {
+    if (this.role != newRole) {
+      this.role = newRole;
+    }
   }
 }

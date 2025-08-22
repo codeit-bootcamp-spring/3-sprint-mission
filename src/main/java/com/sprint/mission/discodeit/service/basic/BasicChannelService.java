@@ -35,8 +35,8 @@ public class BasicChannelService implements ChannelService {
   private final UserRepository userRepository;
   private final ChannelMapper channelMapper;
 
-  @Transactional
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+  @Transactional
   @Override
   public ChannelDto create(PublicChannelCreateRequest request) {
     log.debug("채널 생성 시작: {}", request);
@@ -87,8 +87,8 @@ public class BasicChannelService implements ChannelService {
         .toList();
   }
 
-  @Transactional
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+  @Transactional
   @Override
   public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
     log.debug("채널 수정 시작: id={}, request={}", channelId, request);
@@ -104,8 +104,8 @@ public class BasicChannelService implements ChannelService {
     return channelMapper.toDto(channel);
   }
 
-  @Transactional
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+  @Transactional
   @Override
   public void delete(UUID channelId) {
     log.debug("채널 삭제 시작: id={}", channelId);

@@ -1,12 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -21,9 +19,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.parameters.P;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +33,6 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final PasswordEncoder passwordEncoder;
-  private final SessionRegistry sessionRegistry;
 
   @Transactional
   @Override
@@ -68,10 +62,10 @@ public class BasicUserService implements UserService {
           return binaryContent;
         })
         .orElse(null);
-    String encodedPassword = passwordEncoder.encode(userCreateRequest.password());
+    String password = userCreateRequest.password();
+    String encodedPassword = passwordEncoder.encode(password);
 
     User user = new User(username, email, encodedPassword, nullableProfile);
-    user.updateRole(Role.USER);
 
     userRepository.save(user);
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
@@ -101,10 +95,10 @@ public class BasicUserService implements UserService {
     return userDtos;
   }
 
+  @PreAuthorize("principal.userDto.id == #userId")
   @Transactional
-  @PreAuthorize("@authz.isMe(#userId)")
   @Override
-  public UserDto update(@P("userId") UUID userId, UserUpdateRequest userUpdateRequest,
+  public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     log.debug("사용자 수정 시작: id={}, request={}", userId, userUpdateRequest);
 
@@ -140,16 +134,18 @@ public class BasicUserService implements UserService {
         .orElse(null);
 
     String newPassword = userUpdateRequest.newPassword();
-    user.update(newUsername, newEmail, newPassword, nullableProfile);
+    String encodedPassword = Optional.ofNullable(newPassword).map(passwordEncoder::encode)
+        .orElse(user.getPassword());
+    user.update(newUsername, newEmail, encodedPassword, nullableProfile);
 
     log.info("사용자 수정 완료: id={}", userId);
     return userMapper.toDto(user);
   }
 
+  @PreAuthorize("principal.userDto.id == #userId")
   @Transactional
-  @PreAuthorize("@authz.isMe(#userId)")
   @Override
-  public void delete(@P("userId") UUID userId) {
+  public void delete(UUID userId) {
     log.debug("사용자 삭제 시작: id={}", userId);
 
     if (!userRepository.existsById(userId)) {
@@ -158,31 +154,5 @@ public class BasicUserService implements UserService {
 
     userRepository.deleteById(userId);
     log.info("사용자 삭제 완료: id={}", userId);
-  }
-
-  @Transactional
-  @PreAuthorize("hasRole('ADMIN')")
-  @Override
-  public UserDto updateRole(UUID userId, Role role) {
-      log.debug("사용자 권한 수정 시작: id={}, role={}", userId, role);
-
-      User user = userRepository.findById(userId)
-          .orElseThrow(() -> UserNotFoundException.withId(userId));
-
-      user.updateRole(role);
-
-      sessionRegistry.getAllPrincipals().forEach(principal -> {
-          if (principal instanceof DiscodeitUserDetails dud
-            && dud.getUserDto().id().equals(userId)) {
-              List<SessionInformation> sessions = sessionRegistry.getAllSessions(principal, false);
-              for (SessionInformation session : sessions) {
-                  session.expireNow();
-              }
-          }
-      });
-
-      log.info("사용자 권한 수정 완료 및 세션 만료: id={}, role={}", userId, role);
-
-      return userMapper.toDto(user);
   }
 }
