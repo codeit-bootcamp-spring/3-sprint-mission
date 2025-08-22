@@ -86,7 +86,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/logout").permitAll()
                         .requestMatchers("/api/auth/refresh").permitAll()
-                        .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/auth/role").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
@@ -102,13 +101,6 @@ public class SecurityConfig {
                         .successHandler(loginSuccessHandler)
                         .failureHandler(loginFailureHandler)
                         .permitAll()
-                )
-                .rememberMe(remember -> remember
-                        .key("discodeit-remember-me-key")
-                        .tokenValiditySeconds(60 * 60)
-                        .rememberMeCookieName("remember-me")
-                        .rememberMeParameter("remember-me")
-                        .userDetailsService(discodeitUserDetailsService)
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")

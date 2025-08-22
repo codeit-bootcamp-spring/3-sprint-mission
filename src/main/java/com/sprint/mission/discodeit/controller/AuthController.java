@@ -55,27 +55,6 @@ public class AuthController implements AuthApi {
             .body(null);
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<UserDto> getCurrentUser(
-            @AuthenticationPrincipal DiscodeitUserDetails userDetails
-    ) {
-
-        log.debug(CONTROLLER_NAME + "세션 기반 사용자 정보 조회 요청(me) 들어옴");
-
-        if (userDetails == null) {
-            log.debug(CONTROLLER_NAME + "인증된 사용자가 아님! (인증 정보 null)");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        log.debug(CONTROLLER_NAME + "인증된 사용자 확인");
-
-        UserDto userDto = authService.getCurrentUserInfo(userDetails);
-
-        log.debug(CONTROLLER_NAME + "사용자 정보 조회 완료: {}", userDto);
-
-        return ResponseEntity.status(HttpStatus.OK).body(userDto);
-    }
-
     @PutMapping("/role")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDto> updateRole(
