@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.security.LoginFailureHandler;
+import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -20,6 +22,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
  * <p>특징:</p>
  * <ul>
  *   <li>CSRF 방어 활성화 및 SPA 환경 대응</li>
+ *   <li>폼 로그인 처리 및 로그인 성공/실패 핸들러 설정</li>
  *   <li>비밀번호 인코딩을 위한 {@link BCryptPasswordEncoder} 제공</li>
  *   <li>애플리케이션 시작 시 FilterChain 디버그 로그 출력</li>
  * </ul>
@@ -35,15 +38,22 @@ public class SecurityConfig {
      * <ul>
      *   <li>CSRF 토큰을 HttpOnly=false 쿠키에 저장</li>
      *   <li>SPA 환경에서 헤더 기반 CSRF 토큰 요청 허용</li>
+     *   <li>폼 로그인 처리: 지정한 URL로 로그인 요청 처리, 성공/실패 핸들러 적용</li>
      *   <li>기타 인증/인가 설정은 기본값 사용</li>
      * </ul>
      *
      * @param http HttpSecurity 객체
+     * @param loginSuccessHandler 로그인 성공 시 호출될 커스텀 핸들러
+     * @param loginFailureHandler 로그인 실패 시 호출될 커스텀 핸들러
      * @return 구성된 SecurityFilterChain
      * @throws Exception 보안 구성 시 발생할 수 있는 예외
      */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http)
+    public SecurityFilterChain filterChain(
+        HttpSecurity http,
+        LoginSuccessHandler loginSuccessHandler,
+        LoginFailureHandler loginFailureHandler
+    )
         throws Exception {
         http
             // CSRF 보호 설정
@@ -52,6 +62,15 @@ public class SecurityConfig {
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 // SPA 대응
                 .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+            )
+            // 폼 로그인 처리 과정
+            .formLogin(login -> login
+                // 클라이언트가 로그인 요청을 보낼 URL 지정
+                .loginProcessingUrl("/api/auth/login")
+                // 로그인 성공 시 호출될 커스텀 핸들러
+                .successHandler(loginSuccessHandler)
+                // 로그인 실패 시 호출될 커스텀 핸들러
+                .failureHandler(loginFailureHandler)
             );
 
         // 현재 HttpSecurity 상태를 기반으로 SecurityFilterChain 생성
