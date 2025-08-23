@@ -30,9 +30,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
@@ -133,22 +131,6 @@ public class SecurityConfig {
 
       log.debug("현재 적용된 필터 체인 목록:");
       filterNames.forEach(log::debug);
-    };
-  }
-
-  @Bean
-  @Profile("!prod")
-  public CommandLineRunner debugSecurityBeans(
-      UserDetailsService userDetailsService,
-      PasswordEncoder passwordEncoder,
-      AuthenticationSuccessHandler loginSuccessHandler,
-      LoginFailureHandler loginFailureHandler
-  ) {
-    return args -> {
-      log.debug("UserDetailsService 기본 구현체: {}", userDetailsService.getClass());
-      log.debug("PasswordEncoder 기본 구현체: {}", passwordEncoder.getClass());
-      log.debug("LoginSuccessHandler 기본 구현체: {}", loginSuccessHandler.getClass());
-      log.debug("LoginFailureHandler 기본 구현체: {}", loginFailureHandler.getClass());
     };
   }
 

@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
-import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.JwtInformation;
+import com.sprint.mission.discodeit.dto.response.JwtDto;
 import com.sprint.mission.discodeit.exception.auth.InvalidCredentialsException;
 import com.sprint.mission.discodeit.exception.auth.TokenGenerationException;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;

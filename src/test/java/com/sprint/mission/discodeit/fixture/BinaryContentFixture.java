@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.fixture;
 
+import com.sprint.mission.discodeit.dto.data.BinaryContentData;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.UUID;
 
 public class BinaryContentFixture {

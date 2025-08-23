@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.vo;
+package com.sprint.mission.discodeit.dto.data;
 
 public record BinaryContentData(
     String fileName,

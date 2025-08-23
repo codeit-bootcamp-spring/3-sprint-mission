@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.data.BinaryContentData;
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
-import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.core.io.Resource;
