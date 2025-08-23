@@ -46,15 +46,15 @@ class AuthApiIntegrationTest {
             "login@example.com",
             "Password1!"
         );
-        
+
         userService.create(userRequest, Optional.empty());
-        
+
         // 로그인 요청
         LoginRequest loginRequest = new LoginRequest(
             "loginuser",
             "Password1!"
         );
-        
+
         String requestBody = objectMapper.writeValueAsString(loginRequest);
 
         // When & Then
@@ -75,7 +75,7 @@ class AuthApiIntegrationTest {
             "nonexistentuser",
             "Password1!"
         );
-        
+
         String requestBody = objectMapper.writeValueAsString(loginRequest);
 
         // When & Then
@@ -95,15 +95,15 @@ class AuthApiIntegrationTest {
             "login2@example.com",
             "Password1!"
         );
-        
+
         userService.create(userRequest, Optional.empty());
-        
+
         // 잘못된 비밀번호로 로그인 시도
         LoginRequest loginRequest = new LoginRequest(
             "loginuser2",
             "WrongPassword1!"
         );
-        
+
         String requestBody = objectMapper.writeValueAsString(loginRequest);
 
         // When & Then
@@ -121,7 +121,7 @@ class AuthApiIntegrationTest {
             "", // 사용자 이름 비어있음 (NotBlank 위반)
             ""  // 비밀번호 비어있음 (NotBlank 위반)
         );
-        
+
         String requestBody = objectMapper.writeValueAsString(invalidRequest);
 
         // When & Then
