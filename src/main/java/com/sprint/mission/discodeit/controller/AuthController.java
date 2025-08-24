@@ -1,10 +1,15 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.AuthApi;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.AuthService;
+import com.sprint.mission.discodeit.service.UserService;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthController implements AuthApi {
 
     private final AuthService authService;
+    private final UserService userService;
 
     /**
      * CSRF 토큰을 요청하기 위한 엔드포인트.
@@ -38,5 +44,27 @@ public class AuthController implements AuthApi {
         return ResponseEntity
             .status(HttpStatus.NO_CONTENT)
             .build();
+    }
+
+    /**
+     * 현재 로그인한 사용자의 정보를 조회하는 엔드포인트.
+     *
+     * <p>Spring Security의 {@link AuthenticationPrincipal}을 통해
+     * 현재 인증된 {@link DiscodeitUserDetails}를 주입받아 사용자 식별자를 얻고,
+     * {@link UserService}를 통해 DB에서 상세 정보를 조회하여 반환한다.</p>
+     *
+     * @param userDetails 인증된 사용자 정보 (SecurityContext에서 자동 주입)
+     * @return HTTP 200 OK와 함께 조회된 사용자 DTO 반환
+     */
+    @GetMapping("me")
+    public ResponseEntity<UserDto> me(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
+        log.info("내 정보 조회 요청");
+
+        UUID userId = userDetails.getUserDto().id();
+        UserDto userDto = userService.find(userId);
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(userDto);
     }
 }
