@@ -144,6 +144,19 @@ public class JwtTokenProvider {
         }
     }
 
+    public UUID getUserId(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            String userIdStr = (String) signedJWT.getJWTClaimsSet().getClaim("userId");
+            if (userIdStr == null) {
+                throw new IllegalArgumentException("User ID claim not found in JWT token");
+            }
+            return UUID.fromString(userIdStr);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid JWT token", e);
+        }
+    }
+
     public Cookie genereateRefreshTokenCookie(String refreshToken) {
         // Set refresh token in HttpOnly cookie
         Cookie refreshCookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken);
@@ -151,6 +164,15 @@ public class JwtTokenProvider {
         refreshCookie.setSecure(true); // Use HTTPS in production
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge(refreshTokenExpirationMs / 1000);
+        return refreshCookie;
+    }
+
+    public Cookie genereateRefreshTokenExpirationCookie() {
+        Cookie refreshCookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, "");
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(true); // Use HTTPS in production
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(0);
         return refreshCookie;
     }
 }

@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.security.Http403ForbiddenAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,6 @@ import org.springframework.security.access.expression.method.DefaultMethodSecuri
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -51,7 +50,7 @@ public class SecurityConfig {
         LoginFailureHandler loginFailureHandler,
         ObjectMapper objectMapper,
         JwtAuthenticationFilter jwtAuthenticationFilter,
-        SessionRegistry sessionRegistry) throws Exception {
+        JwtLogoutHandler jwtLogoutHandler) throws Exception {
         http
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
@@ -65,6 +64,7 @@ public class SecurityConfig {
             )
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
+                .addLogoutHandler(jwtLogoutHandler)
                 .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
             )
             .authorizeHttpRequests(auth -> auth
