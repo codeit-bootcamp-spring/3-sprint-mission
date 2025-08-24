@@ -11,7 +11,6 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
@@ -30,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
     private final UserMapper userMapper;
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStorage binaryContentStorage;
@@ -65,7 +63,6 @@ public class BasicUserService implements UserService {
             })
             .orElse(null);
         String password = userCreateRequest.password();
-        // 사용자가 입력한 비밀번호를 BCryptPasswordEncoder로 암호화 처리
         String encodedPassword = passwordEncoder.encode(password);
 
         User user = new User(username, email, encodedPassword, nullableProfile);
@@ -75,6 +72,7 @@ public class BasicUserService implements UserService {
         return userMapper.toDto(user);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserDto find(UUID userId) {
         log.debug("사용자 조회 시작: id={}", userId);
@@ -85,10 +83,11 @@ public class BasicUserService implements UserService {
         return userDto;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<UserDto> findAll() {
         log.debug("모든 사용자 조회 시작");
-        List<UserDto> userDtos = userRepository.findAllWithProfileAndStatus()
+        List<UserDto> userDtos = userRepository.findAllWithProfile()
             .stream()
             .map(userMapper::toDto)
             .toList();
@@ -135,7 +134,6 @@ public class BasicUserService implements UserService {
             .orElse(null);
 
         String newPassword = userUpdateRequest.newPassword();
-        // 새로운 비밀번호가 입력된 경우 해시 후 저장, 아니라면 기존 비밀번호 유지
         String encodedPassword = Optional.ofNullable(newPassword).map(passwordEncoder::encode)
             .orElse(user.getPassword());
         user.update(newUsername, newEmail, encodedPassword, nullableProfile);

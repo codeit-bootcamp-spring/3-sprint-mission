@@ -24,8 +24,7 @@ public class MDCLoggingInterceptor implements HandlerInterceptor {
     public static final String REQUEST_ID_HEADER = "Discodeit-Request-ID";
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
-        Object handler) {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         // 요청 ID 생성 (UUID)
         String requestId = UUID.randomUUID().toString().replaceAll("-", "");
 
@@ -42,8 +41,7 @@ public class MDCLoggingInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
-        Object handler, Exception ex) {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         // 요청 처리 후 MDC 데이터 정리
         log.debug("Request completed");
         MDC.clear();

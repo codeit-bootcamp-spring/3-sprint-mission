@@ -3,7 +3,6 @@ DROP TABLE IF EXISTS read_statuses CASCADE;
 DROP TABLE IF EXISTS message_attachments CASCADE;
 DROP TABLE IF EXISTS messages CASCADE;
 DROP TABLE IF EXISTS channels CASCADE;
-DROP TABLE IF EXISTS user_statuses CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS binary_contents CASCADE;
 
@@ -16,7 +15,7 @@ CREATE TABLE binary_contents
     id           UUID PRIMARY KEY,
 
     -- Column
-    created_at   TIMESTAMPTZ  NOT NULL,
+    created_at   timestamp with time zone  NOT NULL,
     file_name    VARCHAR(255) NOT NULL,
     size         BIGINT       NOT NULL,
     content_type VARCHAR(100) NOT NULL
@@ -29,8 +28,8 @@ CREATE TABLE users
     id         UUID PRIMARY KEY,
 
     -- Column
-    created_at TIMESTAMPTZ  NOT NULL,
-    updated_at TIMESTAMPTZ,
+    created_at timestamp with time zone  NOT NULL,
+    updated_at timestamp with time zone,
     username   VARCHAR(50)  NOT NULL,
     email      VARCHAR(100) NOT NULL,
     password   VARCHAR(60)  NOT NULL,
@@ -52,8 +51,8 @@ CREATE TABLE channels
     id          UUID PRIMARY KEY,
 
     -- Column
-    created_at  TIMESTAMPTZ NOT NULL,
-    updated_at  TIMESTAMPTZ,
+    created_at  timestamp with time zone NOT NULL,
+    updated_at  timestamp with time zone,
     name        VARCHAR(100),
     description VARCHAR(500),
     type        VARCHAR(10) NOT NULL
@@ -66,8 +65,8 @@ CREATE TABLE messages
     id         UUID PRIMARY KEY,
 
     -- Column
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
     content    TEXT,
 
     -- Foreign Key
@@ -90,25 +89,6 @@ CREATE TABLE message_attachments
     FOREIGN KEY (attachment_id) REFERENCES binary_contents (id) ON DELETE CASCADE
 );
 
--- user_statuses Table
-CREATE TABLE user_statuses
-(
-    -- Primary Key
-    id             UUID PRIMARY KEY,
-
-    -- Column
-    created_at     TIMESTAMPTZ NOT NULL,
-    updated_at     TIMESTAMPTZ,
-    last_active_at TIMESTAMPTZ NOT NULL,
-
-    -- Foreign Key
-    user_id        UUID        NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-
-    -- Unique Key
-    CONSTRAINT uk_user_status_user UNIQUE (user_id)
-);
-
 -- read_statuses Table
 CREATE TABLE read_statuses
 (
@@ -116,9 +96,9 @@ CREATE TABLE read_statuses
     id           UUID PRIMARY KEY,
 
     -- Column
-    created_at   TIMESTAMPTZ NOT NULL,
-    updated_at   TIMESTAMPTZ,
-    last_read_at TIMESTAMPTZ NOT NULL,
+    created_at   timestamp with time zone NOT NULL,
+    updated_at   timestamp with time zone,
+    last_read_at timestamp with time zone NOT NULL,
 
     -- Foreign Key
     user_id      UUID        NOT NULL,
