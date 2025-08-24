@@ -87,7 +87,6 @@ public class SecurityConfig {
             )
             // Add JWT authentication filter
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .rememberMe(Customizer.withDefaults())
         ;
 
         return http.build();
