@@ -22,6 +22,24 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * JWT 기반 인증을 처리하는 필터입니다.
+ * 
+ * <p>HTTP 요청의 Authorization 헤더에서 Bearer 토큰을 추출하고,
+ * 토큰의 유효성을 검증하여 Spring Security 컨텍스트에 인증 정보를 설정합니다.</p>
+ * 
+ * <p>주요 기능:</p>
+ * <ul>
+ *   <li>Bearer 토큰 추출 및 검증</li>
+ *   <li>JWT 토큰 유효성 검사</li>
+ *   <li>사용자 인증 정보 설정</li>
+ *   <li>SecurityContext 인증 객체 설정</li>
+ * </ul>
+ * 
+ * @author HuInDoL
+ * @since 1.0.0
+ * @see OncePerRequestFilter
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -34,11 +52,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final ObjectMapper objectMapper;
     private final DiscodeitUserDetailsService userDetailsService;
 
+    /**
+     * 필터 초기화를 수행합니다.
+     */
     @PostConstruct
     public void init() {
         log.info(FILTER_NAME + "생성자 호출됨: 필터 초기화");
     }
 
+    /**
+     * HTTP 요청을 필터링하여 JWT 인증을 처리합니다.
+     * 
+     * <p>각 요청에 대해 다음 작업을 수행합니다:</p>
+     * <ol>
+     *   <li>Authorization 헤더에서 Bearer 토큰 추출</li>
+     *   <li>토큰 유효성 검증 (JWT 레지스트리 확인)</li>
+     *   <li>사용자 정보 로드 및 인증 객체 생성</li>
+     *   <li>SecurityContext에 인증 정보 설정</li>
+     * </ol>
+     * 
+     * @param request HTTP 요청 객체
+     * @param response HTTP 응답 객체
+     * @param filterChain 필터 체인
+     * @throws ServletException 서블릿 예외
+     * @throws IOException I/O 예외
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
@@ -92,6 +130,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    /**
+     * HTTP 요청의 Authorization 헤더에서 Bearer 토큰을 추출합니다.
+     * 
+     * @param request HTTP 요청 객체
+     * @return 추출된 JWT 토큰 또는 null
+     */
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {

@@ -12,14 +12,11 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.jwt.store.InMemoryJwtRegistry;
-import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +40,6 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
-    private final SessionRegistry sessionRegistry;
 
     private static final String SERVICE_NAME = "[UserService] ";
     private final InMemoryJwtRegistry jwtRegistry;

@@ -19,6 +19,25 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.UUID;
 
+/**
+ * JWT 기반 인증 성공 시 처리하는 핸들러입니다.
+ * 
+ * <p>사용자 로그인 성공 시 Access Token과 Refresh Token을 생성하고,
+ * JWT 레지스트리에 토큰 정보를 등록하며, 응답을 구성합니다.</p>
+ * 
+ * <p>주요 기능:</p>
+ * <ul>
+ *   <li>JWT 토큰 생성 (Access Token, Refresh Token)</li>
+ *   <li>기존 토큰 무효화 (동시 로그인 제한)</li>
+ *   <li>토큰 정보 레지스트리 등록</li>
+ *   <li>리프레시 토큰 쿠키 설정</li>
+ *   <li>JWT 응답 데이터 전송</li>
+ * </ul>
+ * 
+ * @author HuInDoL
+ * @since 1.0.0
+ * @see AuthenticationSuccessHandler
+ */
 @Slf4j
 @Component
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
@@ -29,6 +48,13 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
 
+    /**
+     * JwtLoginSuccessHandler를 생성합니다.
+     * 
+     * @param objectMapper JSON 직렬화를 위한 ObjectMapper
+     * @param jwtTokenProvider JWT 토큰 생성 및 관리 컴포넌트
+     * @param jwtRegistry JWT 토큰 상태 관리 레지스트리
+     */
     public JwtLoginSuccessHandler(ObjectMapper objectMapper, JwtTokenProvider jwtTokenProvider, JwtRegistry jwtRegistry) {
         log.info(HANDLER_NAME + "생성자 호출됨: 응답 JSON 직렬화를 위한 매퍼, JWT 생성/쿠키 유틸리티, 토큰 상태 저장소 주입");
         this.objectMapper = objectMapper;
@@ -36,6 +62,24 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         this.jwtRegistry = jwtRegistry;
     }
 
+    /**
+     * 인증 성공 시 호출되는 메소드입니다.
+     * 
+     * <p>로그인 성공 시 다음 작업을 수행합니다:</p>
+     * <ol>
+     *   <li>기존 토큰 무효화 (동시 로그인 제한)</li>
+     *   <li>새로운 Access Token과 Refresh Token 생성</li>
+     *   <li>토큰 정보를 레지스트리에 등록</li>
+     *   <li>리프레시 토큰을 쿠키에 설정</li>
+     *   <li>JWT 응답 데이터를 클라이언트에 전송</li>
+     * </ol>
+     * 
+     * @param request HTTP 요청 객체
+     * @param response HTTP 응답 객체
+     * @param authentication 인증 성공한 사용자 정보
+     * @throws IOException I/O 예외
+     * @throws ServletException 서블릿 예외
+     */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 

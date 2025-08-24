@@ -18,11 +18,29 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.UUID;
 
+/**
+ * JWT 토큰의 생성, 검증, 관리를 담당하는 컴포넌트입니다.
+ * 
+ * <p>Access Token과 Refresh Token을 생성하고, 토큰의 유효성을 검증하며,
+ * 쿠키 관리를 담당합니다.</p>
+ * 
+ * <p>주요 기능:</p>
+ * <ul>
+ *   <li>Access Token 및 Refresh Token 생성</li>
+ *   <li>토큰 유효성 검증 (서명, 만료, 타입)</li>
+ *   <li>토큰에서 사용자 정보 추출</li>
+ *   <li>리프레시 토큰 쿠키 관리</li>
+ * </ul>
+ * 
+ * @author HuInDoL
+ * @since 1.0.0
+ */
 @Slf4j
 @Component
 public class JwtTokenProvider {
 
     public static final String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
+    
     public static final String PROVIDER_NAME = "[JwtTokenProvider] ";
 
     private final int accessTokenExpirationMs;
@@ -33,11 +51,23 @@ public class JwtTokenProvider {
     private final JWSSigner refreshTokenSigner;
     private final JWSVerifier refreshTokenVerifier;
 
+    /**
+     * JwtTokenProvider를 생성합니다.
+     * 
+     * <p>설정 파일에서 JWT 시크릿 키와 만료 시간을 읽어와 
+     * 토큰 서명자와 검증자를 초기화합니다.</p>
+     * 
+     * @param accessTokenSecret Access Token 서명용 시크릿 키
+     * @param accessTokenExpirationMs Access Token 만료 시간 (밀리초)
+     * @param refreshTokenSecret Refresh Token 서명용 시크릿 키
+     * @param refreshTokenExpirationMs Refresh Token 만료 시간 (밀리초)
+     * @throws JOSEException JWT 관련 예외
+     */
     public JwtTokenProvider(
             @Value("${jwt.access-token.secret}") String accessTokenSecret,
             @Value("${jwt.access-token.exp}") int accessTokenExpirationMs,
             @Value("${jwt.refresh-token.secret}") String refreshTokenSecret,
-            @Value("${jwt.access-token.exp}") int refreshTokenExpirationMs
+            @Value("${jwt.refresh-token.exp}") int refreshTokenExpirationMs
     ) throws JOSEException {
 
         log.info(PROVIDER_NAME + "생성자 호출됨: 토큰 서명/검증자 및 만료 시간 초기화");
@@ -54,6 +84,13 @@ public class JwtTokenProvider {
         this.refreshTokenVerifier = new MACVerifier(refreshTokenSecret);
     }
 
+    /**
+     * 사용자 정보를 기반으로 Access Token을 생성합니다.
+     * 
+     * @param userDetails 사용자 상세 정보
+     * @return 생성된 Access Token
+     * @throws JOSEException JWT 생성 중 발생할 수 있는 예외
+     */
     public String generateAccessToken(DiscodeitUserDetails userDetails) throws JOSEException {
 
         log.info(PROVIDER_NAME + "generateAccessToken 호출됨: {} 의 액세스 토큰 생성", userDetails.getUsername());
@@ -61,6 +98,13 @@ public class JwtTokenProvider {
         return generateToken(userDetails, accessTokenExpirationMs, accessTokenSigner, "access");
     }
 
+    /**
+     * 사용자 정보를 기반으로 Refresh Token을 생성합니다.
+     * 
+     * @param userDetails 사용자 상세 정보
+     * @return 생성된 Refresh Token
+     * @throws JOSEException JWT 생성 중 발생할 수 있는 예외
+     */
     public String generateRefreshToken(DiscodeitUserDetails userDetails) throws JOSEException {
 
         log.info(PROVIDER_NAME + "generateRefreshToken 호출됨: {} 의 리프레시 토큰 생성", userDetails.getUsername());
@@ -68,6 +112,19 @@ public class JwtTokenProvider {
         return generateToken(userDetails, refreshTokenExpirationMs, refreshTokenSigner, "refresh");
     }
 
+    /**
+     * JWT 토큰을 생성하는 공통 메소드입니다.
+     * 
+     * <p>사용자 정보, 만료 시간, 서명자, 토큰 타입을 기반으로 
+     * JWT 토큰을 생성합니다.</p>
+     * 
+     * @param userDetails 사용자 상세 정보
+     * @param expirationMs 토큰 만료 시간 (밀리초)
+     * @param signer 토큰 서명자
+     * @param tokenType 토큰 타입 (access 또는 refresh)
+     * @return 생성된 JWT 토큰
+     * @throws JOSEException JWT 생성 중 발생할 수 있는 예외
+     */
     public String generateToken(DiscodeitUserDetails userDetails, int expirationMs, JWSSigner signer, String tokenType) throws JOSEException {
 
         log.info(PROVIDER_NAME + "generateToken: {}의 {} 토큰 생성 시작", userDetails.getUsername(), tokenType);
@@ -147,6 +204,8 @@ public class JwtTokenProvider {
         log.info(PROVIDER_NAME + "expireRefreshCookie 호출됨: 만료 쿠키 응답에 추가");
 
         Cookie cookie = generateRefreshTokenExpirationCookie();
+
+        response.addCookie(cookie);
     }
 
     public boolean validateAccessToken(String accessToken) {

@@ -30,7 +30,6 @@ DROP TABLE IF EXISTS tbl_binary_contents CASCADE;
 DROP TABLE IF EXISTS tbl_read_statuses CASCADE;
 DROP TABLE IF EXISTS tbl_messages CASCADE;
 DROP TABLE IF EXISTS tbl_message_attachments CASCADE;
-DROP TABLE IF EXISTS tbl_jwt_token CASCADE;
 
 CREATE TABLE IF NOT EXISTS discodeit.tbl_binary_contents
 (
