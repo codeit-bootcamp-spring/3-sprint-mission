@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -15,14 +15,13 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,17 +52,17 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
-    private final SessionRegistry sessionRegistry;
+    private final JwtRegistry jwtRegistry;
 
     private static final Logger log= LoggerFactory.getLogger(BasicUserService.class);
 
 
 
     @Transactional(readOnly = true)
-    public List<UserResponse> findAllUsers() {
+    public List<UserDto> findAllUsers() {
         List<User> users = userRepository.findAllWithBinaryContent();
 
-        List<UserResponse> responses = new ArrayList<>();
+        List<UserDto> responses = new ArrayList<>();
         for (User user : users) {
             responses.add(userMapper.toDto(user));
         }
@@ -72,7 +71,7 @@ public class BasicUserService implements UserService {
 
 
     @Override
-    public UserResponse create(
+    public UserDto create(
             UserCreateRequest userCreateRequest,
             Optional<BinaryContentCreateRequest> profile
     ) {
@@ -120,7 +119,7 @@ public class BasicUserService implements UserService {
             userRepository.save(user);
         }
 
-        UserResponse response = userMapper.toDto(user);
+        UserDto response = userMapper.toDto(user);
         return response;
 //        BinaryContent 생성 -> (분기)이미지 없을 경우 -> User 생성 -> userStatus 생성 -> return response
 //                           -> (분기)이미지 있을 경우 -> User 생성 -> attachment 저장 -> userStatus 생성 -> return response
@@ -156,7 +155,7 @@ public class BasicUserService implements UserService {
     @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.id")
     @Transactional
     @Override
-    public UserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file) {
+    public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile file) {
         System.out.println("BasicUserService.update");
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(Map.of("userId ", userId)));
 
@@ -231,33 +230,26 @@ public class BasicUserService implements UserService {
             user.changeProfile(binaryContent);
         }
 
-        UserResponse response = userMapper.toDto(user);
+        UserDto response = userMapper.toDto(user);
         return response;
 //        // 파일 확인(있음) -> 파일 삭제 -> binary content 삭제 -> binary content 추가 -> 파일 생성 -> user 업데이트
 //        // 파일 확인(없음) ->                                  -> binary content 추가 -> 파일 생성 -> user 업데이트
     }
 
     @Override
-    public UserResponse updateRole(UserRoleUpdateRequest request) {
-        User user = userRepository.findById(request.userId()).orElseThrow(() -> new UserNotFoundException(Map.of("userId ", request.userId())));
+    public UserDto updateRole(UserRoleUpdateRequest request) {
+        User user = userRepository.findById(request.userId())
+            .orElseThrow(() -> new UserNotFoundException(Map.of("userId", request.userId())));
 
         user.changeRole(request.newRole());
 
-        invalidateSessionByUsername(user.getUsername());
+        invalidateTokensByUserId(user.getId());
 
-        return  userMapper.toDto(user);
+        return userMapper.toDto(user);
     }
 
-    private void invalidateSessionByUsername(String username) {
-        sessionRegistry.getAllPrincipals().forEach(principal -> {
-            if (principal instanceof UserDetails userDetails
-                && userDetails.getUsername().equals(username)) {
-                sessionRegistry.getAllSessions(principal, false).forEach(sessionInfo -> {
-                    sessionInfo.expireNow();
-                    System.out.println("[BasicUserService.invalidateSessionByUsername] 세션 만료됨: \n" + sessionInfo.getSessionId());
-                });
-            }
-        });
+    private void invalidateTokensByUserId(UUID userId) {
+        jwtRegistry.invalidateJwtInformationByUserId(userId);
     }
 
     private boolean hasValue(MultipartFile attachmentFiles) {

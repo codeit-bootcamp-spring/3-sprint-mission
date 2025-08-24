@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -76,7 +76,7 @@ public class UserServiceTest {
 
         BinaryContent savedBinaryContent = new BinaryContent("profile.jpg", (long) fileBytes.length, "image/jpeg", ".jpg");
         given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(savedBinaryContent);
-        given(userMapper.toDto(any(User.class))).willReturn(mock(UserResponse.class));
+        given(userMapper.toDto(any(User.class))).willReturn(mock(UserDto.class));
 
         // when
         userService.create(request, profile);
@@ -93,7 +93,7 @@ public class UserServiceTest {
     void whenProfileNotFound_thenShouldNotCreateBinaryContent() {
         // given
         UserCreateRequest request = new UserCreateRequest("paul", "duplicate@email.com", "password123");
-        given(userMapper.toDto(any(User.class))).willReturn(mock(UserResponse.class));
+        given(userMapper.toDto(any(User.class))).willReturn(mock(UserDto.class));
 
         // when
         userService.create(request, Optional.empty());
@@ -330,14 +330,14 @@ public class UserServiceTest {
         User user = new User();
         given(userMapper.toDto(user))
             .willReturn(
-                UserResponse.builder()
+                UserDto.builder()
                     .username("paul")
                     .email("paul@example.com")
                     .build()
             );
 
         // when
-        List<UserResponse> responses = userService.findAllUsers();
+        List<UserDto> responses = userService.findAllUsers();
 
         // then
         ObjectMapper objectMapper = new ObjectMapper();
@@ -353,17 +353,17 @@ public class UserServiceTest {
         User user = new User();
         given(userMapper.toDto(user))
             .willReturn(
-                UserResponse.builder()
+                UserDto.builder()
                     .username("paul")
                     .email("paul@example.com")
                     .build()
             );
 
         // when
-        List<UserResponse> responses = userService.findAllUsers();
+        List<UserDto> responses = userService.findAllUsers();
 
         // then
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0)).isInstanceOf(UserResponse.class);
+        assertThat(responses.get(0)).isInstanceOf(UserDto.class);
     }
 }

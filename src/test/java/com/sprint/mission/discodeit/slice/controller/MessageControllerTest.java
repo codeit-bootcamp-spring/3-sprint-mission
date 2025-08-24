@@ -6,7 +6,7 @@ import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.message.response.PageResponse;
 import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.messageException.MessageNotFoundException;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
@@ -148,7 +148,7 @@ public class MessageControllerTest {
             .content("content")
             .build();
 
-        UserResponse userResponse = UserResponse.builder()
+        UserDto userDto = UserDto.builder()
             .id(userId)
             .build();
 
@@ -156,7 +156,7 @@ public class MessageControllerTest {
             .id(messageId)
             .content("content")
             .channelId(channelId)
-            .author(userResponse)
+            .author(userDto)
             .build();
 
         given(messageService.createMessage(any(MessageCreateRequest.class), any()))

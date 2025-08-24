@@ -6,7 +6,7 @@ import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundException;
@@ -57,8 +57,8 @@ public class ChannelControllerTest {
         // given
         PublicChannelCreateRequest request = new PublicChannelCreateRequest("Test channel", "Test channel description");
 
-        List<UserResponse> participants = new ArrayList<>();
-        UserResponse participant = UserResponse.builder().build();
+        List<UserDto> participants = new ArrayList<>();
+        UserDto participant = UserDto.builder().build();
         participants.add(participant);
 
         UUID id = UUID.randomUUID();
@@ -116,21 +116,21 @@ public class ChannelControllerTest {
         UUID id = UUID.randomUUID();
         Instant lastMessageAt = Instant.now();
 
-        UserResponse userResponse1 = UserResponse.builder()
+        UserDto userDto1 = UserDto.builder()
             .username("paul")
             .id(user1.getId())
             .email("paul@gmail.com")
             .build();
 
-        UserResponse userResponse2 = UserResponse.builder()
+        UserDto userDto2 = UserDto.builder()
             .username("daniel")
             .id(user2.getId())
             .email("daniel@gmail.com")
             .build();
 
-        List<UserResponse> participantsList = new ArrayList<>();
-        participantsList.add(userResponse1);
-        participantsList.add(userResponse2);
+        List<UserDto> participantsList = new ArrayList<>();
+        participantsList.add(userDto1);
+        participantsList.add(userDto2);
 
         ChannelResponse response = ChannelResponse.builder()
             .id(id)

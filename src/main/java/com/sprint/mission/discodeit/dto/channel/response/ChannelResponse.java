@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.channel.response;
 
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,6 +22,6 @@ public class ChannelResponse {
   private final ChannelType type;
   private final String name;
   private final String description;
-  private final List<UserResponse> participants;
+  private final List<UserDto> participants;
   private final Instant lastMessageAt;
 }

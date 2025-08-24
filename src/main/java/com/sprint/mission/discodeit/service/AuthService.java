@@ -1,7 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.user.UserResponse;
-import org.springframework.security.core.userdetails.UserDetails;
+import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
+import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic
@@ -16,6 +17,10 @@ import org.springframework.security.core.userdetails.UserDetails;
  */
 public interface AuthService {
 
-    UserResponse getCurrentUserInfo(UserDetails userDetails);
+    UserDto updateRole(UserRoleUpdateRequest request);
+
+    UserDto updateRoleInternal(UserRoleUpdateRequest request);
+
+    JwtInformation refreshToken(String refreshToken);
 
 }
