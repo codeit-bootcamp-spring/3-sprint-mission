@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -24,11 +23,9 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    @Value("${jwt.refresh-token.expiration}")
-    private long refreshTokenExpiration;
-
     private final ObjectMapper objectMapper;
     private final JwtTokenProvider tokenProvider;
+    private final RefreshTokenCookieUtil cookieUtil;
 
     @Override
     public void onAuthenticationSuccess(
@@ -44,7 +41,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 String accessToken = tokenProvider.createAccessToken(userDetails);
                 String refreshToken = tokenProvider.createRefreshToken(userDetails);
 
-                Cookie refreshTokenCookie = createRefreshTokenCookie(refreshToken);
+                Cookie refreshTokenCookie = cookieUtil.createRefreshTokenCookie(refreshToken);
                 response.addCookie(refreshTokenCookie);
 
                 JwtDto jwtDto = new JwtDto(
@@ -64,15 +61,6 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
             log.warn("인증 실패: 유효하지 않은 Principal 타입. 타입: {}", authentication.getPrincipal().getClass().getName());
             sendErrorResponse(response, ErrorCode.UNAUTHORIZED_ACCESS);
         }
-    }
-
-    private Cookie createRefreshTokenCookie(String refreshToken) {
-        Cookie cookie = new Cookie("refresh_token", refreshToken);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge((int) (refreshTokenExpiration / 1000));
-        return cookie;
     }
 
     private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
