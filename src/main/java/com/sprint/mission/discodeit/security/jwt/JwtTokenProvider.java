@@ -34,6 +34,7 @@ public class JwtTokenProvider {
     private final JWSVerifier accessTokenVerifier;
 
     private final JWSSigner refreshTokenSigner;
+    private final JWSVerifier refreshTokenVerifier;
 
     public JwtTokenProvider(
         @Value("${discodeit.jwt.access-token.secret}") String accessTokenSecret,
@@ -51,6 +52,7 @@ public class JwtTokenProvider {
 
         byte[] refreshSecretBytes = refreshTokenSecret.getBytes(StandardCharsets.UTF_8);
         this.refreshTokenSigner = new MACSigner(refreshSecretBytes);
+        this.refreshTokenVerifier = new MACVerifier(refreshSecretBytes);
     }
 
     public String generateAccessToken(DiscodeitUserDetails userDetails) throws JOSEException {
@@ -96,6 +98,10 @@ public class JwtTokenProvider {
 
     public boolean validateAccessToken(String token) {
         return validateToken(token, accessTokenVerifier, "access");
+    }
+
+    public boolean validateRefreshToken(String token) {
+        return validateToken(token, refreshTokenVerifier, "refresh");
     }
 
     private boolean validateToken(String token, JWSVerifier verifier, String expectedType) {
