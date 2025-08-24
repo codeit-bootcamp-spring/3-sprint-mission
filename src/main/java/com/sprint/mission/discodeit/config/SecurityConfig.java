@@ -42,6 +42,7 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
  *   <li>CSRF 방어 활성화 및 SPA 환경 대응</li>
  *   <li>폼 로그인 처리 및 로그인 성공/실패 핸들러 설정</li>
  *   <li>로그아웃 URL 및 성공 처리 핸들러 설정</li>
+ *   <li>Remember-Me 기능 기본 활성화</li>
  *   <li>Role 계층 구조 정의 및 Method Security 지원</li>
  *   <li>동시 세션 제어 및 SessionRegistry/HttpSessionEventPublisher 제공</li>
  *   <li>비밀번호 인코딩을 위한 {@link BCryptPasswordEncoder} 제공</li>
@@ -61,6 +62,7 @@ public class SecurityConfig {
      *   <li>CSRF 토큰을 쿠키에 저장(HttpOnly=false), SPA 헤더 기반 요청 대응</li>
      *   <li>폼 로그인 처리: 성공/실패 시 커스텀 핸들러 적용</li>
      *   <li>로그아웃 처리: 지정 URL, 성공 시 204 반환</li>
+     *   <li>Remember-Me 기능 기본 활성화</li>
      *   <li>특정 요청 제외하고 인증 필요</li>
      *   <li>권한 부족 시 403 JSON 응답 처리</li>
      *   <li>동시 세션 최대 1개 제한, SessionRegistry 사용</li>
@@ -132,7 +134,9 @@ public class SecurityConfig {
                     .maximumSessions(1)
                     .sessionRegistry(sessionRegistry)
                 )
-            );
+            )
+            // Remember-Me 기능 활성화
+            .rememberMe(Customizer.withDefaults());
 
         // 현재 HttpSecurity 상태를 기반으로 SecurityFilterChain 생성
         return http.build();
