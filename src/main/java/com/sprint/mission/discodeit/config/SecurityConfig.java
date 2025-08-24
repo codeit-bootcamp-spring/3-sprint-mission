@@ -1,6 +1,10 @@
 package com.sprint.mission.discodeit.config;
 
-import com.sprint.mission.discodeit.handler.*;
+import com.sprint.mission.discodeit.handler.CustomAccessDeniedHandler;
+import com.sprint.mission.discodeit.handler.CustomAuthenticationEntryPoint;
+import com.sprint.mission.discodeit.handler.LoginFailureHandler;
+import com.sprint.mission.discodeit.handler.SpaCsrfTokenRequestHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -17,19 +21,32 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import java.util.List;
 import java.util.stream.IntStream;
 
+/**
+ * Spring Security 설정을 담당하는 설정 클래스입니다.
+ * 
+ * <p>JWT 기반 인증, 권한 관리, CSRF 보호, 세션 관리 등을 설정합니다.</p>
+ * 
+ * <p>주요 기능:</p>
+ * <ul>
+ *   <li>JWT 기반 무상태 인증 설정</li>
+ *   <li>권한 기반 접근 제어</li>
+ *   <li>CSRF 토큰 보호</li>
+ *   <li>로그인/로그아웃 핸들러 설정</li>
+ *   <li>메소드 보안 활성화</li>
+ * </ul>
+ * 
+ * @author HuInDoL
+ * @since 1.0.0
+ */
 @Slf4j
 @Configuration
 @EnableWebSecurity
@@ -38,11 +55,22 @@ public class SecurityConfig {
 
     private static final String CONFIG_NAME = "[SecurityConfig] ";
 
+    /**
+     * 비밀번호 인코딩을 위한 BCryptPasswordEncoder를 제공합니다.
+     * 
+     * @return BCryptPasswordEncoder 인스턴스
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * 애플리케이션 시작 시 현재 적용된 보안 필터 체인을 로깅합니다.
+     * 
+     * @param filterChain 현재 적용된 보안 필터 체인
+     * @return CommandLineRunner 인스턴스
+     */
     @Bean
     public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
 
@@ -59,6 +87,20 @@ public class SecurityConfig {
         };
     }
 
+    /**
+     * HTTP 보안 설정을 구성합니다.
+     * 
+     * <p>CSRF 보호, 권한 관리, 세션 정책, 로그인/로그아웃 설정을 포함합니다.</p>
+     * 
+     * @param http HttpSecurity 인스턴스
+     * @param loginSuccessHandler 로그인 성공 핸들러
+     * @param loginFailureHandler 로그인 실패 핸들러
+     * @param accessDeniedHandler 접근 거부 핸들러
+     * @param authenticationEntryPoint 인증 진입점 핸들러
+     * @param jwtLogoutHandler JWT 로그아웃 핸들러
+     * @return 구성된 SecurityFilterChain
+     * @throws Exception 설정 중 발생할 수 있는 예외
+     */
     @Bean
     public SecurityFilterChain filterChain(
             HttpSecurity http,
@@ -66,7 +108,8 @@ public class SecurityConfig {
             LoginFailureHandler loginFailureHandler,
             CustomAccessDeniedHandler accessDeniedHandler,
             CustomAuthenticationEntryPoint authenticationEntryPoint,
-            JwtLogoutHandler jwtLogoutHandler) throws Exception {
+            JwtLogoutHandler jwtLogoutHandler,
+            JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
 
         log.info(CONFIG_NAME + "FilterChain 구성 시작");
 
@@ -96,22 +139,28 @@ public class SecurityConfig {
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(loginSuccessHandler)
                         .failureHandler(loginFailureHandler)
-                        .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
                         .addLogoutHandler(jwtLogoutHandler)
-                        .permitAll()
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler)
                 )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         ;
 
         return http.build();
     }
 
+    /**
+     * 웹 보안 설정을 커스터마이징합니다.
+     * 
+     * <p>정적 리소스와 에러 페이지에 대한 보안 검사를 무시합니다.</p>
+     * 
+     * @return WebSecurityCustomizer 인스턴스
+     */
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
@@ -119,7 +168,14 @@ public class SecurityConfig {
                 .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/assets/**")
                 .requestMatchers("/index.html");
     }
-
+    
+    /**
+     * 역할 계층 구조를 정의합니다.
+     * 
+     * <p>ADMIN > CHANNEL_MANAGER > USER 순서로 권한이 상속됩니다.</p>
+     * 
+     * @return 구성된 RoleHierarchy 인스턴스
+     */
     @Bean
     public RoleHierarchy roleHierarchy() {
 
@@ -132,6 +188,14 @@ public class SecurityConfig {
         return hierarchy;
     }
 
+    /**
+     * 메소드 보안 표현식 핸들러를 구성합니다.
+     * 
+     * <p>역할 계층 구조를 메소드 보안에 적용합니다.</p>
+     * 
+     * @param roleHierarchy 역할 계층 구조
+     * @return 구성된 MethodSecurityExpressionHandler 인스턴스
+     */
     @Bean
     static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
             RoleHierarchy roleHierarchy
