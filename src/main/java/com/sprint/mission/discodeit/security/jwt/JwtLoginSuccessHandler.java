@@ -26,6 +26,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper objectMapper;
     private final JwtTokenProvider tokenProvider;
     private final RefreshTokenCookieUtil cookieUtil;
+    private final JwtRegistry jwtRegistry;
 
     @Override
     public void onAuthenticationSuccess(
@@ -52,6 +53,13 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write(objectMapper.writeValueAsString(jwtDto));
 
+                jwtRegistry.registerJwtInformation(
+                        new JwtInformation(
+                                userDetails.getUserDto(),
+                                accessToken,
+                                refreshToken
+                        )
+                );
 
             } catch (JOSEException e) {
                 log.error("JWT 토큰 생성 실패: {}", e.getMessage(), e);

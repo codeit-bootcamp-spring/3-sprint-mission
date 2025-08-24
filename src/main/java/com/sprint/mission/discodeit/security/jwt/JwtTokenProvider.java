@@ -128,4 +128,17 @@ public class JwtTokenProvider {
         }
     }
 
+    public UUID getUserId(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            String userIdStr = (String) signedJWT.getJWTClaimsSet().getClaim("userId");
+            if (userIdStr == null) {
+                throw new DiscodeitException(ErrorCode.USER_ID_CLAIM_NOT_FOUND);
+            }
+            return UUID.fromString(userIdStr);
+        } catch (Exception e) {
+            throw new DiscodeitException(ErrorCode.INVALID_JWT_TOKEN);
+        }
+    }
+
 }

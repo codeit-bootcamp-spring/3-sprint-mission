@@ -2,11 +2,9 @@ package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.security.CustomAccessDeniedHandler;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
-import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
-import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
+import com.sprint.mission.discodeit.security.jwt.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -21,11 +19,11 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
@@ -44,6 +42,7 @@ public class SecurityConfig {
             JwtLoginSuccessHandler loginSuccessHandler,
             LoginFailureHandler loginFailureHandler,
             CustomAccessDeniedHandler customAccessDeniedHandler,
+            JwtAuthenticationFilter jwtAuthenticationFilter,
             JwtLogoutHandler jwtLogoutHandler
     ) throws Exception {
         http
@@ -79,7 +78,8 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -119,6 +119,11 @@ public class SecurityConfig {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
         handler.setRoleHierarchy(roleHierarchy);
         return handler;
+    }
+
+    @Bean
+    public JwtRegistry jwtRegistry(JwtTokenProvider jwtTokenProvider) {
+        return new InMemoryJwtRegistry(1, jwtTokenProvider);
     }
 
 }

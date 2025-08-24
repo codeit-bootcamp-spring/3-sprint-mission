@@ -3,8 +3,8 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.security.jwt.JwtDto;
+import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.RefreshTokenCookieUtil;
-import com.sprint.mission.discodeit.security.jwt.TokenDto;
 import com.sprint.mission.discodeit.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -48,12 +48,12 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<JwtDto> refresh(@CookieValue("REFRESH_TOKEN") String refreshToken, HttpServletResponse response) {
         log.info("액세스 토큰 재발급 요청");
-        TokenDto tokenDto = authService.reissueTokens(refreshToken);
+        JwtInformation jwtInfo = authService.reissueTokens(refreshToken);
 
-        Cookie newRefreshTokenCookie = cookieUtil.createRefreshTokenCookie(tokenDto.refreshToken());
+        Cookie newRefreshTokenCookie = cookieUtil.createRefreshTokenCookie(jwtInfo.refreshToken());
         response.addCookie(newRefreshTokenCookie);
 
-        JwtDto result = new JwtDto(tokenDto.userDto(), tokenDto.accessToken());
+        JwtDto result = new JwtDto(jwtInfo.userDto(), jwtInfo.accessToken());
 
         return ResponseEntity
                 .status(HttpStatus.OK)

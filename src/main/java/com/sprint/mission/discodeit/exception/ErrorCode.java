@@ -33,8 +33,9 @@ public enum ErrorCode {
     TOKEN_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "TG001", "토큰 생성에 실패했습니다."),
     EXPIRED_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "T002", "만료된 JWT 토큰입니다."),
     INVALID_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "T003", "유효하지 않은 JWT 토큰입니다."),
-    INVALID_USER_DETAILS(HttpStatus.UNAUTHORIZED, "T004", "유효하지 않은 사용자 인증 정보입니다");
-    
+    INVALID_USER_DETAILS(HttpStatus.UNAUTHORIZED, "T004", "유효하지 않은 사용자 인증 정보입니다"),
+    USER_ID_CLAIM_NOT_FOUND(HttpStatus.UNAUTHORIZED, "T005", "JWT 토큰에 사용자 ID가 없습니다.");
+
     private final HttpStatus status;
     private final String code;
     private final String message;

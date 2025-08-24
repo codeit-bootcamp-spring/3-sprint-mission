@@ -9,7 +9,7 @@ public record UserDto(
         String username,
         String email,
         BinaryContentDto profile,
-        boolean isOnline,
+        boolean online,
         Role role
 ) {
 
