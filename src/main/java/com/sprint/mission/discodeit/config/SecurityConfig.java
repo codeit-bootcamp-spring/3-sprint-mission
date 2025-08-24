@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.security.Http403ForbiddenAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
-import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +22,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -44,8 +45,7 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
  *   <li>로그아웃 URL 및 성공 처리 핸들러 설정</li>
  *   <li>Remember-Me 기능 기본 활성화</li>
  *   <li>Role 계층 구조 정의 및 Method Security 지원</li>
- *   <li>동시 세션 제어 및 SessionRegistry/HttpSessionEventPublisher 제공</li>
- *   <li>비밀번호 인코딩을 위한 {@link BCryptPasswordEncoder} 제공</li>
+ *   <li>세션을 Stateless로 설정 (동시 세션 제한 제거)</li>
  *   <li>애플리케이션 시작 시 SecurityFilterChain 디버그 로그 출력</li>
  * </ul>
  */
@@ -69,20 +69,18 @@ public class SecurityConfig {
      * </ul>
      *
      * @param http HttpSecurity 객체
-     * @param loginSuccessHandler 로그인 성공 시 호출될 핸들러
+     * @param jwtLoginSuccessHandler 로그인 성공 시 호출될 JWT 핸들러
      * @param loginFailureHandler 로그인 실패 시 호출될 핸들러
      * @param objectMapper JSON 변환용 ObjectMapper
-     * @param sessionRegistry 동시 세션 제어용 SessionRegistry
      * @return SecurityFilterChain
-     * @throws Exception 보안 구성 중 발생 가능한 예외
+     * @throws Exception 필터 체인 구성 중 예외 발생 시
      */
     @Bean
     public SecurityFilterChain filterChain(
         HttpSecurity http,
-        LoginSuccessHandler loginSuccessHandler,
+        JwtLoginSuccessHandler jwtLoginSuccessHandler,
         LoginFailureHandler loginFailureHandler,
-        ObjectMapper objectMapper,
-        SessionRegistry sessionRegistry
+        ObjectMapper objectMapper
     )
         throws Exception {
         http
@@ -98,7 +96,7 @@ public class SecurityConfig {
                 // 클라이언트가 로그인 요청을 보낼 URL 지정
                 .loginProcessingUrl("/api/auth/login")
                 // 로그인 성공 시 호출될 커스텀 핸들러
-                .successHandler(loginSuccessHandler)
+                .successHandler(jwtLoginSuccessHandler)
                 // 로그인 실패 시 호출될 커스텀 핸들러
                 .failureHandler(loginFailureHandler)
             )
@@ -128,12 +126,9 @@ public class SecurityConfig {
                 // 권한 부족
                 .accessDeniedHandler(new Http403ForbiddenAccessDeniedHandler(objectMapper))
             )
-            // 동시 세션 제어
+            // 세션 Stateless 설정
             .sessionManagement(session -> session
-                .sessionConcurrency(concurrency -> concurrency
-                    .maximumSessions(1)
-                    .sessionRegistry(sessionRegistry)
-                )
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             // Remember-Me 기능 활성화
             .rememberMe(Customizer.withDefaults());

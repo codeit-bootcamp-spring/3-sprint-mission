@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.security;
+package com.sprint.mission.discodeit.security.jwt;
 
 
 import com.nimbusds.jose.JOSEException;
@@ -11,6 +11,7 @@ import com.nimbusds.jwt.SignedJWT;
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>Spring Bean 초기화 시점에 Secret을 기반으로 {@link MACSigner}와 {@link MACVerifier}를 생성합니다.</p>
  */
+@Getter
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
