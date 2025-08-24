@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.security.Http403ForbiddenAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +45,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(
         HttpSecurity http,
-        LoginSuccessHandler loginSuccessHandler,
+        JwtLoginSuccessHandler jwtloginSuccessHandler,
         LoginFailureHandler loginFailureHandler,
         ObjectMapper objectMapper,
         SessionRegistry sessionRegistry) throws Exception {
@@ -56,7 +57,7 @@ public class SecurityConfig {
             // Form 기반 로그인 활성화
             .formLogin(login -> login
                 .loginProcessingUrl("/api/auth/login")
-                .successHandler(loginSuccessHandler)
+                .successHandler(jwtloginSuccessHandler)
                 .failureHandler(loginFailureHandler)
             )
             .logout(logout -> logout
