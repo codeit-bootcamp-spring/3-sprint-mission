@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.data.JwtDto;
+import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
@@ -33,6 +34,7 @@ public class AuthController implements AuthApi {
 
     private final AuthService authService;
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * CSRF 토큰 발급 API
@@ -55,10 +57,17 @@ public class AuthController implements AuthApi {
     public ResponseEntity<JwtDto> refresh(@CookieValue("REFRESH_TOKEN") String refreshToken,
         HttpServletResponse response) {
         log.info("토큰 리프레시 요청");
-        JwtDto jwtDto = authService.refreshToken(refreshToken);
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(jwtDto);
+        JwtInformation jwtInformation = authService.refreshToken(refreshToken);
+        Cookie refreshCookie = jwtTokenProvider.genereateRefreshTokenCookie(
+            jwtInformation.getRefreshToken());
+        response.addCookie(refreshCookie);
+
+        JwtDto body = new JwtDto(
+            jwtInformation.getUserDto(),
+            jwtInformation.getAccessToken()
+        );
+
+        return ResponseEntity.ok(body);
     }
 
     @PutMapping("/role")

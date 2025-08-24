@@ -64,8 +64,7 @@ public class JwtTokenProvider {
     }
 
     private String generateToken(DiscodeitUserDetails userDetails, int expirationMs,
-        JWSSigner signer,
-        String tokenType) throws JOSEException {
+        JWSSigner signer, String tokenType) throws JOSEException {
         String tokenId = UUID.randomUUID().toString();
         UserDto user = userDetails.getUserDto();
 

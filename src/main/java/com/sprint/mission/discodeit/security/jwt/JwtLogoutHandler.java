@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 public class JwtLogoutHandler implements LogoutHandler {
 
     private final JwtTokenProvider tokenProvider;
+    private final JwtRegistry jwtRegistry;
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response,
@@ -32,6 +33,7 @@ public class JwtLogoutHandler implements LogoutHandler {
             .ifPresent(cookie -> {
                 String refreshToken = cookie.getValue();
                 UUID userId = tokenProvider.getUserId(refreshToken);
+                jwtRegistry.invalidateJwtInformationByUserId(userId);
             });
 
         log.debug("JWT logout handler executed - refresh token cookie cleared");

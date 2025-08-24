@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.nimbusds.jose.JOSEException;
-import com.sprint.mission.discodeit.dto.data.JwtDto;
+import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.entity.Role;
@@ -12,7 +12,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
-import com.sprint.mission.discodeit.security.SessionManager;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
 import java.util.UUID;
@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final SessionManager sessionManager;
+    private final JwtRegistry jwtRegistry;
     private final JwtTokenProvider tokenProvider;
     private final UserDetailsService userDetailsService;
 
@@ -51,15 +51,16 @@ public class BasicAuthService implements AuthService {
         Role newRole = request.newRole();
         user.updateRole(newRole);
 
-        sessionManager.invalidateSessionsByUserId(userId);
+        jwtRegistry.invalidateJwtInformationByUserId(userId);
 
         return userMapper.toDto(user);
     }
 
     @Override
-    public JwtDto refreshToken(String refreshToken) {
+    public JwtInformation refreshToken(String refreshToken) {
         // Validate refresh token
-        if (!tokenProvider.validateRefreshToken(refreshToken)) {
+        if (!tokenProvider.validateRefreshToken(refreshToken)
+            || !jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
             log.error("Invalid or expired refresh token: {}", refreshToken);
             throw new DiscodeitException(ErrorCode.INVALID_TOKEN);
         }
@@ -73,14 +74,20 @@ public class BasicAuthService implements AuthService {
 
         try {
             String newAccessToken = tokenProvider.generateAccessToken(discodeitUserDetails);
+            String newRefreshToken = tokenProvider.generateRefreshToken(discodeitUserDetails);
             log.info("Access token refreshed for user: {}", username);
 
-            JwtDto jwtDto = new JwtDto(
+            JwtInformation newJwtInformation = new JwtInformation(
                 discodeitUserDetails.getUserDto(),
-                newAccessToken
+                newAccessToken,
+                newRefreshToken
+            );
+            jwtRegistry.rotateJwtInformation(
+                refreshToken,
+                newJwtInformation
             );
 
-            return jwtDto;
+            return newJwtInformation;
 
         } catch (JOSEException e) {
             log.error("Failed to generate new tokens for user: {}", username, e);
