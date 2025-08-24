@@ -144,8 +144,7 @@ class BasicChannelServiceTest {
         // given
         List<ReadStatus> readStatuses = List.of(new ReadStatus(user, channel, Instant.now()));
         given(readStatusRepository.findAllByUserId(eq(userId))).willReturn(readStatuses);
-        given(channelRepository.findAllByTypeOrIdIn(eq(ChannelType.PUBLIC),
-            eq(List.of(channel.getId()))))
+        given(channelRepository.findAllByTypeOrIdIn(eq(ChannelType.PUBLIC), eq(List.of(channel.getId()))))
             .willReturn(List.of(channel));
         given(channelMapper.toDto(any(Channel.class))).willReturn(channelDto);
 
@@ -162,8 +161,7 @@ class BasicChannelServiceTest {
         // given
         String newName = "newChannelName";
         String newDescription = "newDescription";
-        PublicChannelUpdateRequest request = new PublicChannelUpdateRequest(newName,
-            newDescription);
+        PublicChannelUpdateRequest request = new PublicChannelUpdateRequest(newName, newDescription);
 
         given(channelRepository.findById(eq(channelId))).willReturn(Optional.of(channel));
         given(channelMapper.toDto(any(Channel.class))).willReturn(channelDto);

@@ -45,8 +45,6 @@ class ReadStatusRepositoryTest {
     private User createTestUser(String username, String email) {
         BinaryContent profile = new BinaryContent("profile.jpg", 1024L, "image/jpeg");
         User user = new User(username, email, "password123!@#", profile);
-        // UserStatus 생성 및 연결
-        UserStatus status = new UserStatus(user, Instant.now());
         return userRepository.save(user);
     }
 
@@ -75,8 +73,7 @@ class ReadStatusRepositoryTest {
         Channel channel2 = createTestChannel(ChannelType.PRIVATE, "채널2");
 
         Instant now = Instant.now();
-        ReadStatus readStatus1 = createTestReadStatus(user, channel1,
-            now.minus(1, ChronoUnit.DAYS));
+        ReadStatus readStatus1 = createTestReadStatus(user, channel1, now.minus(1, ChronoUnit.DAYS));
         ReadStatus readStatus2 = createTestReadStatus(user, channel2, now);
 
         // 영속성 컨텍스트 초기화
@@ -99,8 +96,7 @@ class ReadStatusRepositoryTest {
         Channel channel = createTestChannel(ChannelType.PUBLIC, "공개채널");
 
         Instant now = Instant.now();
-        ReadStatus readStatus1 = createTestReadStatus(user1, channel,
-            now.minus(1, ChronoUnit.DAYS));
+        ReadStatus readStatus1 = createTestReadStatus(user1, channel, now.minus(1, ChronoUnit.DAYS));
         ReadStatus readStatus2 = createTestReadStatus(user2, channel, now);
 
         // 영속성 컨텍스트 초기화
@@ -117,7 +113,6 @@ class ReadStatusRepositoryTest {
         // 사용자 정보가 함께 로드되었는지 확인 (FETCH JOIN)
         for (ReadStatus status : readStatuses) {
             assertThat(Hibernate.isInitialized(status.getUser())).isTrue();
-            assertThat(Hibernate.isInitialized(status.getUser().getStatus())).isTrue();
             assertThat(Hibernate.isInitialized(status.getUser().getProfile())).isTrue();
         }
     }
@@ -136,8 +131,7 @@ class ReadStatusRepositoryTest {
         entityManager.clear();
 
         // when
-        Boolean exists = readStatusRepository.existsByUserIdAndChannelId(user.getId(),
-            channel.getId());
+        Boolean exists = readStatusRepository.existsByUserIdAndChannelId(user.getId(), channel.getId());
 
         // then
         assertThat(exists).isTrue();
@@ -157,8 +151,7 @@ class ReadStatusRepositoryTest {
         // 읽음 상태를 생성하지 않음
 
         // when
-        Boolean exists = readStatusRepository.existsByUserIdAndChannelId(user.getId(),
-            channel.getId());
+        Boolean exists = readStatusRepository.existsByUserIdAndChannelId(user.getId(), channel.getId());
 
         // then
         assertThat(exists).isFalse();

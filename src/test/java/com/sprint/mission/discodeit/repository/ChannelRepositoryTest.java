@@ -63,8 +63,7 @@ class ChannelRepositoryTest {
 
         // 공개 채널 2개가 모두 포함되어 있는지 확인
         assertThat(
-            foundChannels.stream().filter(c -> c.getType() == ChannelType.PUBLIC)
-                .count()).isEqualTo(2);
+            foundChannels.stream().filter(c -> c.getType() == ChannelType.PUBLIC).count()).isEqualTo(2);
 
         // 선택된 비공개 채널만 포함되어 있는지 확인
         List<Channel> privateChannels = foundChannels.stream()
