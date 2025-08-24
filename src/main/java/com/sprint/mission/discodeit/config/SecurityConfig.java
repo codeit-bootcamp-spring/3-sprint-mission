@@ -5,7 +5,9 @@ import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.security.Http403ForbiddenAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -41,7 +44,7 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
  * <ul>
  *   <li>CSRF 방어 활성화 및 SPA 환경 대응</li>
  *   <li>폼 로그인 처리, JWT 로그인 성공/실패 핸들러 적용</li>
- *   <li>로그아웃 URL 및 성공 처리 핸들러 설정</li>
+ *   <li>JWT 인증 필터 및 로그아웃 핸들러 적용</li>
  *   <li>Role 계층 구조 정의 및 Method Security 지원</li>
  *   <li>세션 Stateless 설정 (동시 세션 제한 제거)</li>
  *   <li>애플리케이션 시작 시 SecurityFilterChain 디버그 로그 출력</li>
@@ -59,16 +62,19 @@ public class SecurityConfig {
      * <ul>
      *   <li>CSRF 토큰을 쿠키에 저장(HttpOnly=false), SPA 헤더 기반 요청 대응</li>
      *   <li>폼 로그인 처리: 성공/실패 시 커스텀 핸들러 적용</li>
-     *   <li>로그아웃 처리: 지정 URL, 성공 시 204 반환</li>
+     *   <li>JWT 인증 필터를 UsernamePasswordAuthenticationFilter 앞에 적용</li>
+     *   <li>로그아웃 처리: 지정 URL, JWT 로그아웃 핸들러, 성공 시 204 반환</li>
      *   <li>특정 요청 제외하고 인증 필요</li>
      *   <li>권한 부족 시 403 JSON 응답 처리</li>
-     *   <li>동시 세션 최대 1개 제한, SessionRegistry 사용</li>
+     *   <li>세션 Stateless 설정</li>
      * </ul>
      *
      * @param http HttpSecurity 객체
      * @param jwtLoginSuccessHandler 로그인 성공 시 JWT 핸들러
      * @param loginFailureHandler 로그인 실패 시 핸들러
      * @param objectMapper JSON 변환용 ObjectMapper
+     * @param jwtAuthenticationFilter JWT 인증 필터
+     * @param jwtLogoutHandler JWT 로그아웃 핸들러
      * @return SecurityFilterChain
      * @throws Exception 필터 체인 구성 중 발생 예외
      */
@@ -77,7 +83,9 @@ public class SecurityConfig {
         HttpSecurity http,
         JwtLoginSuccessHandler jwtLoginSuccessHandler,
         LoginFailureHandler loginFailureHandler,
-        ObjectMapper objectMapper
+        ObjectMapper objectMapper,
+        JwtAuthenticationFilter jwtAuthenticationFilter,
+        JwtLogoutHandler jwtLogoutHandler
     )
         throws Exception {
         http
@@ -101,6 +109,8 @@ public class SecurityConfig {
             .logout(logout -> logout
                 // 클라이언트가 로그아웃 요청을 보낼 URL 지정
                 .logoutUrl("/api/auth/logout")
+                // JWT 로그아웃 처리
+                .addLogoutHandler(jwtLogoutHandler)
                 // 로그아웃 성공 시 204 No Content 반환
                 .logoutSuccessHandler(
                     new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
@@ -127,7 +137,9 @@ public class SecurityConfig {
             // 세션 Stateless 설정
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            );
+            )
+            // JWT 인증 필터 추가
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // 현재 HttpSecurity 상태를 기반으로 SecurityFilterChain 생성
         return http.build();

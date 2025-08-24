@@ -70,3 +70,4 @@ jwt:
   secret: ${JWT_SECRET:defaultSecretKey1234567890}    # 환경 변수가 없으면 기본값 사용
   access-token-validity-ms: ${JWT_ACCESS_TOKEN_VALIDITY_MS:3600000}    # 1시간
   refresh-token-validity-ms: ${JWT_REFRESH_TOKEN_VALIDITY_MS:604800000}    # 7일
+  refresh-token-cookie-name: REFRESH_TOKEN
