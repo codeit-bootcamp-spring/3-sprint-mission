@@ -61,14 +61,6 @@ public class AuthController implements AuthApi {
             .body(jwtDto);
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<UserDto> getCurrentUser(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
-        log.info("내 정보 조회 요청");
-        UUID userId = userDetails.getUserDto().id();
-        UserDto userDto = userService.find(userId);
-        return ResponseEntity.ok(userDto);
-    }
-
     @PutMapping("/role")
     public ResponseEntity<UserDto> role(@RequestBody RoleUpdateRequest request) {
         log.info("권한 수정 요청");
