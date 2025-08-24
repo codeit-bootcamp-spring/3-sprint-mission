@@ -9,11 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 /**
@@ -23,6 +25,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
  * <ul>
  *   <li>CSRF 방어 활성화 및 SPA 환경 대응</li>
  *   <li>폼 로그인 처리 및 로그인 성공/실패 핸들러 설정</li>
+ *   <li>로그아웃 URL 및 성공 처리 핸들러 설정</li>
  *   <li>비밀번호 인코딩을 위한 {@link BCryptPasswordEncoder} 제공</li>
  *   <li>애플리케이션 시작 시 FilterChain 디버그 로그 출력</li>
  * </ul>
@@ -39,6 +42,7 @@ public class SecurityConfig {
      *   <li>CSRF 토큰을 HttpOnly=false 쿠키에 저장</li>
      *   <li>SPA 환경에서 헤더 기반 CSRF 토큰 요청 허용</li>
      *   <li>폼 로그인 처리: 지정한 URL로 로그인 요청 처리, 성공/실패 핸들러 적용</li>
+     *   <li>로그아웃 처리: 지정한 URL로 로그아웃 요청 처리, 성공 시 204 No Content 반환</li>
      *   <li>기타 인증/인가 설정은 기본값 사용</li>
      * </ul>
      *
@@ -71,6 +75,14 @@ public class SecurityConfig {
                 .successHandler(loginSuccessHandler)
                 // 로그인 실패 시 호출될 커스텀 핸들러
                 .failureHandler(loginFailureHandler)
+            )
+            // 로그아웃 처리 설정
+            .logout(logout -> logout
+                // 클라이언트가 로그아웃 요청을 보낼 URL 지정
+                .logoutUrl("/api/auth/logout")
+                // 로그아웃 성공 시 204 No Content 반환
+                .logoutSuccessHandler(
+                    new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
             );
 
         // 현재 HttpSecurity 상태를 기반으로 SecurityFilterChain 생성
