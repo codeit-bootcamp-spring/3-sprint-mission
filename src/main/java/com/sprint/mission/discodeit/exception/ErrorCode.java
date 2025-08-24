@@ -30,7 +30,9 @@ public enum ErrorCode {
     UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "UA001", "사용자 로그인 인증에 실패했습니다."),
     FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "F001", "접근 권한이 없습니다."),
 
-    TOKEN_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "TG001", "토큰 생성에 실패했습니다.");
+    TOKEN_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "TG001", "토큰 생성에 실패했습니다."),
+    EXPIRED_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "T002", "만료된 JWT 토큰입니다."),
+    INVALID_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "T003", "유효하지 않은 JWT 토큰입니다.");
 
     private final HttpStatus status;
     private final String code;
