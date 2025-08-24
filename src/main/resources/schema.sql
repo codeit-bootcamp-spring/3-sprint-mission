@@ -35,6 +35,7 @@ CREATE TABLE users
     email      VARCHAR(100) NOT NULL,
     password   VARCHAR(60)  NOT NULL,
     profile_id UUID,
+    role VARCHAR(20) NOT NULL,
 
     -- Unique Key
     CONSTRAINT uk_users_username UNIQUE (username),
