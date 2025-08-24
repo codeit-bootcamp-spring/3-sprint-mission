@@ -1,18 +1,22 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.AuthApi;
+import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.exception.ErrorResponse;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
-import java.util.UUID;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +31,7 @@ public class AuthController implements AuthApi {
 
     private final AuthService authService;
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * CSRF 토큰을 요청하기 위한 엔드포인트.
@@ -49,28 +54,6 @@ public class AuthController implements AuthApi {
             .build();
     }
 
-    /**
-     * 현재 로그인한 사용자의 정보를 조회하는 엔드포인트.
-     *
-     * <p>Spring Security의 {@link AuthenticationPrincipal}을 통해
-     * 현재 인증된 {@link DiscodeitUserDetails}를 주입받아 사용자 식별자를 얻고,
-     * {@link UserService}를 통해 DB에서 상세 정보를 조회하여 반환한다.</p>
-     *
-     * @param userDetails 인증된 사용자 정보 (SecurityContext에서 자동 주입)
-     * @return HTTP 200 OK와 함께 조회된 사용자 DTO 반환
-     */
-    @GetMapping("me")
-    public ResponseEntity<UserDto> me(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
-        log.info("내 정보 조회 요청");
-
-        UUID userId = userDetails.getUserDto().id();
-        UserDto userDto = userService.find(userId);
-
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(userDto);
-    }
-
     @PutMapping("role")
     public ResponseEntity<UserDto> updateRole(@RequestBody RoleUpdateRequest request) {
         log.info("권한 수정 요청");
@@ -80,4 +63,47 @@ public class AuthController implements AuthApi {
             .status(HttpStatus.OK)
             .body(userDto);
     }
+
+    /**
+     * 쿠키에 담긴 리프레시 토큰으로 액세스 토큰을 재발급합니다.
+     *
+     * @param refreshToken REFRESH_TOKEN 쿠키 값
+     * @param response HttpServletResponse, 새 쿠키 설정에 사용
+     * @return 새 액세스 토큰과 사용자 정보(JwtDto) 또는
+     *         유효하지 않은 토큰 시 ErrorResponse (401 Unauthorized)
+     */
+    @PostMapping("refresh")
+    public ResponseEntity<?> refreshAccessToken(
+        @CookieValue(value = "REFRESH_TOKEN", required = false) String refreshToken,
+        HttpServletResponse response
+    ) {
+        // 쿠키에 토큰이 없거나 유효하지 않으면 401 반환
+        if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(new RuntimeException("Invalid refresh token"), HttpServletResponse.SC_UNAUTHORIZED));
+        }
+
+        // 사용자 이름(subject) 추출
+        String username = jwtTokenProvider.getSubject(refreshToken);
+
+        // UserDto 조회
+        UserDto userDto = userService.findByUsername(username);
+
+        // 새 액세스 토큰 발급
+        String newAccessToken = jwtTokenProvider.createAccessToken(username);
+
+        // 리프레시 토큰 Rotation
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(username);
+        Cookie refreshCookie = new Cookie("REFRESH_TOKEN", newRefreshToken);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(true);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge((int) (jwtTokenProvider.getRefreshTokenValidityMs() / 1000));
+        response.addCookie(refreshCookie);
+
+        // JwtDto 응답
+        JwtDto jwtDto = new JwtDto(userDto, newAccessToken);
+        return ResponseEntity.ok(jwtDto);
+    }
+
 }

@@ -155,4 +155,11 @@ public class BasicUserService implements UserService {
         userRepository.deleteById(userId);
         log.info("사용자 삭제 완료: id={}", userId);
     }
+
+    @Override
+    public UserDto findByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found: " + username));
+        return userMapper.toDto(user);
+    }
 }

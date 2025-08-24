@@ -18,7 +18,6 @@ import org.springframework.security.access.expression.method.DefaultMethodSecuri
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -41,11 +40,10 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
  * <p>주요 특징:</p>
  * <ul>
  *   <li>CSRF 방어 활성화 및 SPA 환경 대응</li>
- *   <li>폼 로그인 처리 및 로그인 성공/실패 핸들러 설정</li>
+ *   <li>폼 로그인 처리, JWT 로그인 성공/실패 핸들러 적용</li>
  *   <li>로그아웃 URL 및 성공 처리 핸들러 설정</li>
- *   <li>Remember-Me 기능 기본 활성화</li>
  *   <li>Role 계층 구조 정의 및 Method Security 지원</li>
- *   <li>세션을 Stateless로 설정 (동시 세션 제한 제거)</li>
+ *   <li>세션 Stateless 설정 (동시 세션 제한 제거)</li>
  *   <li>애플리케이션 시작 시 SecurityFilterChain 디버그 로그 출력</li>
  * </ul>
  */
@@ -62,18 +60,17 @@ public class SecurityConfig {
      *   <li>CSRF 토큰을 쿠키에 저장(HttpOnly=false), SPA 헤더 기반 요청 대응</li>
      *   <li>폼 로그인 처리: 성공/실패 시 커스텀 핸들러 적용</li>
      *   <li>로그아웃 처리: 지정 URL, 성공 시 204 반환</li>
-     *   <li>Remember-Me 기능 기본 활성화</li>
      *   <li>특정 요청 제외하고 인증 필요</li>
      *   <li>권한 부족 시 403 JSON 응답 처리</li>
      *   <li>동시 세션 최대 1개 제한, SessionRegistry 사용</li>
      * </ul>
      *
      * @param http HttpSecurity 객체
-     * @param jwtLoginSuccessHandler 로그인 성공 시 호출될 JWT 핸들러
-     * @param loginFailureHandler 로그인 실패 시 호출될 핸들러
+     * @param jwtLoginSuccessHandler 로그인 성공 시 JWT 핸들러
+     * @param loginFailureHandler 로그인 실패 시 핸들러
      * @param objectMapper JSON 변환용 ObjectMapper
      * @return SecurityFilterChain
-     * @throws Exception 필터 체인 구성 중 예외 발생 시
+     * @throws Exception 필터 체인 구성 중 발생 예외
      */
     @Bean
     public SecurityFilterChain filterChain(
@@ -114,6 +111,7 @@ public class SecurityConfig {
                     AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
                     AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
                     AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
+                    AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/refresh"),
                     AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
                     new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
                 ).permitAll()
@@ -129,9 +127,7 @@ public class SecurityConfig {
             // 세션 Stateless 설정
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            // Remember-Me 기능 활성화
-            .rememberMe(Customizer.withDefaults());
+            );
 
         // 현재 HttpSecurity 상태를 기반으로 SecurityFilterChain 생성
         return http.build();
