@@ -38,6 +38,14 @@ admin:
 remember-me:
   key: discodeit-remember-me-key
 
+jwt:
+  access-token:
+    secret: ${JWT_ACCESS_SECRET}
+    expiration: ${JWT_ACCESS_EXPIRATION:600000}
+  refresh-token:
+    secret: ${JWT_REFRESH_SECRET}
+    expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+
 logging:
   level:
     root: info

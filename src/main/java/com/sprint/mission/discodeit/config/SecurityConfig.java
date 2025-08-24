@@ -1,7 +1,11 @@
 package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.entity.Role;
-import com.sprint.mission.discodeit.security.*;
+import com.sprint.mission.discodeit.security.CustomAccessDeniedHandler;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
+import com.sprint.mission.discodeit.security.LoginFailureHandler;
+import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -16,6 +20,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -41,7 +46,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(
             HttpSecurity http,
-            LoginSuccessHandler loginSuccessHandler,
+            JwtLoginSuccessHandler loginSuccessHandler,
             LoginFailureHandler loginFailureHandler,
             CustomAccessDeniedHandler customAccessDeniedHandler,
             SessionRegistry sessionRegistry,
@@ -78,10 +83,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(customAccessDeniedHandler)
                 )
                 .sessionManagement(session -> session
-                        .sessionConcurrency(concurrency -> concurrency
-                                .maximumSessions(1)
-                                .sessionRegistry(sessionRegistry)
-                        )
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .rememberMe(remember -> remember
                         .key(rememberMeKey)
