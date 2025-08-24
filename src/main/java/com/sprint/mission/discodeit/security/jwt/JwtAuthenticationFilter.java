@@ -1,9 +1,10 @@
-package com.sprint.mission.discodeit.security.jwt.store;
+package com.sprint.mission.discodeit.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
-import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.jwt.store.InMemoryJwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,12 +27,17 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtTokenProvider tokenProvider;
-    private final JwtSessionRegistry jwtSessionRegistry;
+    private static final String FILTER_NAME = "[JwtAuthenticationFilter] ";
+
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtRegistry jwtRegistry;
     private final ObjectMapper objectMapper;
     private final DiscodeitUserDetailsService userDetailsService;
 
-    private static final String FILTER_NAME = "[JwtAuthenticationFilter] ";
+    @PostConstruct
+    public void init() {
+        log.info(FILTER_NAME + "생성자 호출됨: 필터 초기화");
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -46,21 +52,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(token)) {
                 log.info(FILTER_NAME + "Bearer 토큰 추출 성공");
 
-                // 액세스 토큰 유효성 검사(토큰 타입 검증, 만료 시간 검증, 서명 무결성 검증
-                if (tokenProvider.validateAccessToken(token)) {
+                // 액세스 토큰 유효성 검사(토큰 타입 검증, 만료 시간 검증, 서명 무결성 검증)
+                if (jwtRegistry.hasActiveJwtInformationByAccessToken(token)) {
 
-                    String jti = tokenProvider.getTokenId(token);
-
-                    // 토큰 폐기 여부 확인
-                    if (jwtSessionRegistry.isRevoked(jti)) {
-                        log.debug(FILTER_NAME + "토큰이 폐기됨(revoked): jti={}", jti);;
-                        sendUnAuthorized(response, "Token Revoked");
-
-                        // 폐기 시 메서드 종료
-                        return;
-                    }
-
-                    String username = tokenProvider.getUsernameFromToken(token);
+                    String username = jwtTokenProvider.getUsernameFromToken(token);
 
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 

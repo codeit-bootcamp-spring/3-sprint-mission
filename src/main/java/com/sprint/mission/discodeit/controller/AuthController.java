@@ -6,8 +6,8 @@ import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.user.RoleUpdateRequest;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.jwt.store.JwtDto;
-import com.sprint.mission.discodeit.security.jwt.store.JwtSessionRegistry;
-import com.sprint.mission.discodeit.security.jwt.store.JwtTokenEntity;
+import com.sprint.mission.discodeit.security.jwt.store.JwtInformation;
+import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
@@ -18,9 +18,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 /**
  * 인증 관련 HTTP 요청을 처리하는 컨트롤러입니다.
@@ -42,7 +43,7 @@ public class AuthController implements AuthApi {
     private static final String CONTROLLER_NAME = "[AuthController] ";
     private final JwtTokenProvider jwtTokenProvider;
     private final DiscodeitUserDetailsService userDetailsService;
-    private final JwtSessionRegistry jwtSessionRegistry;
+    private final JwtRegistry jwtRegistry;
 
     @GetMapping("/csrf-token")
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
@@ -83,32 +84,21 @@ public class AuthController implements AuthApi {
 
         // 유효 쿠키면 쿠키 값 추출(이전 refreshToken 취급)
         String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
-        String oldRefreshJti = jwtTokenProvider.getTokenId(refreshToken);
 
         DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailsService.loadUserByUsername(username);
 
         try {
+            UUID userId = userDetails.getUserDto().id();
+            jwtRegistry.invalidateJwtInformationByUserId(userId);
+
             // 사용자에게 새 토큰 발급
             String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails);
             String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
 
+            JwtInformation newJwtinformation = new JwtInformation(userDetails.getUserDto(), newAccessToken, newRefreshToken);
+
             // Rotation: 이전 리프레시 무효화 및 교체
-            String newRefreshJti = jwtTokenProvider.getTokenId(newAccessToken);
-
-            // 폐기된 기존 RefreshToken 재사용 차단 (401)
-            if (jwtSessionRegistry.isRevoked(oldRefreshJti)) {
-                // 쿠키 만료 처리: 클라이언트 보관 RT 제거
-                jwtTokenProvider.expireRefreshToken(response);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-            // Rotation
-            jwtSessionRegistry.markReplaced(oldRefreshJti, newRefreshJti);
-
-            // 신규 토큰 메타데이터 저장
-            JwtTokenEntity accessEntity = jwtTokenProvider.toEntity(newAccessToken);
-            JwtTokenEntity refreshEntity = jwtTokenProvider.toEntity(newRefreshToken);
-            jwtSessionRegistry.register(accessEntity);
-            jwtSessionRegistry.register(refreshEntity);
+            jwtRegistry.rotateJwtInformation(refreshToken, newJwtinformation);
 
             // 리프레시 쿠키 교체
             // HTTP 응답 헤더(Set-Cookie)에 리프레시 쿠키 추가

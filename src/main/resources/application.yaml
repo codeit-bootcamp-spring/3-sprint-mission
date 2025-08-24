@@ -104,3 +104,4 @@ jwt:
   refresh-token:
     secret: ${JWT_REFRESH_TOKEN} # 임의 값 입력
     exp: 3600000                                         # 1시간(ms)
+  max-active-count: 1

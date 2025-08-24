@@ -5,7 +5,6 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.sprint.mission.discodeit.security.jwt.store.JwtTokenEntity;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,8 +15,6 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.UUID;
 
@@ -225,85 +222,7 @@ public class JwtTokenProvider {
             throw new IllegalArgumentException("유효하지 않은 JWT", e);
         }
     }
-
-    public String getTokenId(String token) {
-        try {
-            log.info(PROVIDER_NAME + "getTokenId 호출됨: jti 추출 시작");
-
-            SignedJWT signedJWT = SignedJWT.parse(token);
-            String jti = signedJWT.getJWTClaimsSet().getJWTID();
-
-            log.info(PROVIDER_NAME + "getTokenId 결과: jti= {}", jti);
-
-            return jti;
-        } catch (Exception e) {
-            throw new IllegalArgumentException("유효하지 않은 JWT", e);
-        }
-    }
-
-    /**
-     * 토큰에서 발급 시간(iat)을 추출한다.
-     * 디버깅이나 감사 로그에서 토큰 생성 시점을 확인할 때 유용하다.
-     *
-     * @param token JWT 문자열
-     * @return 발급 시간(Date)
-     */
-    public Date getIssuedAt(String token) {
-        try {
-            System.out.println("[TokenProvider] getIssuedAt 호출됨: iat 추출 시작");
-
-            SignedJWT signedJWT = SignedJWT.parse(token);
-            Date iat = signedJWT.getJWTClaimsSet().getIssueTime();
-
-            System.out.println("[TokenProvider] getIssuedAt 결과: iat=" + iat);
-
-            return iat;
-        } catch (Exception e) {
-            throw new IllegalArgumentException("유효하지 않은 JWT", e);
-        }
-    }
-
-    /**
-     * 토큰에서 만료 시간(exp)을 추출한다.
-     * 남은 유효 시간을 계산하거나 만료 임박 알림을 구현할 때 사용할 수 있다.
-     *
-     * @param token JWT 문자열
-     * @return 만료 시간(Date)
-     */
-    public Date getExpiration(String token) {
-        try {
-            System.out.println("[TokenProvider] getExpiration 호출됨: exp 추출 시작");
-
-            SignedJWT signedJWT = SignedJWT.parse(token);
-            Date exp = signedJWT.getJWTClaimsSet().getExpirationTime();
-
-            System.out.println("[TokenProvider] getExpiration 결과: exp=" + exp);
-
-            return exp;
-        } catch (Exception e) {
-            throw new IllegalArgumentException("유효하지 않은 JWT", e);
-        }
-    }
-
-    public JwtTokenEntity toEntity(String accessToken) {
-        try {
-            log.info(PROVIDER_NAME + "toEntity 호출됨: 토큰 메타데이터 변환 시작");
-
-            SignedJWT signedJWT = SignedJWT.parse(accessToken);
-
-            String jti = signedJWT.getJWTClaimsSet().getJWTID();
-            String username = signedJWT.getJWTClaimsSet().getSubject();
-            String tokenType = (String) signedJWT.getJWTClaimsSet().getClaim("type");
-            OffsetDateTime issuedAt = OffsetDateTime.ofInstant(signedJWT.getJWTClaimsSet().getIssueTime().toInstant(), ZoneOffset.UTC);
-            OffsetDateTime expiresAt = OffsetDateTime.ofInstant(signedJWT.getJWTClaimsSet().getExpirationTime().toInstant(), ZoneOffset.UTC);
-
-            JwtTokenEntity entity = new JwtTokenEntity(jti, username, tokenType, issuedAt, expiresAt);
-
-            return entity;
-        } catch (Exception e) {
-            throw new IllegalArgumentException("유효하지 않은 JWT", e);
-        }
-    }
 }
+
 
 

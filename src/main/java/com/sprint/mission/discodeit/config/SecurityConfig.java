@@ -1,13 +1,13 @@
 package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.handler.*;
-import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
+import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
@@ -23,7 +23,6 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -67,8 +66,7 @@ public class SecurityConfig {
             LoginFailureHandler loginFailureHandler,
             CustomAccessDeniedHandler accessDeniedHandler,
             CustomAuthenticationEntryPoint authenticationEntryPoint,
-            SessionRegistry sessionRegistry,
-            DiscodeitUserDetailsService discodeitUserDetailsService) throws Exception {
+            JwtLogoutHandler jwtLogoutHandler) throws Exception {
 
         log.info(CONFIG_NAME + "FilterChain 구성 시작");
 
@@ -94,8 +92,6 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .securityContext(securityContext -> securityContext
-                        .securityContextRepository(new HttpSessionSecurityContextRepository()))
                 .formLogin(form -> form
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(loginSuccessHandler)
@@ -104,10 +100,7 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
-                        .deleteCookies("JSESSIONID", "remember-me")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
+                        .addLogoutHandler(jwtLogoutHandler)
                         .permitAll()
                 )
                 .exceptionHandling(exception -> exception
@@ -125,40 +118,6 @@ public class SecurityConfig {
                 .requestMatchers("/favicon.ico", "/error")
                 .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/assets/**")
                 .requestMatchers("/index.html");
-    }
-
-    @Bean
-    public HttpSessionEventPublisher httpSessionEventPublisher() {
-        return new HttpSessionEventPublisher();
-    }
-
-    @Bean
-    public SessionRegistry sessionRegistry() {
-
-        return new SessionRegistryImpl() {
-
-            @Override
-            public void registerNewSession(String sessionId, Object principal) {
-                log.info(CONFIG_NAME + "새 세션 등록 - 사용자: {}, 세션 ID: {}", principal, sessionId);
-                super.registerNewSession(sessionId, principal);
-                log.info(CONFIG_NAME + "현재 활성 세션 수: {}", getAllSessions(principal, false).size());
-            }
-
-            @Override
-            public void removeSessionInformation(String sessionId) {
-                log.info(CONFIG_NAME + "세션 제거 - 세션ID: {}", sessionId);
-                super.removeSessionInformation(sessionId);
-            }
-
-            @Override
-            public SessionInformation getSessionInformation(String sessionId) {
-                SessionInformation info = super.getSessionInformation(sessionId);
-                if (info != null) {
-                    log.info(CONFIG_NAME + "세션 정보 조회 - 세션ID: {}, 만료됨: {} ", sessionId, info.isExpired());
-                }
-                return info;
-            }
-        };
     }
 
     @Bean

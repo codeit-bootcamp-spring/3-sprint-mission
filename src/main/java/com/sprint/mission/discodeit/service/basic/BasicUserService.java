@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.store.InMemoryJwtRegistry;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -45,6 +46,7 @@ public class BasicUserService implements UserService {
     private final SessionRegistry sessionRegistry;
 
     private static final String SERVICE_NAME = "[UserService] ";
+    private final InMemoryJwtRegistry jwtRegistry;
 
     /**
      * 신규 유저를 생성합니다.
@@ -220,20 +222,7 @@ public class BasicUserService implements UserService {
     }
 
     private boolean isOnline(UUID userId) {
-        if (userId == null) {
-            return false;
-        }
-
-        return sessionRegistry.getAllPrincipals().stream()
-                .anyMatch(principal -> {
-                    if (principal instanceof DiscodeitUserDetails userDetails) {
-                        boolean sameUser = userId.equals(userDetails.getUserDto().id());
-                        if (!sameUser) return false;
-                        return !sessionRegistry.getAllSessions(principal, false).isEmpty();
-                    }
-
-                    return false;
-                });
+        return jwtRegistry.hasActiveJwtInformationByUserId(userId);
     }
 
     @Override

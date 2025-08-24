@@ -1,12 +1,11 @@
-package com.sprint.mission.discodeit.handler;
+package com.sprint.mission.discodeit.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.jwt.store.JwtDto;
-import com.sprint.mission.discodeit.security.jwt.store.JwtSessionRegistry;
-import com.sprint.mission.discodeit.security.jwt.store.JwtTokenEntity;
+import com.sprint.mission.discodeit.security.jwt.store.JwtInformation;
+import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,23 +17,23 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Slf4j
 @Component
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private static final String HANDLER_NAME = "[JwtLoginSuccessHandler] ";
+
     private final ObjectMapper objectMapper;
     private final JwtTokenProvider jwtTokenProvider;
-    private final JwtSessionRegistry jwtSessionRegistry;
-    private final JwtTokenProvider tokenProvider;
+    private final JwtRegistry jwtRegistry;
 
-    public JwtLoginSuccessHandler(ObjectMapper objectMapper, JwtTokenProvider jwtTokenProvider, JwtSessionRegistry jwtSessionRegistry, JwtTokenProvider tokenProvider) {
+    public JwtLoginSuccessHandler(ObjectMapper objectMapper, JwtTokenProvider jwtTokenProvider, JwtRegistry jwtRegistry) {
         log.info(HANDLER_NAME + "생성자 호출됨: 응답 JSON 직렬화를 위한 매퍼, JWT 생성/쿠키 유틸리티, 토큰 상태 저장소 주입");
         this.objectMapper = objectMapper;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.jwtSessionRegistry = jwtSessionRegistry;
-        this.tokenProvider = tokenProvider;
+        this.jwtRegistry = jwtRegistry;
     }
 
     @Override
@@ -51,8 +50,9 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
             try {
                 // 1. 동일 계정 기존 토큰 전부 무효화(동시 로그인 제한)
-                log.info(HANDLER_NAME + "기존 토큰 무효화 시작 - username= {}", userDetails.getUsername());
-                jwtSessionRegistry.revokeAllByUsername(userDetails.getUsername());
+                UUID userId =  userDetails.getUserDto().id();
+                log.info(HANDLER_NAME + "기존 토큰 무효화 시작 - username= {}", userId);
+                jwtRegistry.invalidateJwtInformationByUserId(userId);
 
                 // 2. 새 Access/Refresh 토큰 발급
                 log.info(HANDLER_NAME + "새 토큰 발급 시작");
@@ -61,17 +61,14 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
                 // 3. 토큰 메타데이터 저장 (toEntity로 중복 제거)
                 log.info(HANDLER_NAME + "토큰 메타데이터 저장 시작");
-                JwtTokenEntity accessEntity = tokenProvider.toEntity(accessToken);
-                JwtTokenEntity refreshEntity = tokenProvider.toEntity(refreshToken);
-                jwtSessionRegistry.register(accessEntity);
-                jwtSessionRegistry.register(refreshEntity);
+                UserDto userDto = userDetails.getUserDto();
+                JwtInformation jwtInformation = new JwtInformation(userDto, accessToken,refreshToken);
+                jwtRegistry.registerJwtInformation(jwtInformation);
 
                 // 4. 리프레시 쿠키 설정
                 log.info(HANDLER_NAME + "리프레시 쿠키 설정 시작");
                 jwtTokenProvider.addRefreshCookie(response, refreshToken);
 
-                // 사용자 DTO 구성
-                UserDto userDto = userDetails.getUserDto();
 
                 // 5. JwtDto 바디 전송
                 JwtDto jwtDto = new JwtDto(userDto, accessToken);

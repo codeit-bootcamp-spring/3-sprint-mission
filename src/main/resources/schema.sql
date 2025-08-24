@@ -155,13 +155,3 @@ SELECT table_schema, table_name
 FROM information_schema.tables
 WHERE table_schema = 'discodeit'
   AND table_name = 'tbl_binary_contents';
-
-CREATE TABLE IF NOT EXISTS tbl_jwt_token (
-    jti         VARCHAR(64) PRIMARY KEY,
-    username    VARCHAR(255) NOT NULL,
-    token_type  VARCHAR(16)  NOT NULL CHECK (token_type IN ('access', 'refresh')),
-    issued_at   TIMESTAMPTZ  NOT NULL,
-    expires_at  TIMESTAMPTZ  NOT NULL,
-    revoked     BOOLEAN      NOT NULL DEFAULT FALSE,
-    replaced_by VARCHAR(64)
-);
