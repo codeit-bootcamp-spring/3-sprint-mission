@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -10,6 +11,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
 @EnableAsync
+@EnableRetry
 public class AsyncConfig {
 
     private ThreadPoolTaskExecutor buildExecutor(int core, int max, int keepAlive, String prefix){
