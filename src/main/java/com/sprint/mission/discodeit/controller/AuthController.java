@@ -1,4 +1,3 @@
-// com.sprint.mission.discodeit.controller.AuthController
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.AuthApi;
@@ -18,6 +17,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.util.StringUtils;
@@ -54,6 +54,7 @@ public class AuthController implements AuthApi {
         return userDetails.getUserDto();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/role")
     public ResponseEntity<UserDto> updateUserRole(
             @RequestBody @Valid RoleUpdateRequest request

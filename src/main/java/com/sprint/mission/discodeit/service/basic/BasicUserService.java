@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.payload.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -190,15 +191,24 @@ public class BasicUserService implements UserService {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public UserDto updateRole(UUID userId, Role newRole) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
+        Role oldRole = user.getRole();
         user.updateRole(newRole);
-        log.info("사용자 권한 변경: id={}, newRole={}", userId, newRole);
 
         boolean online = jwtRegistry.hasActiveJwtInformationByUserId(user.getId());
-        return userMapper.toDto(user).withOnline(online);
+
+        log.info("사용자 권한 변경: id={}, newRole={}", userId, newRole);
+
+        UserDto dto = userMapper.toDto(user).withOnline(online);
+        publisher.publishEvent(new RoleUpdatedEvent(
+                user.getId(),
+                oldRole.name(),
+                newRole.name()
+        ));
+
+        return dto;
     }
 }
