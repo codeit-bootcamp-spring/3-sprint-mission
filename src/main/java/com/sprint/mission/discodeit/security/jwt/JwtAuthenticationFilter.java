@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.security.jwt.store.InMemoryJwtRegistry;
+import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
 import jakarta.annotation.PostConstruct;
@@ -21,6 +21,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Instant;
 
 /**
  * JWT 기반 인증을 처리하는 필터입니다.
@@ -103,7 +104,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     userDetails,
                                     null,
                                     userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
                     // 인증 객체에 현재 요청(request) 정보 추가
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -117,7 +117,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
             }
-
         } catch (Exception e) {
             // 인증 과정 예외 발생 시 인증 컨텍스트 초기화 및 401
             log.debug(FILTER_NAME + "예외 발생: {}", e.getMessage());
@@ -146,17 +145,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void sendUnAuthorized(HttpServletResponse response, String message) throws IOException {
 
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpServletResponse.SC_UNAUTHORIZED,
+                "401",
+                message,
+                 Instant.now(),
+                null);
+
         // 응답 헤더 설정
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
 
-        String responseBody = objectMapper.createObjectNode()
-                .put("success", false)
-                .put("message", message)
-                .toString();
-
         // JSON 응답 바디 전송
-        response.getWriter().write(responseBody);
+        String jsonResponse = objectMapper.writeValueAsString(errorResponse);
+        response.getWriter().write(jsonResponse);
     }
 }

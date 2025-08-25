@@ -199,15 +199,6 @@ public class JwtTokenProvider {
         response.addCookie(cookie);
     }
 
-    public void expireRefreshToken(HttpServletResponse response) {
-
-        log.info(PROVIDER_NAME + "expireRefreshCookie 호출됨: 만료 쿠키 응답에 추가");
-
-        Cookie cookie = generateRefreshTokenExpirationCookie();
-
-        response.addCookie(cookie);
-    }
-
     public boolean validateAccessToken(String accessToken) {
 
         log.info(PROVIDER_NAME + "validateAccessToken 호출됨: 토큰 유효성 검사 시작");

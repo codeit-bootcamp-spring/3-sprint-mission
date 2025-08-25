@@ -33,7 +33,6 @@ public class BinaryContentController implements BinaryContentApi {
 
     private final BinaryContentService binaryContentService;
     private final BinaryContentStorage binaryContentStorage;
-    private final BinaryContentMapper binaryContentMapper;
 
     private static final String CONTROLLER_NAME = "[BinaryContentController] ";
 

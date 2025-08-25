@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.security.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.security.jwt.store.JwtDto;
 import com.sprint.mission.discodeit.security.jwt.store.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
@@ -17,6 +18,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -90,8 +92,6 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         if (authentication.getPrincipal() instanceof DiscodeitUserDetails userDetails) {
-
-
             try {
                 // 1. 동일 계정 기존 토큰 전부 무효화(동시 로그인 제한)
                 UUID userId =  userDetails.getUserDto().id();
@@ -124,21 +124,30 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 System.out.println(HANDLER_NAME + "로그인 성공 응답 완료: " + userDto.username());
             } catch (JOSEException e) {
                 // 예외 발생 시 처리(500)
-                log.info(HANDLER_NAME + "예외 발생: {}", e.getMessage());
+                log.error(HANDLER_NAME + "유저 {}의 JWT 생성 중 예외 발생: {}", userDetails.getUsername(),  e.getMessage());
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write(objectMapper.createObjectNode()
-                        .put("success", false)
-                        .put("message", "Token generation failed")
-                        .toString());
+
+                ErrorResponse errorResponse = new ErrorResponse(
+                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                        "500",
+                        "토큰 생성 실패",
+                        Instant.now(),
+                        null);
+
+                response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
             }
         } else {
             // 인증 실패 시 처리(401)
             log.info(HANDLER_NAME + "Invalid principal: {}", authentication.getPrincipal());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write(objectMapper.createObjectNode()
-                    .put("success", false)
-                    .put("message", "Invalid principal")
-                    .toString());
+            ErrorResponse errorResponse = new ErrorResponse(
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "401",
+                    "유저 인증 실패",
+                    Instant.now(),
+                    null);
+
+            response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
 
             System.err.println(HANDLER_NAME + "예상치 못한 Principal 타입: " + authentication.getPrincipal().getClass());
         }

@@ -66,10 +66,8 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     public UUID put(UUID binaryContentId, byte[] bytes) {
         Path filePath = resolvePath(binaryContentId);
         if (Files.exists(filePath)) {
-            throw new RuntimeException("File already exists: " + filePath.toAbsolutePath());
-        }
-        try (OutputStream outputStream = Files.newOutputStream(filePath, StandardOpenOption.CREATE))
-        {
+            throw new RuntimeException("File already exists: " + filePath.toAbsolutePath());}
+        try (OutputStream outputStream = Files.newOutputStream(filePath, StandardOpenOption.CREATE)) {
             outputStream.write(bytes);
         } catch (IOException e) {
             throw new RuntimeException(e);

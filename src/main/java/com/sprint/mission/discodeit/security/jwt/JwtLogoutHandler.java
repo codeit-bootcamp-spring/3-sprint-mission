@@ -77,21 +77,10 @@ public class JwtLogoutHandler implements LogoutHandler {
                 .filter(cookie -> cookie.getName().equals(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME))
                 .findFirst()
                 .ifPresent(cookie -> {
-                    if (jwtRegistry.hasActiveJwtInformationByRefreshToken(cookie.getValue())) {
-                        String refreshToken = cookie.getValue();
+                    String refreshToken = cookie.getValue();
+                    UUID userId = jwtRegistry.findUserIdByRefreshToken(refreshToken);
 
-                        UUID userId = jwtRegistry.findUserIdByRefreshToken(refreshToken);
-
-                        if (userId != null) {
-                            jwtRegistry.invalidateJwtInformationByUserId(userId);
-
-                            log.info(HANDLER_NAME + "Refresh Token 무효화 완료");
-                        } else {
-                            log.info(HANDLER_NAME + "RefreshToken을 소유한 유저가 존재하지 않음");
-                        }
-                    } else {
-                        log.info(HANDLER_NAME + "유효한 Refresh Token이 없음");
-                    }
+                    jwtRegistry.invalidateJwtInformationByUserId(userId);
                 });
     }
 }

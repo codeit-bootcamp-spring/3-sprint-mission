@@ -135,7 +135,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
                     metaData.id(), metaData.fileName());
 
             HttpHeaders headers = new HttpHeaders();
-            headers.add("Location", presignedUrl);
+            headers.add(HttpHeaders.LOCATION, presignedUrl);
 
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
         } catch (Exception e) {

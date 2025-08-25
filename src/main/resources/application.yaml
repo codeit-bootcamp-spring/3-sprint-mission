@@ -99,9 +99,9 @@ info:
 
 jwt:
   access-token:
-    secret: ${JWT_ACCESS_TOKEN} # 임의 값 입력
+    secret: ${JWT_ACCESS_TOKEN:your-access-token-secret-key} # 임의 값 입력
     exp: 900000                                          # 15분(ms)
   refresh-token:
-    secret: ${JWT_REFRESH_TOKEN} # 임의 값 입력
+    secret: ${JWT_REFRESH_TOKEN:your-secret-token-secret-key} # 임의 값 입력
     exp: 3600000                                         # 1시간(ms)
   max-active-count: 1
