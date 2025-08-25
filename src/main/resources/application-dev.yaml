@@ -11,6 +11,13 @@ spring:
       hibernate:
         format_sql: true
 
+async:
+  executors:
+      core-size: 4
+      max-size: 8
+      queue-capacity: 100
+      keep-alive-seconds: 60
+
 logging:
   level:
     com.sprint.mission.discodeit: debug
