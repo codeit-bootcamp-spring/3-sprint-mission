@@ -65,21 +65,17 @@ public class User extends BaseUpdatableEntity {
             this.profile = newProfile;
             anyValueUpdated = true;
         }
-
         if (anyValueUpdated) {
             super.setUpdatedAt(Instant.now());
         }
     }
 
     public void updateRole(Role newRole) {
-
         boolean anyValueUpdated = false;
-
         if (newRole != null) {
             this.role = newRole;
             anyValueUpdated = true;
         }
-
         if (anyValueUpdated) {
             super.setUpdatedAt(Instant.now());
         }

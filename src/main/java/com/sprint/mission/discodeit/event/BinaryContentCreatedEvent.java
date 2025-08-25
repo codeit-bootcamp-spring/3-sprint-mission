@@ -6,10 +6,8 @@ import java.time.Instant;
 
 public record BinaryContentCreatedEvent(
         BinaryContent binaryContent,
-        boolean isStored,
+        byte[] content,
         Instant occurredAt
 ) {
-    public static BinaryContentCreatedEvent now(BinaryContent binaryContent, boolean isStored) {
-        return new BinaryContentCreatedEvent(binaryContent, isStored, Instant.now());
-    }
+
 }

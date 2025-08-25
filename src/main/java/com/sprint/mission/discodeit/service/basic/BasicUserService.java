@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,7 +41,6 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserMapper userMapper;
-    private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
 
     private static final String SERVICE_NAME = "[UserService] ";
@@ -75,14 +75,14 @@ public class BasicUserService implements UserService {
                 String fileName = profileRequest.fileName();
                 String contentType = profileRequest.contentType();
                 byte[] bytes = profileRequest.bytes();
-                log.debug(SERVICE_NAME + "프로필 파일 저장: fileName={}, contentType={}, size={}", fileName, contentType, bytes.length);
 
                 BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
                     contentType);
                 binaryContentRepository.save(binaryContent); // profile 기본 정보 저장
+                log.debug(SERVICE_NAME + "프로필 파일 저장: fileName={}, contentType={}, size={}", fileName, contentType, bytes.length);
 
                 log.debug(SERVICE_NAME + "BinaryContent 생성 이벤트 발행");
-                BinaryContentCreatedEvent event = BinaryContentCreatedEvent.now(binaryContent, true);
+                BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(binaryContent, bytes, Instant.now());
                 eventPublisher.publishEvent(event);
 
                 return binaryContent;
@@ -191,13 +191,13 @@ public class BasicUserService implements UserService {
                 String fileName = profileRequest.fileName();
                 String contentType = profileRequest.contentType();
                 byte[] bytes = profileRequest.bytes();
-                log.debug(SERVICE_NAME + "새 프로필 파일 저장: fileName={}, contentType={}, size={}", fileName, contentType, bytes.length);
                 BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
                     contentType);
                 binaryContentRepository.save(binaryContent);
+                log.debug(SERVICE_NAME + "새 프로필 파일 저장: fileName={}, contentType={}, size={}", fileName, contentType, bytes.length);
 
                 log.debug(SERVICE_NAME + "BinaryContent 수정 이벤트 발행");
-                BinaryContentCreatedEvent event = BinaryContentCreatedEvent.now(binaryContent, true);
+                BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(binaryContent, bytes, Instant.now());
                 eventPublisher.publishEvent(event);
 
                 return binaryContent;
