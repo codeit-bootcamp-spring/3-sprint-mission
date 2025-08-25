@@ -133,3 +133,8 @@ ALTER TABLE message_attachments
         FOREIGN KEY (message_id)
             REFERENCES messages (id)
             ON DELETE CASCADE;
+
+ALTER TABLE binary_contents
+    ADD COLUMN updated_at timestamp with time zone;
+ALTER TABLE binary_contents
+    ADD COLUMN status varchar(20) NOT NULL DEFAULT 'PROCESSING';
