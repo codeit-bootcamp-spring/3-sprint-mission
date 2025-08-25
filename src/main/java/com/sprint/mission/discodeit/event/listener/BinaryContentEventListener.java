@@ -23,12 +23,12 @@ public class BinaryContentEventListener {
     public void onBinaryContentCreated(BinaryContentCreatedEvent event) {
         log.info("바이너리 컨텐츠 스토리지 저장 로직 시작 id: {}", event.binaryContentId());
         try {
-            binaryContentService.updateStatus(event.binaryContentId(), BinaryContentStatus.PROCESSING);
             storage.put(event.binaryContentId(), event.bytes());
         }catch (Exception e) {
             binaryContentService.updateStatus(event.binaryContentId(), BinaryContentStatus.FAIL);
             return;
         }
         binaryContentService.updateStatus(event.binaryContentId(), BinaryContentStatus.SUCCESS);
+        log.info("바이너리 컨텐츠 저장완료!");
     }
 }

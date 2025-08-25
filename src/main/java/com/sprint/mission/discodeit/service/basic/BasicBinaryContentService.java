@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -84,6 +85,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus binaryContentStatus) {
         BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId).orElseThrow(BinaryContentNotFoundException::new);
         binaryContent.updateStatus(binaryContentStatus);
