@@ -57,9 +57,9 @@ public class BasicChannelService implements ChannelService {
         channelRepository.save(channel);
 
         List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds())
-            .stream()
-            .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
-            .toList();
+                .stream()
+                .map(user -> new ReadStatus(user, channel, channel.getCreatedAt(), true))
+                .toList();
         readStatusRepository.saveAll(readStatuses);
 
         log.info("비공개 채널 생성 완료: id={}, 참여자 수={}", channel.getId(), readStatuses.size());
@@ -72,11 +72,11 @@ public class BasicChannelService implements ChannelService {
         log.debug("채널 조회 요청: id={}", channelId);
 
         return channelRepository.findById(channelId)
-            .map(channelMapper::toDto)
-            .orElseThrow(() -> {
-                log.warn("채널 조회 실패: 존재하지 않는 ID={}", channelId);
-                return new ChannelNotFoundException(channelId);
-            });
+                .map(channelMapper::toDto)
+                .orElseThrow(() -> {
+                    log.warn("채널 조회 실패: 존재하지 않는 ID={}", channelId);
+                    return new ChannelNotFoundException(channelId);
+                });
     }
 
     @Transactional(readOnly = true)
@@ -85,14 +85,14 @@ public class BasicChannelService implements ChannelService {
         log.debug("사용자 채널 조회 요청: userId={}", userId);
 
         List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
-            .map(ReadStatus::getChannel)
-            .map(Channel::getId)
-            .toList();
+                .map(ReadStatus::getChannel)
+                .map(Channel::getId)
+                .toList();
 
         return channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC, mySubscribedChannelIds)
-            .stream()
-            .map(channelMapper::toDto)
-            .toList();
+                .stream()
+                .map(channelMapper::toDto)
+                .toList();
     }
 
     @Transactional
@@ -100,13 +100,13 @@ public class BasicChannelService implements ChannelService {
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
         log.info("채널 수정 요청: id={}, newName={}, newDescription={}", channelId, request.newName(),
-            request.newDescription());
+                request.newDescription());
 
         Channel channel = channelRepository.findById(channelId)
-            .orElseThrow(() -> {
-                log.warn("채널 수정 실패: 존재하지 않는 ID={}", channelId);
-                return new ChannelNotFoundException(channelId);
-            });
+                .orElseThrow(() -> {
+                    log.warn("채널 수정 실패: 존재하지 않는 ID={}", channelId);
+                    return new ChannelNotFoundException(channelId);
+                });
 
         if (channel.getType().equals(ChannelType.PRIVATE)) {
             log.warn("비공개 채널 수정 시도 차단: id={}", channelId);
