@@ -59,6 +59,17 @@ discodeit:
       region: ${AWS_S3_REGION}
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
+    admin:
+      username: ${DISCODEIT_ADMIN_USERNAME}
+      email: ${DISCODEIT_ADMIN_EMAIL}
+      password: ${DISCODEIT_ADMIN_PASSWORD}
+    jwt:
+      access-token:
+        secret: ${JWT_ACCESS_SECRET:the-older-i-get-the-more-that-i-see-my-parents-arent-heros-theyre-just-like-me}
+        expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:1800000} # 30 minutes
+      refresh-token:
+        secret: ${JWT_REFRSH_SECRET:and-loving-is-hard-it-dont-always-work-you-just-try-your-best-not-to-get-hurt}
+        expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000} # 7 days
 
 logging:
   level:
