@@ -2,6 +2,13 @@ package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import jakarta.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,14 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
-
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "local")
@@ -29,7 +28,8 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     private final Path root;
 
     @Autowired
-    public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") String rootPath) {
+    public LocalBinaryContentStorage(
+        @Value("${discodeit.storage.local.root-path}") String rootPath) {
         this.root = Paths.get(rootPath);
     }
 
@@ -61,6 +61,13 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         log.debug("저장 경로: {}", path.toAbsolutePath());
 
         try {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Thread interrupted while simulating delay", e);
+            }
+
             Files.createDirectories(path.getParent());
             Files.write(path, bytes);
             log.info("파일 업로드 성공: id={}", id);
@@ -101,10 +108,11 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
             log.info("파일 다운로드 성공: id={}, contentType={}", dto.id(), contentType);
 
             return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + dto.fileName() + "\"")
-                    .contentLength(dto.size())
-                    .body(resource);
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment; filename=\"" + dto.fileName() + "\"")
+                .contentLength(dto.size())
+                .body(resource);
         } catch (IOException e) {
             log.error("파일 다운로드 실패: id={}", dto.id(), e);
             throw new UncheckedIOException("다운로드 실패: " + dto.id(), e);

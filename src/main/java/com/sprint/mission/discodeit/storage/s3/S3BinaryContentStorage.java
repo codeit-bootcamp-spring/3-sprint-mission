@@ -2,6 +2,9 @@ package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.io.InputStream;
+import java.time.Duration;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.UrlResource;
@@ -16,10 +19,6 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
-
-import java.io.InputStream;
-import java.time.Duration;
-import java.util.UUID;
 
 @Component
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3")
@@ -49,6 +48,13 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
             .bucket(bucket)
             .key(key)
             .build();
+
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Thread interrupted while simulating delay", e);
+        }
 
         s3Client.putObject(putRequest, RequestBody.fromBytes(bytes));
 

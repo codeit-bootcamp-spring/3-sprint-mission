@@ -63,3 +63,8 @@ async:
       max-size: ${MAX_SIZE:8}
       queue-capacity: ${QUEUE_CAPACITY:200}
       keep-alive: ${KEEP_ALIVE:60}
+    notification:
+      core-size: ${MAX_CORE_SIZE:2}
+      max-size: ${MAX_SIZE:4}
+      queue-capacity: ${QUEUE_CAPACITY:100}
+      keep-alive: ${KEEP_ALIVE:30}
