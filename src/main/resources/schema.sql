@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS read_statuses CASCADE;
 DROP TABLE IF EXISTS binary_contents CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS channels CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
 
 -- 테이블 생성
 CREATE TABLE channels
@@ -57,7 +58,8 @@ CREATE TABLE read_statuses
     channel_id   UUID                     NOT NULL,
     created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at   TIMESTAMP WITH TIME ZONE,
-    last_read_at TIMESTAMP WITH TIME ZONE NOT NULL
+    last_read_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    notification_enabled BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 
@@ -67,6 +69,17 @@ CREATE TABLE message_attachments
     attachment_id UUID NOT NULL,
     PRIMARY KEY (message_id, attachment_id)
 );
+
+CREATE TABLE notifications (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    receiver_id UUID NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL
+);
+
+ALTER TABLE notifications
+    ADD CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES users (id);
 
 -- FK 제약 추가
 ALTER TABLE users
@@ -83,3 +96,5 @@ ALTER TABLE message_attachments
     ADD CONSTRAINT fk_attachment_message FOREIGN KEY (message_id) REFERENCES messages (id);
 ALTER TABLE message_attachments
     ADD CONSTRAINT fk_attachment_file FOREIGN KEY (attachment_id) REFERENCES binary_contents (id);
+ALTER TABLE notifications
+    ADD CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES users (id);

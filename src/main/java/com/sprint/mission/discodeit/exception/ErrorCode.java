@@ -33,7 +33,10 @@ public enum ErrorCode {
   READ_STATUS_INVALID_USER_OR_CHANNEL("유효하지 않은 사용자 또는 채널입니다.", HttpStatus.BAD_REQUEST),
 
   TOKEN_GENERATION_ERROR("토큰 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-  INTERNAL_SERVER_ERROR("서버 내부 오류입니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+  INTERNAL_SERVER_ERROR("서버 내부 오류입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+  NOTIFICATION_NOT_FOUND("해당 알림을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+  NOTIFICATION_PERMISSION_DENIED("해당 알림에 대한 권한이 없습니다.", HttpStatus.FORBIDDEN);
 
   private final String message;
   private final int status;

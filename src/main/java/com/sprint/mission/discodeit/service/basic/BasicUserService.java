@@ -145,10 +145,19 @@ public class BasicUserService implements UserService {
   public UserResponse updateRole(UpdateUserRoleCommand command) {
     return userRepository.findById(command.userId())
         .map(user -> {
-          user.updateRole(command.newRole());
-          User savedUser = userRepository.save(user);
-          jwtRegistry.invalidateJwtInformationByUserId(savedUser.getId());
-          return toUserResponse(savedUser);
+          var oldRole = user.getRole();
+          if (!oldRole.equals(command.newRole())) {
+            user.updateRole(command.newRole());
+            User savedUser = userRepository.save(user);
+            jwtRegistry.invalidateJwtInformationByUserId(savedUser.getId());
+            applicationEventPublisher.publishEvent(
+                new com.sprint.mission.discodeit.event.RoleUpdatedEvent(savedUser, oldRole,
+                    command.newRole()));
+            return toUserResponse(savedUser);
+          } else {
+            // 권한이 변경되지 않은 경우 기존 응답 반환
+            return toUserResponse(user);
+          }
         }).orElseThrow(() -> new UserNotFoundException(command.userId().toString()));
   }
 

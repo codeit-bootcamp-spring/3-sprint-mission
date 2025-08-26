@@ -62,7 +62,10 @@ public class BasicMessageService implements MessageService {
       message.attach(saved);
     });
 
-    return messageAssembler.toResponse(messageRepository.save(message));
+    Message savedMessage = messageRepository.save(message);
+    applicationEventPublisher.publishEvent(
+        new com.sprint.mission.discodeit.event.MessageCreatedEvent(savedMessage));
+    return messageAssembler.toResponse(savedMessage);
   }
 
   @Override
