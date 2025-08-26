@@ -12,6 +12,10 @@ spring:
     properties:
       hibernate:
         default_batch_fetch_size: 20
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=100,expireAfterAccess=600s,recordStats
 
 management:
   endpoints:
