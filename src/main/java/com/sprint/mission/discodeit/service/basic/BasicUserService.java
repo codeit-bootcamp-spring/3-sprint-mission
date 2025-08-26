@@ -7,10 +7,11 @@ import com.sprint.mission.discodeit.dto.user.UserRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.enums.Role;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
 import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
@@ -162,7 +163,7 @@ public class BasicUserService implements UserService {
 
             BinaryContent profileImage = binaryContentMapper.toEntity(binaryContentDto);
             profileImage.updateStatus(BinaryContentStatus.PROCESSING);
-            
+
             // 기존 프로필 이미지 제거
             if (profile != null) {
                 binaryContentRepository.deleteById(profile.getId());
@@ -232,12 +233,19 @@ public class BasicUserService implements UserService {
 
         log.debug("[BasicUserService] 사용자: {}", user);
 
+        Role oldRole = user.getRole();
+
         user.updateRole(request.newRole());
         User updatedUser = userRepository.save(user);
 
         jwtRegistry.invalidateJwtInformationByUserId(user.getId());
 
         log.info("[BasicUserService] 사용자 권한 변경 완료: {}", updatedUser);
+
+        RoleUpdatedEvent roleUpdatedEvent = new RoleUpdatedEvent(user, oldRole,
+            request.newRole());
+
+        eventPublisher.publishEvent(roleUpdatedEvent);
 
         return userMapper.toDto(user);
     }

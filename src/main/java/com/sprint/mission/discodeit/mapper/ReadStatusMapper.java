@@ -9,6 +9,7 @@ public class ReadStatusMapper {
 
     public ReadStatusResponseDto toDto(ReadStatus readStatus) {
         return new ReadStatusResponseDto(readStatus.getId(), readStatus.getUser().getId(),
-                readStatus.getChannel().getId(), readStatus.getLastReadAt());
+            readStatus.getChannel().getId(), readStatus.getLastReadAt(),
+            readStatus.getNotificationEnabled());
     }
 }
