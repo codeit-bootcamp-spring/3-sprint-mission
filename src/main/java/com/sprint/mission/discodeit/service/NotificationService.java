@@ -11,4 +11,6 @@ public interface NotificationService {
     void confirm(UUID notificationId, UUID userId);
 
     void send(User receiver, String title, String content);
+
+    void sendToAdmin(String title, String content);
 }

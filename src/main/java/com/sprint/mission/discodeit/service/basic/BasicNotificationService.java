@@ -56,4 +56,11 @@ public class BasicNotificationService implements NotificationService {
         notificationRepository.save(notification);
         log.info("알림 저장 완료 → to={}, title={}", receiver.getUsername(), title);
     }
+
+    @Override
+    public void sendToAdmin(String title, String content) {
+        User admin = userRepository.findByUsername("admin")
+                .orElseThrow(() -> new IllegalStateException("관리자 유저를 찾을 수 없습니다"));
+        send(admin, title, content);
+    }
 }
