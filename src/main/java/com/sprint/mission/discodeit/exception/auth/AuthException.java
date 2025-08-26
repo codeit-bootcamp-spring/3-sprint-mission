@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.exception.user;
+package com.sprint.mission.discodeit.exception.auth;
 
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;

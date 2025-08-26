@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.acceptance.user;
+package com.sprint.mission.discodeit.acceptance;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,9 +43,9 @@ public class UserAcceptanceTest {
 
   UUID userId;
   UUID otherUserId;
-  HttpHeaders userSessionHeaders;
-  HttpHeaders otherSessionHeaders;
-  private final String TEST_PASSWORD = "pw123";
+  HttpHeaders userAuthHeaders;
+  HttpHeaders otherAuthHeaders;
+  private final String TEST_PASSWORD = "pwd123";
 
   @TempDir
   static Path tempDir;
@@ -63,13 +63,14 @@ public class UserAcceptanceTest {
         restTemplate,
         "길동쓰",
         "test@test.com",
+        TEST_PASSWORD,
         "images/img_01.png");
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     final UserResponse body = Objects.requireNonNull(response.getBody());
     userId = body.id();
 
-    userSessionHeaders = AcceptanceFixture.login(restTemplate, body.username(), TEST_PASSWORD);
+    userAuthHeaders = AcceptanceFixture.login(restTemplate, body.username(), TEST_PASSWORD);
   }
 
   @Test
@@ -79,13 +80,14 @@ public class UserAcceptanceTest {
         restTemplate,
         "길동쓰2",
         "test2@test.com",
+        TEST_PASSWORD,
         "images/img_02.png");
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     final UserResponse body = Objects.requireNonNull(response.getBody());
     otherUserId = body.id();
 
-    otherSessionHeaders = AcceptanceFixture.login(restTemplate, body.username(), TEST_PASSWORD);
+    otherAuthHeaders = AcceptanceFixture.login(restTemplate, body.username(), TEST_PASSWORD);
   }
 
   @Test
@@ -96,12 +98,16 @@ public class UserAcceptanceTest {
         userId,
         "updatedName",
         "updated@test.com",
+        TEST_PASSWORD,
         "images/img_02.png",
-        userSessionHeaders);
+        userAuthHeaders);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     final UserResponse updated = Objects.requireNonNull(response.getBody());
     assertThat(updated.username()).isEqualTo("updatedName");
+
+    // username 변경 후 토큰 갱신
+    userAuthHeaders = AcceptanceFixture.login(restTemplate, updated.username(), TEST_PASSWORD);
   }
 
   @Test
@@ -112,8 +118,9 @@ public class UserAcceptanceTest {
         userId,
         "hacker",
         "hack@test.com",
+        TEST_PASSWORD,
         "images/img_02.png",
-        otherSessionHeaders);
+        otherAuthHeaders);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
   }
@@ -122,7 +129,7 @@ public class UserAcceptanceTest {
   @Order(5)
   void 사용자_전체_조회() {
     ResponseEntity<List<UserResponse>> response = restTemplate.exchange(
-        "/api/users", HttpMethod.GET, new HttpEntity<Void>(userSessionHeaders),
+        "/api/users", HttpMethod.GET, new HttpEntity<Void>(userAuthHeaders),
         new ParameterizedTypeReference<List<UserResponse>>() {
         });
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -136,7 +143,7 @@ public class UserAcceptanceTest {
     ResponseEntity<Void> response = restTemplate.exchange(
         "/api/users/" + userId,
         HttpMethod.DELETE,
-        new HttpEntity<Void>(otherSessionHeaders),
+        new HttpEntity<Void>(otherAuthHeaders),
         Void.class);
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
   }
@@ -145,7 +152,7 @@ public class UserAcceptanceTest {
   @Order(7)
   void 사용자_삭제() {
     ResponseEntity<Void> response = restTemplate.exchange(
-        "/api/users/" + userId, HttpMethod.DELETE, new HttpEntity<Void>(userSessionHeaders),
+        "/api/users/" + userId, HttpMethod.DELETE, new HttpEntity<Void>(userAuthHeaders),
         Void.class);
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
   }

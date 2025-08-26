@@ -26,6 +26,7 @@ public class AcceptanceFixture {
       TestRestTemplate restTemplate,
       String username,
       String email,
+      String password,
       String profileImagePath
   ) {
     MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
@@ -33,9 +34,9 @@ public class AcceptanceFixture {
         {
           "username": "%s",
           "email": "%s",
-          "password": "pw123"
+          "password": "%s"
         }
-        """.formatted(username, email)), jsonHeader()));
+        """.formatted(username, email, password)), jsonHeader()));
     body.add("profile", new ClassPathResource(profileImagePath));
 
     HttpHeaders headers = multipartHeader();
@@ -50,6 +51,7 @@ public class AcceptanceFixture {
       UUID userId,
       String newUsername,
       String newEmail,
+      String newPassword,
       String newProfileImagePath,
       HttpHeaders sessionHeaders
   ) {
@@ -58,9 +60,9 @@ public class AcceptanceFixture {
         {
           "newUsername": "%s",
           "newEmail": "%s",
-          "newPassword": "pwd123"
+          "newPassword": "%s"
         }
-        """.formatted(newUsername, newEmail)), jsonHeader()));
+        """.formatted(newUsername, newEmail, newPassword)), jsonHeader()));
     body.add("profile", new ClassPathResource(newProfileImagePath));
     HttpHeaders headers = multipartHeader();
     headers.addAll(sessionHeaders);
@@ -115,7 +117,8 @@ public class AcceptanceFixture {
   }
 
   public static HttpHeaders login(TestRestTemplate restTemplate, String username, String password) {
-    return AuthTestUtils.formLogin(restTemplate, username, password);
+    String accessToken = AuthTestUtils.loginAndGetAccessToken(restTemplate, username, password);
+    return AuthTestUtils.bearerAuthHeaders(accessToken);
   }
 
   public static ResponseEntity<ChannelResponse> createPublicChannel(

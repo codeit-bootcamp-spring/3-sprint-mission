@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.acceptance.channel;
+package com.sprint.mission.discodeit.acceptance;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -45,11 +45,11 @@ class ChannelAcceptanceTest {
   UUID publicChannelId;
   UUID privateChannelId;
 
-  private HttpHeaders userSessionHeaders;
-  private final HttpHeaders adminSessionHeaders = new HttpHeaders();
+  private HttpHeaders userAuthHeaders;
+  private final HttpHeaders adminAuthHeaders = new HttpHeaders();
 
   private String username;
-  private final String TEST_PASSWORD = "pw123";
+  private final String TEST_PASSWORD = "pwd123";
 
   @TempDir
   static Path tempDir;
@@ -67,26 +67,26 @@ class ChannelAcceptanceTest {
         restTemplate,
         "길동쓰",
         "test@test.com",
+        TEST_PASSWORD,
         "images/img_02.png");
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     var created = Objects.requireNonNull(response.getBody());
     userId = created.id();
     username = created.username();
-    // 동시 세션 방지 정책 때문에 역할 부여 후 최초 로그인 수행
   }
 
   @Test
   @Order(2)
   void 공개_채널_생성() {
-    // CHANNEL_MANAGER 권한 부여 (사용자 세션 아직 없음)
-    AuthTestUtils.grantRole(restTemplate, adminSessionHeaders, userId, "CHANNEL_MANAGER");
-    userSessionHeaders = AcceptanceFixture.login(restTemplate, username, TEST_PASSWORD);
-    assertThat(userSessionHeaders.getFirst(HttpHeaders.COOKIE)).isNotBlank();
+    // CHANNEL_MANAGER 권한 부여 (JWT 기반)
+    AuthTestUtils.grantRole(restTemplate, adminAuthHeaders, userId, "CHANNEL_MANAGER");
+    userAuthHeaders = AcceptanceFixture.login(restTemplate, username, TEST_PASSWORD);
+    assertThat(userAuthHeaders.getFirst(HttpHeaders.AUTHORIZATION)).isNotBlank();
 
     var response = AcceptanceFixture.createPublicChannel(
         restTemplate,
-        userSessionHeaders,
+        userAuthHeaders,
         "general",
         "공개 채널입니다");
 
@@ -100,7 +100,7 @@ class ChannelAcceptanceTest {
   void 비공개_채널_생성() {
     var response = AcceptanceFixture.createPrivateChannel(
         restTemplate,
-        userSessionHeaders,
+        userAuthHeaders,
         List.of(userId));
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -114,7 +114,7 @@ class ChannelAcceptanceTest {
     var response = restTemplate.exchange(
         "/api/channels?userId=" + userId,
         HttpMethod.GET,
-        new HttpEntity<Void>(userSessionHeaders),
+        new HttpEntity<Void>(userAuthHeaders),
         new ParameterizedTypeReference<List<ChannelResponse>>() {
         });
 
@@ -130,7 +130,7 @@ class ChannelAcceptanceTest {
         publicChannelId,
         "updated-channel",
         "수정된 설명",
-        userSessionHeaders);
+        userAuthHeaders);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     var updatedChannel = Objects.requireNonNull(response.getBody());
@@ -142,11 +142,11 @@ class ChannelAcceptanceTest {
   void 채널_삭제() {
     var res1 = restTemplate.exchange(
         "/api/channels/" + publicChannelId, HttpMethod.DELETE,
-        new HttpEntity<Void>(userSessionHeaders),
+        new HttpEntity<Void>(userAuthHeaders),
         Void.class);
     var res2 = restTemplate.exchange(
         "/api/channels/" + privateChannelId, HttpMethod.DELETE,
-        new HttpEntity<Void>(userSessionHeaders), Void.class);
+        new HttpEntity<Void>(userAuthHeaders), Void.class);
 
     assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
@@ -156,7 +156,7 @@ class ChannelAcceptanceTest {
   @Order(7)
   void 사용자_삭제() {
     var deleteUser = restTemplate.exchange(
-        "/api/users/" + userId, HttpMethod.DELETE, new HttpEntity<Void>(userSessionHeaders),
+        "/api/users/" + userId, HttpMethod.DELETE, new HttpEntity<Void>(userAuthHeaders),
         Void.class);
 
     assertThat(deleteUser.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);

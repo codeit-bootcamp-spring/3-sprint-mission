@@ -10,6 +10,7 @@ import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.times;
 
+import com.sprint.mission.discodeit.dto.data.BinaryContentData;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
@@ -25,11 +26,11 @@ import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserOnlineService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import com.sprint.mission.discodeit.vo.BinaryContentData;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +42,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,7 +66,7 @@ class BasicUserServiceTest {
   private PasswordEncoder passwordEncoder;
 
   @Mock
-  private SessionRegistry sessionRegistry;
+  private JwtRegistry jwtRegistry;
 
   @InjectMocks
   private BasicUserService basicUserService;
@@ -95,8 +95,6 @@ class BasicUserServiceTest {
         });
     Mockito.lenient().when(passwordEncoder.encode(anyString())).thenReturn("encodedPwd");
     Mockito.lenient().when(userOnlineService.isOnline(any(UUID.class))).thenReturn(false);
-    Mockito.lenient().when(sessionRegistry.getAllPrincipals())
-        .thenReturn(java.util.Collections.emptyList());
   }
 
   @Nested

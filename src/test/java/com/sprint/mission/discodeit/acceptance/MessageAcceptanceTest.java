@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.acceptance.message;
+package com.sprint.mission.discodeit.acceptance;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,11 +50,11 @@ public class MessageAcceptanceTest {
   UUID privateChannelId;
   UUID messageId;
 
-  private HttpHeaders userSessionHeaders;
-  private HttpHeaders adminSessionHeaders = new HttpHeaders();
-  private HttpHeaders otherSessionHeaders;
+  private HttpHeaders userAuthHeaders;
+  private HttpHeaders adminAuthHeaders = new HttpHeaders();
+  private HttpHeaders otherAuthHeaders;
   private String username;
-  private final String TEST_PASSWORD = "pw123";
+  private final String TEST_PASSWORD = "pwd123";
 
   @TempDir
   static Path tempDir;
@@ -72,6 +72,7 @@ public class MessageAcceptanceTest {
         restTemplate,
         "길동쓰",
         "test@test.com",
+        TEST_PASSWORD,
         "images/img_01.png");
     var createdUser1 = Objects.requireNonNull(response.getBody());
     userId = createdUser1.id();
@@ -85,24 +86,25 @@ public class MessageAcceptanceTest {
         restTemplate,
         "길동쓰2",
         "test2@test.com",
+        TEST_PASSWORD,
         "images/img_02.png");
     var createdUser2 = Objects.requireNonNull(response.getBody());
     otherUserId = createdUser2.id();
 
-    otherSessionHeaders = AcceptanceFixture.login(restTemplate,
-        createdUser2.username(), TEST_PASSWORD);
+    otherAuthHeaders = AcceptanceFixture.login(restTemplate, createdUser2.username(),
+        TEST_PASSWORD);
   }
 
   @Test
   @Order(3)
   void 공개_채널_생성() {
-    // 권한 부여, 로그인
-    AuthTestUtils.grantRole(restTemplate, adminSessionHeaders, userId, "CHANNEL_MANAGER");
-    userSessionHeaders = AcceptanceFixture.login(restTemplate, username, TEST_PASSWORD);
+    // 권한 부여, JWT 로그인
+    AuthTestUtils.grantRole(restTemplate, adminAuthHeaders, userId, "CHANNEL_MANAGER");
+    userAuthHeaders = AcceptanceFixture.login(restTemplate, username, TEST_PASSWORD);
 
     var response = AcceptanceFixture.createPublicChannel(
         restTemplate,
-        userSessionHeaders,
+        userAuthHeaders,
         "general",
         "공개 채널입니다");
 
@@ -116,7 +118,7 @@ public class MessageAcceptanceTest {
   void 비공개_채널_생성() {
     var response = AcceptanceFixture.createPrivateChannel(
         restTemplate,
-        userSessionHeaders,
+        userAuthHeaders,
         List.of(userId, otherUserId));
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -131,7 +133,7 @@ public class MessageAcceptanceTest {
         restTemplate,
         userId,
         publicChannelId,
-        userSessionHeaders);
+        userAuthHeaders);
 
     var createdMessage = Objects.requireNonNull(response.getBody());
     messageId = createdMessage.id();
@@ -147,7 +149,7 @@ public class MessageAcceptanceTest {
         restTemplate,
         messageId,
         "해커 수정",
-        otherSessionHeaders);
+        otherAuthHeaders);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
   }
@@ -159,7 +161,7 @@ public class MessageAcceptanceTest {
         restTemplate,
         messageId,
         "수정된 메시지입니다.",
-        userSessionHeaders);
+        userAuthHeaders);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     var updated = Objects.requireNonNull(response.getBody());
@@ -172,7 +174,7 @@ public class MessageAcceptanceTest {
     ResponseEntity<PageResponse<MessageResponse>> response = restTemplate.exchange(
         "/api/messages?channelId=" + publicChannelId,
         HttpMethod.GET,
-        new HttpEntity<Void>(userSessionHeaders),
+        new HttpEntity<Void>(userAuthHeaders),
         new ParameterizedTypeReference<>() {
         });
 
@@ -194,7 +196,7 @@ public class MessageAcceptanceTest {
     ResponseEntity<Void> response = restTemplate.exchange(
         "/api/messages/" + messageId,
         HttpMethod.DELETE,
-        new HttpEntity<Void>(otherSessionHeaders),
+        new HttpEntity<Void>(otherAuthHeaders),
         Void.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -206,7 +208,7 @@ public class MessageAcceptanceTest {
     ResponseEntity<Void> response = restTemplate.exchange(
         "/api/messages/" + messageId,
         HttpMethod.DELETE,
-        new HttpEntity<Void>(userSessionHeaders),
+        new HttpEntity<Void>(userAuthHeaders),
         Void.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);

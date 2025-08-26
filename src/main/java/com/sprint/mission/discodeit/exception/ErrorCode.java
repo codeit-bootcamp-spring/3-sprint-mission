@@ -30,7 +30,10 @@ public enum ErrorCode {
 
   READ_STATUS_NOT_FOUND("읽기 상태 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   READ_STATUS_ALREADY_EXISTS("이미 존재하는 읽기 상태 정보입니다.", HttpStatus.CONFLICT),
-  READ_STATUS_INVALID_USER_OR_CHANNEL("유효하지 않은 사용자 또는 채널입니다.", HttpStatus.BAD_REQUEST);
+  READ_STATUS_INVALID_USER_OR_CHANNEL("유효하지 않은 사용자 또는 채널입니다.", HttpStatus.BAD_REQUEST),
+
+  TOKEN_GENERATION_ERROR("토큰 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+  INTERNAL_SERVER_ERROR("서버 내부 오류입니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
   private final String message;
   private final int status;
