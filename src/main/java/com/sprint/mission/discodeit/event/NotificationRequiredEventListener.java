@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.service.NotificationService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -22,6 +23,7 @@ public class NotificationRequiredEventListener {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
 
+    @Async("asyncExecutor")
     @TransactionalEventListener
     public void on(MessageCreatedEvent event) {
         log.debug("MessageCreatedEvent 수신: {}", event);
@@ -40,7 +42,7 @@ public class NotificationRequiredEventListener {
         }
     }
 
-
+    @Async("asyncExecutor")
     @TransactionalEventListener
     public void on(RoleUpdatedEvent event) {
         log.debug("RoleUpdatedEvent 수신: {}", event);
