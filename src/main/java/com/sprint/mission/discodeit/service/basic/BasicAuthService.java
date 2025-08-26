@@ -42,6 +42,10 @@ public class BasicAuthService implements AuthService {
   private final ApplicationEventPublisher publisher;
 
   @PreAuthorize("hasRole('ADMIN')")
+  @Caching(
+          evict = @CacheEvict(value = "users", allEntries = true),
+          put = @CachePut(value = "userById", key = "#result.id")
+  )
   @Transactional
   @Override
   public UserDto updateRole(RoleUpdateRequest request) {
@@ -50,10 +54,6 @@ public class BasicAuthService implements AuthService {
 
   @Transactional
   @Override
-  @Caching(
-          evict = @CacheEvict(value = "users", allEntries = true),
-          put = @CachePut(value = "userById", key = "#result.id")
-  )
   public UserDto updateRoleInternal(RoleUpdateRequest request) {
     UUID userId = request.userId();
     User user = userRepository.findById(userId)
