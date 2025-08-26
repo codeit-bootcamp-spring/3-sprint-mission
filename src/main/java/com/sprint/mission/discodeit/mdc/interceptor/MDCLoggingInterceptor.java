@@ -1,13 +1,12 @@
-package com.sprint.mission.discodeit.interceptor;
+package com.sprint.mission.discodeit.mdc.interceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-
-import java.util.UUID;
 
 @Slf4j
 @Component

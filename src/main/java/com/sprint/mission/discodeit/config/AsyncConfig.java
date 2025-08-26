@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.mdc.decorator.MDCTaskDecorator;
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +34,7 @@ public class AsyncConfig implements AsyncConfigurer {
         executor.setKeepAliveSeconds(keepAlive);
         executor.setThreadNamePrefix(prefix + "-");
         executor.setRejectedExecutionHandler(new CallerRunsPolicy());
+        executor.setTaskDecorator(new MDCTaskDecorator());
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(20);
 
