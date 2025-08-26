@@ -83,7 +83,7 @@ public class BasicChannelService implements ChannelService {
         request.participantIds().forEach(participantId -> {
             userRepository.findById(participantId).ifPresentOrElse(
                     user -> {
-                        readStatusRepository.save(new ReadStatus(user, createdChannel, Instant.MIN));
+                        readStatusRepository.save(new ReadStatus(user, createdChannel, true, Instant.MIN));
                         log.debug(SERVICE_NAME + "비공개 채널 참가자 추가: Channel ID = {}, User ID = {}",
                                 createdChannel.getId(), user.getId());
                     },

@@ -48,8 +48,6 @@ public class AuthController implements AuthApi {
 
     private static final String CONTROLLER_NAME = "[AuthController] ";
     private final JwtTokenProvider jwtTokenProvider;
-    private final DiscodeitUserDetailsService userDetailsService;
-    private final JwtRegistry jwtRegistry;
 
     /**
      * CSRF 토큰을 제공합니다.
@@ -85,7 +83,9 @@ public class AuthController implements AuthApi {
         UserDto userDto = authService.updateRole(request);
         log.debug(CONTROLLER_NAME + "사용자 권한 변경 완료: {}", userDto);
 
-        return ResponseEntity.status(HttpStatus.OK).body(userDto);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(userDto);
     }
 
     /**

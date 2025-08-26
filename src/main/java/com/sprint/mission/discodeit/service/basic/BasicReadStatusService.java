@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
+import com.sprint.mission.discodeit.dto.request.NotificationDto;
 import com.sprint.mission.discodeit.dto.request.readStatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.readStatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
@@ -66,10 +68,18 @@ public class BasicReadStatusService implements ReadStatusService {
         }
 
         Instant lastReadAt = request.lastReadAt();
-        ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
-        readStatusRepository.save(readStatus);
-        log.info(SERVICE_NAME + "읽음 상태 생성 성공: id={}", readStatus.getId());
+        ReadStatus readStatus = null;
+        if (channel.getType() == ChannelType.PRIVATE) {
+            readStatus = new ReadStatus(user, channel, true, lastReadAt);
+            readStatusRepository.save(readStatus);
+        } else if (channel.getType() == ChannelType.PUBLIC){
+            readStatus = new ReadStatus(user, channel, false, lastReadAt);
+            readStatusRepository.save(readStatus);
+        }
+
+        log.info(SERVICE_NAME + "읽음 상태 생성 성공: id={}, channelType={}", readStatus.getId(), channel.getType());
         return readStatusMapper.toDto(readStatus);
+
     }
 
     /**
@@ -102,7 +112,7 @@ public class BasicReadStatusService implements ReadStatusService {
     public List<ReadStatusDto> findAllByUserId(UUID userId) {
         log.info(SERVICE_NAME + "사용자 읽음 상태 목록 조회 시도: userId={}", userId);
         List<ReadStatusDto> result = readStatusRepository.findAllByUserId(userId).stream()
-                .map(readStatus -> readStatusMapper.toDto(readStatus))
+                .map(readStatusMapper::toDto)
                 .toList();
         log.info(SERVICE_NAME + "사용자 읽음 상태 목록 조회 성공: userId={}, 건수={}", userId, result.size());
         return result;
@@ -145,4 +155,5 @@ public class BasicReadStatusService implements ReadStatusService {
         readStatusRepository.deleteById(readStatusId);
         log.info(SERVICE_NAME + "읽음 상태 삭제 성공: id={}", readStatusId);
     }
+
 }

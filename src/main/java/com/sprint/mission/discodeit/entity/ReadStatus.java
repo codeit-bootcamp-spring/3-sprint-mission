@@ -27,13 +27,17 @@ public class ReadStatus extends BaseUpdatableEntity {
     @JoinColumn(name = "channel_id")
     private Channel channel;
 
+    @Column(name = "notification_enabled", nullable = false)
+    private boolean notificationEnabled = false;
+
     @Column(name = "last_read_at", nullable = false)
     private Instant lastReadAt;
 
-    public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+    public ReadStatus(User user, Channel channel, boolean notificationEnabled, Instant lastReadAt) {
         this.user = user;
         this.channel = channel;
-        
+        this.notificationEnabled = notificationEnabled;
+
         // 안전한 timestamp 설정
         if (lastReadAt == null || lastReadAt.getEpochSecond() < 0 || lastReadAt.getEpochSecond() > 253402300799L) {
             this.lastReadAt = Instant.now();

@@ -1,0 +1,17 @@
+package com.sprint.mission.discodeit.repository;
+
+import com.sprint.mission.discodeit.entity.Notification;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+public interface NotificationRepository extends JpaRepository<Notification, UUID> {
+
+    List<Notification> findByReceiverId(UUID receiverId);
+
+    boolean existsByIdAndReceiverId(UUID notificationId, UUID receiverId);
+}

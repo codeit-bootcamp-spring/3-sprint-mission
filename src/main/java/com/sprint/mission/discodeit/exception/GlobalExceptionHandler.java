@@ -136,4 +136,16 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(ErrorCode.METHOD_ARGUE_NOT_VALID.getStatus()).body(response);
     }
+
+    @ExceptionHandler(DiscodeitException.class)
+    public ResponseEntity<ErrorResponse> handleNotificationException(DiscodeitException ex) {
+        ErrorResponse response = new ErrorResponse(
+                ex.getErrorCode().getStatus().value(),
+                ex.getErrorCode().getCode(),
+                ex.getMessage(),
+                ex.getTimestamp(),
+                ex.getDetails()
+        );
+        return ResponseEntity.status(ex.getErrorCode().getStatus()).body(response);
+    }
 }

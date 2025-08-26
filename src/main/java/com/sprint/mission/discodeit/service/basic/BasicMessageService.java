@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
@@ -123,6 +124,9 @@ public class BasicMessageService implements MessageService {
 
         log.info(SERVICE_NAME + "메시지 생성 완료: messageId={}, channelId={}, 첨부파일 개수={}",
                 savedMessage.getId(), channelId, attachments.size());
+
+        MessageCreatedEvent event = new MessageCreatedEvent(savedMessage, Instant.now());
+        eventPublisher.publishEvent(event);
 
         return messageMapper.toDto(savedMessage);
     }

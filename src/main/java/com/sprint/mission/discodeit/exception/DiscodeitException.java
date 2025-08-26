@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.exception;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
@@ -9,14 +10,24 @@ import java.util.Map;
  * 애플리케이션 전반에서 사용되는 공통 런타임 예외 클래스입니다.
  * <p>도메인별 예외의 상위 클래스 역할을 하며, 타임스탬프, 에러코드, 상세정보를 포함할 수 있습니다.</p>
  */
+@Getter
 @RequiredArgsConstructor
 public class DiscodeitException extends RuntimeException {
 
-    /** 예외 발생 시각 */
+    /** 예외 발생 시각
+     * -- GETTER --
+     *  예외 발생 시각 반환
+     */
     final Instant timestamp;
-    /** 에러 코드 */
+    /** 에러 코드
+     * -- GETTER --
+     *  에러 코드 반환
+     */
     final ErrorCode errorCode;
-    /** 추가 상세 정보 */
+    /** 추가 상세 정보
+     * -- GETTER --
+     *  상세 정보 반환
+     */
     final Map<String, Object> details;
 
     /**
@@ -44,22 +55,4 @@ public class DiscodeitException extends RuntimeException {
         this.details = details;
     }
 
-    /**
-     * 예외 발생 시각 반환
-     */
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-    /**
-     * 에러 코드 반환
-     */
-    public ErrorCode getErrorCode() {
-        return errorCode;
-    }
-    /**
-     * 상세 정보 반환
-     */
-    public Map<String, Object> getDetails() {
-        return details;
-    }
 }

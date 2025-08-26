@@ -272,6 +272,19 @@ public class JwtTokenProvider {
             throw new IllegalArgumentException("유효하지 않은 JWT", e);
         }
     }
+    public UUID getUserId(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            String userIdStr = (String) signedJWT.getJWTClaimsSet().getClaim("userId");
+            if (userIdStr == null) {
+                throw new IllegalArgumentException("JWT에서 User의 ID를 찾을 수 없습니다.");
+            }
+            return UUID.fromString(userIdStr);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("유효하지 않은 JWT입니다.", e);
+        }
+    }
+
 }
 
 
