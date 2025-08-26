@@ -26,7 +26,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     private final Path root;
 
     public LocalBinaryContentStorage(
-        @Value("${discodeit.storage.local.root-path}") Path root
+            @Value("${discodeit.storage.local.root-path}") Path root
     ) {
         this.root = root;
     }
@@ -45,10 +45,17 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
     @Override
     public UUID put(UUID binaryContentId, byte[] bytes, String contentType) {
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Thread interrupted while simulating delay", e);
+        }
+
         Path filePath = resolvePath(binaryContentId);
         if (Files.exists(filePath)) {
             throw new IllegalArgumentException(
-                "File with key " + binaryContentId + " already exists");
+                    "File with key " + binaryContentId + " already exists");
         }
         try (OutputStream outputStream = Files.newOutputStream(filePath)) {
             outputStream.write(bytes);
@@ -62,7 +69,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         Path filePath = resolvePath(binaryContentId);
         if (Files.notExists(filePath)) {
             throw new NoSuchElementException(
-                "File with key " + binaryContentId + " does not exist");
+                    "File with key " + binaryContentId + " does not exist");
         }
         try {
             return Files.newInputStream(filePath);
@@ -82,11 +89,11 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         Resource resource = new InputStreamResource(inputStream);
 
         return ResponseEntity
-            .status(HttpStatus.OK)
-            .header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + metaData.fileName() + "\"")
-            .header(HttpHeaders.CONTENT_TYPE, metaData.contentType())
-            .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(metaData.size()))
-            .body(resource);
+                .status(HttpStatus.OK)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + metaData.fileName() + "\"")
+                .header(HttpHeaders.CONTENT_TYPE, metaData.contentType())
+                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(metaData.size()))
+                .body(resource);
     }
 }
