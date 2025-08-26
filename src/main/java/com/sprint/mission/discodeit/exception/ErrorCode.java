@@ -1,41 +1,40 @@
 package com.sprint.mission.discodeit.exception;
 
-import org.springframework.http.HttpStatus;
+import lombok.Getter;
 
+@Getter
 public enum ErrorCode {
-    DUPLICATE_USERNAME("This username is already taken.", HttpStatus.CONFLICT),
-    DUPLICATE_EMAIL("This email is already registered.", HttpStatus.CONFLICT),
-    DUPLICATE_BOTH("Both username and email are already in use.", HttpStatus.CONFLICT),
-    BINARY_CONTENT_NOT_FOUND("BinaryContent not found with ID: %s", HttpStatus.NOT_FOUND),
-    PROFILE_IMAGE_PROCESSING_FAILED("Failed to process the uploaded profile image: %s",
-        HttpStatus.BAD_REQUEST),
-    USER_NOT_FOUND("User not found: %s", HttpStatus.NOT_FOUND),
-    INVALID_PASSWORD("Invalid password.", HttpStatus.UNAUTHORIZED),
-    USER_STATUS_NOT_FOUND("UserStatus not found with ID: %s", HttpStatus.NOT_FOUND),
-    USER_STATUS_ALREADY_EXISTS("UserStatus already exists for userId: %s", HttpStatus.CONFLICT),
+  // User 관련 에러 코드
+  USER_NOT_FOUND("사용자를 찾을 수 없습니다."),
+  DUPLICATE_USER("이미 존재하는 사용자입니다."),
+  INVALID_USER_CREDENTIALS("잘못된 사용자 인증 정보입니다."),
 
-    READ_STATUS_NOT_FOUND("ReadStatus with ID: %s not found", HttpStatus.NOT_FOUND),
-    READ_STATUS_ALREADY_EXISTS("ReadStatus with userId %s and channelId %s already exists",
-        HttpStatus.CONFLICT),
-    CHANNEL_NOT_FOUND("Channel not found with ID: %s", HttpStatus.NOT_FOUND),
-    PRIVATE_CHANNEL_UPDATE("Private channels cannot be updated.", HttpStatus.BAD_REQUEST),
-    MESSAGE_NOT_FOUND("Message with ID: %s not found", HttpStatus.NOT_FOUND),
+  // Channel 관련 에러 코드
+  CHANNEL_NOT_FOUND("채널을 찾을 수 없습니다."),
+  PRIVATE_CHANNEL_UPDATE("비공개 채널은 수정할 수 없습니다."),
 
-    INVALID_REFRESH_TOKEN("유효하지 않은 리프레시 토큰입니다.", HttpStatus.UNAUTHORIZED);
+  // Message 관련 에러 코드
+  MESSAGE_NOT_FOUND("메시지를 찾을 수 없습니다."),
 
-    private final String message;
-    private final HttpStatus status;
+  // BinaryContent 관련 에러 코드
+  BINARY_CONTENT_NOT_FOUND("바이너리 컨텐츠를 찾을 수 없습니다."),
 
-    ErrorCode(String message, HttpStatus status) {
-        this.message = message;
-        this.status = status;
-    }
+  // ReadStatus 관련 에러 코드
+  READ_STATUS_NOT_FOUND("읽음 상태를 찾을 수 없습니다."),
+  DUPLICATE_READ_STATUS("이미 존재하는 읽음 상태입니다."),
 
-    public String getMessage() {
-        return message;
-    }
+  // Server 에러 코드
+  INTERNAL_SERVER_ERROR("서버 내부 오류가 발생했습니다."),
+  INVALID_REQUEST("잘못된 요청입니다."),
 
-    public HttpStatus getStatus() {
-        return status;
-    }
-}
+  // Security 관련 에러 코드
+  INVALID_TOKEN("토큰이 유효하지 않습니다."),
+  INVALID_USER_DETAILS("사용자 인증 정보(UserDetails)가 유효하지 않습니다."),
+  ;
+
+  private final String message;
+
+  ErrorCode(String message) {
+    this.message = message;
+  }
+} 

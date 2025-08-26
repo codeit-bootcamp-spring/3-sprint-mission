@@ -3,13 +3,13 @@ spring:
     name: discodeit
   servlet:
     multipart:
-      maxFileSize: 10MB
-      maxRequestSize: 30MB
+      maxFileSize: 10MB # 파일 하나의 최대 크기
+      maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
   datasource:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     open-in-view: false
   profiles:
     active:
@@ -24,11 +24,11 @@ management:
         include: health,info,metrics,loggers
   endpoint:
     health:
-      show-details: when-authorized
-      show-components: always
+      show-details: always
+
 info:
   name: Discodeit
-  version: 2.0-M9
+  version: 1.7.0
   java:
     version: 17
   spring-boot:
@@ -48,7 +48,7 @@ info:
 
 discodeit:
   storage:
-    type: ${STORAGE_TYPE:local}
+    type: ${STORAGE_TYPE:local}  # local | s3 (기본값: local)
     local:
       root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
     s3:
@@ -56,12 +56,19 @@ discodeit:
       secret-key: ${AWS_S3_SECRET_KEY}
       region: ${AWS_S3_REGION}
       bucket: ${AWS_S3_BUCKET}
-      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
+  admin:
+    username: ${DISCODEIT_ADMIN_USERNAME}
+    email: ${DISCODEIT_ADMIN_EMAIL}
+    password: ${DISCODEIT_ADMIN_PASSWORD}
+  jwt:
+    access-token:
+      secret: ${JWT_ACCESS_SECRET:your-access-token-secret-key-here-make-it-long-and-random}
+      expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:1800000} # 30 minutes
+    refresh-token:
+      secret: ${JWT_REFRESH_SECRET:your-refresh-token-secret-key-here-make-it-different-and-long}
+      expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000} # 7 days
 
-jwt:
-  access-token:
-    secret: kHutF20gKUpweTR_OGbbkPXHxGO-F8iCOqGP6ZOeYYg
-    exp: 900000        # 15분(ms)
-  refresh-token:
-    secret: urb05ejK3exwX1YYCN0ZLnN7tQ7JXRKrgkIVu0l1FwM
-    exp: 3600000
+logging:
+  level:
+    root: info
