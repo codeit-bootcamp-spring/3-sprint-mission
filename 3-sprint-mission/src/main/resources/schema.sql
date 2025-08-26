@@ -109,6 +109,6 @@ ALTER TABLE read_statuses
             REFERENCES channels (id)
             ON DELETE CASCADE;
 
---
-ALTER TABLE users
-    ADD role varchar(20) NOT NULL;
+-- --
+-- ALTER TABLE users
+--     ADD role varchar(20) NOT NULL;
