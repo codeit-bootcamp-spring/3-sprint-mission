@@ -1,4 +1,3 @@
-// com.sprint.mission.discodeit.security.jwt.JwtRegistry
 package com.sprint.mission.discodeit.security.jwt;
 
 import java.util.UUID;
@@ -17,7 +16,7 @@ public interface JwtRegistry {
 
     void rotateJwtInformation(String refreshToken, JwtInformation newJwtInformation);
 
-    void invalidateJwtInformationByRefreshToken(String refreshToken);
+    UUID invalidateJwtInformationByRefreshToken(String refreshToken);
 
     void markAlive(UUID userId);
 
