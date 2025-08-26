@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -40,6 +41,8 @@ public class BasicNotificationService implements NotificationService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "notificationsByUser", key = "#userId")
+
     public void confirm(UUID notificationId, UUID userId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new NotificationNotFoundException(notificationId));
@@ -54,6 +57,8 @@ public class BasicNotificationService implements NotificationService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @CacheEvict(value = "notificationsByUser", key = "#userId")
+
     public void send(User receiver, String title, String content) {
         Notification notification = new Notification(receiver, title, content);
         notificationRepository.save(notification);
