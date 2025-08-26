@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentData;
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.event.BinaryContentCreateEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.binarycontent.InvalidBinaryContentRequestException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -12,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   @Override
   public BinaryContentResponse create(BinaryContentData binaryContentData) {
@@ -40,7 +44,8 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     BinaryContent saved = binaryContentRepository.save(binaryContent);
 
-    binaryContentStorage.put(saved.getId(), binaryContentData.bytes());
+    applicationEventPublisher.publishEvent(
+        new BinaryContentCreateEvent(saved.getId(), binaryContentData.bytes()));
 
     return BinaryContentResponse.from(saved);
   }
@@ -59,7 +64,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     List<BinaryContent> contents = binaryContentRepository.findAllById(binaryContentIds);
 
     if (contents.size() != binaryContentIds.size()) {
-      throw new BinaryContentNotFoundException(); // 일부 ID 누락 검증
+      throw new BinaryContentNotFoundException();
     }
 
     return contents.stream()
@@ -76,6 +81,17 @@ public class BasicBinaryContentService implements BinaryContentService {
         .orElseThrow(() -> new BinaryContentNotFoundException(binaryContentId.toString()));
 
     return binaryContentStorage.download(entity);
+  }
+
+  @Override
+  public BinaryContentResponse updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+    BinaryContent entity = binaryContentRepository.findById(binaryContentId)
+        .orElseThrow(() -> new BinaryContentNotFoundException(binaryContentId.toString()));
+
+    entity.updateStatus(status);
+    BinaryContent updated = binaryContentRepository.save(entity);
+
+    return BinaryContentResponse.from(updated);
   }
 
   @Override
