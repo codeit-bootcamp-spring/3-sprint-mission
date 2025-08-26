@@ -34,13 +34,13 @@ public class AsyncConfig {
     }
 
 
-    @Bean(name = "asyncExecutor")
+    @Bean(name = "eventExecutor")
     public ThreadPoolTaskExecutor asyncExecutor(
             @Value("${async.executors.core-size}") int core,
             @Value("${async.executors.max-size}") int max,
             @Value("${async.executors.queue-capacity}") int queue,
             @Value("${async.executors.keep-alive-seconds}") int keepAlive
     ) {
-        return buildExecutor(core, max, keepAlive, "async-exec");
+        return buildExecutor(core, max, keepAlive, "event-exec");
     }
 }

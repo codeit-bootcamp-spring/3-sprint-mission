@@ -30,7 +30,7 @@ public class BinaryContentEventListener {
     private final NotificationService notificationService;
     private final UserRepository userRepository;
 
-    @Async("asyncExecutor")
+    @Async("eventExecutor")
     @Retryable(
             maxAttempts = 3,
             backoff = @Backoff(delay = 1000, multiplier = 2)

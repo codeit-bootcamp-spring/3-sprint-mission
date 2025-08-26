@@ -5,9 +5,11 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +33,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final ApplicationEventPublisher publisher;
 
 
-    @Transactional
+  @Transactional
   @Override
   public BinaryContentDto create(BinaryContentCreateRequest request) {
     log.debug("바이너리 컨텐츠 생성 시작: fileName={}, size={}, contentType={}", 
@@ -47,7 +50,14 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContent save = binaryContentRepository.save(binaryContent);
         publisher.publishEvent(new BinaryContentCreatedEvent(save.getId(), bytes));
 
-    log.info("바이너리 컨텐츠 생성 완료: id={}, fileName={}, size={}", 
+        //바이너리 컨텐츠 생성 실패시 카프카에 이벤트 발행
+        if(save.getStatus().equals(BinaryContentStatus.FAIL)){
+            DiscodeitUserDetails details = (DiscodeitUserDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
+            UUID userId = details.getUserDto().id();
+            publisher.publishEvent(new S3UploadFailedEvent(userId, save.getId(),fileName));
+        }
+
+        log.info("바이너리 컨텐츠 생성 완료: id={}, fileName={}, size={}",
         binaryContent.getId(), fileName, bytes.length);
     return binaryContentMapper.toDto(binaryContent);
   }
