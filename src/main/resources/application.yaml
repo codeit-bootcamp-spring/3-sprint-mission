@@ -24,7 +24,9 @@ management:
   info:
     env:
       enabled: true
-
+  observations:
+    annotations:
+      enabled: true
 info:
   app:
     name: Discodeit
