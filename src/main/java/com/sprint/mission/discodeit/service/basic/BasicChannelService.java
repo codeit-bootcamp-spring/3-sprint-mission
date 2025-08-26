@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,6 +82,8 @@ public class BasicChannelService implements ChannelService {
 
     @Transactional(readOnly = true)
     @Override
+    @Cacheable(value = "channelsByUser", key = "#userId")
+
     public List<ChannelDto> findAllByUserId(UUID userId) {
         log.debug("사용자 채널 조회 요청: userId={}", userId);
 

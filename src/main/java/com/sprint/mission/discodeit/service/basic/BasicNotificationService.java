@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,8 @@ public class BasicNotificationService implements NotificationService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Cacheable(value = "notificationsByUser", key = "#userId")
+
     public List<NotificationDto> findAllByReceiverId(UUID userId) {
         return notificationRepository.findAllByReceiverIdAndConfirmedFalse(userId).stream()
                 .map(notificationMapper::toDto)

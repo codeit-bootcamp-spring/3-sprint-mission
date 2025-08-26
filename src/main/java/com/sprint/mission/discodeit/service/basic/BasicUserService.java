@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -99,6 +100,8 @@ public class BasicUserService implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable("users")
+
     public List<UserDto> findAll() {
         log.debug("모든 사용자 조회 요청");
         return userRepository.findAll().stream()
