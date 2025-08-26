@@ -65,3 +65,8 @@ discodeit:
 logging:
   level:
     root: info
+
+jwt:
+  secret: ${JWT_SECRET:change-me-please-change-me-please-32chars-!}
+  access-token-validity-in-seconds: 3600       # 액세스 토큰 1시간
+  refresh-token-validity-in-seconds: 1209600   # 리프레시 토큰 14일 (예시)
