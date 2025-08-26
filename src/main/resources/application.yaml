@@ -15,6 +15,9 @@ management:
       enabled: true
     os:
       enabled: true
+  observations:
+    annotations:
+      enabled: true
 
 discodeit:
   storage:

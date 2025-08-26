@@ -61,13 +61,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         log.debug("저장 경로: {}", path.toAbsolutePath());
 
         try {
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("Thread interrupted while simulating delay", e);
-            }
-
+            Thread.sleep(3000);
             Files.createDirectories(path.getParent());
             Files.write(path, bytes);
             log.info("파일 업로드 성공: id={}", id);
@@ -76,6 +70,9 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         } catch (IOException e) {
             log.error("파일 저장 실패: id={}", id, e);
             throw new UncheckedIOException("파일 저장 실패: " + id, e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Thread interrupted while simulating delay", e);
         }
     }
 

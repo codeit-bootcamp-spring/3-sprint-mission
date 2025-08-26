@@ -49,13 +49,6 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
             .key(key)
             .build();
 
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Thread interrupted while simulating delay", e);
-        }
-
         s3Client.putObject(putRequest, RequestBody.fromBytes(bytes));
 
         return id;
