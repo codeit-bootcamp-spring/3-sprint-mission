@@ -28,9 +28,6 @@ discodeit:
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
 
-remember-me:
-  key: ${REMEMBER_ME_KEY:remember-me}
-
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -53,3 +50,8 @@ logging:
     com.sprint.mission.discodeit: INFO
     org.hibernate.sql: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
+
+admin:
+  username: ${ADMIN_USERNAME:admin}
+  email: ${ADMIN_EMAIL:admin@admin.com}
+  password: ${ADMIN_PASSWORD:admin1234}

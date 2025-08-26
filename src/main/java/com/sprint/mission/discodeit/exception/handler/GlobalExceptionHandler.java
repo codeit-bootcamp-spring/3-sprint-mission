@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.binarycontent.NotFoundBinaryContentException;
 import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.jwt.InvalidTokenException;
 import com.sprint.mission.discodeit.exception.message.NotFoundMessageException;
 import com.sprint.mission.discodeit.exception.readstatus.NotFoundReadStatusException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExistsException;
@@ -59,8 +60,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-    @ExceptionHandler(LoginFailedException.class)
-    public ResponseEntity<ErrorResponse> handleLoginFailedException(DiscodeitException e) {
+    @ExceptionHandler({LoginFailedException.class, InvalidTokenException.class})
+    public ResponseEntity<ErrorResponse> handleUnAuthorizedException(DiscodeitException e) {
         ErrorResponse errorResponse = new ErrorResponse(
             Instant.now(),
             e.getErrorCode().toString(),

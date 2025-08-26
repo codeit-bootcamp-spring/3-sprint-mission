@@ -1,14 +1,16 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.user.UserResponseDto;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
-import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetailsService;
+import com.sprint.mission.discodeit.dto.jwt.JwtDto;
+import com.sprint.mission.discodeit.dto.jwt.JwtInformation;
+import com.sprint.mission.discodeit.exception.jwt.InvalidTokenException;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -16,26 +18,44 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
 
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final DiscodeitUserDetailsService userDetailsService;
+    private final JwtRegistry jwtRegistry;
 
-    @Override
-    public UserResponseDto getCurrentUser(UserDetails userDetails) {
-        log.debug("[AuthService] 현재 사용자 정보 요청");
+    public JwtDto refresh(String refreshToken, HttpServletResponse response) {
 
-        if (userDetails == null) {
-            log.warn("[AuthService] UserDetails가 null입니다.");
-            return null;
+        if (!jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken) ||
+            !jwtTokenProvider.validateRefreshToken(refreshToken)) {
+            log.error("유효하지 않는 RefreshToken: {}", refreshToken);
+            throw new InvalidTokenException(refreshToken);
         }
 
-        String username = userDetails.getUsername();
-        log.debug("[AuthService] 조회할 사용자명: {}", username);
+        String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
 
-        User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new NotFoundUserException("사용자를 찾을 수 없습니다: " + username));
+        DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailsService.loadUserByUsername(
+            username);
 
-        log.debug("[AuthService] 조회된 사용자 정보: {}", user);
+        JwtDto jwtDto = null;
+        try {
+            // 새 토큰 발급
+            String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails);
+            String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
 
-        return userMapper.toDto(user);
+            JwtInformation newJwtInfo = new JwtInformation(userDetails.getUserResponseDto(),
+                newAccessToken, newRefreshToken);
+
+            // Refresh 토큰 Rotation
+            JwtInformation jwtInformation = jwtRegistry.rotateJwtInformation(refreshToken,
+                newJwtInfo);
+
+            // 리프레시 쿠키 교체
+            // HTTP 응답 헤더(Set-Cookie)에 Refresh Cookie를 추가한다.
+            jwtTokenProvider.addRefreshCookie(response, newRefreshToken);
+
+            jwtDto = new JwtDto(jwtInformation.userResponseDto(), jwtInformation.accessToken());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return jwtDto;
     }
 }

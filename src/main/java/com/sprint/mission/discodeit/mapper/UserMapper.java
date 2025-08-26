@@ -3,10 +3,9 @@ package com.sprint.mission.discodeit.mapper;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.User;
-import java.util.List;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class UserMapper {
 
     private final BinaryContentMapper binaryContentMapper;
-    private final SessionRegistry sessionRegistry;
+    private final JwtRegistry jwtRegistry;
 
     public UserResponseDto toDto(User user) {
         BinaryContentResponseDto profileDto = null;
@@ -23,26 +22,15 @@ public class UserMapper {
             profileDto = binaryContentMapper.toDto(user.getProfile());
         }
 
-        String username = user.getUsername();
+        UUID userId = user.getId();
 
-        boolean online = isOnline(username);
+        boolean online = isOnline(userId);
 
-        return new UserResponseDto(user.getId(), username, user.getEmail(),
+        return new UserResponseDto(userId, user.getUsername(), user.getEmail(),
             profileDto, online, user.getRole());
     }
 
-    private boolean isOnline(String username) {
-        List<Object> principals = sessionRegistry.getAllPrincipals();
-
-        for (Object principal : principals) {
-            UserDetails userDetails = (UserDetails) principal;
-            String principalName = userDetails.getUsername();
-
-            if (username.equals(principalName)) {
-                return true;
-            }
-        }
-
-        return false;
+    private boolean isOnline(UUID userId) {
+        return jwtRegistry.hasActiveJwtInformationByUserId(userId);
     }
 }
