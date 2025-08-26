@@ -9,10 +9,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Getter
 @Setter
 @Entity
+@DynamicUpdate
 @Table(name = "binary_contents", schema = "discodeit")
 public class BinaryContent extends BaseUpdatableEntity {
 

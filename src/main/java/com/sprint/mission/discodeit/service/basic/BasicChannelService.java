@@ -5,9 +5,9 @@ import com.sprint.mission.discodeit.dto.channel.PrivateChannelDto;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelDto;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateDto;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
@@ -78,6 +78,7 @@ public class BasicChannelService implements ChannelService {
                     .user(user)
                     .channel(channel)
                     .lastReadAt(createdChannel.getCreatedAt())
+                    .notificationEnabled(true)
                     .build();
 
                 return readStatus;

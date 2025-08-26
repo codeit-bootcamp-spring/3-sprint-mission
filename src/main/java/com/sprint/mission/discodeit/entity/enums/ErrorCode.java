@@ -14,6 +14,7 @@ public enum ErrorCode {
     BINARY_CONTENT_NOT_FOUND("파일을 찾을 수 없습니다."),
     READ_STATUS_NOT_FOUND("읽음 상태를 찾을 수 없습니다."),
     USER_STATUS_NOT_FOUND("사용자 상태를 찾을 수 없습니다."),
+    NOTIFICATION_NOT_FOUND("알림을 찾을 수 없습니다."),
     READ_STATUS_ALREADY_EXIST("이미 존재하는 읽음 상태입니다."),
     USER_STATUS_ALREADY_EXIST("이미 존재하는 사용자 상태입니다."),
     INTERNAL_SERVER_ERROR("서버 내부 오류가 발생했습니다."),
