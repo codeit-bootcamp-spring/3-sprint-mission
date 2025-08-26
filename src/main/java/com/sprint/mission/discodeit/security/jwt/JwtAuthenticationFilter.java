@@ -24,7 +24,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtTokenProvider tokenProvider;      // 네가 만든 Provider 사용
+    private final JwtTokenProvider tokenProvider;
     private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
 

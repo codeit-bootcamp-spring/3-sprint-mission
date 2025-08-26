@@ -36,11 +36,10 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     if (authentication.getPrincipal() instanceof DiscodeitUserDetails userDetails) {
       try {
-        String accessToken = tokenProvider.generateAccessToken(userDetails);
-        String refreshToken = tokenProvider.generateRefreshToken(userDetails);
+        String accessToken = tokenProvider.createAccessToken(userDetails.getUsername());
+        String refreshToken = tokenProvider.createRefreshToken(userDetails.getUsername());
 
-        // Set refresh token in HttpOnly cookie
-        Cookie refreshCookie = tokenProvider.genereateRefreshTokenCookie(refreshToken);
+        Cookie refreshCookie = tokenProvider.generateRefreshTokenCookie(refreshToken);
         response.addCookie(refreshCookie);
 
         JwtDto jwtDto = new JwtDto(
@@ -53,7 +52,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
         log.info("JWT access and refresh tokens issued for user: {}", userDetails.getUsername());
 
-      } catch (JOSEException e) {
+      } catch (Exception e) {
         log.error("Failed to generate JWT token for user: {}", userDetails.getUsername(), e);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         ErrorResponse errorResponse = new ErrorResponse(
