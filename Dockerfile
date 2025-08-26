@@ -1,53 +1,40 @@
-########################################################################################
-# 1단계: Gradle 빌드 환경 (Amazon Corretto 17, 멀티스테이지)
-########################################################################################
+# 빌드 스테이지
 FROM amazoncorretto:17 AS builder
 
+# 작업 디렉토리 설정
 WORKDIR /app
 
-# Gradle Wrapper 및 설정파일 복사
-COPY gradlew .
-COPY gradle gradle
-COPY build.gradle .
-COPY settings.gradle .
+# Gradle Wrapper 파일 먼저 복사
+COPY gradle ./gradle
+COPY gradlew ./gradlew
 
-# 소스 코드 복사
-COPY src src
+# Gradle 캐시를 위한 의존성 파일 복사
+COPY build.gradle settings.gradle ./
 
-# 애플리케이션 빌드 (bootJar)
-RUN ./gradlew bootJar
+# 의존성 다운로드
+RUN ./gradlew dependencies
 
-########################################################################################
-# 2단계: 최적화된 런타임 환경 (Amazon Corretto 17 JRE)
-########################################################################################
-FROM amazoncorretto:17
+# 소스 코드 복사 및 빌드
+COPY src ./src
+RUN ./gradlew build -x test
 
+
+# 런타임 스테이지
+FROM amazoncorretto:17-alpine3.21
+
+# 작업 디렉토리 설정
 WORKDIR /app
 
-# curl 설치 - Amazon Corretto 기본이미지는 yum 사용 가능(Alpine과 다름)
-RUN yum install -y curl || true
+# 프로젝트 정보를 ENV로 설정
+ENV PROJECT_NAME=discodeit \
+    PROJECT_VERSION=1.2-M8 \
+    JVM_OPTS=""
 
-# 빌드된 JAR 복사
-COPY --from=builder /app/build/libs/*.jar app.jar
+# 빌드 스테이지에서 jar 파일만 복사
+COPY --from=builder /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar ./
 
-########################################################################################
-# 이미지 파일 처리 옵션 (로컬테스트/S3)
-########################################################################################
-
-# 옵션 1: static 파일 포함 (실습/테스트)
-COPY --from=builder /app/src/main/resources/static /app/static
-
-# 옵션 2: S3에만 의존 (프로덕션/용량최소)
-# COPY --from=builder /app/src/main/resources/static /app/static
-
-########################################################################################
-# 환경변수/포트/ENTRYPOINT
-########################################################################################
-
-ENV PROJECT_NAME=discodeit
-ENV PROJECT_VERSION=1.2-M8
-ENV JVM_OPTS=""
-
+# 80 포트 노출
 EXPOSE 80
 
-ENTRYPOINT ["sh", "-c", "java $JVM_OPTS -jar app.jar"]
+# jar 파일 실행
+ENTRYPOINT ["sh", "-c", "java ${JVM_OPTS} -jar ${PROJECT_NAME}-${PROJECT_VERSION}.jar"]
