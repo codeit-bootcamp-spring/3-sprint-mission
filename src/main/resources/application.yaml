@@ -16,6 +16,12 @@ spring:
       - dev
   config:
     import: optional:file:.env[.properties]
+  cache:
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
 
 management:
   endpoints:
@@ -71,6 +77,7 @@ discodeit:
     refresh-token:
       secret: ${JWT_REFRESH_SECRET:your-refresh-token-secret-key-here-make-it-different-and-long}
       expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000} # 7 days
+
 
 logging:
   level:

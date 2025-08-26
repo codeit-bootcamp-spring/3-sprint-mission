@@ -8,11 +8,11 @@ import java.util.UUID;
 
 public interface NotificationService {
 
-    NotificationDto create(User user, String title, String content);
+    void create(User user, String title, String content);
 
-    List<NotificationDto> findAll(String bearerToken);
+    List<NotificationDto> findAll(UUID userId);
 
-    void deleteNotification(UUID notificationId, String bearerToken);
+    void deleteNotification(UUID notificationId, UUID userId);
 
 
 }

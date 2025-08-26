@@ -36,8 +36,8 @@ public class NotificationRequiredEventListener {
                     else{
                         title = event.authorUsername() + " (#" + event.authorUsername() + ")";
                     }
-                    NotificationDto notification = notificationService.create(readStatus.getUser(), title, event.content());
-                    log.info("알림 이벤트 생성완료 id:{}",notification.id());
+                    notificationService.create(readStatus.getUser(), title, event.content());
+                    log.info("알림 이벤트 생성완료 id");
                 });
 
     }

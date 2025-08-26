@@ -37,6 +37,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
 
+    implementation 'org.springframework.retry:spring-retry'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    // https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.2.2'
     runtimeOnly 'org.postgresql:postgresql'
 
     compileOnly 'org.projectlombok:lombok'

@@ -19,6 +19,9 @@ import com.sprint.mission.discodeit.service.AuthService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -47,6 +50,10 @@ public class BasicAuthService implements AuthService {
 
   @Transactional
   @Override
+  @Caching(
+          evict = @CacheEvict(value = "users", allEntries = true),
+          put = @CachePut(value = "userById", key = "#result.id")
+  )
   public UserDto updateRoleInternal(RoleUpdateRequest request) {
     UUID userId = request.userId();
     User user = userRepository.findById(userId)
