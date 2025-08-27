@@ -72,6 +72,9 @@ management:
   info:
     env:
       enabled: true             # info 엔드포인트 명시적 활성화
+  observability:
+    annotations:
+      enabled: true
 
 info:
   app:
@@ -108,6 +111,11 @@ jwt:
 
 async:
   executors:
+    main:
+      core-size: 4
+      max-size: 8
+      queue-capacity: 200
+      keep-alive-seconds: 60
     # 파일 업로드/이미지 처리 등 작업 TaskExecutor 설정
     file:
       core-size: 2

@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,11 +26,14 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class NotificationRequiredEventListener {
 
+    private static final String LISTENER_NAME = "[NotificationRequiredEventListener] ";
+
     private final NotificationRepository notificationRepository;
     private final ReadStatusRepository readStatusRepository;
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Async("notificationTaskExecutor")
     public void on(MessageCreatedEvent event) {
         Message message = event.message();
 
@@ -61,20 +65,21 @@ public class NotificationRequiredEventListener {
                 notificationRepository.save(notification);
             }
         } catch (Exception e) {
-            throw new NotificationException("알림 생성에 실패했습니다.");
+            log.error(LISTENER_NAME + "메시지 알림 생성 실패: messageId={}, channelId={}", message.getId(), channelId, e);
         }
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Async("notificationTaskExecutor")
     public void on(RoleUpdatedEvent event) {
         User user = event.user();
         Role oldRole = event.oldRole();
-        Role newRole = event.user().getRole();
+        Role newRole = event.newRole();
 
         try {
             String title = "권한이 변경되었습니다.";
-            String content = oldRole.name() + " -> " + newRole.name();
+            String content = oldRole + " -> " + newRole;
 
             Notification notification = new Notification(
                     user,
@@ -84,7 +89,7 @@ public class NotificationRequiredEventListener {
 
             notificationRepository.save(notification);
         } catch (Exception e) {
-            throw new NotificationException("알림 생성에 실패했습니다.");
+            log.error(LISTENER_NAME + "권한 변경 알림 생성 실패: userId={}", user.getId(), e);
         }
     }
 }

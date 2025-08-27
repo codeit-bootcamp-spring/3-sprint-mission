@@ -79,9 +79,10 @@ public class BasicAuthService implements AuthService {
                 .orElseThrow(() -> new UserNotFoundException("사용자가 존재하지 않습니다."));
 
         Role oldRole = user.getRole();
+        Role newRole = request.newRole();
         user.updateRole(request.newRole());
 
-        RoleUpdatedEvent event = new RoleUpdatedEvent(user, oldRole, Instant.now());
+        RoleUpdatedEvent event = new RoleUpdatedEvent(user, oldRole, newRole, Instant.now());
         eventPublisher.publishEvent(event);
 
         UUID userId = user.getId();

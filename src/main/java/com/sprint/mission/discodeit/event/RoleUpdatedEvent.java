@@ -8,6 +8,7 @@ import java.time.Instant;
 public record RoleUpdatedEvent(
         User user,
         Role oldRole,
+        Role newRole,
         Instant occurredAt
 ) {
 }
