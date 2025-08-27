@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
@@ -27,6 +28,7 @@ public class NotificationRequiredEventListener {
     private final NotificationRepository notificationRepository;
     private final ReadStatusRepository readStatusRepository;
     private static final String ROLE_UPDATE_TITLE = "권한이 변경되었습니다.";
+    private static final String PRIVATE_CHANNEL_NAME = "개인 메시지";
 
     @Async("notificationExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -35,7 +37,7 @@ public class NotificationRequiredEventListener {
 
         User author = event.author();
         Channel channel = event.channel();
-        String title = author.getUsername() + " (#" + channel.getName() + ")";
+        String title = getTitle(author, channel);
         String content = event.content();
 
         // 알림 수신 여부가 true인 채널의 readStatus 조회
@@ -77,5 +79,18 @@ public class NotificationRequiredEventListener {
 
         log.debug("[NotificationRequiredEventListener] 권한 변경 알림 생성 완료- id: {}",
             savedNotification.getId());
+    }
+
+    private String getTitle(User author, Channel channel) {
+        StringBuilder title = new StringBuilder(author.getUsername()).append(" (#");
+
+        if (channel.getType().equals(ChannelType.PUBLIC)) {
+            title.append(channel.getName());
+        } else {
+            title.append(PRIVATE_CHANNEL_NAME);
+        }
+        title.append(")");
+
+        return title.toString();
     }
 }

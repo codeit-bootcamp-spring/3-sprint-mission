@@ -61,6 +61,8 @@ dependencies {
 
     // Nimbus JOSE + JWT 라이브러리
     implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+    // Spring retry
+    implementation 'org.springframework.retry:spring-retry'
 }
 
 tasks.named('test') {
