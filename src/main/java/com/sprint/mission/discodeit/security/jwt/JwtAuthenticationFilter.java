@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.security.jwt;
 
+import com.sprint.mission.discodeit.security.jwt.registry.JwtRegistry;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
+    private final JwtRegistry jwtRegistry;
 
     @Override
     protected void doFilterInternal(
@@ -42,6 +44,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 이미 인증된 경우는 스킵
                 if (SecurityContextHolder.getContext().getAuthentication() == null
                     && jwtTokenProvider.validateAccessToken(token)) {
+
+                    // 레지스트리에 등록된(활성) 액세스 토큰인지 확인
+                    if (!jwtRegistry.hasActiveJwtInformationByAccessToken(token)) {
+                        log.debug("레지스트리에 없는(또는 만료된) 액세스 토큰: 인증 생략");
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
 
                     String username = jwtTokenProvider.getUsernameFromToken(token);
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
