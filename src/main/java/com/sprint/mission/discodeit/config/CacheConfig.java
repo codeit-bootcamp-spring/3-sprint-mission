@@ -1,5 +1,9 @@
 package com.sprint.mission.discodeit.config;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalListener;
 import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
@@ -13,6 +17,9 @@ import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -68,6 +75,27 @@ public class CacheConfig {
                     log.debug("캐시 엔트리 제거 - key: {}, cause: {}", key, cause);
             }
         };
+    }
+
+    @Bean
+    @Profile("prod")
+    public RedisCacheConfiguration redisCacheConfiguration(ObjectMapper objectMapper) {
+        ObjectMapper redisObjectMapper = objectMapper.copy();
+        redisObjectMapper.activateDefaultTyping(
+            LaissezFaireSubTypeValidator.instance,
+            DefaultTyping.EVERYTHING,
+            As.PROPERTY
+        );
+
+        return RedisCacheConfiguration.defaultCacheConfig()
+            .serializeValuesWith(
+                RedisSerializationContext.SerializationPair.fromSerializer(
+                    new GenericJackson2JsonRedisSerializer(redisObjectMapper)
+                )
+            )
+            .prefixCacheNameWith("discodeit:")
+            .entryTtl(Duration.ofSeconds(600))
+            .disableCachingNullValues();
     }
 
     @Bean("userIdKeyGenerator")

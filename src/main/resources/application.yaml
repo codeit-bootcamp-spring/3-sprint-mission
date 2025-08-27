@@ -1,10 +1,21 @@
 spring:
   cache:
+    type: redis
     caffeine:
       spec: >
         maximumSize=1000,
         expireAfterAccess=600s,
         recordStats
+    cache-names:
+      - channelsByUser
+      - notificationsByUser
+      - users
+    redis:
+      enable-statistics: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   kafka:
     bootstrap-servers: localhost:9092
     producer:
