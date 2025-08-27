@@ -167,9 +167,9 @@ public class JwtTokenProvider {
         cookie.setHttpOnly(true);
         cookie.setSecure(false);                // 개발환경: HTTP도 동작하도록 Secure=false (운영 환경에선 HTTPS 통신 이용 예정)
         cookie.setPath("/");
-        cookie.setMaxAge(accessTokenExpirationMs / 1000);
+        cookie.setMaxAge(refreshTokenExpirationMs / 1000);
 
-        log.info(PROVIDER_NAME + "generateRefreshTokenCookie 완료: Max-Age= {}", (accessTokenExpirationMs / 1000));
+        log.info(PROVIDER_NAME + "generateRefreshTokenCookie 완료: Max-Age= {}", (refreshTokenExpirationMs / 1000));
 
         return cookie;
     }
@@ -284,7 +284,6 @@ public class JwtTokenProvider {
             throw new IllegalArgumentException("유효하지 않은 JWT입니다.", e);
         }
     }
-
 }
 
 

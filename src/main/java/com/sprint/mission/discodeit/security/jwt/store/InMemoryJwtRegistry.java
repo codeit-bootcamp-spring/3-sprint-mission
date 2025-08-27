@@ -117,6 +117,11 @@ public class InMemoryJwtRegistry implements JwtRegistry {
      */
     @Override
     public void invalidateJwtInformationByUserId(UUID userId) {
+        if (userId == null) {
+            log.warn(SERVICE_NAME + "userId가 null이므로 무효화할 수 없음");
+            return;
+        }
+
         Queue<JwtInformation> removedTokens = origin.remove(userId);
         if (removedTokens != null && !removedTokens.isEmpty()) {
             log.info(SERVICE_NAME + "사용자별 모든 JWT 정보 삭제됨: userId={}, 삭제된 토큰 수={}",

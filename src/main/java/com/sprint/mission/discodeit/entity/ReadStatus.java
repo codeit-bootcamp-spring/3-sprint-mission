@@ -46,10 +46,15 @@ public class ReadStatus extends BaseUpdatableEntity {
         }
     }
 
-    public void update(Instant newLastReadAt) {
+    public void update(Instant newLastReadAt, boolean newNotificationEnabled) {
         boolean anyValueUpdated = false;
         if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
             this.lastReadAt = newLastReadAt;
+            anyValueUpdated = true;
+        }
+
+        if (newNotificationEnabled != this.notificationEnabled) {
+            this.notificationEnabled = newNotificationEnabled;
             anyValueUpdated = true;
         }
 

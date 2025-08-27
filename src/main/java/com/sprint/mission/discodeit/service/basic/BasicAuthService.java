@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.nimbusds.jose.JOSEException;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.user.RoleUpdateRequest;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
@@ -77,9 +78,10 @@ public class BasicAuthService implements AuthService {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new UserNotFoundException("사용자가 존재하지 않습니다."));
 
+        Role oldRole = user.getRole();
         user.updateRole(request.newRole());
 
-        RoleUpdatedEvent event = new RoleUpdatedEvent(user, Instant.now());
+        RoleUpdatedEvent event = new RoleUpdatedEvent(user, oldRole, Instant.now());
         eventPublisher.publishEvent(event);
 
         UUID userId = user.getId();
@@ -130,8 +132,7 @@ public class BasicAuthService implements AuthService {
             // HTTP 응답 헤더(Set-Cookie)에 리프레시 쿠키 추가
             jwtTokenProvider.addRefreshCookie(response, newRefreshToken);
 
-            return newJwtinformation
-                    ;
+            return newJwtinformation;
         } catch (JOSEException e) {
             // 리프레시 토큰 재발급 도중 발생한 예외 처리 (500)
             log.error(SERVICE_NAME + "유저 {}의 RefreshToken 재발급 실패", username, e);

@@ -20,7 +20,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicNotificationService implements NotificationService {
 
-
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
 

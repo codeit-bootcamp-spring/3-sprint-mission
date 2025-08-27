@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
 
@@ -78,9 +79,18 @@ public class JwtLogoutHandler implements LogoutHandler {
                 .findFirst()
                 .ifPresent(cookie -> {
                     String refreshToken = cookie.getValue();
-                    UUID userId = jwtRegistry.findUserIdByRefreshToken(refreshToken);
+                    try {
+                        UUID userId = jwtRegistry.findUserIdByRefreshToken(refreshToken);
 
-                    jwtRegistry.invalidateJwtInformationByUserId(userId);
+                        if (userId != null) {
+                            jwtRegistry.invalidateJwtInformationByUserId(userId);
+                            log.info(HANDLER_NAME + "사용자 토큰 무효화 완료: userId={}", userId);
+                        } else {
+                            log.warn(HANDLER_NAME + "Refresh Token에 해당하는 사용자를 찾을 수 없음: {}", refreshToken);
+                        }
+                    } catch (Exception e) {
+                        log.error(HANDLER_NAME + "토큰 무효화 중 오류 발생: {}", e.getMessage(), e);
+                    }
                 });
     }
 }

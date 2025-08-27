@@ -24,13 +24,13 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA discodeit TO discod
 
 ALTER ROLE discodeit_user SET search_path TO discodeit;
 
-DROP TABLE IF EXISTS tbl_users CASCADE;
-DROP TABLE IF EXISTS tbl_channels CASCADE;
-DROP TABLE IF EXISTS tbl_binary_contents CASCADE;
-DROP TABLE IF EXISTS tbl_read_statuses CASCADE;
-DROP TABLE IF EXISTS tbl_messages CASCADE;
-DROP TABLE IF EXISTS tbl_message_attachments CASCADE;
-DROP TABLE IF EXISTS tbl_notifications CASCADE;
+-- DROP TABLE IF EXISTS tbl_users CASCADE;
+-- DROP TABLE IF EXISTS tbl_channels CASCADE;
+-- DROP TABLE IF EXISTS tbl_binary_contents CASCADE;
+-- DROP TABLE IF EXISTS tbl_read_statuses CASCADE;
+-- DROP TABLE IF EXISTS tbl_messages CASCADE;
+-- DROP TABLE IF EXISTS tbl_message_attachments CASCADE;
+-- DROP TABLE IF EXISTS tbl_notifications CASCADE;
 
 CREATE TABLE IF NOT EXISTS discodeit.tbl_binary_contents
 (

@@ -1,27 +1,27 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
-import com.sprint.mission.discodeit.dto.request.NotificationDto;
 import com.sprint.mission.discodeit.dto.request.readStatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.readStatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.readstatus.DuplicatedReadStatusException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
-import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
-import com.sprint.mission.discodeit.exception.readstatus.DuplicatedReadStatusException;
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 메시지 읽음 상태(ReadStatus) 관련 비즈니스 로직을 처리하는 서비스 클래스입니다.
@@ -129,13 +129,19 @@ public class BasicReadStatusService implements ReadStatusService {
     public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
         log.info(SERVICE_NAME + "읽음 상태 수정 시도: id={}", readStatusId);
         Instant newLastReadAt = request.newLastReadAt();
+        boolean newNotificationEnabled = request.newNotificationEnabled();
+
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
             .orElseThrow(() -> {
                 log.error(SERVICE_NAME + "읽음 상태 없음: id={}", readStatusId);
                 return new ReadStatusNotFoundException("읽음 상태 정보를 찾을 수 없습니다.");
             });
-        readStatus.update(newLastReadAt);
+        if (newLastReadAt != null || newNotificationEnabled != readStatus.isNotificationEnabled()) {
+            readStatus.update(newLastReadAt, newNotificationEnabled);
+        }
+
         readStatusRepository.save(readStatus);
+
         log.info(SERVICE_NAME + "읽음 상태 수정 성공: id={}", readStatusId);
         return readStatusMapper.toDto(readStatus);
     }
@@ -155,5 +161,4 @@ public class BasicReadStatusService implements ReadStatusService {
         readStatusRepository.deleteById(readStatusId);
         log.info(SERVICE_NAME + "읽음 상태 삭제 성공: id={}", readStatusId);
     }
-
 }

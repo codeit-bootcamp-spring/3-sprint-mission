@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.request.NotificationDto;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
-import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +28,11 @@ public class NotificationController {
     public ResponseEntity<List<NotificationDto>> getNotifications(
             @RequestHeader("Authorization") String accessToken
     ) {
-        UUID receiverId = jwtTokenProvider.getUserId(accessToken);
+        String token = accessToken.startsWith("Bearer ")
+                ? accessToken.substring(7)
+                : accessToken;
+
+        UUID receiverId = jwtTokenProvider.getUserId(token);
 
         // 401 전역 예외처리
         if (receiverId == null) {
@@ -50,7 +53,11 @@ public class NotificationController {
             throw new DiscodeitException("인증되지 않은 요청입니다.", Instant.now(), ErrorCode.UNAUTHORIZED_USER, null);
         }
 
-        UUID receiverId = jwtTokenProvider.getUserId(accessToken);
+        String token = accessToken.startsWith("Bearer ")
+                ? accessToken.substring(7)
+                : accessToken;
+
+        UUID receiverId = jwtTokenProvider.getUserId(token);
 
         if (receiverId == null) {
             throw new DiscodeitException("인증되지 않은 요청입니다.", Instant.now(), ErrorCode.UNAUTHORIZED_USER, null);
