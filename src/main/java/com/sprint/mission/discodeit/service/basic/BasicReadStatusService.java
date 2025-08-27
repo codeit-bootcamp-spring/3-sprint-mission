@@ -62,11 +62,14 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
-  public ReadStatusResponse update(UUID readStatusId) {
+  public ReadStatusResponse update(UUID readStatusId, Boolean newNotificationEnabled) {
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId.toString()));
 
     readStatus.updateLastReadAt();
+    if (newNotificationEnabled != null) {
+      readStatus.updateNotificationEnabled(newNotificationEnabled);
+    }
     return ReadStatusResponse.from(readStatusRepository.save(readStatus));
   }
 

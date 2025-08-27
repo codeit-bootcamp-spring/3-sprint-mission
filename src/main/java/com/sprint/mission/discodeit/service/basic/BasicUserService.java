@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreateEvent;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -151,7 +152,7 @@ public class BasicUserService implements UserService {
             User savedUser = userRepository.save(user);
             jwtRegistry.invalidateJwtInformationByUserId(savedUser.getId());
             applicationEventPublisher.publishEvent(
-                new com.sprint.mission.discodeit.event.RoleUpdatedEvent(savedUser, oldRole,
+                new RoleUpdatedEvent(savedUser, oldRole,
                     command.newRole()));
             return toUserResponse(savedUser);
           } else {

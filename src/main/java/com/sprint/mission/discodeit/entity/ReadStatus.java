@@ -50,6 +50,10 @@ public class ReadStatus extends BaseUpdatableEntity {
     this.lastReadAt = Instant.now();
   }
 
+  public void updateNotificationEnabled(Boolean newNotificationEnabled) {
+    this.notificationEnabled = newNotificationEnabled;
+  }
+
   public void assignIdForTest(UUID id) {
     this.id = id;
   }

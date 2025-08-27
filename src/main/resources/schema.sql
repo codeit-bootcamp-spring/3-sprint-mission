@@ -79,22 +79,22 @@ CREATE TABLE notifications (
 );
 
 ALTER TABLE notifications
-    ADD CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES users (id);
+    ADD CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES users (id) ON DELETE CASCADE;
 
 -- FK 제약 추가
 ALTER TABLE users
-    ADD CONSTRAINT fk_profile FOREIGN KEY (profile_id) REFERENCES binary_contents (id);
+    ADD CONSTRAINT fk_profile FOREIGN KEY (profile_id) REFERENCES binary_contents (id) ON DELETE CASCADE;
 ALTER TABLE messages
-    ADD CONSTRAINT fk_channel FOREIGN KEY (channel_id) REFERENCES channels (id);
+    ADD CONSTRAINT fk_channel FOREIGN KEY (channel_id) REFERENCES channels (id) ON DELETE CASCADE;
 ALTER TABLE messages
-    ADD CONSTRAINT fk_author FOREIGN KEY (author_id) REFERENCES users (id);
+    ADD CONSTRAINT fk_author FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE CASCADE;
 ALTER TABLE read_statuses
-    ADD CONSTRAINT fk_read_user FOREIGN KEY (user_id) REFERENCES users (id);
+    ADD CONSTRAINT fk_read_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE;
 ALTER TABLE read_statuses
-    ADD CONSTRAINT fk_read_channel FOREIGN KEY (channel_id) REFERENCES channels (id);
+    ADD CONSTRAINT fk_read_channel FOREIGN KEY (channel_id) REFERENCES channels (id) ON DELETE CASCADE;
 ALTER TABLE message_attachments
-    ADD CONSTRAINT fk_attachment_message FOREIGN KEY (message_id) REFERENCES messages (id);
+    ADD CONSTRAINT fk_attachment_message FOREIGN KEY (message_id) REFERENCES messages (id) ON DELETE CASCADE;
 ALTER TABLE message_attachments
-    ADD CONSTRAINT fk_attachment_file FOREIGN KEY (attachment_id) REFERENCES binary_contents (id);
+    ADD CONSTRAINT fk_attachment_file FOREIGN KEY (attachment_id) REFERENCES binary_contents (id) ON DELETE CASCADE;
 ALTER TABLE notifications
     ADD CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES users (id);
