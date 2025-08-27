@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.repository.custom.impl;
 
 import static com.sprint.mission.discodeit.entity.QBinaryContent.binaryContent;
 import static com.sprint.mission.discodeit.entity.QUser.user;
-import static com.sprint.mission.discodeit.entity.QUserStatus.userStatus;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.mission.discodeit.entity.User;
@@ -22,7 +21,6 @@ public class CustomUserRepositoryImpl implements CustomUserRepository {
         return jpaQueryFactory
             .selectFrom(user).distinct()
             .leftJoin(user.profile, binaryContent).fetchJoin()
-            .join(user.status, userStatus).fetchJoin()
             .fetch();
     }
 }

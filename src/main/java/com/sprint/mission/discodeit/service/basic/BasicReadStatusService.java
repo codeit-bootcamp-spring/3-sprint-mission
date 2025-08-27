@@ -19,7 +19,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.logging.Logger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,8 +31,6 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ChannelRepository channelRepository;
     private final ReadStatusRepository readStatusRepository;
     private final ReadStatusMapper readStatusMapper;
-
-    private static final Logger logger = Logger.getLogger(BasicReadStatusService.class.getName());
 
     // 생성
     @Override

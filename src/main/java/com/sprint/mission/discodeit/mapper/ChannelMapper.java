@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.mapper;
 
+import com.sprint.mission.discodeit.auth.util.OnlineStatusUtil;
 import com.sprint.mission.discodeit.dto.response.ChannelDto;
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -23,6 +24,8 @@ public abstract class ChannelMapper {
     private ReadStatusRepository readStatusRepository;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private OnlineStatusUtil onlineStatusUtil;
 
     @Mapping(target = "participants", expression = "java(resolveParticipants(channel))")
     @Mapping(target = "lastMessageAt", expression = "java(resolveLastMessageAt(channel))")
@@ -40,7 +43,11 @@ public abstract class ChannelMapper {
             readStatusRepository.findAllByChannelIdWithUser(channel.getId())
                 .stream()
                 .map(ReadStatus::getUser)
-                .map(userMapper::toDto)
+
+                .map(user -> {
+                    boolean isOnline = onlineStatusUtil.isOnlineUser(user.getId());
+                    return userMapper.toDto(user, isOnline);
+                })
                 .forEach(participants::add);
         }
         return participants;

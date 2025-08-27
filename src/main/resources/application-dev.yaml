@@ -1,6 +1,10 @@
 # 개발 환경 설정
 server:
   port: 8080
+  servlet:
+    session:
+      # 원래 Spring Security의 서버 세션 유지 기간은 디폴트로 30분이다.
+      timeout: 30m
 
 spring:
   servlet:
@@ -25,7 +29,9 @@ logging:
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql: TRACE
-    org.hibernate.orm.jdbc.bind: trace
+    org.hibernate.orm.jdbc.bind: TRACE
+    # Spring Security 관련 디버그 로그 활성화
+    org.springframework.security: TRACE
 
 
 info:

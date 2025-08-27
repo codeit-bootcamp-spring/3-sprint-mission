@@ -18,11 +18,13 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Logger;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class BasicChannelService implements ChannelService {
@@ -34,9 +36,8 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final ChannelMapper channelMapper;
 
-    private static final Logger logger = Logger.getLogger(BasicChannelService.class.getName()); // 필드로 Logger 선언
-
     // 공개 채널 생성
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     @Transactional
     public ChannelDto createPublicChannel(PublicChannelCreateRequest request) {
@@ -99,6 +100,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     // 채널 이름 수정
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     @Transactional
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
@@ -112,12 +114,13 @@ public class BasicChannelService implements ChannelService {
 
         channel.updateChannelName(request.newName());
         channel.updateDescription(request.newDescription());
-        logger.info("ChannelService: 채널 이름과 설명 수정이 완료되었습니다.");
+        log.info("ChannelService: 채널 이름과 설명 수정이 완료되었습니다.");
 
         return channelMapper.toDto(channel);
     }
 
     // 채널 삭제
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     @Transactional
     public void delete(UUID channelId) {
@@ -132,6 +135,6 @@ public class BasicChannelService implements ChannelService {
         readStatusRepository.deleteAll(readStatuses);
 
         channelRepository.deleteById(channelId);
-        logger.info("ChannelService: 채널이 삭제되었습니다.");
+        log.info("ChannelService: 채널이 삭제되었습니다.");
     }
 }

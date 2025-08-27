@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS users
     email varchar(100) UNIQUE NOT NULL,
     password varchar(60) NOT NULL,
     profile_id UUID,
+    role varchar(20) NOT NULL DEFAULT 'USER' CHECK (role IN ('ADMIN', 'USER', 'CHANNEL_MANAGER')),
 
     CONSTRAINT pk_user_id PRIMARY KEY (id),
     CONSTRAINT fk_profile_id FOREIGN KEY (profile_id) REFERENCES binary_contents (id) ON DELETE SET NULL

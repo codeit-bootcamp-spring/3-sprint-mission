@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository;
 
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.custom.CustomUserRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,5 +18,7 @@ public interface UserRepository extends JpaRepository<User, UUID>, CustomUserRep
 
     // 유저 조회 (이름)
     Optional<User> findByUsername(String userName);
+
+    boolean existsByRole(Role role);
 
 }

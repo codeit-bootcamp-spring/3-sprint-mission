@@ -19,14 +19,12 @@ public enum ErrorCode {
     BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "바이너리 컨텐츠를 찾을 수 없습니다."),
     RESOURCE_LOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "바이너리 컨텐츠 로드에 실패했습니다."),
 
-    USER_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "유저 접속 상태를 찾을 수 없습니다."),
-    USER_STATUS_NOT_FOUND_BY_USER(HttpStatus.NOT_FOUND, "유저 접속 상태를 찾을 수 없습니다."),
-    USER_STATUS_ALREADY_EXIST(HttpStatus.CONFLICT, "이미 존재하는 user status 입니다."),
-
     READ_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "유저의 읽음 상태를 찾을 수 없습니다."),
     READ_STATUS_ALREADY_EXIST(HttpStatus.CONFLICT, "이미 존재하는 read status 입니다."),
 
-    VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "입력값 검증에 실패했습니다.");
+    VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "입력값 검증에 실패했습니다."),
+
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.");
 
     private final String message;
     private final HttpStatus status;

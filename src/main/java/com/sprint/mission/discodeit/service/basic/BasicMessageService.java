@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.auth.service.MessageSecurityService;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
@@ -26,10 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.logging.Logger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,8 +46,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentStorage binaryContentStorage;
     private final MessageMapper messageMapper;
     private final PageResponseMapper pageResponseMapper;
-
-    private static final Logger logger = Logger.getLogger(BasicMessageService.class.getName());
+    private final MessageSecurityService messageSecurityService;
 
     //메시지 생성
     @Override
@@ -120,6 +120,7 @@ public class BasicMessageService implements MessageService {
     }
 
     // 메시지 수정
+    @PreAuthorize("@messageSecurityService.canEdit(#messageId, authentication.principal.id)")
     @Override
     @Transactional
     public MessageDto update(UUID messageId, MessageUpdateRequest request) {
@@ -134,6 +135,7 @@ public class BasicMessageService implements MessageService {
     }
 
     // 메시지 삭제
+    @PreAuthorize("@messageSecurityService.canDelete(#messageId, authentication.principal.id)")
     @Override
     @Transactional
     public void delete(UUID messageId) {

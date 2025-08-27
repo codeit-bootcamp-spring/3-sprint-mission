@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.repository.custom.impl;
 import static com.sprint.mission.discodeit.entity.QBinaryContent.binaryContent;
 import static com.sprint.mission.discodeit.entity.QReadStatus.readStatus;
 import static com.sprint.mission.discodeit.entity.QUser.user;
-import static com.sprint.mission.discodeit.entity.QUserStatus.userStatus;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -24,7 +23,6 @@ public class CustomReadStatusRepositoryImpl implements CustomReadStatusRepositor
         return jpaQueryFactory
             .selectFrom(readStatus)
             .join(readStatus.user, user).fetchJoin()
-            .join(user.status, userStatus).fetchJoin()
             .leftJoin(user.profile, binaryContent).fetchJoin()
             .where(readStatus.channel.id.eq(channelId))
             .fetch();
