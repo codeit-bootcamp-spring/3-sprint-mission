@@ -69,12 +69,24 @@ management:
       # 추후 never로 수정
       show-details: never
       show-components: never
+    metrics:
+      enabled: true
   info:
     env:
       enabled: true             # info 엔드포인트 명시적 활성화
-  observability:
+  observations:
     annotations:
       enabled: true
+  # Prometheus 메트릭 설정 (새로운 구조)
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  # 웹 서버 메트릭 설정 (Spring Boot 3.4.0 구조)
+  metrics:
+    distribution:
+      percentiles:
+        all: 0.5,0.95,0.99,0.999
 
 info:
   app:
