@@ -105,3 +105,18 @@ jwt:
     secret: ${JWT_REFRESH_TOKEN:your-secret-token-secret-key} # 임의 값 입력
     exp: 3600000                                         # 1시간(ms)
   max-active-count: 1
+
+async:
+  executors:
+    # 파일 업로드/이미지 처리 등 작업 TaskExecutor 설정
+    file:
+      core-size: 2
+      max-size: 4
+      queue-capacity: 100
+      keep-alive-seconds: 60
+    # 알림 발송 비동기 TaskExecutor 설정
+    notification:
+      core-size: 2
+      max-size: 4
+      queue-capacity: 500
+      keep-alive-seconds: 60
