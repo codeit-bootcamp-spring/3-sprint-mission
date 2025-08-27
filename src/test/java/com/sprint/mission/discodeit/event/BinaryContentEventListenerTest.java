@@ -30,7 +30,7 @@ class BinaryContentEventListenerTest {
     byte[] bytes = new byte[]{1, 2, 3};
     BinaryContentCreateEvent event = new BinaryContentCreateEvent(id, bytes);
 
-    listener.handle(event);
+    listener.on(event);
 
     then(binaryContentStorage).should().put(id, bytes);
     then(binaryContentService).should().updateStatus(id, BinaryContentStatus.SUCCESS);
@@ -44,7 +44,7 @@ class BinaryContentEventListenerTest {
 
     willThrow(new RuntimeException()).given(binaryContentStorage).put(id, bytes);
 
-    listener.handle(event);
+    listener.on(event);
 
     then(binaryContentService).should().updateStatus(id, BinaryContentStatus.FAIL);
   }
