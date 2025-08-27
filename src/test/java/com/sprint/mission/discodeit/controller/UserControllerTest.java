@@ -20,12 +20,14 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
@@ -48,6 +50,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
     )
 )
 @WithMockUser
+@AutoConfigureMockMvc(addFilters = false)
 @DisplayName("UserController 슬라이스 테스트")
 public class UserControllerTest {
 
@@ -55,6 +58,7 @@ public class UserControllerTest {
     @Autowired private ObjectMapper objectMapper;
 
     @MockitoBean private UserService userService;
+    @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Test
     @DisplayName("사용자 생성 API 성공")

@@ -12,6 +12,7 @@ public enum ErrorCode {
 
     AUTHENTICATION_REQUIRED("A001", HttpStatus.UNAUTHORIZED ,"인증이 필요합니다."),
     ACCESS_DENIED("A0012", HttpStatus.FORBIDDEN ,"접근 권한이 없습니다."),
+    INVALID_JWT_TOKEN("", HttpStatus.UNAUTHORIZED,"유효하지 않은 토큰입니다."),
 
     CHANNEL_NOT_FOUND("CH001", HttpStatus.NOT_FOUND, "채널을 조회할 수 없습니다."),
     PRIVATE_CHANNEL_UPDATE("CH002", HttpStatus.BAD_REQUEST, "비공개 채널은 수정할 수 없습니다."),

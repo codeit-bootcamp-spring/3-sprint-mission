@@ -2,18 +2,21 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.auth.service.AuthService;
 import com.sprint.mission.discodeit.controller.api.AuthApi;
+import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
-import com.sprint.mission.discodeit.service.UserService;
-import jakarta.validation.Valid;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController implements AuthApi {
 
     private final AuthService authService;
-    private final UserService userService;
+    private final UserMapper userMapper;
 
     /**
      * CSRF 토큰 발급 API
@@ -41,35 +44,45 @@ public class AuthController implements AuthApi {
     @GetMapping("csrf-token")
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
         String tokenValue = csrfToken.getToken();
-        log.debug("CSRF 토큰 요청: {}", tokenValue);
+        log.info("CSRF 토큰 요청: {}", tokenValue);
 
         return ResponseEntity.noContent().build();
     }
 
     /**
-     * 현재 로그인된 사용자 정보 조회 API
+     * 리프레시 토큰으로 액세스 토큰 재발급
      * <p>
-     * 세션을 활용한 현재 사용자 정보 조회
+     * 리프레시 토큰을 사용해 액세스 토큰을 재발급하는 API.
+     * 리프레시 토큰은 쿠키에 저장되어 있으며, 이를 통해 액세스 토큰을 재발급한다.
      *
-     * @param userDetails 인증된 사용자 정보
-     * @return 사용자 정보 DTO
+     * @param refreshToken 리프레시 토큰
+     * @param response HTTP 응답 객체
+     * @return 재발급된 액세스 토큰
      */
-    @Override
-    @GetMapping("/me")
-    public ResponseEntity<UserDto> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
-            log.error("인증된 사용자가 아닙니다. (인증 정보 null)");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
+    @PostMapping("/refresh")
+    public ResponseEntity<JwtDto> refreshToken(
+        @CookieValue(
+            name = JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME,
+            required = false
+        )
+        String refreshToken,
+        HttpServletResponse response
+    ) {
+        log.info("[AuthController] 리프레시 토큰 재발급 요청");
 
-        UserDto userDto = authService.getCurrentUserInfo(userDetails);
-        return ResponseEntity.ok(userDto);
+        JwtDto jwtDto = authService.refreshToken(refreshToken, response);
+
+        return ResponseEntity.ok(jwtDto);
     }
 
-    @PutMapping("/role")
-    public ResponseEntity<UserDto> updateUserRole (@Valid @RequestBody RoleUpdateRequest roleUpdateRequest, @AuthenticationPrincipal UserDetails userDetails) {
-        UserDto userDto = userService.updateUserRole(roleUpdateRequest);
+    @PutMapping("role")
+    public ResponseEntity<UserDto> updateRole(@RequestBody RoleUpdateRequest request) {
+        log.info("[AuthController] 사용자 권한 수정 요청");
+        User user = authService.updateRole(request);
+        UserDto userDto = userMapper.toDto(user);
 
-        return ResponseEntity.ok(userDto);
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(userDto);
     }
 }

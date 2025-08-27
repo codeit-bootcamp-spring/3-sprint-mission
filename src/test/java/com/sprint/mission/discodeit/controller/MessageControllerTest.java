@@ -22,6 +22,7 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.time.Instant;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
@@ -48,16 +50,20 @@ import org.springframework.test.web.servlet.MockMvc;
     )
 )
 @WithMockUser
+@AutoConfigureMockMvc(addFilters = false)
 @DisplayName("MessageController 슬라이스 테스트")
 public class MessageControllerTest {
 
     @Autowired
-     MockMvc mockMvc;
+    MockMvc mockMvc;
     @Autowired
     ObjectMapper objectMapper;
 
     @MockitoBean
     MessageService messageService;
+
+    @MockitoBean
+    JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Test
     @DisplayName("메시지 생성 API")
