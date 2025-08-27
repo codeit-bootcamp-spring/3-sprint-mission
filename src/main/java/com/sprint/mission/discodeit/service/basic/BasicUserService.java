@@ -26,6 +26,9 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -50,6 +53,7 @@ public class BasicUserService implements UserService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     @Transactional
     public UserResponseDto create(UserRequestDto userRequestDto,
         BinaryContentDto binaryContentDto) {
@@ -115,6 +119,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Cacheable(value = "users")
     public List<UserResponseDto> findAll() {
         List<UserResponseDto> users = userRepository.findAll().stream()
             .map(userMapper::toDto)
@@ -125,6 +130,7 @@ public class BasicUserService implements UserService {
 
     @Override
     @PreAuthorize("#id == authentication.principal.id")
+    @CachePut(value = "users", key = "#id")
     @Transactional
     public UserResponseDto update(UUID id, UserUpdateDto userUpdateDto,
         BinaryContentDto binaryContentDto) {
@@ -208,6 +214,7 @@ public class BasicUserService implements UserService {
 
     @Override
     @PreAuthorize("#id == authentication.principal.id")
+    @CacheEvict(value = "users", allEntries = true)
     @Transactional
     public void deleteById(UUID id) {
         log.info("[BasicUserService] 사용자 삭제 요청: id: {}", id);
@@ -227,6 +234,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @CachePut(value = "users", key = "#request.userId()")
     @Transactional
     public UserResponseDto updateRole(RoleUpdateRequest request) {
         User user = findUser(request.userId());

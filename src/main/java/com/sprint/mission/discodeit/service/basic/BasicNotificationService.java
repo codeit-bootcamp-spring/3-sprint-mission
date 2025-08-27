@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +30,7 @@ public class BasicNotificationService implements NotificationService {
     private final NotificationMapper notificationMapper;
 
     @Override
+    @Cacheable(value = "notificationsByUser", keyGenerator = "userIdKeyGenerator")
     public List<NotificationDto> getNotifications() {
         User user = getUser();
 
@@ -43,6 +46,7 @@ public class BasicNotificationService implements NotificationService {
     }
 
     @Override
+    @CacheEvict(value = "notificationsByUser", keyGenerator = "userIdKeyGenerator")
     public void checkNotifications(UUID notificationId) {
         User user = getUser();
 

@@ -63,6 +63,12 @@ dependencies {
     implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
     // Spring retry
     implementation 'org.springframework.retry:spring-retry'
+
+    // Spring Cache
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+
+    // caffeine cache
+    implementation 'com.github.ben-manes.caffeine:caffeine'
 }
 
 tasks.named('test') {

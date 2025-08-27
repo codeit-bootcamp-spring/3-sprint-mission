@@ -15,6 +15,9 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -31,6 +34,7 @@ public class NotificationRequiredEventListener {
     private final NotificationRepository notificationRepository;
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
+    private final CacheManager cacheManager;
     private static final String ROLE_UPDATE_TITLE = "권한이 변경되었습니다.";
     private static final String PRIVATE_CHANNEL_NAME = "개인 메시지";
     private static final String S3_UPLOAD_FAIL_TITLE = "S3 업로드 실패";
@@ -50,6 +54,17 @@ public class NotificationRequiredEventListener {
             channel.getId(), true
         );
 
+        // 캐시 무효화
+        Cache cache = cacheManager.getCache("notificationsByUser");
+        if (cache != null) {
+            readStatuses.stream()
+                .map(ReadStatus::getUser)
+                .map(User::getId)
+                .filter(userId -> !userId.equals(author.getId()))
+                .distinct()
+                .forEach(cache::evict);
+        }
+
         log.debug("[NotificationRequiredEventListener] 알림 수신 가능 사용자 수: {}", readStatuses.size());
 
         // 메시지를 보낸 사용자는 알림 대상에서 제외
@@ -64,6 +79,7 @@ public class NotificationRequiredEventListener {
     }
 
     @Async("notificationExecutor")
+    @CacheEvict(value = "notificationsByUser", key = "#event.user().id")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onRoleUpdated(RoleUpdatedEvent event) {
@@ -95,9 +111,20 @@ public class NotificationRequiredEventListener {
                 + "\n Error: "
                 + event.errorMessage();
 
-        List<Notification> notifications = userRepository.findByRole(Role.ADMIN).stream()
+        List<User> admins = userRepository.findByRole(Role.ADMIN);
+
+        List<Notification> notifications = admins.stream()
             .map(user -> new Notification(S3_UPLOAD_FAIL_TITLE, content, user))
             .toList();
+
+        // 캐시 무효화
+        Cache cache = cacheManager.getCache("notificationsByUser");
+        if (cache != null) {
+            admins.stream()
+                .map(User::getId)
+                .distinct()
+                .forEach(cache::evict);
+        }
 
         notificationRepository.saveAll(notifications);
 

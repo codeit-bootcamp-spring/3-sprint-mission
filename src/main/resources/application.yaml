@@ -1,10 +1,20 @@
+spring:
+  cache:
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
+
 management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, loggers
+        include: health, info, metrics, loggers, caches
   endpoint:
     info:
+      enabled: true
+    caches:
       enabled: true
     health:
       show-details: always
