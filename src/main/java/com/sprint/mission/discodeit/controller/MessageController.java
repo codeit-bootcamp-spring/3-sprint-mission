@@ -17,6 +17,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -114,6 +115,7 @@ public class MessageController implements MessageApi {
      * @param messageUpdateRequest 메시지 수정 요청 정보
      * @return 수정된 메시지 DTO
      */
+    @PreAuthorize("@basicMessageService.isMessageOwner(#messageId, authentication.principal.userDto.id)")
     @PatchMapping("/{messageId}")
     public ResponseEntity<MessageDto> update(
         @PathVariable UUID messageId,
@@ -137,6 +139,7 @@ public class MessageController implements MessageApi {
      * @param messageId 삭제할 메시지 ID
      * @return HTTP 204 No Content
      */
+    @PreAuthorize("@basicMessageService.isMessageOwner(#messageId, authentication.principal.userDto.id)")
     @DeleteMapping("/{messageId}")
     public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
         log.info(CONTROLLER_NAME + "메시지 삭제 시도: messageId={}", messageId);

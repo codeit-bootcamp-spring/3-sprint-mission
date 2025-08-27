@@ -14,10 +14,6 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "003_USER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "004_INVALID_PASSWORD", "비밀번호가 일치하지 않습니다."),
 
-    // UserStatus 도메인
-    USER_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "101_USER_STATUS_NOT_FOUND", "유저 상태 정보를 찾을 수 없습니다."),
-    DUPLICATED_USER_STATUS(HttpStatus.BAD_REQUEST, "102_DUPLICATED_USER_STATUS", "이미 등록된 유저 상태입니다."),
-
     // Channel 도메인
     CHANNEL_NOT_FOUND(HttpStatus.NOT_FOUND, "201_CHANNEL_NOT_FOUND", "채널을 찾을 수 없습니다."),
     DUPLICATED_CHANNEL(HttpStatus.BAD_REQUEST, "202_DUPLICATED_CHANNEL", "이미 존재하는 채널입니다."),

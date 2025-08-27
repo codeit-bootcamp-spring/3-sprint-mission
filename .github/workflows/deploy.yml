@@ -1,5 +1,5 @@
 # 프로덕션 배포용 워크플로우 이름
-name: Deploy to AWS ECS - discodeit
+name: Deploy to AWS ECS
 
 # 트리거 조건: release 브랜치에 푸쉬 시 자동 실행
 on:

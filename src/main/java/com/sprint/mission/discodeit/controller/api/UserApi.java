@@ -1,11 +1,8 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.request.userStatus.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.data.UserStatusDto;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -15,16 +12,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
-import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.UUID;
 
 @Tag(name = "User", description = "User API")
 public interface UserApi {
@@ -85,18 +79,4 @@ public interface UserApi {
         content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDto.class))))
     @GetMapping
     ResponseEntity<List<UserDto>> findAll();
-
-    // 유저 상태 정보 수정 요청
-    @Operation(summary = "User 온라인 상태 수정")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "User 상태 수정 성공",
-            content = @Content(schema = @Schema(implementation = UserStatus.class))),
-        @ApiResponse(responseCode = "404", description = "User 상태 정보 없음",
-            content = @Content(examples = @ExampleObject(value = "UserStatus with userId {userId} not found")))
-    })
-    @PatchMapping(path = "/{userId}/userStatus")
-    ResponseEntity<UserStatusDto> updateUserStatus(
-        @Parameter(description = "상태를 변경할 User iD") @PathVariable UUID userId,
-        @Parameter(description = "변경할 User 온라인 상태 정보") UserStatusUpdateRequest userStatusUpdateRequest
-    );
 }

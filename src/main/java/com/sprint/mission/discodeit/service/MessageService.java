@@ -26,4 +26,6 @@ public interface MessageService {
     MessageDto update(UUID messageId, MessageUpdateRequest request);
 
     void delete(UUID messageId);
+
+    boolean isMessageOwner(UUID messageId, UUID userId);
 }

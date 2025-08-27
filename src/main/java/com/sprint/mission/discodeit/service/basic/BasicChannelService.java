@@ -17,6 +17,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +51,7 @@ public class BasicChannelService implements ChannelService {
      * @return 생성된 채널
      */
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHANNEL_MANAGER')")
     @Transactional
     public ChannelDto create(PublicChannelCreateRequest request) {
         log.info(SERVICE_NAME + "공개 채널 생성 시도: {}", request);
@@ -163,6 +165,7 @@ public class BasicChannelService implements ChannelService {
      * @throws IllegalArgumentException 비공개 채널을 수정하려 할 경우
      */
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHANNEL_MANAGER')")
     @Transactional
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
         log.info(SERVICE_NAME + "채널 수정 요청: ID = {}", channelId);
@@ -194,6 +197,7 @@ public class BasicChannelService implements ChannelService {
      * @throws NoSuchElementException 채널이 존재하지 않을 경우
      */
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHANNEL_MANAGER')")
     @Transactional
     public void delete(UUID channelId) {
         log.info(SERVICE_NAME + "채널 삭제 시도: ID = {}", channelId);

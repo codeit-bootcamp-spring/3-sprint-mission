@@ -95,7 +95,6 @@ application-*.yml
 aws-credentials.txt
 .aws/
 credentials
-config
 
 ### Docker 관련 ###
 docker-compose.yml

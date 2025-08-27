@@ -78,6 +78,7 @@ public class BasicReadStatusService implements ReadStatusService {
      * @return 조회된 읽음 상태 DTO
      */
     @Override
+    @Transactional(readOnly = true)
     public ReadStatusDto find(UUID readStatusId) {
         log.info(SERVICE_NAME + "읽음 상태 조회 시도: id={}", readStatusId);
         return readStatusRepository.findById(readStatusId)
@@ -97,6 +98,7 @@ public class BasicReadStatusService implements ReadStatusService {
      * @return 읽음 상태 DTO 목록
      */
     @Override
+    @Transactional(readOnly = true)
     public List<ReadStatusDto> findAllByUserId(UUID userId) {
         log.info(SERVICE_NAME + "사용자 읽음 상태 목록 조회 시도: userId={}", userId);
         List<ReadStatusDto> result = readStatusRepository.findAllByUserId(userId).stream()

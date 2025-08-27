@@ -1,5 +1,5 @@
 # 프로덕션 테스트용 워크플로우 이름
-name: Run Tests to AWS ECS - discodeit
+name: Run Tests to AWS ECS
 
 on:
   pull_request:

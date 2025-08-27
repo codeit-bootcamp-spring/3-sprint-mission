@@ -1,35 +1,26 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.UserApi;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.request.userStatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * 사용자(User) 관련 HTTP 요청을 처리하는 컨트롤러입니다.
@@ -42,7 +33,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController implements UserApi {
 
     private final UserService userService;
-    private final UserStatusService userStatusService;
     private static final String CONTROLLER_NAME = "[UserController] ";
 
     /**
@@ -75,7 +65,7 @@ public class UserController implements UserApi {
         log.info(CONTROLLER_NAME + "신규 유저 생성 성공: userId={}", createdUser.id());
 
         return ResponseEntity
-            .status(HttpStatus.CREATED)
+            .status(HttpStatus.OK)
             .body(createdUser);
     }
 
@@ -109,6 +99,7 @@ public class UserController implements UserApi {
      * @param profile 프로필 이미지 파일(선택)
      * @return 수정된 유저 DTO
      */
+    @PreAuthorize("@basicUserService.isUserOwner(#userId, authentication.principal.userDto.id)")
     @PatchMapping(
         path = "/{userId}",
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE
@@ -137,6 +128,7 @@ public class UserController implements UserApi {
      * @param userId 삭제할 유저 ID
      * @return HTTP 204 No Content
      */
+    @PreAuthorize("@basicUserService.isUserOwner(#userId, authentication.principal.userDto.id)")
     @Parameter(name = "userId", description = "삭제할 User ID", required = true)
     @Override
     @DeleteMapping(path = "/{userId}")
@@ -164,23 +156,5 @@ public class UserController implements UserApi {
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(userDtoDataList);
-    }
-
-    /**
-     * 유저 상태 정보를 수정합니다.
-     * @param userId 상태를 수정할 유저 ID
-     * @param userStatusUpdateRequest 상태 수정 요청 정보
-     * @return 수정된 유저 상태 DTO
-     */
-    @PatchMapping(path = "/{userId}/userStatus")
-    @Override
-    public ResponseEntity<UserStatusDto> updateUserStatus(
-        @PathVariable UUID userId,
-        @Valid @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
-    ) {
-        log.info(CONTROLLER_NAME + "유저 상태 정보 수정 요청: userId={}", userId);
-        UserStatusDto updatedUserStatus = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
-        log.info(CONTROLLER_NAME + "유저 상태 정보 수정 성공: userId={}", userId);
-        return ResponseEntity.status(HttpStatus.OK).body(updatedUserStatus);
     }
 }

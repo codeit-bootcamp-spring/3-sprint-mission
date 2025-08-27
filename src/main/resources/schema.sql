@@ -19,12 +19,14 @@ WHERE
 -- 4. schema.sql 실행하여 테이블 생성
 CREATE SCHEMA IF NOT EXISTS discodeit;
 
+GRANT USAGE ON SCHEMA discodeit TO discodeit_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA discodeit TO discodeit_user;
+
 ALTER ROLE discodeit_user SET search_path TO discodeit;
 
 DROP TABLE IF EXISTS tbl_users CASCADE;
 DROP TABLE IF EXISTS tbl_channels CASCADE;
 DROP TABLE IF EXISTS tbl_binary_contents CASCADE;
-DROP TABLE IF EXISTS tbl_user_statuses CASCADE;
 DROP TABLE IF EXISTS tbl_read_statuses CASCADE;
 DROP TABLE IF EXISTS tbl_messages CASCADE;
 DROP TABLE IF EXISTS tbl_message_attachments CASCADE;
@@ -45,15 +47,14 @@ ALTER TABLE discodeit.tbl_binary_contents
 
 CREATE TABLE IF NOT EXISTS tbl_users
 (
-    -- column level constraints
-    id         UUID PRIMARY KEY, --> tbl_user_statuses user_id, tbl_messages author_id
+    id         UUID PRIMARY KEY, --> tbl_messages author_id
     created_at TIMESTAMP WITH TIME ZONE  NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE,
     username   VARCHAR(50)  NOT NULL UNIQUE,
     email      VARCHAR(100) NOT NULL UNIQUE,
     password   VARCHAR(60)  NOT NULL,
     profile_id UUID,
-    -- table level constraints
+    role VARCHAR(20) NOT NULL,
     CONSTRAINT fk_profile_id FOREIGN KEY (profile_id) REFERENCES tbl_binary_contents (id) ON DELETE SET NULL
 );
 
@@ -63,23 +64,6 @@ CREATE TABLE IF NOT EXISTS tbl_users
 --         FOREIGN KEY (profile_id)
 --             REFERENCES tbl_binary_contents (id)
 --             ON DELETE SET NULL;
-
-CREATE TABLE IF NOT EXISTS discodeit.tbl_user_statuses
-(
-    id             UUID PRIMARY KEY,
-    created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at     TIMESTAMP WITH TIME ZONE,
-    user_id        UUID UNIQUE NOT NULL,
-    last_active_at TIMESTAMP WITH TIME ZONE,
-    CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES tbl_users (id) ON DELETE CASCADE
-);
-
--- -- UserStatus (1) -> User (1)
--- ALTER TABLE tbl_user_statuses
---     ADD CONSTRAINT fk_user_id
---         FOREIGN KEY (user_id)
---             REFERENCES tbl_users (id)
---             ON DELETE CASCADE;
 
 CREATE TABLE IF NOT EXISTS discodeit.tbl_channels
 (
@@ -170,6 +154,3 @@ SELECT table_schema, table_name
 FROM information_schema.tables
 WHERE table_schema = 'discodeit'
   AND table_name = 'tbl_binary_contents';
-
-GRANT USAGE ON SCHEMA discodeit TO discodeit_user;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA discodeit TO discodeit_user;

@@ -4,13 +4,11 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit
-    username: discodeit_user
-    password: discodeit1234
-  boot:
-    admin:
-      client:
-        url: http://localhost:9090
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
   # JPA 설정
   jpa:
     hibernate:
@@ -21,9 +19,15 @@ spring:
       hibernate:
         format_sql: true
 
+discodeit:
+  storage:
+    type: local
+
 logging:
   level:
     com.sprint.mission.discodeit: debug
+    org.springframework.security: debug
+    org.springframework.web: debug
     # Hibernate 설정은 공통에 선언되어 유지됨 (SQL: debug, bind: trace)
 
 management:
