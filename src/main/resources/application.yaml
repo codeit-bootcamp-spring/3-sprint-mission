@@ -82,6 +82,9 @@ management:
     web:
       exposure:
         include: health,info,metrics,loggers
+  observations:
+    annotations:
+      enabled: true
 
 server:
   servlet:
