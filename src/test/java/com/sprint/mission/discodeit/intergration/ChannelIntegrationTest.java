@@ -14,11 +14,8 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.hamcrest.Matchers;
@@ -51,9 +48,6 @@ public class ChannelIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private UserStatusRepository userStatusRepository;
 
     @Test
     @Transactional
@@ -97,8 +91,6 @@ public class ChannelIntegrationTest {
         // Given
         User user1 = userRepository.save(new User("테스트맨1","test1@test.com","1111",null));
         User user2 = userRepository.save(new User("테스트맨2","test2@test.com","2222",null));
-        UserStatus userStatus1 = userStatusRepository.save(new UserStatus(user1, Instant.now()));
-        UserStatus userStatus2 = userStatusRepository.save(new UserStatus(user2, Instant.now()));
         PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(
             List.of(user1.getId(),user2.getId()));
 

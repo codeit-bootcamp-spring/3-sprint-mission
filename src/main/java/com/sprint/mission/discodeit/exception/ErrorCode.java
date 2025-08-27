@@ -21,6 +21,9 @@ public enum ErrorCode {
 
     /* Auth 관련 에러 */
     INVALID_PASSWORD("잘못된 비밀번호입니다."),
+    INVAILD_TOKEN("유효하지 않은 토큰입니다."),
+    EXPIRED_TOKEN("만료된 토큰입니다."),
+    INVAILD_REFRESH_TOKEN("유효하지 않은 리프레시 토큰입니다."),
 
     /* BinaryContent 관련 에러 */
     BINARYCONTENT_NOT_FOUND("파일을 찾을 수 없습니다."),

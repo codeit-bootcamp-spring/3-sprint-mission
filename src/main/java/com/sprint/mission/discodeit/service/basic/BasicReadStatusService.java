@@ -66,6 +66,7 @@ public class BasicReadStatusService implements ReadStatusService {
     return readStatusMapper.toDto(readStatus);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public ReadStatusDto find(UUID readStatusId) {
     log.info("[읽음 정보 조회 시도] 읽음 정보 ID : {}", readStatusId);
@@ -78,6 +79,7 @@ public class BasicReadStatusService implements ReadStatusService {
         });
   }
 
+  @Transactional(readOnly = true)
   @Override
   public List<ReadStatusDto> findAllByUserId(UUID userId) {
     log.info("[유저의 모든 읽음 정보 조회 시도] 읽음 정보 ID : {}", userId);

@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -60,8 +61,10 @@ public class ChannelControllerTest {
     void createChannelSuccess() throws Exception {
         // Given
         UUID channelId = UUID.randomUUID();
-        UserDto user1 = new UserDto(UUID.randomUUID(),"김현기","test1@test.com",null, true);
-        UserDto user2 = new UserDto(UUID.randomUUID(),"testUser","tset2@test.com",null, true);
+        UserDto user1 = new UserDto(UUID.randomUUID(),"김현기","test1@test.com",Role.USER
+            , null,true);
+        UserDto user2 = new UserDto(UUID.randomUUID(),"testUser","tset2@test.com", Role.USER
+            , null,true);
         when(channelService.create(any(PrivateChannelCreateRequest.class)))
             .thenReturn(
                 new ChannelDto(

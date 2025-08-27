@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -42,9 +44,26 @@ public class BinaryContentController implements BinaryContentApi {
   }
 
   @GetMapping(path = "{binaryContentId}/download")
-  public ResponseEntity<?> download(
+  public ResponseEntity<byte[]> download(
       @PathVariable("binaryContentId") UUID binaryContentId) {
+
     BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
-    return binaryContentStorage.download(binaryContentDto);
+
+    // 기존 방식: return binaryContentStorage.download(binaryContentDto);
+    // 새로운 방식: 바이너리 데이터를 직접 반환
+    try (InputStream inputStream = binaryContentStorage.get(binaryContentId)) {
+      byte[] data = inputStream.readAllBytes();
+
+      return ResponseEntity.ok()
+          .header("Content-Type", binaryContentDto.contentType())
+          .header("Content-Length", String.valueOf(data.length))
+          .header("Content-Disposition", "inline; filename=\"" + binaryContentDto.fileName() + "\"")
+          // CORS 헤더 추가 (필요시)
+          .header("Access-Control-Allow-Origin", "*")
+          .body(data);
+
+    } catch (IOException e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
   }
 }

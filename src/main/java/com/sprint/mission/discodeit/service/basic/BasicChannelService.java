@@ -23,6 +23,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +39,7 @@ public class BasicChannelService implements ChannelService {
   private final ChannelMapper channelMapper;
 
   @Transactional
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Override
   public ChannelDto create(PublicChannelCreateRequest request) {
     String name = request.name();
@@ -58,6 +60,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Transactional
+  @PreAuthorize("hasRole('USER')")
   @Override
   public ChannelDto create(PrivateChannelCreateRequest request) {
     List<UUID> participantIds = request.participantIds();
@@ -89,6 +92,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Transactional(readOnly = true)
+  @PreAuthorize("hasRole('USER')")
   @Override
   public ChannelDto find(UUID channelId) {
     log.info("[채널 조회 시도] 읽음 상태 ID : {} ", channelId);
@@ -102,6 +106,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Transactional(readOnly = true)
+  @PreAuthorize("hasRole('USER')")
   @Override
   public List<ChannelDto> findAllByUserId(UUID userId) {
     log.info("[유저가 참여한 모든 채널 조회 시도] 유저 ID : {} ", userId);
@@ -119,6 +124,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Transactional
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Override
   public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
     String newName = request.newName();
@@ -143,6 +149,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Transactional
+  @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Override
   public void delete(UUID channelId) {
     log.info("[채널 삭제 시도] 채널 ID : {} ", channelId);

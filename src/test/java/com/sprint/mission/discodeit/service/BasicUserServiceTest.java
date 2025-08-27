@@ -11,14 +11,13 @@ import static org.mockito.Mockito.never;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserEmailAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNameAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import java.time.Instant;
 import java.util.Optional;
@@ -30,7 +29,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.ActiveProfiles;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserService 단위 테스트")
@@ -42,9 +40,6 @@ public class BasicUserServiceTest {
     @Mock
     private UserMapper userMapper;
 
-    @Mock
-    private UserStatusRepository userStatusRepository;
-
     @InjectMocks
     private BasicUserService userService;
 
@@ -55,12 +50,11 @@ public class BasicUserServiceTest {
         // Given
         UserCreateRequest userCreateRequest = new UserCreateRequest("KHG", "KHG@test.com", "009874");
         User user = new User(userCreateRequest.username(), userCreateRequest.email(), userCreateRequest.password(), null);
-        UserDto userDto = new UserDto(user.getId(), user.getUsername(), user.getEmail(), null, true);
-        UserStatus userStatus = new UserStatus(user, Instant.now());
+        UserDto userDto = new UserDto(user.getId(), user.getUsername(), user.getEmail(), Role.USER
+            , null,true);
         given(userRepository.existsByUsername(userCreateRequest.username())).willReturn(false);
         given(userRepository.existsByEmail(userCreateRequest.email())).willReturn(false);
         given(userRepository.save(any(User.class))).willReturn(user);
-        given(userStatusRepository.save(any(UserStatus.class))).willReturn(userStatus);
         given(userMapper.toDto(any(User.class))).willReturn(userDto);
 
         // When
@@ -95,7 +89,8 @@ public class BasicUserServiceTest {
         // Given
         UUID userId = UUID.randomUUID();
         User user = new User("KHG", "KHG@test.com", "009874", null);
-        UserDto expectedDto = new UserDto(userId, "KHG", "KHG@test.com", null, true);
+        UserDto expectedDto = new UserDto(userId, "KHG", "KHG@test.com", Role.USER
+            , null, true);
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(userMapper.toDto(user)).willReturn(expectedDto);
 
@@ -130,7 +125,8 @@ public class BasicUserServiceTest {
         UUID userId = UUID.randomUUID();
         User existingUser = new User("test", "test@test.com","9874",null);
         UserUpdateRequest userUpdateRequest = new UserUpdateRequest("KHG","KHG@test.com","009874");
-        UserDto expectedDto = new UserDto(userId, userUpdateRequest.newUsername(), userUpdateRequest.newEmail(), null, true);
+        UserDto expectedDto = new UserDto(userId, userUpdateRequest.newUsername(), userUpdateRequest.newEmail(), Role.USER
+            , null, true);
         given(userRepository.findById(userId)).willReturn(Optional.of(existingUser));
         given(userRepository.existsByUsername(userUpdateRequest.newUsername())).willReturn(false);
         given(userMapper.toDto(existingUser)).willReturn(expectedDto);

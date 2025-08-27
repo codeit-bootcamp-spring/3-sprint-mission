@@ -10,7 +10,6 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.List;
@@ -41,8 +40,6 @@ public class MessageRepositoryTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private UserStatusRepository userStatusRepository;
 
     @Autowired
     private ChannelRepository channelRepository;
@@ -60,7 +57,6 @@ public class MessageRepositoryTest {
         User user = userRepository.save(
             new User("김현기","test@test.com","009874", profile)
         );
-        userStatusRepository.save(new UserStatus(user, Instant.now()));
         Channel channel = channelRepository.save(new Channel(ChannelType.PUBLIC,"testPublicChannel",null));
         Message message1 = new Message("testMessage1", channel, user, null);
         Message message2 = new Message("testMessage2", channel, user, null);
@@ -86,7 +82,6 @@ public class MessageRepositoryTest {
         for (Message message : result.getContent() ) {
             assertNotNull(message.getAuthor());
             assertNotNull(message.getAuthor().getProfile());
-            assertNotNull(message.getAuthor().getStatus());
         }
     }
 
@@ -97,7 +92,6 @@ public class MessageRepositoryTest {
         User user = userRepository.save(
             new User("김현기","test@test.com","009874", null)
         );
-        userStatusRepository.save(new UserStatus(user, Instant.now()));
         Channel channel = channelRepository.save(new Channel(ChannelType.PUBLIC,"testPublicChannel",null));
         Message message = new Message("testMessage1", channel, user, null);
         Pageable pageable = PageRequest.of(0, 10);
@@ -119,7 +113,6 @@ public class MessageRepositoryTest {
         // Given
         Channel channel = channelRepository.save(new Channel(ChannelType.PUBLIC,"testPublicChannel",null));
         User user = userRepository.save(new User("김현기","test@test.com","009874", null));
-        userStatusRepository.save(new UserStatus(user, Instant.now()));
 
         Message message1 = new Message("testMessage1", channel, user, null);
         Message message2 = new Message("testMessage2", channel, user, null);

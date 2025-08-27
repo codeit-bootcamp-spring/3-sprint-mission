@@ -16,6 +16,7 @@ logging: # dev는 개발 시 디버깅을 위해 성세한 로그 출력
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
     com.sprint.mission.discodeit: debug
+    org.springframework.security: trace
 
 management:
   endpoints:

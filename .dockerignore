@@ -13,7 +13,8 @@ out
 .git
 .gitignore
 
-
 out
 *.iws
 *.ipr
+.env
+*.iml

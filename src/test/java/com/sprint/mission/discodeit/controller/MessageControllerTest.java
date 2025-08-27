@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
@@ -65,7 +66,8 @@ public class MessageControllerTest {
         UUID channelId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
-        UserDto author = new UserDto(authorId, "김현기", "test@test.com", null, true);
+        UserDto author = new UserDto(authorId, "김현기", "test@test.com", Role.USER
+            , null,true);
         MessageDto response = new MessageDto(
             messageId,
             Instant.now(),

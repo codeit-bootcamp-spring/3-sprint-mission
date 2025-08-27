@@ -11,10 +11,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -39,8 +39,6 @@ public class UserControllerTest {
     @MockitoBean
     private UserService userService;
 
-    @MockitoBean
-    private UserStatusService userStatusService;
 
     @Test
     @DisplayName("POST /users - case : success")
@@ -48,7 +46,8 @@ public class UserControllerTest {
         // Given
         UUID userId = UUID.randomUUID();
         when(userService.create(any(UserCreateRequest.class),any()))
-            .thenReturn(new UserDto(userId,"김현기","test@test.com",null,true));
+            .thenReturn(new UserDto(userId,"김현기","test@test.com", Role.USER
+                ,null,true));
         MockMultipartFile userPart = new MockMultipartFile(
             "userCreateRequest",
             "",

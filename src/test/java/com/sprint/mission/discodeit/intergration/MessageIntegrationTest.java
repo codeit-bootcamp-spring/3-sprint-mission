@@ -15,12 +15,9 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import java.time.Instant;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,9 +51,6 @@ public class MessageIntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
-    private UserStatusRepository userStatusRepository;
-
-    @Autowired
     private MessageRepository messageRepository;
 
     @Test
@@ -66,7 +60,6 @@ public class MessageIntegrationTest {
         // Given
         User user = userRepository.save(new User("김현기","test@test.com","009874",null));
         Channel channel = channelRepository.save(new Channel(ChannelType.PUBLIC,"testChannel",null));
-        UserStatus userStatus = userStatusRepository.save(new UserStatus(user, Instant.now()));
         MessageCreateRequest request = new MessageCreateRequest("testMessage",channel.getId(),user.getId());
         MockMultipartFile jsonPart = new MockMultipartFile(
             "messageCreateRequest",
@@ -133,7 +126,6 @@ public class MessageIntegrationTest {
         // Given
         User user = userRepository.save(new User("김현기","test@test.com","009874",null));
         Channel channel = channelRepository.save(new Channel(ChannelType.PUBLIC,"testChannel",null));
-        UserStatus userStatus = userStatusRepository.save(new UserStatus(user, Instant.now()));
         Message message1 = messageRepository.save(new Message("test",channel,user,null));
         Message message2 = messageRepository.save(new Message("test2",channel,user,null));
 
@@ -159,7 +151,6 @@ public class MessageIntegrationTest {
         // Given
         User user = userRepository.save(new User("김현기","test@test.com","009874",null));
         Channel channel = channelRepository.save(new Channel(ChannelType.PUBLIC,"testChannel",null));
-        UserStatus userStatus = userStatusRepository.save(new UserStatus(user, Instant.now()));
         Message message = messageRepository.save(new Message("test",channel,user,null));
         MessageUpdateRequest request = new MessageUpdateRequest("Hello Test");
 
@@ -181,7 +172,6 @@ public class MessageIntegrationTest {
         // Given
         User user = userRepository.save(new User("김현기","test@test.com","009874",null));
         Channel channel = channelRepository.save(new Channel(ChannelType.PUBLIC,"testChannel",null));
-        UserStatus userStatus = userStatusRepository.save(new UserStatus(user, Instant.now()));
         Message message = messageRepository.save(new Message("test",channel,user,null));
 
         // When

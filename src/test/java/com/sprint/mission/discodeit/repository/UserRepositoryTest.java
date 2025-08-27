@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -28,9 +27,6 @@ public class UserRepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private UserStatusRepository userStatusRepository;
 
     @Autowired
     private BinaryContentRepository binaryContentRepository;
@@ -72,9 +68,6 @@ public class UserRepositoryTest {
             new BinaryContent("img001.jpg", (long) "이미지파일".getBytes().length, "image/jpg"));
             User user = new User("김현기","test@test.com","009874", profile);
             userRepository.save(user);
-            UserStatus userStatus = userStatusRepository.save(
-                new UserStatus(user, Instant.now()));
-            userStatusRepository.save(userStatus);
 
         // When
         List<User> users = userRepository.findAllWithProfileAndStatus();
@@ -83,9 +76,7 @@ public class UserRepositoryTest {
         assertEquals(1, users.size());
         User result = users.get(0);
         assertNotNull(result.getProfile());
-        assertNotNull(result.getStatus());
         assertEquals("img001.jpg",result.getProfile().getFileName());
-        assertEquals(userStatus, result.getStatus());
 
     }
 
@@ -95,8 +86,6 @@ public class UserRepositoryTest {
         // Given
         User user = new User("김현기", "test@test.com", "009874", null);
         userRepository.save(user);
-        UserStatus status = new UserStatus(user, Instant.now());
-        userStatusRepository.save(status);
 
         // When
         List<User> users = userRepository.findAllWithProfileAndStatus();
