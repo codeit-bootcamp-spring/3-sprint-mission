@@ -26,7 +26,6 @@ management:
     env:
       enabled: true
 
-
 # JWT 설정
 discodeit:
   jwt:
