@@ -2,11 +2,14 @@ package com.sprint.mission.discodeit.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.JwtDto;
+import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.jwt.registry.JwtRegistry;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -21,6 +24,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final ObjectMapper objectMapper;
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtRegistry jwtRegistry;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -40,6 +44,18 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
             Cookie refreshCookie = jwtTokenProvider.generateRefreshTokenCookie(refreshToken);
             response.addCookie(refreshCookie);
+
+            Instant accessExp  = jwtTokenProvider.getExpiration(accessToken);
+            Instant refreshExp = jwtTokenProvider.getExpiration(refreshToken);
+            JwtInformation info = new JwtInformation(
+                userDetails.getUserDto().id(),
+                accessToken,
+                refreshToken,
+                accessExp,
+                refreshExp,
+                "ROLE_" + userDetails.getUserDto().role().name()
+            );
+            jwtRegistry.registerJwtInformation(info);
 
             JwtDto body = new JwtDto(userDetails.getUserDto(), accessToken);
 
