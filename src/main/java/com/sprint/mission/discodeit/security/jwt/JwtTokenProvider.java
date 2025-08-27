@@ -92,6 +92,20 @@ public class JwtTokenProvider {
         }
     }
 
+    /** 토큰 만료시각(Instant) 추출 */
+    public Instant getExpiration(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            Date exp = signedJWT.getJWTClaimsSet().getExpirationTime();
+            if (exp == null) {
+                throw new IllegalArgumentException("만료 시각이 없는 토큰입니다.");
+            }
+            return exp.toInstant();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("만료시각 추출 실패", e);
+        }
+    }
+
     /** HttpOnly 쿠키(리프레시 토큰) 생성 */
     public Cookie generateRefreshTokenCookie(String refreshToken) {
         Cookie refreshCookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken);
@@ -173,4 +187,5 @@ public class JwtTokenProvider {
             return false;
         }
     }
+
 }
