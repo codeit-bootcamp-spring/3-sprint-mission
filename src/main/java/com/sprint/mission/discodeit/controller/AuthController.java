@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.jwt.registry.JwtRegistry;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,6 +35,7 @@ public class AuthController implements AuthApi {
   private final UserService userService;
   private final JwtTokenProvider jwtTokenProvider;
   private final UserDetailsService userDetailsService;
+  private final JwtRegistry jwtRegistry;
 
   @GetMapping("csrf-token")
   public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
@@ -88,6 +90,8 @@ public class AuthController implements AuthApi {
   public ResponseEntity<UserDto> updateRole(@RequestBody RoleUpdateRequest request) {
     log.info("권한 수정 요청");
     UserDto userDto = authService.updateRole(request);
+
+    jwtRegistry.invalidateJwtInformationByUserId(userDto.id());
 
     return ResponseEntity
         .status(HttpStatus.OK)
