@@ -1,7 +1,12 @@
-package com.sprint.mission.discodeit.event;
+package com.sprint.mission.discodeit.event.listener;
 
 import com.sprint.mission.discodeit.entity.Notification;
+import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.event.BinaryContentUploadFailedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +24,22 @@ public class NotificationRequiredEventListener {
 
   private final ReadStatusRepository readStatusRepository;
   private final NotificationService notificationService;
+  private final UserRepository userRepository;
+
+  @Async("taskExecutor")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void on(BinaryContentUploadFailedEvent event) {
+    userRepository.findAllByRole(Role.ADMIN)
+        .forEach(admin -> {
+          String body = "RequestId: " + event.requestId()
+              + "\nBinaryContentId: " + event.binaryContentId()
+              + "\nError: " + event.errorMessage();
+          notificationService.create(admin, "BinaryContent 저장 실패", body);
+          log.warn("[Notification created] BinaryContent 저장 실패 알림 전송: {} (receiver: {})", body,
+              admin.getEmail());
+        });
+  }
 
   @Async("taskExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

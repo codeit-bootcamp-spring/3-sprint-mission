@@ -61,7 +61,7 @@ class S3BinaryContentStorageTest {
   void setUp() {
     // 테스트용 생성자로 Mock 객체들을 주입
     storage = new S3BinaryContentStorage(testAccessKey, testSecretKey, testRegion, testBucket,
-        testExpiration, s3Client, s3Presigner);
+        testExpiration, s3Client, s3Presigner, null);
   }
 
   @Test

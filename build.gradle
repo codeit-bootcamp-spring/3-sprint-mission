@@ -36,6 +36,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
+    // Async
+    implementation 'org.springframework.retry:spring-retry'
+
     // JWT
     implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
 
