@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
@@ -66,7 +67,7 @@ class UserControllerTest {
         UserRequestDto request = new UserRequestDto("test", "test@test.com", "pwd1234");
         BinaryContentResponseDto profileImage = new BinaryContentResponseDto(UUID.randomUUID(),
             "profile.png", 3L,
-            "image/png");
+            "image/png", BinaryContentStatus.SUCCESS);
 
         UserResponseDto expectedResponse = new UserResponseDto(userId, "test", "test@test.com",
             profileImage, null, Role.USER);

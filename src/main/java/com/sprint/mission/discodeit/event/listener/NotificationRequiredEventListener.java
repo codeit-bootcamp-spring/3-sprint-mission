@@ -8,11 +8,14 @@ import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -27,8 +30,10 @@ public class NotificationRequiredEventListener {
 
     private final NotificationRepository notificationRepository;
     private final ReadStatusRepository readStatusRepository;
+    private final UserRepository userRepository;
     private static final String ROLE_UPDATE_TITLE = "권한이 변경되었습니다.";
     private static final String PRIVATE_CHANNEL_NAME = "개인 메시지";
+    private static final String S3_UPLOAD_FAIL_TITLE = "S3 업로드 실패";
 
     @Async("notificationExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -79,6 +84,25 @@ public class NotificationRequiredEventListener {
 
         log.debug("[NotificationRequiredEventListener] 권한 변경 알림 생성 완료- id: {}",
             savedNotification.getId());
+    }
+
+    @Async("notificationExecutor")
+    @EventListener
+    public void onS3UploadFailed(S3UploadFailedEvent event) {
+
+        String content =
+            "Request Id: " + event.requestId() + "\n BinaryContentId: " + event.binaryContentId()
+                + "\n Error: "
+                + event.errorMessage();
+
+        List<Notification> notifications = userRepository.findByRole(Role.ADMIN).stream()
+            .map(user -> new Notification(S3_UPLOAD_FAIL_TITLE, content, user))
+            .toList();
+
+        notificationRepository.saveAll(notifications);
+
+        log.debug("[NotificationRequiredEventListener] S3 업로드 실패 알림 전송 완료- {}개",
+            notifications.size());
     }
 
     private String getTitle(User author, Channel channel) {

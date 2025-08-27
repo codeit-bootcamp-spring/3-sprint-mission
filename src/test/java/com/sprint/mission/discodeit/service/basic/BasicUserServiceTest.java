@@ -15,8 +15,9 @@ import com.sprint.mission.discodeit.dto.user.UserRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
@@ -93,7 +94,7 @@ class BasicUserServiceTest {
 
         BinaryContentResponseDto profile = new BinaryContentResponseDto(profileId, "profile.png",
             3L,
-            "image/png");
+            "image/png", BinaryContentStatus.SUCCESS);
 
         UserResponseDto response = new UserResponseDto(userId, username, email, profile, null,
             Role.USER);
