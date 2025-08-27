@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.data.JwtDto;
+import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
@@ -32,7 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController implements AuthApi {
 
   private final AuthService authService;
-  private final UserService userService;
   private final JwtTokenProvider jwtTokenProvider;
   private final UserDetailsService userDetailsService;
   private final JwtRegistry jwtRegistry;
@@ -53,8 +53,10 @@ public class AuthController implements AuthApi {
   ) {
     log.info("토큰 리프레시 요청");
 
-    if (refreshToken == null || !jwtTokenProvider.validateRefreshToken(refreshToken)) {
-      log.warn("유효하지 않은 리프레시 토큰");
+    if (refreshToken == null
+        || !jwtTokenProvider.validateRefreshToken(refreshToken)
+        || !jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
+      log.warn("유효하지 않은 리프레시 토큰(쿠키 누락/서명 불일치/레지스트리 미등록/만료)");
       ErrorResponse body = new ErrorResponse(
           new RuntimeException("유효하지 않은 리프레시 토큰입니다."),
           HttpStatus.UNAUTHORIZED.value()
@@ -70,12 +72,33 @@ public class AuthController implements AuthApi {
       String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails);
       String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
 
-      // 회전: 새 리프레시 토큰으로 쿠키 교체
+      // 레지스트리 회전(rotation)
+      JwtInformation newInfo = new JwtInformation(
+          userDetails.getUserDto().id(),
+          newAccessToken,
+          newRefreshToken,
+          jwtTokenProvider.getExpiration(newAccessToken),
+          jwtTokenProvider.getExpiration(newRefreshToken),
+          "ROLE_" + userDetails.getUserDto().role().name()
+      );
+      boolean rotated = jwtRegistry.rotateJwtInformation(refreshToken, newInfo);
+      if (!rotated) {
+        log.warn("리프레시 토큰 회전 실패(이미 무효화되었거나 사용자 불일치)");
+        ErrorResponse body = new ErrorResponse(
+            new RuntimeException("유효하지 않은 리프레시 토큰입니다."),
+            HttpStatus.UNAUTHORIZED.value()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+      }
+
+      // 새 리프레시 쿠키 교체
       var refreshCookie = jwtTokenProvider.generateRefreshTokenCookie(newRefreshToken);
       response.addCookie(refreshCookie);
 
+      // 응답: 새 accessToken 본문
       JwtDto body = new JwtDto(userDetails.getUserDto(), newAccessToken);
       return ResponseEntity.ok(body);
+
     } catch (Exception e) {
       log.error("토큰 재발급 중 오류: {}", e.getMessage(), e);
       ErrorResponse body = new ErrorResponse(
