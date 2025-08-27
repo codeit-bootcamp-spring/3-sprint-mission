@@ -38,8 +38,22 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * AWS S3를 활용하여 바이너리 콘텐츠를 저장/조회/다운로드하는 저장소 구현체.
- * Spring Retry를 활용한 안정적인 업로드 및 다운로드를 제공한다.
+ * AWS S3를 활용하여 바이너리 콘텐츠를 저장/조회/다운로드하는 저장소 구현체입니다.
+ * 
+ * <p>Spring Retry를 활용한 안정적인 업로드 및 다운로드를 제공하며,
+ * S3 Presigned URL을 통한 안전한 파일 다운로드를 지원합니다.</p>
+ * 
+ * <p>주요 특징:</p>
+ * <ul>
+ *   <li>AWS S3 기반 파일 저장 및 관리</li>
+ *   <li>Spring Retry를 통한 자동 재시도</li>
+ *   <li>Presigned URL을 통한 안전한 다운로드</li>
+ *   <li>이벤트 기반 오류 처리</li>
+ *   <li>조건부 빈 등록 (S3 스토리지 타입일 때만)</li>
+ * </ul>
+ * 
+ * @author HuInDoL
+ * @since 1.0.0
  */
 @Slf4j
 @Component

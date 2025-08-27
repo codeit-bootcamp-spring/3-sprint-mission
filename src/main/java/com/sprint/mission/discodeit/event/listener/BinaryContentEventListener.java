@@ -16,6 +16,23 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.UUID;
 
+/**
+ * 바이너리 콘텐츠 관련 이벤트를 처리하는 리스너 클래스입니다.
+ * 
+ * <p>BinaryContentCreatedEvent를 수신하여 실제 파일 데이터를 스토리지에 저장하고,
+ * 처리 상태를 업데이트합니다.</p>
+ * 
+ * <p>주요 특징:</p>
+ * <ul>
+ *   <li>비동기 처리로 성능 최적화</li>
+ *   <li>트랜잭션 완료 후 이벤트 처리</li>
+ *   <li>파일 저장 실패 시 상태 관리</li>
+ *   <li>파일 전용 스레드 풀 사용</li>
+ * </ul>
+ * 
+ * @author HuInDoL
+ * @since 1.0.0
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -26,6 +43,14 @@ public class BinaryContentEventListener {
     private final BinaryContentStorage binaryContentStorage;
     private final BinaryContentService binaryContentService;
 
+    /**
+     * 바이너리 콘텐츠 생성 이벤트를 처리합니다.
+     * 
+     * <p>트랜잭션이 커밋된 후 비동기적으로 실행되며, 실제 파일 데이터를
+     * 스토리지에 저장하고 처리 상태를 업데이트합니다.</p>
+     * 
+     * @param event 바이너리 콘텐츠 생성 이벤트
+     */
     @Async("fileTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

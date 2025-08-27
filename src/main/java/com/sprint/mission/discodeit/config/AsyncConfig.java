@@ -16,6 +16,23 @@ import java.util.Arrays;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
+/**
+ * 비동기 작업을 위한 스레드 풀 설정을 담당하는 클래스입니다.
+ * 
+ * <p>메인 작업, 파일 처리, 알림 전송을 위한 별도의 스레드 풀을 구성하여
+ * 각 작업 유형별로 최적화된 비동기 처리를 지원합니다.</p>
+ * 
+ * <p>주요 기능:</p>
+ * <ul>
+ *   <li>메인 작업용 스레드 풀 (mainTaskExecutor)</li>
+ *   <li>파일 처리용 스레드 풀 (fileTaskExecutor)</li>
+ *   <li>알림 전송용 스레드 풀 (notificationTaskExecutor)</li>
+ *   <li>비동기 예외 처리 및 로깅</li>
+ * </ul>
+ * 
+ * @author HuInDoL
+ * @since 1.0.0
+ */
 @Configuration
 @EnableAsync
 @EnableRetry
@@ -28,6 +45,17 @@ public class AsyncConfig implements AsyncConfigurer {
     private static final int DEFAULT_QUEUE_CAPACITY = 100;
     private static final int DEFAULT_KEEP_ALIVE_SECONDS = 60;
 
+    /**
+     * 스레드 풀 실행자를 생성하는 공통 메소드입니다.
+     * 
+     * @param core 코어 스레드 수
+     * @param max 최대 스레드 수
+     * @param queue 큐 용량
+     * @param keepAlive 유휴 스레드 유지 시간 (초)
+     * @param prefix 스레드 이름 접두사
+     * @return 구성된 ThreadPoolTaskExecutor
+     * @throws IllegalArgumentException 잘못된 설정값이 제공된 경우
+     */
     private ThreadPoolTaskExecutor buildExecutor(int core, int max, int queue, int keepAlive, String prefix) {
 
         if (core <= 0 || max <= 0 || queue < 0 || keepAlive < 0) {
@@ -53,11 +81,25 @@ public class AsyncConfig implements AsyncConfigurer {
         return executor;
     }
 
+    /**
+     * 기본 비동기 실행자를 반환합니다.
+     * 
+     * @return 메인 작업용 스레드 풀 실행자
+     */
     @Override
     public Executor getAsyncExecutor() {
         return mainTaskExecutor(4, 8, 200, 60);
     }
 
+    /**
+     * 메인 작업을 위한 스레드 풀 실행자를 생성합니다.
+     * 
+     * @param core 코어 스레드 수 (기본값: 2)
+     * @param max 최대 스레드 수 (기본값: 4)
+     * @param queue 큐 용량 (기본값: 100)
+     * @param keepAlive 유휴 스레드 유지 시간 (기본값: 60초)
+     * @return 메인 작업용 ThreadPoolTaskExecutor
+     */
     @Bean(name = "mainTaskExecutor")
     public ThreadPoolTaskExecutor mainTaskExecutor(
             @Value("${async.executors.main.core-size:" + DEFAULT_CORE_POOL_SIZE + "}") int core,
@@ -68,6 +110,15 @@ public class AsyncConfig implements AsyncConfigurer {
         return buildExecutor(core, max, queue, keepAlive, "main-exec");
     }
 
+    /**
+     * 파일 처리를 위한 스레드 풀 실행자를 생성합니다.
+     * 
+     * @param core 코어 스레드 수 (기본값: 2)
+     * @param max 최대 스레드 수 (기본값: 4)
+     * @param queue 큐 용량 (기본값: 100)
+     * @param keepAlive 유휴 스레드 유지 시간 (기본값: 60초)
+     * @return 파일 처리용 ThreadPoolTaskExecutor
+     */
     @Bean(name = "fileTaskExecutor")
     public ThreadPoolTaskExecutor fileTaskExecutor(
             @Value("${async.executors.file.core-size:" + DEFAULT_CORE_POOL_SIZE + "}") int core,
@@ -78,6 +129,15 @@ public class AsyncConfig implements AsyncConfigurer {
         return buildExecutor(core, max, queue, keepAlive, "file-exec");
     }
 
+    /**
+     * 알림 전송을 위한 스레드 풀 실행자를 생성합니다.
+     * 
+     * @param core 코어 스레드 수 (기본값: 2)
+     * @param max 최대 스레드 수 (기본값: 4)
+     * @param queue 큐 용량 (기본값: 100)
+     * @param keepAlive 유휴 스레드 유지 시간 (기본값: 60초)
+     * @return 알림 전송용 ThreadPoolTaskExecutor
+     */
     @Bean(name = "notificationTaskExecutor")
     public ThreadPoolTaskExecutor notificationTaskExecutor(
             @Value("${async.executors.notification.core-size:" + DEFAULT_CORE_POOL_SIZE + "}") int core,
@@ -88,13 +148,28 @@ public class AsyncConfig implements AsyncConfigurer {
         return buildExecutor(core, max, queue, keepAlive, "notify-exec");
     }
 
+    /**
+     * 비동기 작업에서 발생한 예외를 처리하는 핸들러를 반환합니다.
+     * 
+     * @return 로깅 기반 예외 처리 핸들러
+     */
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return new LoggingAsyncUncaughtExceptionHandler();
     }
 
+    /**
+     * 비동기 작업에서 발생한 예외를 로깅하는 내부 클래스입니다.
+     */
     private static class LoggingAsyncUncaughtExceptionHandler implements AsyncUncaughtExceptionHandler {
 
+        /**
+         * 처리되지 않은 비동기 예외를 로깅합니다.
+         * 
+         * @param ex 발생한 예외
+         * @param method 예외가 발생한 메소드
+         * @param params 메소드 호출 시 전달된 매개변수
+         */
         @Override
         public void handleUncaughtException(Throwable ex, Method method, Object... params) {
 

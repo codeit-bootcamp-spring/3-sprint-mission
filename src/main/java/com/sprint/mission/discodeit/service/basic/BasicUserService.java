@@ -14,7 +14,6 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.jwt.store.InMemoryJwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -30,7 +29,21 @@ import java.util.UUID;
 
 /**
  * 사용자(User) 관련 비즈니스 로직을 처리하는 서비스 클래스입니다.
- * <p>사용자 생성, 수정, 삭제, 조회 기능을 제공합니다.</p>
+ * 
+ * <p>사용자 생성, 수정, 삭제, 조회 기능을 제공하며, 프로필 이미지 관리와
+ * JWT 토큰 무효화 등의 보안 기능도 포함합니다.</p>
+ * 
+ * <p>주요 기능:</p>
+ * <ul>
+ *   <li>사용자 계정 생성 및 관리</li>
+ *   <li>프로필 이미지 업로드 및 관리</li>
+ *   <li>사용자 정보 수정 및 삭제</li>
+ *   <li>JWT 토큰 무효화</li>
+ *   <li>이벤트 기반 파일 처리</li>
+ * </ul>
+ * 
+ * @author HuInDoL
+ * @since 1.0.0
  */
 @Slf4j
 @RequiredArgsConstructor
