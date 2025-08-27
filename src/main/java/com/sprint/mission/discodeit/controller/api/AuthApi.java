@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.controller.api;
 
+import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
+import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -10,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.csrf.CsrfToken;
 
@@ -25,12 +28,26 @@ public interface AuthApi {
       @Parameter(hidden = true) CsrfToken csrfToken
   );
 
-  @Operation(summary = "세션 정보를 활용한 현재 사용자 정보 조회")
+  @Operation(
+      summary = "리프레시 토큰으로 엑세스 토큰 재발급",
+      description = "쿠키(REFRESH_TOKEN)가 유효한 경우 새로운 액세스 토큰을 발급하고, 리프레시 토큰을 회전(재발급)합니다."
+  )
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = UserDto.class))),
-      @ApiResponse(responseCode = "401", description = "올바르지 않은 세션")
+      @ApiResponse(
+          responseCode = "200",
+          description = "재발급 성공",
+          content = @Content(schema = @Schema(implementation = JwtDto.class))
+      ),
+      @ApiResponse(
+          responseCode = "401",
+          description = "유효하지 않은 리프레시 토큰",
+          content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+      )
   })
-  ResponseEntity<UserDto> me(@Parameter(hidden = true) DiscodeitUserDetails userDetails);
+  ResponseEntity<?> refresh(
+      @Parameter(hidden = true) String refreshToken,
+      @Parameter(hidden = true) HttpServletResponse response
+  );
 
   @Operation(summary = "사용자 권한 수정")
   @ApiResponses(value = {
