@@ -57,6 +57,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
     implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+
+    // https://mvnrepository.com/artifact/org.springframework.retry/spring-retry
+    implementation 'org.springframework.retry:spring-retry:2.0.12'
 }
 dependencyManagement {
     imports {
