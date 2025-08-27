@@ -28,10 +28,13 @@ management:
 
 
 # JWT 설정
-jwt:
-  access-token:
-    secret: lznY5nGVhmXR-KZXk48WD5QEeMO0Tij6POzxcfvb_8M
-    exp: 3600000        # 1시간
-  refresh-token:
-    secret: izr3kekviWOGmqh4V_6VKM76f0xIT3VOJtHL4kANwPo
-    exp: 1209600000       # 14일
+discodeit:
+  jwt:
+    access-token:
+      secret: lznY5nGVhmXR-KZXk48WD5QEeMO0Tij6POzxcfvb_8M
+      expiration-ms: 3600000       # 1시간
+    refresh-token:
+      secret: izr3kekviWOGmqh4V_6VKM76f0xIT3VOJtHL4kANwPo
+      expiration-ms: 1209600000    # 14일
+    registry:
+      max-active: 1

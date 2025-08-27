@@ -80,14 +80,16 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         JwtInformation old = refreshIndex.get(oldRefreshToken);
         if (old == null) return false;
         // 동일 사용자에 대해서만 회전 허용
-        origin.computeIfPresent(old.userId(), (uid, q) -> {
+        if (!old.userId().equals(newInfo.userId())) {
+            return false;
+        }
+        return origin.computeIfPresent(old.userId(), (uid, q) -> {
             q.remove(old);
             removeIndexes(old);
             q.add(newInfo);
             putIndexes(newInfo);
             return q;
-        });
-        return true;
+        }) != null;
     }
 
     @Override
@@ -102,11 +104,22 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     @Scheduled(fixedDelay = 1000 * 60 * 5)
     public void clearExpiredJwtInformation() {
         Instant now = Instant.now();
-        origin.forEach((uid, q) -> q.removeIf(info -> {
-            boolean expired = info.refreshTokenExpiresAt().isBefore(now);
-            if (expired) removeIndexes(info);
-            return expired;
-        }));
+        origin.entrySet().removeIf(entry -> {
+            UUID uid = entry.getKey();
+            Queue<JwtInformation> q = entry.getValue();
+
+            q.removeIf(info -> {
+                boolean expired = info.refreshTokenExpiresAt().isBefore(now);
+                if (expired) removeIndexes(info);
+                return expired;
+            });
+            boolean empty = q.isEmpty();
+            if (empty) {
+                log.trace("JWT 레지스트리 정리: userId={}의 항목이 비어 제거됨", uid);
+            }
+            return empty;
+        });
+        log.debug("만료 토큰 정리 완료");
     }
 
     @Override
