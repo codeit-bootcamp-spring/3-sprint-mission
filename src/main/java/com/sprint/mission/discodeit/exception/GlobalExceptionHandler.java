@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.exception;
 
 import com.sprint.mission.discodeit.dto.ErrorResponse;
+import com.sprint.mission.discodeit.exception.authException.UnauthorizedTokenException;
 import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channelException.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.messageException.MessageNotFoundException;
@@ -46,7 +47,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
 
-    //0 여기 아래로는 바뀐 요구사항
+    // 여기 아래로는 바뀐 요구사항
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> userNotFoundExceptionHandler(UserNotFoundException e) {
         return buildDiscodeitException(e);
@@ -65,6 +66,10 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(MessageNotFoundException.class)
     public ResponseEntity<ErrorResponse> messageNotFoundExceptionHandler(MessageNotFoundException e) {
+        return buildDiscodeitException(e);
+    }
+    @ExceptionHandler(UnauthorizedTokenException.class)
+    public ResponseEntity<ErrorResponse> UnauthorizedTokenExceptionHandler(UnauthorizedTokenException e) {
         return buildDiscodeitException(e);
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.slice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.controller.UserController;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.exception.userException.UserAlreadyExistsException;
@@ -53,17 +53,17 @@ public class UserControllerTest {
     @DisplayName("모든 유저를 찾는 API가 정상 작동한다.")
     void findAllUsers_success() throws Exception {
         // given
-        UserResponse response1 = UserResponse.builder()
+        UserDto response1 = UserDto.builder()
             .id(UUID.randomUUID())
             .username("testUser1")
             .email("test1@example.com")
             .build();
-        UserResponse response2 = UserResponse.builder()
+        UserDto response2 = UserDto.builder()
             .id(UUID.randomUUID())
             .username("testUser2")
             .email("test2@example.com")
             .build();
-        List<UserResponse> responses = List.of(response1, response2);
+        List<UserDto> responses = List.of(response1, response2);
 
         given(userService.findAllUsers()).willReturn(responses);
 
@@ -83,7 +83,7 @@ public class UserControllerTest {
     @DisplayName("유저가 없으면 빈 리스트를 반환한다.")
     void whenNoUsers_thenReturnEmptyList() throws Exception {
         // given
-        List<UserResponse> responses = Collections.emptyList();
+        List<UserDto> responses = Collections.emptyList();
 
         given(userService.findAllUsers()).willReturn(responses);
 
@@ -109,7 +109,7 @@ public class UserControllerTest {
             objectMapper.writeValueAsBytes(request)
         );
 
-        UserResponse response = UserResponse.builder()
+        UserDto response = UserDto.builder()
             .username("paul")
             .email("test@test.com")
             .build();
@@ -198,7 +198,7 @@ public class UserControllerTest {
              objectMapper.writeValueAsBytes(request)
          );
 
-         UserResponse response = UserResponse.builder()
+         UserDto response = UserDto.builder()
              .username("daniel")
              .email("daniel@test.com")
              .build();

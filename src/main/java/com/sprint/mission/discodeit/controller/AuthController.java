@@ -1,17 +1,20 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.AuthApi;
+import com.sprint.mission.discodeit.dto.auth.JwtDto;
 import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
-import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
+import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.security.jwt.JwtInformation;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,41 +35,38 @@ public class AuthController implements AuthApi {
 
     private final AuthService authService;
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping("/csrf-token")
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
         String tokenValue = csrfToken.getToken();
-        log.info("Csrf token 요청: {}", tokenValue);
-        log.info("파라미터 이름: {}",csrfToken.getParameterName());
-        log.info("헤더 이름: {}",csrfToken.getHeaderName());
-        log.info("토큰 값: {}",csrfToken.getToken());
+        System.out.println("Csrf token 요청: "+ tokenValue);
+        System.out.println("파라미터 이름: " + csrfToken.getParameterName());
+        System.out.println("헤더 이름: " + csrfToken.getHeaderName());
+        System.out.println("토큰 값: " + csrfToken.getToken());
 
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<UserResponse> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
-        log.info("[AuthController] 세션 기반 사용자 정보 조회 요청(me) 들어옴.");
-
-        if(userDetails == null) {
-            log.warn("[AuthController] 유저 인증 실패");
-            throw new UserNotFoundException();
-        }
-
-        UserResponse response = authService.getCurrentUserInfo(userDetails);
-
-        if (response == null) {
-            log.info("[AuthController] AuthService에서 사용자 정보를 가져올 수 없음");
-            throw new UserNotFoundException();
-        }
-
-        log.info("[AuthController] 사용자 정보 조회 완료: " + response);
-
-        return ResponseEntity.ok(response);
+    @PutMapping("/role")
+    public ResponseEntity<UserDto> updateRole(@Valid @RequestBody UserRoleUpdateRequest request){
+        return ResponseEntity.ok(userService.updateRole(request));
     }
 
-    @PutMapping("/role")
-    public ResponseEntity<UserResponse> updateRole(@Valid @RequestBody UserRoleUpdateRequest request){
-        return ResponseEntity.ok(userService.updateRole(request));
+    @PostMapping("/refresh")
+    public ResponseEntity<JwtDto> refresh(@CookieValue("REFRESH_TOKEN") String refreshToken,
+                                          HttpServletResponse response) {
+        JwtInformation jwtInformation = authService.refreshToken(refreshToken);
+        Cookie refreshCookie = jwtTokenProvider.genereateRefreshTokenCookie(
+            jwtInformation.getRefreshToken());
+        response.addCookie(refreshCookie);
+
+        JwtDto body = new JwtDto(
+            jwtInformation.getUserDto(),
+            jwtInformation.getAccessToken()
+        );
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(body);
     }
 }

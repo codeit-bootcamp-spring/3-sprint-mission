@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.dto.message.response;
 
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import lombok.Builder;
 
 import java.time.Instant;
@@ -21,7 +21,7 @@ public record MessageResponse(
         Instant updatedAt,
         String content,
         UUID channelId,
-        UserResponse author,
+        UserDto author,
         List<BinaryContentResponse> attachments
 ) {
 }

@@ -13,7 +13,7 @@ import java.util.UUID;
  * Date         : 2025. 5. 29.
  */
 @Builder
-public record UserResponse(
+public record UserDto(
         UUID id,
         String username,
         String email,

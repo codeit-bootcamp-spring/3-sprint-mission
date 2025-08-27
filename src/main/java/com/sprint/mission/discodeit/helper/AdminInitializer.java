@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -19,9 +20,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminInitializer implements CommandLineRunner {
-    private static final String USERNAME = "admin";
-    private static final String PASSWORD = "admin";
-    private static final String EMAIL = "admin@admin.com";
+    @Value("${discodeit.admin.username}") String adminUsername;
+    @Value("${discodeit.admin.email}")    String adminEmail;
+    @Value("${discodeit.admin.password}") String adminPassword;
+
+
     private static final Role ROLE = Role.ADMIN;
 
 
@@ -33,9 +36,9 @@ public class AdminInitializer implements CommandLineRunner {
         if (userRepository.findByUsername("admin").isEmpty()) {
             log.info("ADMIN 계정 생성");
             User user = User.builder()
-                .username(USERNAME)
-                .email(EMAIL)
-                .password(passwordEncoder.encode(PASSWORD))
+                .username(adminUsername)
+                .email(adminEmail)
+                .password(passwordEncoder.encode(adminPassword))
                 .role(ROLE)
                 .build();
             userRepository.save(user);

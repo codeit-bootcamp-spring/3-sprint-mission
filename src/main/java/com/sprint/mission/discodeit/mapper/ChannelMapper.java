@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -45,7 +45,7 @@ public class ChannelMapper {
                 .map(ReadStatus::getUser)
                 .collect(Collectors.toSet());
 
-        List<UserResponse> participants = users.stream()
+        List<UserDto> participants = users.stream()
                 .map(userMapper::toDto)
                 .collect(Collectors.toList());
 

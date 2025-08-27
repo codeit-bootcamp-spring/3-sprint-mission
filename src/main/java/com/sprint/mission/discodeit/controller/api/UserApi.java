@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,7 +41,7 @@ public interface UserApi {
 
     @Operation(summary = "사용자 정보 수정", description = "사용자 이름, 비밀번호, 이메일, 이미지를 수정합니다.")
     @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<UserResponse> update(
+    ResponseEntity<UserDto> update(
         @PathVariable UUID userId,
         @Valid @RequestPart("userUpdateRequest") UserUpdateRequest request,
         @RequestPart(value = "profile", required = false) MultipartFile profileFile);
