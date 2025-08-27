@@ -2,7 +2,7 @@ spring:
   cache:
     caffeine:
       spec: >
-        maximumSize=100,
+        maximumSize=1000,
         expireAfterAccess=600s,
         recordStats
 

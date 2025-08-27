@@ -39,6 +39,7 @@ public class CacheConfig {
             .initialCapacity(100)
             .maximumSize(1000)
             .expireAfterWrite(Duration.ofHours(1))
+            .recordStats()
             .removalListener(removalListener());
     }
 
