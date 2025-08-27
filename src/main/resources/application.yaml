@@ -24,6 +24,14 @@ spring:
         format_sql: false
         show_sql: false
 
+  cache:
+    cache-names: channels, notifications, users
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
+
 info:
   app:
     name: discodeit
@@ -81,7 +89,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,loggers
+        include: health,info,metrics,loggers,caches
   observations:
     annotations:
       enabled: true

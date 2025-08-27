@@ -23,6 +23,8 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,6 +46,7 @@ public class BasicUserService implements UserService {
   private final PasswordEncoder passwordEncoder;
 
   @Override
+  @CacheEvict(value = "users", allEntries = true)
   public UserResponse create(CreateUserCommand command) {
     validateUserEmail(command.email());
     validateUserName(command.username());
@@ -105,12 +108,14 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional(readOnly = true)
+  @Cacheable("users")
   public List<UserResponse> findAll() {
     return userRepository.findAll().stream().map(this::toUserResponse).toList();
   }
 
   @Override
   @PreAuthorize("@userSecurity.isSelf(#command.userId)")
+  @CacheEvict(value = "users", allEntries = true)
   public UserResponse update(UpdateUserCommand command) {
     return userRepository.findById(command.userId())
         .map(user -> {
@@ -143,6 +148,7 @@ public class BasicUserService implements UserService {
 
   @Override
   @PreAuthorize("hasRole('ADMIN')")
+  @CacheEvict(value = "users", allEntries = true)
   public UserResponse updateRole(UpdateUserRoleCommand command) {
     return userRepository.findById(command.userId())
         .map(user -> {
@@ -164,6 +170,7 @@ public class BasicUserService implements UserService {
 
   @Override
   @PreAuthorize("@userSecurity.isSelf(#userId)")
+  @CacheEvict(value = "users", allEntries = true)
   public void delete(UUID userId) {
     userRepository.findById(userId).ifPresentOrElse(user -> {
       userRepository.deleteById(userId);

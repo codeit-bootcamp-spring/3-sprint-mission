@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -28,6 +29,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final ObjectMapper objectMapper;
   private final JwtTokenProvider tokenProvider;
   private final JwtRegistry jwtRegistry;
+  private final CacheManager cacheManager;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request,
@@ -58,6 +60,11 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
           refreshToken
       );
       jwtRegistry.registerJwtInformation(jwtInformation);
+
+      var usersCache = cacheManager.getCache("users");
+      if (usersCache != null) {
+        usersCache.clear();
+      }
 
       response.setStatus(HttpServletResponse.SC_OK);
       objectMapper.writeValue(response.getWriter(), jwtDto);
