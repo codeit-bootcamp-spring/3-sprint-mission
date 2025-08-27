@@ -14,7 +14,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 /**
- * 접근 거부 핸들로
+ * 접근 거부 핸들러
  * <p>
  * 인증은 되었지만 권한이 부족한 경우 403 응답을 JSON으로 반환
  */
@@ -29,7 +29,8 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest request, HttpServletResponse response,
         AccessDeniedException accessDeniedException) throws IOException, ServletException {
 
-        String userId = (request.getUserPrincipal() != null) ? request.getUserPrincipal().getName() : "anonymous";
+        String userId = (request.getUserPrincipal() != null) ? request.getUserPrincipal().getName()
+            : "anonymous";
 
         log.info("[AccessDenied] 접근 거부 발생 - 요청 URL: {}, 사유: {}, userId={}",
             request.getRequestURI(),
@@ -39,7 +40,8 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         if (log.isDebugEnabled()) {
             log.debug("[AccessDenied] 상세 정보 - Remote IP: {}, 세션 ID: {}",
                 request.getRemoteAddr(),
-                request.getSession(false) != null ? request.getSession(false).getId() : "no-session");
+                request.getSession(false) != null ? request.getSession(false).getId()
+                    : "no-session");
         }
 
         // JSON 에러 응답 생성

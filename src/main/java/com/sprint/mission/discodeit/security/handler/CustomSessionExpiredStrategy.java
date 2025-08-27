@@ -32,7 +32,7 @@ public class CustomSessionExpiredStrategy implements SessionInformationExpiredSt
         // JSON 응답 설정
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 
         response.getWriter().write(objectMapper.writeValueAsString(result));
     }

@@ -81,3 +81,12 @@ server:
       charset: UTF-8
       enabled: true
       force: true
+
+# JWT 설정
+jwt:
+  access-token:
+    secret: change-me-access-secret-for-dev-only
+    exp: 900000        # 15분(ms)
+  refresh-token:
+    secret: change-me-refresh-secret-for-dev-only
+    exp: 3600000       # 1시간(ms)

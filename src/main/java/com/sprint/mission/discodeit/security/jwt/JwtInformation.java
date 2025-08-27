@@ -1,0 +1,25 @@
+package com.sprint.mission.discodeit.security.jwt;
+
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
+@Getter
+public class JwtInformation {
+
+    private UserDto userDto;
+    private String accessToken;
+    private String refreshToken;
+
+    public JwtInformation(UserDto userDto, String accessToken, String refreshToken) {
+        this.userDto = userDto;
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+    }
+
+    public void rotate(String newAccessToken, String newRefreshToken) {
+        this.accessToken = newAccessToken;
+        this.refreshToken = newRefreshToken;
+    }
+}

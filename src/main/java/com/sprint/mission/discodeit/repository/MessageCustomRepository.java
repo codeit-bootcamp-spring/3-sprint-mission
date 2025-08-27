@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.springframework.data.domain.Sort;
 
 public interface MessageCustomRepository {
-    List<Message> findByChannelIdWithCursor(UUID channelId, Instant cursor, Sort.Direction direction, int limit);
+
+    List<Message> findByChannelIdWithCursor(UUID channelId, Instant cursor,
+        Sort.Direction direction, int limit);
 
 }

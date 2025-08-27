@@ -20,9 +20,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthorizationDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
+    public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(
+        AuthorizationDeniedException ex) {
         log.warn("[예외 처리] AuthorizationDeniedException 발생: {}", ex.getMessage(), ex);
-        
+
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
             .body(new ErrorResponse(
                 Instant.now(),

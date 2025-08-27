@@ -117,14 +117,15 @@ com.sprint.mission.discodeit
     - 콘솔 + 파일 동시 출력
 
 ## 🔐 보안 및 권한 관리
+
 - **세션 기반 인증** (`JSESSIONID` Cookie)
 - **커스텀 PermissionEvaluator**
-  - `UserPermissionEvaluator`
-  - `MessagePermissionEvaluator`
+    - `UserPermissionEvaluator`
+    - `MessagePermissionEvaluator`
 - **Handler**
-  - 로그인/로그아웃 이벤트 핸들러
-  - AccessDenied / SessionExpired 처리
+    - 로그인/로그아웃 이벤트 핸들러
+    - AccessDenied / SessionExpired 처리
 - **권한 계층**
-  - `USER`
-  - `CHANNEL_MANAGER`
-  - `ADMIN`
+    - `USER`
+    - `CHANNEL_MANAGER`
+    - `ADMIN`

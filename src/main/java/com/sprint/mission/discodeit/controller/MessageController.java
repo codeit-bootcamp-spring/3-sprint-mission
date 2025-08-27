@@ -16,9 +16,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -69,7 +66,8 @@ public class MessageController implements MessageApi {
         @RequestParam(value = "direction", defaultValue = "DESC") String direction,
         @RequestParam(value = "limit", defaultValue = "50") int limit
     ) {
-        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor, direction, limit);
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor,
+            direction, limit);
 
         return ResponseEntity
             .status(HttpStatus.OK)

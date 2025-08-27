@@ -203,7 +203,7 @@ class UserControllerTest {
 
         // When
         ResultActions result = mockMvc.perform(delete("/api/users/{userId}", userId)
-                .with(csrf()));
+            .with(csrf()));
 
         // Then
         result.andExpect(status().isNoContent())

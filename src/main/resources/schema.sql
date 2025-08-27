@@ -64,14 +64,6 @@ CREATE TABLE read_statuses
     UNIQUE (user_id, channel_id)
 );
 
-CREATE TABLE persistent_logins
-(
-    username  VARCHAR(64) UNIQUE NOT NULL,
-    series    VARCHAR(64) PRIMARY KEY,
-    token     VARCHAR(64)        NOT NULL,
-    last_used TIMESTAMP          NOT NULL
-);
-
 -- 제약 조건
 -- User (1) -> BinaryContent (1)
 ALTER TABLE users
@@ -115,4 +107,9 @@ ALTER TABLE read_statuses
             REFERENCES channels (id)
             ON DELETE CASCADE;
 
-DROP TABLE IF EXISTS persistent_logins;
+-- 테이블 컬럼 코멘트 추가
+COMMENT ON COLUMN users.id IS '사용자 고유 ID';
+COMMENT ON COLUMN users.username IS '사용자명 (로그인 ID)';
+COMMENT ON COLUMN users.email IS '이메일 주소';
+COMMENT ON COLUMN users.password IS 'BCrypt 암호화된 비밀번호';
+COMMENT ON COLUMN users.role IS '사용자 권한 (ADMIN, USER)';

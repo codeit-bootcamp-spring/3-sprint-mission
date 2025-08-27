@@ -4,31 +4,40 @@ import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-@Component
+@Slf4j
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "app.init.admin", havingValue = "true", matchIfMissing = true)
-public class AdminInitializer implements CommandLineRunner {
+@Component
+public class AdminInitializer implements ApplicationRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${discodeit.admin.username}")
+    private String username;
+    @Value("${discodeit.admin.password}")
+    private String password;
+    @Value("${discodeit.admin.email}")
+    private String email;
+
     @Override
-    public void run(String... args) throws Exception {
-        boolean existsAdmin = userRepository.existsByRole(Role.ADMIN);
-        if (!existsAdmin) {
-            User admin = new User(
-                "admin",
-                "admin@discodeit.com",
-                passwordEncoder.encode("admin1234!"),
-                null
-            );
-            admin.updateRole(Role.ADMIN);
-            userRepository.save(admin);
+    public void run(ApplicationArguments args) {
+        if (userRepository.existsByRole(Role.ADMIN)) {
+            return;
         }
+        log.info("기본 Admin 계정 생성 요청");
+
+        User user = new User(username, email, passwordEncoder.encode(password), null);
+        user.updateRole(Role.ADMIN);
+        userRepository.save(user);
+
+        log.info("기본 Admin 계정 생성 완료");
     }
+
 }

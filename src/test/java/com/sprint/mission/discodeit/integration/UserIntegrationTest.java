@@ -19,7 +19,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -45,23 +45,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserIntegrationTest {
 
     @Autowired
+    PasswordEncoder passwordEncoder;
+    @Autowired
     private MockMvc mockMvc;
-
     @Autowired
     private ObjectMapper objectMapper;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private BinaryContentRepository binaryContentRepository;
-
     @Autowired
     private UserMapper userMapper;
-
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
     private User savedUser1;
     private User savedUser2;
     private BinaryContent savedBinaryContent;
@@ -74,7 +68,8 @@ public class UserIntegrationTest {
         savedBinaryContent = binaryContentRepository.save(binaryContent);
 
         // User 생성
-        User user1 = new User("조현아", "zzo@email.com", passwordEncoder.encode("password123!"), savedBinaryContent);
+        User user1 = new User("조현아", "zzo@email.com", passwordEncoder.encode("password123!"),
+            savedBinaryContent);
         savedUser1 = userRepository.save(user1);
 
         User user2 = new User("투현아", "z2@email.com", passwordEncoder.encode("password123!"), null);
@@ -159,7 +154,8 @@ public class UserIntegrationTest {
         String targetUserId = savedUser1.getId().toString();
         UserDto otherUserDto = userMapper.toDto(savedUser2);
         DiscodeitUserDetails principal = new DiscodeitUserDetails(otherUserDto, "{noop}pwd");
-        UserUpdateRequest request = new UserUpdateRequest("뉴현아", "updated@email.com", "newPassword123!");
+        UserUpdateRequest request = new UserUpdateRequest("뉴현아", "updated@email.com",
+            "newPassword123!");
         String json = objectMapper.writeValueAsString(request);
         MockMultipartFile userPart = new MockMultipartFile(
             "userUpdateRequest", "", "application/json",
@@ -178,7 +174,7 @@ public class UserIntegrationTest {
 
         // Then
         result.andExpect(status().isForbidden())
-        .andDo(print());
+            .andDo(print());
     }
 
     @Test

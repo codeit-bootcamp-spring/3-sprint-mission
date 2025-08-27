@@ -146,7 +146,8 @@ class MessageControllerTest {
             false,
             null
         );
-        given(messageService.findAllByChannelId(eq(channelId), any(), anyString(), anyInt())).willReturn(response);
+        given(messageService.findAllByChannelId(eq(channelId), any(), anyString(),
+            anyInt())).willReturn(response);
 
         // When
         ResultActions result = mockMvc.perform(get("/api/messages")

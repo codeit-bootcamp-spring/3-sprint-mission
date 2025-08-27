@@ -19,7 +19,7 @@ public class MessageCustomRepositoryImpl implements MessageCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<Message> findByChannelIdWithCursor(   UUID channelId,
+    public List<Message> findByChannelIdWithCursor(UUID channelId,
         Instant cursor,
         Sort.Direction direction,
         int limit

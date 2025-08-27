@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.UserSessionService;
+import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,14 +11,14 @@ import org.springframework.stereotype.Component;
 public class UserMapper {
 
     private final BinaryContentMapper binaryContentMapper;
-    private final UserSessionService userSessionService;
+    private final JwtRegistry jwtRegistry;
 
     public UserDto toDto(User user) {
         if (user == null) {
             return null;
         }
 
-        boolean isOnline = userSessionService.isUserOnline(user.getUsername());
+        boolean isOnline = jwtRegistry.hasActiveJwtInformationByUserId(user.getId());
 
         return new UserDto(
             user.getId(),
