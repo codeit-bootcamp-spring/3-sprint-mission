@@ -11,6 +11,8 @@ package com.sprint.mission.discodeit.entity;
  * -----------------------------------------------------------
  * 2025. 4. 25.        doungukkim       최초 생성
  */
+
+
 public enum ChannelType {
     PUBLIC,
     PRIVATE,

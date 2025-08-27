@@ -20,7 +20,8 @@ public enum ErrorCode {
     CHANNEL_NOT_FOUND(HttpStatus.NOT_FOUND, "채널을 찾을 수 없습니다."),
     PRIVATE_CHANNEL_UPDATE(HttpStatus.BAD_REQUEST, "프라이빗 채널은 수정이 불가능합니다."),
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "Validation 검증에 실패했습니다."),
-    MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "메세지를 찾을 수 없습니다.");
+    MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "메세지를 찾을 수 없습니다."),
+    UNAUTHORIZED_USER(HttpStatus.UNAUTHORIZED, "로그인 할 수 없습니다.");
 
     private final HttpStatus status;
     private final String message;

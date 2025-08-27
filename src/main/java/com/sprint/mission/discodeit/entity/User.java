@@ -2,13 +2,8 @@ package com.sprint.mission.discodeit.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
-import org.apache.logging.log4j.util.Lazy;
 
-import java.awt.*;
 import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.refactor.entity
@@ -41,51 +36,31 @@ public class User extends BaseUpdatableEntity implements Serializable {
     @Column(name = "password", nullable = false, length = 60)
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "USER")
+    private Role role;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "profile_id")
     private BinaryContent profile;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserStatus status;
-
+    // 프로필 있음
+    public User(String username, String email, String password, BinaryContent profile) {
+        super();
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.profile = profile;
+        this.role = Role.USER;
+    }
 
     // 프로필 없음
     public User(String username, String email, String password) {
         super();
         this.username = username;
-        this.email = email;
-        this.password = password;
-    }
-
-    public User(String username, String email, String password, BinaryContent profile) {
-        super();
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.profile = profile;
-    }
-
-    // 프로필 있음
-    public User(String username, String email, String password, UserStatus status, BinaryContent profile) {
-        super();
-        this.username = username;
         this.password = password;
         this.email = email;
-        this.status = status;
-        this.profile = profile;
-    }
-
-    // 프로필 없음
-    public User(String username, String email, String password, UserStatus status) {
-        super();
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.status = status;
-    }
-
-    public void changeUserStatus(UserStatus status) {
-        this.status = status;
+        this.role = Role.USER;
     }
 
     public void changeUsername(String username) {
@@ -99,5 +74,8 @@ public class User extends BaseUpdatableEntity implements Serializable {
     }
     public void changeProfile(BinaryContent profile) {
         this.profile = profile;
+    }
+    public void changeRole(Role role) {
+        this.role = role;
     }
 }

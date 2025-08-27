@@ -12,15 +12,16 @@ import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundEx
 import com.sprint.mission.discodeit.exception.messageException.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
-import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
+import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.ChannelRepository;
+import com.sprint.mission.discodeit.repository.jpa.MessageRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,10 +49,10 @@ import java.util.UUID;
 @Service("basicMessageService")
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
-    private final JpaMessageRepository messageRepository;
-    private final JpaChannelRepository channelRepository;
-    private final JpaUserRepository userRepository;
-    private final JpaBinaryContentRepository binaryContentRepository;
+    private final MessageRepository messageRepository;
+    private final ChannelRepository channelRepository;
+    private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
     private final MessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
 
@@ -142,14 +143,16 @@ public class BasicMessageService implements MessageService {
         // for(BinaryContent 생성 -> 이미지 저장 -> BinaryContent Id 리스트로 저장)  -> 메세지 생성
     }
 
+    @PreAuthorize("hasRole('ADMIN') or @MessagePostSecurityService.isAuthor(#messageId)")
     @Override
     public void deleteMessage(UUID messageId) {
-        if(!messageRepository.existsById(messageId)) {
-            throw new MessageNotFoundException(Map.of("messageId",messageId));
+        if (!messageRepository.existsById(messageId)) {
+            throw new MessageNotFoundException(Map.of("messageId", messageId));
         }
         messageRepository.deleteById(messageId);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or @MessagePostSecurityService.isAuthor(#messageId)")
     @Override
     public MessageResponse updateMessage(UUID messageId, MessageUpdateRequest request) {
         Message message = messageRepository.findById(messageId).orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));

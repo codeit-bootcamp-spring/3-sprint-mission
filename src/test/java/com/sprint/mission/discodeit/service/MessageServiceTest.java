@@ -12,10 +12,10 @@ import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundEx
 import com.sprint.mission.discodeit.exception.messageException.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
-import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
+import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.ChannelRepository;
+import com.sprint.mission.discodeit.repository.jpa.MessageRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.storage.LocalBinaryContentStorage;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import org.junit.jupiter.api.DisplayName;
@@ -56,16 +56,16 @@ public class MessageServiceTest {
     private MessageMapper messageMapper;
 
     @Mock
-    private JpaMessageRepository messageRepository;
+    private MessageRepository messageRepository;
 
     @Mock
-    private JpaChannelRepository channelRepository;
+    private ChannelRepository channelRepository;
 
     @Mock
-    private JpaUserRepository userRepository;
+    private UserRepository userRepository;
 
     @Mock
-    private JpaBinaryContentRepository binaryContentRepository;
+    private BinaryContentRepository binaryContentRepository;
 
     @Mock
     private LocalBinaryContentStorage binaryContentStorage;

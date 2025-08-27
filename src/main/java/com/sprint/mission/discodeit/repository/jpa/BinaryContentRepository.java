@@ -16,7 +16,7 @@ import java.util.UUID;
  * Date         : 2025. 5. 28.
  */
 @Repository
-public interface JpaBinaryContentRepository extends JpaRepository<BinaryContent, UUID> {
+public interface BinaryContentRepository extends JpaRepository<BinaryContent, UUID> {
     List<BinaryContent> findAllByIdIn(Collection<UUID> ids);
 
     Optional<BinaryContent> findById(UUID binaryContentId);

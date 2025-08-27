@@ -5,10 +5,7 @@ import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userStatus.UserStatusResponse;
-import com.sprint.mission.discodeit.dto.userStatus.UserStatusUpdateByUserIdRequest;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,7 +30,7 @@ import java.util.UUID;
 public class UserController implements UserApi {
 
     private final UserService userService;
-    private final UserStatusService userStatusService;
+//    private final UserStatusService userStatusService;
 
 
     @GetMapping
@@ -56,19 +53,13 @@ public class UserController implements UserApi {
         return ResponseEntity.noContent().build();
     }
 
+
     @PatchMapping(path = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserResponse> update(
             @PathVariable UUID userId,
             @Valid @RequestPart("userUpdateRequest") UserUpdateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profileFile) {
         return ResponseEntity.ok(userService.update(userId, request, profileFile));
-    }
-
-    @PatchMapping("/{userId}/userStatus")
-    public ResponseEntity<UserStatusResponse> updateTime(
-            @PathVariable UUID userId,
-            @Valid @RequestBody UserStatusUpdateByUserIdRequest request) {
-        return ResponseEntity.ok(userStatusService.updateByUserId(userId, request.newLastActiveAt()));
     }
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {

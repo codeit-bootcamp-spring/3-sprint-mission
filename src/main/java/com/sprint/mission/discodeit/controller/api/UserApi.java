@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.controller.api;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userStatus.UserStatusUpdateByUserIdRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -47,9 +46,4 @@ public interface UserApi {
         @Valid @RequestPart("userUpdateRequest") UserUpdateRequest request,
         @RequestPart(value = "profile", required = false) MultipartFile profileFile);
 
-    @Operation(summary = "사용자 활동상태 수정", description = "사용자의 최근 접속시간을 수정합니다.")
-    @PatchMapping("/{userId}/userStatus")
-    ResponseEntity<?> updateTime(
-        @PathVariable UUID userId,
-        @Valid @RequestBody UserStatusUpdateByUserIdRequest request);
 }

@@ -2,12 +2,11 @@ package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.service.basic.DiscodeitUserDetails;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
-import java.time.Duration;
-import java.time.Instant;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.session.SessionRegistry;
 
 /**
  * PackageName  : com.sprint.mission.discodeit.mapper.advanced
@@ -15,17 +14,22 @@ import java.time.Instant;
  * Author       : dounguk
  * Date         : 2025. 6. 3.
  */
+
+//@RequiredArgsConstructor
 @Mapper(uses = {BinaryContentMapper.class}, componentModel = "spring")
-public interface UserMapper {
+public abstract class UserMapper {
+
+    @Autowired
+    private SessionRegistry sessionRegistry;
 
     @Mapping(source = "profile", target = "profile")
-    @Mapping(target = "online", expression = "java(isOnline(user.getStatus()))")
-    UserResponse toDto(User user);
+    @Mapping(target = "online", expression = "java(isOnline(user))")
+    public abstract UserResponse toDto(User user);
 
-
-    default boolean isOnline(UserStatus userStatus) {
-        if (userStatus == null || userStatus.getLastActiveAt() == null) return false;
-        Instant now = Instant.now();
-        return Duration.between(userStatus.getLastActiveAt(), now).toMinutes() < 5;
+    protected boolean isOnline(User user){
+        return sessionRegistry.getAllPrincipals().stream()
+            .filter(p -> p instanceof DiscodeitUserDetails)
+            .map(p -> (DiscodeitUserDetails)p)
+            .anyMatch(d -> d.getUser().id().equals(user.getId()));
     }
 }

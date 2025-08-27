@@ -6,11 +6,9 @@ import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
-import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,13 +58,11 @@ public class UserTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private JpaBinaryContentRepository binaryContentRepository;
+    private BinaryContentRepository binaryContentRepository;
+
 
     @Autowired
-    private JpaUserStatusRepository userStatusRepository;
-
-    @Autowired
-    private JpaUserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -139,8 +135,8 @@ public class UserTest {
 
         assertThat(fileName).isEqualTo("avatar.png");
 
-        assertThat(savedUser.getStatus()).isNotNull();
-        assertThat(savedUser.getStatus().getUser().getId()).isEqualTo(userId);
+//        assertThat(savedUser.getStatus()).isNotNull();
+//        assertThat(savedUser.getStatus().getUser().getId()).isEqualTo(userId);
     }
 
     @Test
@@ -215,7 +211,7 @@ public class UserTest {
         userRepository.save(user);
         UUID userId = user.getId();
 
-        userStatusRepository.save(new UserStatus(user));
+//        userStatusRepository.save(new UserStatus(user));
 
         // when
         userService.deleteUser(userId);
@@ -224,7 +220,7 @@ public class UserTest {
         // binaryContent + userStatus 삭제
         assertThat(userRepository.findById(userId)).isEmpty();
         assertThat(binaryContentRepository.findById(profile.getId())).isEmpty();
-        assertThat(userStatusRepository.findById(userId)).isEmpty();
+//        assertThat(userStatusRepository.findById(userId)).isEmpty();
 
         assertThat(Files.exists(profileFile)).isFalse();
     }
@@ -241,14 +237,14 @@ public class UserTest {
         userRepository.save(user);
         UUID userId = user.getId();
 
-        userStatusRepository.save(new UserStatus(user));
+//        userStatusRepository.save(new UserStatus(user));
 
         // when
         userService.deleteUser(userId);
 
         // then
         assertThat(userRepository.findById(userId)).isEmpty();
-        assertThat(userStatusRepository.findById(userId)).isEmpty();
+//        assertThat(userStatusRepository.findById(userId)).isEmpty();
     }
 
     @Test

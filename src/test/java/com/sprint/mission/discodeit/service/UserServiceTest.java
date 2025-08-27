@@ -7,15 +7,13 @@ import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.userException.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.storage.LocalBinaryContentStorage;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import org.junit.jupiter.api.DisplayName;
@@ -51,13 +49,10 @@ public class UserServiceTest {
     private FileUploadUtils fileUploadUtils;
 
     @Mock
-    private JpaUserRepository userRepository;
+    private UserRepository userRepository;
 
     @Mock
-    private JpaUserStatusRepository userStatusRepository;
-
-    @Mock
-    private JpaBinaryContentRepository binaryContentRepository;
+    private BinaryContentRepository binaryContentRepository;
 
     @Mock
     private LocalBinaryContentStorage binaryContentStorage;
@@ -175,19 +170,6 @@ public class UserServiceTest {
         then(userRepository).should().existsByEmail(request.email());
         then(userRepository).should().existsByUsername(request.username());
         then(userRepository).shouldHaveNoMoreInteractions();
-    }
-
-    @DisplayName("유저 생성시 user status가 생성되어야 한다.")
-    @Test
-    void createUser_create_UserStatus() {
-        // given
-        UserCreateRequest request = new UserCreateRequest("paul", "duplicate@email.com", "password123");
-
-        // when
-        userService.create(request, Optional.empty());
-
-        // then
-        then(userStatusRepository).should(times(1)).save(any(UserStatus.class));
     }
 
     @Test
@@ -346,8 +328,6 @@ public class UserServiceTest {
     void whenFindAllUsers_ShouldNotContainPassword() throws Exception {
         // given
         User user = new User();
-        given(userRepository.findAllWithBinaryContentAndUserStatus())
-            .willReturn(List.of(user));
         given(userMapper.toDto(user))
             .willReturn(
                 UserResponse.builder()
@@ -371,8 +351,6 @@ public class UserServiceTest {
     void whenFindAllUsers_thenResponseWithDto() throws Exception {
         // given
         User user = new User();
-        given(userRepository.findAllWithBinaryContentAndUserStatus())
-            .willReturn(List.of(user));
         given(userMapper.toDto(user))
             .willReturn(
                 UserResponse.builder()

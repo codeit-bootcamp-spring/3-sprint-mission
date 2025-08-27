@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     private static final Logger log = LoggerFactory.getLogger(LocalBinaryContentStorage.class);
 
 
-    private final JpaBinaryContentRepository binaryContentRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     private Path root;
 

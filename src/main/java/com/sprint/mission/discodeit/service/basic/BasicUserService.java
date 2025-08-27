@@ -1,25 +1,29 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.userException.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,13 +44,16 @@ import java.util.*;
 @Transactional
 public class BasicUserService implements UserService {
 
+    private static final Role DEFAULT_ROLE = Role.USER;
     private static final String PROFILE_PATH = "img";
-    private final JpaUserRepository userRepository;
-    private final JpaBinaryContentRepository binaryContentRepository;
-    private final JpaUserStatusRepository userStatusRepository;
+
+    private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
     private final FileUploadUtils fileUploadUtils;
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
+    private final PasswordEncoder passwordEncoder;
+    private final SessionRegistry sessionRegistry;
 
     private static final Logger log= LoggerFactory.getLogger(BasicUserService.class);
 
@@ -54,7 +61,7 @@ public class BasicUserService implements UserService {
 
     @Transactional(readOnly = true)
     public List<UserResponse> findAllUsers() {
-        List<User> users = userRepository.findAllWithBinaryContentAndUserStatus();
+        List<User> users = userRepository.findAllWithBinaryContent();
 
         List<UserResponse> responses = new ArrayList<>();
         for (User user : users) {
@@ -99,22 +106,19 @@ public class BasicUserService implements UserService {
 
         User user;
         if (nullableProfile == null) {
-            user = new User(userCreateRequest.username(), userCreateRequest.email(), userCreateRequest.password());
+            user = new User(userCreateRequest.username(), userCreateRequest.email(), passwordEncoder.encode(userCreateRequest.password()));
             userRepository.save(user);
         } else {
             // USER 객체 생성
             user = User.builder()
                 .username(userCreateRequest.username())
                 .email(userCreateRequest.email())
-                .password(userCreateRequest.password())
+                .password(passwordEncoder.encode(userCreateRequest.password()))
                 .profile(nullableProfile)
+                .role(DEFAULT_ROLE)
                 .build();
             userRepository.save(user);
         }
-        // USER STATUS
-        UserStatus userStatus = new UserStatus(user);
-        userStatusRepository.save(userStatus);
-        user.changeUserStatus(userStatus); // 양방향성을 위한 주입
 
         UserResponse response = userMapper.toDto(user);
         return response;
@@ -122,6 +126,7 @@ public class BasicUserService implements UserService {
 //                           -> (분기)이미지 있을 경우 -> User 생성 -> attachment 저장 -> userStatus 생성 -> return response
     }
 
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.id")
     @Override
     public void deleteUser(UUID userId) {
         Objects.requireNonNull(userId, "no user Id: BasicUserService.deleteUser");
@@ -148,10 +153,11 @@ public class BasicUserService implements UserService {
     }
 
     // name, email, password 수정 image는 optional
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.id")
     @Transactional
     @Override
     public UserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file) {
-
+        System.out.println("BasicUserService.update");
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(Map.of("userId ", userId)));
 
         String oldName = user.getUsername();
@@ -161,18 +167,20 @@ public class BasicUserService implements UserService {
 
         if (newName == null || newName.isBlank()) {
             newName = oldName;
+            System.out.println(newName);
         }
         if (newEmail == null || newEmail.isBlank()) {
             newEmail = oldEmail;
+            System.out.println(newEmail);
         }
 
         if (userRepository.existsByUsername(newName) && (!oldName.equals(newName))) { // 있고 내 이름도 아닌경우
-            throw new  UserAlreadyExistsException(Map.of("username", newName));
+            throw new UserAlreadyExistsException(Map.of("username", newName));
         }
         user.changeUsername(newName);
 
         if (userRepository.existsByEmail(newEmail) && (!oldEmail.equals(newEmail))) { // 있고 내 이메일이 아닌경우
-            throw new  UserAlreadyExistsException(Map.of("email", newEmail));
+            throw new UserAlreadyExistsException(Map.of("email", newEmail));
         }
         user.changeEmail(newEmail);
 
@@ -227,7 +235,29 @@ public class BasicUserService implements UserService {
         return response;
 //        // 파일 확인(있음) -> 파일 삭제 -> binary content 삭제 -> binary content 추가 -> 파일 생성 -> user 업데이트
 //        // 파일 확인(없음) ->                                  -> binary content 추가 -> 파일 생성 -> user 업데이트
+    }
 
+    @Override
+    public UserResponse updateRole(UserRoleUpdateRequest request) {
+        User user = userRepository.findById(request.userId()).orElseThrow(() -> new UserNotFoundException(Map.of("userId ", request.userId())));
+
+        user.changeRole(request.newRole());
+
+        invalidateSessionByUsername(user.getUsername());
+
+        return  userMapper.toDto(user);
+    }
+
+    private void invalidateSessionByUsername(String username) {
+        sessionRegistry.getAllPrincipals().forEach(principal -> {
+            if (principal instanceof UserDetails userDetails
+                && userDetails.getUsername().equals(username)) {
+                sessionRegistry.getAllSessions(principal, false).forEach(sessionInfo -> {
+                    sessionInfo.expireNow();
+                    System.out.println("[BasicUserService.invalidateSessionByUsername] 세션 만료됨: \n" + sessionInfo.getSessionId());
+                });
+            }
+        });
     }
 
     private boolean hasValue(MultipartFile attachmentFiles) {

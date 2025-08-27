@@ -13,10 +13,10 @@ import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundEx
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.messageException.MessageNotFoundException;
 import com.sprint.mission.discodeit.helper.FileUploadUtils;
-import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaUserRepository;
+import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.ChannelRepository;
+import com.sprint.mission.discodeit.repository.jpa.MessageRepository;
+import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,16 +73,16 @@ public class MessageTest {
     private BasicMessageService messageService;
 
     @Autowired
-    private JpaMessageRepository messageRepository;
+    private MessageRepository messageRepository;
 
     @Autowired
-    private JpaChannelRepository channelRepository;
+    private ChannelRepository channelRepository;
 
     @Autowired
-    private JpaBinaryContentRepository binaryContentRepository;
+    private BinaryContentRepository binaryContentRepository;
 
     @Autowired
-    private JpaUserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private FileUploadUtils fileUploadUtils;

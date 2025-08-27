@@ -6,12 +6,9 @@ import com.sprint.mission.discodeit.controller.UserController;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userStatus.UserStatusResponse;
-import com.sprint.mission.discodeit.dto.userStatus.UserStatusUpdateByUserIdRequest;
 import com.sprint.mission.discodeit.exception.userException.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
-import com.sprint.mission.discodeit.service.basic.BasicUserStatusService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +18,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -52,10 +48,6 @@ public class UserControllerTest {
 
     @MockitoBean
     private BasicUserService userService;
-
-    @MockitoBean
-    private BasicUserStatusService userStatusService;
-
 
     @Test
     @DisplayName("모든 유저를 찾는 API가 정상 작동한다.")
@@ -250,51 +242,6 @@ public class UserControllerTest {
                  .with(r-> {
                      r.setMethod("PATCH"); return r;
                  }))
-             .andExpect(status().isNotFound())
-             .andExpect(jsonPath("$.message").value("유저를 찾을 수 없습니다."))
-             .andExpect(jsonPath("$.code").value("USER_NOT_FOUND"))
-             .andExpect(jsonPath("$.details").isMap())
-             .andExpect(jsonPath("$.details", hasKey("userId")))
-             .andExpect(jsonPath("$.details.userId").value(userId.toString()));
-     }
-
-     @Test
-     @DisplayName("유저 최근 접속시간 업데이트 API가 정상 작동 한다.")
-     void updateUserStatus_success() throws Exception {
-         // given
-         Instant newLastActiveAt = Instant.now();
-         UUID id = UUID.randomUUID();
-         UUID userId = UUID.randomUUID();
-         UserStatusUpdateByUserIdRequest request = new UserStatusUpdateByUserIdRequest(newLastActiveAt);
-         UserStatusResponse response = new UserStatusResponse(id, userId, newLastActiveAt);
-
-         given(userStatusService.updateByUserId(any(UUID.class), any(Instant.class))).willReturn(response);
-
-         // when n then
-         mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)
-                 .contentType(MediaType.APPLICATION_JSON)
-                 .content(objectMapper.writeValueAsBytes(request)))
-             .andExpect(status().isOk())
-             .andExpect(jsonPath("$.id").value(id.toString()))
-             .andExpect(jsonPath("$.userId").value(userId.toString()))
-             .andExpect(jsonPath("$.lastActiveAt").value(newLastActiveAt.toString()));
-     }
-
-     @Test
-     @DisplayName("업데이트 유저가 없을경우 UserNotFoundException(404)를 반환한다.")
-     void updateUser_noUser_UserNotFoundException() throws Exception {
-         // given
-         Instant newLastActiveAt = Instant.now();
-         UUID userId = UUID.randomUUID();
-         UserStatusUpdateByUserIdRequest request = new UserStatusUpdateByUserIdRequest(newLastActiveAt);
-
-         given(userStatusService.updateByUserId(any(UUID.class), any(Instant.class)))
-             .willThrow(new UserNotFoundException(Map.of("userId", userId)));
-
-         // when n then
-         mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)
-                 .contentType(MediaType.APPLICATION_JSON)
-                 .content(objectMapper.writeValueAsBytes(request)))
              .andExpect(status().isNotFound())
              .andExpect(jsonPath("$.message").value("유저를 찾을 수 없습니다."))
              .andExpect(jsonPath("$.code").value("USER_NOT_FOUND"))

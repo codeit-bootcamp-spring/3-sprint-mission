@@ -1,0 +1,69 @@
+package com.sprint.mission.discodeit.handler;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.auth.LoginResponse;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.service.basic.DiscodeitUserDetails;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+
+/**
+ * PackageName  : com.sprint.mission.discodeit.handler
+ * FileName     : LoginSuccessHandler
+ * Author       : dounguk
+ * Date         : 2025. 8. 5.
+ */
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class LoginSuccessHandler implements AuthenticationSuccessHandler {
+    public final ObjectMapper objectMapper;
+
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+
+        log.info("[LoginSuccessHandler] 로그인 성공 처리 시작");
+        log.info("Principal: " + authentication.getPrincipal());
+        log.info("Authorities: " + authentication.getAuthorities());
+        log.info("Credntials: " + authentication.getCredentials());
+        log.info("Details: " + authentication.getDetails());
+        log.info("isAuthenticated: " + authentication.isAuthenticated());
+        log.info("Username: " + authentication.getPrincipal());
+
+        if (authentication.getPrincipal() instanceof DiscodeitUserDetails customUserDetails) {
+            UserResponse userResponse = customUserDetails.getUser();
+
+            LoginResponse loginResponse = new LoginResponse(
+                userResponse.id(),
+                userResponse.username(),
+                userResponse.email(),
+                userResponse.profile(),
+                userResponse.online()
+            );
+
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.setStatus(HttpServletResponse.SC_OK);
+
+            String responseBody = objectMapper.writeValueAsString(loginResponse);
+            response.getWriter().write(responseBody);
+
+            log.info("[LoginSuccessHandler] 로그인 성공 응답 완료: " + userResponse.username());
+
+        } else {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\": \"인증 정보를 처리할 수 없습니다.\"}");
+
+            log.info("[LoginSuccessHandler] 예상치 못한 Principal 타입: " + authentication.getPrincipal().getClass());
+        }
+
+    }
+}

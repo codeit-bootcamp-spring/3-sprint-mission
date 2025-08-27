@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.authService;
+package com.sprint.mission.discodeit.dto.auth;
 
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 

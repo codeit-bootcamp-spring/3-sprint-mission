@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.slice.repository;
 import com.sprint.mission.discodeit.config.QuerydslConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.repository.jpa.JpaChannelRepository;
+import com.sprint.mission.discodeit.repository.jpa.ChannelRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ChannelRepositoryTest {
 
     @Autowired
-    private JpaChannelRepository channelRepository;
+    private ChannelRepository channelRepository;
 
     @Test
     @DisplayName("public 채널이 필요하면 모든 public 채널을 찾아야 한다.")

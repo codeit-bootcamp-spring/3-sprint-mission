@@ -6,8 +6,8 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.jpa.JpaMessageRepository;
-import com.sprint.mission.discodeit.repository.jpa.JpaReadStatusRepository;
+import com.sprint.mission.discodeit.repository.jpa.MessageRepository;
+import com.sprint.mission.discodeit.repository.jpa.ReadStatusRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class ChannelMapper {
-    private final JpaMessageRepository messageRepository;
-    private final JpaReadStatusRepository readStatusRepository;
+    private final MessageRepository messageRepository;
+    private final ReadStatusRepository readStatusRepository;
     private final UserMapper userMapper;
 
     public ChannelResponse toDto(Channel channel) {

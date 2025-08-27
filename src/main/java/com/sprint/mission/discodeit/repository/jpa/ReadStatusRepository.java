@@ -16,7 +16,7 @@ import java.util.UUID;
  * Author       : dounguk
  * Date         : 2025. 5. 28.
  */
-public interface JpaReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
+public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
 
     List<ReadStatus> findAllByChannelId(UUID channelId);
 

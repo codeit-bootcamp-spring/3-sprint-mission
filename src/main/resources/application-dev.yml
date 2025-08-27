@@ -15,24 +15,21 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:h2:mem:discodeit;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:postgresql://localhost:5432/discodeit
+#    url: jdbc:postgresql://host.docker.internal:5432/discodeit 도커 사용시에도 내 로컬 db 연결
+#    url: jdbc:h2:mem:discodeit;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;
+    driver-class-name: org.postgresql.Driver
+    username: discodeit_user
+    password: discodeit_1234
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     properties:
       hibernate:
         default_schema: DISCODEIT
         format_sql: true
         use_sql_comments: false
-        dialect: org.hibernate.dialect.H2Dialect
-  sql:
-    init:
-      platform: h2
-      schema-locations:
-        - classpath:schema-h2.sql
+
 
 discodeit:
   storage:

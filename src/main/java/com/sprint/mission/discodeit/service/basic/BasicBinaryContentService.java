@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
-import com.sprint.mission.discodeit.repository.jpa.JpaBinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ import java.util.*;
 @Service("basicBinaryContentService")
 @RequiredArgsConstructor
 public class BasicBinaryContentService implements BinaryContentService {
-    private final JpaBinaryContentRepository binaryContentRepository;
+    private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
 
     @Override
