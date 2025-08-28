@@ -22,8 +22,8 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
     @Override
     public void registerJwtInformation(JwtInformation jwtInformation) {
-        UUID userId = jwtInformation.userResponseDto().id();
-        String username = jwtInformation.userResponseDto().username();
+        UUID userId = jwtInformation.userId();
+        String username = jwtInformation.username();
 
         log.debug("[JwtRegistry] Jwt 정보 등록 시작 username: {}", username);
 
@@ -71,9 +71,9 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     public JwtInformation rotateJwtInformation(String refreshToken,
         JwtInformation newJwtInformation) {
         log.debug("[JwtRegistry] Jwt 토큰 로테이션 시작- username: {}",
-            newJwtInformation.userResponseDto().username());
+            newJwtInformation.username());
 
-        UUID userId = newJwtInformation.userResponseDto().id();
+        UUID userId = newJwtInformation.userId();
         final JwtInformation[] rotated = {null};
 
         origin.computeIfPresent(userId, (key, current) -> {

@@ -1,14 +1,15 @@
 package com.sprint.mission.discodeit.dto.jwt;
 
-import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import java.util.UUID;
 
 public record JwtInformation(
-    UserResponseDto userResponseDto,
+    UUID userId,
+    String username,
     String accessToken,
     String refreshToken
 ) {
 
     public JwtInformation rotate(String newAccessToken, String newRefreshToken) {
-        return new JwtInformation(userResponseDto, newAccessToken, newRefreshToken);
+        return new JwtInformation(userId, username, newAccessToken, newRefreshToken);
     }
 }
