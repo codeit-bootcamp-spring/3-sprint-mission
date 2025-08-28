@@ -1,10 +1,20 @@
--- 2. 테이블 생성
+DROP TABLE IF EXISTS message_attachments CASCADE;
+DROP TABLE IF EXISTS read_statuses CASCADE;
+DROP TABLE IF EXISTS messages CASCADE;
+DROP TABLE IF EXISTS channels CASCADE;
+DROP TABLE IF EXISTS persistent_logins CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS binary_contents CASCADE;
+
+
 CREATE TABLE binary_contents (
     id              UUID PRIMARY KEY,
     created_at      timestamp with time zone NOT NULL,
+    updated_at      timestamp with time zone,
     file_name       VARCHAR(255) NOT NULL,
     size            BIGINT NOT NULL,
-    content_type    VARCHAR(100) NOT NULL
+    content_type    VARCHAR(100) NOT NULL,
+    status          VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE users (
