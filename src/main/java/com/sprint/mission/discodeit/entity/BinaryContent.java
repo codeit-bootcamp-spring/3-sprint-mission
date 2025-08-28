@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -9,31 +9,31 @@ import lombok.Getter;
 @Entity
 @Table(name = "binary_contents")
 @Getter
-public class BinaryContent extends BaseEntity {
+public class BinaryContent extends BaseUpdatableEntity {
 
-  @Column(name = "file_name", length = 255, nullable = false)
-  private String fileName;
+    @Column(name = "file_name", length = 255, nullable = false)
+    private String fileName;
 
-  @Column(name = "size", nullable = false)
-  private Long size;
+    @Column(name = "size", nullable = false)
+    private Long size;
 
-  @Column(name = "content_type", length = 100, nullable = false)
-  private String contentType;
+    @Column(name = "content_type", length = 100, nullable = false)
+    private String contentType;
 
-  public BinaryContent(String fileName, Long size, String contentType) {
-    this.fileName = fileName;
-    this.size = size;
-    this.contentType = contentType;
-  }
+    public BinaryContent(String fileName, Long size, String contentType) {
+        this.fileName = fileName;
+        this.size = size;
+        this.contentType = contentType;
+    }
 
-  public BinaryContent() { }
+    public BinaryContent() { }
 
-  @Override
-  public String toString() {
-    return "BinaryContent{" +
-        "fileName='" + fileName + '\'' +
-        ", size=" + size +
-        ", contentType='" + contentType + '\'' +
-        '}';
-  }
+    @Override
+    public String toString() {
+        return "BinaryContent{" +
+            "fileName='" + fileName + '\'' +
+            ", size=" + size +
+            ", contentType='" + contentType + '\'' +
+            '}';
+    }
 }

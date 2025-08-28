@@ -23,42 +23,36 @@ import lombok.Getter;
 @Getter
 public class ReadStatus extends BaseUpdatableEntity {
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(
-      name = "user_id",
-      nullable = false,
-      foreignKey = @ForeignKey(name = "fk_read_statuses_user")
-  )
-  private User user;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+        name = "user_id",
+        nullable = false,
+        foreignKey = @ForeignKey(name = "fk_read_statuses_user")
+    )
+    private User user;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(
-      name = "channel_id",
-      nullable = false,
-      foreignKey = @ForeignKey(name = "fk_read_statuses_channel")
-  )
-  private Channel channel;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+        name = "channel_id",
+        nullable = false,
+        foreignKey = @ForeignKey(name = "fk_read_statuses_channel")
+    )
+    private Channel channel;
 
-  @Column(name = "last_read_at", nullable = false)
-  private Instant lastReadAt;
+    @Column(name = "last_read_at", nullable = false)
+    private Instant lastReadAt;
 
-  public ReadStatus(User user, Channel channel, Instant lastReadAt) {
-    this.user = user;
-    this.channel = channel;
-    this.lastReadAt = lastReadAt;
-  }
-
-  public ReadStatus() { }
-
-  public void update(Instant newLastReadAt) {
-    boolean anyValueUpdated = false;
-    if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
-      this.lastReadAt = newLastReadAt;
-      anyValueUpdated = true;
+    public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+        this.user = user;
+        this.channel = channel;
+        this.lastReadAt = lastReadAt;
     }
 
-    if (anyValueUpdated) {
-      setUpdatedAt();
+    public ReadStatus() { }
+
+    public void update(Instant newLastReadAt) {
+        if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
+            this.lastReadAt = newLastReadAt;
+        }
     }
-  }
 }
