@@ -39,6 +39,9 @@ admin:
 logging:
   level:
     root: info
+    org.springframework.cache: debug
+    org.springframework.cache.interceptor: trace
+    org.ohgiraffers.springcache: debug
 
 server:
   port: ${PORT:8080}
@@ -61,7 +64,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, loggers
+        include: health, info, metrics, loggers, env, configprops, beans, loggers, thread dump, head dump, caches
       base-path: /actuator
   endpoint:
     health:
@@ -71,6 +74,8 @@ management:
       show-components: never
     metrics:
       enabled: true
+    caches:
+      access: unrestricted
   info:
     env:
       enabled: true             # info 엔드포인트 명시적 활성화
