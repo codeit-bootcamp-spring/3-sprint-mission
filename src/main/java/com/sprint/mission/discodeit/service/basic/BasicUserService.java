@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentData;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.event.BinaryContentCreateEvent;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
@@ -158,8 +158,12 @@ public class BasicUserService implements UserService {
             User savedUser = userRepository.save(user);
             jwtRegistry.invalidateJwtInformationByUserId(savedUser.getId());
             applicationEventPublisher.publishEvent(
-                new RoleUpdatedEvent(savedUser, oldRole,
-                    command.newRole()));
+                new RoleUpdatedEvent(
+                    savedUser.getId(),
+                    oldRole,
+                    command.newRole(),
+                    savedUser.getUpdatedAt()
+                ));
             return toUserResponse(savedUser);
           } else {
             // 권한이 변경되지 않은 경우 기존 응답 반환
@@ -194,7 +198,7 @@ public class BasicUserService implements UserService {
       BinaryContent saved = binaryContentRepository.save(binaryContent);
 
       applicationEventPublisher.publishEvent(
-          new BinaryContentCreateEvent(saved.getId(), profile.bytes()));
+          new BinaryContentCreatedEvent(saved.getId(), profile.bytes()));
 
       return saved;
     } catch (Exception e) {

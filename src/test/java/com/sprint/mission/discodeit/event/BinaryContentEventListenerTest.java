@@ -4,7 +4,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willThrow;
 
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
-import com.sprint.mission.discodeit.event.listener.BinaryContentCreateEventListener;
+import com.sprint.mission.discodeit.event.listener.BinaryContentCreatedEventListener;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.UUID;
@@ -23,13 +23,13 @@ class BinaryContentEventListenerTest {
   private BinaryContentService binaryContentService;
 
   @InjectMocks
-  private BinaryContentCreateEventListener listener;
+  private BinaryContentCreatedEventListener listener;
 
   @Test
   void 이벤트를_받아_파일을_저장하고_성공_상태를_설정한다() {
     UUID id = UUID.randomUUID();
     byte[] bytes = new byte[]{1, 2, 3};
-    BinaryContentCreateEvent event = new BinaryContentCreateEvent(id, bytes);
+    BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(id, bytes);
 
     listener.on(event);
 
@@ -41,7 +41,7 @@ class BinaryContentEventListenerTest {
   void 파일_저장에_실패하면_실패_상태를_설정한다() {
     UUID id = UUID.randomUUID();
     byte[] bytes = new byte[]{1, 2, 3};
-    BinaryContentCreateEvent event = new BinaryContentCreateEvent(id, bytes);
+    BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(id, bytes);
 
     willThrow(new RuntimeException()).given(binaryContentStorage).put(id, bytes);
 

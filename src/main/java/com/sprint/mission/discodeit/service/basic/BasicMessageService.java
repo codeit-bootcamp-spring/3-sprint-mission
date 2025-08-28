@@ -7,7 +7,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.event.BinaryContentCreateEvent;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
@@ -40,7 +40,7 @@ public class BasicMessageService implements MessageService {
   private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final ApplicationEventPublisher applicationEventPublisher;
+  private final ApplicationEventPublisher eventPublisher;
   private final MessageAssembler messageAssembler;
   private final MessageMapper messageMapper;
 
@@ -58,15 +58,16 @@ public class BasicMessageService implements MessageService {
           (long) attachment.bytes().length,
           attachment.contentType());
       BinaryContent saved = binaryContentRepository.save(binaryContent);
-      applicationEventPublisher.publishEvent(
-          new BinaryContentCreateEvent(saved.getId(), attachment.bytes()));
+      eventPublisher.publishEvent(
+          new BinaryContentCreatedEvent(saved.getId(), attachment.bytes()));
       message.attach(saved);
     });
 
     Message savedMessage = messageRepository.save(message);
-    applicationEventPublisher.publishEvent(
-        new MessageCreatedEvent(savedMessage));
-    return messageAssembler.toResponse(savedMessage);
+    MessageResponse messageResponse = messageAssembler.toResponse(savedMessage);
+    eventPublisher.publishEvent(
+        new MessageCreatedEvent(messageResponse));
+    return messageResponse;
   }
 
   @Override

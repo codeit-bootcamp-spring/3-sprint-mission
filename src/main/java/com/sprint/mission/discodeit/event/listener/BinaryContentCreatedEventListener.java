@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.event.listener;
 
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
-import com.sprint.mission.discodeit.event.BinaryContentCreateEvent;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -16,15 +16,15 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class BinaryContentCreateEventListener {
+public class BinaryContentCreatedEventListener {
 
   private final BinaryContentStorage binaryContentStorage;
   private final BinaryContentService binaryContentService;
 
-  @Async("taskExecutor")
+  @Async("eventTaskExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void on(BinaryContentCreateEvent event) {
+  public void on(BinaryContentCreatedEvent event) {
     try {
       binaryContentStorage.put(event.id(), event.bytes());
       binaryContentService.updateStatus(event.id(), BinaryContentStatus.SUCCESS);
