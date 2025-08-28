@@ -129,14 +129,14 @@ public class BasicReadStatusService implements ReadStatusService {
     public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
         log.info(SERVICE_NAME + "읽음 상태 수정 시도: id={}", readStatusId);
         Instant newLastReadAt = request.newLastReadAt();
-        boolean newNotificationEnabled = request.newNotificationEnabled();
+        Boolean newNotificationEnabled = request.newNotificationEnabled();
 
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
             .orElseThrow(() -> {
                 log.error(SERVICE_NAME + "읽음 상태 없음: id={}", readStatusId);
                 return new ReadStatusNotFoundException("읽음 상태 정보를 찾을 수 없습니다.");
             });
-        if (newLastReadAt != null || newNotificationEnabled != readStatus.isNotificationEnabled()) {
+        if (newLastReadAt != null || newNotificationEnabled != null && newNotificationEnabled != readStatus.isNotificationEnabled()) {
             readStatus.update(newLastReadAt, newNotificationEnabled);
         }
 

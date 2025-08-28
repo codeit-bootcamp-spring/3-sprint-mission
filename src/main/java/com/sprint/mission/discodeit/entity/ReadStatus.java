@@ -59,7 +59,7 @@ public class ReadStatus extends BaseUpdatableEntity {
      * <p>기본값은 false이며, 사용자가 설정을 변경할 수 있습니다.</p>
      */
     @Column(name = "notification_enabled", nullable = false)
-    private boolean notificationEnabled = false;
+    private boolean notificationEnabled;
 
     /**
      * 사용자가 해당 채널에서 마지막으로 메시지를 읽은 시간입니다.
@@ -98,14 +98,14 @@ public class ReadStatus extends BaseUpdatableEntity {
      * @param newLastReadAt 새로운 마지막 읽은 시간 (변경하지 않으려면 null)
      * @param newNotificationEnabled 새로운 알림 활성화 여부
      */
-    public void update(Instant newLastReadAt, boolean newNotificationEnabled) {
+    public void update(Instant newLastReadAt, Boolean newNotificationEnabled) {
         boolean anyValueUpdated = false;
         if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
             this.lastReadAt = newLastReadAt;
             anyValueUpdated = true;
         }
 
-        if (newNotificationEnabled != this.notificationEnabled) {
+        if (newNotificationEnabled != null && newNotificationEnabled != this.notificationEnabled) {
             this.notificationEnabled = newNotificationEnabled;
             anyValueUpdated = true;
         }
