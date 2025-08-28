@@ -6,9 +6,11 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -19,7 +21,6 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -49,7 +51,8 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
+    private final ApplicationEventPublisher eventPublisher;
+
     private final MessageMapper messageMapper;
     private final PageResponseMapper pageResponseMapper;
 
@@ -76,15 +79,18 @@ public class BasicMessageService implements MessageService {
 
         List<BinaryContent> attachments = binaryContentCreateRequests.stream()
             .map(binaryContentCreateRequest -> {
-            BinaryContent binaryContent = new BinaryContent(
-                binaryContentCreateRequest.fileName(),
-                (long) binaryContentCreateRequest.bytes().length,
-                binaryContentCreateRequest.contentType()
-            );
+                BinaryContent binaryContent = new BinaryContent(
+                    binaryContentCreateRequest.fileName(),
+                    (long) binaryContentCreateRequest.bytes().length,
+                    binaryContentCreateRequest.contentType(),
+                    BinaryContentStatus.PROCESSING
+                );
 
-            BinaryContent saved = binaryContentRepository.save(binaryContent);
-            binaryContentStorage.put(saved.getId(), binaryContentCreateRequest.bytes());
-            return saved;
+                BinaryContent saved = binaryContentRepository.save(binaryContent);
+
+                eventPublisher.publishEvent(new BinaryContentCreatedEvent(saved.getId(), binaryContentCreateRequest.bytes()));
+
+                return saved;
             })
             .toList();
 
@@ -96,6 +102,7 @@ public class BasicMessageService implements MessageService {
             attachments
         );
         log.debug("메시지 entity 생성: {}", message);
+
         messageRepository.save(message);
 
         return messageMapper.toDto(message);

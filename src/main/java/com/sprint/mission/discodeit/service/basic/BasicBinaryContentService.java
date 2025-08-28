@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binaryContent.FileNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
@@ -45,13 +47,15 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContent binaryContent = new BinaryContent(
             fileName,
             (long) bytes.length,
-            contentType
+            contentType,
+            BinaryContentStatus.PROCESSING
         );
         log.debug("파일 entity 생성: {}", binaryContent);
 
-    BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
-    log.info("파일 메타데이터 저장 완료 - id: {}", savedBinaryContent.getId());
-    binaryContentStorage.put(savedBinaryContent.getId(), bytes);
+        BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+        log.info("파일 메타데이터 저장 완료 - id: {}", savedBinaryContent.getId());
+
+        eventPublisher.publishEvent(new BinaryContentCreatedEvent(savedBinaryContent.getId(), bytes));
 
         return savedBinaryContent;
     }
@@ -75,6 +79,13 @@ public class BasicBinaryContentService implements BinaryContentService {
         return binaryContents.stream()
             .map(binaryContentMapper::toDto)
             .collect(Collectors.toList());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+        binaryContentRepository.findById(binaryContentId)
+            .ifPresent(binaryContent -> binaryContent.updateStatus(status));
+        log.debug("파일 상태 {}로 업데이트 완료 - binaryContentId: {}", status, binaryContentId);
     }
 
     @Override

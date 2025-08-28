@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.io.InputStream;
@@ -18,6 +19,8 @@ public interface BinaryContentService {
   BinaryContentDto find(@NotNull UUID binaryContentId);
 
   List<BinaryContentDto> findAllByIdIn(@NotNull List<UUID> binaryContentIds);
+
+  void updateStatus(@NotNull UUID binaryContentId, @NotNull BinaryContentStatus status);
 
   void delete(@NotNull UUID binaryContentId);
 
