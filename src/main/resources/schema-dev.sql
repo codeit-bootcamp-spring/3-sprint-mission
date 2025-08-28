@@ -72,12 +72,13 @@ CREATE TABLE messages (
 );
 
 CREATE TABLE read_statuses (
-    id              UUID PRIMARY KEY,
-    created_at      timestamp with time zone NOT NULL,
-    updated_at      timestamp with time zone,
-    user_id         UUID NOT NULL,
-    channel_id      UUID NOT NULL,
-    last_read_at    TIMESTAMP NOT NULL,
+    id                      UUID PRIMARY KEY,
+    created_at              timestamp with time zone NOT NULL,
+    updated_at              timestamp with time zone,
+    user_id                 UUID NOT NULL,
+    channel_id              UUID NOT NULL,
+    last_read_at            TIMESTAMP NOT NULL,
+    notification_enabled    boolean NOT NULL,
 
     CONSTRAINT fk_read_statuses_user
         FOREIGN KEY (user_id)
