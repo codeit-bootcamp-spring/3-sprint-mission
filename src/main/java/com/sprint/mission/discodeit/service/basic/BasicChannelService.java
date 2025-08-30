@@ -21,12 +21,16 @@ import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Key;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -42,13 +46,13 @@ import java.util.UUID;
 @Service
 public class BasicChannelService implements ChannelService {
 
+    private static final String SERVICE_NAME = "[ChannelService] ";
+
     private final ChannelRepository channelRepository;
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final ChannelMapper channelMapper;
-
-    private static final String SERVICE_NAME = "[ChannelService] ";
     private final UserMapper userMapper;
     private final UserService userService;
 
@@ -61,6 +65,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     @PreAuthorize("hasAnyRole('ADMIN', 'CHANNEL_MANAGER')")
     @Transactional
+    @CachePut(value = "channelById", key = "#result.id()")
     public ChannelDto create(PublicChannelCreateRequest request) {
         log.info(SERVICE_NAME + "공개 채널 생성 시도: {}", request);
 
@@ -71,6 +76,7 @@ public class BasicChannelService implements ChannelService {
 
         log.info(SERVICE_NAME + "공개 채널 생성 완료: ID = {}", savedChannel.getId());
         log.info(SERVICE_NAME + "공개 채널 이름: {}", name);
+
         return channelMapper.toDto(savedChannel);
     }
 
@@ -82,6 +88,8 @@ public class BasicChannelService implements ChannelService {
      */
     @Override
     @Transactional
+    @CachePut(value = "channelByUser", key = "#result.id()")
+    @CacheEvict(value = "channelById", allEntries = true)
     public ChannelDto create(PrivateChannelCreateRequest request) {
         log.info(SERVICE_NAME + "비공개 채널 생성 요청: {}", request);
 
@@ -98,18 +106,9 @@ public class BasicChannelService implements ChannelService {
                     () -> log.error(SERVICE_NAME + "참가자 ID를 찾을 수 없음: {}", participantId)
             );
         });
-
         log.info(SERVICE_NAME + "비공개 채널 생성 완료: ID = {}", createdChannel.getId());
-        return channelMapper.toDto(createdChannel);
 
-//        request.participantIds().stream()
-//            .map(userRepository::findById)
-//            .filter(Optional::isPresent)
-//            .map(Optional::get)
-//            .map(user -> new ReadStatus(user, createdChannel, Instant.MIN))
-//            .forEach(readStatusRepository::save);
-//
-//        return channelMapper.toDto(createdChannel);
+        return channelMapper.toDto(createdChannel);
     }
 
     /**
@@ -117,10 +116,11 @@ public class BasicChannelService implements ChannelService {
      *
      * @param channelId 조회할 채널 ID
      * @return 조회된 채널 DTO
-     * @throws NoSuchElementException 채널이 존재하지 않을 경우
+     * @throws ChannelNotFoundException 채널이 존재하지 않을 경우
      */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "channelById", key = "#channelId")
     public ChannelDto find(UUID channelId) {
         log.debug(SERVICE_NAME + "채널 조회 시도: ID = {}", channelId);
 
@@ -155,6 +155,7 @@ public class BasicChannelService implements ChannelService {
      */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "channelByUser", key = "#userId")
     public List<ChannelDto> findAllByUserId(UUID userId) {
         log.debug(SERVICE_NAME + "사용자 채널 목록 조회: ID = {}", userId);
 
@@ -187,6 +188,8 @@ public class BasicChannelService implements ChannelService {
     @Override
     @PreAuthorize("hasAnyRole('ADMIN', 'CHANNEL_MANAGER')")
     @Transactional
+    @CachePut(value = "channelById", key = "#channelId")
+    @CacheEvict(value = "channelByUser", key = "#channelId")
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
         log.info(SERVICE_NAME + "채널 수정 요청: ID = {}", channelId);
 
@@ -214,11 +217,12 @@ public class BasicChannelService implements ChannelService {
      * 채널을 삭제합니다.
      *
      * @param channelId 삭제할 채널 ID
-     * @throws NoSuchElementException 채널이 존재하지 않을 경우
+     * @throws ChannelNotFoundException 채널이 존재하지 않을 경우
      */
     @Override
     @PreAuthorize("hasAnyRole('ADMIN', 'CHANNEL_MANAGER')")
     @Transactional
+    @CacheEvict(value = {"channelById", "channelByUser"}, key = "#channelId", allEntries = true)
     public void delete(UUID channelId) {
         log.info(SERVICE_NAME + "채널 삭제 시도: ID = {}", channelId);
         Channel channel = channelRepository.findById(channelId)

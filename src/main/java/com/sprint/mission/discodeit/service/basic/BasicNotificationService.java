@@ -9,6 +9,8 @@ import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -24,6 +26,7 @@ public class BasicNotificationService implements NotificationService {
     private final NotificationMapper notificationMapper;
 
     @Override
+    @Cacheable(value = "notificationByUser", key = "#receiverId")
     public List<NotificationDto> findByUserId(UUID receiverId) {
 
         List<Notification> notificationList = notificationRepository.findByReceiverId(receiverId);
@@ -34,6 +37,7 @@ public class BasicNotificationService implements NotificationService {
     }
 
     @Override
+    @CacheEvict(value = "notificationByUser", key = "#receiverId")
     public void delete(UUID notificationId, UUID receiverId) {
 
         Notification notification = notificationRepository.findById(notificationId)

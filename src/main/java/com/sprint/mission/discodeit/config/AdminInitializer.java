@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminInitializer implements CommandLineRunner {
 
     private static final String CONFIG_NAME = "[AdminInitializer] ";
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 

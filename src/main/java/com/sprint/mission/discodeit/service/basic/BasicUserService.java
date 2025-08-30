@@ -16,6 +16,9 @@ import com.sprint.mission.discodeit.security.jwt.store.InMemoryJwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -51,12 +54,13 @@ import java.util.UUID;
 @ComponentScan(basePackages = "com.example.mapper")
 public class BasicUserService implements UserService {
 
+    private static final String SERVICE_NAME = "[UserService] ";
+
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    private static final String SERVICE_NAME = "[UserService] ";
     private final InMemoryJwtRegistry jwtRegistry;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -68,6 +72,7 @@ public class BasicUserService implements UserService {
      */
     @Override
     @Transactional
+    @CachePut(value = "users", key = "#result.id()")
     public UserDto create(UserCreateRequest userCreateRequest,
         Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         String username = userCreateRequest.username();
@@ -120,6 +125,7 @@ public class BasicUserService implements UserService {
      */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "userById", key = "#userId")
     public UserDto find(UUID userId) {
         log.info(SERVICE_NAME + "유저 조회 시도: userId={}", userId);
         return userRepository.findById(userId)
@@ -137,6 +143,7 @@ public class BasicUserService implements UserService {
      */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "users")
     public List<UserDto> findAll() {
         log.info(SERVICE_NAME + "전체 유저 목록 조회 시도");
         List<UserDto> result = userRepository.findAllWithProfile()
@@ -157,6 +164,7 @@ public class BasicUserService implements UserService {
      */
     @Override
     @Transactional
+    @CachePut(value = "users", key = "#result.id()")
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
         Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         log.info(SERVICE_NAME + "유저 정보 수정 시도: userId={}", userId);
@@ -232,6 +240,7 @@ public class BasicUserService implements UserService {
      */
     @Override
     @Transactional
+    @CacheEvict(value = {"userById", "users"}, key = "#userId")
     public void delete(UUID userId) {
         log.info(SERVICE_NAME + "유저 삭제 시도: userId={}", userId);
         if (!userRepository.existsById(userId)) {
