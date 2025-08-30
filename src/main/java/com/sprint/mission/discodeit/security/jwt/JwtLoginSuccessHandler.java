@@ -12,6 +12,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -49,6 +51,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper objectMapper;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
+    private final CacheManager cacheManager;
 
     /**
      * JwtLoginSuccessHandler를 생성합니다.
@@ -56,12 +59,15 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
      * @param objectMapper JSON 직렬화를 위한 ObjectMapper
      * @param jwtTokenProvider JWT 토큰 생성 및 관리 컴포넌트
      * @param jwtRegistry JWT 토큰 상태 관리 레지스트리
+     * @param cacheManager 캐시 관리 컴포넌트
      */
-    public JwtLoginSuccessHandler(ObjectMapper objectMapper, JwtTokenProvider jwtTokenProvider, JwtRegistry jwtRegistry) {
-        log.info(HANDLER_NAME + "생성자 호출됨: 응답 JSON 직렬화를 위한 매퍼, JWT 생성/쿠키 유틸리티, 토큰 상태 저장소 주입");
+    public JwtLoginSuccessHandler(ObjectMapper objectMapper, JwtTokenProvider jwtTokenProvider, 
+                                JwtRegistry jwtRegistry, CacheManager cacheManager) {
+        log.info(HANDLER_NAME + "생성자 호출됨: 응답 JSON 직렬화를 위한 매퍼, JWT 생성/쿠키 유틸리티, 토큰 상태 저장소, 캐시 매니저 주입");
         this.objectMapper = objectMapper;
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtRegistry = jwtRegistry;
+        this.cacheManager = cacheManager;
     }
 
     /**
@@ -94,27 +100,31 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
         if (authentication.getPrincipal() instanceof DiscodeitUserDetails userDetails) {
             try {
                 // 1. 동일 계정 기존 토큰 전부 무효화(동시 로그인 제한)
-                UUID userId =  userDetails.getUserDto().id();
+                UUID userId = userDetails.getUserDto().id();
+                String username = userDetails.getUsername();
                 log.info(HANDLER_NAME + "기존 토큰 무효화 시작 - username= {}", userId);
                 jwtRegistry.invalidateJwtInformationByUserId(userId);
 
-                // 2. 새 Access/Refresh 토큰 발급
+                // 2. 사용자 관련 캐시 무효화
+                evictUserCache(userId, username);
+
+                // 3. 새 Access/Refresh 토큰 발급
                 log.info(HANDLER_NAME + "새 토큰 발급 시작");
                 String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
                 String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
 
-                // 3. 토큰 메타데이터 저장 (toEntity로 중복 제거)
+                // 4. 토큰 메타데이터 저장 (toEntity로 중복 제거)
                 log.info(HANDLER_NAME + "토큰 메타데이터 저장 시작");
                 UserDto userDto = userDetails.getUserDto();
                 JwtInformation jwtInformation = new JwtInformation(userDto, accessToken,refreshToken);
                 jwtRegistry.registerJwtInformation(jwtInformation);
 
-                // 4. 리프레시 쿠키 설정
+                // 5. 리프레시 쿠키 설정
                 log.info(HANDLER_NAME + "리프레시 쿠키 설정 시작");
                 jwtTokenProvider.addRefreshCookie(response, refreshToken);
 
 
-                // 5. JwtDto 바디 전송
+                // 6. JwtDto 바디 전송
                 JwtDto jwtDto = new JwtDto(userDto, accessToken);
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write(objectMapper.writeValueAsString(jwtDto));
@@ -150,6 +160,42 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
             response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
 
             System.err.println(HANDLER_NAME + "예상치 못한 Principal 타입: " + authentication.getPrincipal().getClass());
+        }
+    }
+
+    /**
+     * 사용자 관련 캐시를 무효화합니다.
+     * 
+     * @param userId 사용자 ID
+     * @param username 사용자명
+     */
+    private void evictUserCache(UUID userId, String username) {
+        try {
+            // 사용자 정보 캐시 무효화
+            Cache userCache = cacheManager.getCache("userById");
+            if (userCache != null) {
+                userCache.evict(userId);
+                log.debug(HANDLER_NAME + "사용자 정보 캐시 무효화 완료 - userId: {}", userId);
+            }
+
+            // 전체 사용자 목록 캐시 무효화
+            Cache usersCache = cacheManager.getCache("users");
+            if (usersCache != null) {
+                usersCache.clear();
+                log.debug(HANDLER_NAME + "전체 사용자 목록 캐시 무효화 완료");
+            }
+
+            // UserDetails 캐시 무효화 (보안상 중요!)
+            Cache userDetailsCache = cacheManager.getCache("userDetailsByUsername");
+            if (userDetailsCache != null) {
+                userDetailsCache.evict(username);
+                log.debug(HANDLER_NAME + "UserDetails 캐시 무효화 완료 - username: {}", username);
+            }
+
+            log.info(HANDLER_NAME + "사용자 로그인 캐시 무효화 완료 - userId: {}, username: {}", userId, username);
+
+        } catch (Exception e) {
+            log.warn(HANDLER_NAME + "사용자 로그인 캐시 무효화 실패 - userId: {}, username: {}", userId, username, e);
         }
     }
 }

@@ -34,6 +34,7 @@ spring:
   config:
     import: optional:file:.env[.properties]
 
+
 admin:
   username: admin
   email: admin@discodeit.com
