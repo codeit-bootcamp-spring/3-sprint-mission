@@ -18,7 +18,7 @@ public record ReadStatusResponse(
         readStatus.getUser().getId(),
         readStatus.getChannel().getId(),
         readStatus.getLastReadAt(),
-        readStatus.getNotificationEnabled()
+        readStatus.isNotificationEnabled()
     );
   }
 }
