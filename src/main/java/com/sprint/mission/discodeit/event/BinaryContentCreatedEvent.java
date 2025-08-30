@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.storage.event;
+package com.sprint.mission.discodeit.event;
 
 import java.util.UUID;
 
@@ -8,4 +8,6 @@ public record BinaryContentCreatedEvent(
     String fileName,
     String contentType,
     long size
-) {}
+) {
+
+}
