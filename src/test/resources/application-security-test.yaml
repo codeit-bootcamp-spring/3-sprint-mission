@@ -28,6 +28,15 @@ spring:
     init:
       mode: never
 
+  cache:
+    type: caffeine
+    cache-names: channels, notifications, users
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
+
 decorator:
   datasource:
     p6spy:
