@@ -57,25 +57,62 @@ public class BinaryContentEventListener {
     public void onBinaryContentCreated(BinaryContentCreatedEvent event) {
         BinaryContent binaryContent = event.binaryContent();
         UUID id = binaryContent.getId();
+        String fileName = binaryContent.getFileName();
+        String contentType = binaryContent.getContentType();
         byte[] bytes = event.content();
 
+        log.info(LISTENER_NAME + "BinaryContent 저장 시작 - id={}, fileName={}, contentType={}, size={} bytes", 
+                id, fileName, contentType, bytes != null ? bytes.length : 0);
+
+        // 빈 컨텐츠 검증
         if (bytes == null || bytes.length == 0) {
-            log.warn(LISTENER_NAME + "빈 컨텐츠는 저장하지 않습니다: id={}", id);
-            binaryContentService.updateStatus(id, BinaryContentStatus.FAIL);
+            log.warn(LISTENER_NAME + "빈 컨텐츠는 저장하지 않습니다 - id={}, fileName={}", id, fileName);
+            try {
+                binaryContentService.updateStatus(id, BinaryContentStatus.FAIL);
+                log.info(LISTENER_NAME + "빈 컨텐츠 상태 업데이트 완료 - id={}, status=FAIL", id);
+            } catch (Exception statusException) {
+                log.error(LISTENER_NAME + "상태 업데이트 실패 - id={}, status=FAIL", id, statusException);
+            }
             return;
         }
 
-        log.info(LISTENER_NAME + "BinaryContent bytes 저장 시작: id={}, size={}", id, bytes.length);
-
         try {
+            // 파일 크기 검증 (예: 최대 100MB)
+            if (bytes.length > 100 * 1024 * 1024) {
+                log.warn(LISTENER_NAME + "파일 크기가 너무 큽니다 - id={}, fileName={}, size={} bytes (최대: 100MB)", 
+                        id, fileName, bytes.length);
+                binaryContentService.updateStatus(id, BinaryContentStatus.FAIL);
+                return;
+            }
+
+            log.debug(LISTENER_NAME + "스토리지에 파일 저장 시작 - id={}, fileName={}, size={} bytes", 
+                    id, fileName, bytes.length);
+
+            // 스토리지에 파일 저장
             binaryContentStorage.put(id, bytes);
+            
+            log.debug(LISTENER_NAME + "스토리지 저장 완료, 상태 업데이트 시작 - id={}, fileName={}", id, fileName);
+
+            // 성공 상태로 업데이트
             binaryContentService.updateStatus(id, BinaryContentStatus.SUCCESS);
-            log.info(LISTENER_NAME + "BinaryContent bytes 저장 완료: id={}", id);
+
+            log.info(LISTENER_NAME + "BinaryContent 저장 완료 - id={}, fileName={}, size={} bytes", 
+                    id, fileName, bytes.length);
+
         } catch (Exception e) {
-            log.error(LISTENER_NAME + "BinaryContent bytes 저장 실패: id={}", id, e);
-            // 실패한 경우의 처리 로직을 추가할 수 있습니다.
-            // 예: 재시도 큐에 추가, 알림 발송 등
-            binaryContentService.updateStatus(id, BinaryContentStatus.FAIL);
+            log.error(LISTENER_NAME + "BinaryContent 저장 실패 - id={}, fileName={}, size={} bytes", 
+                    id, fileName, bytes != null ? bytes.length : 0, e);
+
+            try {
+                // 실패 상태로 업데이트
+                binaryContentService.updateStatus(id, BinaryContentStatus.FAIL);
+                log.info(LISTENER_NAME + "실패 상태 업데이트 완료 - id={}, status=FAIL", id);
+            } catch (Exception statusException) {
+                log.error(LISTENER_NAME + "실패 상태 업데이트 실패 - id={}, status=FAIL", id, statusException);
+            }
+
+            // TODO: 실패한 경우의 처리 로직을 추가할 수 있습니다.
+            // 예: 재시도 큐에 추가, 알림 발송, 메트릭 수집 등
         }
     }
 }
