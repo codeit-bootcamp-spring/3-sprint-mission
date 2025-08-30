@@ -34,12 +34,13 @@ public class ReadStatus extends BaseUpdatableEntity {
   private Instant lastReadAt;
 
   @Column(name = "notification_enabled", nullable = false)
-  private Boolean notificationEnabled = true;
+  private boolean notificationEnabled;
 
   private ReadStatus(User user, Channel channel) {
     this.user = user;
     this.channel = channel;
     this.lastReadAt = Instant.now();
+    this.notificationEnabled = !channel.getType().equals(ChannelType.PUBLIC);
   }
 
   public static ReadStatus create(User user, Channel channel) {
@@ -51,7 +52,9 @@ public class ReadStatus extends BaseUpdatableEntity {
   }
 
   public void updateNotificationEnabled(Boolean newNotificationEnabled) {
-    this.notificationEnabled = newNotificationEnabled;
+    if (newNotificationEnabled != null) {
+      this.notificationEnabled = newNotificationEnabled;
+    }
   }
 
   public void assignIdForTest(UUID id) {

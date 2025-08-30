@@ -78,9 +78,6 @@ CREATE TABLE notifications (
     content TEXT NOT NULL
 );
 
-ALTER TABLE notifications
-    ADD CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES users (id) ON DELETE CASCADE;
-
 -- FK 제약 추가
 ALTER TABLE users
     ADD CONSTRAINT fk_profile FOREIGN KEY (profile_id) REFERENCES binary_contents (id) ON DELETE CASCADE;
@@ -97,4 +94,4 @@ ALTER TABLE message_attachments
 ALTER TABLE message_attachments
     ADD CONSTRAINT fk_attachment_file FOREIGN KEY (attachment_id) REFERENCES binary_contents (id) ON DELETE CASCADE;
 ALTER TABLE notifications
-    ADD CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES users (id);
+    ADD CONSTRAINT fk_notification_receiver FOREIGN KEY (receiver_id) REFERENCES users (id) ON DELETE CASCADE;
