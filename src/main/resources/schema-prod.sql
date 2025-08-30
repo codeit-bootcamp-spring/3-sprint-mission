@@ -66,6 +66,16 @@ CREATE TABLE IF NOT EXISTS read_statuses
     UNIQUE (user_id, channel_id)
 );
 
+-- Notifications
+CREATE TABLE notifications
+(
+    id          UUID NOT NULL,
+    createdAt   timestamp with time zone NOT NULL,
+    receiver_id UUID,
+    title       VARCHAR(20) NOT NULL,
+    content     text NOT NULL
+);
+
 
 -- User (1) -> BinaryContent (1)
 ALTER TABLE users

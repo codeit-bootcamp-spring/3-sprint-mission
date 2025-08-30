@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS channels CASCADE;
 DROP TABLE IF EXISTS persistent_logins CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS binary_contents CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
 
 
 CREATE TABLE binary_contents (
@@ -108,4 +109,12 @@ CREATE TABLE message_attachments (
         FOREIGN KEY (attachment_id)
         REFERENCES  binary_contents(id)
         ON DELETE CASCADE
+);
+
+CREATE TABLE notifications (
+    id          UUID NOT NULL,
+    createdAt   timestamp with time zone NOT NULL,
+    receiver_id UUID,
+    title       VARCHAR(20) NOT NULL,
+    content     TEXT NOT NULL
 );

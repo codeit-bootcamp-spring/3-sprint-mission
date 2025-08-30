@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.auth.InvalidTokenException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
@@ -29,6 +30,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final DiscodeitUserDetailsService userDetailsService;
     private final UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
 
     public JwtDto refreshToken(String refreshToken, HttpServletResponse response) {
 
@@ -66,7 +68,7 @@ public class AuthService {
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public User updateRole(RoleUpdateRequest roleUpdateRequest) {
-        log.debug("사용자 권한 변경 시작");
+        log.info("사용자 권한 변경 시작");
 
         UUID userId = roleUpdateRequest.userId();
         User user = userRepository.findById(userId)
@@ -77,8 +79,14 @@ public class AuthService {
 
         jwtRegistry.invalidateJwtInformationByUserId(userId);
 
-        log.info("사용자 권한 변경 완료");
+        log.info("사용자 권한 변경 완료 - newRole: {}", newRole);
 
         return user;
+    }
+
+    public boolean isOwnerOfNotification(UUID notificationId, UUID userId) {
+        return notificationRepository.findById(notificationId)
+            .map(n -> n.getReceiverId().equals(userId))
+            .orElse(false);
     }
 }

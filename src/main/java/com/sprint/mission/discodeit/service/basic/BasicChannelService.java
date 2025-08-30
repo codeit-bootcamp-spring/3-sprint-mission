@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
@@ -42,9 +43,18 @@ public class BasicChannelService implements ChannelService {
         String name = request.name();
         String description = request.description();
         Channel channel = new Channel(ChannelType.PUBLIC, name, description);
-        log.debug("채널 entity 생성: {}", channel);
-
         channelRepository.save(channel);
+
+        log.debug("채널 entity 생성 및 DB에 저장 완료: {}", channel);
+
+        List<User> users = userRepository.findAll();
+        List<ReadStatus> readStatuses = users.stream()
+            .map(user -> new ReadStatus(user, channel, channel.getCreatedAt(), false))
+            .toList();
+        readStatusRepository.saveAll(readStatuses);
+
+        log.debug("저장된 ReadStatus 수: {}", readStatuses.size());
+
         return channelMapper.toDto(channel);
     }
 
@@ -56,7 +66,7 @@ public class BasicChannelService implements ChannelService {
         log.debug("채널 entity 생성: {}", channel);
 
         List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds()).stream()
-            .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
+            .map(user -> new ReadStatus(user, channel, channel.getCreatedAt(), true))
             .toList();
         readStatusRepository.saveAll(readStatuses);
 
