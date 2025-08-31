@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
-import com.sprint.mission.discodeit.event.BinaryContentNotUploadedEvent;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.extern.slf4j.Slf4j;
@@ -309,7 +309,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
             requestId = "unknown";
         }
 
-        BinaryContentNotUploadedEvent event = new BinaryContentNotUploadedEvent(requestId, binaryContentId, e.getMessage(), Instant.now());
+        S3UploadFailedEvent event = new S3UploadFailedEvent(requestId, binaryContentId, e.getMessage(), Instant.now());
         eventPublisher.publishEvent(event);
 
         // 실패 원인 분석 및 로깅

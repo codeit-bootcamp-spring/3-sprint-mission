@@ -64,6 +64,12 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine
     implementation 'com.github.ben-manes.caffeine:caffeine:3.2.2'
+
+    implementation 'org.springframework.kafka:spring-kafka'
+
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
 }
 dependencyManagement {
     imports {

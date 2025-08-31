@@ -138,7 +138,7 @@ public class AsyncConfig implements AsyncConfigurer {
      * @param keepAlive 유휴 스레드 유지 시간 (기본값: 60초)
      * @return 알림 전송용 ThreadPoolTaskExecutor
      */
-    @Bean(name = "notificationTaskExecutor")
+    @Bean(name = "eventTaskListener")
     public ThreadPoolTaskExecutor notificationTaskExecutor(
             @Value("${async.executors.notification.core-size:" + DEFAULT_CORE_POOL_SIZE + "}") int core,
             @Value("${async.executors.notification.max-size:" +  DEFAULT_MAX_POOL_SIZE + "}") int max,

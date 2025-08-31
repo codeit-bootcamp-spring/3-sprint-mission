@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * 바이너리 콘텐츠 업로드가 실패했을 때 발생하는 이벤트입니다.
+ * S3 파일 업로드가 실패했을 때 발생하는 이벤트입니다.
  * 
  * <p>파일 업로드 중 오류가 발생했을 때 실패 원인과 함께 이벤트 리스너에게
  * 알리는 데 사용됩니다.</p>
@@ -17,7 +17,7 @@ import java.util.UUID;
  * @author HuInDoL
  * @since 1.0.0
  */
-public record BinaryContentNotUploadedEvent (
+public record S3UploadFailedEvent(
         String requestId,
         UUID binaryContentId,
         String reason,

@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -73,6 +74,7 @@ public class BasicAuthService implements AuthService {
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
+    @CacheEvict(value = {"users", "userById", "userDetailsByUsername"}, allEntries = true, condition = "#result != null")
     public UserDto updateRole(RoleUpdateRequest request) {
 
         User user = userRepository.findById(request.userId())
@@ -82,7 +84,7 @@ public class BasicAuthService implements AuthService {
         Role newRole = request.newRole();
         user.updateRole(request.newRole());
 
-        RoleUpdatedEvent event = new RoleUpdatedEvent(user, oldRole, newRole, Instant.now());
+        RoleUpdatedEvent event = new RoleUpdatedEvent(user.getId(), oldRole, newRole, Instant.now());
         eventPublisher.publishEvent(event);
 
         UUID userId = user.getId();

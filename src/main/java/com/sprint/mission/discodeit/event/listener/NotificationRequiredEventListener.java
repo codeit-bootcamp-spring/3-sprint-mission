@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.event.listener;
 
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.event.BinaryContentNotUploadedEvent;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
@@ -22,7 +21,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
-@Component
+//@Component
 @RequiredArgsConstructor
 public class NotificationRequiredEventListener {
 
@@ -44,7 +43,7 @@ public class NotificationRequiredEventListener {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Async("notificationTaskExecutor")
+    @Async("eventTaskListener")
     public void on(MessageCreatedEvent event) {
         Message message = event.message();
         UUID messageId = message.getId();
@@ -100,10 +99,9 @@ public class NotificationRequiredEventListener {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Async("notificationTaskExecutor")
+    @Async("eventTaskListener")
     public void on(RoleUpdatedEvent event) {
-        User user = event.user();
-        UUID userId = user.getId();
+        UUID userId = event.userId();
         Role oldRole = event.oldRole();
         Role newRole = event.newRole();
 
@@ -113,7 +111,7 @@ public class NotificationRequiredEventListener {
         try {
             String title = "권한이 변경되었습니다.";
             String content = String.format("%s → %s", oldRole.name(), newRole.name());
-
+            User user = userRepository.findById(userId).orElseThrow();
             Notification notification = new Notification(user, title, content);
             notificationRepository.save(notification);
 
@@ -137,8 +135,8 @@ public class NotificationRequiredEventListener {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Async("notificationTaskExecutor")
-    public void on(BinaryContentNotUploadedEvent event) {
+    @Async("eventTaskListener")
+    public void on(S3UploadFailedEvent event) {
         String requestId = event.requestId();
         UUID binaryContentId = event.binaryContentId();
 
