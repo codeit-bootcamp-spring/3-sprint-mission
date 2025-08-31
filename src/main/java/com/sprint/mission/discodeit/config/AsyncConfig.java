@@ -57,6 +57,11 @@ public class AsyncConfig implements AsyncConfigurer {
         return exec;
     }
 
+    @Bean(name = "eventTaskExecutor")
+    public ThreadPoolTaskExecutor eventTaskExecutor(TaskDecorator mdcTaskDecorator) {
+        return buildExecutor(2, 4, 100, 60, "event-exec", mdcTaskDecorator);
+    }
+
     @Bean(name = "binaryContentTaskExecutor")
     public ThreadPoolTaskExecutor binaryContentTaskExecutor(TaskDecorator mdcTaskDecorator) {
         return buildExecutor(4, 8, 100, 120, "binarycontent-exec", mdcTaskDecorator);

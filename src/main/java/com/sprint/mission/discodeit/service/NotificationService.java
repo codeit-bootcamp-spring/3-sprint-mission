@@ -17,5 +17,5 @@ public interface NotificationService {
 
     void delete(@NotNull UUID notificationId);
 
-    void notifyAdmin(@NotBlank String title, @NotNull UUID binaryContentId, Exception ex);
+    void notifyAdmin(@NotBlank String title, @NotNull UUID binaryContentId, @NotNull String content);
 }

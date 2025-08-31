@@ -89,19 +89,7 @@ public class BasicNotificationService implements NotificationService {
 
     @Override
     @Transactional
-    public void notifyAdmin(String title, UUID binaryContentId, Exception ex) {
-        String requestId = null;
-        if (ex instanceof SdkServiceException sdkEx) {
-            requestId = sdkEx.requestId();
-        }
-
-        String content = String.format(
-            "RequestId: %s%nBinaryContentId: %s%nError: %s",
-            requestId,
-            binaryContentId,
-            ex.getMessage()
-        );
-
+    public void notifyAdmin(String title, UUID binaryContentId, String content) {
         List<UUID> adminIds = userRepository.findAllIdsByRole(Role.ADMIN);
 
         adminIds.forEach(adminId -> {

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -19,6 +20,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Slf4j
 @RequiredArgsConstructor
 @Component
+@ConditionalOnProperty(prefix = "discodeit.notification", name = "listener", havingValue = "event", matchIfMissing = true)
 public class NotificationRequiredEventListener {
 
     private final NotificationService notificationService;

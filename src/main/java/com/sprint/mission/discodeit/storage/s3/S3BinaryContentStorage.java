@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.service.NotificationService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.InputStream;
@@ -8,6 +9,7 @@ import java.time.Duration;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.exception.SdkServiceException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -31,7 +34,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 @ConditionalOnProperty(prefix = "discodeit.storage", name = "type", havingValue = "s3")
 public class S3BinaryContentStorage implements BinaryContentStorage {
 
-    private final NotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final S3Client s3Client;
     private final String accessKey;
@@ -40,8 +43,8 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     private final String bucket;
     private final Duration expiration;
 
-    public S3BinaryContentStorage(NotificationService notificationService, AwsProperties aws) {
-        this.notificationService = notificationService;
+    public S3BinaryContentStorage(NotificationService notificationService, ApplicationEventPublisher eventPublisher, AwsProperties aws) {
+        this.eventPublisher = eventPublisher;
         this.accessKey = aws.accessKey();
         this.secretKey = aws.secretKey();
         this.region = aws.region();
@@ -69,12 +72,10 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     public void recover(Exception ex, UUID binaryContentId, byte[] data) {
         log.error("S3 업로드 실패 - id={}, 원인={}", binaryContentId, ex.getMessage());
 
-        String title = "S3 파일 업로드 실패";
+        String requestId = (ex instanceof SdkServiceException sdkEx) ? sdkEx.requestId() : null;
 
-        notificationService.notifyAdmin(
-            title,
-            binaryContentId,
-            ex
+        eventPublisher.publishEvent(
+            new S3UploadFailedEvent(binaryContentId, requestId, ex.getMessage())
         );
     }
 
