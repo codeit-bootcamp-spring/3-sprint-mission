@@ -185,7 +185,7 @@ public class SecurityConfig {
     public RoleHierarchy roleHierarchy() {
 
         RoleHierarchy hierarchy = RoleHierarchyImpl.fromHierarchy(
-                "ROLE_ADMIN > ROLE_CHANNEL_MANAGER" +
+                "ROLE_ADMIN > ROLE_CHANNEL_MANAGER\n" +
                         "ROLE_CHANNEL_MANAGER > ROLE_USER"
                 );
         log.info(CONFIG_NAME + "RoleHierarchy 설정 완료: ROLE_ADMIN > ROLE_CHANNEL_MANAGER > ROLE_USER");

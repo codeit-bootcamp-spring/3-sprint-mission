@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -75,7 +76,7 @@ public class AuthController implements AuthApi {
     @PutMapping("/role")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDto> updateRole(
-            @RequestBody RoleUpdateRequest request
+            @Valid @RequestBody RoleUpdateRequest request
     ) {
 
         UserDto userDto = authService.updateRole(request);
@@ -104,7 +105,7 @@ public class AuthController implements AuthApi {
     public ResponseEntity<JwtDto> reIssueAccessByRefreshToken(
             @CookieValue(
                     name = JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME,
-                    required = false
+                    required = true
             )
             String refreshToken,
             HttpServletResponse response

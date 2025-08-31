@@ -104,9 +104,9 @@ public class DiscodeitUserDetails implements UserDetails {
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-
         if (obj == null) return false;
+
+        if (this == obj) return true;
 
         if (getClass() != obj.getClass()) return false;
 
