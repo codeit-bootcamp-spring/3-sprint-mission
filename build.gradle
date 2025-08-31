@@ -50,6 +50,8 @@ dependencies {
 
     // AWS
     implementation 'software.amazon.awssdk:s3:2.31.7'
+    implementation 'org.springframework.retry:spring-retry'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 
     // Env
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
