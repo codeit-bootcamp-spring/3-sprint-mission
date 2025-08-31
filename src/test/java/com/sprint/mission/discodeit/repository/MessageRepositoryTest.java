@@ -19,9 +19,11 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
+@EnableJpaAuditing
 @ActiveProfiles("test")
 @DisplayName("MessageRepository 슬라이스 테스트")
 public class MessageRepositoryTest {

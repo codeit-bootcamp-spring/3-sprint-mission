@@ -215,7 +215,7 @@ public class ChannelServiceTest {
     @DisplayName("특정 사용자의 접속 채널 조회 성공")
     void findAllByUserId() {
         // given
-        List<ReadStatus> readStatuses = List.of(new ReadStatus(user, channel, Instant.now()));
+        List<ReadStatus> readStatuses = List.of(new ReadStatus(user, channel, Instant.now(), false));
         given(readStatusRepository.findAllByUserId(eq(userId))).willReturn(readStatuses);
         given(channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC, List.of(channel.getId()))).willReturn(List.of(channel));
         given(channelMapper.toDto(any(Channel.class))).willReturn(channelDto);

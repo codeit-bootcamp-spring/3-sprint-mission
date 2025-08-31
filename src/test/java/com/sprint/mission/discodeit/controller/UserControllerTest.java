@@ -18,6 +18,7 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
@@ -102,7 +103,7 @@ public class UserControllerTest {
         UserUpdateRequest updateReq = new UserUpdateRequest("tommy", "tommy@test.com", "pw223456");
 
         UUID contentId = UUID.randomUUID();
-        BinaryContentDto profileDto = new BinaryContentDto(contentId, "profile.png", 1024L, "image/png");
+        BinaryContentDto profileDto = new BinaryContentDto(contentId, "profile.png", 1024L, "image/png", BinaryContentStatus.PROCESSING);
 
         UserDto returned = new UserDto(eq(userId), "tommy", "tommy@test.com", profileDto, false, Role.USER);
         given(userService.update(userId, any(UserUpdateRequest.class), any(Optional.class))).willReturn(returned);

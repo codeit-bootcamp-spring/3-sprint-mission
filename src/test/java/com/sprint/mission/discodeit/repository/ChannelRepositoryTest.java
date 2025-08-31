@@ -40,8 +40,7 @@ public class ChannelRepositoryTest {
         channelRepository.save(publicChannel);
 
         privateChannelAccessible = channelRepository.save(new Channel(ChannelType.PRIVATE, null, null));
-        readStatusRepository.save(new ReadStatus(user, privateChannelAccessible, privateChannelAccessible.getCreatedAt()));
-
+        readStatusRepository.save(new ReadStatus(user, privateChannelAccessible, privateChannelAccessible.getCreatedAt(), false));
 
         em.flush();
         em.clear();

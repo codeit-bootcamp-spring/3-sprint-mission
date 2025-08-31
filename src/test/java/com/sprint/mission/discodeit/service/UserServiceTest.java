@@ -1,8 +1,13 @@
 package com.sprint.mission.discodeit.service;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.*;
+import static org.mockito.BDDMockito.anyString;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willDoNothing;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
@@ -10,6 +15,7 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.user.DuplicateUserException;
@@ -28,6 +34,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,6 +46,7 @@ public class UserServiceTest {
     @Mock private BinaryContentStorage binaryContentStorage;
     @Mock private UserMapper userMapper;
     @Mock private PasswordEncoder passwordEncoder;
+    @Mock private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private BasicUserService userService;
@@ -53,14 +61,14 @@ public class UserServiceTest {
     @BeforeEach
     void setUp() {
         profileBytes = "tom profile data".getBytes();
-        binaryContent = new BinaryContent("tomProfile", (long) profileBytes.length, "png");
+        binaryContent = new BinaryContent("tomProfile", (long) profileBytes.length, "png", BinaryContentStatus.PROCESSING);
         profileCreateRequest = new BinaryContentCreateRequest("tomProfile", "png", profileBytes);
 
         userCreateRequest = new UserCreateRequest("tom", "tom@test.com", "pw123456");
         user = new User("tom", "tom@test.com", "pw123456", binaryContent);
         userDto = new UserDto(
             UUID.randomUUID(), "tom", "tom@test.com",
-            new BinaryContentDto(UUID.randomUUID(), "tomProfile", 16L, "png"), false, Role.USER);
+            new BinaryContentDto(UUID.randomUUID(), "tomProfile", 16L, "png", BinaryContentStatus.PROCESSING), false, Role.USER);
     }
 
     @Test
@@ -100,7 +108,6 @@ public class UserServiceTest {
         given(userRepository.existsByEmail("tom@test.com")).willReturn(false);
 
         given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(binaryContent);
-        given(binaryContentStorage.put(binaryContent.getId(), profileBytes)).willReturn(binaryContent.getId());
 
         given(userRepository.save(any(User.class))).willReturn(user);
         given(userMapper.toDto(user)).willReturn(userDto);
@@ -110,7 +117,6 @@ public class UserServiceTest {
 
         // then
         then(binaryContentRepository).should().save(any(BinaryContent.class));
-        then(binaryContentStorage).should().put(eq(binaryContent.getId()), eq(profileBytes));
         then(userRepository).should().save(any(User.class));
         then(userMapper).should().toDto(user);
 
