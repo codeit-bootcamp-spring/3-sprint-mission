@@ -8,15 +8,10 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.util.UUID;
 
-/**
- * 요청마다 MDC에 컨텍스트 정보를 추가하는 인터셉터
- */
+
 @Slf4j
 public class MDCLoggingInterceptor implements HandlerInterceptor {
-    
-    /**
-     * MDC 로깅에 사용되는 상수 정의
-     */
+
     public static final String REQUEST_ID = "requestId";
     public static final String REQUEST_METHOD = "requestMethod";
     public static final String REQUEST_URI = "requestUri";
