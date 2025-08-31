@@ -33,4 +33,13 @@ public class Notification extends BaseEntity {
     public static Notification of(UUID receiverId, String title, String content) {
         return new Notification(receiverId, title, content);
     }
+
+    @Override
+    public String toString() {
+        return "Notification{" +
+            "receiverId=" + receiverId +
+            ", title=" + title +
+            ", content='" + content + '\'' +
+            '}';
+    }
 }

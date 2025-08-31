@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.data.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
@@ -13,4 +14,6 @@ public interface NotificationService {
     List<NotificationDto> findAll();
 
     void delete(@NotNull UUID notificationId);
+
+    void notifyAdmin(@NotBlank String title, @NotNull UUID binaryContentId, Exception ex);
 }

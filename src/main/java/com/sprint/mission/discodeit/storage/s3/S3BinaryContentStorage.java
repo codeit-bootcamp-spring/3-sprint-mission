@@ -1,15 +1,19 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.service.NotificationService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -22,9 +26,13 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
+@Slf4j
 @Component
 @ConditionalOnProperty(prefix = "discodeit.storage", name = "type", havingValue = "s3")
 public class S3BinaryContentStorage implements BinaryContentStorage {
+
+    private final NotificationService notificationService;
+
     private final S3Client s3Client;
     private final String accessKey;
     private final String secretKey;
@@ -32,7 +40,8 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     private final String bucket;
     private final Duration expiration;
 
-    public S3BinaryContentStorage(AwsProperties aws) {
+    public S3BinaryContentStorage(NotificationService notificationService, AwsProperties aws) {
+        this.notificationService = notificationService;
         this.accessKey = aws.accessKey();
         this.secretKey = aws.secretKey();
         this.region = aws.region();
@@ -41,6 +50,10 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         this.s3Client = getS3Client();
     }
 
+    @Retryable(
+        maxAttempts = 2,
+        backoff = @Backoff(delay = 2000, multiplier = 2)
+    )
     @Override
     public UUID put(UUID id, byte[] data) {
         PutObjectRequest putRequest = PutObjectRequest.builder()
@@ -50,6 +63,19 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
         s3Client.putObject(putRequest, RequestBody.fromBytes(data));
         return id;
+    }
+
+    @Recover
+    public void recover(Exception ex, UUID binaryContentId, byte[] data) {
+        log.error("S3 업로드 실패 - id={}, 원인={}", binaryContentId, ex.getMessage());
+
+        String title = "S3 파일 업로드 실패";
+
+        notificationService.notifyAdmin(
+            title,
+            binaryContentId,
+            ex
+        );
     }
 
     @Override
