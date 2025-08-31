@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.exception.binaryContent.FileStorageErrorException;
 import com.sprint.mission.discodeit.exception.binaryContent.ResourceUrlCreationErrorException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import io.micrometer.core.annotation.Timed;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,6 +46,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         }
     }
 
+    @Timed("binarycontent.put.time")
     @Override
     public UUID put(UUID id, byte[] data) {
         Path file = resolvePath(id);

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -23,6 +24,7 @@ public class NotificationRequiredEventListener {
     private final NotificationService notificationService;
     private final ReadStatusRepository readStatusRepository;
 
+    @Async("notificationTaskExecutor")
     @Transactional
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onMessageCreated(MessageCreatedEvent event) {
@@ -47,6 +49,7 @@ public class NotificationRequiredEventListener {
             });
     }
 
+    @Async("notificationTaskExecutor")
     @Transactional
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onRoleUpdated(RoleUpdatedEvent event) {

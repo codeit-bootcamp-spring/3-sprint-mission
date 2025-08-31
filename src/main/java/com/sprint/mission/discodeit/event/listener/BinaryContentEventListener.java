@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -19,6 +20,7 @@ public class BinaryContentEventListener {
     private final BinaryContentStorage binaryContentStorage;
     private final BinaryContentService binaryContentService;
 
+    @Async("binaryContentTaskExecutor")
     @Transactional
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onBinaryContentCreated(BinaryContentCreatedEvent event) {
