@@ -17,6 +17,13 @@ spring:
   security:
     rememberme:
       key: ${SPRING_SECURITY_REMEMBERME_KEY}
+  cache:
+    type: caffeine
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
 
 logging:
   level:
@@ -54,10 +61,13 @@ management:
           - metrics
           - loggers
           - env
+          - caches
   endpoint:
     health:
       show-details: always
       show-components: always
+    caches:
+      access: unrestricted
   info:
     env:
       enabled: true

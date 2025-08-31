@@ -21,6 +21,8 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,6 +45,7 @@ public class BasicUserService implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto create(
         UserCreateRequest userCreateRequest,
         Optional<BinaryContentCreateRequest> optionalProfileCreateRequest
@@ -97,6 +100,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Cacheable(value = "users")
     public List<UserDto> findAll() {
         return userRepository.findAll()
             .stream()
@@ -107,6 +111,7 @@ public class BasicUserService implements UserService {
     @Override
     @PreAuthorize("#userId == principal.userDto.id()")
     @Transactional
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto update(
         UUID userId,
         UserUpdateRequest userUpdateRequest,
@@ -158,6 +163,7 @@ public class BasicUserService implements UserService {
     @Override
     @PreAuthorize("#userId == principal.userDto.id()")
     @Transactional
+    @CacheEvict(value = "users", allEntries = true)
     public void delete(UUID userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> {
@@ -174,6 +180,7 @@ public class BasicUserService implements UserService {
     @Override
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto updateUserRole(RoleUpdateRequest roleUpdateRequest) {
         UUID userId = roleUpdateRequest.userId();
 

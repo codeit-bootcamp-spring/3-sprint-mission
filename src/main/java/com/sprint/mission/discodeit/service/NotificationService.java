@@ -13,6 +13,8 @@ public interface NotificationService {
 
     List<NotificationDto> findAll();
 
+    List<NotificationDto> findAllByUserId(@NotNull UUID userId);
+
     void delete(@NotNull UUID notificationId);
 
     void notifyAdmin(@NotBlank String title, @NotNull UUID binaryContentId, Exception ex);
