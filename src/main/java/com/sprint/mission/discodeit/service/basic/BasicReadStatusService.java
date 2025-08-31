@@ -98,6 +98,9 @@ public class BasicReadStatusService implements ReadStatusService {
                 log.error("읽음 상태 조회 실패 - readStatusId={}", readStatusId);
                 return new ReadStatusNotFoundException(readStatusId);
             });
+
+        readStatus.update(request.newLastReadAt(), request.newNotificationEnabled());
+
         return readStatusMapper.toDto(readStatus);
     }
 

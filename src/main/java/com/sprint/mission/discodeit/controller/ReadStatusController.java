@@ -11,6 +11,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -24,37 +25,40 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 @RequiredArgsConstructor
 @RestController
+@Transactional(readOnly = true)
 @RequestMapping("/api/readStatuses")
 public class ReadStatusController implements ReadStatusApi {
 
-  private final ReadStatusService readStatusService;
+    private final ReadStatusService readStatusService;
 
-  @PostMapping
-  @Override
-  public ResponseEntity<ReadStatusDto> create(@Valid @RequestBody ReadStatusCreateRequest request) {
-    ReadStatusDto createdReadStatus = readStatusService.create(request);
-    return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(createdReadStatus);
-  }
+    @PostMapping
+    @Transactional
+    @Override
+    public ResponseEntity<ReadStatusDto> create(@Valid @RequestBody ReadStatusCreateRequest request) {
+        ReadStatusDto createdReadStatus = readStatusService.create(request);
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(createdReadStatus);
+    }
 
-  @PatchMapping(path = "{readStatusId}")
-  @Override
-  public ResponseEntity<ReadStatusDto> update(
-      @Valid @PathVariable("readStatusId") UUID readStatusId,
-      @Valid @RequestBody ReadStatusUpdateRequest request) {
-    ReadStatusDto updatedReadStatus = readStatusService.update(readStatusId, request);
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(updatedReadStatus);
-  }
+    @PatchMapping(path = "{readStatusId}")
+    @Transactional
+    @Override
+    public ResponseEntity<ReadStatusDto> update(
+        @Valid @PathVariable("readStatusId") UUID readStatusId,
+        @Valid @RequestBody ReadStatusUpdateRequest request) {
+        ReadStatusDto updatedReadStatus = readStatusService.update(readStatusId, request);
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(updatedReadStatus);
+    }
 
-  @GetMapping
-  @Override
-  public ResponseEntity<List<ReadStatusDto>> findAllByUserId(@Valid @RequestParam("userId") UUID userId) {
-    List<ReadStatusDto> readStatuses = readStatusService.findAllByUserId(userId);
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(readStatuses);
-  }
+    @GetMapping
+    @Override
+    public ResponseEntity<List<ReadStatusDto>> findAllByUserId(@Valid @RequestParam("userId") UUID userId) {
+        List<ReadStatusDto> readStatuses = readStatusService.findAllByUserId(userId);
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(readStatuses);
+    }
 }
