@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS read_statuses
 CREATE TABLE notifications
 (
     id          UUID NOT NULL,
-    createdAt   timestamp with time zone NOT NULL,
+    created_at   timestamp with time zone NOT NULL,
     receiver_id UUID,
     title       VARCHAR(20) NOT NULL,
     content     text NOT NULL

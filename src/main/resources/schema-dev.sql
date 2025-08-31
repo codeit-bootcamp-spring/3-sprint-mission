@@ -113,7 +113,7 @@ CREATE TABLE message_attachments (
 
 CREATE TABLE notifications (
     id          UUID NOT NULL,
-    createdAt   timestamp with time zone NOT NULL,
+    created_at   timestamp with time zone NOT NULL,
     receiver_id UUID,
     title       VARCHAR(20) NOT NULL,
     content     TEXT NOT NULL
