@@ -24,6 +24,16 @@ spring:
         maximumSize=100,
         expireAfterAccess=600s,
         recordStats
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 logging:
   level:
@@ -31,8 +41,7 @@ logging:
     org.hibernate.orm.jdbc.bind: trace
 
 discodeit:
-  storage:
-#    type: ${STORAGE_TYPE:local}  #local | s3 (기본값: local)
+  storage:  #type: ${STORAGE_TYPE:local}  #local | s3 (기본값: local)
     type: local
     local:
       root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
@@ -42,6 +51,8 @@ discodeit:
       region: ${AWS_S3_REGION}
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} #(기본값: 10분)
+  notification:
+    listener: kafka  #event | kafka
 
 jwt:
   access-token:

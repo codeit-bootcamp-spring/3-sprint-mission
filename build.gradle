@@ -57,6 +57,9 @@ dependencies {
     implementation 'org.springframework.retry:spring-retry'
     implementation 'org.springframework.boot:spring-boot-starter-aop'
 
+    // Kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+
     // Env
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 
