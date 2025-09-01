@@ -1,14 +1,20 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.jpa.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.service.basic
@@ -28,8 +34,8 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentMapper binaryContentMapper;
 
     @Override
-    public List<BinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds) {
-        List<BinaryContentResponse> responses = new ArrayList<>();
+    public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
+        List<BinaryContentDto> responses = new ArrayList<>();
 
         if (binaryContentIds.isEmpty()) {
             throw new RuntimeException("no ids in param");
@@ -48,10 +54,19 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public BinaryContentResponse find(UUID binaryContentId) {
+    public BinaryContentDto find(UUID binaryContentId) {
         BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
                 .orElseThrow(() -> new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found"));
 
+        return binaryContentMapper.toDto(binaryContent);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public BinaryContentDto updatedStatus(UUID binaryContentId, BinaryContentStatus status) {
+        BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId).orElseThrow(() -> new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found"));
+        binaryContent.updateStatus(status);
+        binaryContentRepository.save(binaryContent);
         return binaryContentMapper.toDto(binaryContent);
     }
 }

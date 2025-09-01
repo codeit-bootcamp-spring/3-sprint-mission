@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import org.mapstruct.Mapper;
 
@@ -13,5 +13,5 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface BinaryContentMapper {
 
-    BinaryContentResponse toDto(BinaryContent binaryContent);
+    BinaryContentDto toDto(BinaryContent binaryContent);
 }

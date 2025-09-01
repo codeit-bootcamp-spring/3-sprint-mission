@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto.binaryContent;
 
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import lombok.Builder;
 
 import java.util.UUID;
@@ -11,10 +12,11 @@ import java.util.UUID;
  * Date         : 2025. 5. 28.
  */
 @Builder
-public record BinaryContentResponse(
+public record BinaryContentDto(
                 UUID id,
                 String fileName,
                 Long size,
-                String contentType
+                String contentType,
+                BinaryContentStatus status
 ) {
 }

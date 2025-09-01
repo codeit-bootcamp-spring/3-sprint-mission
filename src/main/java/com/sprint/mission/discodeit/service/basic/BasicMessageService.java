@@ -1,9 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.message.response.PageResponse;
 import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -19,6 +20,7 @@ import com.sprint.mission.discodeit.repository.jpa.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -55,6 +57,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
     private final MessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public PageResponse findAllByChannelIdAndCursor(UUID channelId, Instant cursor, Pageable pageable) {
@@ -118,7 +121,11 @@ public class BasicMessageService implements MessageService {
                         .extension(extension)
                         .build();
                     attachment = binaryContentRepository.save(binaryContent);
-                    binaryContentStorage.put(binaryContent.getId(),file.getBytes());
+                    eventPublisher.publishEvent(
+                        new BinaryContentCreatedEvent(
+                            binaryContent, binaryContent.getCreatedAt(),file.getBytes()
+                        )
+                    );
 
                 } catch (IOException e) {
                     throw new RuntimeException(e);
