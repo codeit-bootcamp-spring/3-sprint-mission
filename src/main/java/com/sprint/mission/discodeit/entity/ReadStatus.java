@@ -5,10 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * packageName    : com.sprint.mission.discodeit.entity
@@ -37,21 +35,28 @@ public class ReadStatus extends BaseUpdatableEntity {
     @JoinColumn(name = "channel_id")
     private Channel channel;
 
-    public ReadStatus(User user, Channel channel) {
-        super();
-        this.user = user;
-        this.channel = channel;
-        this.lastReadAt = Instant.now();
-    }
+    @Column(nullable = false)
+    private boolean notificationEnabled;
+
+
 
     public ReadStatus(User user, Channel channel, Instant lastReadAt) {
-        super();
         this.user = user;
         this.channel = channel;
         this.lastReadAt = lastReadAt;
+        this.notificationEnabled = channel.getType().equals(ChannelType.PRIVATE);
     }
 
-    public void changeLastReadAt(Instant lastReadAt) {
-        this.lastReadAt = lastReadAt;
+    public void changeLastReadAt(Instant newLastReadAt, Boolean notificationEnabled) {
+        if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
+            this.lastReadAt = newLastReadAt;
+        }
+        if (notificationEnabled != null) {
+            this.notificationEnabled = notificationEnabled;
+        }
     }
+
+//    public void changeLastReadAt(Instant lastReadAt) {
+//        this.lastReadAt = lastReadAt;
+//    }
 }

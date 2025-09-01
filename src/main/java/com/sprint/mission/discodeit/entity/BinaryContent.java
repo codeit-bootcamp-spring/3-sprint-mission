@@ -43,4 +43,13 @@ public class BinaryContent extends BaseUpdatableEntity implements Serializable {
     public void updateStatus(BinaryContentStatus status) {
         this.status = status;
     }
+
+    public BinaryContent(String fileName, Long size, String contentType, String extension) {
+        this.fileName = fileName;
+        this.size = size;
+        this.contentType = contentType;
+        this.extension = extension;
+    }
+
+
 }

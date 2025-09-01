@@ -84,15 +84,8 @@ public class BasicReadStatusService implements ReadStatusService {
     public ReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest request) {
 
         ReadStatus readStatus = readStatusRepository.findById(readStatusId).orElseThrow(() -> new NoSuchElementException("readStatus with id " + readStatusId + " not found"));
-        readStatus.changeLastReadAt(request.newLastReadAt());
+        readStatus.changeLastReadAt(request.newLastReadAt(), request.newNotificationEnabled());
 
-        ReadStatusResponse response = new ReadStatusResponse(
-                readStatus.getId(),
-                readStatus.getUser().getId(),
-                readStatus.getChannel().getId(),
-                readStatus.getLastReadAt()
-        );
-
-        return response;
+        return readStatusMapper.toDto(readStatus);
     }
 }

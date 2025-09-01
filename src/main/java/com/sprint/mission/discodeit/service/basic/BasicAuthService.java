@@ -7,14 +7,16 @@ import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.authException.UnauthorizedTokenException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
+import com.sprint.mission.discodeit.handler.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.jpa.UserRepository;
-import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
-import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,6 +43,7 @@ public class BasicAuthService implements AuthService {
     private final JwtTokenProvider tokenProvider;
     private final UserDetailsService userDetailsService;
     private final JwtRegistry jwtRegistry;
+    private final ApplicationEventPublisher eventPublisher;
 
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
@@ -56,10 +59,14 @@ public class BasicAuthService implements AuthService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new UserNotFoundException());
 
+        Role oldRole = user.getRole();
         Role newRole = request.newRole();
         user.changeRole(newRole);
 
         jwtRegistry.invalidateJwtInformationByUserId(userId);
+        eventPublisher.publishEvent(
+            new RoleUpdatedEvent(user.getId(), oldRole, newRole, user.getUpdatedAt())
+        );
 
         return userMapper.toDto(user);
     }

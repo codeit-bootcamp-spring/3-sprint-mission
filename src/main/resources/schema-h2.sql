@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS read_statuses (
     user_id      UUID,
     channel_id   UUID,
     last_read_at TIMESTAMP with time zone ,
+    notification_enabled boolean NOT NULL,
     CONSTRAINT fk_rs_user
     FOREIGN KEY (user_id)
     REFERENCES users(id)

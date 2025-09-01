@@ -8,7 +8,6 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.exception.channelException.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channelException.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.userException.UserNotFoundException;
-import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.jpa.ChannelRepository;
 import com.sprint.mission.discodeit.repository.jpa.MessageRepository;
@@ -71,7 +70,7 @@ public class BasicChannelService implements ChannelService {
         channelRepository.save(channel);
 
         List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds()).stream()
-            .map(user -> new ReadStatus(user, channel))
+            .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
             .toList();
         readStatusRepository.saveAll(readStatuses);
 

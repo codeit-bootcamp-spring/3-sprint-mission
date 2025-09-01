@@ -22,7 +22,7 @@ public class BinaryContentEventHandler {
     private final BinaryContentService binaryContentService;
 
     @TransactionalEventListener
-    public void onCreated(BinaryContentCreatedEvent event) {
+    public void on(BinaryContentCreatedEvent event) {
         BinaryContent binaryContent = event.getData();
         try {
             binaryContentStorage.put(binaryContent.getId(), event.getBytes());

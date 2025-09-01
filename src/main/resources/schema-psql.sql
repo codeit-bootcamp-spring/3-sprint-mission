@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS read_statuses
     user_id      UUID,
     channel_id   UUID,
     last_read_at TIMESTAMPTZ,
+    notification_enabled boolean NOT NULL,
 
     CONSTRAINT pk_read_statuses PRIMARY KEY (id),
     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,

@@ -207,7 +207,7 @@ public class ChannelTest {
             messageRepository.save(message);
         }
 
-        ReadStatus readStatus = new ReadStatus(user, channel);
+        ReadStatus readStatus = new ReadStatus(user, channel, channel.getCreatedAt());
         readStatusRepository.save(readStatus);
 
         em.flush();
