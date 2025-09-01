@@ -30,4 +30,6 @@ public interface ChannelService {
     void deleteChannel(UUID channelId);
 
     List<ChannelResponse> findAllByUserId(UUID userId);
+
+    ChannelResponse findById(UUID channelId);
 }

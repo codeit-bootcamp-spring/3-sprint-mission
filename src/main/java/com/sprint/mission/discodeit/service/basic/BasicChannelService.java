@@ -136,4 +136,12 @@ public class BasicChannelService implements ChannelService {
 
         channelRepository.deleteById(channelId);
     }
+
+    @Transactional
+    @Override
+    public ChannelResponse findById(UUID channelId) {
+        return channelRepository.findById(channelId)
+            .map(channelMapper::toDto)
+            .orElseThrow(() -> new IllegalArgumentException());
+    }
 }
