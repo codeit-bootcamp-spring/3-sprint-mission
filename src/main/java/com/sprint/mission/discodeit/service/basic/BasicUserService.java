@@ -7,8 +7,11 @@ import com.sprint.mission.discodeit.dto.user.UserRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
+import com.sprint.mission.discodeit.entity.enums.Role;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
 import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
@@ -18,19 +21,19 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,18 +46,21 @@ public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
     private final UserMapper userMapper;
     private final BinaryContentStructMapper binaryContentMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtRegistry jwtRegistry;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     @Transactional
     public UserResponseDto create(UserRequestDto userRequestDto,
         BinaryContentDto binaryContentDto) {
         String username = userRequestDto.username();
         String email = userRequestDto.email();
+
+        String currentThread = Thread.currentThread().getName();
 
         log.info("[BasicUserService] 사용자 등록 요청 - username: {}, email: {}", username, email);
 
@@ -81,14 +87,20 @@ public class BasicUserService implements UserService {
 
         // 프로필 이미지를 등록한 경우
         if (binaryContentDto != null) {
-            byte[] bytes = binaryContentDto.bytes();
+            byte[] data = binaryContentDto.bytes();
 
             BinaryContent profileImage = binaryContentMapper.toEntity(binaryContentDto);
 
+            profileImage.updateStatus(BinaryContentStatus.PROCESSING);
             user.updateProfile(profileImage);
 
-            binaryContentRepository.save(profileImage);
-            binaryContentStorage.put(profileImage.getId(), bytes);
+            BinaryContent savedProfile = binaryContentRepository.save(profileImage);
+            // 저장 후 이벤트 발행
+            log.info("[BasicUserService] 유저 등록 프로필 메타데이터 저장 이벤트 발행 시작 - Thread : {}",
+                currentThread);
+            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(savedProfile, data);
+            eventPublisher.publishEvent(event);
+            log.info("[BasicUserService] 유저 등록 프로필 메타데이터 저장 이벤트 발행 완료 - Thread: {}", currentThread);
         }
 
         User savedUser = userRepository.save(user);
@@ -107,6 +119,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Cacheable(value = "users")
     public List<UserResponseDto> findAll() {
         List<UserResponseDto> users = userRepository.findAll().stream()
             .map(userMapper::toDto)
@@ -117,9 +130,12 @@ public class BasicUserService implements UserService {
 
     @Override
     @PreAuthorize("#id == authentication.principal.id")
+    @CachePut(value = "users", key = "#id")
     @Transactional
     public UserResponseDto update(UUID id, UserUpdateDto userUpdateDto,
         BinaryContentDto binaryContentDto) {
+
+        String currentThread = Thread.currentThread().getName();
         User user = findUser(id);
 
         String newUsername = userUpdateDto.newUsername();
@@ -149,9 +165,10 @@ public class BasicUserService implements UserService {
         // 프로필 이미지 처리
         BinaryContent profile = user.getProfile();
         if (binaryContentDto != null) {
-            byte[] bytes = binaryContentDto.bytes();
+            byte[] data = binaryContentDto.bytes();
 
             BinaryContent profileImage = binaryContentMapper.toEntity(binaryContentDto);
+            profileImage.updateStatus(BinaryContentStatus.PROCESSING);
 
             // 기존 프로필 이미지 제거
             if (profile != null) {
@@ -160,8 +177,13 @@ public class BasicUserService implements UserService {
 
             user.updateProfile(profileImage);
 
-            binaryContentRepository.save(profileImage);
-            binaryContentStorage.put(profileImage.getId(), bytes);
+            BinaryContent updatedProfile = binaryContentRepository.save(profileImage);
+            log.info("[BasicUserService] 유저 정보 변경 프로필 메타 데이터 저장 이벤트 발행 시작 - Thread : {}",
+                currentThread);
+            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(updatedProfile, data);
+            eventPublisher.publishEvent(event);
+            log.info("[BasicUserService] 유저 정보 변경 프로필 메타 데이터 저장 이벤트 발행 완료 - Thread: {}",
+                currentThread);
         } else if (profile != null) {
             binaryContentRepository.deleteById(profile.getId());
             user.updateProfile(null);
@@ -192,6 +214,7 @@ public class BasicUserService implements UserService {
 
     @Override
     @PreAuthorize("#id == authentication.principal.id")
+    @CacheEvict(value = "users", allEntries = true)
     @Transactional
     public void deleteById(UUID id) {
         log.info("[BasicUserService] 사용자 삭제 요청: id: {}", id);
@@ -211,11 +234,14 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @CachePut(value = "users", key = "#request.userId()")
     @Transactional
     public UserResponseDto updateRole(RoleUpdateRequest request) {
         User user = findUser(request.userId());
 
         log.debug("[BasicUserService] 사용자: {}", user);
+
+        Role oldRole = user.getRole();
 
         user.updateRole(request.newRole());
         User updatedUser = userRepository.save(user);
@@ -223,6 +249,11 @@ public class BasicUserService implements UserService {
         jwtRegistry.invalidateJwtInformationByUserId(user.getId());
 
         log.info("[BasicUserService] 사용자 권한 변경 완료: {}", updatedUser);
+
+        RoleUpdatedEvent roleUpdatedEvent = new RoleUpdatedEvent(user, oldRole,
+            request.newRole());
+
+        eventPublisher.publishEvent(roleUpdatedEvent);
 
         return userMapper.toDto(user);
     }

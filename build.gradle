@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '2.1-M10'
+version = '2.2-M11'
 
 java {
     toolchain {
@@ -58,9 +58,18 @@ dependencies {
     // spring security
     implementation 'org.springframework.boot:spring-boot-starter-security'
     testImplementation 'org.springframework.security:spring-security-test'
-
     // Nimbus JOSE + JWT 라이브러리
     implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+    // Spring retry
+    implementation 'org.springframework.retry:spring-retry'
+    // Spring Cache
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    // caffeine cache
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+    // kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 tasks.named('test') {

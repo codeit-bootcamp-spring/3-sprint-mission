@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.init;
 
-import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

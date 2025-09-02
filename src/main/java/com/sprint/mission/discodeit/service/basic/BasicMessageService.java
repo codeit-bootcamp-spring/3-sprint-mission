@@ -8,6 +8,9 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
 import com.sprint.mission.discodeit.exception.message.NotFoundMessageException;
 import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
@@ -18,19 +21,18 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Service("basicMessageService")
@@ -42,9 +44,9 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
     private final MessageMapper messageMapper;
     private final BinaryContentStructMapper binaryContentMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -53,15 +55,22 @@ public class BasicMessageService implements MessageService {
         User author = findUser(messageRequestDto.authorId());
         Channel channel = findChannel(messageRequestDto.channelId());
 
+        String currentThread = Thread.currentThread().getName();
+
         // Dto -> Entity
         List<BinaryContent> binaryContents = convertBinaryContentDtos(binaryContentDtos);
 
         binaryContentRepository.saveAll(binaryContents);
 
         for (int i = 0; i < binaryContents.size(); i++) {
-            UUID id = binaryContents.get(i).getId();
-            byte[] bytes = binaryContentDtos.get(i).bytes();
-            binaryContentStorage.put(id, bytes);
+            BinaryContent attachment = binaryContents.get(i);
+            byte[] data = binaryContentDtos.get(i).bytes();
+
+            log.info("[BasicUserService] 메시지 첨부 파일 메타데이터 저장 이벤트 발행 시작 - Thread : {}",
+                currentThread);
+            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(attachment, data);
+            eventPublisher.publishEvent(event);
+            log.info("[BasicUserService] 메시지 첨부 파일 메타데이터 저장 이벤트 발행 완료 - Thread: {}", currentThread);
         }
 
         String content = messageRequestDto.content();
@@ -79,6 +88,11 @@ public class BasicMessageService implements MessageService {
         message.updateAttachments(binaryContents);
 
         Message savedMessage = messageRepository.save(message);
+
+        MessageCreatedEvent messageCreatedEvent = new MessageCreatedEvent(author, channel,
+            savedMessage.getContent());
+
+        eventPublisher.publishEvent(messageCreatedEvent);
 
         log.info(
             "[BasicMessageService] 메시지 생성 성공- id: {}, authorId: {}, channelId: {}, content: {}",
@@ -170,6 +184,7 @@ public class BasicMessageService implements MessageService {
     private List<BinaryContent> convertBinaryContentDtos(List<BinaryContentDto> binaryContentDtos) {
         return binaryContentDtos.stream()
             .map(binaryContentMapper::toEntity)
+            .peek(binaryContent -> binaryContent.updateStatus(BinaryContentStatus.PROCESSING))
             .toList();
     }
 

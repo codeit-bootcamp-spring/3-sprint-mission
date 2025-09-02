@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +27,10 @@ class ChannelRepositoryTest {
 
         // given
         Channel channel = Channel.builder()
-                .name("public")
-                .description("test channel")
-                .type(ChannelType.PUBLIC)
-                .build();
+            .name("public")
+            .description("test channel")
+            .type(ChannelType.PUBLIC)
+            .build();
 
         // when
         Channel savedChannel = channelRepository.save(channel);

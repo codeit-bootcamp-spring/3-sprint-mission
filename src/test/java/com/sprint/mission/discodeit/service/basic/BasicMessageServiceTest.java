@@ -1,12 +1,30 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.message.MessageRequestDto;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
-import com.sprint.mission.discodeit.dto.message.MessageUpdateDto;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
 import com.sprint.mission.discodeit.exception.message.NotFoundMessageException;
 import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
@@ -16,29 +34,21 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Message 서비스 단위 테스트")
@@ -63,7 +73,7 @@ class BasicMessageServiceTest {
     private MessageMapper messageMapper;
 
     @Mock
-    private BinaryContentStorage binaryContentStorage;
+    private ApplicationEventPublisher eventPublisher;
 
     @Mock
     private BinaryContentStructMapper binaryContentMapper;
@@ -81,7 +91,7 @@ class BasicMessageServiceTest {
         byte[] imageBytes = new byte[]{1, 2, 3};
 
         BinaryContentDto binaryContentDto = new BinaryContentDto("attachment.png", 3L,
-                "image/png", imageBytes);
+            "image/png", imageBytes);
 
         BinaryContent binaryContent = new BinaryContent("attachment.png", 3L, "image/png");
 
@@ -91,39 +101,42 @@ class BasicMessageServiceTest {
         MessageRequestDto request = new MessageRequestDto(content, channelId, authorId);
 
         User user = User.builder()
-                .username("test")
-                .email("test@test.com")
-                .password("pwd1234")
-                .build();
+            .username("test")
+            .email("test@test.com")
+            .password("pwd1234")
+            .build();
 
         Channel channel = Channel.builder()
-                .name("public")
-                .description("test channel")
-                .type(ChannelType.PUBLIC)
-                .build();
+            .name("public")
+            .description("test channel")
+            .type(ChannelType.PUBLIC)
+            .build();
 
         Message message = Message.builder()
-                .author(user)
-                .channel(channel)
-                .content(content)
-                .attachments(List.of(binaryContent))
-                .build();
+            .author(user)
+            .channel(channel)
+            .content(content)
+            .attachments(List.of(binaryContent))
+            .build();
 
         ReflectionTestUtils.setField(user, "id", authorId);
         ReflectionTestUtils.setField(channel, "id", channelId);
         ReflectionTestUtils.setField(message, "id", messageId);
 
-        BinaryContentResponseDto attachment = new BinaryContentResponseDto(attachmentId, "attachment.png", 3L,
-                "image/png");
+        BinaryContentResponseDto attachment = new BinaryContentResponseDto(attachmentId,
+            "attachment.png", 3L,
+            "image/png", BinaryContentStatus.SUCCESS);
 
-        MessageResponseDto messageResponseDto = new MessageResponseDto(messageId, Instant.now(), Instant.now(),
-                content, channelId, null, List.of(attachment));
+        MessageResponseDto messageResponseDto = new MessageResponseDto(messageId, Instant.now(),
+            Instant.now(),
+            content, channelId, null, List.of(attachment));
 
         given(userRepository.findById(authorId)).willReturn(Optional.of(user));
         given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
         given(binaryContentMapper.toEntity(binaryContentDto)).willReturn(binaryContent);
         given(messageRepository.save(any(Message.class))).willReturn(message);
         given(messageMapper.toDto(any(Message.class))).willReturn(messageResponseDto);
+        given(binaryContentRepository.saveAll(anyList())).willReturn(List.of(binaryContent));
 
         // when
         MessageResponseDto result = messageService.create(request, List.of(binaryContentDto));
@@ -136,7 +149,7 @@ class BasicMessageServiceTest {
         verify(userRepository).findById(authorId);
         verify(channelRepository).findById(channelId);
         verify(binaryContentRepository).saveAll(List.of(binaryContent));
-        verify(binaryContentStorage).put(attachmentId, imageBytes);
+        verify(eventPublisher).publishEvent(any(BinaryContentCreatedEvent.class));
     }
 
     @Test
@@ -156,8 +169,8 @@ class BasicMessageServiceTest {
 
         // then
         assertThat(thrown)
-                .isInstanceOf(NotFoundUserException.class)
-                .hasMessageContaining("사용자");
+            .isInstanceOf(NotFoundUserException.class)
+            .hasMessageContaining("사용자");
         verify(messageRepository, never()).save(any());
     }
 
@@ -172,10 +185,10 @@ class BasicMessageServiceTest {
         MessageRequestDto request = new MessageRequestDto("Hello", notExistChannelId, userId);
 
         User user = User.builder()
-                .username("test")
-                .email("test@test.com")
-                .password("pwd1234")
-                .build();
+            .username("test")
+            .email("test@test.com")
+            .password("pwd1234")
+            .build();
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(channelRepository.findById(notExistChannelId)).willReturn(Optional.empty());
@@ -185,8 +198,8 @@ class BasicMessageServiceTest {
 
         // then
         assertThat(thrown)
-                .isInstanceOf(NotFoundChannelException.class)
-                .hasMessageContaining("채널");
+            .isInstanceOf(NotFoundChannelException.class)
+            .hasMessageContaining("채널");
         verify(messageRepository, never()).save(any());
     }
 
@@ -199,31 +212,31 @@ class BasicMessageServiceTest {
         UUID messageId = UUID.randomUUID();
 
         User user = User.builder()
-                .username("test")
-                .email("test@test.com")
-                .password("pwd1234")
-                .build();
+            .username("test")
+            .email("test@test.com")
+            .password("pwd1234")
+            .build();
 
         Channel channel = Channel.builder()
-                .name("public")
-                .description("test channel")
-                .type(ChannelType.PUBLIC)
-                .build();
+            .name("public")
+            .description("test channel")
+            .type(ChannelType.PUBLIC)
+            .build();
 
         Message message = Message.builder()
-                .content(content)
-                .author(user)
-                .channel(channel)
-                .attachments(List.of())
-                .build();
+            .content(content)
+            .author(user)
+            .channel(channel)
+            .attachments(List.of())
+            .build();
 
         ReflectionTestUtils.setField(message, "id", messageId);
         ReflectionTestUtils.setField(user, "id", UUID.randomUUID());
         ReflectionTestUtils.setField(channel, "id", UUID.randomUUID());
 
         MessageResponseDto expectedDto = new MessageResponseDto(
-                messageId, Instant.now(), Instant.now(),
-                content, channel.getId(), null, List.of()
+            messageId, Instant.now(), Instant.now(),
+            content, channel.getId(), null, List.of()
         );
 
         given(messageRepository.findById(messageId)).willReturn(Optional.of(message));
@@ -254,8 +267,8 @@ class BasicMessageServiceTest {
 
         // then
         assertThat(thrown)
-                .isInstanceOf(NotFoundMessageException.class)
-                .hasMessageContaining("메시지");
+            .isInstanceOf(NotFoundMessageException.class)
+            .hasMessageContaining("메시지");
         verify(messageRepository).findById(notExistId);
         verifyNoInteractions(messageMapper);
     }
@@ -270,7 +283,8 @@ class BasicMessageServiceTest {
 
         int size = 2;
         Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Pageable extendedPageable = PageRequest.of(0, size + 1, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable extendedPageable = PageRequest.of(0, size + 1,
+            Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Channel channel = Channel.builder().name("channel").type(ChannelType.PUBLIC).build();
         ReflectionTestUtils.setField(channel, "id", channelId);
@@ -291,15 +305,19 @@ class BasicMessageServiceTest {
 
         List<Message> allMessages = List.of(msg1, msg2, msg3); // size + 1개
 
-        MessageResponseDto dto1 = new MessageResponseDto(messageId1, Instant.now(), Instant.now(), "Hello", channelId, null, List.of());
-        MessageResponseDto dto2 = new MessageResponseDto(messageId2, Instant.now(), Instant.now(), "World", channelId, null, List.of());
+        MessageResponseDto dto1 = new MessageResponseDto(messageId1, Instant.now(), Instant.now(),
+            "Hello", channelId, null, List.of());
+        MessageResponseDto dto2 = new MessageResponseDto(messageId2, Instant.now(), Instant.now(),
+            "World", channelId, null, List.of());
 
-        given(messageRepository.findPageByChannelId(channelId, extendedPageable)).willReturn(allMessages);
+        given(messageRepository.findPageByChannelId(channelId, extendedPageable)).willReturn(
+            allMessages);
         given(messageMapper.toDto(msg1)).willReturn(dto1);
         given(messageMapper.toDto(msg2)).willReturn(dto2);
 
         // when
-        PageResponse<MessageResponseDto> result = messageService.findAllByChannelId(channelId, null, pageable);
+        PageResponse<MessageResponseDto> result = messageService.findAllByChannelId(channelId, null,
+            pageable);
 
         // then
         assertEquals(size, result.content().size());
@@ -326,7 +344,8 @@ class BasicMessageServiceTest {
         Instant t3 = cursor.minusSeconds(30);
 
         Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Pageable extendedPageable = PageRequest.of(0, size + 1, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable extendedPageable = PageRequest.of(0, size + 1,
+            Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Channel channel = Channel.builder().name("channel").type(ChannelType.PUBLIC).build();
         ReflectionTestUtils.setField(channel, "id", channelId);
@@ -343,16 +362,20 @@ class BasicMessageServiceTest {
 
         List<Message> messages = List.of(msg1, msg2, msg3); // size + 1개
 
-        MessageResponseDto dto1 = new MessageResponseDto(messageId1, t1, t1, "Msg1", channelId, null, List.of());
-        MessageResponseDto dto2 = new MessageResponseDto(messageId2, t2, t2, "Msg2", channelId, null, List.of());
+        MessageResponseDto dto1 = new MessageResponseDto(messageId1, t1, t1, "Msg1", channelId,
+            null, List.of());
+        MessageResponseDto dto2 = new MessageResponseDto(messageId2, t2, t2, "Msg2", channelId,
+            null, List.of());
 
-        given(messageRepository.findByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(channelId, cursor, extendedPageable))
-                .willReturn(messages);
+        given(messageRepository.findByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(channelId,
+            cursor, extendedPageable))
+            .willReturn(messages);
         given(messageMapper.toDto(msg1)).willReturn(dto1);
         given(messageMapper.toDto(msg2)).willReturn(dto2);
 
         // when
-        PageResponse<MessageResponseDto> result = messageService.findAllByChannelId(channelId, cursor, pageable);
+        PageResponse<MessageResponseDto> result = messageService.findAllByChannelId(channelId,
+            cursor, pageable);
 
         // then
         assertEquals(size, result.content().size());
@@ -360,7 +383,8 @@ class BasicMessageServiceTest {
         assertEquals(dto1, result.content().get(0));
         assertEquals(dto2, result.content().get(1));
         assertEquals(t2, result.nextCursor()); // 마지막 메시지의 createdAt
-        verify(messageRepository).findByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(channelId, cursor, extendedPageable);
+        verify(messageRepository).findByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(channelId,
+            cursor, extendedPageable);
         verify(messageMapper).toDto(msg1);
         verify(messageMapper).toDto(msg2);
         verifyNoMoreInteractions(messageMapper); // msg3는 변환 안됨
@@ -374,19 +398,20 @@ class BasicMessageServiceTest {
         UUID messageId = UUID.randomUUID();
 
         Message message = Message.builder()
-                .content("Hello")
-                .build();
+            .content("Hello")
+            .build();
 
         ReflectionTestUtils.setField(message, "id", messageId);
 
         String newContent = "Hi";
 
         Message updatedMessage = Message.builder()
-                .content(newContent)
-                .build();
+            .content(newContent)
+            .build();
 
-        MessageResponseDto expectedMessage = new MessageResponseDto(messageId, Instant.now(), Instant.now(), newContent,
-                null, null, List.of());
+        MessageResponseDto expectedMessage = new MessageResponseDto(messageId, Instant.now(),
+            Instant.now(), newContent,
+            null, null, List.of());
 
         given(messageRepository.findById(messageId)).willReturn(Optional.of(message));
         given(messageMapper.toDto(any(Message.class))).willReturn(expectedMessage);
@@ -415,8 +440,8 @@ class BasicMessageServiceTest {
 
         // then
         assertThat(thrown)
-                .isInstanceOf(NotFoundMessageException.class)
-                .hasMessageContaining("메시지");
+            .isInstanceOf(NotFoundMessageException.class)
+            .hasMessageContaining("메시지");
         verify(messageRepository).findById(notExistId);
     }
 
@@ -427,13 +452,13 @@ class BasicMessageServiceTest {
         // given
         UUID messageId = UUID.randomUUID();
         BinaryContent attachment = new BinaryContent("attachment.jpg", 3L,
-                "image/jpeg");
+            "image/jpeg");
 
         ReflectionTestUtils.setField(attachment, "id", UUID.randomUUID());
 
         Message message = Message.builder()
-                .attachments(List.of(attachment))
-                .build();
+            .attachments(List.of(attachment))
+            .build();
 
         ReflectionTestUtils.setField(message, "id", messageId);
 
@@ -461,8 +486,8 @@ class BasicMessageServiceTest {
 
         // then
         assertThat(thrown)
-                .isInstanceOf(NotFoundMessageException.class)
-                .hasMessageContaining("메시지");
+            .isInstanceOf(NotFoundMessageException.class)
+            .hasMessageContaining("메시지");
         verify(messageRepository).findById(notExistId);
         verifyNoMoreInteractions(binaryContentRepository);
     }

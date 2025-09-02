@@ -49,13 +49,14 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 String refreshToken = tokenProvider.generateRefreshToken(userDetails);
 
                 JwtInformation jwtInformation = new JwtInformation(
-                    userDetails.getUserResponseDto(),
+                    userDetails.getId(),
+                    userDetails.getUsername(),
                     accessToken,
                     refreshToken
                 );
 
                 jwtRegistry.registerJwtInformation(jwtInformation);
-                
+
                 // Refresh 쿠키 설정
                 log.debug("[JwtLoginSuccessHandler] Refresh 쿠키 설정 시작");
                 tokenProvider.addRefreshCookie(response, refreshToken);

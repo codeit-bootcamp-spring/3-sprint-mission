@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,10 +43,10 @@ public class Channel extends BaseUpdatableEntity {
     @Override
     public String toString() {
         return "Channel{" +
-                "name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", type=" + type +
-                "} " + super.toString();
+            "name='" + name + '\'' +
+            ", description='" + description + '\'' +
+            ", type=" + type +
+            "} " + super.toString();
     }
 
     @Override

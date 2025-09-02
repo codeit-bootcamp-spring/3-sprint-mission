@@ -5,7 +5,7 @@ import com.sprint.mission.discodeit.dto.channel.PrivateChannelDto;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelDto;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateDto;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
@@ -65,15 +65,15 @@ class BasicChannelServiceTest {
         PublicChannelDto request = new PublicChannelDto(name, description);
 
         Channel channel = Channel.builder()
-                .name(name)
-                .description(description)
-                .type(ChannelType.PUBLIC)
-                .build();
+            .name(name)
+            .description(description)
+            .type(ChannelType.PUBLIC)
+            .build();
 
         ReflectionTestUtils.setField(channel, "id", channelId);
 
         ChannelResponseDto response = new ChannelResponseDto(channel.getId(), ChannelType.PUBLIC,
-                name, description, null, null);
+            name, description, null, null);
 
         given(channelRepository.save(any(Channel.class))).willReturn(channel);
         given(channelMapper.toDto(any(Channel.class))).willReturn(response);
@@ -103,19 +103,19 @@ class BasicChannelServiceTest {
         ReflectionTestUtils.setField(channel, "id", channelId);
 
         User user1 = User.builder()
-                .username("user1")
-                .email("user1@example.com")
-                .password("pwd1")
-                .build();
+            .username("user1")
+            .email("user1@example.com")
+            .password("pwd1")
+            .build();
 
         User user2 = User.builder()
-                .username("user2")
-                .email("user2@example.com")
-                .password("pwd2")
-                .build();
+            .username("user2")
+            .email("user2@example.com")
+            .password("pwd2")
+            .build();
 
         ChannelResponseDto response = new ChannelResponseDto(channelId, ChannelType.PRIVATE, null,
-                null, List.of(), null);
+            null, List.of(), null);
 
         ReflectionTestUtils.setField(user1, "id", userId1);
         ReflectionTestUtils.setField(user2, "id", userId2);
@@ -147,15 +147,16 @@ class BasicChannelServiceTest {
         UUID channelId = UUID.randomUUID();
 
         Channel channel = Channel.builder()
-                .name(channelName)
-                .description(channelDescription)
-                .type(ChannelType.PUBLIC)
-                .build();
+            .name(channelName)
+            .description(channelDescription)
+            .type(ChannelType.PUBLIC)
+            .build();
 
         ReflectionTestUtils.setField(channel, "id", channelId);
 
-        ChannelResponseDto expectedChannel = new ChannelResponseDto(channelId, ChannelType.PUBLIC, channelName,
-                channelDescription, List.of(), null);
+        ChannelResponseDto expectedChannel = new ChannelResponseDto(channelId, ChannelType.PUBLIC,
+            channelName,
+            channelDescription, List.of(), null);
 
         given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
         given(channelMapper.toDto(channel)).willReturn(expectedChannel);
@@ -182,8 +183,8 @@ class BasicChannelServiceTest {
 
         // then
         assertThat(thrown)
-                .isInstanceOf(NotFoundChannelException.class)
-                .hasMessageContaining("채널");
+            .isInstanceOf(NotFoundChannelException.class)
+            .hasMessageContaining("채널");
         verify(channelRepository).findById(notExistId);
     }
 
@@ -198,24 +199,24 @@ class BasicChannelServiceTest {
         UUID notRelatedChannelId = UUID.randomUUID();
 
         User user = User.builder()
-                .username("test")
-                .email("test@test.com")
-                .password("test123")
-                .build();
+            .username("test")
+            .email("test@test.com")
+            .password("test123")
+            .build();
 
         Channel publicChannel = Channel.builder()
-                .name("public")
-                .description("test channel")
-                .type(ChannelType.PUBLIC)
-                .build();
+            .name("public")
+            .description("test channel")
+            .type(ChannelType.PUBLIC)
+            .build();
 
         Channel privateChannel = Channel.builder()
-                .type(ChannelType.PRIVATE)
-                .build();
+            .type(ChannelType.PRIVATE)
+            .build();
 
         Channel notRelatedChannel = Channel.builder()
-                .type(ChannelType.PRIVATE)
-                .build();
+            .type(ChannelType.PRIVATE)
+            .build();
 
         ReflectionTestUtils.setField(user, "id", userId);
         ReflectionTestUtils.setField(publicChannel, "id", publicChannelId);
@@ -223,19 +224,21 @@ class BasicChannelServiceTest {
         ReflectionTestUtils.setField(notRelatedChannel, "id", notRelatedChannelId);
 
         ReadStatus readStatus = ReadStatus.builder()
-                .channel(privateChannel)
-                .user(user)
-                .build();
+            .channel(privateChannel)
+            .user(user)
+            .build();
         ReflectionTestUtils.setField(readStatus, "id", UUID.randomUUID());
 
         List<Channel> allChannels = List.of(publicChannel, privateChannel, notRelatedChannel);
         List<ReadStatus> readStatuses = List.of(readStatus);
 
-        ChannelResponseDto publicChannelDto = new ChannelResponseDto(publicChannelId, ChannelType.PUBLIC, "public",
-                "test channel", null, null);
+        ChannelResponseDto publicChannelDto = new ChannelResponseDto(publicChannelId,
+            ChannelType.PUBLIC, "public",
+            "test channel", null, null);
 
-        ChannelResponseDto privateChannelDto = new ChannelResponseDto(privateChannelId, ChannelType.PRIVATE, null,
-                null, List.of(), null);
+        ChannelResponseDto privateChannelDto = new ChannelResponseDto(privateChannelId,
+            ChannelType.PRIVATE, null,
+            null, List.of(), null);
 
         given(readStatusRepository.findAllByUserId(userId)).willReturn(readStatuses);
         given(channelRepository.findAll()).willReturn(allChannels);
@@ -267,22 +270,23 @@ class BasicChannelServiceTest {
         UUID privateChannelId = UUID.randomUUID();
 
         Channel publicChannel = Channel.builder()
-                .name("public")
-                .description("test channel")
-                .type(ChannelType.PUBLIC)
-                .build();
+            .name("public")
+            .description("test channel")
+            .type(ChannelType.PUBLIC)
+            .build();
 
         Channel privateChannel = Channel.builder()
-                .type(ChannelType.PRIVATE)
-                .build();
+            .type(ChannelType.PRIVATE)
+            .build();
 
         ReflectionTestUtils.setField(publicChannel, "id", publicChannelId);
         ReflectionTestUtils.setField(privateChannel, "id", privateChannelId);
 
         List<Channel> allChannels = List.of(publicChannel, privateChannel);
 
-        ChannelResponseDto publicChannelDto = new ChannelResponseDto(publicChannelId, ChannelType.PUBLIC, "public",
-                "test channel", null, null);
+        ChannelResponseDto publicChannelDto = new ChannelResponseDto(publicChannelId,
+            ChannelType.PUBLIC, "public",
+            "test channel", null, null);
 
         given(readStatusRepository.findAllByUserId(notExistId)).willReturn(List.of());
         given(channelRepository.findAll()).willReturn(allChannels);
@@ -311,17 +315,17 @@ class BasicChannelServiceTest {
         String newDescription = "It's public channel";
 
         Channel existingChannel = Channel.builder()
-                .name("public channel")
-                .description("it's public channel")
-                .type(ChannelType.PUBLIC)
-                .build();
+            .name("public channel")
+            .description("it's public channel")
+            .type(ChannelType.PUBLIC)
+            .build();
 
         ReflectionTestUtils.setField(existingChannel, "id", channelId);
 
         PublicChannelUpdateDto updateRequest = new PublicChannelUpdateDto(newName, newDescription);
 
         ChannelResponseDto expectedResponse = new ChannelResponseDto(channelId, ChannelType.PUBLIC,
-                newName, newDescription, List.of(), null);
+            newName, newDescription, List.of(), null);
 
         given(channelRepository.findById(channelId)).willReturn(Optional.of(existingChannel));
         given(channelRepository.save(any(Channel.class))).willReturn(existingChannel);
@@ -344,12 +348,13 @@ class BasicChannelServiceTest {
         // given
         UUID channelId = UUID.randomUUID();
         Channel channel = Channel.builder()
-                .type(ChannelType.PRIVATE)
-                .build();
+            .type(ChannelType.PRIVATE)
+            .build();
 
         ReflectionTestUtils.setField(channel, "id", channelId);
 
-        PublicChannelUpdateDto updateRequest = new PublicChannelUpdateDto("new Channel", "It's new Channel");
+        PublicChannelUpdateDto updateRequest = new PublicChannelUpdateDto("new Channel",
+            "It's new Channel");
 
         given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
 
@@ -358,8 +363,8 @@ class BasicChannelServiceTest {
 
         // then
         assertThat(thrown)
-                .isInstanceOf(PrivateChannelUpdateException.class)
-                .hasMessageContaining("Private");
+            .isInstanceOf(PrivateChannelUpdateException.class)
+            .hasMessageContaining("Private");
         verify(channelRepository).findById(channelId);
         verify(userRepository, never()).save(any());
     }
@@ -373,10 +378,10 @@ class BasicChannelServiceTest {
         UUID channelId = UUID.randomUUID();
 
         Channel channel = Channel.builder()
-                .name("public channel")
-                .description("It's public channel")
-                .type(ChannelType.PUBLIC)
-                .build();
+            .name("public channel")
+            .description("It's public channel")
+            .type(ChannelType.PUBLIC)
+            .build();
 
         ReflectionTestUtils.setField(channel, "id", channelId);
 
@@ -402,8 +407,8 @@ class BasicChannelServiceTest {
 
         // then
         assertThat(thrown)
-                .isInstanceOf(NotFoundChannelException.class)
-                .hasMessageContaining("채널");
+            .isInstanceOf(NotFoundChannelException.class)
+            .hasMessageContaining("채널");
         verify(channelRepository).findById(notExistId);
     }
 }

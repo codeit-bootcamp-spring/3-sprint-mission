@@ -1,10 +1,43 @@
+spring:
+  cache:
+    type: redis
+    caffeine:
+      spec: >
+        maximumSize=1000,
+        expireAfterAccess=600s,
+        recordStats
+    cache-names:
+      - channelsByUser
+      - notificationsByUser
+      - users
+    redis:
+      enable-statistics: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+
+
 management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, loggers
+        include: health, info, metrics, loggers, caches
   endpoint:
     info:
+      enabled: true
+    caches:
       enabled: true
     health:
       show-details: always
@@ -14,6 +47,9 @@ management:
     java:
       enabled: true
     os:
+      enabled: true
+  observations:
+    annotations:
       enabled: true
 
 discodeit:
@@ -55,3 +91,16 @@ admin:
   username: ${ADMIN_USERNAME:admin}
   email: ${ADMIN_EMAIL:admin@admin.com}
   password: ${ADMIN_PASSWORD:admin1234}
+
+async:
+  executors:
+    binary-content:
+      core-size: ${MAX_CORE_SIZE:4}
+      max-size: ${MAX_SIZE:8}
+      queue-capacity: ${QUEUE_CAPACITY:200}
+      keep-alive: ${KEEP_ALIVE:60}
+    notification:
+      core-size: ${MAX_CORE_SIZE:2}
+      max-size: ${MAX_SIZE:4}
+      queue-capacity: ${QUEUE_CAPACITY:100}
+      keep-alive: ${KEEP_ALIVE:30}

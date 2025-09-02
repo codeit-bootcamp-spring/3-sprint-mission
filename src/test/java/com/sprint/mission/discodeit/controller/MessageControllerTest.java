@@ -16,7 +16,8 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.message.MessageRequestDto;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
-import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
+import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import java.time.Instant;
@@ -73,7 +74,7 @@ class MessageControllerTest {
         MessageRequestDto request = new MessageRequestDto("Hello", channelId, authorId);
         BinaryContentResponseDto file = new BinaryContentResponseDto(UUID.randomUUID(), "image.png",
             3L,
-            "image/png");
+            "image/png", BinaryContentStatus.SUCCESS);
         MessageResponseDto expectedResponse = new MessageResponseDto(messageId, Instant.now(),
             Instant.now(),
             "Hello", channelId, author, List.of(file));
