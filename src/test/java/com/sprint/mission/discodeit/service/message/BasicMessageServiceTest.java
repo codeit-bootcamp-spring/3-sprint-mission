@@ -1,20 +1,11 @@
 package com.sprint.mission.discodeit.service.message;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.then;
 
 import com.sprint.mission.discodeit.assembler.MessageAssembler;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
@@ -32,6 +23,16 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class BasicMessageServiceTest {
@@ -44,6 +45,8 @@ class BasicMessageServiceTest {
   private ChannelRepository channelRepository;
   @Mock
   private MessageAssembler messageAssembler;
+  @Mock
+  private ApplicationEventPublisher applicationEventPublisher;
 
   @InjectMocks
   private BasicMessageService messageService;
@@ -80,9 +83,7 @@ class BasicMessageServiceTest {
     void 메시지를_삭제하면_해당_ID로_삭제_요청된다() {
       Message message = mock(Message.class);
       given(messageRepository.findById(message.getId())).willReturn(Optional.of(message));
-
       messageService.delete(message.getId());
-
       then(messageRepository).should().deleteById(message.getId());
     }
   }

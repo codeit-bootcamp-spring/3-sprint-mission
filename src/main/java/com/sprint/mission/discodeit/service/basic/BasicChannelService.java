@@ -18,6 +18,8 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+  @CacheEvict(value = "channels", allEntries = true)
   public ChannelResponse create(String name, String description) {
     Channel channel = Channel.createPublic(name, description);
     Channel savedChannel = channelRepository.save(channel);
@@ -43,6 +46,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
+  @CacheEvict(value = "channels", allEntries = true)
   public ChannelResponse create(List<UUID> participantIds) {
     Channel channel = Channel.createPrivate();
     Channel savedChannel = channelRepository.save(channel);
@@ -67,6 +71,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @Transactional(readOnly = true)
+  @Cacheable(value = "channels", key = "#userId")
   public List<ChannelResponse> findAllByUserId(UUID userId) {
     return channelRepository.findAllByUserId(userId).stream()
         .map(channelAssembler::toResponse)
@@ -75,6 +80,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+  @CacheEvict(value = "channels", allEntries = true)
   public ChannelResponse update(UUID channelId, String newName, String newDescription) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(channelId.toString()));
@@ -92,6 +98,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
+  @CacheEvict(value = "channels", allEntries = true)
   public ChannelResponse delete(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(channelId.toString()));

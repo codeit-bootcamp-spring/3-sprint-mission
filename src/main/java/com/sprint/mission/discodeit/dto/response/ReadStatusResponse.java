@@ -8,7 +8,8 @@ public record ReadStatusResponse(
     UUID id,
     UUID userId,
     UUID channelId,
-    Instant lastReadAt
+    Instant lastReadAt,
+    Boolean notificationEnabled
 ) {
 
   public static ReadStatusResponse from(ReadStatus readStatus) {
@@ -16,7 +17,8 @@ public record ReadStatusResponse(
         readStatus.getId(),
         readStatus.getUser().getId(),
         readStatus.getChannel().getId(),
-        readStatus.getLastReadAt()
+        readStatus.getLastReadAt(),
+        readStatus.isNotificationEnabled()
     );
   }
 }

@@ -1,19 +1,25 @@
 package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.event.BinaryContentUploadFailedEvent;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -42,24 +48,37 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   private S3Client s3Client;
   private S3Presigner s3Presigner;
 
+  private final ApplicationEventPublisher eventPublisher;
+
   @Autowired
   public S3BinaryContentStorage(
       @Value("${discodeit.storage.s3.access-key}") String accessKey,
       @Value("${discodeit.storage.s3.secret-key}") String secretKey,
       @Value("${discodeit.storage.s3.region}") String region,
       @Value("${discodeit.storage.s3.bucket}") String bucket,
-      @Value("${discodeit.storage.s3.presigned-url-expiration}") long presignedUrlExpiration) {
+      @Value("${discodeit.storage.s3.presigned-url-expiration}") long presignedUrlExpiration,
+      ApplicationEventPublisher eventPublisher
+  ) {
     this.accessKey = accessKey;
     this.secretKey = secretKey;
     this.region = region;
     this.bucket = bucket;
     this.presignedUrlExpiration = presignedUrlExpiration;
+    this.eventPublisher = eventPublisher;
     initializeS3Client();
   }
 
   // 테스트용 생성자 default(package-private)
-  S3BinaryContentStorage(String accessKey, String secretKey, String region, String bucket,
-      long presignedUrlExpiration, S3Client s3Client, S3Presigner s3Presigner) {
+  S3BinaryContentStorage(
+      String accessKey,
+      String secretKey,
+      String region,
+      String bucket,
+      long presignedUrlExpiration,
+      S3Client s3Client,
+      S3Presigner s3Presigner,
+      ApplicationEventPublisher eventPublisher
+  ) {
     this.accessKey = accessKey;
     this.secretKey = secretKey;
     this.region = region;
@@ -67,6 +86,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     this.presignedUrlExpiration = presignedUrlExpiration;
     this.s3Client = s3Client;
     this.s3Presigner = s3Presigner;
+    this.eventPublisher = eventPublisher;
   }
 
   private void initializeS3Client() {
@@ -85,6 +105,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   }
 
   @Override
+  @Retryable(retryFor = RuntimeException.class, maxAttempts = 3, backoff = @Backoff(delay = 1000L, multiplier = 2.0))
   public UUID put(UUID id, byte[] content) {
     String key = id.toString();
     log.debug("S3 파일 업로드 시작: key={}, size={}", key, content.length);
@@ -155,5 +176,18 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
     PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
     return presignedRequest.url().toString();
+  }
+
+  @Recover
+  public UUID recover(RuntimeException e, UUID id, byte[] content) {
+    String requestId = MDC.get("traceId");
+    String errorMessage = e.getMessage();
+    eventPublisher.publishEvent(new BinaryContentUploadFailedEvent(
+        requestId,
+        id,
+        errorMessage
+    ));
+    log.error("S3 파일 업로드 재시도 실패: key={}, error={}", id, errorMessage, e);
+    throw e;
   }
 }

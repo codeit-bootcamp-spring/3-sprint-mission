@@ -37,7 +37,7 @@ public interface ReadStatusService {
    * @param readStatusId ReadStatus ID
    * @return 업데이트된 ReadStatus 객체
    */
-  ReadStatusResponse update(UUID readStatusId);
+  ReadStatusResponse update(UUID readStatusId, Boolean newNotificationEnabled);
 
   /**
    * ReadStatus를 삭제한다

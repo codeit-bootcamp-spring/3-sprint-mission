@@ -15,5 +15,6 @@ public interface MessageAttachmentMapper {
   @Mapping(target = "fileName", expression = "java(attachment.getAttachment().getFileName())")
   @Mapping(target = "contentType", expression = "java(attachment.getAttachment().getContentType())")
   @Mapping(target = "size", expression = "java(attachment.getAttachment().getSize())")
+  @Mapping(target = "status", expression = "java(attachment.getAttachment().getStatus())")
   BinaryContentResponse toResponse(MessageAttachment attachment);
 }

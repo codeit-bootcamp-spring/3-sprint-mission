@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,7 @@ public class JwtLogoutHandler implements LogoutHandler {
 
   private final JwtTokenProvider tokenProvider;
   private final JwtRegistry jwtRegistry;
+  private final CacheManager cacheManager;
 
   @Override
   public void logout(HttpServletRequest request, HttpServletResponse response,
@@ -41,6 +43,11 @@ public class JwtLogoutHandler implements LogoutHandler {
               log.warn("Failed to invalidate JWT information on logout", e);
             }
           });
+    }
+
+    var usersCache = cacheManager.getCache("users");
+    if (usersCache != null) {
+      usersCache.clear();
     }
 
     log.debug("JWT 로그아웃 핸들러 실행 - 리프레시 토큰 쿠키 삭제");

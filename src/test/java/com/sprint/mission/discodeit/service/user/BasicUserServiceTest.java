@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.ErrorCode;
@@ -42,6 +43,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,6 +69,8 @@ class BasicUserServiceTest {
 
   @Mock
   private JwtRegistry jwtRegistry;
+  @Mock
+  private ApplicationEventPublisher applicationEventPublisher;
 
   @InjectMocks
   private BasicUserService basicUserService;
@@ -83,7 +87,8 @@ class BasicUserServiceTest {
                   profileEntity.getId(),
                   profileEntity.getFileName(),
                   profileEntity.getContentType(),
-                  profileEntity.getSize());
+                  profileEntity.getSize(),
+                  BinaryContentStatus.PROCESSING);
 
           return new UserResponse(
               u.getId(),

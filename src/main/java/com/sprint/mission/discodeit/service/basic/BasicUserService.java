@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentData;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -16,12 +18,14 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserRoleCommand;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,11 +41,12 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final UserOnlineService userOnlineService;
   private final JwtRegistry jwtRegistry;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher applicationEventPublisher;
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
 
   @Override
+  @CacheEvict(value = "users", allEntries = true)
   public UserResponse create(CreateUserCommand command) {
     validateUserEmail(command.email());
     validateUserName(command.username());
@@ -103,12 +108,14 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional(readOnly = true)
+  @Cacheable("users")
   public List<UserResponse> findAll() {
     return userRepository.findAll().stream().map(this::toUserResponse).toList();
   }
 
   @Override
   @PreAuthorize("@userSecurity.isSelf(#command.userId)")
+  @CacheEvict(value = "users", allEntries = true)
   public UserResponse update(UpdateUserCommand command) {
     return userRepository.findById(command.userId())
         .map(user -> {
@@ -141,18 +148,33 @@ public class BasicUserService implements UserService {
 
   @Override
   @PreAuthorize("hasRole('ADMIN')")
+  @CacheEvict(value = "users", allEntries = true)
   public UserResponse updateRole(UpdateUserRoleCommand command) {
     return userRepository.findById(command.userId())
         .map(user -> {
-          user.updateRole(command.newRole());
-          User savedUser = userRepository.save(user);
-          jwtRegistry.invalidateJwtInformationByUserId(savedUser.getId());
-          return toUserResponse(savedUser);
+          var oldRole = user.getRole();
+          if (!oldRole.equals(command.newRole())) {
+            user.updateRole(command.newRole());
+            User savedUser = userRepository.save(user);
+            jwtRegistry.invalidateJwtInformationByUserId(savedUser.getId());
+            applicationEventPublisher.publishEvent(
+                new RoleUpdatedEvent(
+                    savedUser.getId(),
+                    oldRole,
+                    command.newRole(),
+                    savedUser.getUpdatedAt()
+                ));
+            return toUserResponse(savedUser);
+          } else {
+            // 권한이 변경되지 않은 경우 기존 응답 반환
+            return toUserResponse(user);
+          }
         }).orElseThrow(() -> new UserNotFoundException(command.userId().toString()));
   }
 
   @Override
   @PreAuthorize("@userSecurity.isSelf(#userId)")
+  @CacheEvict(value = "users", allEntries = true)
   public void delete(UUID userId) {
     userRepository.findById(userId).ifPresentOrElse(user -> {
       userRepository.deleteById(userId);
@@ -175,7 +197,8 @@ public class BasicUserService implements UserService {
 
       BinaryContent saved = binaryContentRepository.save(binaryContent);
 
-      binaryContentStorage.put(saved.getId(), profile.bytes());
+      applicationEventPublisher.publishEvent(
+          new BinaryContentCreatedEvent(saved.getId(), profile.bytes()));
 
       return saved;
     } catch (Exception e) {

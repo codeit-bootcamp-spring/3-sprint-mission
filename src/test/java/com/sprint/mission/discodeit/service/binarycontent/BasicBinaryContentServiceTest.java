@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service.binarycontent;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -21,9 +20,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class BasicBinaryContentServiceTest {
+
+  @Mock
+  private ApplicationEventPublisher applicationEventPublisher;
 
   @Mock
   private BinaryContentStorage binaryContentStorage;
@@ -62,7 +65,6 @@ class BasicBinaryContentServiceTest {
       assertThat(result.size()).isEqualTo(expected.getSize());
 
       then(binaryContentRepository).should().save(any());
-      then(binaryContentStorage).should().put(any(UUID.class), eq(mockBytes));
     }
   }
 
@@ -104,7 +106,7 @@ class BasicBinaryContentServiceTest {
     void 여러_ID로_BinaryContent_목록을_조회한다() {
       BinaryContent content1 = BinaryContentFixture.createValid();
       BinaryContent content2 = BinaryContentFixture.createValid();
-      // save() mock을 통해 id가 할당된 객체를 반환하도록 설정
+
       BinaryContent saved1 = BinaryContent.create(content1.getFileName(), content1.getSize(),
           content1.getContentType());
       BinaryContent saved2 = BinaryContent.create(content2.getFileName(), content2.getSize(),

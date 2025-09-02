@@ -6,7 +6,7 @@ public record AuthSessionResponse(boolean authenticated, UserResponse user) {
     return new AuthSessionResponse(false, null);
   }
 
-  public static AuthSessionResponse of(UserResponse user) {
+  public static AuthSessionResponse from(UserResponse user) {
     return new AuthSessionResponse(true, user);
   }
 }
