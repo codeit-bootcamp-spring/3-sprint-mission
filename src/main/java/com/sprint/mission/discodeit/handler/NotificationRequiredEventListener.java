@@ -33,6 +33,7 @@ public class NotificationRequiredEventListener {
 
     @Value("${discodeit.admin.username}") String adminUsername;
 
+    // message
     @TransactionalEventListener
     public void on(MessageCreatedEvent event) {
         MessageResponse message = event.getData();
@@ -54,6 +55,31 @@ public class NotificationRequiredEventListener {
         notificationService.create(receiverIds, title, content);
     }
 
+    // authority
+    @TransactionalEventListener
+    public void on(RoleUpdatedEvent event) {
+        String content = String.format(event.getFrom().name(), event.getTo().name() + " -> " + event.getTo().name());
+        notificationService.create(Set.of(event.getUserId()), "권한이 변경 되었습니다.", content);
+    }
+
+    // image
+    public void on(S3UpdatedFailedEvent event) {
+        String requestId = event.getRequestId();
+        UUID id = event.getId();
+        Throwable throwable = event.getThrowable();
+
+        StringBuffer sb = new StringBuffer();
+        sb.append("RequestId: ").append(requestId).append("\n");
+        sb.append("BinaryContentId: ").append(id).append("\n");
+        sb.append("Error: ").append(throwable.getMessage()).append("\n");
+        String content = sb.toString();
+
+        Set<UUID> receiverIds = userRepository.findByUsername(adminUsername)
+            .map(user -> Set.of(user.getId()))
+            .orElse(Set.of());
+
+        notificationService.create(receiverIds, "S3 파일 업로드 실패", content);
+    }
 
 
 }
