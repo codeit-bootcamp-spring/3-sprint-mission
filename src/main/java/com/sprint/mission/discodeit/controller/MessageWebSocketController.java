@@ -24,8 +24,8 @@ public class MessageWebSocketController {
         log.info("[MessageWebSocketController] 메시지 수신: 채널={}, 내용={}", request.channelId(), request.content());
 
         MessageDto saved = messageService.create(request, List.of());
-
-        String destination = "/sub/channels/" + request.channelId();
+        
+        String destination = "/sub/channels." + request.channelId() + ".messages";
         messagingTemplate.convertAndSend(destination, saved);
 
         log.info("[MessageWebSocketController] 메시지 전송 완료: {}", destination);
