@@ -38,6 +38,7 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
     runtimeOnly 'org.postgresql:postgresql'
+    implementation 'org.springframework.retry:spring-retry'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
