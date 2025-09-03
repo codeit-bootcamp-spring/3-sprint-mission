@@ -16,7 +16,6 @@ import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -25,6 +24,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -55,6 +56,7 @@ public class BasicAuthService implements AuthService {
     Role previousRole = user.getRole();
     Role newRole = request.newRole();
     user.updateRole(newRole);
+    userRepository.save(user);
 
     jwtRegistry.invalidateJwtInformationByUserId(userId);
     eventPublisher.publishEvent(

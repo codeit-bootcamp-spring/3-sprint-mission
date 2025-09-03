@@ -42,6 +42,10 @@ dependencies {
     implementation 'org.springframework.kafka:spring-kafka'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    // websocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+
     runtimeOnly 'org.postgresql:postgresql'
 
     compileOnly 'org.projectlombok:lombok'
