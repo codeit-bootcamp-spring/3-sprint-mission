@@ -20,10 +20,19 @@ public class BinaryContent extends BaseEntity {
   private Long size;
   @Column(length = 100, nullable = false)
   private String contentType;
+  @Column(length = 20, nullable = false)
+  private BinaryContentStatus status;
 
   public BinaryContent(String fileName, Long size, String contentType) {
     this.fileName = fileName;
     this.size = size;
     this.contentType = contentType;
+    this.status = BinaryContentStatus.PROCESSING;
   }
+
+  // 상태 변경 메서드들 (트랜잭션은 호출 측 서비스에서 관리)
+  public void updateStatus(BinaryContentStatus status) {
+    this.status = status;
+  }
+
 }
