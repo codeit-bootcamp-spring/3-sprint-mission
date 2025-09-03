@@ -69,7 +69,6 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-                .ignoringRequestMatchers("/api/auth/refresh", "/api/auth/login")
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "index.html").permitAll()

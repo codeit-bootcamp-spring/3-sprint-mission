@@ -17,11 +17,13 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
@@ -43,6 +45,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -60,6 +63,7 @@ public class MessageServiceTest {
     @Mock private BinaryContentStorage binaryContentStorage;
     @Mock private MessageMapper messageMapper;
     @Mock private PageResponseMapper pageResponseMapper;
+    @Mock private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private BasicMessageService messageService;
@@ -92,9 +96,8 @@ public class MessageServiceTest {
 
         byte[] data = "bytes".getBytes();
         BinaryContentCreateRequest attachmentRequest = new BinaryContentCreateRequest("attach.png", "image/png", data);
-        BinaryContent binaryContent = new BinaryContent("attach.png", (long) data.length, "image/png");
+        BinaryContent binaryContent = new BinaryContent("attach.png", (long) data.length, "image/png", BinaryContentStatus.PROCESSING);
         given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(binaryContent);
-        given(binaryContentStorage.put(binaryContent.getId(), data)).willReturn(binaryContent.getId());
 
         Message message = new Message("test message", channel, user, List.of(binaryContent));
         given(messageRepository.save(any(Message.class))).willReturn(message);
@@ -110,7 +113,8 @@ public class MessageServiceTest {
                 binaryContent.getId(),
                 binaryContent.getFileName(),
                 binaryContent.getSize(),
-                binaryContent.getContentType()
+                binaryContent.getContentType(),
+                BinaryContentStatus.PROCESSING
             ))
         );
         given(messageMapper.toDto(any(Message.class))).willReturn(messageDto);
@@ -122,7 +126,7 @@ public class MessageServiceTest {
         then(channelRepository).should().findById(channelId);
         then(userRepository).should().findById(authorId);
         then(binaryContentRepository).should().save(any(BinaryContent.class));
-        then(binaryContentStorage).should().put(binaryContent.getId(), data);
+        then(eventPublisher).should().publishEvent(any(BinaryContentCreatedEvent.class));
         then(messageRepository).should().save(any(Message.class));
         then(messageMapper).should().toDto(any(Message.class));
 
@@ -197,8 +201,8 @@ public class MessageServiceTest {
     @DisplayName("메시지 삭제 성공")
     void deleteMessage() {
         // given
-        BinaryContent attachment1 = new BinaryContent("img1.png", 100L, "image/png");
-        BinaryContent attachment2 = new BinaryContent("img2.jpg", 200L, "image/jpeg");
+        BinaryContent attachment1 = new BinaryContent("img1.png", 100L, "image/png", BinaryContentStatus.PROCESSING);
+        BinaryContent attachment2 = new BinaryContent("img2.jpg", 200L, "image/jpeg", BinaryContentStatus.PROCESSING);
         List<BinaryContent> attachments = List.of(attachment1, attachment2);
 
         Message message = new Message("test message", channel, user, attachments);

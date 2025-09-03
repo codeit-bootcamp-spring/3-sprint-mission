@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -20,7 +21,9 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     private final JwtTokenProvider tokenProvider;
 
     private final Map<UUID, Queue<JwtInformation>> origin = new ConcurrentHashMap<>();
-    private final int maxActiveJwtCount = 1;
+
+    private final Set<String> accessTokenIndexes = ConcurrentHashMap.newKeySet();
+    private final Set<String> refreshTokenIndexes = ConcurrentHashMap.newKeySet();
 
     @Override
     public void registerJwtInformation(JwtInformation jwtInformation) {
@@ -33,10 +36,15 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
         while (!queue.isEmpty()) {
             JwtInformation removed = queue.poll();
+            accessTokenIndexes.remove(removed.accessToken());
+            refreshTokenIndexes.remove(removed.refreshToken());
+
             log.debug("[InMemoryJwtRegistry] 동시 로그인 초과 → 기존 토큰 제거: userId={}, removedAT={}", userId, removed.accessToken());
         }
 
         queue.add(jwtInformation);
+        accessTokenIndexes.add(jwtInformation.accessToken());
+        refreshTokenIndexes.add(jwtInformation.refreshToken());
 
         log.debug("[InMemoryJwtRegistry] 토큰 등록 완료: userId={}, activeCount={}", userId, queue.size());
     }
@@ -48,6 +56,10 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         Queue<JwtInformation> removed = origin.remove(userId);
 
         if (removed != null) {
+            removed.forEach(info -> {
+                accessTokenIndexes.remove(info.accessToken());
+                refreshTokenIndexes.remove(info.refreshToken());
+            });
             log.debug("[JwtRegistry] JWT 정보 무효화 완료: userId={}, 제거된 JWT 수={}", userId, removed.size());
         } else {
             log.debug("[JwtRegistry] 무효화할 JWT 정보가 없음: userId={}", userId);
@@ -61,16 +73,12 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
     @Override
     public boolean hasActiveJwtInformationByAccessToken(String accessToken) {
-        return origin.values().stream()
-            .flatMap(Queue::stream)
-            .anyMatch(info -> info.accessToken().equals(accessToken));
+        return accessTokenIndexes.contains(accessToken);
     }
 
     @Override
     public boolean hasActiveJwtInformationByRefreshToken(String refreshToken) {
-        return origin.values().stream()
-            .flatMap(Queue::stream)
-            .anyMatch(info -> info.refreshToken().equals(refreshToken));
+        return refreshTokenIndexes.contains(refreshToken);
     }
 
     @Override
@@ -88,7 +96,12 @@ public class InMemoryJwtRegistry implements JwtRegistry {
                     );
 
                     queue.remove(oldInfo);
+                    accessTokenIndexes.remove(oldInfo.accessToken());
+                    refreshTokenIndexes.remove(oldInfo.refreshToken());
+
                     queue.add(rotated);
+                    accessTokenIndexes.add(rotated.accessToken());
+                    refreshTokenIndexes.add(rotated.refreshToken());
 
                     log.debug("[InMemoryJwtRegistry] 토큰 회전 완료 - userId={}", rotated.userDto().id());
                 });
@@ -101,10 +114,16 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         log.info("[InMemoryJwtRegistry] 만료된 JWT 정리 작업 시작");
 
         origin.forEach((userId, queue) -> {
-            boolean removed = queue.removeIf(info ->
-                !tokenProvider.validateAccessToken(info.accessToken()) &&
-                    !tokenProvider.validateRefreshToken(info.refreshToken())
-            );
+            boolean removed = queue.removeIf(info -> {
+                boolean expired = !tokenProvider.validateAccessToken(info.accessToken()) &&
+                    !tokenProvider.validateRefreshToken(info.refreshToken());
+                if (expired) {
+                    accessTokenIndexes.remove(info.accessToken());
+                    refreshTokenIndexes.remove(info.refreshToken());
+                }
+                return expired;
+            });
+
             if (removed) {
                 log.debug("[InMemoryJwtRegistry] 만료 토큰 제거 완료: userId={}", userId);
             }

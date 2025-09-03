@@ -11,7 +11,6 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.local.LocalBinaryContentStorage;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,7 +25,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 

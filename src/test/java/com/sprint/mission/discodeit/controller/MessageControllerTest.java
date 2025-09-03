@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
@@ -78,7 +79,7 @@ public class MessageControllerTest {
 
         MessageCreateRequest req = new MessageCreateRequest("hello", channelId, userId);
         BinaryContentDto attachDto = new BinaryContentDto(
-            UUID.randomUUID(), "test.txt", 5L, "text/plain"
+            UUID.randomUUID(), "test.txt", 5L, "text/plain", BinaryContentStatus.PROCESSING
         );
         UserDto userDto = new UserDto(
             userId, "tom", "tom@test.com", null, false, Role.USER

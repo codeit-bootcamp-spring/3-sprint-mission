@@ -10,9 +10,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
     name = "read_statuses",
     uniqueConstraints = @UniqueConstraint(
@@ -23,42 +26,40 @@ import lombok.Getter;
 @Getter
 public class ReadStatus extends BaseUpdatableEntity {
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(
-      name = "user_id",
-      nullable = false,
-      foreignKey = @ForeignKey(name = "fk_read_statuses_user")
-  )
-  private User user;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+        name = "user_id",
+        nullable = false,
+        foreignKey = @ForeignKey(name = "fk_read_statuses_user")
+    )
+    private User user;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(
-      name = "channel_id",
-      nullable = false,
-      foreignKey = @ForeignKey(name = "fk_read_statuses_channel")
-  )
-  private Channel channel;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+        name = "channel_id",
+        nullable = false,
+        foreignKey = @ForeignKey(name = "fk_read_statuses_channel")
+    )
+    private Channel channel;
 
-  @Column(name = "last_read_at", nullable = false)
-  private Instant lastReadAt;
+    @Column(name = "last_read_at", nullable = false)
+    private Instant lastReadAt;
 
-  public ReadStatus(User user, Channel channel, Instant lastReadAt) {
-    this.user = user;
-    this.channel = channel;
-    this.lastReadAt = lastReadAt;
-  }
+    @Column(name = "notification_enabled")
+    private boolean notificationEnabled;
 
-  public ReadStatus() { }
-
-  public void update(Instant newLastReadAt) {
-    boolean anyValueUpdated = false;
-    if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
-      this.lastReadAt = newLastReadAt;
-      anyValueUpdated = true;
+    public ReadStatus(User user, Channel channel, Instant lastReadAt, boolean notificationEnabled) {
+        this.user = user;
+        this.channel = channel;
+        this.lastReadAt = lastReadAt;
+        this.notificationEnabled = notificationEnabled;
     }
 
-    if (anyValueUpdated) {
-      setUpdatedAt();
+    public void update(Instant newLastReadAt, boolean newNotificationEnabled) {
+        if (newLastReadAt != null) {
+            this.lastReadAt = newLastReadAt;
+        }
+
+        this.notificationEnabled = newNotificationEnabled;
     }
-  }
 }

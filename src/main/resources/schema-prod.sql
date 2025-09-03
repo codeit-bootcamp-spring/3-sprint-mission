@@ -4,11 +4,11 @@ CREATE TABLE IF NOT EXISTS users
     id         uuid PRIMARY KEY,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone,
-    username   varchar(50) UNIQUE       NOT NULL,
-    email      varchar(100) UNIQUE      NOT NULL,
-    password   varchar(60)              NOT NULL,
+    username   varchar(50) UNIQUE NOT NULL,
+    email      varchar(100) UNIQUE NOT NULL,
+    password   varchar(60) NOT NULL,
     profile_id uuid,
-    role       varchar(20)              NOT NULL DEFAULT 'USER'
+    role       varchar(20) NOT NULL DEFAULT 'USER'
 );
 
 -- BinaryContent
@@ -16,9 +16,11 @@ CREATE TABLE IF NOT EXISTS binary_contents
 (
     id           uuid PRIMARY KEY,
     created_at   timestamp with time zone NOT NULL,
-    file_name    varchar(255)             NOT NULL,
-    size         bigint                   NOT NULL,
-    content_type varchar(100)             NOT NULL
+    updated_at   timestamp with time zone,
+    file_name    varchar(255) NOT NULL,
+    size         bigint NOT NULL,
+    content_type varchar(100) NOT NULL,
+    status       varchar(20) NOT NULL
 );
 
 -- Channel
@@ -29,7 +31,7 @@ CREATE TABLE IF NOT EXISTS channels
     updated_at  timestamp with time zone,
     name        varchar(100),
     description varchar(500),
-    type        varchar(10)              NOT NULL
+    type        varchar(10) NOT NULL
 );
 
 -- Message
@@ -39,7 +41,7 @@ CREATE TABLE IF NOT EXISTS messages
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone,
     content    text,
-    channel_id uuid                     NOT NULL,
+    channel_id uuid  NOT NULL,
     author_id  uuid
 );
 
@@ -54,13 +56,24 @@ CREATE TABLE IF NOT EXISTS message_attachments
 -- ReadStatus
 CREATE TABLE IF NOT EXISTS read_statuses
 (
-    id           uuid PRIMARY KEY,
-    created_at   timestamp with time zone NOT NULL,
-    updated_at   timestamp with time zone,
-    user_id      uuid                     NOT NULL,
-    channel_id   uuid                     NOT NULL,
-    last_read_at timestamp with time zone NOT NULL,
+    id                      uuid PRIMARY KEY,
+    created_at              timestamp with time zone NOT NULL,
+    updated_at              timestamp with time zone,
+    user_id                 uuid NOT NULL,
+    channel_id              uuid NOT NULL,
+    last_read_at            timestamp with time zone NOT NULL,
+    notification_enabled    boolean NOT NULL,
     UNIQUE (user_id, channel_id)
+);
+
+-- Notifications
+CREATE TABLE notifications
+(
+    id          UUID NOT NULL,
+    created_at   timestamp with time zone NOT NULL,
+    receiver_id UUID,
+    title       VARCHAR(20) NOT NULL,
+    content     text NOT NULL
 );
 
 

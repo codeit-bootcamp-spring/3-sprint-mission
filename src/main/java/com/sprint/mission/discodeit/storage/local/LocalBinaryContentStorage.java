@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.exception.binaryContent.FileStorageErrorException;
 import com.sprint.mission.discodeit.exception.binaryContent.ResourceUrlCreationErrorException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import io.micrometer.core.annotation.Timed;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +16,6 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -46,6 +46,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         }
     }
 
+    @Timed("binarycontent.put.time")
     @Override
     public UUID put(UUID id, byte[] data) {
         Path file = resolvePath(id);

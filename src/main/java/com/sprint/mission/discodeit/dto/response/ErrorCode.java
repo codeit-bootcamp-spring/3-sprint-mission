@@ -28,7 +28,9 @@ public enum ErrorCode {
     DUPLICATE_READSTATUS("R002", HttpStatus.BAD_REQUEST, "이미 존재하는 읽음 상태입니다."),
 
     USERSTATUS_NOT_FOUND("S001", HttpStatus.NOT_FOUND, "사용자 상태를 조회할 수 없습니다."),
-    DUPLICATE_USERSTATUS("S002", HttpStatus.BAD_REQUEST, "이미 존재하는 사용자 상태입니다.");
+    DUPLICATE_USERSTATUS("S002", HttpStatus.BAD_REQUEST, "이미 존재하는 사용자 상태입니다."),
+
+    NOTIFICATION_NOT_FOUND("N001", HttpStatus.NOT_FOUND, "알림을 조회할 수 없습니다.");
 
     private final String code;
     private final HttpStatus status;

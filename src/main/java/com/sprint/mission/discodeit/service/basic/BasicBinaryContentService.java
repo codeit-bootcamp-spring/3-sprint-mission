@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binaryContent.FileNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -16,8 +18,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
@@ -28,76 +32,86 @@ import org.springframework.validation.annotation.Validated;
 @Service
 public class BasicBinaryContentService implements BinaryContentService {
 
-  private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
-  private final BinaryContentMapper binaryContentMapper;
+    private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentStorage binaryContentStorage;
+    private final BinaryContentMapper binaryContentMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
-  @Override
-  @Transactional
-  public BinaryContent create(@Valid BinaryContentCreateRequest binaryContentCreateRequest) {
-    String fileName = binaryContentCreateRequest.fileName();
-    byte[] bytes = binaryContentCreateRequest.bytes();
-    String contentType = binaryContentCreateRequest.contentType();
+    @Override
+    @Transactional
+    public BinaryContent create(@Valid BinaryContentCreateRequest binaryContentCreateRequest) {
+        String fileName = binaryContentCreateRequest.fileName();
+        byte[] bytes = binaryContentCreateRequest.bytes();
+        String contentType = binaryContentCreateRequest.contentType();
 
-    BinaryContent binaryContent = new BinaryContent(
-        fileName,
-        (long) bytes.length,
-        contentType
-    );
-    log.debug("파일 entity 생성: {}", binaryContent);
+        BinaryContent binaryContent = new BinaryContent(
+            fileName,
+            (long) bytes.length,
+            contentType,
+            BinaryContentStatus.PROCESSING
+        );
+        log.debug("파일 entity 생성: {}", binaryContent);
 
-    BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
-    log.info("파일 메타데이터 저장 완료 - id: {}", savedBinaryContent.getId());
-    binaryContentStorage.put(savedBinaryContent.getId(), bytes);
+        BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+        log.info("파일 메타데이터 저장 완료 - id: {}", savedBinaryContent.getId());
 
-    return savedBinaryContent;
-  }
+        eventPublisher.publishEvent(new BinaryContentCreatedEvent(savedBinaryContent.getId(), bytes));
 
-  @Override
-  public BinaryContentDto find(@NotNull UUID binaryContentId) {
-    BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
-        .orElseThrow(() -> {
-          log.error("파일 조회 실패 - binaryContentid={}", binaryContentId);
-          return new FileNotFoundException(binaryContentId);
-        });
+        return savedBinaryContent;
+    }
 
-    return binaryContentMapper.toDto(binaryContent);
-  }
+    @Override
+    public BinaryContentDto find(@NotNull UUID binaryContentId) {
+        BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
+            .orElseThrow(() -> {
+                log.error("파일 조회 실패 - binaryContentid={}", binaryContentId);
+                return new FileNotFoundException(binaryContentId);
+            });
 
-  @Override
-  public List<BinaryContentDto> findAllByIdIn(@NotNull List<UUID> binaryContentIds) {
-    List<BinaryContent> binaryContents = binaryContentRepository.findAllById(binaryContentIds);
-    log.info("총 {}개의 BinaryContent 조회", binaryContents.size());
+        return binaryContentMapper.toDto(binaryContent);
+    }
 
-    return binaryContents.stream()
-        .map(binaryContentMapper::toDto)
-        .collect(Collectors.toList());
-  }
+    @Override
+    public List<BinaryContentDto> findAllByIdIn(@NotNull List<UUID> binaryContentIds) {
+        List<BinaryContent> binaryContents = binaryContentRepository.findAllById(binaryContentIds);
+        log.info("총 {}개의 BinaryContent 조회", binaryContents.size());
 
-  @Override
-  @Transactional
-  public void delete(@NotNull UUID binaryContentId) {
-    BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
-        .orElseThrow(() -> {
-          log.error("파일 조회 실패 - binaryContentId={}", binaryContentId);
-          return new FileNotFoundException(binaryContentId);
-        });
+        return binaryContents.stream()
+            .map(binaryContentMapper::toDto)
+            .collect(Collectors.toList());
+    }
 
-    binaryContentRepository.delete(binaryContent);
-  }
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+        binaryContentRepository.findById(binaryContentId)
+            .ifPresent(binaryContent -> binaryContent.updateStatus(status));
+        log.debug("파일 상태 {}로 업데이트 완료 - binaryContentId: {}", status, binaryContentId);
+    }
 
-  @Override
-  public InputStream getRawData(@NotNull UUID binaryContentId) {
-    binaryContentRepository.findById(binaryContentId)
-        .orElseThrow(() -> {
-          log.error("파일 조회 실패 - binaryContentId={}", binaryContentId);
-          return new FileNotFoundException(binaryContentId);
-        });
-    return binaryContentStorage.get(binaryContentId);
-  }
+    @Override
+    @Transactional
+    public void delete(@NotNull UUID binaryContentId) {
+        BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
+            .orElseThrow(() -> {
+                log.error("파일 조회 실패 - binaryContentId={}", binaryContentId);
+                return new FileNotFoundException(binaryContentId);
+            });
 
-  @Override
-  public ResponseEntity<?> download(@NotNull BinaryContentDto dto) {
-    return binaryContentStorage.download(dto);
-  }
+        binaryContentRepository.delete(binaryContent);
+    }
+
+    @Override
+    public InputStream getRawData(@NotNull UUID binaryContentId) {
+        binaryContentRepository.findById(binaryContentId)
+            .orElseThrow(() -> {
+                log.error("파일 조회 실패 - binaryContentId={}", binaryContentId);
+                return new FileNotFoundException(binaryContentId);
+            });
+        return binaryContentStorage.get(binaryContentId);
+    }
+
+    @Override
+    public ResponseEntity<?> download(@NotNull BinaryContentDto dto) {
+        return binaryContentStorage.download(dto);
+    }
 }
