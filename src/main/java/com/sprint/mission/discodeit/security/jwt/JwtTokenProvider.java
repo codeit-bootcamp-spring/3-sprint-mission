@@ -9,14 +9,13 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,164 +25,161 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenProvider {
 
-    public static final String REFRESH_TOKEN_COOKIE_NAME = "REFRESH-TOKEN";
+  public static final String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
 
-    private final long accessTokenExpirationMs;
-    private final long refreshTokenExpirationMs;
+  private final int accessTokenExpirationMs;
+  private final int refreshTokenExpirationMs;
 
-    private final JWSSigner accessTokenSigner;
-    private final JWSVerifier accessTokenVerifier;
-    private final JWSSigner refreshTokenSigner;
-    private final JWSVerifier refreshTokenVerifier;
+  private final JWSSigner accessTokenSigner;
+  private final JWSVerifier accessTokenVerifier;
+  private final JWSSigner refreshTokenSigner;
+  private final JWSVerifier refreshTokenVerifier;
 
-    public JwtTokenProvider(
-        @Value("${jwt.access-token.secret}") String accessTokenSecret,
-        @Value("${jwt.access-token.exp}") long accessTokenExpirationMs,
-        @Value("${jwt.refresh-token.secret}") String refreshTokenSecret,
-        @Value("${jwt.refresh-token.exp}") long refreshTokenExpirationMs
-    ) throws JOSEException {
+  public JwtTokenProvider(
+      @Value("${discodeit.jwt.access-token.secret}") String accessTokenSecret,
+      @Value("${discodeit.jwt.access-token.expiration-ms}") int accessTokenExpirationMs,
+      @Value("${discodeit.jwt.refresh-token.secret}") String refreshTokenSecret,
+      @Value("${discodeit.jwt.refresh-token.expiration-ms}") int refreshTokenExpirationMs)
+      throws JOSEException {
 
-        byte[] a = accessTokenSecret.getBytes(StandardCharsets.UTF_8);
-        byte[] r = refreshTokenSecret.getBytes(StandardCharsets.UTF_8);
-        if (a.length < 32 || r.length < 32) {
-            throw new IllegalStateException("JWT HS256 secrets must be at least 32 bytes.");
-        }
+    this.accessTokenExpirationMs = accessTokenExpirationMs;
+    this.refreshTokenExpirationMs = refreshTokenExpirationMs;
 
-        this.accessTokenExpirationMs = accessTokenExpirationMs;
-        this.refreshTokenExpirationMs = refreshTokenExpirationMs;
+    byte[] accessSecretBytes = accessTokenSecret.getBytes(StandardCharsets.UTF_8);
+    this.accessTokenSigner = new MACSigner(accessSecretBytes);
+    this.accessTokenVerifier = new MACVerifier(accessSecretBytes);
 
-        this.accessTokenSigner = new MACSigner(a);
-        this.accessTokenVerifier = new MACVerifier(a);
-        this.refreshTokenSigner = new MACSigner(r);
-        this.refreshTokenVerifier = new MACVerifier(r);
-    }
+    byte[] refreshSecretBytes = refreshTokenSecret.getBytes(StandardCharsets.UTF_8);
+    this.refreshTokenSigner = new MACSigner(refreshSecretBytes);
+    this.refreshTokenVerifier = new MACVerifier(refreshSecretBytes);
+  }
 
-    /* ===== 발급 ===== */
-    public String generateAccessToken(DiscodeitUserDetails user) throws JOSEException {
-        return generateToken(user, accessTokenExpirationMs, accessTokenSigner, "access");
-    }
+  public String generateAccessToken(DiscodeitUserDetails userDetails) throws JOSEException {
+    return generateToken(userDetails, accessTokenExpirationMs, accessTokenSigner, "access");
+  }
 
-    public String generateRefreshToken(DiscodeitUserDetails user) throws JOSEException {
-        return generateToken(user, refreshTokenExpirationMs, refreshTokenSigner, "refresh");
-    }
+  public String generateRefreshToken(DiscodeitUserDetails userDetails) throws JOSEException {
+    return generateToken(userDetails, refreshTokenExpirationMs, refreshTokenSigner, "refresh");
+  }
 
-    private String generateToken(DiscodeitUserDetails user, long expMs, JWSSigner signer,
-                                 String type)
-        throws JOSEException {
+  private String generateToken(DiscodeitUserDetails userDetails, int expirationMs, JWSSigner signer,
+      String tokenType) throws JOSEException {
+    String tokenId = UUID.randomUUID().toString();
+    UserDto user = userDetails.getUserDto();
 
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() + expMs);
+    Date now = new Date();
+    Date expiryDate = new Date(now.getTime() + expirationMs);
 
-        List<String> roles = user.getAuthorities().stream()
+    JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+        .subject(user.username())
+        .jwtID(tokenId)
+        .claim("userId", user.id().toString())
+        .claim("type", tokenType)
+        .claim("roles", userDetails.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority)
-            .toList();
+            .collect(Collectors.toList()))
+        .issueTime(now)
+        .expirationTime(expiryDate)
+        .build();
 
-        JWTClaimsSet claims = new JWTClaimsSet.Builder()
-            .subject(user.getUsername())                      // username
-            .jwtID(UUID.randomUUID().toString())              // jti
-            .claim("uid", user.getUserDto().id().toString())  // 사용자 UUID
-            .claim("roles", roles)
-            .claim("type", type)                              // access | refresh
-            .issueTime(now)
-            .expirationTime(expiry)
-            .build();
+    SignedJWT signedJWT = new SignedJWT(
+        new JWSHeader(JWSAlgorithm.HS256),
+        claimsSet
+    );
 
-        SignedJWT jwt = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claims);
-        jwt.sign(signer);
-        return jwt.serialize();
+    signedJWT.sign(signer);
+    String token = signedJWT.serialize();
+
+    log.debug("Generated {} token for user: {}", tokenType, user.username());
+    return token;
+  }
+
+  public boolean validateAccessToken(String token) {
+    return validateToken(token, accessTokenVerifier, "access");
+  }
+
+  public boolean validateRefreshToken(String token) {
+    return validateToken(token, refreshTokenVerifier, "refresh");
+  }
+
+  private boolean validateToken(String token, JWSVerifier verifier, String expectedType) {
+    try {
+      SignedJWT signedJWT = SignedJWT.parse(token);
+
+      // Verify signature
+      if (!signedJWT.verify(verifier)) {
+        log.debug("JWT signature verification failed for {} token", expectedType);
+        return false;
+      }
+
+      // Check token type
+      String tokenType = (String) signedJWT.getJWTClaimsSet().getClaim("type");
+      if (!expectedType.equals(tokenType)) {
+        log.debug("JWT token type mismatch: expected {}, got {}", expectedType, tokenType);
+        return false;
+      }
+
+      // Check expiration
+      Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+      if (expirationTime == null || expirationTime.before(new Date())) {
+        log.debug("JWT {} token expired", expectedType);
+        return false;
+      }
+
+      return true;
+    } catch (Exception e) {
+      log.debug("JWT {} token validation failed: {}", expectedType, e.getMessage());
+      return false;
     }
+  }
 
-    /* ===== 검증 ===== */
-    public boolean validateAccessToken(String token) {
-        return verify(token, accessTokenVerifier, "access");
+  public String getUsernameFromToken(String token) {
+    try {
+      SignedJWT signedJWT = SignedJWT.parse(token);
+      return signedJWT.getJWTClaimsSet().getSubject();
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid JWT token", e);
     }
+  }
 
-    public boolean validateRefreshToken(String token) {
-        return verify(token, refreshTokenVerifier, "refresh");
+  public String getTokenId(String token) {
+    try {
+      SignedJWT signedJWT = SignedJWT.parse(token);
+      return signedJWT.getJWTClaimsSet().getJWTID();
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid JWT token", e);
     }
+  }
 
-    private boolean verify(String token, JWSVerifier verifier, String expectedType) {
-        try {
-            SignedJWT jwt = SignedJWT.parse(token);
-            if (!jwt.verify(verifier)) {
-                return false;
-            }
-
-            String type = (String) jwt.getJWTClaimsSet().getClaim("type");
-            if (!expectedType.equals(type)) {
-                return false;
-            }
-
-            Date exp = jwt.getJWTClaimsSet().getExpirationTime();
-            return exp != null && exp.after(new Date());
-        } catch (Exception e) {
-            log.debug("JWT verify failed: {}", e.getMessage());
-            return false;
-        }
+  public UUID getUserId(String token) {
+    try {
+      SignedJWT signedJWT = SignedJWT.parse(token);
+      String userIdStr = (String) signedJWT.getJWTClaimsSet().getClaim("userId");
+      if (userIdStr == null) {
+        throw new IllegalArgumentException("User ID claim not found in JWT token");
+      }
+      return UUID.fromString(userIdStr);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid JWT token", e);
     }
+  }
 
-    /* ===== 파싱 헬퍼 ===== */
-    public String getUsername(String token) {
-        try {
-            return SignedJWT.parse(token).getJWTClaimsSet().getSubject();
-        } catch (Exception e) {
-            return null;
-        }
-    }
+  public Cookie genereateRefreshTokenCookie(String refreshToken) {
+    // Set refresh token in HttpOnly cookie
+    Cookie refreshCookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken);
+    refreshCookie.setHttpOnly(true);
+    refreshCookie.setSecure(true); // Use HTTPS in production
+    refreshCookie.setPath("/");
+    refreshCookie.setMaxAge(refreshTokenExpirationMs / 1000);
+    return refreshCookie;
+  }
 
-    public String getTokenId(String token) {
-        try {
-            return SignedJWT.parse(token).getJWTClaimsSet().getJWTID();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public Cookie buildRefreshCookie(String refreshToken) {
-        Cookie c = new Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken);
-        c.setHttpOnly(true);
-        c.setSecure(false);
-        c.setPath("/");
-        c.setMaxAge((int) (refreshTokenExpirationMs / 1000));
-        return c;
-    }
-
-    public Cookie buildExpireRefreshCookie() {
-        Cookie c = new Cookie(REFRESH_TOKEN_COOKIE_NAME, "");
-        c.setHttpOnly(true);
-        c.setSecure(false);
-        c.setPath("/");
-        c.setMaxAge(0);
-        return c;
-    }
-
-    public void addRefreshCookie(HttpServletResponse res, String refreshToken) {
-        res.addCookie(buildRefreshCookie(refreshToken));
-    }
-
-    public void expireRefreshCookie(HttpServletResponse res) {
-        res.addCookie(buildExpireRefreshCookie());
-    }
-
-    public String resolveRefreshToken(HttpServletRequest request) {
-        if (request.getCookies() == null) {
-            return null;
-        }
-        for (Cookie c : request.getCookies()) {
-            if (REFRESH_TOKEN_COOKIE_NAME.equals(c.getName())) {
-                return c.getValue();
-            }
-        }
-        return null;
-    }
-
-    public UUID getUserId(String token) {
-        try {
-            String uid = (String) SignedJWT.parse(token).getJWTClaimsSet().getClaim("uid");
-            return uid != null ? UUID.fromString(uid) : null;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
+  public Cookie genereateRefreshTokenExpirationCookie() {
+    Cookie refreshCookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, "");
+    refreshCookie.setHttpOnly(true);
+    refreshCookie.setSecure(true); // Use HTTPS in production
+    refreshCookie.setPath("/");
+    refreshCookie.setMaxAge(0);
+    return refreshCookie;
+  }
 }

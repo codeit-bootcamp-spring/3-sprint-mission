@@ -1,13 +1,5 @@
 -- 테이블
 -- User
-DROP TABLE IF EXISTS public.message_attachments CASCADE;
-DROP TABLE IF EXISTS public.read_statuses CASCADE;
-DROP TABLE IF EXISTS public.messages CASCADE;
-DROP TABLE IF EXISTS public.channels CASCADE;
-DROP TABLE IF EXISTS public.users CASCADE;
-DROP TABLE IF EXISTS public.binary_contents CASCADE;
-DROP TABLE IF EXISTS persistent_logins CASCADE;
-
 CREATE TABLE users
 (
     id         uuid PRIMARY KEY,
@@ -17,7 +9,7 @@ CREATE TABLE users
     email      varchar(100) UNIQUE      NOT NULL,
     password   varchar(60)              NOT NULL,
     profile_id uuid,
-    role       VARCHAR(255)
+    role       varchar(20)              NOT NULL
 );
 
 -- BinaryContent
@@ -25,18 +17,12 @@ CREATE TABLE binary_contents
 (
     id           uuid PRIMARY KEY,
     created_at   timestamp with time zone NOT NULL,
+    updated_at   timestamp with time zone,
     file_name    varchar(255)             NOT NULL,
     size         bigint                   NOT NULL,
-    content_type varchar(100)             NOT NULL
+    content_type varchar(100)             NOT NULL,
+    status       varchar(20)              NOT NULL
 --     ,bytes        bytea        NOT NULL
-);
-
-CREATE TABLE persistent_logins
-(
-    username  VARCHAR(64) NOT NULL,
-    series    VARCHAR(64) PRIMARY KEY,
-    token     VARCHAR(64) NOT NULL,
-    last_used TIMESTAMPTZ NOT NULL
 );
 
 -- Channel
@@ -83,6 +69,16 @@ CREATE TABLE read_statuses
 );
 
 
+CREATE TABLE notifications
+(
+    id          uuid PRIMARY KEY,
+    created_at  timestamp with time zone NOT NULL,
+    updated_at  timestamp with time zone,
+    receiver_id uuid                     NOT NULL,
+    title       varchar(255)             NOT NULL,
+    content     text                     NOT NULL
+);
+
 -- 제약 조건
 -- User (1) -> BinaryContent (1)
 ALTER TABLE users
@@ -90,7 +86,6 @@ ALTER TABLE users
         FOREIGN KEY (profile_id)
             REFERENCES binary_contents (id)
             ON DELETE SET NULL;
-
 
 -- Message (N) -> Channel (1)
 ALTER TABLE messages
@@ -126,31 +121,3 @@ ALTER TABLE read_statuses
         FOREIGN KEY (channel_id)
             REFERENCES channels (id)
             ON DELETE CASCADE;
-
-
-
-ALTER TABLE message_attachments
-    ADD CONSTRAINT fk_message_attachment_message
-        FOREIGN KEY (message_id)
-            REFERENCES messages (id)
-            ON DELETE CASCADE;
-
-ALTER TABLE binary_contents
-    ADD COLUMN updated_at timestamp with time zone;
-ALTER TABLE binary_contents
-    ADD COLUMN status varchar(20) NOT NULL DEFAULT 'PROCESSING';
-
-CREATE TABLE notifications
-(
-    id          UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    receiver_id UUID        NOT NULL,
-    title       TEXT        NOT NULL,
-    content     TEXT        NOT NULL,
-    confirmed   BOOLEAN     NOT NULL DEFAULT FALSE,
-
-    CONSTRAINT fk_notifications_user
-        FOREIGN KEY (receiver_id)
-            REFERENCES users (id)
-            ON DELETE CASCADE
-);

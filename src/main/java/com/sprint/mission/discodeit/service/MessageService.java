@@ -13,7 +13,7 @@ import org.springframework.data.domain.Pageable;
 public interface MessageService {
 
   MessageDto create(MessageCreateRequest messageCreateRequest,
-                    List<BinaryContentCreateRequest> binaryContentCreateRequests);
+      List<BinaryContentCreateRequest> binaryContentCreateRequests);
 
   MessageDto find(UUID messageId);
 
@@ -22,7 +22,4 @@ public interface MessageService {
   MessageDto update(UUID messageId, MessageUpdateRequest request);
 
   void delete(UUID messageId);
-
-
-  MessageDto findLastMessageInChannel(UUID channelId);
 }

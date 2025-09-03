@@ -4,11 +4,11 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record NotificationDto(
-        UUID id,
-        UUID receiverId,
-        String title,
-        String content,
-        boolean confirmed,
-        Instant createdAt
+    UUID id,
+    Instant createdAt,
+    UUID receiverId,
+    String title,
+    String content
 ) {
+
 }

@@ -2,146 +2,131 @@ package com.sprint.mission.discodeit.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.sprint.mission.discodeit.config.JpaAuditingConfig;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import jakarta.persistence.EntityManager;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.hibernate.Hibernate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 
+/**
+ * UserRepository 슬라이스 테스트
+ */
 @DataJpaTest
-@Import(JpaAuditingConfig.class)
-@ActiveProfiles("test") // application-test.yaml 사용
+@EnableJpaAuditing
+@ActiveProfiles("test")
 class UserRepositoryTest {
 
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired
+  private UserRepository userRepository;
 
-    @Autowired
-    private BinaryContentRepository binaryContentRepository;
+  @Autowired
+  private TestEntityManager entityManager;
 
-    @Autowired
-    private UserStatusRepository userStatusRepository;
+  /**
+   * TestFixture: 테스트에서 일관된 상태를 제공하기 위한 고정된 객체 세트 여러 테스트에서 재사용할 수 있는 테스트 데이터를 생성하는 메서드
+   */
+  private User createTestUser(String username, String email) {
+    BinaryContent profile = new BinaryContent("profile.jpg", 1024L, "image/jpeg");
+    User user = new User(username, email, "password123!@#", profile);
+    return user;
+  }
 
-    @Autowired
-    EntityManager em;
+  @Test
+  @DisplayName("사용자 이름으로 사용자를 찾을 수 있다")
+  void findByUsername_ExistingUsername_ReturnsUser() {
+    // given
+    String username = "testUser";
+    User user = createTestUser(username, "test@example.com");
+    userRepository.save(user);
 
-    @Test
-    @DisplayName("사용자 저장 및 findByUsername 성공")
-    void findByUsername_success() {
-        // given
-        User user = new User("testuser", "test@example.com", "password", null);
-        userRepository.saveAndFlush(user);
+    // 영속성 컨텍스트 초기화 - 1차 캐시 비우기
+    entityManager.flush();
+    entityManager.clear();
 
-        // when
-        Optional<User> result = userRepository.findByUsername("testuser");
+    // when
+    Optional<User> foundUser = userRepository.findByUsername(username);
 
-        // then
-        assertThat(result).isPresent();
-        assertThat(result.get().getEmail()).isEqualTo("test@example.com");
-    }
+    // then
+    assertThat(foundUser).isPresent();
+    assertThat(foundUser.get().getUsername()).isEqualTo(username);
+  }
 
-    @Test
-    @DisplayName("존재하지 않는 사용자 조회 실패")
-    void findByUsername_fail() {
-        // when
-        Optional<User> result = userRepository.findByUsername("unknown");
+  @Test
+  @DisplayName("존재하지 않는 사용자 이름으로 검색하면 빈 Optional을 반환한다")
+  void findByUsername_NonExistingUsername_ReturnsEmptyOptional() {
+    // given
+    String nonExistingUsername = "nonExistingUser";
 
-        // then
-        assertThat(result).isEmpty();
-    }
+    // when
+    Optional<User> foundUser = userRepository.findByUsername(nonExistingUsername);
 
-    @Test
-    @DisplayName("이메일/아이디 존재 여부 검사")
-    void existsByEmailAndUsername() {
-        // given
-        User user = new User("testuser", "test@example.com", "password", null);
-        userRepository.save(user);
+    // then
+    assertThat(foundUser).isEmpty();
+  }
 
-        // when
-        boolean existsEmail = userRepository.existsByEmail("test@example.com");
-        boolean existsUsername = userRepository.existsByUsername("testuser");
+  @Test
+  @DisplayName("이메일로 사용자 존재 여부를 확인할 수 있다")
+  void existsByEmail_ExistingEmail_ReturnsTrue() {
+    // given
+    String email = "test@example.com";
+    User user = createTestUser("testUser", email);
+    userRepository.save(user);
 
-        // then
-        assertThat(existsEmail).isTrue();
-        assertThat(existsUsername).isTrue();
-    }
+    // when
+    boolean exists = userRepository.existsByEmail(email);
 
-    @Test
-    @DisplayName("사용자 전체 조회 - 프로필, 상태 포함")
-    void findAllWithProfileAndStatus() {
-        // given
-        BinaryContent profile = new BinaryContent("test.jpg", 100L, "image/jpeg");
-        binaryContentRepository.save(profile);
+    // then
+    assertThat(exists).isTrue();
+  }
 
-        User user = new User("tester", "email@domain.com", "pw", profile);
-        userRepository.save(user);
+  @Test
+  @DisplayName("존재하지 않는 이메일로 확인하면 false를 반환한다")
+  void existsByEmail_NonExistingEmail_ReturnsFalse() {
+    // given
+    String nonExistingEmail = "nonexisting@example.com";
 
-        UserStatus status = new UserStatus(user, Instant.now());
-        userStatusRepository.save(status);
+    // when
+    boolean exists = userRepository.existsByEmail(nonExistingEmail);
 
-        // when
-        List<User> users = userRepository.findAllWithProfileAndStatus();
+    // then
+    assertThat(exists).isFalse();
+  }
 
-        // then
-        assertThat(users).hasSize(1);
-        assertThat(users.get(0).getProfile()).isNotNull();
-        assertThat(users.get(0).getStatus()).isNotNull();
-    }
+  @Test
+  @DisplayName("모든 사용자를 프로필과 함께 조회할 수 있다")
+  void findAllWithProfileAndStatus_ReturnsUsersWithProfileAndStatus() {
+    // given
+    User user1 = createTestUser("user1", "user1@example.com");
+    User user2 = createTestUser("user2", "user2@example.com");
 
-    // 제약 조건 검증
+    userRepository.saveAll(List.of(user1, user2));
 
-    @Test
-    @DisplayName("프로필 이미지 삭제 시 User의 profile_id가 null로 설정되는지 확인")
-    void profileDeletionSetsUserProfileIdToNull() {
-        // given
-        BinaryContent profile = new BinaryContent("to-delete.jpg", 200L, "image/jpeg");
-        binaryContentRepository.save(profile);
+    // 영속성 컨텍스트 초기화 - 1차 캐시 비우기
+    entityManager.flush();
+    entityManager.clear();
 
-        User user = new User("deluser", "del@exam.com", "pw", profile);
-        userRepository.save(user);
+    // when
+    List<User> users = userRepository.findAllWithProfile();
 
-        // 연관 끊기 👇
-        user.clearProfile();
-        userRepository.save(user);
+    // then
+    assertThat(users).hasSize(2);
+    assertThat(users).extracting("username").containsExactlyInAnyOrder("user1", "user2");
 
-        // when
-        binaryContentRepository.delete(profile);
+    // 프로필과 상태 정보가 함께 조회되었는지 확인 - 프록시 초기화 없이도 접근 가능한지 테스트
+    User foundUser1 = users.stream().filter(u -> u.getUsername().equals("user1")).findFirst()
+        .orElseThrow();
+    User foundUser2 = users.stream().filter(u -> u.getUsername().equals("user2")).findFirst()
+        .orElseThrow();
 
-        // then
-        em.flush();
-        em.clear();
-
-        User fetchedUser = userRepository.findByUsername("deluser").orElseThrow();
-        assertThat(fetchedUser.getProfile()).isNull();
-    }
-
-    @Test
-    @DisplayName("User 삭제 시 UserStatus도 함께 삭제되는지 확인")
-    void deleteUserAlsoDeletesUserStatus() {
-        // given
-        User user = new User("deleteMe", "gone@example.com", "pass", null);
-        userRepository.save(user);
-
-        UserStatus status = new UserStatus(user, Instant.now());
-        userStatusRepository.save(status);
-
-        // when
-        userRepository.delete(user);
-
-        // then
-        boolean exists = userStatusRepository.findAll().stream()
-            .anyMatch(s -> s.getUser().getId().equals(user.getId()));
-        assertThat(exists).isFalse();
-    }
-
-
-}
+    // 프록시 초기화 여부 확인
+    assertThat(Hibernate.isInitialized(foundUser1.getProfile())).isTrue();
+    assertThat(Hibernate.isInitialized(foundUser2.getProfile())).isTrue();
+  }
+} 
