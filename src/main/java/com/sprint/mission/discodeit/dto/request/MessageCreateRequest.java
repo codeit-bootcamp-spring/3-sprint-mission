@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record MessageCreateRequest(
-        @NotBlank String content,
-        @NotNull UUID channelId
+    @NotBlank String content,
+    @NotNull UUID channelId
 ) {
 
 }
