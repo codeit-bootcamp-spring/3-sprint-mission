@@ -1,3 +1,5 @@
 # Discodeit
 
-[![codecov](https://codecov.io/gh/bladnoch/3-sprint-mission/branch/main/graph/badge.svg)](https://codecov.io/gh/bladnoch/3-sprint-mission)
+미션 12 (9/2~)
+
+[![codecov](https://codecov.io/gh/codeit-bootcamp-spring/0-sprint-mission/branch/s8%2Fadvanced/graph/badge.svg?token=XRIA1GENAM)](https://codecov.io/gh/codeit-bootcamp-spring/0-sprint-mission)

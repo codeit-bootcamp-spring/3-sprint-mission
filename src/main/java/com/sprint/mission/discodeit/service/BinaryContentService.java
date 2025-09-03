@@ -1,24 +1,20 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponse;
-
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * packageName    : com.sprint.mission.discodeit.service.jcf
- * fileName       : BinaryContentService
- * author         : doungukkim
- * date           : 2025. 4. 28.
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2025. 4. 28.        doungukkim       최초 생성
- */
 public interface BinaryContentService {
 
-    BinaryContentResponse find(UUID binaryContentId);
+  BinaryContentDto create(BinaryContentCreateRequest request);
 
-    List<BinaryContentResponse> findAllByIdIn(List<UUID> binaryContentIds);
+  BinaryContentDto find(UUID binaryContentId);
+
+  List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds);
+
+  void delete(UUID binaryContentId);
+
+  BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status);
 }
