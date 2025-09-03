@@ -39,7 +39,7 @@ public class ReadStatusController implements ReadStatusApi {
         .body(createdReadStatus);
   }
 
-  @PatchMapping(path = "{readStatusId}")
+  @PatchMapping(path = "/{readStatusId}")
   public ResponseEntity<ReadStatusDto> update(@PathVariable("readStatusId") UUID readStatusId,
       @RequestBody @Valid ReadStatusUpdateRequest request) {
     log.info("읽음 상태 수정 요청: id={}, request={}", readStatusId, request);

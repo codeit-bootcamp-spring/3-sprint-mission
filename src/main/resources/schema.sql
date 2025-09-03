@@ -8,8 +8,8 @@ CREATE TABLE users
     username   varchar(50) UNIQUE       NOT NULL,
     email      varchar(100) UNIQUE      NOT NULL,
     password   varchar(60)              NOT NULL,
-    role       varchar(20)              NOT NULL,
-    profile_id uuid
+    profile_id uuid,
+    role       varchar(20)              NOT NULL
 );
 
 -- BinaryContent
@@ -17,11 +17,14 @@ CREATE TABLE binary_contents
 (
     id           uuid PRIMARY KEY,
     created_at   timestamp with time zone NOT NULL,
+    updated_at   timestamp with time zone,
     file_name    varchar(255)             NOT NULL,
     size         bigint                   NOT NULL,
-    content_type varchar(100)             NOT NULL
+    content_type varchar(100)             NOT NULL,
+    status       varchar(20)              NOT NULL
 --     ,bytes        bytea        NOT NULL
 );
+
 
 -- Channel
 CREATE TABLE channels
@@ -62,15 +65,19 @@ CREATE TABLE read_statuses
     user_id      uuid                     NOT NULL,
     channel_id   uuid                     NOT NULL,
     last_read_at timestamp with time zone NOT NULL,
+    notification_enabled   boolean        NOT NULL,
     UNIQUE (user_id, channel_id)
 );
 
--- PersistentLogins
-CREATE TABLE persistent_logins (
-    username   VARCHAR(64)  NOT NULL,
-    series     VARCHAR(64)  PRIMARY KEY,
-    token      VARCHAR(64)  NOT NULL,
-    last_used  TIMESTAMP    NOT NULL
+-- Notification
+CREATE TABLE notifications
+(
+    id          uuid PRIMARY KEY,
+    created_at  timestamp with time zone NOT NULL,
+    updated_at  timestamp with time zone,
+    receiver_id uuid                     NOT NULL,
+    title       varchar(255)             NOT NULL,
+    content     text                     NOT NULL
 );
 
 
@@ -116,8 +123,3 @@ ALTER TABLE read_statuses
         FOREIGN KEY (channel_id)
             REFERENCES channels (id)
             ON DELETE CASCADE;
-
--- 기존 테이블에 role 컬럼 추가 및 데이터 채우기
-ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20);
-UPDATE users SET role = 'USER' WHERE role IS NULL;
-ALTER TABLE users ALTER COLUMN role SET NOT NULL;
