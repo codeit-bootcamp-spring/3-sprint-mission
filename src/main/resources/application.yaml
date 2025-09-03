@@ -1,58 +1,73 @@
 spring:
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
   application:
     name: discodeit
-
-  # DB Config
+  servlet:
+    multipart:
+      maxFileSize: 10MB # 파일 하나의 최대 크기
+      maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
   datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit
-    username: discodeit_user
-    password: discodeit1234
-    hikari:
-      connection-init-sql: SET SESSION hibernate.jdbc.lob.non_contextual_creation=true
     driver-class-name: org.postgresql.Driver
-
-  # JPA Config
   jpa:
-    generate-ddl: false
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    properties:
-      hibernate:
-        format_sql: true
-        highlight_sql: true
-        user_sql_comments: true
-        show_sql: true
+    hibernate:
+      ddl-auto: validate
     open-in-view: false
+  profiles:
+    active:
+      - dev
+  config:
+    import: optional:file:.env[.properties]
 
-# Logging Config
-logging:
-  level:
-    org.hibernate.sql: debug
-    org.hibernate.orm.jdbc.bind: trace
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers
+  endpoint:
+    health:
+      show-details: always
 
-server:
-  port: 8080
+info:
+  name: Discodeit
+  version: 1.7.0
+  java:
+    version: 17
+  spring-boot:
+    version: 3.4.0
+  config:
+    datasource:
+      url: ${spring.datasource.url}
+      driver-class-name: ${spring.datasource.driver-class-name}
+    jpa:
+      ddl-auto: ${spring.jpa.hibernate.ddl-auto}
+    storage:
+      type: ${discodeit.storage.type}
+      path: ${discodeit.storage.local.root-path}
+    multipart:
+      max-file-size: ${spring.servlet.multipart.maxFileSize}
+      max-request-size: ${spring.servlet.multipart.maxRequestSize}
 
 discodeit:
   storage:
-    type: local
+    type: ${STORAGE_TYPE:local}  # local | s3 (기본값: local)
     local:
-      root-path: ./storage
-  repository:
-    type: file   # jcf | file
-    file-directory: .discodeit
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
+    s3:
+      access-key: ${AWS_S3_ACCESS_KEY}
+      secret-key: ${AWS_S3_SECRET_KEY}
+      region: ${AWS_S3_REGION}
+      bucket: ${AWS_S3_BUCKET}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
+  admin:
+    username: ${DISCODEIT_ADMIN_USERNAME}
+    email: ${DISCODEIT_ADMIN_EMAIL}
+    password: ${DISCODEIT_ADMIN_PASSWORD}
 
-springdoc:
-  api-docs:
-    # OpenAPI 명세서 경로( JSON )
-    path: /v3/api-docs
-  swagger-ui:
-    # OpenAPI 명세서 경로( HTML )
-    path: /swagger-ui.html
-    # API 정렬 기준
-    operations-sorter: method  # HTTP 메서드의 알파벳 기준
-#    operations-sorter: alpha  # Java 메서드의 알파벳 기준
+logging:
+  level:
+    root: info
+
+jwt:
+  secret: ${JWT_SECRET:defaultSecretKey1234567890}    # 환경 변수가 없으면 기본값 사용
+  access-token-validity-ms: ${JWT_ACCESS_TOKEN_VALIDITY_MS:3600000}    # 1시간
+  refresh-token-validity-ms: ${JWT_REFRESH_TOKEN_VALIDITY_MS:604800000}    # 7일
+  refresh-token-cookie-name: REFRESH_TOKEN

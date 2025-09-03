@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,4 +22,5 @@ public interface UserService {
 
     void delete(UUID userId);
 
+    UserDto findByUsername(String username);
 }

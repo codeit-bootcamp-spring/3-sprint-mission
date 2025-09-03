@@ -4,10 +4,8 @@ import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.entity.Message;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,7 +27,7 @@ public interface MessageApi {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "201", description = "Message가 성공적으로 생성됨",
-            content = @Content(schema = @Schema(implementation = Message.class))
+            content = @Content(schema = @Schema(implementation = MessageDto.class))
         ),
         @ApiResponse(
             responseCode = "404", description = "Channel 또는 User를 찾을 수 없음",
@@ -51,7 +49,7 @@ public interface MessageApi {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200", description = "Message가 성공적으로 수정됨",
-            content = @Content(schema = @Schema(implementation = Message.class))
+            content = @Content(schema = @Schema(implementation = MessageDto.class))
         ),
         @ApiResponse(
             responseCode = "404", description = "Message를 찾을 수 없음",
@@ -81,7 +79,7 @@ public interface MessageApi {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200", description = "Message 목록 조회 성공",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = Message.class)))
+            content = @Content(schema = @Schema(implementation = PageResponse.class))
         )
     })
     ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
@@ -89,4 +87,4 @@ public interface MessageApi {
         @Parameter(description = "페이징 커서 정보") Instant cursor,
         @Parameter(description = "페이징 정보", example = "{\"size\": 50, \"sort\": \"createdAt,desc\"}") Pageable pageable
     );
-}
+} 
