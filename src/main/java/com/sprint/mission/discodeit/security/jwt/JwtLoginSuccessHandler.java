@@ -1,15 +1,16 @@
 package com.sprint.mission.discodeit.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.JOSEException;
 import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.JwtInformation;
+import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
-import com.sprint.mission.discodeit.security.jwt.registry.JwtRegistry;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -22,53 +23,62 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final ObjectMapper objectMapper;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final JwtRegistry jwtRegistry;
+  private final ObjectMapper objectMapper;
+  private final JwtTokenProvider tokenProvider;
+  private final JwtRegistry jwtRegistry;
 
-    @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-        Authentication authentication) throws IOException {
-        if (!(authentication.getPrincipal() instanceof DiscodeitUserDetails userDetails)) {
-            log.warn("인증 성공 처리 중 사용자 정보를 확인할 수 없습니다.");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().write("{\"message\":\"인증 정보가 유효하지 않습니다.\"}");
-            return;
-        }
+  @Override
+  public void onAuthenticationSuccess(HttpServletRequest request,
+      HttpServletResponse response,
+      Authentication authentication) throws IOException, ServletException {
 
-        try {
-            String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
-            String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
+    response.setCharacterEncoding("UTF-8");
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-            Cookie refreshCookie = jwtTokenProvider.generateRefreshTokenCookie(refreshToken);
-            response.addCookie(refreshCookie);
+    if (authentication.getPrincipal() instanceof DiscodeitUserDetails userDetails) {
+      try {
+        String accessToken = tokenProvider.generateAccessToken(userDetails);
+        String refreshToken = tokenProvider.generateRefreshToken(userDetails);
 
-            Instant accessExp  = jwtTokenProvider.getExpiration(accessToken);
-            Instant refreshExp = jwtTokenProvider.getExpiration(refreshToken);
-            JwtInformation info = new JwtInformation(
-                userDetails.getUserDto().id(),
+        // Set refresh token in HttpOnly cookie
+        Cookie refreshCookie = tokenProvider.genereateRefreshTokenCookie(refreshToken);
+        response.addCookie(refreshCookie);
+
+        JwtDto jwtDto = new JwtDto(
+            userDetails.getUserDto(),
+            accessToken
+        );
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write(objectMapper.writeValueAsString(jwtDto));
+
+        jwtRegistry.registerJwtInformation(
+            new JwtInformation(
+                userDetails.getUserDto(),
                 accessToken,
-                refreshToken,
-                accessExp,
-                refreshExp,
-                "ROLE_" + userDetails.getUserDto().role().name()
-            );
-            jwtRegistry.registerJwtInformation(info);
+                refreshToken
+            )
+        );
 
-            JwtDto body = new JwtDto(userDetails.getUserDto(), accessToken);
+        log.info("JWT access and refresh tokens issued for user: {}", userDetails.getUsername());
 
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().write(objectMapper.writeValueAsString(body));
-        } catch (Exception e) {
-            log.error("JWT 발급 중 오류: {}", e.getMessage(), e);
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().write("{\"message\":\"토큰 발급 중 오류가 발생했습니다.\"}");
-        }
+      } catch (JOSEException e) {
+        log.error("Failed to generate JWT token for user: {}", userDetails.getUsername(), e);
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        ErrorResponse errorResponse = new ErrorResponse(
+            new RuntimeException("Token generation failed"),
+            HttpServletResponse.SC_INTERNAL_SERVER_ERROR
+        );
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+      }
+    } else {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      ErrorResponse errorResponse = new ErrorResponse(
+          new RuntimeException("Authentication failed: Invalid user details"),
+          HttpServletResponse.SC_UNAUTHORIZED
+      );
+      response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
+  }
+
 }

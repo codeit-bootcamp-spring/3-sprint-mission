@@ -1,13 +1,18 @@
 package com.sprint.mission.discodeit.dto.data;
 
-import java.time.Instant;
-import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-public record JwtInformation(
-    UUID userId,
-    String accessToken,
-    String refreshToken,
-    Instant accessTokenExpiresAt,
-    Instant refreshTokenExpiresAt,
-    String role
-) {}
+@Data
+@AllArgsConstructor
+public class JwtInformation {
+
+  private UserDto userDto;
+  private String accessToken;
+  private String refreshToken;
+
+  public void rotate(String newAccessToken, String newRefreshToken) {
+    this.accessToken = newAccessToken;
+    this.refreshToken = newRefreshToken;
+  }
+}
