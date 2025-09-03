@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import static org.springframework.util.StringUtils.hasText;
+
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
@@ -8,6 +11,8 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateUserException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -15,12 +20,15 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -39,10 +47,11 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserMapper userMapper;
-    private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
+    private final ApplicationEventPublisher eventPublisher;
 
+    @CacheEvict(value = "users", allEntries = true)
     @Transactional
     public UserDto create(UserCreateRequest request,
         Optional<BinaryContentCreateRequest> profileRequest) {
@@ -86,20 +95,22 @@ public class BasicUserService implements UserService {
             });
     }
 
+    @Cacheable(value = "users")
     @Transactional(readOnly = true)
     @Override
     public List<UserDto> findAll() {
-        log.info("[user] 전체 조회 요청");
+        log.info("[user] 전체 조회 요청 (cacheable) - 캐시 miss 시 DB 접근");
 
         List<UserDto> userDtos = userRepository.findAll()
             .stream()
             .map(userMapper::toDto)
             .toList();
 
-        log.info("[user] 전체 조회 응답: size={}", userDtos.size());
+        log.info("[user] 전체 조회 응답(DB 쿼리 실행됨): size={}", userDtos.size());
         return userDtos;
     }
 
+    @CacheEvict(value = "users", allEntries = true)
     @PreAuthorize("@userPermissionEvaluator.isSelf(#userId, authentication.principal.userDto.id)")
     @Transactional
     @Override
@@ -120,13 +131,22 @@ public class BasicUserService implements UserService {
         });
 
         // 2. email/username 중복 체크
-        if (userRepository.existsByEmail(newEmail)) {
-            log.warn("[user] 수정 실패 - email 중복됨: email={}", newEmail);
-            throw new DuplicateEmailException(newEmail);
+        if (hasText(newEmail) && !newEmail.equals(user.getEmail())) {
+            if (userRepository.existsByEmailAndIdNot(newEmail, user.getId())) {
+                throw new DuplicateEmailException(newEmail);
+            }
+            user.updateEmail(newEmail);
         }
-        if (userRepository.existsByUsername(newUsername)) {
-            log.warn("[user] 수정 실패 - username 중복됨: name={}", newUsername);
-            throw new DuplicateUserException(newUsername);
+
+        if (hasText(newUsername) && !newUsername.equals(user.getUsername())) {
+            if (userRepository.existsByUsernameAndIdNot(newUsername, user.getId())) {
+                throw new DuplicateUserException(newUsername);
+            }
+            user.updateUsername(newUsername);
+        }
+
+        if (hasText(newPassword)) {
+            user.updatePassword(passwordEncoder.encode(newPassword));
         }
 
         // 3. 프로필이미지 있으면 지우고, 생성
@@ -139,18 +159,6 @@ public class BasicUserService implements UserService {
             user.updateProfile(newNullableProfile);
         }
 
-        // 4. 변경 감지
-        if (newUsername != null && !newUsername.equals(user.getUsername())) {
-            user.updateUsername(newUsername);
-        }
-        if (newEmail != null && !newEmail.equals(user.getEmail())) {
-            user.updateEmail(newEmail);
-        }
-        if (newPassword != null) {
-            String encodedPassword = passwordEncoder.encode(newPassword);
-            user.updatePassword(encodedPassword);
-        }
-        user.updateProfile(newNullableProfile);
         log.info("[user] 수정 완료: {}", logMessage);
 
         String finalUsername = (newUsername != null) ? newUsername : user.getUsername();
@@ -165,6 +173,7 @@ public class BasicUserService implements UserService {
         return userMapper.toDto(user);
     }
 
+    @CacheEvict(value = "users", allEntries = true)
     @PreAuthorize("@userPermissionEvaluator.isSelf(#userId, authentication.principal.userDto.id)")
     @Transactional
     @Override
@@ -180,6 +189,7 @@ public class BasicUserService implements UserService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
     @Override
     public UserDto updateUserRole(RoleUpdateRequest request) {
         UUID userId = request.userId();
@@ -193,18 +203,20 @@ public class BasicUserService implements UserService {
         log.info("[user] 사용자 권한 변경 요청: username={}, oldRole={}, newRole={}", username, oldRole,
             newRole);
 
-        User updatedUser = user; // 기본값으로 기존 사용자 설정
+        User updatedUser = user;
 
         if (user.getRole() != newRole) {
             user.updateRole(newRole);
             updatedUser = userRepository.save(user);
             log.info("[user] 사용자 권한 변경 완료: username={}", username);
+
+            // 권한 변경 알림 이벤트 발행
+            publishRoleUpdatedEvent(user, oldRole, newRole);
         } else {
             log.info("[user] 권한 변경 없음 - 기존과 동일한 권한: username={}, role={}", username, oldRole);
         }
 
         log.info("[user] 사용자 권한 변경 처리 완료");
-
         return userMapper.toDto(updatedUser);
     }
 
@@ -215,7 +227,7 @@ public class BasicUserService implements UserService {
 
         String newUsername = request.newUsername();
         String newEmail = request.newEmail();
-        String newPassword = passwordEncoder.encode(request.newPassword());
+        String newPassword = request.newPassword();
 
         if (newUsername != null) {
             logMessage.append(", newUsername=").append(newUsername);
@@ -224,7 +236,7 @@ public class BasicUserService implements UserService {
             logMessage.append(", newEmail=").append(newEmail);
         }
         if (newPassword != null) {
-            logMessage.append(", newPassword=").append(newPassword);
+            logMessage.append(", newPassword=***");
         }
         if (newProfile.isPresent()) {
             logMessage.append(", newProfileImage=true");
@@ -237,20 +249,37 @@ public class BasicUserService implements UserService {
      * 프로필이미지 생성 메서드
      */
     private BinaryContent createProfile(Optional<BinaryContentCreateRequest> profileRequest) {
-        return profileRequest.map(profileCreateRequest -> {
-                byte[] bytes = profileCreateRequest.bytes();
+        return profileRequest.map(req -> {
+            BinaryContent meta = new BinaryContent(
+                req.fileName(),
+                req.size(),
+                req.contentType()
+            );
+            BinaryContent saved = binaryContentRepository.save(meta);
 
-                BinaryContent binaryContent = new BinaryContent(
-                    profileCreateRequest.fileName(),
-                    (long) profileCreateRequest.bytes().length,
-                    profileCreateRequest.contentType()
-                );
+            // Dto 변환 후 이벤트 발행
+            BinaryContentDto dto = new BinaryContentDto(
+                saved.getId(), saved.getFileName(), saved.getSize(), saved.getContentType(),
+                saved.getStatus()
+            );
+            String objectKey = saved.getId().toString();
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(
+                dto,
+                objectKey,
+                req.toInputStreamSupplier()
+            ));
 
-                binaryContentRepository.save(binaryContent);
-                // Storage에 bytes 저장
-                binaryContentStorage.put(binaryContent.getId(), bytes);
-                return binaryContent;
-            })
-            .orElse(null);
+            return saved;
+        }).orElse(null);
+    }
+
+    // 권한 변경시 알림 이벤트 발행
+    private void publishRoleUpdatedEvent(User user, Role oldRole, Role newRole) {
+        eventPublisher.publishEvent(new RoleUpdatedEvent(
+            user.getId(),
+            oldRole,
+            newRole,
+            Instant.now()
+        ));
     }
 }

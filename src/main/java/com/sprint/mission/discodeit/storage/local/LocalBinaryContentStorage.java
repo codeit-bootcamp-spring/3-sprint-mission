@@ -1,12 +1,12 @@
 package com.sprint.mission.discodeit.storage.local;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
-import com.sprint.mission.discodeit.exception.binarycontent.DuplicateFileException;
 import com.sprint.mission.discodeit.exception.binarycontent.FileInitFailedException;
 import com.sprint.mission.discodeit.exception.binarycontent.FileNotFoundException;
 import com.sprint.mission.discodeit.exception.binarycontent.FileReadFailedException;
 import com.sprint.mission.discodeit.exception.binarycontent.FileSaveFailedException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import io.micrometer.core.annotation.Timed;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,8 +16,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -25,8 +28,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "local")
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class LocalBinaryContentStorage implements BinaryContentStorage {
 
     private final Path root;
@@ -34,6 +39,13 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     public LocalBinaryContentStorage(
         @Value("${discodeit.storage.local.root-path}") Path root) {
         this.root = root;
+    }
+
+    @PostConstruct
+    void checkProxy() {
+        log.info("[AOP] LocalBinaryContentStorage proxied? {} ({})",
+            org.springframework.aop.support.AopUtils.isAopProxy(this),
+            this.getClass().getName());
     }
 
     @PostConstruct
@@ -48,17 +60,37 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     }
 
     @Override
+    @Timed(value = "storage.put.local", description = "로컬 저장소 파일 저장", histogram = true, percentiles = {
+        0.5, 0.95, 0.99})
     public UUID put(UUID binaryContentId, byte[] bytes) {
+        log.info("[LocalStorage] put(byte[]) start key={}, size={}, thread={}",
+            binaryContentId, bytes.length, Thread.currentThread().getName());
+
         Path filePath = resolvePath(binaryContentId);
-        if (Files.exists(filePath)) {
-            throw new DuplicateFileException(binaryContentId, filePath.getFileName().toString());
+        try {
+            Thread.sleep(3000); // 3초 지연
+            Files.createDirectories(filePath.getParent());
+            try (OutputStream os = Files.newOutputStream(filePath)) {
+                os.write(bytes);
+            }
+            log.info("[LocalStorage] put(byte[]) end key={}", binaryContentId);
+            return binaryContentId;
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Thread interrupted while simulating delay", ie);
+        } catch (IOException ioe) {
+            throw new FileSaveFailedException(filePath.toString(), ioe);
         }
-        try (OutputStream outputStream = Files.newOutputStream(filePath)) {
-            outputStream.write(bytes);
+    }
+
+    @Override
+    public void put(String objectKey, InputStream in, long contentLength, String contentType) {
+        try (in) {
+            byte[] bytes = in.readAllBytes();
+            put(UUID.fromString(objectKey), bytes);
         } catch (IOException e) {
-            throw new FileSaveFailedException(filePath.toString(), e);
+            throw new FileSaveFailedException(resolvePath(objectKey).toString(), e);
         }
-        return binaryContentId;
     }
 
     @Override
@@ -94,5 +126,9 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
     private Path resolvePath(UUID id) {
         return root.resolve(id.toString());
+    }
+
+    private Path resolvePath(String objectKey) {
+        return root.resolve(objectKey);
     }
 }

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.fixture;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import java.util.UUID;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -32,7 +33,8 @@ public class BinaryContentFixture {
             entity().getId(),
             "testImage",
             (long) "testImage".length(),
-            "png"
+            "png",
+            BinaryContentStatus.SUCCESS
         );
     }
 

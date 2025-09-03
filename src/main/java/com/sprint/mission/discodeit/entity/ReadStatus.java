@@ -12,6 +12,7 @@ import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /*사용자가 채널 별 마지막으로 메시지를 읽은 시간을 표현 하는 도메인
  * 사용자별 각 채널에 읽지 않은 메시지 확인하기
@@ -35,10 +36,19 @@ public class ReadStatus extends BaseUpdatableEntity {
     @Column(columnDefinition = "timestamp with time zone", nullable = false)
     private Instant lastReadAt;
 
-    public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+    @Setter
+    @Column(nullable = false)
+    private boolean notificationEnabled = false;
+
+    public ReadStatus(User user, Channel channel, Instant lastReadAt, boolean notificationEnabled) {
         this.user = user;
         this.channel = channel;
-        this.lastReadAt = lastReadAt;
+        this.lastReadAt = (lastReadAt != null) ? lastReadAt : Instant.EPOCH;
+        this.notificationEnabled = notificationEnabled;
+    }
+
+    public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+        this(user, channel, lastReadAt, false);
     }
 
     public void update(Instant newLastReadAt) {
@@ -46,4 +56,13 @@ public class ReadStatus extends BaseUpdatableEntity {
             this.lastReadAt = newLastReadAt;
         }
     }
+
+    public void enableNotification() {
+        this.notificationEnabled = true;
+    }
+
+    public void disableNotification() {
+        this.notificationEnabled = false;
+    }
+
 }

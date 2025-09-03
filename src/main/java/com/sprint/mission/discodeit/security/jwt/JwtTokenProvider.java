@@ -29,40 +29,32 @@ public class JwtTokenProvider {
     private final int accessTokenExpirationMs;
     private final int refreshTokenExpirationMs;
 
-    // 액세스 토큰을 서명하기 위한 서명자
     private final JWSSigner accessTokenSigner;
-    // 액세스 토큰의 서명을 검증하기 위한 검증자
     private final JWSVerifier accessTokenVerifier;
-    // 리프레시 토큰을 서명하기 위한 서명자
     private final JWSSigner refreshTokenSigner;
-    // 리프레시 토큰의 서명을 검증하기 위한 검증자
     private final JWSVerifier refreshTokenVerifier;
 
     // 토큰 서명/검증자와 만료 시간을 초기화
     // 애플리케이션 시작 시 한 번 호출되고, 이후 발급/검증 로직에서 재사용 됨
     public JwtTokenProvider(
         // application.yaml 파일에 정의된 프로퍼티 값 주입
-        @Value("change-me-access-secret-for-dev-only") String accessTokenSecret,
-        @Value("900000") int accessTokenExpirationMs,
-        @Value("${jwt.refresh-token.secret}") String refreshTokenSecret,
-        @Value("${jwt.refresh-token.exp}") int refreshTokenExpirationMs
+        @Value("${discodeit.jwt.access-token.secret}") String accessTokenSecret,
+        @Value("${discodeit.jwt.access-token.expiration-ms}") int accessTokenExpirationMs,
+        @Value("${discodeit.jwt.refresh-token.secret}") String refreshTokenSecret,
+        @Value("${discodeit.jwt.refresh-token.expiration-ms}") int refreshTokenExpirationMs
     ) throws JOSEException {
 
         log.info("[TokenProvider] 생성자 호출됨: 토큰 서명/검증자 및 만료 시간 초기화");
 
-        // 주입받은 만료 시간 값들을 필드에 저장하여 토큰 생성 시 사용할 수 있도록 설정한다.
         this.accessTokenExpirationMs = accessTokenExpirationMs;
         this.refreshTokenExpirationMs = refreshTokenExpirationMs;
 
-        // 액세스 토큰용 비밀키를 바이트 배열로 변환하여 HMAC-SHA256 서명자와 검증자를 생성한다.
-        // 이를 통해 액세스 토큰의 무결성을 보장하고 위변조를 방지할 수 있다.
-        // Access 토큰 검증/서명을 위한 비밀키 바이트 배열을 준비한다.
+        // 리프레시 토큰용 비밀키를 바이트 배열로 변환하여 별도의 서명자와 검증자를 생성한다.
+        // 액세스 토큰과 다른 비밀키를 사용함으로써 각 토큰의 독립적인 보안성을 확보한다.
         byte[] accessSecretBytes = accessTokenSecret.getBytes(StandardCharsets.UTF_8);
         this.accessTokenSigner = new MACSigner(accessSecretBytes);
         this.accessTokenVerifier = new MACVerifier(accessSecretBytes);
 
-        // 리프레시 토큰용 비밀키를 바이트 배열로 변환하여 별도의 서명자와 검증자를 생성한다.
-        // 액세스 토큰과 다른 비밀키를 사용함으로써 각 토큰의 독립적인 보안성을 확보한다.
         byte[] refreshSecretBytes = refreshTokenSecret.getBytes(StandardCharsets.UTF_8);
         this.refreshTokenSigner = new MACSigner(refreshSecretBytes);
         this.refreshTokenVerifier = new MACVerifier(refreshSecretBytes);

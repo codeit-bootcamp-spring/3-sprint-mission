@@ -27,3 +27,12 @@ management:
   info:
     env:
       enabled: true
+
+discodeit:
+  jwt:
+    access-token:
+      secret: change-me-access-secret-for-dev-only
+      expiration-ms: 900000
+    refresh-token:
+      secret: change-me-refresh-secret-for-dev-only
+      expiration-ms: 1209600000

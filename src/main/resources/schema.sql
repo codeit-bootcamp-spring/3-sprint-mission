@@ -1,5 +1,13 @@
 -- 테이블
 -- User
+drop table read_statuses;
+drop table notifications;
+drop table message_attachments;
+drop table messages;
+drop table channels;
+drop table users;
+drop table binary_contents;
+
 CREATE TABLE users
 (
     id         uuid PRIMARY KEY,
@@ -17,9 +25,11 @@ CREATE TABLE binary_contents
 (
     id           uuid PRIMARY KEY,
     created_at   timestamp with time zone NOT NULL,
+    updated_at   timestamp with time zone,
     file_name    varchar(255)             NOT NULL,
     size         bigint                   NOT NULL,
-    content_type varchar(100)             NOT NULL
+    content_type varchar(100)             NOT NULL,
+    status       varchar(20)              NOT NULL
 );
 
 -- Channel
@@ -55,13 +65,24 @@ CREATE TABLE message_attachments
 -- ReadStatus
 CREATE TABLE read_statuses
 (
-    id           uuid PRIMARY KEY,
-    created_at   timestamp with time zone NOT NULL,
-    updated_at   timestamp with time zone,
-    user_id      uuid                     NOT NULL,
-    channel_id   uuid                     NOT NULL,
-    last_read_at timestamp with time zone NOT NULL,
+    id                   uuid PRIMARY KEY,
+    created_at           timestamp with time zone NOT NULL,
+    updated_at           timestamp with time zone,
+    user_id              uuid                     NOT NULL,
+    channel_id           uuid                     NOT NULL,
+    last_read_at         timestamp with time zone NOT NULL,
+    notification_enabled boolean                  NOT NULL,
     UNIQUE (user_id, channel_id)
+);
+
+-- Notifications
+CREATE TABLE notifications
+(
+    id          uuid PRIMARY KEY,
+    created_at  timestamp with time zone NOT NULL,
+    receiver_id uuid                     NOT NULL,
+    title       varchar(255)             NOT NULL,
+    content     text                     NOT NULL
 );
 
 -- 제약 조건
@@ -106,10 +127,3 @@ ALTER TABLE read_statuses
         FOREIGN KEY (channel_id)
             REFERENCES channels (id)
             ON DELETE CASCADE;
-
--- 테이블 컬럼 코멘트 추가
-COMMENT ON COLUMN users.id IS '사용자 고유 ID';
-COMMENT ON COLUMN users.username IS '사용자명 (로그인 ID)';
-COMMENT ON COLUMN users.email IS '이메일 주소';
-COMMENT ON COLUMN users.password IS 'BCrypt 암호화된 비밀번호';
-COMMENT ON COLUMN users.role IS '사용자 권한 (ADMIN, USER)';

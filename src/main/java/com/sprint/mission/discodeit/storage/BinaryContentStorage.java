@@ -10,6 +10,9 @@ public interface BinaryContentStorage {
 
     UUID put(UUID binaryContentId, byte[] bytes);
 
+    void put(String objectKey, InputStream in, long contentLength, String contentType)
+        throws Exception;
+
     InputStream get(UUID binaryContentId);
 
     ResponseEntity<Resource> download(BinaryContentDto binaryContentDto);

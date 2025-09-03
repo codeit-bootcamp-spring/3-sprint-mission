@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.exception.binarycontent.FileSaveFailedException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.annotation.PostConstruct;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.time.Duration;
@@ -10,17 +12,25 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
+import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
@@ -30,7 +40,8 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 @Slf4j
 public class S3BinaryContentStorage implements BinaryContentStorage {
 
-    private final S3Properties s3;
+    private final S3Client s3Client;
+    private final S3Properties props;
 
     private String accessKey;
     private String secretKey;
@@ -39,62 +50,80 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
     @PostConstruct
     public void init() {
-        this.region = s3.getRegion();
-        this.accessKey = s3.getAccessKey();
-        this.secretKey = s3.getSecretKey();
-        this.bucket = s3.getBucket();
+        this.region = props.getRegion();
+        this.accessKey = props.getAccessKey();
+        this.secretKey = props.getSecretKey();
+        this.bucket = props.getBucket();
+    }
+
+    @Retryable(
+        value = {S3Exception.class, IOException.class},
+        maxAttempts = 3,               // 최대 3번 시도
+        backoff = @Backoff(delay = 2000, multiplier = 2) // 2초 대기, 점진적으로 증가
+    )
+    @Override
+    public UUID put(UUID binaryContentId, byte[] bytes) {
+        try {
+            String key = binaryContentId.toString();
+            String contentType = detectContentType(bytes);
+
+            log.info("[S3] put(bytes) 요청: key={}, contentType={}, size={}", key, contentType,
+                bytes.length);
+
+            s3Client.putObject(
+                b -> b.bucket(bucket).key(key).contentType(contentType)
+                    .contentLength((long) bytes.length),
+                RequestBody.fromBytes(bytes)
+            );
+            return binaryContentId;
+        } catch (Exception e) {
+            log.error("[S3Storage] put 실패 id={}, ex={}", binaryContentId, e.toString());
+            throw e;
+        }
     }
 
     @Override
-    public UUID put(UUID binaryContentId, byte[] bytes) {
-        String key = "uploads/" + binaryContentId.toString();
-        S3Client client = getS3Client();
-        String contentType = detectContentType(bytes);
-
-        log.info("[S3] put 요청: key={}, contentType={}, size={}", key, contentType, bytes.length);
-
-        client.putObject(builder -> builder
+    public void put(String objectKey, InputStream in, long contentLength, String contentType) {
+        try {
+            PutObjectRequest req = PutObjectRequest.builder()
                 .bucket(bucket)
-                .key(key)
-                .contentLength((long) bytes.length)
-                .contentType(contentType),
-            RequestBody.fromBytes(bytes)
-        );
+                .key(objectKey)
+                .contentType(contentType)
+                .contentLength(contentLength)
+                .build();
 
-        return binaryContentId;
+            s3Client.putObject(req, RequestBody.fromInputStream(in, contentLength));
+            log.info("[S3] put(stream) 성공: key={}, len={}", objectKey, contentLength);
+        } catch (S3Exception | SdkClientException e) {
+            log.error("[S3] put(stream) 실패: key={}, msg={}", objectKey, e.getMessage(), e);
+            throw new FileSaveFailedException(objectKey, e);
+        }
     }
 
     @Override
     public InputStream get(UUID binaryContentId) {
-        String key = "uploads/" + binaryContentId.toString();
-        S3Client client = getS3Client();
-
+        String key = binaryContentId.toString();
         log.info("[S3] get 요청 : key={}", key);
-
-        return client.getObject(builder -> builder
-            .bucket(bucket)
-            .key(key)
-        );
+        try {
+            return s3Client.getObject(GetObjectRequest.builder().bucket(bucket).key(key).build());
+        } catch (NoSuchKeyException e) {
+            log.warn("[S3] get - 키 없음: {}", key);
+            throw e;
+        }
     }
 
     @Override
     public ResponseEntity<Resource> download(BinaryContentDto binaryContentDto) {
-        String key = "uploads/" + binaryContentDto.id().toString();
+        String key = binaryContentDto.id().toString();
         String contentType = binaryContentDto.contentType();
 
         log.info("[S3] Presigned URL 생성 요청: key={}, contentType={}", key, contentType);
+        String presignedUrl = generatePresignedUrl(key, contentType);
+        log.info("[S3] Presigned URL 생성 성공: {}", presignedUrl);
 
-        // Content-Disposition 헤더를 포함한 PresignedUrl 생성
-        try {
-            String presignedUrl = generatePresignedUrl(key, contentType);
-            log.info("Presigned URL 생성 성공: {}", presignedUrl);
-            return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create(presignedUrl))
-                .build();
-        } catch (Exception e) {
-            log.error("Presigned URL 생성 실패: key={}", key, e);
-            throw e;
-        }
+        return ResponseEntity.status(HttpStatus.FOUND)
+            .location(URI.create(presignedUrl))
+            .build();
     }
 
     private S3Client getS3Client() {
@@ -109,34 +138,33 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     }
 
     private String generatePresignedUrl(String key, String contentType) {
-        int expiration = s3.getExpiration();
+        int expiration = props.getExpiration();
         AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
-
-        log.debug("[S3] Presigner 생성: expiration={}s, region={}", expiration, region);
 
         try (S3Presigner presigner = S3Presigner.builder()
             .region(Region.of(region))
             .credentialsProvider(StaticCredentialsProvider.create(credentials))
             .build()) {
 
-            // 확장자 추가
-            String extension = getExtensionFromContentType(contentType);
-            String fileName = key.substring(key.lastIndexOf('/') + 1) + extension;
-            log.debug("Presign 대상 파일: fileName={}, extension={}", fileName, extension);
+            String fileName = key;
+            String ext = getExtensionFromContentType(contentType);
+            if (!ext.isEmpty()) {
+                fileName += ext;
+            }
 
-            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+            var getReq = GetObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
                 .responseContentType(contentType)
                 .responseContentDisposition("attachment; filename=\"" + fileName + "\"")
                 .build();
 
-            GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+            var presign = GetObjectPresignRequest.builder()
                 .signatureDuration(Duration.ofSeconds(expiration))
-                .getObjectRequest(getObjectRequest)
+                .getObjectRequest(getReq)
                 .build();
 
-            return presigner.presignGetObject(presignRequest).url().toString();
+            return presigner.presignGetObject(presign).url().toString();
         }
     }
 
@@ -161,11 +189,33 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
     private String detectContentType(byte[] bytes) {
         try {
-            Tika tika = new Tika();
-            return tika.detect(bytes);
+            return new Tika().detect(bytes);
         } catch (Exception e) {
             return "application/octet-stream";
         }
     }
 
+    @Recover
+    public UUID recover(Exception e, UUID binaryContentId, byte[] bytes) {
+        // 모든 재시도가 실패했을 때 호출됨
+        String requestId = MDC.get("requestId");
+        log.error("[S3Storage] put 실패 - id={}, requestId={}, cause={}",
+            binaryContentId, requestId, e.toString(), e);
+
+        // 관리자에게 알림 발생
+        notifyAdmin(requestId, binaryContentId, e);
+
+        throw new RuntimeException("S3 업로드 실패 -id=" + binaryContentId, e);
+    }
+
+    private void notifyAdmin(String requestId, UUID binaryContentId, Exception e) {
+        String message = """
+            S3 파일 업로드 실패
+            RequestId: %s
+            BinaryContentId: %s
+            Error: %s
+            """.formatted(requestId, binaryContentId, e.getMessage());
+
+        log.warn("[ALERT] 관리자 알림 전송: {}", message);
+    }
 }

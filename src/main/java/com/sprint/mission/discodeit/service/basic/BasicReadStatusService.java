@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
@@ -59,8 +60,12 @@ public class BasicReadStatusService implements ReadStatusService {
             throw new DuplicateReadStatusException(userId, channelId);
         }
 
+        // 채널 최초 참여/생성 시 notificationEnabled 초기화
+        boolean enabled = channel.getType() == ChannelType.PRIVATE;
+
         Instant lastReadAt = request.lastReadAt();
-        ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
+        ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt, enabled);
+
         ReadStatus savedReadStatus = readStatusRepository.save(readStatus);
         log.info("[readStatus] 생성 완료: readStatusId={}, userId={}, channelId={}, lastReadAt={}",
             readStatus.getId(), userId, channelId, lastReadAt != null ? lastReadAt : "(null)");
@@ -106,8 +111,19 @@ public class BasicReadStatusService implements ReadStatusService {
                 return new ReadStatusNotFoundException(readStatusId);
             });
 
+        // 알림 on/off 토글
+        if (request.newNotificationEnabled() != null &&
+            request.newNotificationEnabled() != readStatus.isNotificationEnabled()) {
+            readStatus.setNotificationEnabled(request.newNotificationEnabled());
+        }
+
+        // 마지막 읽은 시각 업데이트
+        if (request.newLastReadAt() != null) {
+            readStatus.update(request.newLastReadAt());
+        }
+
         readStatus.update(request.newLastReadAt());
-        log.info("[readStatus] 업데이트 완료: readStatusId={}, requested={}, allied={}",
+        log.info("[readStatus] 업데이트 완료: readStatusId={}, requested={}, applied={}",
             readStatusId, request.newLastReadAt(), request.newLastReadAt());
 
         return readStatusMapper.toDto(readStatus);

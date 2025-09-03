@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.aop;
+package com.sprint.mission.discodeit.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;

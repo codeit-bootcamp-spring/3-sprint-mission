@@ -18,4 +18,6 @@ public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
 
     @EntityGraph(attributePaths = {"user"})
     List<ReadStatus> findAllByChannelId(UUID channelId);
+
+    List<ReadStatus> findByChannel_IdAndNotificationEnabledTrue(UUID channelId);
 }

@@ -17,6 +17,7 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -117,7 +118,7 @@ class BasicMessageServiceTest {
             attachByte);
         List<BinaryContent> attachments = List.of(binaryContent);
         BinaryContentDto attachmentDto = new BinaryContentDto(UUID.randomUUID(),
-            "testAttachment", (long) attachByte.length, "png");
+            "testAttachment", (long) attachByte.length, "png", BinaryContentStatus.SUCCESS);
         User author = new User("조현아", "zzo@email.com", "password123!", null);
         ReflectionTestUtils.setField(author, "id", authorId);
         UserDto userDto = new UserDto(authorId, "조현아", "zzo@email.com", null, null, Role.USER);

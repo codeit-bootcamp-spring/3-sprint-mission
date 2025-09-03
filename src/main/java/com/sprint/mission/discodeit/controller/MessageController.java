@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
+import io.micrometer.core.annotation.Timed;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.time.Instant;
@@ -39,11 +40,14 @@ public class MessageController implements MessageApi {
 
     private final MessageService messageService;
 
+    @Timed(value = "message.create.async", description = "Create message API")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MessageDto> create(
         @RequestPart("messageCreateRequest") @Valid MessageCreateRequest messageCreateRequest,
         @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
+        long startTime = System.currentTimeMillis();
+
         List<BinaryContentCreateRequest> attachmentRequests =
             Optional.ofNullable(attachments)
                 .orElse(List.of())
@@ -53,6 +57,13 @@ public class MessageController implements MessageApi {
                 .collect(Collectors.toList());
 
         MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
+
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+
+        log.info("[PERFORMANCE] Message create took: {}ms (async={})",
+            duration,
+            attachmentRequests.isEmpty() ? "N/A" : (duration < 1000 ? "YES" : "NO"));
 
         return ResponseEntity
             .status(HttpStatus.CREATED)

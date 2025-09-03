@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import io.github.cdimascio.dotenv.Dotenv;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +23,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StreamUtils;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Disabled
@@ -68,7 +73,14 @@ public class S3BinaryContentStorageTest {
         }
 
         // S3BinaryContentStorage 초기화
-        storage = new S3BinaryContentStorage(s3Properties);
+        S3Client s3Client = S3Client.builder()
+            .region(Region.of(region))
+            .credentialsProvider(StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(accessKey, secretKey)
+            ))
+            .build();
+
+        storage = new S3BinaryContentStorage(s3Client, s3Properties);
 
         // 테스트 데이터 준비
         Resource resource = new ClassPathResource("test2.png");
@@ -118,7 +130,8 @@ public class S3BinaryContentStorageTest {
             binaryContentId,
             "test.png",
             (long) bytes.length,
-            "image/png"
+            "image/png",
+            BinaryContentStatus.SUCCESS
         );
 
         // When

@@ -26,16 +26,50 @@ spring:
         instance:
           name: discodeit
 
+  aop:
+    proxy-target-class: true
+
+  cache:
+    type: redis
+    cache-names: users, channelsByUser, notificationsByUser
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
+    redis:
+      enable-statistics: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,loggers
+        include: health, info, metrics, loggers, prometheus, caches
       base-path: /actuator
   endpoint:
     health:
       show-details: always
       show-components: always
+  observations:
+    annotations:
+      enabled: true
+
 info:
   name: Discodeit
   description: 실시간 커뮤니케이션 시스템
@@ -85,8 +119,14 @@ server:
 # JWT 설정
 jwt:
   access-token:
-    secret: change-me-access-secret-for-dev-only
-    exp: 900000        # 15분(ms)
+    secret: ${JWT_ACCESS_SECRET:change-me-access-secret-for-dev-only}
+    expiration-ms: 900000          # 15분
   refresh-token:
-    secret: change-me-refresh-secret-for-dev-only
-    exp: 3600000       # 1시간(ms)
+    secret: ${JWT_REFRESH_SECRET:change-me-refresh-secret-for-dev-only}
+    expiration-ms: 1209600000      # 14일
+
+# true=비동기, false=동기
+app:
+  async:
+    enabled: true
+  cache: redis

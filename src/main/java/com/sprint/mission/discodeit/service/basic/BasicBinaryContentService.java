@@ -3,16 +3,17 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.FileNotFoundException;
 import com.sprint.mission.discodeit.exception.binarycontent.FileUploadInvalidException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class BasicBinaryContentService implements BinaryContentService {
 
-    public final BinaryContentRepository binaryContentRepository;
-    public final BinaryContentStorage binaryContentStorage;
-    public final BinaryContentMapper binaryContentMapper;
+    private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentMapper binaryContentMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @Override
@@ -40,21 +41,29 @@ public class BasicBinaryContentService implements BinaryContentService {
             throw new FileUploadInvalidException(fileName);
         }
 
-        //1. 메타데이터만 가진 BinaryContent 객체 생성
+        // 1. 메타데이터 저장(status = PROCESSING)
         BinaryContent binaryContent = new BinaryContent(
             fileName,
-            (long) bytes.length,
+            request.size(),
             contentType
         );
-
-        //2. 실제 바이너리 데이터 저장소에 따로 저장
-        binaryContentStorage.put(binaryContent.getId(), bytes);
         BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+
+        // 2. dto 변환 (status 포함)
+        BinaryContentDto dto = binaryContentMapper.toDto(savedBinaryContent);
+
+        // 3. 이벤트 발행(커밋 후 업로드)
+        String objectKey = savedBinaryContent.getId().toString();
+        eventPublisher.publishEvent(new BinaryContentCreatedEvent(
+            dto,
+            objectKey,
+            request.toInputStreamSupplier()
+        ));
 
         log.info("[binaryContent] 저장 완료: id={}, size={} bytes", binaryContent.getId(),
             bytes.length);
 
-        return binaryContentMapper.toDto(savedBinaryContent);
+        return dto;
     }
 
     @Transactional(readOnly = true)

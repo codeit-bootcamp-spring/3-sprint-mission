@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +40,7 @@ public class BasicChannelService implements ChannelService {
     private final ChannelMapper channelMapper;
 
     //private 채널생성
+    @CacheEvict(value = "channelsByUser", key = "#userId")
     @Transactional
     @Override
     public ChannelDto create(PrivateChannelCreateRequest request) {
@@ -70,8 +73,9 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toDto(savedPrivateChannel);
     }
 
-    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     //public 채널생성
+    @CacheEvict(value = "channelsByUser", allEntries = true)
+    @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Transactional
     @Override
     public ChannelDto create(PublicChannelCreateRequest request) {
@@ -99,10 +103,11 @@ public class BasicChannelService implements ChannelService {
             });
     }
 
+    @Cacheable(value = "channelsByUser", key = "#userId")
     @Transactional(readOnly = true)
     @Override
     public List<ChannelDto> findAllByUserId(UUID userId) {
-        log.info("[channel] 전체 조회 요청: userId={}", userId);
+        log.info("[channel] 전체 조회 요청 (cacheable) - userId={} (캐시 miss 시 DB 접근)", userId);
         List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
             .map(ReadStatus::getChannel)
             .map(Channel::getId)
@@ -114,10 +119,11 @@ public class BasicChannelService implements ChannelService {
             .map(channelMapper::toDto)
             .toList();
 
-        log.info("[channel] 전체 조회 응답: userId={}, 결과 개수={}", userId, channels.size());
+        log.info("[channel] 전체 조회 응답(DB 쿼리 실행됨): userId={}, 결과 개수={}", userId, channels.size());
         return channels;
     }
 
+    @CacheEvict(value = "channelsByUser", allEntries = true)
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Transactional
     @Override
@@ -146,6 +152,7 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toDto(channel);
     }
 
+    @CacheEvict(value = "channelsByUser", allEntries = true)
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Transactional
     @Override
