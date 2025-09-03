@@ -18,6 +18,10 @@ spring:
     import: optional:file:.env[.properties]
   cache:
     type: redis
+    cache-names:
+      - channels
+      - notifications
+      - users
     caffeine:
       spec: >
         maximumSize=100,
@@ -27,10 +31,10 @@ spring:
       enable-statistics: true
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -44,7 +48,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,loggers, caches
+        include: health,info,metrics,loggers
   endpoint:
     health:
       show-details: always
@@ -84,9 +88,9 @@ discodeit:
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
   admin:
-    username: ${DISCODEIT_ADMIN_USERNAME:admin}
-    email: ${DISCODEIT_ADMIN_EMAIL:admin@test.com}
-    password: ${DISCODEIT_ADMIN_PASSWORD:qwe123}
+    username: ${DISCODEIT_ADMIN_USERNAME}
+    email: ${DISCODEIT_ADMIN_EMAIL}
+    password: ${DISCODEIT_ADMIN_PASSWORD}
   jwt:
     access-token:
       secret: ${JWT_ACCESS_SECRET:your-access-token-secret-key-here-make-it-long-and-random}
@@ -94,7 +98,6 @@ discodeit:
     refresh-token:
       secret: ${JWT_REFRESH_SECRET:your-refresh-token-secret-key-here-make-it-different-and-long}
       expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000} # 7 days
-
 
 logging:
   level:
