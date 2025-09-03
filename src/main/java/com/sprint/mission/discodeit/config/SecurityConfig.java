@@ -57,64 +57,65 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .formLogin(login -> login
-                        .loginProcessingUrl("/api/auth/login")
-                        .successHandler(jwtLoginSuccessHandler)
-                        .failureHandler(loginFailureHandler)
-                        .permitAll()
+            .formLogin(login -> login
+                .loginProcessingUrl("/api/auth/login")
+                .successHandler(jwtLoginSuccessHandler)
+                .failureHandler(loginFailureHandler)
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/api/auth/logout")
+                .addLogoutHandler(jwtLogoutHandler)
+                .logoutSuccessHandler(
+                    new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)
                 )
-                .logout(logout -> logout
-                        .logoutUrl("/api/auth/logout")
-                        .addLogoutHandler(jwtLogoutHandler)
-                        .logoutSuccessHandler(
-                                new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)
-                        )
-                        .permitAll()
+                .permitAll()
+            )
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler() {
+                    @Override
+                    public void handle(HttpServletRequest request, HttpServletResponse response,
+                                       Supplier<CsrfToken> csrfToken) {
+                        super.handle(request, response, csrfToken);
+                        csrfToken.get();
+                    }
+                })
+                .ignoringRequestMatchers(
+                    new AntPathRequestMatcher("/api/auth/login", "POST"),
+                    new AntPathRequestMatcher("/api/auth/logout", "POST"),
+                    new AntPathRequestMatcher("/api/auth/refresh", "POST"),
+                    new AntPathRequestMatcher("/api/users", "POST")
                 )
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler() {
-                            @Override
-                            public void handle(HttpServletRequest request, HttpServletResponse response,
-                                               Supplier<CsrfToken> csrfToken) {
-                                super.handle(request, response, csrfToken);
-                                csrfToken.get();
-                            }
-                        })
-                        .ignoringRequestMatchers(
-                                new AntPathRequestMatcher("/api/auth/login", "POST"),
-                                new AntPathRequestMatcher("/api/auth/logout", "POST"),
-                                new AntPathRequestMatcher("/api/auth/refresh", "POST"),
-                                new AntPathRequestMatcher("/api/users", "POST")
-                        )
-                )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/",
-                                "/index.html",
-                                "/favicon.ico",
-                                "/index-*.js",
-                                "/index-*.css",
-                                "/assets/**",
+            )
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/",
+                    "/index.html",
+                    "/favicon.ico",
+                    "/index-*.js",
+                    "/index-*.css",
+                    "/assets/**",
 
-                                "/api/auth/login",
-                                "/api/auth/logout",
-                                "/api/auth/csrf-token",
+                    "/api/auth/login",
+                    "/api/auth/logout",
+                    "/api/auth/csrf-token",
 
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/api/auth/refresh"
-                        ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(authenticationEntryPoint())
-                        .accessDeniedHandler(accessDeniedHandler)
-                )
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilter, LogoutFilter.class);
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/api/auth/refresh",
+                    "/ws/**"
+                ).permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+                .anyRequest().authenticated()
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(authenticationEntryPoint())
+                .accessDeniedHandler(accessDeniedHandler)
+            )
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(jwtAuthenticationFilter, LogoutFilter.class);
         return http.build();
     }
 
@@ -127,18 +128,18 @@ public class SecurityConfig {
     public AuthenticationEntryPoint authenticationEntryPoint() {
         return (request, response, authException) -> {
             ErrorResponse errorResponse = new ErrorResponse(
-                    Instant.now(),
-                    "UNAUTHORIZED",
-                    "로그인이 필요합니다.",
-                    Map.of("path", request.getRequestURI()),
-                    authException.getClass().getSimpleName(),
-                    HttpServletResponse.SC_UNAUTHORIZED
+                Instant.now(),
+                "UNAUTHORIZED",
+                "로그인이 필요합니다.",
+                Map.of("path", request.getRequestURI()),
+                authException.getClass().getSimpleName(),
+                HttpServletResponse.SC_UNAUTHORIZED
             );
 
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write(
-                    new ObjectMapper().writeValueAsString(errorResponse)
+                new ObjectMapper().writeValueAsString(errorResponse)
             );
         };
     }
@@ -147,13 +148,13 @@ public class SecurityConfig {
     public RoleHierarchy roleHierarchy() {
 
         RoleHierarchy hierarchy = RoleHierarchyImpl.fromHierarchy(
-                "ROLE_ADMIN > ROLE_CHANNEL_MANAGER > ROLE_USER");
+            "ROLE_ADMIN > ROLE_CHANNEL_MANAGER > ROLE_USER");
         return hierarchy;
     }
 
     @Bean
     static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
-            RoleHierarchy roleHierarchy) {
+        RoleHierarchy roleHierarchy) {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
         handler.setRoleHierarchy(roleHierarchy);
         return handler;
@@ -173,11 +174,11 @@ public class SecurityConfig {
     public RememberMeServices rememberMeServices(PersistentTokenRepository repo,
                                                  UserDetailsService userDetailsService) {
         PersistentTokenBasedRememberMeServices svc =
-                new PersistentTokenBasedRememberMeServices(
-                        "discodeit-remember-me-key",
-                        userDetailsService,
-                        repo
-                );
+            new PersistentTokenBasedRememberMeServices(
+                "discodeit-remember-me-key",
+                userDetailsService,
+                repo
+            );
         svc.setParameter("remember-me");
         svc.setTokenValiditySeconds(24 * 60 * 60);
         svc.setAlwaysRemember(false);
