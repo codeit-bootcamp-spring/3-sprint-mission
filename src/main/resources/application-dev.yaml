@@ -22,11 +22,20 @@ management:
   endpoints:
     web:
       exposure:
-        include:
-          - "health"
-          - "info"
-          - "metrics"
-          - "loggers"
+        include: health, info, caches, metrics, prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+      metrics:
+        cache:
+          instrument: true  # 캐시 메트릭 활성화
+        export:
+          prometheus:
+            enabled: true
+
 
   info:
     env:

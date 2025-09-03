@@ -34,4 +34,9 @@ public interface JwtRegistry {
      * 토큰 로테이션 수행 ( 토큰 재발급 시 )
      * */
     void rotateJwtInformation(String refreshToken,JwtInformation jwtInformation);
+
+    /**
+     * 만료된 JwtInformation 을 삭제
+     * */
+    void clearExpiredJwtInformation();
 }

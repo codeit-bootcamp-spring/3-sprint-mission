@@ -1,10 +1,14 @@
 package com.sprint.mission.discodeit.exception;
 
 import com.sprint.mission.discodeit.exception.auth.AuthException;
+import com.sprint.mission.discodeit.exception.auth.InvalidRefreshTokenException;
+import com.sprint.mission.discodeit.exception.auth.RefreshTokenNotFoundException;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateNotAllowedException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.notification.NotificationAccessDeniedException;
+import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserEmailAlreadyExistsException;
@@ -171,8 +175,42 @@ public class GlobalExceptionHandler {
         );
   }
 
+  /** 알림 관련 Error
+   * 14.Notification Not Found Exception
+   * */
+  @ExceptionHandler(NotificationNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleNotificationNotFoundException(NotificationNotFoundException e) {
+    ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND, e.getErrorCode());
+    return ResponseEntity
+        .status(HttpStatus.NOT_FOUND)
+        .body(errorResponse);
+  }
+
+  /** 알림 관련 Error
+   * 15.Notification Access Denied Exception
+   * */
+  @ExceptionHandler(NotificationAccessDeniedException.class)
+  public ResponseEntity<ErrorResponse> handleNotificationAccessDeniedException(NotificationAccessDeniedException e) {
+    ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN, e.getErrorCode());
+    return ResponseEntity
+        .status(HttpStatus.FORBIDDEN)
+        .body(errorResponse);
+  }
+
+
+  /** Refresh Token 관련 에러
+   *  16. InvalidRefreshTokenException & RefreshTokenNotFoundException
+   * */
+  @ExceptionHandler({InvalidRefreshTokenException.class, RefreshTokenNotFoundException.class})
+  public ResponseEntity<ErrorResponse> handleRefreshTokenException(DiscodeitException e) {
+    ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, e.getErrorCode());
+    return ResponseEntity
+        .status(HttpStatus.UNAUTHORIZED)
+        .body(errorResponse);
+  }
+
   /**
-   *  14. 예상치 못한 에러 관련
+   *  17. 예상치 못한 에러 관련
    * */
   @ExceptionHandler(Exception.class)
   public ResponseEntity<String> handleException(Exception e) {

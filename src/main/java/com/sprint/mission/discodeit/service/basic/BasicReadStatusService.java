@@ -100,7 +100,20 @@ public class BasicReadStatusService implements ReadStatusService {
           log.error("[읽음 상태 수정 실패] 해당하는 읽음 상태를 찾을 수 없습니다. 읽음 상태 ID : {}", readStatusId);
           throw new ReadStatusNotFoundException();
         });
-    readStatus.update(newLastReadAt);
+
+    // newLastReadAt이 제공된 경우에만 업데이트
+    if (newLastReadAt != null) {
+      readStatus.update(newLastReadAt);
+      log.info("[읽음 시간 업데이트] readStatusId : {}, newLastReadAt : {}",
+          readStatusId, newLastReadAt);
+    }
+
+    if (request.newNotificationEnabled() != null) {
+      readStatus.updateNotificationEnabled(request.newNotificationEnabled());
+      log.info("[알림 설정 변경] readStatusId : {}, notificationEnabled : {}",
+                readStatusId, request.newNotificationEnabled());
+    }
+
     log.info("[읽음 정보 수정 성공] 읽음 정보 ID : {}", readStatusId);
 
     return readStatusMapper.toDto(readStatus);

@@ -17,9 +17,11 @@ CREATE TABLE binary_contents
 (
     id           uuid PRIMARY KEY,
     created_at   timestamp with time zone NOT NULL,
+    updated_at   timestamp with time zone,
     file_name    varchar(255)             NOT NULL,
     size         bigint                   NOT NULL,
-    content_type varchar(100)             NOT NULL
+    content_type varchar(100)             NOT NULL,
+    status varchar(20)                    NOT NULL
 --     ,bytes        bytea        NOT NULL
 );
 
@@ -53,6 +55,17 @@ CREATE TABLE message_attachments
     PRIMARY KEY (message_id, attachment_id)
 );
 
+-- notifications 테이블 추가
+CREATE TABLE notifications
+(
+    id          uuid PRIMARY KEY,
+    created_at  timestamp with time zone NOT NULL,
+    receiver_id uuid                     NOT NULL,
+    title       varchar(255)             NOT NULL,
+    content     text                     NOT NULL
+);
+
+
 -- ReadStatus
 CREATE TABLE read_statuses
 (
@@ -62,6 +75,7 @@ CREATE TABLE read_statuses
     user_id      uuid                     NOT NULL,
     channel_id   uuid                     NOT NULL,
     last_read_at timestamp with time zone NOT NULL,
+    notification_enabled boolean          NOT NULL,
     UNIQUE (user_id, channel_id)
 );
 
@@ -115,3 +129,11 @@ ALTER TABLE read_statuses
             REFERENCES channels (id)
             ON DELETE CASCADE;
 
+ALTER TABLE binary_contents
+    ADD COLUMN updated_at timestamp with time zone;
+
+ALTER TABLE binary_contents
+    ADD COLUMN status varchar(20) NOT NULL DEFAULT 'PROCESSING';
+
+ALTER TABLE read_statuses
+ADD COLUMN notification_enabled boolean NOT NULL DEFAULT false;

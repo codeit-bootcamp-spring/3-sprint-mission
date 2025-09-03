@@ -8,11 +8,41 @@ spring:
       client:
         instance:
           name: discodeit
+  # Kafka 설정
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  # 캐시 설정 - Redis로 변경
+  cache:
+    type: redis
+    cache-names:
+      - channels
+      - notifications
+      - users
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
+    redis:
+      enable-statistics: true
+    # Redis 연결 설정 추가
+    data:
+      redis:
+        host: ${REDIS_HOST:localhost}
+        port: ${REDIS_PORT:6379}
 
   servlet:
     multipart:
-      maxFileSize: 10MB # 파일 하나의 최대 크기
-      maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
+      maxFileSize: 10MB
+      maxRequestSize: 30MB
 
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -25,7 +55,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    # default_batch_fetch_size: 100
     open-in-view: false
 
 logging:
@@ -33,12 +62,15 @@ logging:
     root: info
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
-    com.sprint.mission.discodeit: info
+    com.sprint.mission.discodeit: debug
     org.springframework.security: DEBUG
     org.springframework.security.web.FilterChainProxy: DEBUG
     org.springframework.security.config.annotation.web.builders.HttpSecurity: DEBUG
     org.springframework.security.web.access.intercept.FilterSecurityInterceptor: DEBUG
     org.springframework.security.access.prepost.PreAuthorizeAuthorizationManager: DEBUG
+    org.springframework.cache: DEBUG
+    org.springframework.kafka: DEBUG
+    org.apache.kafka: INFO
 
 discodeit:
   storage:
@@ -56,3 +88,13 @@ jwt:
   secret: ${JWT_SECRET:myVerySecureSecretKeyForJWTTokenGenerationThatShouldBeVeryLongAndSecure}
   expiration-minutes: 60      # 액세스 토큰 만료 시간 (분)
   refresh-expiration-days: 7  # 리프레시 토큰 만료 시간 (일)
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, caches, metrics, prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always

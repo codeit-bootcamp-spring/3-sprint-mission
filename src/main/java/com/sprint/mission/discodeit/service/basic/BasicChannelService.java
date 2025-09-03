@@ -19,10 +19,11 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,8 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Override
+  // Public 채널 생성 시 모든 사용자의 채널 목록 캐시 무효화
+  @CacheEvict(value = "userChannels", allEntries = true)
   public ChannelDto create(PublicChannelCreateRequest request) {
     String name = request.name();
     String description = request.description();
@@ -62,6 +65,8 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   @PreAuthorize("hasRole('USER')")
   @Override
+  // Private 채널 생성 시 관련 사용자들의 채널 목록 캐시 무효화
+  @CacheEvict(value = "userChannels", allEntries = true)
   public ChannelDto create(PrivateChannelCreateRequest request) {
     List<UUID> participantIds = request.participantIds();
 
@@ -108,6 +113,7 @@ public class BasicChannelService implements ChannelService {
   @Transactional(readOnly = true)
   @PreAuthorize("hasRole('USER')")
   @Override
+  @Cacheable(value = "userChannels", key = "#userId")
   public List<ChannelDto> findAllByUserId(UUID userId) {
     log.info("[유저가 참여한 모든 채널 조회 시도] 유저 ID : {} ", userId);
 
@@ -126,6 +132,8 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Override
+  // 채널 수정 시 모든 사용자의 채널 목록 캐시 무효화
+  @CacheEvict(value = "userChannels", allEntries = true)
   public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
     String newName = request.newName();
     String newDescription = request.newDescription();
@@ -151,6 +159,8 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Override
+  // 채널 삭제 시 모든 사용자의 채널 목록 캐시 무효화
+  @CacheEvict(value = "userChannels", allEntries = true)
   public void delete(UUID channelId) {
     log.info("[채널 삭제 시도] 채널 ID : {} ", channelId);
 

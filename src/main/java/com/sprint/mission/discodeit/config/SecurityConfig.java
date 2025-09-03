@@ -58,6 +58,8 @@ public class SecurityConfig {
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 // CSRF 토큰 요청 처리 핸들러 설정
                 .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+                // 테스트 용 - 테스트 엔드포인트는 CSRF 보호 제외
+                .ignoringRequestMatchers("/api/test/cache/**")
             )
             .formLogin(login -> login
                 .loginProcessingUrl("/api/auth/login")
@@ -84,6 +86,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/login").permitAll()     // 로그인
                 .requestMatchers("/api/auth/logout").permitAll()    // 로그아웃
                 .requestMatchers("/api/auth/refresh").permitAll()
+
+                // 테스트용 - 캐시 테스트 엔드포인트 허용
+                .requestMatchers("/api/test/cache/**").permitAll()
+
                 // API가 아닌 요청 (Swagger, Actuator 등)
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()

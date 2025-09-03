@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,9 +16,12 @@ public class InMemoryJwtRegistry implements JwtRegistry{
     // <userId, Queue<JwtInformation>>
     private final ConcurrentHashMap<UUID, Queue<JwtInformation>> origin = new ConcurrentHashMap<>();
     private final int maxActiveJwtCount;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public InMemoryJwtRegistry(@Value("${jwt.max-active-session:1}") int maxActiveJwtCount) {
+    public InMemoryJwtRegistry(@Value("${jwt.max-active-session:1}") int maxActiveJwtCount,
+        JwtTokenProvider jwtTokenProvider) {
         this.maxActiveJwtCount = maxActiveJwtCount;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Override
@@ -97,5 +101,41 @@ public class InMemoryJwtRegistry implements JwtRegistry{
 
             return newQueue;
         });
+    }
+
+    /**
+     * 만료된 JWT 토큰들을 주기적으로 정리합니다.
+     */
+    @Scheduled(fixedDelay = 1000 * 60 * 5)
+    @Override
+    public void clearExpiredJwtInformation() {
+        log.debug("만료된 JWT 토큰 정리 시작");
+
+        origin.entrySet().removeIf(entry -> {
+            Queue<JwtInformation> queue = entry.getValue();
+            queue.removeIf(jwtInformation -> {
+                try {
+                    // 토큰이 유효하지 않으면 true 반환 ( 제거 대상 )
+                    boolean isAccessTokenExpired = !jwtTokenProvider.validateToken(jwtInformation.getAccessToken());
+                    boolean isRefreshTokenExpired = !jwtTokenProvider.validateToken(jwtInformation.getRefreshToken());
+
+                    boolean isExpired = isAccessTokenExpired || isRefreshTokenExpired;
+
+                    if (isExpired) {
+                        log.debug("만료된 토큰 제거: accessToken={}, refreshToken={}",
+                            jwtInformation.getAccessToken().substring(0, Math.min(10, jwtInformation.getAccessToken().length())) + "...",
+                            jwtInformation.getRefreshToken().substring(0, Math.min(10, jwtInformation.getRefreshToken().length())) + "...");
+                    }
+
+                    return isExpired;
+                } catch (Exception e) {
+                    log.warn("토큰 검증 중 오류 발생, 만료된 토큰으로 처리: {}", e.getMessage());
+                    return true; // 오류 발생시 제거
+                }
+            });
+            return queue.isEmpty();
+        });
+
+        log.debug("만료된 JWT 토큰 정리 완료");
     }
 }

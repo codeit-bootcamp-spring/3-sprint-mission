@@ -6,12 +6,15 @@ import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.JwtDto;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
+import com.sprint.mission.discodeit.exception.user.UserAccessDeniedException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
+import com.sprint.mission.discodeit.service.TokenRefreshService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -41,9 +45,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController implements AuthApi {
 
     private final AuthService authService;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final DiscodeitUserDetailsService userDetailsService;
-  private final JwtRegistry jwtRegistry;
+    private final TokenRefreshService tokenRefreshService;
+    private final JwtRegistry jwtRegistry;
 
   /**
    * CSRF 토큰 발급 API
@@ -73,80 +76,13 @@ public class AuthController implements AuthApi {
    * 응답 : 200 JwtDto ( 새로운 Access 토큰 + Refresh 토큰 )
    * */
   @PostMapping("/refresh")
-  public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
-    try {
-      // 쿠키에서 Refresh 토큰 추출
-      String refreshToken = extractRefreshTokenFromCookie(request);
+  public ResponseEntity<JwtDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    String refreshToken = extractRefreshTokenFromCookie(request);
 
-      if (!StringUtils.hasText(refreshToken)) {
-        log.warn("Refresh 토큰이 쿠키에 존재하지 않습니다.");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(new ErrorResponse(HttpStatus.UNAUTHORIZED, ErrorCode.INVALID_PASSWORD));
-      }
+    JwtDto jwtDto = tokenRefreshService.refreshTokens(refreshToken, request, response);
 
-      // JwtRegistry에서 리프레시 토큰 상태 확인 (추가된 검증)
-      if (!jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
-        log.warn("레지스트리에 등록되지 않은 리프레시 토큰입니다.");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(new ErrorResponse(HttpStatus.UNAUTHORIZED, ErrorCode.INVALID_PASSWORD));
-      }
-
-      // Refresh 토큰 유효성 검사
-      if (!jwtTokenProvider.validateToken(refreshToken)) {
-        log.warn("유효하지 않은 Refresh 토큰입니다.");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(new ErrorResponse(HttpStatus.UNAUTHORIZED, ErrorCode.INVALID_PASSWORD));
-      }
-
-      // Refresh 토큰 타입 확인
-      String tokenType = jwtTokenProvider.getTokenType(refreshToken);
-      if (!"refresh".equals(tokenType)) {
-        log.warn("Refresh 토큰이 아닙니다. 토큰 타입 : {}", tokenType);
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(new ErrorResponse(HttpStatus.UNAUTHORIZED, ErrorCode.INVALID_PASSWORD));
-      }
-
-      // 사용자 정보 조회
-      String username = jwtTokenProvider.extractUsername(refreshToken);
-      UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-      DiscodeitUserDetails discodeitUserdetails = (DiscodeitUserDetails) userDetails;
-
-      // Authentication 객체 생성
-      Authentication authentication = new UsernamePasswordAuthenticationToken(
-          userDetails, null, userDetails.getAuthorities()
-      );
-
-      // 새로운 토큰 생성 ( Refresh Token Rotation )
-      String newAccessToken = jwtTokenProvider.generateAccessToken(authentication);
-      String newRefreshToken = jwtTokenProvider.generateRefreshToken(authentication);
-
-      // JWTRegistry에서 토큰 로테이션
-      JwtInformation newJwtInformation = new JwtInformation(
-          discodeitUserdetails.getUserDto(), newAccessToken, newRefreshToken
-      );
-      jwtRegistry.rotateJwtInformation(refreshToken, newJwtInformation);
-
-      // 새로운 Refresh 토큰을 쿠키에 설정 ( 기존 토큰을 교체 )
-      Cookie newRefreshTokenCookie = new Cookie("REFRESH_TOKEN", newRefreshToken);
-      newRefreshTokenCookie.setHttpOnly(true);
-      newRefreshTokenCookie.setSecure(request.isSecure());
-      newRefreshTokenCookie.setPath("/");
-      newRefreshTokenCookie.setMaxAge((int) jwtTokenProvider.getRefreshTokenValidityInSeconds());
-      response.addCookie(newRefreshTokenCookie);
-
-      JwtDto jwtDto = new JwtDto(discodeitUserdetails.getUserDto(), newAccessToken);
-
-      log.info("토큰 재발급 완료 : userId = {} ", discodeitUserdetails.getUserDto().id());
-
-      return ResponseEntity.ok(jwtDto);
-
-    } catch (Exception e) {
-      log.error("토큰 재발급 중 오류 발생", e);
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-          .body(new ErrorResponse(HttpStatus.UNAUTHORIZED, ErrorCode.INVALID_PASSWORD));
-    }
+    return ResponseEntity.ok(jwtDto);
   }
-
 
   /**
    * 쿠키에서 Refresh 토큰 추출
@@ -188,10 +124,15 @@ public class AuthController implements AuthApi {
 
       return ResponseEntity.ok(updatedUser);
 
+    } catch (AccessDeniedException e) {
+      log.error("권한 없음: userId={}", request.userId(), e);
+      throw new UserAccessDeniedException();
+    } catch (UserNotFoundException e) {
+      log.error("사용자를 찾을 수 없음: userId={}", request.userId(), e);
+      throw e;
     } catch (Exception e) {
       log.error("사용자 권한 업데이트 중 오류 발생: userId={}", request.userId(), e);
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(null);
+      throw new RuntimeException("사용자 권한 업데이트 중 오류가 발생했습니다.", e);
     }
   }
 }

@@ -3,17 +3,19 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
@@ -23,7 +25,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentMapper binaryContentMapper;
-  private final BinaryContentStorage binaryContentStorage;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   @Override
@@ -39,7 +41,13 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     log.info("[파일 생성 시도] fileName : {} ", fileName);
     binaryContentRepository.save(binaryContent);
-    binaryContentStorage.put(binaryContent.getId(), bytes);
+
+    // 이벤트 발행 ( 바이너리 저장 로직 분리 )
+    eventPublisher.publishEvent(new BinaryContentCreatedEvent(
+        binaryContent.getId(),
+        bytes,
+        fileName
+    ));
 
     log.info("[파일 생성 성공] fileName : {} ", fileName);
     return binaryContentMapper.toDto(binaryContent);
@@ -74,5 +82,17 @@ public class BasicBinaryContentService implements BinaryContentService {
       throw new BinaryContentNotFoundException();
     }
     binaryContentRepository.deleteById(binaryContentId);
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Override
+  public BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status) {
+    BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
+        .orElseThrow(() -> new BinaryContentNotFoundException());
+
+    binaryContent.updateStatus(status);
+    binaryContentRepository.save(binaryContent);
+
+    return binaryContentMapper.toDto(binaryContent);
   }
 }
