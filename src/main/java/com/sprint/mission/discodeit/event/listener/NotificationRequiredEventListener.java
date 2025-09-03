@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -34,7 +35,7 @@ public class NotificationRequiredEventListener {
     @Value("${discodeit.admin.username}")
     private String adminUsername;
 
-
+    @Async("eventTaskExecutor")
     @TransactionalEventListener
     public void on(MessageCreatedEvent event) {
         MessageDto message = event.getData();
@@ -56,6 +57,7 @@ public class NotificationRequiredEventListener {
         notificationService.create(receiverIds, title, content);
     }
 
+    @Async("eventTaskExecutor")
     @TransactionalEventListener
     public void on(RoleUpdatedEvent event) {
         UUID userId = event.getUserId();
@@ -68,6 +70,7 @@ public class NotificationRequiredEventListener {
         notificationService.create(Set.of(userId), title, content);
     }
 
+    @Async("eventTaskExecutor")
     @EventListener
     public void on(S3UploadFailedEvent event) {
         String requestId = event.getRequestId();
