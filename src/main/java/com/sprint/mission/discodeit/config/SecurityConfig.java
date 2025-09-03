@@ -1,24 +1,20 @@
 package com.sprint.mission.discodeit.config;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.entity.Role;
-import com.sprint.mission.discodeit.handler.Http403ForbiddenAccessDeniedHandler;
-import com.sprint.mission.discodeit.handler.LoginFailureHandler;
-import com.sprint.mission.discodeit.handler.SpaCsrfTokenRequestHandler;
-import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
-import com.sprint.mission.discodeit.handler.JwtLoginSuccessHandler;
-import com.sprint.mission.discodeit.handler.JwtLogoutHandler;
-import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.Http403ForbiddenAccessDeniedHandler;
+import com.sprint.mission.discodeit.security.LoginFailureHandler;
+import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import com.sprint.mission.discodeit.security.jwt.InMemoryJwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import java.util.List;
+import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -40,18 +36,6 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.IntStream;
-
-/**
- * PackageName  : com.sprint.mission.discodeit.config
- * FileName     : SecurityConfig
- * Author       : dounguk
- * Date         : 2025. 8. 5.
- */
 
 @Slf4j
 @Configuration
@@ -59,113 +43,95 @@ import java.util.stream.IntStream;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain filterChain(
-        HttpSecurity http,
-        JwtLoginSuccessHandler jwtLoginSuccessHandler,
-        LoginFailureHandler loginFailureHandler,
-        ObjectMapper objectMapper,
-        JwtAuthenticationFilter jwtAuthenticationFilter,
-        JwtLogoutHandler jwtLogoutHandler
-    )
+  @Bean
+  public SecurityFilterChain filterChain(
+      HttpSecurity http,
+      JwtLoginSuccessHandler jwtLoginSuccessHandler,
+      LoginFailureHandler loginFailureHandler,
+      ObjectMapper objectMapper,
+      JwtAuthenticationFilter jwtAuthenticationFilter,
+      JwtLogoutHandler jwtLogoutHandler
+  )
+      throws Exception {
+    http
+        .csrf(csrf -> csrf
+            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+        )
+        .formLogin(login -> login
+            .loginProcessingUrl("/api/auth/login")
+            .successHandler(jwtLoginSuccessHandler)
+            .failureHandler(loginFailureHandler)
+        )
+        .logout(logout -> logout
+            .logoutUrl("/api/auth/logout")
+            .addLogoutHandler(jwtLogoutHandler)
+            .logoutSuccessHandler(
+                new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+        )
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(
+                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/refresh"),
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
+                new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
+            ).permitAll()
+            .anyRequest().authenticated()
+        )
+        .exceptionHandling(ex -> ex
+            .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
+            .accessDeniedHandler(new Http403ForbiddenAccessDeniedHandler(objectMapper))
+        )
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        )
+        // Add JWT authentication filter
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+    ;
+    return http.build();
+  }
 
-        throws Exception {
-        http
-            .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-            )
-            .formLogin(login -> login
-                .loginProcessingUrl("/api/auth/login")
-                .successHandler(jwtLoginSuccessHandler)
-                .failureHandler(loginFailureHandler)
-            )
-            .logout(logout -> logout
-                .logoutUrl("/api/auth/logout")
-                .addLogoutHandler(jwtLogoutHandler)
-                .logoutSuccessHandler(
-                    new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
-            )
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
-                    AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
-                    AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
-                    AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/refresh"),
-                    AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
-                    new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
-                ).permitAll()
-                .anyRequest().authenticated()
-            )
-            .exceptionHandling(ex -> ex
-                .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
-                .accessDeniedHandler(new Http403ForbiddenAccessDeniedHandler(objectMapper))
-            )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            // Add JWT authentication filter
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-        ;
-        return http.build();
-    }
-    @Bean
-    public FilterRegistrationBean<OncePerRequestFilter> loginProbe() {
-        OncePerRequestFilter f = new OncePerRequestFilter() {
-            @Override
-            protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
-                throws ServletException, IOException {
-                if ("/api/auth/login".equals(req.getRequestURI()) && "POST".equalsIgnoreCase(req.getMethod())) {
-                    log.info("[LOGIN-PROBE] ct={}, username={}, passPresent={}",
-                        req.getContentType(),
-                        req.getParameter("username"),
-                        req.getParameter("password") != null);
-                }
-                chain.doFilter(req, res);
-            }
-        };
-        FilterRegistrationBean<OncePerRequestFilter> reg = new FilterRegistrationBean<>(f);
-        reg.setOrder(0);
-        return reg;
-    }
-    @Bean
-    public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
-        return args -> {
-            int filterSize = filterChain.getFilters().size();
-            List<String> filterNames = IntStream.range(0, filterSize)
-                .mapToObj(idx -> String.format("\t[%s/%s] %s", idx + 1, filterSize,
-                    filterChain.getFilters().get(idx).getClass()))
-                .toList();
-            log.debug("Debug Filter Chain...\n{}", String.join(System.lineSeparator(), filterNames));
-        };
-    }
+  @Bean
+  public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
+    return args -> {
+      int filterSize = filterChain.getFilters().size();
+      List<String> filterNames = IntStream.range(0, filterSize)
+          .mapToObj(idx -> String.format("\t[%s/%s] %s", idx + 1, filterSize,
+              filterChain.getFilters().get(idx).getClass()))
+          .toList();
+      log.debug("Debug Filter Chain...\n{}", String.join(System.lineSeparator(), filterNames));
+    };
+  }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 
-    @Bean
-    public RoleHierarchy roleHierarchy() {
-        return RoleHierarchyImpl.withDefaultRolePrefix()
-            .role(Role.ADMIN.name())
-            .implies(Role.USER.name(), Role.CHANNEL_MANAGER.name())
+  @Bean
+  public RoleHierarchy roleHierarchy() {
+    return RoleHierarchyImpl.withDefaultRolePrefix()
+        .role(Role.ADMIN.name())
+        .implies(Role.USER.name(), Role.CHANNEL_MANAGER.name())
 
-            .role(Role.CHANNEL_MANAGER.name())
-            .implies(Role.USER.name())
-            .build();
-    }
+        .role(Role.CHANNEL_MANAGER.name())
+        .implies(Role.USER.name())
 
-    @Bean
-    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
-        RoleHierarchy roleHierarchy) {
-        DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
-        handler.setRoleHierarchy(roleHierarchy);
-        return handler;
-    }
+        .build();
+  }
 
-    @Bean
-    public JwtRegistry jwtRegistry(JwtTokenProvider jwtTokenProvider) {
-        return new InMemoryJwtRegistry(1, jwtTokenProvider);
-    }
+  @Bean
+  static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
+      RoleHierarchy roleHierarchy) {
+    DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+    handler.setRoleHierarchy(roleHierarchy);
+    return handler;
+  }
+
+  @Bean
+  public JwtRegistry jwtRegistry(JwtTokenProvider jwtTokenProvider) {
+    return new InMemoryJwtRegistry(1, jwtTokenProvider);
+  }
 }

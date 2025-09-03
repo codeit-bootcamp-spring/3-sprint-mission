@@ -1,32 +1,24 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
-import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserDto;
-import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
-import org.springframework.web.multipart.MultipartFile;
-
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * packageName    : com.sprint.mission.discodeit.refactor.service fileName       : UserService2
- * author         : doungukkim date           : 2025. 4. 17. description    :
- * =========================================================== DATE              AUTHOR NOTE
- * ----------------------------------------------------------- 2025. 4. 17.        doungukkim 최초 생성
- */
 public interface UserService {
 
-    List<UserDto> findAllUsers();
+  UserDto create(UserCreateRequest userCreateRequest,
+      Optional<BinaryContentCreateRequest> profileCreateRequest);
 
-    UserDto create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> profile);
+  UserDto find(UUID userId);
 
-    UserDto update(UUID userId, UserUpdateRequest request, MultipartFile file);
+  List<UserDto> findAll();
 
-    void deleteUser(UUID userId);
+  UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
+      Optional<BinaryContentCreateRequest> profileCreateRequest);
 
-    UserDto updateRole(UserRoleUpdateRequest request);
-
+  void delete(UUID userId);
 }

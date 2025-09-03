@@ -1,58 +1,41 @@
 package com.sprint.mission.discodeit.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
-
-/**
- * packageName    : com.sprint.mission.discodeit.refactor.entity
- * fileName       : Channel2
- * author         : doungukkim
- * date           : 2025. 4. 17.
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2025. 4. 17.        doungukkim       최초 생성
- */
-@Getter
 @Entity
-@Builder
-@AllArgsConstructor
-@Table(name = "channels", schema = "discodeit")
-public class Channel extends BaseUpdatableEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
+@Table(name = "channels")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Channel extends BaseUpdatableEntity {
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false, length = 10)
-    private ChannelType type;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private ChannelType type;
+  @Column(length = 100)
+  private String name;
+  @Column(length = 500)
+  private String description;
 
-    @Column(name = "name")
-    private String name;
+  public Channel(ChannelType type, String name, String description) {
+    this.type = type;
+    this.name = name;
+    this.description = description;
+  }
 
-    @Column(name = "description")
-    private String description;
-
-    public Channel() {
-        super();
-        this.name = "";
-        this.description = "";
-        this.type = ChannelType.PRIVATE;
+  public void update(String newName, String newDescription) {
+    if (newName != null && !newName.equals(this.name)) {
+      this.name = newName;
     }
-
-    public Channel(String name, String description) {
-        super();
-        this.name = name;
-        this.description = description;
-        this.type = ChannelType.PUBLIC;
+    if (newDescription != null && !newDescription.equals(this.description)) {
+      this.description = newDescription;
     }
-
-    public void changeChannelInformation(String name, String description) {
-        this.name = name;
-        this.description = description;
-    }
+  }
 }

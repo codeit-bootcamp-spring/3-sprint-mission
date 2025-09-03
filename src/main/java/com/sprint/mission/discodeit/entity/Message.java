@@ -1,73 +1,55 @@
 package com.sprint.mission.discodeit.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.*;
-
-/**
- * packageName    : com.sprint.mission.discodeit.refactor.entity
- * fileName       : Message2
- * author         : doungukkim
- * date           : 2025. 4. 17.
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2025. 4. 17.        doungukkim       최초 생성
- */
-@Getter
 @Entity
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
-@Table(name = "messages", schema = "discodeit")
-public class Message extends BaseUpdatableEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
+@Table(name = "messages")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Message extends BaseUpdatableEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id")
-    private User author;
+  @Column(columnDefinition = "text", nullable = false)
+  private String content;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "channel_id", columnDefinition = "uuid")
+  private Channel channel;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "author_id", columnDefinition = "uuid")
+  private User author;
+  @BatchSize(size = 100)
+  @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
+  @JoinTable(
+      name = "message_attachments",
+      joinColumns = @JoinColumn(name = "message_id"),
+      inverseJoinColumns = @JoinColumn(name = "attachment_id")
+  )
+  private List<BinaryContent> attachments = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "channel_id")
-    private Channel channel;
+  public Message(String content, Channel channel, User author, List<BinaryContent> attachments) {
+    this.channel = channel;
+    this.content = content;
+    this.author = author;
+    this.attachments = attachments;
+  }
 
-// 메세지가 첨부파일의 개수만큼의 연관관계가 생긴다.
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinTable(
-            name = "message_attachments",
-            joinColumns = @JoinColumn(name = "message_id"),
-            inverseJoinColumns = @JoinColumn(name = "attachment_id")
-    )
-    private List<BinaryContent> attachments;
-
-    @Column(name = "content")
-    private String content;
-
-    // 이미지 없음
-    public Message(User author, Channel channel, String content) {
-        super();
-        this.author = author;
-        this.channel = channel;
-        this.content = content;
+  public void update(String newContent) {
+    if (newContent != null && !newContent.equals(this.content)) {
+      this.content = newContent;
     }
-
-    // 이미지 있음
-    public Message(User author, Channel channel, String content, List<BinaryContent> attachments) {
-        super();
-        this.author = author;
-        this.channel = channel;
-        this.content = content;
-        this.attachments = attachments;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-        this.updatedAt = Instant.now();
-    }
+  }
 }
