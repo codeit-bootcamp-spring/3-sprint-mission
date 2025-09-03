@@ -51,7 +51,7 @@ public class UserController implements UserApi {
   }
 
   @PatchMapping(
-      path = "{userId}",
+      path = "/{userId}",
       consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
   )
   @Override
@@ -70,7 +70,7 @@ public class UserController implements UserApi {
         .body(updatedUser);
   }
 
-  @DeleteMapping(path = "{userId}")
+  @DeleteMapping(path = "/{userId}")
   @Override
   public ResponseEntity<Void> delete(@PathVariable("userId") UUID userId) {
     userService.delete(userId);

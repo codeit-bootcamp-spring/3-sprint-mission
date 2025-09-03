@@ -33,7 +33,7 @@ public class AuthController implements AuthApi {
   private final UserService userService;
   private final JwtTokenProvider jwtTokenProvider;
 
-  @GetMapping("csrf-token")
+  @GetMapping("/csrf-token")
   public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
     log.debug("CSRF 토큰 요청");
     log.trace("CSRF 토큰: {}", csrfToken.getToken());
@@ -42,7 +42,7 @@ public class AuthController implements AuthApi {
         .build();
   }
 
-  @PostMapping("refresh")
+  @PostMapping("/refresh")
   public ResponseEntity<JwtDto> refresh(@CookieValue("REFRESH_TOKEN") String refreshToken,
       HttpServletResponse response) {
     log.info("토큰 리프레시 요청");
@@ -60,7 +60,7 @@ public class AuthController implements AuthApi {
         .body(body);
   }
 
-  @PutMapping("role")
+  @PutMapping("/role")
   public ResponseEntity<UserDto> updateRole(@RequestBody RoleUpdateRequest request) {
     log.info("권한 수정 요청");
     UserDto userDto = authService.updateRole(request);

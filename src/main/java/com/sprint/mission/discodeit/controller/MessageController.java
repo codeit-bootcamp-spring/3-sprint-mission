@@ -74,7 +74,7 @@ public class MessageController implements MessageApi {
         .body(createdMessage);
   }
 
-  @PatchMapping(path = "{messageId}")
+  @PatchMapping(path = "/{messageId}")
   public ResponseEntity<MessageDto> update(
       @PathVariable("messageId") UUID messageId,
       @RequestBody @Valid MessageUpdateRequest request) {
@@ -86,7 +86,7 @@ public class MessageController implements MessageApi {
         .body(updatedMessage);
   }
 
-  @DeleteMapping(path = "{messageId}")
+  @DeleteMapping(path = "/{messageId}")
   public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
     log.info("메시지 삭제 요청: id={}", messageId);
     messageService.delete(messageId);
