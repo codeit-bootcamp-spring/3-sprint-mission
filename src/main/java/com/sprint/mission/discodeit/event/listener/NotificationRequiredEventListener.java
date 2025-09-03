@@ -34,7 +34,7 @@ public class NotificationRequiredEventListener {
     @Value("${discodeit.admin.username}")
     private String adminUsername;
 
-    
+
     @TransactionalEventListener
     public void on(MessageCreatedEvent event) {
         MessageDto message = event.getData();
