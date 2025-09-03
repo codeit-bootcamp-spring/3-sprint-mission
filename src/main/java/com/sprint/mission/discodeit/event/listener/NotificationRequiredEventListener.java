@@ -24,7 +24,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
+//@Component
 public class NotificationRequiredEventListener {
 
     private final NotificationService notificationService;
@@ -34,6 +34,7 @@ public class NotificationRequiredEventListener {
 
     @Value("${discodeit.admin.username}")
     private String adminUsername;
+
 
     @Async("eventTaskExecutor")
     @TransactionalEventListener
