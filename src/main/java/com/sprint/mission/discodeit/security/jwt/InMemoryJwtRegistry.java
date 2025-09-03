@@ -20,7 +20,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     private final long onlineIdleWindowMs;
 
     public InMemoryJwtRegistry(
-            @Value("${jwt.online-idle-window-ms:120000}") long onlineIdleWindowMs
+        @Value("${jwt.online-idle-window-ms:120000}") long onlineIdleWindowMs
     ) {
         this.onlineIdleWindowMs = onlineIdleWindowMs;
     }
@@ -53,15 +53,15 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     @Override
     public boolean hasActiveJwtInformationByAccessToken(String accessToken) {
         return origin.values().stream()
-                .flatMap(Collection::stream)
-                .anyMatch(info -> info.getAccessToken().equals(accessToken));
+            .flatMap(Collection::stream)
+            .anyMatch(info -> info.getAccessToken().equals(accessToken));
     }
 
     @Override
     public boolean hasActiveJwtInformationByRefreshToken(String refreshToken) {
         return origin.values().stream()
-                .flatMap(Collection::stream)
-                .anyMatch(info -> info.getRefreshToken().equals(refreshToken));
+            .flatMap(Collection::stream)
+            .anyMatch(info -> info.getRefreshToken().equals(refreshToken));
     }
 
     @Override

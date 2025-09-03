@@ -37,10 +37,10 @@ public class JwtTokenProvider {
     private final JWSVerifier refreshTokenVerifier;
 
     public JwtTokenProvider(
-            @Value("${jwt.access-token.secret}") String accessTokenSecret,
-            @Value("${jwt.access-token.exp}") long accessTokenExpirationMs,
-            @Value("${jwt.refresh-token.secret}") String refreshTokenSecret,
-            @Value("${jwt.refresh-token.exp}") long refreshTokenExpirationMs
+        @Value("${jwt.access-token.secret}") String accessTokenSecret,
+        @Value("${jwt.access-token.exp}") long accessTokenExpirationMs,
+        @Value("${jwt.refresh-token.secret}") String refreshTokenSecret,
+        @Value("${jwt.refresh-token.exp}") long refreshTokenExpirationMs
     ) throws JOSEException {
 
         byte[] a = accessTokenSecret.getBytes(StandardCharsets.UTF_8);
@@ -69,24 +69,24 @@ public class JwtTokenProvider {
 
     private String generateToken(DiscodeitUserDetails user, long expMs, JWSSigner signer,
                                  String type)
-            throws JOSEException {
+        throws JOSEException {
 
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expMs);
 
         List<String> roles = user.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
+            .map(GrantedAuthority::getAuthority)
+            .toList();
 
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .subject(user.getUsername())                      // username
-                .jwtID(UUID.randomUUID().toString())              // jti
-                .claim("uid", user.getUserDto().id().toString())  // 사용자 UUID
-                .claim("roles", roles)
-                .claim("type", type)                              // access | refresh
-                .issueTime(now)
-                .expirationTime(expiry)
-                .build();
+            .subject(user.getUsername())                      // username
+            .jwtID(UUID.randomUUID().toString())              // jti
+            .claim("uid", user.getUserDto().id().toString())  // 사용자 UUID
+            .claim("roles", roles)
+            .claim("type", type)                              // access | refresh
+            .issueTime(now)
+            .expirationTime(expiry)
+            .build();
 
         SignedJWT jwt = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claims);
         jwt.sign(signer);
