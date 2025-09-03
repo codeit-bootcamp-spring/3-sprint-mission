@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.dto.response.ReadStatusResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExistsException;
@@ -57,7 +58,7 @@ class BasicReadStatusServiceTest {
         ReadStatusCreateRequest request = new ReadStatusCreateRequest(userId, channelId,
             lastReadAt);
 
-        User user = new User("user", "user@email.com", "pw", null);
+        User user = new User("user", "user@email.com", "pw", null, Role.USER);
         Channel channel = new Channel(ChannelType.PUBLIC, "channel name", "channel description");
         ReadStatusResponse response = mock(ReadStatusResponse.class);
 

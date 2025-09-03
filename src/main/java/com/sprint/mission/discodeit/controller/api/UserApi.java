@@ -1,13 +1,10 @@
 package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
@@ -53,21 +50,6 @@ public interface UserApi {
 
         @Parameter(description = "프로필 이미지 (선택)", required = false)
         @RequestPart(value = "profile", required = false) MultipartFile profile
-    );
-
-    @Operation(
-        summary = "사용자 상태 수정",
-        description = "사용자의 상태를 업데이트합니다."
-    )
-    @ApiResponse(responseCode = "200", description = "상태 수정 성공")
-    ResponseEntity<UserStatusResponse> updateUserStatusByUserId(
-        @Parameter(description = "사용자 ID", example = "e7f3c2b1-a4d5-6789-0b1c-123456789abc")
-        UUID userId,
-
-        @RequestBody(
-            description = "사용자 상태 수정 요청 DTO",
-            required = true
-        ) UserStatusUpdateRequest request
     );
 
     @Operation(

@@ -3,10 +3,8 @@ package com.sprint.mission.discodeit.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,10 +25,7 @@ class UserRepositoryTest {
     @BeforeEach
     void setup() {
         BinaryContent profile = new BinaryContent("profile.png", 1024L, "image/png");
-        user = new User("testuser", "test@email.com", "password", profile);
-        userRepository.save(user);
-
-        UserStatus status = new UserStatus(user, Instant.now());
+        user = new User("testuser", "test@email.com", "password", null, Role.USER);
         userRepository.save(user);
     }
 
@@ -81,15 +76,5 @@ class UserRepositoryTest {
         boolean exists = userRepository.existsByUsername("nouser");
 
         assertThat(exists).isFalse();
-    }
-
-    @Test
-    @DisplayName("프로필과 상태 포함 전체 사용자 조회 성공")
-    void shouldFindAllUsersWithProfileAndStatus() {
-        List<User> result = userRepository.findAllWithProfileAndStatus();
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getStatus()).isNotNull();
-        assertThat(result.get(0).getProfile()).isNotNull();
     }
 }

@@ -19,7 +19,9 @@ public enum ErrorCode {
         HttpStatus.CONFLICT),
     CHANNEL_NOT_FOUND("Channel not found with ID: %s", HttpStatus.NOT_FOUND),
     PRIVATE_CHANNEL_UPDATE("Private channels cannot be updated.", HttpStatus.BAD_REQUEST),
-    MESSAGE_NOT_FOUND("Message with ID: %s not found", HttpStatus.NOT_FOUND);
+    MESSAGE_NOT_FOUND("Message with ID: %s not found", HttpStatus.NOT_FOUND),
+
+    INVALID_REFRESH_TOKEN("유효하지 않은 리프레시 토큰입니다.", HttpStatus.UNAUTHORIZED);
 
     private final String message;
     private final HttpStatus status;

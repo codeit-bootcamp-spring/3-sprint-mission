@@ -11,11 +11,11 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
@@ -39,13 +39,10 @@ class BasicChannelServiceTest {
     private ChannelRepository channelRepository;
 
     @Mock
-    private ReadStatusRepository readStatusRepository;
-
-    @Mock
-    private MessageRepository messageRepository;
-
-    @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private ReadStatusRepository readStatusRepository;
 
     @Mock
     private ChannelMapper channelMapper;
@@ -76,7 +73,7 @@ class BasicChannelServiceTest {
         given(userRepository.findAllById(request.participantIds()))
             .willReturn(List.of(
                 new com.sprint.mission.discodeit.entity.User("username", "email", "password",
-                    null)));
+                    null, Role.USER)));
 
         given(channelMapper.toResponse(any())).willReturn(
             new ChannelResponse(UUID.randomUUID(), ChannelType.PRIVATE, null, null, List.of(), null)

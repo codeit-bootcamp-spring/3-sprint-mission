@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.integration;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -20,6 +22,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -29,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@WithMockUser(username = "tester", roles = {"USER"})
 class UserIntegrationTest {
 
     @Autowired
@@ -36,6 +43,31 @@ class UserIntegrationTest {
 
     @Autowired
     ObjectMapper objectMapper;
+
+    static class TestPrincipal {
+
+        private final UUID id;
+
+        TestPrincipal(UUID id) {
+            this.id = id;
+        }
+
+        public Object getUserResponse() {
+            return new Object() {
+                public UUID id() {
+                    return id;
+                }
+            };
+        }
+    }
+
+    private Authentication ownerAuth(UUID userId) {
+        return new UsernamePasswordAuthenticationToken(
+            new TestPrincipal(userId),
+            "N/A",
+            java.util.List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+    }
 
     private String createUser(String username, String email) throws Exception {
         UserCreateRequest request = new UserCreateRequest(username, email, "password");
@@ -46,7 +78,11 @@ class UserIntegrationTest {
             objectMapper.writeValueAsBytes(request)
         );
 
-        MvcResult result = mockMvc.perform(multipart("/api/users").file(json))
+        MvcResult result = mockMvc.perform(
+                multipart("/api/users")
+                    .file(json)
+                    .with(csrf())
+            )
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -76,16 +112,18 @@ class UserIntegrationTest {
             "이미지_내용".getBytes()
         );
 
-        mockMvc.perform(multipart("/api/users")
-                .file(userCreateRequest)
-                .file(profile)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
+        mockMvc.perform(
+                multipart("/api/users")
+                    .file(userCreateRequest)
+                    .file(profile)
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .with(csrf())
+            )
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.username", is("testuser")))
             .andExpect(jsonPath("$.email", is("test@example.com")))
             .andExpect(jsonPath("$.profile.fileName", is("profile.jpg")))
-            .andExpect(jsonPath("$.profile.contentType", is("image/jpeg")))
-            .andExpect(jsonPath("$.online", is(true)));
+            .andExpect(jsonPath("$.profile.contentType", is("image/jpeg")));
     }
 
     @Test
@@ -108,9 +146,12 @@ class UserIntegrationTest {
             new byte[0]
         );
 
-        mockMvc.perform(multipart("/api/users")
-                .file(jsonPart)
-                .file(emptyProfile))
+        mockMvc.perform(
+                multipart("/api/users")
+                    .file(jsonPart)
+                    .file(emptyProfile)
+                    .with(csrf())
+            )
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.username", is("emptyfile")))
             .andExpect(jsonPath("$.profile").doesNotExist());
@@ -127,7 +168,7 @@ class UserIntegrationTest {
             objectMapper.writeValueAsBytes(request)
         );
 
-        mockMvc.perform(multipart("/api/users").file(json))
+        mockMvc.perform(multipart("/api/users").file(json).with(csrf()))
             .andExpect(status().isBadRequest());
     }
 
@@ -163,7 +204,12 @@ class UserIntegrationTest {
             patchJson.getBytes()
         );
 
-        mockMvc.perform(multipart(HttpMethod.PATCH, "/api/users/{id}", userId).file(patchFile))
+        mockMvc.perform(
+                multipart(HttpMethod.PATCH, "/api/users/{id}", userId)
+                    .file(patchFile)
+                    .with(csrf())
+                    .with(authentication(ownerAuth(UUID.fromString(userId))))
+            )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username", is("after")))
             .andExpect(jsonPath("$.email", is("after@email.com")));
@@ -189,7 +235,12 @@ class UserIntegrationTest {
             patchJson.getBytes()
         );
 
-        mockMvc.perform(multipart(HttpMethod.PATCH, "/api/users/{id}", fakeId).file(patchFile))
+        mockMvc.perform(
+                multipart(HttpMethod.PATCH, "/api/users/{id}", fakeId)
+                    .file(patchFile)
+                    .with(csrf())
+                    .with(authentication(ownerAuth(UUID.fromString(fakeId))))
+            )
             .andExpect(status().isNotFound());
     }
 
@@ -198,7 +249,11 @@ class UserIntegrationTest {
     void shouldDeleteUserSuccessfully() throws Exception {
         String userId = createUser("deleteme", "delete@email.com");
 
-        mockMvc.perform(delete("/api/users/{id}", UUID.fromString(userId)))
+        mockMvc.perform(
+                delete("/api/users/{id}", UUID.fromString(userId))
+                    .with(csrf())
+                    .with(authentication(ownerAuth(UUID.fromString(userId))))
+            )
             .andExpect(status().isNoContent());
     }
 
@@ -207,7 +262,11 @@ class UserIntegrationTest {
     void shouldFailToDeleteUserWhenNotFound() throws Exception {
         UUID fakeId = UUID.randomUUID();
 
-        mockMvc.perform(delete("/api/users/{id}", fakeId))
+        mockMvc.perform(
+                delete("/api/users/{id}", fakeId)
+                    .with(csrf())
+                    .with(authentication(ownerAuth(fakeId)))
+            )
             .andExpect(status().isNotFound());
     }
 
@@ -224,7 +283,7 @@ class UserIntegrationTest {
             objectMapper.writeValueAsBytes(request)
         );
 
-        mockMvc.perform(multipart("/api/users").file(json))
+        mockMvc.perform(multipart("/api/users").file(json).with(csrf()))
             .andExpect(status().isConflict())
             .andExpect(jsonPath("$.code", is("DUPLICATE_BOTH")));
     }

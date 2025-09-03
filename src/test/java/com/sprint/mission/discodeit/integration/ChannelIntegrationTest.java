@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.integration;
 
 import static org.hamcrest.Matchers.is;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -27,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@WithMockUser(username = "manager", roles = {"CHANNEL_MANAGER"})
 public class ChannelIntegrationTest {
 
     @Autowired
@@ -41,15 +44,13 @@ public class ChannelIntegrationTest {
         PublicChannelCreateRequest request = new PublicChannelCreateRequest("test-channel",
             "설명입니다.");
 
-        MvcResult result = mockMvc.perform(post("/api/channels/public")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsBytes(request)))
-            .andExpect(status().isCreated())
+        MvcResult result = mockMvc.perform(
+                post("/api/channels/public").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(request))).andExpect(status().isCreated())
             .andReturn();
 
         channelId = UUID.fromString(
-            objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asText()
-        );
+            objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asText());
     }
 
     @Test
@@ -57,14 +58,12 @@ public class ChannelIntegrationTest {
     void shouldCreatePublicChannelSuccessfully() throws Exception {
         PublicChannelCreateRequest request = new PublicChannelCreateRequest("new-channel", "새 설명");
 
-        mockMvc.perform(post("/api/channels/public")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsBytes(request)))
-            .andExpect(status().isCreated())
+        mockMvc.perform(
+                post("/api/channels/public").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(request))).andExpect(status().isCreated())
             .andExpect(jsonPath("$.name", is("new-channel")))
             .andExpect(jsonPath("$.description", is("새 설명")))
-            .andExpect(jsonPath("$.type", is("PUBLIC")))
-            .andExpect(jsonPath("$.id").exists());
+            .andExpect(jsonPath("$.type", is("PUBLIC"))).andExpect(jsonPath("$.id").exists());
     }
 
     @Test
@@ -72,9 +71,9 @@ public class ChannelIntegrationTest {
     void shouldFailToCreatePublicChannelWithInvalidRequest() throws Exception {
         PublicChannelCreateRequest request = new PublicChannelCreateRequest("a", "desc");
 
-        mockMvc.perform(post("/api/channels/public")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsBytes(request)))
+        mockMvc.perform(
+                post("/api/channels/public").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(request)))
             .andExpect(status().isBadRequest());
     }
 
@@ -85,10 +84,8 @@ public class ChannelIntegrationTest {
             "업데이트 설명");
         String json = objectMapper.writeValueAsString(updateRequest);
 
-        mockMvc.perform(patch("/api/channels/{id}", channelId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-            .andExpect(status().isOk())
+        mockMvc.perform(patch("/api/channels/{id}", channelId).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON).content(json)).andExpect(status().isOk())
             .andExpect(jsonPath("$.id", is(channelId.toString())))
             .andExpect(jsonPath("$.name", is("updated")))
             .andExpect(jsonPath("$.description", is("업데이트 설명")));
@@ -102,18 +99,16 @@ public class ChannelIntegrationTest {
             "업데이트 설명");
         String json = objectMapper.writeValueAsString(updateRequest);
 
-        mockMvc.perform(patch("/api/channels/{id}", fakeId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-            .andExpect(status().isNotFound());
+        mockMvc.perform(
+            patch("/api/channels/{id}", fakeId).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+                .content(json)).andExpect(status().isNotFound());
     }
 
     @Test
     @DisplayName("공개 채널 삭제 성공")
     void shouldDeletePublicChannelSuccessfully() throws Exception {
-        mockMvc.perform(delete("/api/channels/{id}", channelId))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id", is(channelId.toString())));
+        mockMvc.perform(delete("/api/channels/{id}", channelId).with(csrf()))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.id", is(channelId.toString())));
     }
 
     @Test
@@ -121,7 +116,7 @@ public class ChannelIntegrationTest {
     void shouldFailToDeletePublicChannelWhenNotFound() throws Exception {
         UUID fakeId = UUID.randomUUID();
 
-        mockMvc.perform(delete("/api/channels/{id}", fakeId))
+        mockMvc.perform(delete("/api/channels/{id}", fakeId).with(csrf()))
             .andExpect(status().isNotFound());
     }
 }

@@ -3,13 +3,10 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.dto.response.UserStatusResponse;
 import com.sprint.mission.discodeit.exception.user.ProfileImageProcessingException;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
@@ -25,7 +22,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,7 +34,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController implements UserApi {
 
     private final UserService userService;
-    private final UserStatusService userStatusService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserResponse> createUser(
@@ -82,19 +77,6 @@ public class UserController implements UserApi {
 
         log.debug("[UserController] User updated. [id={}]", updatedUser.id());
         return ResponseEntity.ok(updatedUser);
-    }
-
-    @PatchMapping("/{userId}/userStatus")
-    public ResponseEntity<UserStatusResponse> updateUserStatusByUserId(
-        @PathVariable UUID userId,
-        @RequestBody UserStatusUpdateRequest request
-    ) {
-        log.info("[UserController] Update user status request received. [userId={}]", userId);
-
-        UserStatusResponse updatedUserStatus = userStatusService.updateByUserId(userId, request);
-
-        log.debug("[UserController] User status updated. [userId={}]", userId);
-        return ResponseEntity.ok(updatedUserStatus);
     }
 
     @DeleteMapping("/{userId}")

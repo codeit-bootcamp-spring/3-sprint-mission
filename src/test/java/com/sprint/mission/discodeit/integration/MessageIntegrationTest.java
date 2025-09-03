@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.integration;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -26,6 +28,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -35,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@WithMockUser(username = "manager", roles = {"CHANNEL_MANAGER", "USER"})
 class MessageIntegrationTest {
 
     @Autowired
@@ -59,6 +66,31 @@ class MessageIntegrationTest {
         userId = userService.create(userRequest, Optional.empty()).id();
     }
 
+    static class TestPrincipal {
+
+        private final java.util.UUID id;
+
+        TestPrincipal(java.util.UUID id) {
+            this.id = id;
+        }
+
+        public Object getUserResponse() {
+            return new Object() {
+                public java.util.UUID id() {
+                    return id;
+                }
+            };
+        }
+    }
+
+    private Authentication ownerAuth(UUID userId) {
+        return new UsernamePasswordAuthenticationToken(
+            new TestPrincipal(userId),
+            "N/A",
+            java.util.List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+    }
+
     @Test
     @DisplayName("메시지 생성 성공")
     void shouldCreateMessageSuccessfully() throws Exception {
@@ -68,7 +100,9 @@ class MessageIntegrationTest {
             objectMapper.writeValueAsBytes(request)
         );
 
-        mockMvc.perform(multipart("/api/messages").file(messagePart))
+        mockMvc.perform(multipart("/api/messages")
+                .file(messagePart)
+                .with(csrf()))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.content", is("헬로 메시지")))
             .andExpect(jsonPath("$.channelId", is(channelId.toString())))
@@ -83,9 +117,12 @@ class MessageIntegrationTest {
             "messageCreateRequest", "", MediaType.APPLICATION_JSON_VALUE,
             objectMapper.writeValueAsBytes(create)
         );
-        MvcResult result = mockMvc.perform(multipart("/api/messages").file(messagePart))
+        MvcResult result = mockMvc.perform(multipart("/api/messages")
+                .file(messagePart)
+                .with(csrf()))
             .andExpect(status().isCreated())
             .andReturn();
+
         UUID messageId = UUID.fromString(
             objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asText()
         );
@@ -94,6 +131,8 @@ class MessageIntegrationTest {
         String json = objectMapper.writeValueAsString(update);
 
         mockMvc.perform(patch("/api/messages/{id}", messageId)
+                .with(csrf())
+                .with(authentication(ownerAuth(userId)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
             .andExpect(status().isOk())
@@ -104,21 +143,29 @@ class MessageIntegrationTest {
     @Test
     @DisplayName("메시지 삭제 성공")
     void shouldDeleteMessageSuccessfully() throws Exception {
+        // 생성
         MessageCreateRequest request = new MessageCreateRequest("삭제할 메시지", channelId, userId);
         MockMultipartFile messagePart = new MockMultipartFile(
             "messageCreateRequest", "", MediaType.APPLICATION_JSON_VALUE,
             objectMapper.writeValueAsBytes(request)
         );
-        MvcResult result = mockMvc.perform(multipart("/api/messages").file(messagePart))
+        MvcResult result = mockMvc.perform(multipart("/api/messages")
+                .file(messagePart)
+                .with(csrf()))
             .andExpect(status().isCreated())
             .andReturn();
+
         UUID messageId = UUID.fromString(
             objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asText()
         );
 
-        mockMvc.perform(delete("/api/messages/{id}", messageId))
+        // 삭제 (소유자 인증 + CSRF)
+        mockMvc.perform(delete("/api/messages/{id}", messageId)
+                .with(csrf())
+                .with(authentication(ownerAuth(userId))))
             .andExpect(status().isNoContent());
 
+        // 목록 검증 (GET은 CSRF 불필요)
         mockMvc.perform(get("/api/messages")
                 .param("channelId", channelId.toString())
                 .contentType(MediaType.APPLICATION_JSON))
@@ -135,7 +182,9 @@ class MessageIntegrationTest {
                 "messageCreateRequest", "", MediaType.APPLICATION_JSON_VALUE,
                 objectMapper.writeValueAsBytes(req)
             );
-            mockMvc.perform(multipart("/api/messages").file(part))
+            mockMvc.perform(multipart("/api/messages")
+                    .file(part)
+                    .with(csrf()))
                 .andExpect(status().isCreated());
         }
 

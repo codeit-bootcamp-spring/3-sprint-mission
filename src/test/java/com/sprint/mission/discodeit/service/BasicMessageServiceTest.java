@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
@@ -74,7 +75,7 @@ class BasicMessageServiceTest {
         BinaryContent attachment = new BinaryContent("file.png", 10L, "image/png");
 
         Channel channel = new Channel(ChannelType.PUBLIC, "test", null);
-        User author = new User("name", "email", "password", null);
+        User author = new User("name", "email", "password", null, Role.USER);
 
         given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
         given(userRepository.findById(userId)).willReturn(Optional.of(author));
@@ -89,7 +90,8 @@ class BasicMessageServiceTest {
                 Instant.now(),
                 message.getContent(),
                 channelId,
-                new UserDto(UUID.randomUUID(), author.getUsername(), author.getEmail(), null, true),
+                new UserDto(UUID.randomUUID(), author.getUsername(), author.getEmail(), null, true,
+                    Role.USER),
                 List.of()
             );
         });
@@ -104,7 +106,7 @@ class BasicMessageServiceTest {
         UUID messageId = UUID.randomUUID();
 
         Channel channel = new Channel(ChannelType.PUBLIC, "test-channel", "description");
-        User user = new User("tester", "tester@email.com", "password", null);
+        User user = new User("tester", "tester@email.com", "password", null, Role.USER);
         Message message = new Message("old", channel, user, List.of());
 
         given(messageRepository.findById(messageId)).willReturn(Optional.of(message));
@@ -117,7 +119,8 @@ class BasicMessageServiceTest {
                 Instant.now(),
                 updatedMessage.getContent(),
                 channel.getId(),
-                new UserDto(UUID.randomUUID(), user.getUsername(), user.getEmail(), null, true),
+                new UserDto(UUID.randomUUID(), user.getUsername(), user.getEmail(), null, true,
+                    Role.USER),
                 List.of()
             );
         });

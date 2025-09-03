@@ -21,7 +21,5 @@ public interface UserService {
     UserResponse update(UUID userId, UserUpdateRequest request,
         Optional<BinaryContentCreateRequest> optionalProfileCreateRequest);
 
-
     UserResponse delete(UUID userId);
-
 }

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.exception.GlobalExceptionHandler;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.time.Instant;
@@ -22,6 +24,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -46,6 +49,7 @@ class MessageControllerTest {
 
     @Test
     @DisplayName("메시지 생성 성공")
+    @WithMockUser(username = "tester", roles = {"USER"})
     void shouldCreateMessageSuccessfully() throws Exception {
         UUID channelId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
@@ -58,7 +62,7 @@ class MessageControllerTest {
             Instant.now(),
             "안녕하세요",
             channelId,
-            new UserDto(authorId, "tester", "tester@email.com", null, true),
+            new UserDto(authorId, "tester", "tester@email.com", null, true, Role.USER),
             List.of()
         );
 
@@ -73,6 +77,7 @@ class MessageControllerTest {
 
         mockMvc.perform(multipart("/api/messages")
                 .file(jsonPart)
+                .with(csrf())
                 .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.content").value("안녕하세요"))
@@ -82,6 +87,7 @@ class MessageControllerTest {
 
     @Test
     @DisplayName("메시지 생성 실패 - 유효성 검사")
+    @WithMockUser
     void shouldFailToCreateMessageWithInvalidInput() throws Exception {
         MessageCreateRequest request = new MessageCreateRequest("", null, null);
 
@@ -94,6 +100,7 @@ class MessageControllerTest {
 
         mockMvc.perform(multipart("/api/messages")
                 .file(jsonPart)
+                .with(csrf())
                 .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").exists())
@@ -102,6 +109,7 @@ class MessageControllerTest {
 
     @Test
     @DisplayName("채널 ID 없이 메시지 생성 시 400 반환")
+    @WithMockUser
     void shouldReturn400WhenChannelIdMissing() throws Exception {
         MessageCreateRequest invalidRequest = new MessageCreateRequest("유효하지 않은 요청", null,
             UUID.randomUUID());
@@ -115,6 +123,7 @@ class MessageControllerTest {
 
         mockMvc.perform(multipart("/api/messages")
                 .file(jsonPart)
+                .with(csrf())
                 .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.message").exists())
