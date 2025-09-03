@@ -13,7 +13,7 @@ discodeit:
 spring:
   profiles:
     active:
-      - prod
+      - dev
   servlet:
     multipart:
       maxFileSize: 10MB
@@ -29,6 +29,22 @@ spring:
       client:
         instance:
           name: discodeit
+
+admin:
+  email: admin@abc.com
+  username: admin
+  password: admin1234
+
+remember-me:
+  key: discodeit-remember-me-key
+
+jwt:
+  access-token:
+    secret: ${JWT_ACCESS_SECRET}
+    expiration: ${JWT_ACCESS_EXPIRATION:600000}
+  refresh-token:
+    secret: ${JWT_REFRESH_SECRET}
+    expiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
 logging:
   level:

@@ -22,13 +22,19 @@ public enum ErrorCode {
     READ_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "R001", "읽기 상태을 찾을 수 없습니다."),
     READ_STATUS_ALREADY_EXISTS(HttpStatus.CONFLICT, "R002", "해당 유저와 채널에 대한 읽기 상태가 이미 존재합니다."),
 
-    USER_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "US001", "사용자 상태를 찾을 수 없습니다."),
-    USER_STATUS_ALREADY_EXISTS(HttpStatus.CONFLICT, "US002", "이미 존재하는 사용자 상태입니다."),
-
     BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "B001", "첨부파일을 찾을 수 없습니다."),
     BINARY_CONTENT_INVALID(HttpStatus.BAD_REQUEST, "B002", "유효하지 않은 첨부파일입니다."),
 
-    VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "V001", "요청 데이터 유효성 검증에 실패하였습니다.");
+    VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "V001", "요청 데이터 유효성 검증에 실패하였습니다."),
+
+    UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "UA001", "사용자 로그인 인증에 실패했습니다."),
+    FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "F001", "접근 권한이 없습니다."),
+
+    TOKEN_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "TG001", "토큰 생성에 실패했습니다."),
+    EXPIRED_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "T002", "만료된 JWT 토큰입니다."),
+    INVALID_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "T003", "유효하지 않은 JWT 토큰입니다."),
+    INVALID_USER_DETAILS(HttpStatus.UNAUTHORIZED, "T004", "유효하지 않은 사용자 인증 정보입니다"),
+    USER_ID_CLAIM_NOT_FOUND(HttpStatus.UNAUTHORIZED, "T005", "JWT 토큰에 사용자 ID가 없습니다.");
 
     private final HttpStatus status;
     private final String code;

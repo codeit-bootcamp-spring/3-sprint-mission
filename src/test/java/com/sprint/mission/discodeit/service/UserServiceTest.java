@@ -1,21 +1,13 @@
 package com.sprint.mission.discodeit.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willDoNothing;
-import static org.mockito.Mockito.verify;
-
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserEmailAlreadyExistException;
 import com.sprint.mission.discodeit.exception.user.UserNameAlreadyExistException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -23,12 +15,8 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,6 +25,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("BasicUserService 단위 테스트")
@@ -48,8 +48,6 @@ public class UserServiceTest {
     private UserRepository userRepository;
     @Mock
     private BinaryContentRepository binaryContentRepository;
-    @Mock
-    private UserStatusRepository userStatusRepository;
     @Mock
     private MessageRepository messageRepository;
     @Mock
@@ -92,12 +90,12 @@ public class UserServiceTest {
         ReflectionTestUtils.setField(userWithProfile, "id", userId);
 
         profileDto = new BinaryContentDto(profileId, "img.png", (long) imageBytes.length,
-            "image/png");
-        userWithProfileDto = new UserDto(userId, username, email, profileDto, true);
-        userDto = new UserDto(userId, username, email, null, true);
+                "image/png");
+        userWithProfileDto = new UserDto(userId, username, email, profileDto, true, Role.USER);
+        userDto = new UserDto(userId, username, email, null, true, Role.USER);
 
         profileRequest = new BinaryContentCreateRequest("img.png", (long) imageBytes.length,
-            "image/png", imageBytes);
+                "image/png", imageBytes);
     }
 
     @Test
@@ -111,7 +109,6 @@ public class UserServiceTest {
         given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(profileImage);
         given(binaryContentStorage.put(eq(profileId), eq(imageBytes))).willReturn(profileId);
         given(userRepository.save(any(User.class))).willReturn(userWithProfile);
-        given(userStatusRepository.save(any(UserStatus.class))).willReturn(any());
         given(userMapper.toDto(userWithProfile)).willReturn(userWithProfileDto);
 
         // when
@@ -130,12 +127,11 @@ public class UserServiceTest {
     void createUser_NoProfileImage_Success() {
         //given
         UserCreateRequest userCreateRequest = new UserCreateRequest(username, email, password);
-        UserDto userDto = new UserDto(userId, username, email, null, true);
+        UserDto userDto = new UserDto(userId, username, email, null, true, Role.USER);
 
         given(userRepository.existsByEmail(email)).willReturn(false);
         given(userRepository.existsByUsername(username)).willReturn(false);
         given(userRepository.save(any(User.class))).willReturn(user);
-        given(userStatusRepository.save(any(UserStatus.class))).willReturn(any());
         given(userMapper.toDto(user)).willReturn(userDto);
 
         //when
@@ -158,7 +154,7 @@ public class UserServiceTest {
 
         //when, then
         assertThatThrownBy(() -> userService.createUser(userCreateRequest, Optional.empty()))
-            .isInstanceOf(UserEmailAlreadyExistException.class);
+                .isInstanceOf(UserEmailAlreadyExistException.class);
     }
 
     @Test
@@ -172,7 +168,7 @@ public class UserServiceTest {
 
         // when & then
         assertThatThrownBy(() -> userService.createUser(request, Optional.empty()))
-            .isInstanceOf(UserNameAlreadyExistException.class);
+                .isInstanceOf(UserNameAlreadyExistException.class);
     }
 
     @Test
@@ -204,12 +200,12 @@ public class UserServiceTest {
     void updateUser_WithNonExistentId_Fali() {
         //given
         UserUpdateRequest request = new UserUpdateRequest("newName", "newEmail@abc.com",
-            "newPassword");
+                "newPassword");
         given(userRepository.findById(eq(userId))).willReturn(Optional.empty());
 
         //when, then
         assertThatThrownBy(() -> userService.update(userId, request, Optional.empty()))
-            .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class);
 
     }
 
@@ -236,7 +232,7 @@ public class UserServiceTest {
 
         // when & then
         assertThatThrownBy(() -> userService.delete(userId))
-            .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class);
     }
 
 }
