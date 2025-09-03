@@ -68,8 +68,9 @@ public class BasicMessageService implements MessageService {
 
             log.info("[BasicUserService] 메시지 첨부 파일 메타데이터 저장 이벤트 발행 시작 - Thread : {}",
                 currentThread);
-            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(attachment, data);
-            eventPublisher.publishEvent(event);
+
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(attachment, data));
+
             log.info("[BasicUserService] 메시지 첨부 파일 메타데이터 저장 이벤트 발행 완료 - Thread: {}", currentThread);
         }
 
@@ -89,10 +90,8 @@ public class BasicMessageService implements MessageService {
 
         Message savedMessage = messageRepository.save(message);
 
-        MessageCreatedEvent messageCreatedEvent = new MessageCreatedEvent(author, channel,
-            savedMessage.getContent());
-
-        eventPublisher.publishEvent(messageCreatedEvent);
+        eventPublisher.publishEvent(new MessageCreatedEvent(author, channel,
+            savedMessage.getContent()));
 
         log.info(
             "[BasicMessageService] 메시지 생성 성공- id: {}, authorId: {}, channelId: {}, content: {}",

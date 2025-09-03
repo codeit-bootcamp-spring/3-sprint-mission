@@ -12,8 +12,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -24,9 +22,13 @@ public class KafkaProduceRequiredEventListener {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
+    private static final String TOPIC_PREFIX = "discodeit.";
+    private static final String TOPIC_SUFFIX = "Event";
+    private static final String MESSAGE_CREATED = TOPIC_PREFIX + "MessageCreated" + TOPIC_SUFFIX;
+    private static final String ROLE_UPDATED = TOPIC_PREFIX + "RoleUpdated" + TOPIC_SUFFIX;
+    private static final String S3_UPLOAD_FAILED = TOPIC_PREFIX + "S3UploadFailed" + TOPIC_SUFFIX;
 
     @Async("notificationExecutor")
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onMessageCreated(MessageCreatedEvent event) {
 
@@ -35,7 +37,7 @@ public class KafkaProduceRequiredEventListener {
 
             log.debug("[KafkaProduceRequiredEventListener] 메시지 생성 이벤트 발행: {}", payload);
 
-            kafkaTemplate.send("discodeit.MessageCreatedEvent", payload);
+            kafkaTemplate.send(MESSAGE_CREATED, payload);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -43,7 +45,6 @@ public class KafkaProduceRequiredEventListener {
 
     @Async("notificationExecutor")
     @CacheEvict(value = "notificationsByUser", key = "#event.user().id")
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onRoleUpdated(RoleUpdatedEvent event) {
 
@@ -52,7 +53,7 @@ public class KafkaProduceRequiredEventListener {
 
             log.debug("[KafkaProduceRequiredEventListener] 권한 변경 이벤트 발행: {}", payload);
 
-            kafkaTemplate.send("discodeit.RoleUpdatedEvent", payload);
+            kafkaTemplate.send(ROLE_UPDATED, payload);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -67,7 +68,7 @@ public class KafkaProduceRequiredEventListener {
 
             log.debug("[KafkaProduceRequiredEventListener] S3 파일 업로드 실패 이벤트 발행: {}", payload);
 
-            kafkaTemplate.send("discodeit.S3UploadFailedEvent", payload);
+            kafkaTemplate.send(S3_UPLOAD_FAILED, payload);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

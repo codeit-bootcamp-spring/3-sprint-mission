@@ -98,8 +98,7 @@ public class BasicUserService implements UserService {
             // 저장 후 이벤트 발행
             log.info("[BasicUserService] 유저 등록 프로필 메타데이터 저장 이벤트 발행 시작 - Thread : {}",
                 currentThread);
-            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(savedProfile, data);
-            eventPublisher.publishEvent(event);
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(savedProfile, data));
             log.info("[BasicUserService] 유저 등록 프로필 메타데이터 저장 이벤트 발행 완료 - Thread: {}", currentThread);
         }
 
@@ -180,8 +179,9 @@ public class BasicUserService implements UserService {
             BinaryContent updatedProfile = binaryContentRepository.save(profileImage);
             log.info("[BasicUserService] 유저 정보 변경 프로필 메타 데이터 저장 이벤트 발행 시작 - Thread : {}",
                 currentThread);
-            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(updatedProfile, data);
-            eventPublisher.publishEvent(event);
+
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(updatedProfile, data));
+
             log.info("[BasicUserService] 유저 정보 변경 프로필 메타 데이터 저장 이벤트 발행 완료 - Thread: {}",
                 currentThread);
         } else if (profile != null) {
@@ -250,10 +250,8 @@ public class BasicUserService implements UserService {
 
         log.info("[BasicUserService] 사용자 권한 변경 완료: {}", updatedUser);
 
-        RoleUpdatedEvent roleUpdatedEvent = new RoleUpdatedEvent(user, oldRole,
-            request.newRole());
-
-        eventPublisher.publishEvent(roleUpdatedEvent);
+        eventPublisher.publishEvent(new RoleUpdatedEvent(user, oldRole,
+            request.newRole()));
 
         return userMapper.toDto(user);
     }

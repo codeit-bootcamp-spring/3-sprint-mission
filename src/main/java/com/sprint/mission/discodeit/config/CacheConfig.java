@@ -28,6 +28,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @EnableCaching
 public class CacheConfig {
 
+    private static final String PREFIX_CACHE_NAME = "discodeit:";
+
     @Bean
     @Profile("dev")
     public CacheManager devCacheManager() {
@@ -93,7 +95,7 @@ public class CacheConfig {
                     new GenericJackson2JsonRedisSerializer(redisObjectMapper)
                 )
             )
-            .prefixCacheNameWith("discodeit:")
+            .prefixCacheNameWith(PREFIX_CACHE_NAME)
             .entryTtl(Duration.ofSeconds(600))
             .disableCachingNullValues();
     }
