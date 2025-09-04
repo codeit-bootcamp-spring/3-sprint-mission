@@ -56,3 +56,5 @@ HELP.md
 *.env
 *.txt
 .env.bak
+
+kafka-data/*
