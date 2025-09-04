@@ -21,20 +21,20 @@ import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Key;
 import java.time.Instant;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 채널 관련 비즈니스 로직을 처리하는 서비스 클래스입니다.
@@ -55,7 +55,7 @@ public class BasicChannelService implements ChannelService {
     private final ChannelMapper channelMapper;
     private final UserMapper userMapper;
     private final UserService userService;
-
+    private final CacheManager cacheManager;
     /**
      * 공개 채널을 생성합니다.
      *
@@ -66,6 +66,7 @@ public class BasicChannelService implements ChannelService {
     @PreAuthorize("hasAnyRole('ADMIN', 'CHANNEL_MANAGER')")
     @Transactional
     @CachePut(value = "channelById", key = "#result.id()")
+    @CacheEvict(value = "channelByUser", allEntries = true)
     public ChannelDto create(PublicChannelCreateRequest request) {
         log.info(SERVICE_NAME + "공개 채널 생성 시도: {}", request);
 
@@ -88,15 +89,15 @@ public class BasicChannelService implements ChannelService {
      */
     @Override
     @Transactional
-    @CachePut(value = "channelByUser", key = "#result.id()")
-    @CacheEvict(value = "channelById", allEntries = true)
     public ChannelDto create(PrivateChannelCreateRequest request) {
         log.info(SERVICE_NAME + "비공개 채널 생성 요청: {}", request);
 
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         Channel createdChannel = channelRepository.save(channel);
 
-        request.participantIds().forEach(participantId -> {
+        Set<UUID> participantIds = new HashSet<>(request.participantIds());
+
+        participantIds.forEach(participantId -> {
             userRepository.findById(participantId).ifPresentOrElse(
                     user -> {
                         readStatusRepository.save(new ReadStatus(user, createdChannel, true, Instant.MIN));
@@ -106,8 +107,16 @@ public class BasicChannelService implements ChannelService {
                     () -> log.error(SERVICE_NAME + "참가자 ID를 찾을 수 없음: {}", participantId)
             );
         });
-        log.info(SERVICE_NAME + "비공개 채널 생성 완료: ID = {}", createdChannel.getId());
 
+        Cache privateChannelCache = cacheManager.getCache("channelByUser");
+        if (privateChannelCache != null) {
+            participantIds.forEach(privateChannelCache::evict);
+            log.debug(SERVICE_NAME + "channelByUser 캐시 개별 무효화 완료: {}", participantIds);
+        } else {
+            log.warn(SERVICE_NAME + "'channelByUser' 캐시를 찾을 수 없음");
+        }
+
+        log.info(SERVICE_NAME + "비공개 채널 생성 완료: ID = {}", createdChannel.getId());
         return channelMapper.toDto(createdChannel);
     }
 
@@ -189,7 +198,7 @@ public class BasicChannelService implements ChannelService {
     @PreAuthorize("hasAnyRole('ADMIN', 'CHANNEL_MANAGER')")
     @Transactional
     @CachePut(value = "channelById", key = "#channelId")
-    @CacheEvict(value = "channelByUser", key = "#channelId")
+    @CacheEvict(value = "channelByUser", allEntries = true)
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
         log.info(SERVICE_NAME + "채널 수정 요청: ID = {}", channelId);
 
@@ -222,7 +231,11 @@ public class BasicChannelService implements ChannelService {
     @Override
     @PreAuthorize("hasAnyRole('ADMIN', 'CHANNEL_MANAGER')")
     @Transactional
-    @CacheEvict(value = {"channelById", "channelByUser"}, key = "#channelId", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "channelById", key = "#channelId"),
+            @CacheEvict(value = "channelByUser", allEntries = true)
+    })
+
     public void delete(UUID channelId) {
         log.info(SERVICE_NAME + "채널 삭제 시도: ID = {}", channelId);
         Channel channel = channelRepository.findById(channelId)
