@@ -29,21 +29,21 @@ public class KafkaProduceRequiredEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void on(MessageCreatedEvent event) {
         try {
-            log.info(LISTENER_NAME + "MessageCreatedEvent를 Kafka로 발행 시작 - messageId={}", event.message().getId());
+            log.info(LISTENER_NAME + "MessageCreatedEvent를 Kafka로 발행 시작 - messageId={}", event.messageId());
 
             String payload = objectMapper.writeValueAsString(event);
             CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send("discodeit.MessageCreatedEvent", payload);
 
             SendResult<String, String> result = future.get();
             log.info(LISTENER_NAME + "MessageCreatedEvent Kafka 발행 성공 - userId={}, topic={}, partition={}, offset={}",
-                    event.message(),
+                    event.messageId(),
                     result.getRecordMetadata().topic(),
                     result.getRecordMetadata().partition(),
                     result.getRecordMetadata().offset());
 
         } catch (Exception e) {
             log.error(LISTENER_NAME + "MessageCreatedEvent Kafka 발행 실패 - messageId={}",
-                    event.message().getId(), e);
+                    event.messageId(), e);
         }
     }
 

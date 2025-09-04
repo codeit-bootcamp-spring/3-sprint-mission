@@ -45,11 +45,10 @@ public class NotificationRequiredEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async("eventTaskListener")
     public void on(MessageCreatedEvent event) {
-        Message message = event.message();
-        UUID messageId = message.getId();
-        UUID channelId = message.getChannel().getId();
-        String channelName = message.getChannel().getName();
-        UUID authorId = message.getAuthor().getId();
+        UUID messageId = event.messageId();
+        UUID channelId = event.channelId();
+        String channelName = event.channelName();
+        UUID authorId = event.authorId();
 
         log.info(LISTENER_NAME + "메시지 알림 생성 시작 - messageId={}, channelId={}, channelName={}", 
                 messageId, channelId, channelName);
@@ -67,8 +66,10 @@ public class NotificationRequiredEventListener {
                 }
 
                 try {
-                    String title = String.format("%s(#%s)", message.getAuthor().getUsername(), channelName);
-                    Notification notification = new Notification(user, title, message.getContent());
+                    String authorName = user.getUsername();
+
+                    String title = String.format("%s(#%s)", authorName, channelName);
+                    Notification notification = new Notification(user, title, event.content());
 
                     notificationRepository.save(notification);
                     notificationCount++;

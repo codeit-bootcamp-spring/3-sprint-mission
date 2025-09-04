@@ -2,17 +2,19 @@ package com.sprint.mission.discodeit.event.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +41,7 @@ public class NotificationRequiredTopicListener {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
+    private final CacheManager cacheManager;
 
     /**
      * MessageCreatedEvent를 Kafka에서 구독하여 알림을 생성합니다.
@@ -54,32 +57,34 @@ public class NotificationRequiredTopicListener {
             MessageCreatedEvent event = objectMapper.readValue(kafkaEvent, MessageCreatedEvent.class);
             
             // 기존 NotificationRequiredEventListener의 로직을 여기로 이동
-            List<User> users = readStatusRepository.findAllByChannelIdWithUserAndNotificationEnabledTrue(event.message().getChannel().getId())
+            List<User> users = readStatusRepository.findAllByChannelIdWithUserAndNotificationEnabledTrue(event.channelId())
                     .stream()
                     .map(ReadStatus::getUser)
                     .toList();
 
             int notificationCount = 0;
             for (User user : users) {
-                if (user.getId().equals(event.message().getAuthor().getId())) {
-                    continue; // 메시지 작성자는 제외
-                }
+                if (user.getId().equals(event.authorId())) continue; // 메시지 작성자는 제외
 
                 try {
-                    String title = String.format("%s(#%s)", event.message().getAuthor().getUsername(), event.message().getChannel().getName());
-                    Notification notification = new Notification(user, title, event.message().getContent());
+                    String authorName = user.getUsername();
+
+                    String title = String.format("%s(#%s)", authorName, event.channelName());
+                    Notification notification = new Notification(user, title, event.content());
 
                     notificationRepository.save(notification);
+                    Cache cache = cacheManager.getCache("notificationByUser");
+                    if (cache != null) cache.evict(user.getId());
                     notificationCount++;
 
                 } catch (Exception userException) {
                     log.error(LISTENER_NAME + "개별 사용자 알림 생성 실패 - userId={}, messageId={}", 
-                            user.getId(), event.message().getId(), userException);
+                            user.getId(), event.messageId(), userException);
                 }
             }
             
             log.info(LISTENER_NAME + "MessageCreatedEvent 처리 완료 - messageId: {}, notificationCount: {}", 
-                    event.message().getId(), notificationCount);
+                    event.messageId(), notificationCount);
             
         } catch (JsonProcessingException e) {
             log.error(LISTENER_NAME + "MessageCreatedEvent JSON 파싱 실패", e);

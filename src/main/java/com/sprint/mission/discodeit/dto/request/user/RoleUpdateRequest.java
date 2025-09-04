@@ -8,6 +8,6 @@ import java.util.UUID;
 
 public record RoleUpdateRequest(
         @NotNull UUID userId,
-        @NotBlank Role newRole
+        Role newRole
 ) {
 }
