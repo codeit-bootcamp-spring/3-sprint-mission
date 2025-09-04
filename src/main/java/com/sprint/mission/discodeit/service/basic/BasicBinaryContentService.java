@@ -7,22 +7,21 @@ import com.sprint.mission.discodeit.exception.binarycontent.NotFoundBinaryConten
 import com.sprint.mission.discodeit.mapper.struct.BinaryContentStructMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
-
 @Service("basicBinaryContentService")
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class BasicBinaryContentService implements BinaryContentService {
 
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentStructMapper binaryContentMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public BinaryContentResponseDto findById(UUID id) {
         BinaryContent foundBinaryContent = binaryContentRepository.findById(id)
             .orElseThrow(() -> new NotFoundBinaryContentException(id));
@@ -31,6 +30,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BinaryContentResponseDto> findAllByIdIn(List<UUID> ids) {
         return binaryContentRepository.findAllByIdIn(ids).stream()
             .map(binaryContentMapper::toDto)

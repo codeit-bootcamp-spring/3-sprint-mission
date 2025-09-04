@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.event.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
+import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -11,10 +13,13 @@ import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
+import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -30,6 +35,7 @@ public class NotificationRequiredTopicListener {
     private final ObjectMapper objectMapper;
     private final NotificationRepository notificationRepository;
     private final ReadStatusRepository readStatusRepository;
+    private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final CacheManager cacheManager;
     private static final String ROLE_UPDATE_TITLE = "권한이 변경되었습니다.";
@@ -42,14 +48,16 @@ public class NotificationRequiredTopicListener {
         try {
             MessageCreatedEvent event = objectMapper.readValue(kafkaEvent,
                 MessageCreatedEvent.class);
-            User author = event.author();
-            Channel channel = event.channel();
-            String title = getTitle(author, channel);
-            String content = event.content();
+            MessageResponseDto message = event.data();
+
+            UserResponseDto author = message.author();
+            UUID channelId = message.channelId();
+            String title = getTitle(author, channelId);
+            String content = message.content();
 
             // 알림 수신 여부가 true인 채널의 readStatus 조회
             List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelIdAndNotificationEnabled(
-                channel.getId(), true
+                channelId, true
             );
 
             // 캐시 무효화
@@ -58,7 +66,7 @@ public class NotificationRequiredTopicListener {
                 readStatuses.stream()
                     .map(ReadStatus::getUser)
                     .map(User::getId)
-                    .filter(userId -> !userId.equals(author.getId()))
+                    .filter(userId -> !userId.equals(author.id()))
                     .distinct()
                     .forEach(cache::evict);
             }
@@ -146,8 +154,10 @@ public class NotificationRequiredTopicListener {
         }
     }
 
-    private String getTitle(User author, Channel channel) {
-        StringBuilder title = new StringBuilder(author.getUsername()).append(" (#");
+    private String getTitle(UserResponseDto author, UUID channelId) {
+        StringBuilder title = new StringBuilder(author.username()).append(" (#");
+
+        Channel channel = findChannel(channelId);
 
         if (channel.getType().equals(ChannelType.PUBLIC)) {
             title.append(channel.getName());
@@ -157,5 +167,10 @@ public class NotificationRequiredTopicListener {
         title.append(")");
 
         return title.toString();
+    }
+
+    private Channel findChannel(UUID channelId) {
+        return channelRepository.findById(channelId)
+            .orElseThrow(() -> new NotFoundChannelException(channelId));
     }
 }

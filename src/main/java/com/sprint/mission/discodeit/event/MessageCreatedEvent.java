@@ -1,12 +1,9 @@
 package com.sprint.mission.discodeit.event;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 
 public record MessageCreatedEvent(
-    User author,
-    Channel channel,
-    String content
+    MessageResponseDto data
 ) {
 
 }

@@ -104,3 +104,9 @@ async:
       max-size: ${MAX_SIZE:4}
       queue-capacity: ${QUEUE_CAPACITY:100}
       keep-alive: ${KEEP_ALIVE:30}
+
+websocket:
+  executors:
+    core-size: ${MAX_CORE_SIZE:4}
+    max-size: ${MAX_SIZE:8}
+    queue-capacity: ${QUEUE_CAPACITY:100}
