@@ -5,12 +5,18 @@ import com.sprint.mission.discodeit.auth.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.jwt.JwtDto;
 import com.sprint.mission.discodeit.dto.jwt.JwtInformation;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.service.SseService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -26,6 +32,11 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper objectMapper;
     private final JwtTokenProvider tokenProvider;
     private final JwtRegistry jwtRegistry;
+    private final SseService sseService;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
+
+    private static final String EVENT_NAME_USER_UPDATED = "users.updated";
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -67,6 +78,10 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write(objectMapper.writeValueAsString(jwtDto));
 
+                // SSE 전송
+                User user = findUser(userDetails.getId());
+                sseService.broadcast(EVENT_NAME_USER_UPDATED, userMapper.toDto(user));
+
                 log.debug("[JwtLoginSuccessHandler] 응답 전송됨");
             } catch (Exception e) {
                 log.warn("[JwtLoginSuccessHandler] 예외 발생: {}", e.getMessage());
@@ -85,5 +100,10 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 .put("message", "Invalid principal")
                 .toString());
         }
+    }
+
+    private User findUser(UUID userId) {
+        return userRepository.findById(userId)
+            .orElseThrow(() -> new NotFoundUserException(userId));
     }
 }

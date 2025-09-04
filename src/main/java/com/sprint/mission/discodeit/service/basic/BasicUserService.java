@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.mapper.struct.BinaryContentStructMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
+import com.sprint.mission.discodeit.service.SseService;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class BasicUserService implements UserService {
 
+    private final SseService sseService;
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserMapper userMapper;
@@ -51,6 +53,10 @@ public class BasicUserService implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtRegistry jwtRegistry;
     private final ApplicationEventPublisher eventPublisher;
+
+    private static final String EVENT_NAME_USER_CREATED = "users.created";
+    private static final String EVENT_NAME_USER_UPDATED = "users.updated";
+    private static final String EVENT_NAME_USER_DELETED = "users.deleted";
 
     @Override
     @CacheEvict(value = "users", allEntries = true)
@@ -104,10 +110,14 @@ public class BasicUserService implements UserService {
 
         User savedUser = userRepository.save(user);
 
+        UserResponseDto userDto = userMapper.toDto(savedUser);
+        // SSE 전송
+        sendSseEvent(EVENT_NAME_USER_CREATED, userDto);
+
         log.info("[BasicUserService] 사용자 등록 성공 - id: {}, username: {}, email: {}",
             savedUser.getId(), username, email);
 
-        return userMapper.toDto(savedUser);
+        return userDto;
     }
 
     @Override
@@ -206,6 +216,8 @@ public class BasicUserService implements UserService {
         );
         SecurityContextHolder.getContext().setAuthentication(newAuth);
 
+        sendSseEvent(EVENT_NAME_USER_UPDATED, updatedUserDto);
+
         log.info("[BasicUserService] 사용자 수정 성공! id: {}, username: {}, email: {}",
             updatedUser.getId(), updatedUser.getUsername(), updatedUser.getEmail());
 
@@ -230,6 +242,7 @@ public class BasicUserService implements UserService {
             binaryContentRepository.deleteById(user.getProfile().getId());
         }
 
+        sendSseEvent(EVENT_NAME_USER_DELETED, userMapper.toDto(user));
         log.info("[BasicUserService] 사용자 삭제 완료 - userId: {}", id);
     }
 
@@ -250,14 +263,21 @@ public class BasicUserService implements UserService {
 
         log.info("[BasicUserService] 사용자 권한 변경 완료: {}", updatedUser);
 
+        UserResponseDto userDto = userMapper.toDto(updatedUser);
+        sendSseEvent(EVENT_NAME_USER_UPDATED, userDto);
+
         eventPublisher.publishEvent(new RoleUpdatedEvent(user, oldRole,
             request.newRole()));
 
-        return userMapper.toDto(user);
+        return userDto;
     }
 
     private User findUser(UUID id) {
         return userRepository.findById(id)
             .orElseThrow(() -> new NotFoundUserException(id));
+    }
+
+    private void sendSseEvent(String eventName, UserResponseDto userDto) {
+        sseService.broadcast(eventName, userDto);
     }
 }

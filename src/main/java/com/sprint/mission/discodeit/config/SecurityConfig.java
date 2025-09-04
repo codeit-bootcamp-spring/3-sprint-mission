@@ -135,7 +135,6 @@ public class SecurityConfig {
                     .logoutSuccessHandler(
                         new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
                     .addLogoutHandler(jwtLogoutHandler)
-                    .permitAll()
             )
             // 예외 처리 (적절한 권한이 없는 경우)
             .exceptionHandling(ex -> ex

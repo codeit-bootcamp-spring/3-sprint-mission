@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.SseService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -34,11 +35,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class BasicChannelService implements ChannelService {
 
+    private final SseService sseService;
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
     private final ChannelMapper channelMapper;
     private final CacheManager cacheManager;
+
+    private static final String EVENT_NAME_CHANNEL_CREATED = "channels.created";
+    private static final String EVENT_NAME_CHANNEL_UPDATED = "channels.updated";
+    private static final String EVENT_NAME_CHANNEL_DELETED = "channels.deleted";
 
     @Override
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
@@ -63,7 +69,11 @@ public class BasicChannelService implements ChannelService {
         log.info("[BasicChannelService] 공개 채널 생성 성공 - id: {}, name: {}, description: {}",
             savedChannel.getId(), savedChannel.getName(), savedChannel.getDescription());
 
-        return channelMapper.toDto(savedChannel);
+        ChannelResponseDto channelDto = channelMapper.toDto(savedChannel);
+        // SSE 전송
+        sendSseEvent(EVENT_NAME_CHANNEL_CREATED, channelDto);
+
+        return channelDto;
     }
 
     @Override
@@ -96,9 +106,13 @@ public class BasicChannelService implements ChannelService {
         // Private Channel에 참여한 사용자 ID에 대해서만 CacheEvict
         evictCache(privateChannelDto.participantIds());
 
+        ChannelResponseDto channelDto = channelMapper.toDto(createdChannel);
+        // SSE 전송
+        sseService.send(privateChannelDto.participantIds(), EVENT_NAME_CHANNEL_CREATED, channelDto);
+
         log.info("[BasicChannelService] 비공개 채널 생성 성공 id: {}", createdChannel.getId());
 
-        return channelMapper.toDto(createdChannel);
+        return channelDto;
     }
 
     @Override
@@ -148,10 +162,14 @@ public class BasicChannelService implements ChannelService {
 
         Channel updatedChannel = channelRepository.save(channel);
 
+        ChannelResponseDto channelDto = channelMapper.toDto(updatedChannel);
+        // SSE 전송
+        sendSseEvent(EVENT_NAME_CHANNEL_UPDATED, channelDto);
+
         log.info("[BasicChannelService] 공개 채널 수정 성공: id: {}, newName: {}, newDescription: {}",
             updatedChannel.getId(), updatedChannel.getName(), updatedChannel.getDescription());
 
-        return channelMapper.toDto(updatedChannel);
+        return channelDto;
     }
 
     @Override
@@ -166,7 +184,8 @@ public class BasicChannelService implements ChannelService {
         log.info("[BasicChannelService] 삭제할 채널 조회 완료: id: {}", channel.getId());
 
         channelRepository.deleteById(channelId);
-
+        sendSseEvent(EVENT_NAME_CHANNEL_DELETED, channelMapper.toDto(channel));
+        
         log.info("[BasicUserService] 채널 삭제 완료 - channelId: {}", channelId);
     }
 
@@ -187,5 +206,9 @@ public class BasicChannelService implements ChannelService {
                 userCache.evict(id);
             }
         });
+    }
+
+    private void sendSseEvent(String eventName, ChannelResponseDto channelDto) {
+        sseService.broadcast(eventName, channelDto);
     }
 }
