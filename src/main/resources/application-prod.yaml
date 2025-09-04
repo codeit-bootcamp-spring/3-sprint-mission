@@ -11,6 +11,20 @@ spring:
       hibernate:
         format_sql: false
 
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+    listener:
+      missing-topics-fatal: false
+
 logging:
   level:
     com.sprint.mission.discodeit: info
