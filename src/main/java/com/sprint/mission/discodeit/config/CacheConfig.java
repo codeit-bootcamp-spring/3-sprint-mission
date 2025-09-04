@@ -15,6 +15,9 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 @EnableCaching
 public class CacheConfig {
 
+  private static final String CACHE_PREFIX = "discodeit:";
+  private static final long CACHE_TTL_SECONDS = 600;
+
   @Bean
   public RedisCacheConfiguration redisCacheConfiguration(ObjectMapper objectMapper) {
     ObjectMapper redisObjectMapper = objectMapper.copy();
@@ -30,8 +33,8 @@ public class CacheConfig {
                 new GenericJackson2JsonRedisSerializer(redisObjectMapper)
             )
         )
-        .prefixCacheNameWith("discodeit:")
-        .entryTtl(Duration.ofSeconds(600))
+        .prefixCacheNameWith(CACHE_PREFIX)
+        .entryTtl(Duration.ofSeconds(CACHE_TTL_SECONDS))
         .disableCachingNullValues();
   }
 }

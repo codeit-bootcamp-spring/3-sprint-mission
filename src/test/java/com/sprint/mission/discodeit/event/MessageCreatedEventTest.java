@@ -31,7 +31,7 @@ class MessageCreatedEventTest {
   }
 
   @Test
-  void eventShouldContainMessage() {
+  void 이벤트는_메시지를_포함해야_한다() {
     User author = UserFixture.createValidUser();
     Channel channel = ChannelFixture.createPublic();
     Message message = MessageFixture.createCustom("내용", author, channel);

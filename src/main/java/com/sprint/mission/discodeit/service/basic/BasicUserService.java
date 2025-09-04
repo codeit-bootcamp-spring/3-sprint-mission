@@ -151,25 +151,28 @@ public class BasicUserService implements UserService {
   @CacheEvict(value = "users", allEntries = true)
   public UserResponse updateRole(UpdateUserRoleCommand command) {
     return userRepository.findById(command.userId())
-        .map(user -> {
-          var oldRole = user.getRole();
-          if (!oldRole.equals(command.newRole())) {
-            user.updateRole(command.newRole());
-            User savedUser = userRepository.save(user);
-            jwtRegistry.invalidateJwtInformationByUserId(savedUser.getId());
-            applicationEventPublisher.publishEvent(
-                new RoleUpdatedEvent(
-                    savedUser.getId(),
-                    oldRole,
-                    command.newRole(),
-                    savedUser.getUpdatedAt()
-                ));
-            return toUserResponse(savedUser);
-          } else {
-            // 권한이 변경되지 않은 경우 기존 응답 반환
-            return toUserResponse(user);
-          }
-        }).orElseThrow(() -> new UserNotFoundException(command.userId().toString()));
+        .map(user -> updateUserRoleIfChanged(user, command))
+        .orElseThrow(() -> new UserNotFoundException(command.userId().toString()));
+  }
+
+  private UserResponse updateUserRoleIfChanged(User user, UpdateUserRoleCommand command) {
+    var oldRole = user.getRole();
+    if (!oldRole.equals(command.newRole())) {
+      user.updateRole(command.newRole());
+      User savedUser = userRepository.save(user);
+      jwtRegistry.invalidateJwtInformationByUserId(savedUser.getId());
+      applicationEventPublisher.publishEvent(
+          new RoleUpdatedEvent(
+              savedUser.getId(),
+              oldRole,
+              command.newRole(),
+              savedUser.getUpdatedAt()
+          ));
+      return toUserResponse(savedUser);
+    } else {
+      // 권한이 변경되지 않은 경우 기존 응답 반환
+      return toUserResponse(user);
+    }
   }
 
   @Override
