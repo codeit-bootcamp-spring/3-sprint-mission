@@ -1,16 +1,19 @@
 package com.sprint.mission.discodeit.event.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
@@ -29,10 +32,14 @@ public class KafkaProduceRequiredEventListener {
             log.info(LISTENER_NAME + "MessageCreatedEvent를 Kafka로 발행 시작 - messageId={}", event.message().getId());
 
             String payload = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send("discodeit.MessageCreatedEvent", payload);
+            CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send("discodeit.MessageCreatedEvent", payload);
 
-            log.info(LISTENER_NAME + "MessageCreatedEvent Kafka 발행 완료 - messageId={}, topic: discodeit.MessageCreatedEvent",
-                    event.message().getId());
+            SendResult<String, String> result = future.get();
+            log.info(LISTENER_NAME + "MessageCreatedEvent Kafka 발행 성공 - userId={}, topic={}, partition={}, offset={}",
+                    event.message(),
+                    result.getRecordMetadata().topic(),
+                    result.getRecordMetadata().partition(),
+                    result.getRecordMetadata().offset());
 
         } catch (Exception e) {
             log.error(LISTENER_NAME + "MessageCreatedEvent Kafka 발행 실패 - messageId={}",
@@ -47,10 +54,15 @@ public class KafkaProduceRequiredEventListener {
             log.info(LISTENER_NAME + "RoleUpdatedEvent를 Kafka로 발행 시작 - userId={}", event.userId());
 
             String payload = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send("discodeit.RoleUpdatedEvent", payload);
+            CompletableFuture<SendResult<String, String>> future =  kafkaTemplate.send("discodeit.RoleUpdatedEvent", payload);
 
-            log.info(LISTENER_NAME + "RoleUpdatedEvent Kafka 발행 완료 - userId: {}, topic: discodeit.RoleUpdatedEvent",
-                    event.userId());
+            SendResult<String, String> result = future.get();
+
+            log.info(LISTENER_NAME + "RoleUpdatedEvent Kafka 발행 성공 - userId={}, topic={}, partition={}, offset={}",
+                    event.userId(),
+                    result.getRecordMetadata().topic(),
+                    result.getRecordMetadata().partition(),
+                    result.getRecordMetadata().offset());
 
         } catch (Exception e) {
             log.error(LISTENER_NAME + "RoleUpdatedEvent Kafka 발행 실패 - userId: {}", event.userId(), e);
@@ -64,10 +76,14 @@ public class KafkaProduceRequiredEventListener {
             log.info(LISTENER_NAME + "S3UploadFailedEvent를 Kafka로 발행 시작 - requestId: {}", event.requestId());
 
             String payload = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send("discodeit.S3UploadFailedEvent", payload);
+            CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send("discodeit.S3UploadFailedEvent", payload);
 
-            log.info(LISTENER_NAME + "S3UploadFailedEvent Kafka 발행 완료 - requestId: {}, topic: discodeit.S3UploadFailedEvent",
-                    event.requestId());
+            SendResult<String, String> result = future.get();
+            log.info(LISTENER_NAME + "S3UploadFailedEvent Kafka 발행 성공 - requestId={}, topic={}, partition={}, offset={}",
+                    event.requestId(),
+                    result.getRecordMetadata().topic(),
+                    result.getRecordMetadata().partition(),
+                    result.getRecordMetadata().offset());
 
         } catch (Exception e) {
             log.error(LISTENER_NAME + "S3UploadFailedEvent Kafka 발행 실패 - requestId: {}", event.requestId(), e);
