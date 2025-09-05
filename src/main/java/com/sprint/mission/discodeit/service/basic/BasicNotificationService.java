@@ -2,11 +2,13 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
+import com.sprint.mission.discodeit.event.message.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.exception.notification.NotificationForbiddenException;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -16,6 +18,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -29,6 +32,7 @@ public class BasicNotificationService implements NotificationService {
   private final NotificationRepository notificationRepository;
   private final NotificationMapper notificationMapper;
   private final CacheManager cacheManager;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Cacheable(value = "notifications", key = "#receiverId", unless = "#result.isEmpty()")
   @PreAuthorize("principal.userDto.id == #receiverId")
@@ -75,6 +79,10 @@ public class BasicNotificationService implements NotificationService {
         )).toList();
     notificationRepository.saveAll(notifications);
     evictNotificationCache(receiverIds);
+    notifications.forEach(notification -> {
+        eventPublisher.publishEvent(new NotificationCreatedEvent(Set.of(notification.getReceiverId()),notificationMapper.toDto(notification),
+            notification.getCreatedAt()));
+    });
     log.info("새 알림 생성 완료: receiverIds={}", receiverIds);
   }
 

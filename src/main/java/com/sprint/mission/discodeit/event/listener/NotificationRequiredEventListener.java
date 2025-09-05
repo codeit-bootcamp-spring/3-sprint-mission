@@ -14,11 +14,14 @@ import com.sprint.mission.discodeit.service.NotificationService;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import com.sprint.mission.discodeit.service.basic.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
@@ -30,6 +33,7 @@ public class NotificationRequiredEventListener {
   private final ReadStatusRepository readStatusRepository;
   private final ChannelService channelService;
   private final UserRepository userRepository;
+  private final SseService sseService;
 
   @Value("${discodeit.admin.username}")
   private String adminUsername;

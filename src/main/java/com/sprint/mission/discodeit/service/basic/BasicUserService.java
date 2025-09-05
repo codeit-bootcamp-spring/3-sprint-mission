@@ -7,12 +7,14 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.message.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.message.UserEvent;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -76,8 +78,10 @@ public class BasicUserService implements UserService {
     User user = new User(username, email, encodedPassword, nullableProfile);
 
     userRepository.save(user);
+    UserDto userDto = userMapper.toDto(user);
+    eventPublisher.publishEvent(new UserEvent("users.created",userDto,user.getCreatedAt()));
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
-    return userMapper.toDto(user);
+    return userDto;
   }
 
   @Transactional(readOnly = true)
@@ -152,8 +156,10 @@ public class BasicUserService implements UserService {
         .orElse(user.getPassword());
     user.update(newUsername, newEmail, encodedPassword, nullableProfile);
 
+      UserDto dto = userMapper.toDto(user);
+      eventPublisher.publishEvent(new UserEvent("users.updated",dto,user.getUpdatedAt()));
     log.info("사용자 수정 완료: id={}", userId);
-    return userMapper.toDto(user);
+    return dto;
   }
 
   @CacheEvict(value = "users", key = "'all'")
@@ -166,7 +172,9 @@ public class BasicUserService implements UserService {
     if (!userRepository.existsById(userId)) {
       throw UserNotFoundException.withId(userId);
     }
-
+      User user = userRepository.findById(userId).get();
+      UserDto dto = userMapper.toDto(user);
+      eventPublisher.publishEvent(new UserEvent("users.deleted",dto,user.getUpdatedAt()));
     userRepository.deleteById(userId);
     log.info("사용자 삭제 완료: id={}", userId);
   }

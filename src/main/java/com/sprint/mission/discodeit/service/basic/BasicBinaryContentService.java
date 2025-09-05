@@ -4,12 +4,17 @@ import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.event.message.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.message.BinaryContentStatusUpdatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -93,6 +98,9 @@ public class BasicBinaryContentService implements BinaryContentService {
         .orElseThrow(() -> BinaryContentNotFoundException.withId(binaryContentId));
     binaryContent.updateStatus(status);
     binaryContentRepository.save(binaryContent);
-    return binaryContentMapper.toDto(binaryContent);
+    BinaryContentDto dto = binaryContentMapper.toDto(binaryContent);
+    eventPublisher.publishEvent(new BinaryContentStatusUpdatedEvent(dto, binaryContent.getCreatedAt()));
+
+    return dto;
   }
 }

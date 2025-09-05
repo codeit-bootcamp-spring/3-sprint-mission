@@ -16,8 +16,7 @@ public class WebSocketRequiredEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleMessage(MessageCreatedEvent event){
-        String destination = "/sub/channels." + event.getData().id() + ".messages";
+        String destination = "/sub/channels." + event.getData().channelId() + ".messages";
         messagingTemplate.convertAndSend(destination, event.getData());
-
     }
 }

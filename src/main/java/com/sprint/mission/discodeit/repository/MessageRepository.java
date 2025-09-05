@@ -27,5 +27,9 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
       + "ORDER BY m.createdAt DESC LIMIT 1")
   Optional<Instant> findLastMessageAtByChannelId(@Param("channelId") UUID channelId);
 
+    // 특정 BinaryContent가 속한 Message 찾기
+    @Query("select m from Message m join m.attachments a where a.id = :attachmentId")
+    Optional<Message> findByAttachmentId(UUID attachmentId);
+
   void deleteAllByChannelId(UUID channelId);
 }
