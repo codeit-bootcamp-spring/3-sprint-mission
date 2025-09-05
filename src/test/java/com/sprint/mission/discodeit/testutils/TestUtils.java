@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.support;
+package com.sprint.mission.discodeit.testutils;
 
 import java.io.IOException;
 import java.nio.file.Files;

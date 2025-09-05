@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
-import com.sprint.mission.discodeit.support.AuthTestUtils;
+import com.sprint.mission.discodeit.testutils.AuthTestUtils;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
@@ -37,6 +37,14 @@ import org.springframework.test.context.DynamicPropertySource;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(Lifecycle.PER_CLASS)
 class ChannelAcceptanceTest {
+
+  @DynamicPropertySource
+  static void kafkaProperties(DynamicPropertyRegistry registry) {
+    String bootstrapServers = com.sprint.mission.discodeit.testconfig.TestKafkaConfig.kafka.getBootstrapServers();
+    System.out.println(
+        "[ChannelAcceptanceTest] spring.kafka.bootstrap-servers set to: " + bootstrapServers);
+    registry.add("spring.kafka.bootstrap-servers", () -> bootstrapServers);
+  }
 
   @Autowired
   TestRestTemplate restTemplate;

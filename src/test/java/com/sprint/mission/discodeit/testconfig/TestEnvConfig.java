@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.support;
+package com.sprint.mission.discodeit.testconfig;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.context.annotation.Profile;

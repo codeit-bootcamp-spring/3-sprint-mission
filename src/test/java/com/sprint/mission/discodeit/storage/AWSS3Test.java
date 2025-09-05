@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.sprint.mission.discodeit.support.TestEnvConfig;
-import com.sprint.mission.discodeit.support.TestUtils;
+import com.sprint.mission.discodeit.testconfig.TestEnvConfig;
+import com.sprint.mission.discodeit.testutils.TestUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,6 +41,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 
 @Tag("integration")
 @ActiveProfiles("security-test")
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
 class AWSS3Test {

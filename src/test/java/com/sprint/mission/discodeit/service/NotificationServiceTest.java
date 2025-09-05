@@ -6,7 +6,7 @@ import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
-import com.sprint.mission.discodeit.support.RepositoryTest;
+import com.sprint.mission.discodeit.testannotation.RepositoryTest;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

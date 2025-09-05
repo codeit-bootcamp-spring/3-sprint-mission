@@ -7,10 +7,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.sprint.mission.discodeit.assembler.MessageCommandAssembler;
-import com.sprint.mission.discodeit.config.TestSecurityConfig;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.testconfig.TestSecurityConfig;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

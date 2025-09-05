@@ -6,7 +6,7 @@ import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
-import com.sprint.mission.discodeit.support.AuthTestUtils;
+import com.sprint.mission.discodeit.testutils.AuthTestUtils;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;

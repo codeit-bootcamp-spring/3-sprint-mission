@@ -22,9 +22,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 @Tag("integration")
+@ActiveProfiles("security-test")
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("security-test")
 class AuthControllerTest {
 
   @Autowired

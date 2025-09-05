@@ -1,7 +1,8 @@
-package com.sprint.mission.discodeit.support;
+package com.sprint.mission.discodeit.testutils;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.sprint.mission.discodeit.testconfig.TestEnvConfig;
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.UUID;

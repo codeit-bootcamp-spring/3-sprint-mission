@@ -6,12 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.sprint.mission.discodeit.fixture.ChannelFixture;
 import com.sprint.mission.discodeit.fixture.ReadStatusFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
+import com.sprint.mission.discodeit.testannotation.RepositoryTest;
 import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.sprint.mission.discodeit.support.RepositoryTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
