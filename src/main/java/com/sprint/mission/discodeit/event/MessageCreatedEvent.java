@@ -12,18 +12,14 @@ import java.util.UUID;
  * <p>새로운 메시지가 작성되었을 때 알림 전송이나 읽음 상태 업데이트 등의
  * 후속 작업을 위해 이벤트 리스너에게 알리는 데 사용됩니다.</p>
  * 
- * @param messageId 생성된 메시지 엔티티 ID
+ * @param message 생성된 메시지 엔티티 DTO
  * @param occurredAt 이벤트 발생 시간
  * 
  * @author HuInDoL
  * @since 1.0.0
  */
 public record MessageCreatedEvent(
-        UUID messageId,
-        UUID channelId,
-        String channelName,
-        UUID authorId,
-        String content,
+        MessageDto message,
         Instant occurredAt
 ) {
 }

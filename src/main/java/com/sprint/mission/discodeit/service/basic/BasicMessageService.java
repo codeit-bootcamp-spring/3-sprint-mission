@@ -125,7 +125,8 @@ public class BasicMessageService implements MessageService {
         log.info(SERVICE_NAME + "메시지 생성 완료: messageId={}, channelId={}, 첨부파일 개수={}",
                 savedMessage.getId(), channelId, attachments.size());
 
-        MessageCreatedEvent event = new MessageCreatedEvent(message.getId(), channelId, channel.getName(), authorId, content, Instant.now());
+        MessageDto messageDto = messageMapper.toDto(savedMessage);
+        MessageCreatedEvent event = new MessageCreatedEvent(messageDto, Instant.now());
         eventPublisher.publishEvent(event);
 
         return messageMapper.toDto(savedMessage);

@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -31,6 +33,7 @@ public class NotificationRequiredEventListener {
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
     private final CacheManager notificationCacheManager;
+    private final ChannelRepository channelRepository;
 
     /**
      * 메시지 생성 이벤트를 처리하여 관련 사용자들에게 알림을 생성합니다.
@@ -45,10 +48,12 @@ public class NotificationRequiredEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async("eventTaskListener")
     public void on(MessageCreatedEvent event) {
-        UUID messageId = event.messageId();
-        UUID channelId = event.channelId();
-        String channelName = event.channelName();
-        UUID authorId = event.authorId();
+        UUID messageId = event.message().id();
+        UUID channelId = event.message().channelId();
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new ChannelNotFoundException("channelId={}", channelId));
+        String channelName = channel.getName();
+        UUID authorId = event.message().author().id();
 
         log.info(LISTENER_NAME + "메시지 알림 생성 시작 - messageId={}, channelId={}, channelName={}", 
                 messageId, channelId, channelName);
@@ -69,7 +74,7 @@ public class NotificationRequiredEventListener {
                     String authorName = user.getUsername();
 
                     String title = String.format("%s(#%s)", authorName, channelName);
-                    Notification notification = new Notification(user, title, event.content());
+                    Notification notification = new Notification(user, title, event.message().content());
 
                     notificationRepository.save(notification);
                     notificationCount++;

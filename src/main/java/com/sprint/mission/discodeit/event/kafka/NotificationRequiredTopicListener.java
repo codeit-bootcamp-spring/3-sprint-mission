@@ -2,12 +2,15 @@ package com.sprint.mission.discodeit.event.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Kafka 토픽에서 이벤트를 구독하여 알림을 생성하는 리스너입니다.
@@ -42,6 +46,7 @@ public class NotificationRequiredTopicListener {
     private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
     private final CacheManager cacheManager;
+    private final ChannelRepository channelRepository;
 
     /**
      * MessageCreatedEvent를 Kafka에서 구독하여 알림을 생성합니다.
@@ -57,20 +62,24 @@ public class NotificationRequiredTopicListener {
             MessageCreatedEvent event = objectMapper.readValue(kafkaEvent, MessageCreatedEvent.class);
             
             // 기존 NotificationRequiredEventListener의 로직을 여기로 이동
-            List<User> users = readStatusRepository.findAllByChannelIdWithUserAndNotificationEnabledTrue(event.channelId())
+            List<User> users = readStatusRepository.findAllByChannelIdWithUserAndNotificationEnabledTrue(event.message().channelId())
                     .stream()
                     .map(ReadStatus::getUser)
                     .toList();
 
             int notificationCount = 0;
             for (User user : users) {
-                if (user.getId().equals(event.authorId())) continue; // 메시지 작성자는 제외
+                if (user.getId().equals(event.message().author().id())) continue; // 메시지 작성자는 제외
 
                 try {
                     String authorName = user.getUsername();
+                    UUID channelId = event.message().channelId();
+                    Channel channel = channelRepository.findById(channelId)
+                            .orElseThrow(() -> new ChannelNotFoundException("channelId: " + channelId));
+                    String channelName = channel.getName();
 
-                    String title = String.format("%s(#%s)", authorName, event.channelName());
-                    Notification notification = new Notification(user, title, event.content());
+                    String title = String.format("%s(#%s)", authorName, channelName);
+                    Notification notification = new Notification(user, title, event.message().content());
 
                     notificationRepository.save(notification);
                     Cache cache = cacheManager.getCache("notificationByUser");
@@ -79,12 +88,12 @@ public class NotificationRequiredTopicListener {
 
                 } catch (Exception userException) {
                     log.error(LISTENER_NAME + "개별 사용자 알림 생성 실패 - userId={}, messageId={}", 
-                            user.getId(), event.messageId(), userException);
+                            user.getId(), event.message().id(), userException);
                 }
             }
             
             log.info(LISTENER_NAME + "MessageCreatedEvent 처리 완료 - messageId: {}, notificationCount: {}", 
-                    event.messageId(), notificationCount);
+                    event.message().id(), notificationCount);
             
         } catch (JsonProcessingException e) {
             log.error(LISTENER_NAME + "MessageCreatedEvent JSON 파싱 실패", e);
