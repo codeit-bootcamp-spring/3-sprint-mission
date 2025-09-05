@@ -2,35 +2,22 @@ version: '3.8'
 
 # 서비스 정의
 services:
-  postgres:
-    image: postgres:17-alpine
-    container_name: discodeit-db
-    restart: unless-stopped
-
-    # 환경변수 설정
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
-      TZ: "Asia/Seoul"
-
-    # 포트 매핑
+  reverse-proxy:
+    image: nginx:1.27-alpine
+    container_name: nginx-reverse-proxy
     ports:
-      - "${POSTGRES_PORT}:5432"
-
-    # 볼륨 마운트 (데이터 영속화)
+      - "3000:80"   # 외부 접근 허용
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./src/main/resources/static:/usr/share/nginx/html:ro   # 정적 리소스
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - appnet
 
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-  
-  app:
+  # ------ Spring Boot Backend ------
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
@@ -40,32 +27,129 @@ services:
     # 환경 변수 설정
     environment:
       # STORAGE 설정
-      STORAGE_TYPE: ${STORAGE_TYPE:-local}
+      STORAGE_TYPE: ${STORAGE_TYPE}
       STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH}
-
-      # AWS S3 설정
-      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
-      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
-      AWS_S3_REGION: ${AWS_S3_REGION}
-      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
-      AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION:-600}
-
+      # DB 설정
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       DISCODEIT_STORAGE_LOCAL_ROOT_PATH: /app/binary_content_storage
-
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      # Kafka (내부 리스너: broker: 29092)
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: broker:29092
+    expose:
+      - "8080"  # reverse-proxy만 접근
     depends_on:
-      postgres:
+      db:
         condition: service_healthy
-
+      redis:
+        condition: service_started
+      broker:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - appnet
     volumes:
       - app_data:/app/binary_content_storage
 
-    ports:
-      - "${APP_PORT}:80"
+  # ------ PostgreSQL (내부 전용) ------
+  db:
+    image: postgres:17-alpine
+    container_name: discodeit-db
+    restart: unless-stopped
+    # 환경변수 설정
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+      TZ: "Asia/Seoul"
+    # 볼륨 마운트 (데이터 영속화)
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    expose:
+      - "5432"
+    networks:
+      - appnet
+
+  # ------ Redis (내부 전용) ------
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    command: [ "redis-server", "--appendonly", "yes" ]
+    volumes:
+      - redis_data:/data
+    expose:
+      - "6379"
+    networks:
+      - appnet
+
+  # ------ Redis (내부 전용) ------
+  # ------ Kafka (KRaft, internal only) ------
+  broker:
+    image: apache/kafka:latest
+    container_name: kafka-broker
+    hostname: broker
+    environment:
+      # KRaft 단일 노드 설정
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+
+      # 리스너/포트
+      # - 내부 브로커 통신: PLAINTEXT://broker:29092
+      # - 컨트롤러(메타데이터): CONTROLLER://broker:29093
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      # 컨트롤러 쿼럼 (단일 노드)
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+
+      # 레플리케이션/트랜잭션 최소치 (단일 노드에 맞춤)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+      # 기타
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      # 임의 고유 클러스터 ID (예시)
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    volumes:
+      - broker_data:/var/lib/kafka/data
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-topics.sh --bootstrap-server broker:29092 --list >/dev/null 2>&1" ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    networks:
+      - appnet
+    # 외부 노출 금지 (ports 없음)
+    expose:
+      - "29092"
+
+networks:
+  appnet:
+    driver: bridge
 
 volumes:
-  postgres_data:
+  db_data:
   app_data:
+  broker_data:
+  redis_data:
+

@@ -14,10 +14,10 @@ spring:
       enable-statistics: true
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -110,3 +110,12 @@ websocket:
     core-size: ${MAX_CORE_SIZE:4}
     max-size: ${MAX_SIZE:8}
     queue-capacity: ${QUEUE_CAPACITY:100}
+
+# JWT 설정
+jwt:
+  access-token:
+    secret: 5mB1dfWfn8ygrUjaY31ZFhZi6KzfX_7uOj6ae9IubC0
+    exp: 900000 # 15분
+  refresh-token:
+    secret: lqmmP_B1CxhpP4g-z5y5Rco34uYbY0is4nJRdYRRtHk
+    exp: 3600000 # 1시간
