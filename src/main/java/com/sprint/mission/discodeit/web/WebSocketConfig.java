@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.websocket;
+package com.sprint.mission.discodeit.web;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

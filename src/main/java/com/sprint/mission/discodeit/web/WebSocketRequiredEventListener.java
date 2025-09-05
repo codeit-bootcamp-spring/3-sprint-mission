@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.websocket;
+package com.sprint.mission.discodeit.web;
 
 import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
