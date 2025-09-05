@@ -28,6 +28,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -119,6 +120,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+                        // SockJs/WebSocket 핸드셰이크 경로 CSRF 예외
+                        .ignoringRequestMatchers(new AntPathRequestMatcher("/ws/**"))
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
@@ -130,6 +133,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/logout").permitAll()
                         .requestMatchers("/api/auth/refresh").permitAll()
                         .requestMatchers("/api/auth/role").hasRole("ADMIN")
+                        // 웹소켓 핸드셰이크/정보/폴백 경로 허용
+                        .requestMatchers("/ws/**").permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .anyRequest().authenticated()
