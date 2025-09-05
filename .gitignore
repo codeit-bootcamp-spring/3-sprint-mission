@@ -90,3 +90,4 @@ HOWTO-PHASE-*.md
 allow-cloudflare-ipv6.sh
 allow-cloudflare.sh
 src/main/java/com/sprint/mission/discodeit/coding/test/Main.java
+coding/test/Main.java

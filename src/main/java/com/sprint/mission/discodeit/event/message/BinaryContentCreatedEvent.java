@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.event.message;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import java.time.Instant;
 import lombok.Getter;
 
+import java.time.Instant;
+
 @Getter
-public class BinaryContentCreatedEvent extends CreatedEvent<BinaryContent> {
+public class
+BinaryContentCreatedEvent extends CreatedEvent<BinaryContent> {
 
   private final byte[] bytes;
 
