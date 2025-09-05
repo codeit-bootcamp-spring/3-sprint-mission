@@ -1,23 +1,23 @@
 package com.sprint.mission.discodeit.acceptance;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.fixture.AcceptanceFixture;
+import com.sprint.mission.discodeit.testconfig.AbstractTestKafkaConfig;
 import com.sprint.mission.discodeit.testutils.AuthTestUtils;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -27,24 +27,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 
 @Tag("integration")
 @ActiveProfiles("test")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@TestInstance(Lifecycle.PER_CLASS)
-class ChannelAcceptanceTest {
-
-  @DynamicPropertySource
-  static void kafkaProperties(DynamicPropertyRegistry registry) {
-    String bootstrapServers = com.sprint.mission.discodeit.testconfig.TestKafkaConfig.kafka.getBootstrapServers();
-    System.out.println(
-        "[ChannelAcceptanceTest] spring.kafka.bootstrap-servers set to: " + bootstrapServers);
-    registry.add("spring.kafka.bootstrap-servers", () -> bootstrapServers);
-  }
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+@TestMethodOrder(OrderAnnotation.class)
+@TestInstance(PER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+class ChannelAcceptanceTest extends AbstractTestKafkaConfig {
 
   @Autowired
   TestRestTemplate restTemplate;
@@ -58,15 +50,6 @@ class ChannelAcceptanceTest {
 
   private String username;
   private final String TEST_PASSWORD = "pwd123";
-
-  @TempDir
-  static Path tempDir;
-
-  @DynamicPropertySource
-  static void overrideProperties(DynamicPropertyRegistry registry) {
-    registry.add("discodeit.repository.file-directory.folder",
-        () -> tempDir.toAbsolutePath().toString());
-  }
 
   @Test
   @Order(1)

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.sprint.mission.discodeit.testconfig.AbstractTestKafkaConfig;
 import jakarta.servlet.http.Cookie;
 import java.util.Objects;
 import org.junit.jupiter.api.Tag;
@@ -19,7 +20,7 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("security-test")
 @SpringBootTest
 @AutoConfigureMockMvc
-class SecurityConfigTest {
+class SecurityConfigTest extends AbstractTestKafkaConfig {
 
   @Autowired
   private MockMvc mockMvc;

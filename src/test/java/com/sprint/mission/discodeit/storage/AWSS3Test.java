@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
+import com.sprint.mission.discodeit.testconfig.AbstractTestKafkaConfig;
 import com.sprint.mission.discodeit.testconfig.TestEnvConfig;
 import com.sprint.mission.discodeit.testutils.TestUtils;
 import java.io.IOException;
@@ -41,10 +43,9 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 
 @Tag("integration")
 @ActiveProfiles("security-test")
-
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(PER_CLASS)
 @SpringBootTest
-class AWSS3Test {
+class AWSS3Test extends AbstractTestKafkaConfig {
 
   private static final Logger log = LoggerFactory.getLogger(AWSS3Test.class);
   private S3Client s3Client;
