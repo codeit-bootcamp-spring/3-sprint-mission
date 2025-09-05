@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
@@ -9,9 +10,13 @@ import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -24,6 +29,19 @@ public class BasicNotificationService implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
+    private final RedisCacheManager cacheManager;
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public NotificationDto create(User user, String title, String content) {
+        Notification notification = new Notification(user, title, content);
+        notificationRepository.save(notification);
+
+        Cache cache = cacheManager.getCache("notificationByUser");
+        if (cache != null) cache.evict(user.getId());
+
+        return notificationMapper.toDto(notification);
+    }
 
     @Override
     @Cacheable(value = "notificationByUser", key = "#receiverId")

@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.event.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.request.NotificationDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -10,10 +11,13 @@ import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.NotificationService;
+import com.sprint.mission.discodeit.web.sse.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -47,6 +51,9 @@ public class NotificationRequiredTopicListener {
     private final ReadStatusRepository readStatusRepository;
     private final CacheManager cacheManager;
     private final ChannelRepository channelRepository;
+    private final SseService sseService;
+    private final NotificationMapper notificationMapper;
+    private final NotificationService notificationService;
 
     /**
      * MessageCreatedEvent를 Kafka에서 구독하여 알림을 생성합니다.
@@ -67,24 +74,24 @@ public class NotificationRequiredTopicListener {
                     .map(ReadStatus::getUser)
                     .toList();
 
-            int notificationCount = 0;
             for (User user : users) {
                 if (user.getId().equals(event.message().author().id())) continue; // 메시지 작성자는 제외
 
                 try {
-                    String authorName = user.getUsername();
+                    String authorName = event.message().author().username();
                     UUID channelId = event.message().channelId();
                     Channel channel = channelRepository.findById(channelId)
                             .orElseThrow(() -> new ChannelNotFoundException("channelId: " + channelId));
                     String channelName = channel.getName();
+                    UUID userId = user.getId();
 
                     String title = String.format("%s(#%s)", authorName, channelName);
-                    Notification notification = new Notification(user, title, event.message().content());
 
-                    notificationRepository.save(notification);
+                    NotificationDto notificationDto = notificationService.create(user, title, event.message().content());
+                    sseService.send(List.of(userId), "MessageCreatedEvent", notificationDto);
+
                     Cache cache = cacheManager.getCache("notificationByUser");
                     if (cache != null) cache.evict(user.getId());
-                    notificationCount++;
 
                 } catch (Exception userException) {
                     log.error(LISTENER_NAME + "개별 사용자 알림 생성 실패 - userId={}, messageId={}", 
@@ -92,8 +99,8 @@ public class NotificationRequiredTopicListener {
                 }
             }
             
-            log.info(LISTENER_NAME + "MessageCreatedEvent 처리 완료 - messageId: {}, notificationCount: {}", 
-                    event.message().id(), notificationCount);
+            log.info(LISTENER_NAME + "MessageCreatedEvent 처리 완료 - messageId: {}",
+                    event.message().id());
             
         } catch (JsonProcessingException e) {
             log.error(LISTENER_NAME + "MessageCreatedEvent JSON 파싱 실패", e);
@@ -125,11 +132,14 @@ public class NotificationRequiredTopicListener {
             try {
                 User targetUser = userRepository.findById(event.userId())
                         .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + event.userId()));
-                
-                Notification notification = new Notification(targetUser, title, content);
-                notificationRepository.save(notification);
-                
-                log.info(LISTENER_NAME + "RoleUpdatedEvent 알림 생성 완료 - userId: {}, oldRole: {}, newRole: {}", 
+
+                NotificationDto notificationDto = notificationService.create(targetUser, title, content);
+                sseService.send(List.of(event.userId()), "RoleUpdatedEvent", notificationDto);
+
+                Cache cache = cacheManager.getCache("notificationByUser");
+                if (cache != null) cache.evict(targetUser.getId());
+
+                log.info(LISTENER_NAME + "RoleUpdatedEvent 알림 생성 완료 - userId: {}, oldRole: {}, newRole: {}",
                         event.userId(), event.oldRole(), event.newRole());
                 
             } catch (Exception userException) {
@@ -173,21 +183,19 @@ public class NotificationRequiredTopicListener {
                     event.reason(),
                     event.occurredAt());
 
-            int notificationCount = 0;
-            for (User adminUser : adminUsers) {
+            for (User user : adminUsers) {
                 try {
-                    Notification notification = new Notification(adminUser, title, content);
-                    notificationRepository.save(notification);
-                    notificationCount++;
-                    
+                    NotificationDto notificationDto = notificationService.create(user, title, content);
+                    log.info(LISTENER_NAME + "관리자에게 알림 생성 성공 - adminId: {}, requestId: {}, notification: {}",
+                            user.getId(), event.requestId(), notificationDto);
                 } catch (Exception adminException) {
-                    log.error(LISTENER_NAME + "관리자 알림 생성 실패 - adminId: {}, requestId: {}", 
-                            adminUser.getId(), event.requestId(), adminException);
+                    log.error(LISTENER_NAME + "관리자에게 알림 생성 실패 - adminId: {}, requestId: {}",
+                            user.getId(), event.requestId(), adminException);
                 }
             }
             
-            log.info(LISTENER_NAME + "S3UploadFailedEvent 처리 완료 - requestId: {}, adminCount: {}, notificationCount: {}", 
-                    event.requestId(), adminUsers.size(), notificationCount);
+            log.info(LISTENER_NAME + "S3UploadFailedEvent 처리 완료 - requestId: {}, adminCount: {}",
+                    event.requestId(), adminUsers.size());
             
         } catch (JsonProcessingException e) {
             log.error(LISTENER_NAME + "S3UploadFailedEvent JSON 파싱 실패", e);
