@@ -66,8 +66,8 @@ public class BasicChannelService implements ChannelService {
         channelRepository.save(channel);
 
         List<ReadStatus> readStatuses = userRepository.findAllById(request.participantIds()).stream()
-            .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
-            .toList();
+                .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
+                .toList();
         readStatusRepository.saveAll(readStatuses);
         evictCache(request.participantIds());
 
@@ -83,8 +83,8 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelDto find(UUID channelId) {
         return channelRepository.findById(channelId)
-            .map(channelMapper::toDto)
-            .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
+                .map(channelMapper::toDto)
+                .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
     }
 
     @Cacheable(value = "channels", key = "#userId", unless = "#result.isEmpty()")
@@ -92,14 +92,14 @@ public class BasicChannelService implements ChannelService {
     @Override
     public List<ChannelDto> findAllByUserId(UUID userId) {
         List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
-            .map(ReadStatus::getChannel)
-            .map(Channel::getId)
-            .toList();
+                .map(ReadStatus::getChannel)
+                .map(Channel::getId)
+                .toList();
 
         return channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC, mySubscribedChannelIds)
-            .stream()
-            .map(channelMapper::toDto)
-            .toList();
+                .stream()
+                .map(channelMapper::toDto)
+                .toList();
     }
 
     @CacheEvict(value = "channels", allEntries = true)
@@ -109,7 +109,7 @@ public class BasicChannelService implements ChannelService {
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
         log.debug("채널 수정 시작: id={}, request={}", channelId, request);
         Channel channel = channelRepository.findById(channelId)
-            .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
+                .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
 
         if (channel.getType().equals(ChannelType.PRIVATE)) {
             throw PrivateChannelUpdateException.forChannel(channelId);
