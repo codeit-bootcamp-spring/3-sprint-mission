@@ -29,7 +29,7 @@ public class SseMessageRepository {
      */
     public record SseMessage(UUID id, String eventName, Object data, Instant at) {}
 
-    private final ConcurrentLinkedDeque<UUID> eventIds = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<UUID> eventIdQueue = new ConcurrentLinkedDeque<>();
     private final Map<UUID, SseMessage> messages = new ConcurrentHashMap<>();
     private static final int MAX_BUFFER = 200;
 
@@ -44,9 +44,9 @@ public class SseMessageRepository {
         UUID id = UUID.randomUUID();
         SseMessage message = new SseMessage(id, eventName, data, Instant.now());
         messages.put(id, message);
-        eventIds.addLast(id);
-        while (eventIds.size() > MAX_BUFFER) {
-            UUID old = eventIds.pollFirst();
+        eventIdQueue.addLast(id);
+        while (eventIdQueue.size() > MAX_BUFFER) {
+            UUID old = eventIdQueue.pollFirst();
             if (old != null) messages.remove(old);
         }
 
@@ -63,7 +63,7 @@ public class SseMessageRepository {
         if (lastEventId == null) return List.of();
         List<SseMessage> result = new ArrayList<>();
         boolean pass = false;
-        for (UUID id : eventIds) {
+        for (UUID id : eventIdQueue) {
             if (!pass) {
                 if (id.equals(lastEventId)) pass = true;
                 continue;
