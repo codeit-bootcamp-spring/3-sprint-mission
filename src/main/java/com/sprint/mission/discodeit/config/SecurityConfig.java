@@ -132,13 +132,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/logout").permitAll()
                         .requestMatchers("/api/auth/refresh").permitAll()
+                        .requestMatchers("/api/notifications/**").permitAll()
                         .requestMatchers("/api/auth/role").hasRole("ADMIN")
 
                         // 웹소켓 핸드셰이크/정보/폴백 경로 허용
                         .requestMatchers("/ws/**").permitAll()
 
                         // SSE
-                        .requestMatchers("/api/sse").permitAll()
+                        .requestMatchers("/api/sse/**").authenticated()
 
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .anyRequest().authenticated()

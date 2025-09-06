@@ -43,7 +43,7 @@ public class SseService {
      */
     public SseEmitter connect(UUID receiverId, UUID lastEventId) {
 
-        SseEmitter emitter = new SseEmitter(6000L);
+        SseEmitter emitter = new SseEmitter(1000L * 60 * 30); // 30m
         emitterRepo.add(receiverId, emitter);
 
         emitter.onCompletion(() -> emitterRepo.remove(receiverId, emitter));

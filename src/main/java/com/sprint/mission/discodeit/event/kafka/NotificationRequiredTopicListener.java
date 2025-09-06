@@ -4,24 +4,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.request.NotificationDto;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
-import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
-import com.sprint.mission.discodeit.web.sse.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,13 +40,9 @@ public class NotificationRequiredTopicListener {
     private static final String LISTENER_NAME = "[NotificationRequiredTopicListener] ";
     
     private final ObjectMapper objectMapper;
-    private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
-    private final CacheManager cacheManager;
     private final ChannelRepository channelRepository;
-    private final SseService sseService;
-    private final NotificationMapper notificationMapper;
     private final NotificationService notificationService;
 
     /**
@@ -88,13 +78,10 @@ public class NotificationRequiredTopicListener {
                     String title = String.format("%s(#%s)", authorName, channelName);
 
                     NotificationDto notificationDto = notificationService.create(user, title, event.message().content());
-                    sseService.send(List.of(userId), "MessageCreatedEvent", notificationDto);
-
-                    Cache cache = cacheManager.getCache("notificationByUser");
-                    if (cache != null) cache.evict(user.getId());
-
+                    log.info(LISTENER_NAME + "수신자에게 알림 생성 완료 - userId= {}, messageId= {}, notification= {}",
+                            userId, event.message().id(), notificationDto);
                 } catch (Exception userException) {
-                    log.error(LISTENER_NAME + "개별 사용자 알림 생성 실패 - userId={}, messageId={}", 
+                    log.error(LISTENER_NAME + "개별 사용자 알림 생성 실패 - userId= {}, messageId= {}",
                             user.getId(), event.message().id(), userException);
                 }
             }
@@ -134,14 +121,9 @@ public class NotificationRequiredTopicListener {
                         .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + event.userId()));
 
                 NotificationDto notificationDto = notificationService.create(targetUser, title, content);
-                sseService.send(List.of(event.userId()), "RoleUpdatedEvent", notificationDto);
 
-                Cache cache = cacheManager.getCache("notificationByUser");
-                if (cache != null) cache.evict(targetUser.getId());
-
-                log.info(LISTENER_NAME + "RoleUpdatedEvent 알림 생성 완료 - userId: {}, oldRole: {}, newRole: {}",
-                        event.userId(), event.oldRole(), event.newRole());
-                
+                log.info(LISTENER_NAME + "RoleUpdatedEvent 알림 생성 완료 - userId: {}, oldRole: {}, newRole: {}, notification: {}",
+                        event.userId(), event.oldRole(), event.newRole(),  notificationDto);
             } catch (Exception userException) {
                 log.error(LISTENER_NAME + "RoleUpdatedEvent 알림 생성 실패 - userId: {}, oldRole: {}, newRole: {}", 
                         event.userId(), event.oldRole(), event.newRole(), userException);

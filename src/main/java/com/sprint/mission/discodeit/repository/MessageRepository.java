@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository;
 import com.sprint.mission.discodeit.entity.Message;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
@@ -34,4 +35,14 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     Optional<Message> findTop1ByChannelIdOrderByCreatedAtDesc(UUID channelId);
 
     void deleteAllByChannelId(UUID channelId);
+
+    @Query("SELECT DISTINCT m.author.id " +
+            "FROM Message m JOIN m.attachments a " +
+            "WHERE a.id =:attachmentId")
+    List<UUID> findAuthorIdsByAttachmentId(UUID attachmentId);
+
+    @Query("SELECT DISTINCT m.channel.id " +
+            "FROM Message m JOIN m.attachments a " +
+            "WHERE a.id = :attachmentId")
+    List<UUID> findChannelIdsByAttachmentId(UUID attachmentId);
 }

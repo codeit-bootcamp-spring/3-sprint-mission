@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.security.jwt;
 
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.web.sse.SseService;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,6 +49,8 @@ public class JwtLogoutHandler implements LogoutHandler {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
     private final CacheManager cacheManager;
+    private final BasicUserService userService;
+    private final SseService sseService;
 
     /**
      * 핸들러 초기화를 수행합니다.
@@ -93,6 +98,13 @@ public class JwtLogoutHandler implements LogoutHandler {
 
                             // 2. 사용자 관련 캐시 무효화
                             evictUserCache(userId);
+
+                            try {
+                                var userDto = userService.find(userId);
+                                sseService.broadcast("users.updated", UserDto.withOnlineStatus(userDto, false));
+                            } catch (Exception e) {
+                                log.warn(HANDLER_NAME + "로그아웃 SSE 브로드캐스트 실패 - userId={}", userId, e);
+                            }
 
                         } else {
                             log.warn(HANDLER_NAME + "Refresh Token에 해당하는 사용자를 찾을 수 없음: {}", refreshToken);

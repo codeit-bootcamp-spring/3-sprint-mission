@@ -8,17 +8,22 @@ import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.web.sse.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 바이너리 콘텐츠 관련 비즈니스 로직을 제공하는 서비스 클래스입니다.
@@ -31,11 +36,14 @@ import java.util.UUID;
 @Service
 public class BasicBinaryContentService implements BinaryContentService {
 
+    private static final String SERVICE_NAME = "[BinaryContentService] ";
+
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
     private final ApplicationEventPublisher eventPublisher;
-
-    private static final String SERVICE_NAME = "[BinaryContentService] ";
+    private final MessageRepository messageRepository;
+    private final ReadStatusRepository readStatusRepository;
+    private final SseService sseService;
 
     /**
      * 바이너리 콘텐츠를 생성하고 저장소에 저장합니다.
@@ -151,11 +159,17 @@ public class BasicBinaryContentService implements BinaryContentService {
                 });
 
         // 기존 엔티티의 상태만 업데이트
-        try {
-            binaryContent.updateStatus(status);
-        } catch (Exception e) {
-            log.error(SERVICE_NAME + "상태 업데이트 실패: id={}, status={}", binaryContentId, status, e);
-        }
+        binaryContent.updateStatus(status);
+
+        Set<UUID> receiverIds = getReceiverIds(binaryContent.getId());
+
+
+        BinaryContentDto binaryContentDto = binaryContentMapper.toDto(binaryContent);
+
+        if (!receiverIds.isEmpty()) {
+                sseAfterCommit(receiverIds, "binaryContents.updated", binaryContentDto);
+            }
+
 
         // 더티 체킹으로 자동 업데이트되긴 하지만, 코드 가독성을 위해 추가
         BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
@@ -164,5 +178,32 @@ public class BasicBinaryContentService implements BinaryContentService {
                 binaryContentId, status);
 
         return binaryContentMapper.toDto(savedBinaryContent);
+    }
+
+    private void sseAfterCommit(Collection<UUID> receiverIds, String eventName, Object dto) {
+
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() { sseService.send(receiverIds, eventName, dto); }
+            });
+        } else {
+            sseService.send(receiverIds, eventName, dto);
+        }
+    }
+
+    private Set<UUID> getReceiverIds(UUID attachmentId) {
+        Set<UUID> receiverIds = new HashSet<>();
+
+        List<UUID> authorIds = messageRepository.findAuthorIdsByAttachmentId(attachmentId);
+        receiverIds.addAll(authorIds);
+
+        List<UUID> channelIds = messageRepository.findChannelIdsByAttachmentId(attachmentId);
+        for (UUID channelId : channelIds) {
+            readStatusRepository.findAllByChannelIdWithUserAndNotificationEnabledTrue(channelId)
+                    .forEach(rs -> receiverIds.add(rs.getUser().getId()));
+        }
+
+        return receiverIds;
     }
 }

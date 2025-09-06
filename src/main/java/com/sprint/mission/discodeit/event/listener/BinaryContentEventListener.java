@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import com.sprint.mission.discodeit.web.sse.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -110,9 +111,6 @@ public class BinaryContentEventListener {
             } catch (Exception statusException) {
                 log.error(LISTENER_NAME + "실패 상태 업데이트 실패 - id={}, status=FAIL", id, statusException);
             }
-
-            // TODO: 실패한 경우의 처리 로직을 추가할 수 있습니다.
-            // 예: 재시도 큐에 추가, 알림 발송, 메트릭 수집 등
         }
     }
 }

@@ -19,6 +19,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.web.sse.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -32,6 +33,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Instant;
 import java.util.*;
@@ -56,6 +59,8 @@ public class BasicChannelService implements ChannelService {
     private final UserMapper userMapper;
     private final UserService userService;
     private final CacheManager cacheManager;
+    private final SseService sseService;
+
     /**
      * 공개 채널을 생성합니다.
      *
@@ -78,7 +83,10 @@ public class BasicChannelService implements ChannelService {
         log.info(SERVICE_NAME + "공개 채널 생성 완료: ID = {}", savedChannel.getId());
         log.info(SERVICE_NAME + "공개 채널 이름: {}", name);
 
-        return channelMapper.toDto(savedChannel);
+        ChannelDto channelDto = channelMapper.toDto(savedChannel);
+        sseService.broadcast("channels.created", channelDto);
+
+        return channelDto;
     }
 
     /**
@@ -117,7 +125,11 @@ public class BasicChannelService implements ChannelService {
         }
 
         log.info(SERVICE_NAME + "비공개 채널 생성 완료: ID = {}", createdChannel.getId());
-        return channelMapper.toDto(createdChannel);
+
+        ChannelDto channelDto = channelMapper.toDto(createdChannel);
+        sseAfterCommit(participantIds, "channels.created", channelDto);
+
+        return channelDto;
     }
 
     /**
@@ -219,7 +231,10 @@ public class BasicChannelService implements ChannelService {
         channelRepository.save(channel);
 
         log.info(SERVICE_NAME + "채널 수정 완료: ID = {}", channelId);
-        return channelMapper.toDto(channel);
+        ChannelDto channelDto = channelMapper.toDto(channel);
+        sseService.broadcast("channels.updated", channelDto);
+
+        return channelDto;
     }
 
     /**
@@ -249,5 +264,18 @@ public class BasicChannelService implements ChannelService {
         channelRepository.deleteById(channelId);
 
         log.info(SERVICE_NAME + "채널 삭제 완료: ID = {}", channelId);
+
+        ChannelDto channelDto = channelMapper.toDto(channel);
+        sseService.broadcast("channels.deleted", channelDto);
+    }
+
+    private void sseAfterCommit(Collection<UUID> receiverIds, String eventName, Object dto) {
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override public void afterCommit() { sseService.send(receiverIds, eventName, dto); }
+            });
+        } else {
+            sseService.send(receiverIds, eventName, dto);
+        }
     }
 }
