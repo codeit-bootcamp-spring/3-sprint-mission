@@ -68,6 +68,9 @@ management:
       enabled: true
     os:
       enabled: true
+  observations:
+    annotations:
+      enabled: true
 
 info:
   app:

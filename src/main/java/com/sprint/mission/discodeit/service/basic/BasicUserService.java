@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.user.UserEmailAlreadyExistException;
 import com.sprint.mission.discodeit.exception.user.UserNameAlreadyExistException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -14,9 +15,9 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,9 +36,9 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserMapper userMapper;
-    private final BinaryContentStorage binaryContentStorage;
     private final MessageRepository messageRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     @Transactional
@@ -65,7 +66,8 @@ public class BasicUserService implements UserService {
                 .map(req -> {
                     BinaryContent newFile = binaryContentRepository.save(
                             new BinaryContent(req.fileName(), req.size(), req.contentType()));
-                    binaryContentStorage.put(newFile.getId(), req.bytes());
+                    applicationEventPublisher.publishEvent(
+                            new BinaryContentCreatedEvent(newFile.getId(), req.bytes()));
                     return newFile;
                 })
                 .orElse(null);
@@ -125,7 +127,8 @@ public class BasicUserService implements UserService {
                 .map(req -> {
                     BinaryContent newFile = binaryContentRepository.save(
                             new BinaryContent(req.fileName(), req.size(), req.contentType()));
-                    binaryContentStorage.put(newFile.getId(), req.bytes());
+                    applicationEventPublisher.publishEvent(
+                            new BinaryContentCreatedEvent(newFile.getId(), req.bytes()));
                     log.info("프로필 이미지 저장 완료 - 파일 ID: {}", newFile.getId());
                     return newFile;
                 })

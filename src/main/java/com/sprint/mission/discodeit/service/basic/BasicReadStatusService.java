@@ -15,13 +15,14 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,13 +40,13 @@ public class BasicReadStatusService implements ReadStatusService {
         UUID channelId = request.channelId();
 
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> UserNotFoundException.withId(userId));
+                .orElseThrow(() -> UserNotFoundException.withId(userId));
 
         Channel channel = channelRepository.findById(channelId)
-            .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
+                .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
 
         Optional<ReadStatus> existing = readStatusRepository
-            .findByUserIdAndChannelId(userId, channelId);
+                .findByUserIdAndChannelId(userId, channelId);
         if (existing.isPresent()) {
             throw ReadStatusAlreadyExistException.withUserIdAndChannelId(userId, channelId);
         }
@@ -59,14 +60,14 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     public Optional<ReadStatusDto> findById(UUID id) {
         return readStatusRepository.findById(id)
-            .map(readStatusMapper::toDto);
+                .map(readStatusMapper::toDto);
     }
 
     @Override
     public List<ReadStatusDto> findAllByUserId(UUID userId) {
         return readStatusRepository.findAllByUserId(userId).stream()
-            .map(readStatusMapper::toDto)
-            .toList();
+                .map(readStatusMapper::toDto)
+                .toList();
     }
 
     @Override
@@ -74,9 +75,9 @@ public class BasicReadStatusService implements ReadStatusService {
     public ReadStatusDto update(UUID id, ReadStatusUpdateRequest request) {
         Instant newLastReadAt = request.newLastReadAt();
         ReadStatus readStatus = readStatusRepository.findById(id)
-            .orElseThrow(() -> ReadStatusNotFoundException.withId(id));
+                .orElseThrow(() -> ReadStatusNotFoundException.withId(id));
 
-        readStatus.updateLastReadAt(newLastReadAt);
+        readStatus.updateLastReadAt(newLastReadAt, request.newNotificationEnabled());
         ReadStatus updatedReadStatus = readStatusRepository.save(readStatus);
         return readStatusMapper.toDto(updatedReadStatus);
     }
