@@ -29,6 +29,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final ApplicationEventPublisher applicationEventPublisher;
+  private final com.sprint.mission.discodeit.service.SseService sseService;
 
   @Override
   public BinaryContentResponse create(BinaryContentData binaryContentData) {
@@ -90,8 +91,19 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     entity.updateStatus(status);
     BinaryContent updated = binaryContentRepository.save(entity);
+    BinaryContentResponse response = BinaryContentResponse.from(updated);
 
-    return BinaryContentResponse.from(updated);
+    // TODO: 파일 소유자 ID 추출
+    UUID ownerId = null;
+    if (ownerId != null) {
+      sseService.send(
+          List.of(ownerId),
+          "binaryContents.updated",
+          response
+      );
+    }
+
+    return response;
   }
 
   @Override

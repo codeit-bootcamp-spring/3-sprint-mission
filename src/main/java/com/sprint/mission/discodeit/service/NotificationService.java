@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.response.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
@@ -18,12 +20,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationService {
 
   private final NotificationRepository notificationRepository;
+  private final SseService sseService;
 
   @Transactional
   @CacheEvict(value = "notifications", key = "#receiver.id")
   public Notification create(User receiver, String title, String content) {
     Notification notification = Notification.create(receiver, title, content);
-    return notificationRepository.save(notification);
+    Notification saved = notificationRepository.save(notification);
+
+    sseService.send(
+        List.of(receiver.getId()),
+        "notifications.created",
+        NotificationDto.from(saved)
+    );
+    return saved;
   }
 
   @Transactional(readOnly = true)
@@ -38,7 +48,7 @@ public class NotificationService {
     Notification notification = notificationRepository.findById(notificationId)
         .orElseThrow(() -> new NotificationNotFoundException(notificationId.toString()));
     if (!notification.getReceiver().getId().equals(receiverId)) {
-      throw new com.sprint.mission.discodeit.exception.DiscodeitException(
+      throw new DiscodeitException(
           ErrorCode.NOTIFICATION_PERMISSION_DENIED,
           "알림 삭제 권한이 없습니다.");
     }
