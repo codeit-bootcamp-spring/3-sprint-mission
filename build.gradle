@@ -72,6 +72,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     // websocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    // security-messaging
+    implementation 'org.springframework.security:spring-security-messaging'
 }
 
 tasks.named('test') {

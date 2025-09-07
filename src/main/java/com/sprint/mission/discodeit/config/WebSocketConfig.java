@@ -1,13 +1,20 @@
 package com.sprint.mission.discodeit.config;
 
-import com.sprint.mission.discodeit.websocket.interceptor.WebSocketInterceptor;
+import com.sprint.mission.discodeit.entity.enums.Role;
+import com.sprint.mission.discodeit.websocket.interceptor.JwtAuthenticationChannelInterceptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.simp.config.TaskExecutorRegistration;
+import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.messaging.access.intercept.AuthorizationChannelInterceptor;
+import org.springframework.security.messaging.access.intercept.MessageMatcherDelegatingAuthorizationManager;
+import org.springframework.security.messaging.context.SecurityContextChannelInterceptor;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -16,9 +23,9 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
-public class WebSockerConfig implements WebSocketMessageBrokerConfigurer {
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final WebSocketInterceptor webSocketInterceptor;
+    private final JwtAuthenticationChannelInterceptor jwtAuthenticationChannelInterceptor;
 
     @Value("${websocket.executors.core-size}")
     private int MAX_CORE_SIZE;
@@ -77,7 +84,11 @@ public class WebSockerConfig implements WebSocketMessageBrokerConfigurer {
 
         setTaskExecutorRegistration(registration);
 
-        registration.interceptors(webSocketInterceptor);
+        registration.interceptors(
+            jwtAuthenticationChannelInterceptor,
+            new SecurityContextChannelInterceptor(),
+            authorizationChannelInterceptor()
+        );
 
         log.debug("[WebSocketConfig] 클라이언트 인바운드 채널 설정 완료");
     }
@@ -94,7 +105,7 @@ public class WebSockerConfig implements WebSocketMessageBrokerConfigurer {
 
         setTaskExecutorRegistration(registration);
 
-        registration.interceptors(webSocketInterceptor);
+        registration.interceptors(jwtAuthenticationChannelInterceptor);
 
         log.debug("[WebSocketConfig] 클라이언트 아웃바운드 채널 설정 완료");
     }
@@ -104,5 +115,30 @@ public class WebSockerConfig implements WebSocketMessageBrokerConfigurer {
             .corePoolSize(MAX_CORE_SIZE)
             .maxPoolSize(MAX_POOL_SIZE)
             .queueCapacity(MAX_QUEUE_CAPACITY);
+    }
+
+    /**
+     * 메시지 매칭 기반 인가 정책 정의
+     * <p>
+     * CONNECT, HEARTBEAT, UNSUBSCRIBE, DISCONNECT 등은 허용(permitAll) 발행(/pub/**) 및 구독(/sub/**)은
+     * ROLE_USER 필요 - 그 외는 명시적으로 거부
+     */
+    private AuthorizationChannelInterceptor authorizationChannelInterceptor() {
+        AuthorizationManager<Message<?>> manager =
+            MessageMatcherDelegatingAuthorizationManager.builder()
+                .simpTypeMatchers(
+                    SimpMessageType.CONNECT,
+                    SimpMessageType.HEARTBEAT,
+                    SimpMessageType.DISCONNECT,
+                    SimpMessageType.UNSUBSCRIBE
+                ).permitAll()
+
+                .simpDestMatchers("/pub/**").hasRole(Role.USER.name())
+                .simpSubscribeDestMatchers("/sub/**").hasRole(Role.USER.name())
+
+                .anyMessage().denyAll()
+                .build();
+
+        return new AuthorizationChannelInterceptor(manager);
     }
 }
