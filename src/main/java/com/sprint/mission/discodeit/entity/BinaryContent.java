@@ -23,7 +23,7 @@ public class BinaryContent extends BaseUpdatableEntity {
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private BinaryContentStatus status;
+    private BinaryContentStatus status = BinaryContentStatus.PROCESSING;
 
     public BinaryContent(String fileName, Long size, String contentType) {
         this.fileName = fileName;
