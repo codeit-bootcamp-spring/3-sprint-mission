@@ -29,6 +29,34 @@ spring:
       client:
         instance:
           name: discodeit
+  cache:
+    type: redis
+    cache-names:
+      - channels
+      - notifications
+      - users
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
+    redis:
+      enable-statistics: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 admin:
   email: admin@abc.com
@@ -67,6 +95,9 @@ management:
     java:
       enabled: true
     os:
+      enabled: true
+  observations:
+    annotations:
       enabled: true
 
 info:

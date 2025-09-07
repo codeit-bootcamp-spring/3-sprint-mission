@@ -9,9 +9,11 @@ CREATE TABLE binary_contents
 (
     id           UUID PRIMARY KEY,
     created_at   TIMESTAMPTZ  NOT NULL,
+    updated_at   TIMESTAMP WITH TIME ZONE,
     file_name    VARCHAR(255) NOT NULL,
     size         BIGINT       NOT NULL,
-    content_type VARCHAR(100) NOT NULL
+    content_type VARCHAR(100) NOT NULL,
+    status       VARCHAR(20)  NOT NULL CHECK (status IN ('PROCESSING', 'SUCCESS', 'FAIL'))
 );
 
 CREATE TABLE users
@@ -48,12 +50,13 @@ CREATE TABLE messages
 
 CREATE TABLE read_statuses
 (
-    id           UUID PRIMARY KEY,
-    created_at   TIMESTAMPTZ NOT NULL,
-    updated_at   TIMESTAMPTZ,
-    user_id      UUID        NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    channel_id   UUID        NOT NULL REFERENCES channels (id) ON DELETE CASCADE,
-    last_read_at TIMESTAMPTZ NOT NULL,
+    id                   UUID PRIMARY KEY,
+    created_at           TIMESTAMPTZ NOT NULL,
+    updated_at           TIMESTAMPTZ,
+    user_id              UUID        NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    channel_id           UUID        NOT NULL REFERENCES channels (id) ON DELETE CASCADE,
+    last_read_at         TIMESTAMPTZ NOT NULL,
+    notification_enabled boolean     NOT NULL,
     UNIQUE (user_id, channel_id)
 );
 
@@ -62,4 +65,14 @@ CREATE TABLE message_attachments
     message_id    UUID REFERENCES messages (id) ON DELETE CASCADE,
     attachment_id UUID REFERENCES binary_contents (id) ON DELETE CASCADE,
     PRIMARY KEY (message_id, attachment_id)
+);
+
+CREATE TABLE notifications
+(
+    id          uuid PRIMARY KEY,
+    created_at  timestamp with time zone NOT NULL,
+    updated_at  timestamp with time zone,
+    receiver_id uuid                     NOT NULL,
+    title       varchar(255)             NOT NULL,
+    content     text                     NOT NULL
 );

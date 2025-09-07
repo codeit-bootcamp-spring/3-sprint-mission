@@ -19,6 +19,10 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +40,9 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
     private final ChannelMapper channelMapper;
+    private final CacheManager cacheManager;
 
+    @CacheEvict(value = "channels", allEntries = true)
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     @Transactional
@@ -70,11 +76,12 @@ public class BasicChannelService implements ChannelService {
                     createdChannel.getCreatedAt());
             readStatusRepository.save(readStatus);
         }
-
+        evictChannelsForUsers(request.participantIds());
         Channel newChannel = channelRepository.save(channel);
         return channelMapper.toDto(newChannel);
     }
 
+    @Cacheable(value = "channels", key = "#userId", unless = "#result.isEmpty()")
     @Override
     @Transactional(readOnly = true)
     public List<ChannelDto> findAllByUserId(UUID userId) {
@@ -94,6 +101,7 @@ public class BasicChannelService implements ChannelService {
                 .toList();
     }
 
+    @CacheEvict(value = "channels", allEntries = true)
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     @Transactional
@@ -118,6 +126,7 @@ public class BasicChannelService implements ChannelService {
         return channelMapper.toDto(updatedChannel);
     }
 
+    @CacheEvict(value = "channels", allEntries = true)
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     @Transactional
@@ -132,5 +141,13 @@ public class BasicChannelService implements ChannelService {
         messageRepository.deleteByChannelId(channelId);
         readStatusRepository.deleteByChannelId(channelId);
         channelRepository.deleteById(channelId);
+    }
+
+    private void evictChannelsForUsers(List<UUID> userIds) {
+        Cache cache = cacheManager.getCache("channels");
+        if (cache == null) return;
+        for (UUID id : userIds) {
+            cache.evict(id);
+        }
     }
 }
