@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.config.custom.CacheWrapper;
 import com.sprint.mission.discodeit.dto.data.BinaryContentData;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -21,7 +22,6 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserRoleCommand;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -114,8 +114,9 @@ public class BasicUserService implements UserService {
   @Override
   @Transactional(readOnly = true)
   @Cacheable("users")
-  public List<UserResponse> findAll() {
-    return userRepository.findAll().stream().map(this::toUserResponse).toList();
+  public CacheWrapper findAll() {
+    var dtos = userRepository.findAll().stream().map(this::toUserResponse).toList();
+    return new CacheWrapper(dtos);
   }
 
   @Override

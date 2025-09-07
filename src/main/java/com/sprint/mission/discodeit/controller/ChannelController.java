@@ -1,9 +1,17 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.ChannelApi;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.ChannelResponse;
+import com.sprint.mission.discodeit.service.ChannelService;
+import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,17 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.sprint.mission.discodeit.controller.api.ChannelApi;
-import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.response.ChannelResponse;
-import com.sprint.mission.discodeit.service.ChannelService;
-
-import io.swagger.v3.oas.annotations.Parameter;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
@@ -53,7 +50,10 @@ public class ChannelController implements ChannelApi {
 
   @GetMapping
   public ResponseEntity<List<ChannelResponse>> findAllByUser(@Parameter UUID userId) {
-    return ResponseEntity.ok(channelService.findAllByUserId(userId));
+    var wrapper = channelService.findAllByUserId(userId);
+    @SuppressWarnings("unchecked")
+    List<ChannelResponse> channels = (List<ChannelResponse>) wrapper.getData();
+    return ResponseEntity.ok(channels);
   }
 
   @PatchMapping("/{channelId}")

@@ -25,8 +25,9 @@ public class NotificationController implements NotificationApi {
   @GetMapping
   public ResponseEntity<List<NotificationDto>> findAll(Authentication authentication) {
     DiscodeitUserDetails details = (DiscodeitUserDetails) authentication.getPrincipal();
-    var notifications = notificationService.findAllByReceiverId(details.getUser().id());
-    var dtos = notifications.stream().map(NotificationDto::from).toList();
+    var wrapper = notificationService.findAllByReceiverId(details.getUser().id());
+    @SuppressWarnings("unchecked")
+    var dtos = (List<NotificationDto>) wrapper.cached;
     return ResponseEntity.ok(dtos);
   }
 

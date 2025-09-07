@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.config;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
+import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
+import com.sprint.mission.discodeit.config.custom.RecordSupportingTypeResolver;
 import java.time.Duration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -21,11 +23,12 @@ public class CacheConfig {
   @Bean
   public RedisCacheConfiguration redisCacheConfiguration(ObjectMapper objectMapper) {
     ObjectMapper redisObjectMapper = objectMapper.copy();
-    redisObjectMapper.activateDefaultTyping(
-        LaissezFaireSubTypeValidator.instance,
-        ObjectMapper.DefaultTyping.NON_FINAL_AND_ENUMS,
-        As.PROPERTY
-    );
+    RecordSupportingTypeResolver typeResolver =
+        new RecordSupportingTypeResolver(DefaultTyping.NON_FINAL,
+            redisObjectMapper.getPolymorphicTypeValidator());
+    StdTypeResolverBuilder initializedResolver = typeResolver.init(JsonTypeInfo.Id.CLASS, null);
+    initializedResolver = initializedResolver.inclusion(JsonTypeInfo.As.PROPERTY);
+    redisObjectMapper.setDefaultTyping(initializedResolver);
 
     return RedisCacheConfiguration.defaultCacheConfig()
         .serializeValuesWith(

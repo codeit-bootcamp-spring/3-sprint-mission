@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.config.custom.CacheWrapper;
 import com.sprint.mission.discodeit.dto.response.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.User;
@@ -8,7 +9,6 @@ import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -36,8 +36,12 @@ public class NotificationService {
 
   @Transactional(readOnly = true)
   @Cacheable(value = "notifications", key = "#receiverId")
-  public List<Notification> findAllByReceiverId(UUID receiverId) {
-    return notificationRepository.findAllByReceiverId(receiverId);
+  public CacheWrapper findAllByReceiverId(UUID receiverId) {
+    var dtos = notificationRepository.findAllByReceiverId(receiverId)
+        .stream()
+        .map(NotificationDto::from)
+        .toList();
+    return new CacheWrapper(dtos);
   }
 
   @Transactional

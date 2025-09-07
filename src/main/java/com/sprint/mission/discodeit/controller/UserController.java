@@ -64,7 +64,9 @@ public class UserController implements UserApi {
 
   @GetMapping
   public ResponseEntity<List<UserResponse>> findAll() {
-    List<UserResponse> users = userService.findAll();
+    var wrapper = userService.findAll();
+    @SuppressWarnings("unchecked")
+    List<UserResponse> users = (List<UserResponse>) wrapper.getData();
     return ResponseEntity.ok(users);
   }
 

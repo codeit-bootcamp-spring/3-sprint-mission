@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.assembler.ChannelAssembler;
+import com.sprint.mission.discodeit.config.custom.CacheWrapper;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
@@ -81,10 +82,11 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional(readOnly = true)
   @Cacheable(value = "channels", key = "#userId")
-  public List<ChannelResponse> findAllByUserId(UUID userId) {
-    return channelRepository.findAllByUserId(userId).stream()
+  public CacheWrapper findAllByUserId(UUID userId) {
+    var dtos = channelRepository.findAllByUserId(userId).stream()
         .map(channelAssembler::toResponse)
         .toList();
+    return new CacheWrapper(dtos);
   }
 
   @Override
