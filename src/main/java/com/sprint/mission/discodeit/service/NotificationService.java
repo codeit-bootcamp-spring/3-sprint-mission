@@ -8,6 +8,10 @@ import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundE
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +26,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
+    private final CaffeineCacheManager cacheManager;
 
     @Transactional
     public void create(Set<UUID> receiverIds, String title, String content) {
@@ -35,8 +40,10 @@ public class NotificationService {
                         content
                 )).toList();
         notificationRepository.saveAll(notifications);
+        evictNotificationCache(receiverIds);
     }
 
+    @Cacheable(value = "notifications", key = "#receiverId", unless = "#result.isEmpty()")
     @PreAuthorize("principal.userDto.id == #receiverId")
     @Transactional(readOnly = true)
     public List<NotificationDto> findAllByReceiverId(UUID receiverId) {
@@ -46,6 +53,7 @@ public class NotificationService {
                 .toList();
     }
 
+    @CacheEvict(value = "notifications", key = "#receiverId")
     @PreAuthorize("principal.userDto.id == #receiverId")
     @Transactional
     public void delete(UUID notificationId, UUID receiverId) {
@@ -57,4 +65,11 @@ public class NotificationService {
         notificationRepository.delete(notification);
     }
 
+    private void evictNotificationCache(Set<UUID> receiverIds) {
+        Cache cache = cacheManager.getCache("notifications");
+        if (cache == null) return;
+        for (UUID id : receiverIds) {
+            cache.evict(id);
+        }
+    }
 }

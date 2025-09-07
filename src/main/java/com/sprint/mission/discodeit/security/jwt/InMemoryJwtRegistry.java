@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.security.jwt;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.Map;
@@ -21,6 +22,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     private final int maxActiveJwtCount;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @CacheEvict(value = "users", key = "'all'")
     @Override
     public void registerJwtInformation(JwtInformation info) {
         final UUID userId = info.userDto().id();
@@ -35,6 +37,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
     }
 
 
+    @CacheEvict(value = "users", key = "'all'")
     @Override
     public void invalidateJwtInformationByUserId(UUID userId) {
         origin.computeIfPresent(userId, (id, queue) -> {

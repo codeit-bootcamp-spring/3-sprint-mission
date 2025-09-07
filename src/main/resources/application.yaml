@@ -29,6 +29,17 @@ spring:
       client:
         instance:
           name: discodeit
+  cache:
+    type: caffeine
+    cache-names:
+      - channels
+      - notifications
+      - users
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
 
 admin:
   email: admin@abc.com

@@ -17,6 +17,8 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
@@ -40,6 +42,7 @@ public class BasicUserService implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    @CacheEvict(value = "users", key = "'all'")
     @Override
     @Transactional
     public UserDto createUser(UserCreateRequest userRequest,
@@ -87,6 +90,7 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> UserNotFoundException.withId(userId));
     }
 
+    @Cacheable(value = "users", key = "'all'", unless = "#result.isEmpty()")
     @Override
     @Transactional(readOnly = true)
     public List<UserDto> findAll() {
@@ -95,6 +99,7 @@ public class BasicUserService implements UserService {
                 .toList();
     }
 
+    @CacheEvict(value = "users", key = "'all'")
     @PreAuthorize("principal.userId == #userId")
     @Override
     @Transactional
@@ -140,6 +145,7 @@ public class BasicUserService implements UserService {
         return userMapper.toDto(updatedUser);
     }
 
+    @CacheEvict(value = "users", key = "'all'")
     @PreAuthorize("principal.userId == #userId")
     @Override
     @Transactional
