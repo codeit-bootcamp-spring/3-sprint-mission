@@ -11,7 +11,7 @@ services:
   ##################################################################
   postgres:
     image: postgres:17-alpine
-    container_name: discodeit-db
+#    container_name: discodeit-db
     restart: unless-stopped
     env_file:
       - .env
@@ -29,7 +29,7 @@ services:
   ##################################################################
   redis:
     image: redis:7.2-alpine
-    container_name: discodeit-redis
+#    container_name: discodeit-redis
     restart: unless-stopped
     # 외부 노출 금지: ports 없음
     volumes:
@@ -42,7 +42,7 @@ services:
   broker:
     image: apache/kafka:latest
     hostname: broker
-    container_name: discodeit-kafka
+#    container_name: discodeit-kafka
     restart: unless-stopped
     # 외부 노출 금지: ports 없음
     environment:
@@ -67,7 +67,7 @@ services:
   ##################################################################
   app:
     build: .
-    container_name: discodeit-app
+#    container_name: discodeit-app
     restart: unless-stopped
     # 외부 노출 금지: ports 제거
     volumes:
@@ -90,6 +90,10 @@ services:
       - postgres
       - redis
       - broker
+    deploy:
+      mode: replicated
+      replicas: 3
+      endpoint_mode: dnsrr # <- Nginx가 여러 IP를 직접 인식하도록
 
   ##################################################################
   # Reverse Proxy (외부 유일 진입점: 3000 → 컨테이너 80)
@@ -98,7 +102,7 @@ services:
     build:
       context: .
       dockerfile: ./nginx/Dockerfile
-    container_name: discodeit-nginx
+#    container_name: discodeit-nginx
     depends_on:
       - app
     ports:
