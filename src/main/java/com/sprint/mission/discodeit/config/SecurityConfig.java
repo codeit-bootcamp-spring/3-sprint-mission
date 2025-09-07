@@ -121,7 +121,10 @@ public class SecurityConfig {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
                         // SockJs/WebSocket 핸드셰이크 경로 CSRF 예외
-                        .ignoringRequestMatchers(new AntPathRequestMatcher("/ws/**"))
+                        .ignoringRequestMatchers(
+                                new AntPathRequestMatcher("/ws"),
+                                new AntPathRequestMatcher("/ws/**")
+                        )
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
@@ -136,7 +139,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/role").hasRole("ADMIN")
 
                         // 웹소켓 핸드셰이크/정보/폴백 경로 허용
-                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers( "/ws", "/ws/**").permitAll()
 
                         // SSE
                         .requestMatchers("/api/sse/**").authenticated()

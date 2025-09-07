@@ -57,14 +57,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     String username = jwtTokenProvider.getUsernameFromToken(token);
 
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    UserDetails user = userDetailsService.loadUserByUsername(username);
 
                     // 사용자 정보를 담은 토큰 인증 토큰 생성
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(
-                                    userDetails,
+                                    user,
                                     null,
-                                    userDetails.getAuthorities());
+                                    user.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
                     // 인증 객체에 현재 요청(request) 정보 추가

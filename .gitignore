@@ -121,3 +121,5 @@ Desktop.ini        # Windows
 
 ### Lombok 관련 캐시 ###
 *.lombok.log
+
+data/
