@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.service;
 
 
+import com.sprint.mission.discodeit.dto.response.SseMessage;
 import com.sprint.mission.discodeit.repository.SseEmitterRepository;
 import com.sprint.mission.discodeit.repository.SseMessageRepository;
-import com.sprint.mission.discodeit.sse.SseMessage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,8 @@ public class SseService {
     UUID eventId = UUID.randomUUID();
     messageRepository.save(eventId, eventName, data);
     for (UUID receiverId : receiverIds) {
-      List<SseEmitter> emitters = emitterRepository.get(receiverId);
+      List<SseEmitter> emitters = new ArrayList<>(emitterRepository.get(receiverId));
+      List<SseEmitter> toRemove = new ArrayList<>();
       for (SseEmitter emitter : emitters) {
         try {
           emitter.send(SseEmitter.event()
@@ -62,8 +64,11 @@ public class SseService {
               .name(eventName)
               .data(data));
         } catch (IOException ex) {
-          emitterRepository.remove(receiverId, emitter);
+          toRemove.add(emitter);
         }
+      }
+      for (SseEmitter emitter : toRemove) {
+        emitterRepository.remove(receiverId, emitter);
       }
     }
   }
@@ -72,7 +77,8 @@ public class SseService {
     UUID eventId = UUID.randomUUID();
     messageRepository.save(eventId, eventName, data);
     emitterRepository.getAll().forEach((receiverId, emitters) -> {
-      for (SseEmitter emitter : emitters) {
+      List<SseEmitter> copy = new ArrayList<>(emitters);
+      for (SseEmitter emitter : copy) {
         try {
           emitter.send(SseEmitter.event()
               .id(eventId.toString())

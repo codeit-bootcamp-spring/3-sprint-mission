@@ -10,20 +10,27 @@ import com.sprint.mission.discodeit.event.ChannelUpdatedEvent;
 import com.sprint.mission.discodeit.event.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.event.UserCreatedEvent;
 import com.sprint.mission.discodeit.event.UserDeletedEvent;
+import com.sprint.mission.discodeit.event.UserOnlineStatusChangedEvent;
 import com.sprint.mission.discodeit.event.UserUpdatedEvent;
 import com.sprint.mission.discodeit.service.SseService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SseDomainEventListener {
 
   private final SseService sseService;
+  private final BasicUserService basicUserService;
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void on(NotificationCreatedEvent event) {
@@ -47,6 +54,13 @@ public class SseDomainEventListener {
     dispatchChannel("channels.deleted", event.channel());
   }
 
+  @Async("eventTaskExecutor")
+  @EventListener
+  public void on(UserOnlineStatusChangedEvent event) {
+    UserResponse userResponse = basicUserService.findById(event.userId());
+    sseService.broadcast("users.updated", userResponse);
+  }
+
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void on(UserCreatedEvent event) {
     sseService.broadcast("users.created", event.user());
@@ -64,7 +78,6 @@ public class SseDomainEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void on(BinaryContentStatusUpdatedEvent event) {
-    // Owner information is not available from BinaryContentResponse; broadcast for now.
     sseService.broadcast("binaryContents.updated", event.content());
   }
 

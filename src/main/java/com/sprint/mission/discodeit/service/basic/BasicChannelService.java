@@ -115,23 +115,14 @@ public class BasicChannelService implements ChannelService {
   public ChannelResponse delete(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(channelId.toString()));
-
-    // 해당 채널의 메시지 ID 목록 조회
     List<UUID> messageIds = messageRepository.findMessageIdsByChannelId(channelId);
+    ChannelResponse response = channelAssembler.toResponse(channel);
 
-    // 첨부파일 먼저 삭제
     messageAttachmentRepository.deleteByMessageIds(messageIds);
-
-    // 메시지 삭제
     messageRepository.deleteByChannelId(channelId);
-
-    // 읽음 상태 삭제
     readStatusRepository.deleteByChannelId(channelId);
-
-    // 채널 삭제
     channelRepository.deleteById(channelId);
 
-    ChannelResponse response = channelAssembler.toResponse(channel);
     eventPublisher.publishEvent(new ChannelDeletedEvent(response));
     return response;
   }
