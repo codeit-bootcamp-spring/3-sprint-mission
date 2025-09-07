@@ -46,8 +46,8 @@ WORKDIR /app
 # 1단계에서 생성된 JAR 파일만 복사
 COPY --from=builder /app/build/libs/*.jar ./app.jar
 
-# 컨테이너 외부에서 접근할 포트
-EXPOSE 80
+# 컨테이너 외부에서 접근할 포트 (앱은 8080에서 리슨)
+EXPOSE 8080
 
 ENV PROJECT_NAME=discodeit
 ENV PROJECT_VERSION=1.2-M8

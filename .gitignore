@@ -97,8 +97,6 @@ aws-credentials.txt
 credentials
 
 ### Docker 관련 ###
-docker-compose.yml
-docker-compose.override.yml
 .dockerignore
 *.log
 
