@@ -6,6 +6,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,9 +23,17 @@ public class SseController implements SseApi {
   @GetMapping
   public ResponseEntity<SseEmitter> connect(
       @RequestParam UUID receiverId,
-      @RequestParam(required = false) UUID lastEventId
+      @RequestParam(required = false) UUID lastEventId,
+      @RequestHeader(value = "Last-Event-ID", required = false) String lastEventIdHeader
   ) {
-    SseEmitter emitter = sseService.connect(receiverId, lastEventId);
+    UUID resumeId = lastEventId;
+    if (resumeId == null && lastEventIdHeader != null && !lastEventIdHeader.isBlank()) {
+      try {
+        resumeId = UUID.fromString(lastEventIdHeader.trim());
+      } catch (IllegalArgumentException ignored) {
+      }
+    }
+    SseEmitter emitter = sseService.connect(receiverId, resumeId);
     return ResponseEntity.ok(emitter);
   }
 }

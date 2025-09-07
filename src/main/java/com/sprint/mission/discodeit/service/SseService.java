@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.repository.SseEmitterRepository;
 import com.sprint.mission.discodeit.repository.SseMessageRepository;
+import com.sprint.mission.discodeit.sse.SseMessage;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -33,13 +34,13 @@ public class SseService {
     ping(emitter);
 
     if (lastEventId != null) {
-      Map<UUID, Object> missed = messageRepository.findAllAfter(lastEventId);
+      Map<UUID, SseMessage<?>> missed = messageRepository.findAllAfter(lastEventId);
       missed.forEach((eventId, message) -> {
         try {
           emitter.send(SseEmitter.event()
               .id(eventId.toString())
-              .name(getEventName(message))
-              .data(message));
+              .name(message.name())
+              .data(message.data()));
         } catch (IOException ex) {
           emitterRepository.remove(receiverId, emitter);
         }
@@ -49,9 +50,9 @@ public class SseService {
     return emitter;
   }
 
-  public void send(Collection<UUID> receiverIds, String eventName, Object data) {
+  public <T> void send(Collection<UUID> receiverIds, String eventName, T data) {
     UUID eventId = UUID.randomUUID();
-    messageRepository.save(eventId, data);
+    messageRepository.save(eventId, eventName, data);
     for (UUID receiverId : receiverIds) {
       List<SseEmitter> emitters = emitterRepository.get(receiverId);
       for (SseEmitter emitter : emitters) {
@@ -67,9 +68,9 @@ public class SseService {
     }
   }
 
-  public void broadcast(String eventName, Object data) {
+  public <T> void broadcast(String eventName, T data) {
     UUID eventId = UUID.randomUUID();
-    messageRepository.save(eventId, data);
+    messageRepository.save(eventId, eventName, data);
     emitterRepository.getAll().forEach((receiverId, emitters) -> {
       for (SseEmitter emitter : emitters) {
         try {
@@ -101,10 +102,5 @@ public class SseService {
     } catch (IOException ex) {
       return false;
     }
-  }
-
-  private String getEventName(Object message) {
-    // TODO: DTO 타입별로 이벤트명 매핑 필요
-    return "unknown";
   }
 }

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Tag(name = "SSE", description = "SSE 이벤트 API")
@@ -19,6 +20,7 @@ public interface SseApi {
   })
   ResponseEntity<SseEmitter> connect(
       @Parameter(description = "수신자 ID", required = true) UUID receiverId,
-      @Parameter(description = "마지막 이벤트 ID", required = false) UUID lastEventId
+      @Parameter(description = "마지막 이벤트 ID", required = false) UUID lastEventId,
+      @RequestHeader(value = "Last-Event-ID", required = false) String lastEventIdHeader
   );
 }
