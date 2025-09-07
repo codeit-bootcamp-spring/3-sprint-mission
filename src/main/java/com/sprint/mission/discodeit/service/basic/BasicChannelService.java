@@ -6,6 +6,9 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.ChannelCreatedEvent;
+import com.sprint.mission.discodeit.event.ChannelDeletedEvent;
+import com.sprint.mission.discodeit.event.ChannelUpdatedEvent;
 import com.sprint.mission.discodeit.exception.channel.CannotUpdatePrivateChannelException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -20,6 +23,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +39,7 @@ public class BasicChannelService implements ChannelService {
   private final MessageRepository messageRepository;
   private final MessageAttachmentRepository messageAttachmentRepository;
   private final ChannelAssembler channelAssembler;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
@@ -42,7 +47,9 @@ public class BasicChannelService implements ChannelService {
   public ChannelResponse create(String name, String description) {
     Channel channel = Channel.createPublic(name, description);
     Channel savedChannel = channelRepository.save(channel);
-    return channelAssembler.toResponse(savedChannel);
+    ChannelResponse response = channelAssembler.toResponse(savedChannel);
+    eventPublisher.publishEvent(new ChannelCreatedEvent(response));
+    return response;
   }
 
   @Override
@@ -58,7 +65,9 @@ public class BasicChannelService implements ChannelService {
       readStatusRepository.save(status);
     }
 
-    return channelAssembler.toResponse(savedChannel);
+    ChannelResponse response = channelAssembler.toResponse(savedChannel);
+    eventPublisher.publishEvent(new ChannelCreatedEvent(response));
+    return response;
   }
 
   @Override
@@ -93,7 +102,9 @@ public class BasicChannelService implements ChannelService {
     channel.updateDescription(newDescription);
 
     Channel updated = channelRepository.save(channel);
-    return channelAssembler.toResponse(updated);
+    ChannelResponse response = channelAssembler.toResponse(updated);
+    eventPublisher.publishEvent(new ChannelUpdatedEvent(response));
+    return response;
   }
 
   @Override
@@ -118,6 +129,8 @@ public class BasicChannelService implements ChannelService {
     // 채널 삭제
     channelRepository.deleteById(channelId);
 
-    return channelAssembler.toResponse(channel);
+    ChannelResponse response = channelAssembler.toResponse(channel);
+    eventPublisher.publishEvent(new ChannelDeletedEvent(response));
+    return response;
   }
 }

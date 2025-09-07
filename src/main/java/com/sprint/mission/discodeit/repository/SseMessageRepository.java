@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository;
 
+import com.sprint.mission.discodeit.sse.SseMessage;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -11,11 +12,11 @@ import org.springframework.stereotype.Repository;
 public class SseMessageRepository {
 
   private final ConcurrentLinkedDeque<UUID> eventIdQueue = new ConcurrentLinkedDeque<>();
-  private final Map<UUID, Object> messages = new ConcurrentHashMap<>(); // TODO: SseMessage 타입으로 변경
+  private final Map<UUID, SseMessage<?>> messages = new ConcurrentHashMap<>();
 
-  public void save(UUID eventId, Object message) {
+  public <T> void save(UUID eventId, String name, T data) {
     eventIdQueue.addLast(eventId);
-    messages.put(eventId, message);
+    messages.put(eventId, new SseMessage<>(eventId, name, data));
 
     if (eventIdQueue.size() > 1000) {
       UUID oldest = eventIdQueue.pollFirst();
@@ -25,12 +26,12 @@ public class SseMessageRepository {
     }
   }
 
-  public Object find(UUID eventId) {
+  public SseMessage<?> find(UUID eventId) {
     return messages.get(eventId);
   }
 
-  public Map<UUID, Object> findAllAfter(UUID lastEventId) {
-    Map<UUID, Object> result = new LinkedHashMap<>();
+  public Map<UUID, SseMessage<?>> findAllAfter(UUID lastEventId) {
+    Map<UUID, SseMessage<?>> result = new LinkedHashMap<>();
     boolean found = (lastEventId == null);
     for (UUID id : eventIdQueue) {
       if (!found && id.equals(lastEventId)) {

@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.response.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.BinaryContentStatusUpdatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.exception.binarycontent.InvalidBinaryContentRequestException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -29,7 +30,6 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final ApplicationEventPublisher applicationEventPublisher;
-  private final com.sprint.mission.discodeit.service.SseService sseService;
 
   @Override
   public BinaryContentResponse create(BinaryContentData binaryContentData) {
@@ -93,15 +93,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     BinaryContent updated = binaryContentRepository.save(entity);
     BinaryContentResponse response = BinaryContentResponse.from(updated);
 
-    // TODO: 파일 소유자 ID 추출
-    UUID ownerId = null;
-    if (ownerId != null) {
-      sseService.send(
-          List.of(ownerId),
-          "binaryContents.updated",
-          response
-      );
-    }
+    applicationEventPublisher.publishEvent(new BinaryContentStatusUpdatedEvent(response));
 
     return response;
   }

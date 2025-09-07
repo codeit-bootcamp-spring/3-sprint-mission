@@ -19,7 +19,6 @@ public interface SseApi {
       @ApiResponse(responseCode = "401", description = "인증 실패")
   })
   ResponseEntity<SseEmitter> connect(
-      @Parameter(description = "수신자 ID", required = true) UUID receiverId,
       @Parameter(description = "마지막 이벤트 ID", required = false) UUID lastEventId,
       @RequestHeader(value = "Last-Event-ID", required = false) String lastEventIdHeader
   );
