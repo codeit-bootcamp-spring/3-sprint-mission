@@ -22,7 +22,20 @@ services:
     # 외부 노출 금지: ports 제거
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+#      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    configs:
+      - source: schema_sql
+        target: /docker-entrypoint-initdb.d/001-schema.sql
+        mode: 0444
+    healthcheck:                          # [ADDED] DB 준비 여부 확인
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB -h 127.0.0.1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+    deploy:
+      mode: replicated
+      replicas: 1
 
   ##################################################################
   # Redis (내부 전용): 외부 포트 미노출, 백엔드만 접근
@@ -66,9 +79,12 @@ services:
   # Backend (내부 전용): 외부 포트 미노출, Nginx만 접근
   ##################################################################
   app:
-    build: .
+    image: discodeit-app:1.0.0
+    build: .                    # [ADDED] 로컬 Dockerfile로 애플리케이션 이미지 빌드
 #    container_name: discodeit-app
     restart: unless-stopped
+    env_file:
+      - .env
     # 외부 노출 금지: ports 제거
     volumes:
       # 호스트 영속 디렉토리 ↔ 컨테이너 저장 경로 매핑
@@ -76,6 +92,8 @@ services:
     environment:
       # 내부 인프라 접점
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}   # [ADDED]
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD} # [ADDED]
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:-broker:29092}
@@ -86,29 +104,49 @@ services:
       PORT: ${PORT:-8080}
       JWT_ACCESS_TOKEN: ${JWT_ACCESS_TOKEN}
       JWT_REFRESH_TOKEN: ${JWT_REFRESH_TOKEN}
-    depends_on:
-      - postgres
-      - redis
-      - broker
+    depends_on:                         # [CHANGED] DB 건강 상태를 기다림
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      broker:
+        condition: service_started
     deploy:
       mode: replicated
       replicas: 3
       endpoint_mode: dnsrr # <- Nginx가 여러 IP를 직접 인식하도록
+    networks:
+      - default                # [ADDED]
+      - mesh                   # [ADDED]
 
   ##################################################################
   # Reverse Proxy (외부 유일 진입점: 3000 → 컨테이너 80)
   ##################################################################
   nginx:
+    image: discodeit-nginx:1.0.0
     build:
-      context: .
-      dockerfile: ./nginx/Dockerfile
+      context: .               # [CHANGED] Nginx 빌드 컨텍스트를 프로젝트 루트로 변경
+      dockerfile: nginx/Dockerfile  # [CHANGED] Dockerfile 경로 명시
 #    container_name: discodeit-nginx
     depends_on:
       - app
+    deploy:
+      mode: replicated
+      replicas: 1
     ports:
       - "3000:80"
-    restart: unless-stopped
+#    restart: unless-stopped
+    networks:
+      - default                # [ADDED] 기본 네트워크도 연결해 DNS 해석 안정화
+      - mesh                   # [ADDED]
+
+configs:
+  schema_sql:
+    file: ./src/main/resources/schema.sql
 
 volumes:
   postgres_data:
   redis-data:
+
+networks:
+  mesh:                        # [ADDED] Nginx ↔ app 전용 사용자 정의 네트워크
