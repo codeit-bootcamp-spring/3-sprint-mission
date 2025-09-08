@@ -44,6 +44,12 @@ services:
       - private
     volumes:
       - app-storage:/data/storage
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 1g
 
   db:
     image: postgres:16-alpine
