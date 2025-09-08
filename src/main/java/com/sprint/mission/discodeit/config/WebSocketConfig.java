@@ -18,6 +18,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").withSockJS();
+        registry.addEndpoint("/ws")
+            .setAllowedOriginPatterns("*")
+            .withSockJS()
+            .setHeartbeatTime(25000)       // 25초마다 하트비트 전송
+            .setDisconnectDelay(5000);   // 5초 후 연결 해제
     }
 }

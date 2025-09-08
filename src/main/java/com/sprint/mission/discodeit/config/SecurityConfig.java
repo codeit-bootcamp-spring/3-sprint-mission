@@ -57,6 +57,7 @@ public class SecurityConfig {
         .csrf(csrf -> csrf
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+            .ignoringRequestMatchers("/ws/**") // WebSocket 경로만 CSRF 비활성화
         )
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
