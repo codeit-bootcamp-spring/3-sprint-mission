@@ -130,15 +130,17 @@ public class RedisJwtRegistry implements JwtRegistry {
                         addTokenIndex(newJwtInformation.accessToken(),
                             newJwtInformation.refreshToken());
                         redisTemplate.expire(userKey, DEFAULT_TTL);
-                        break;
+
+                        log.debug("[JwtRegistry] Jwt 토큰 로테이션 완료 - userKey: {}", userKey);
+                        return jwtInfo;
                     }
                 }
             }
-
+            log.debug("[JwtRegistry] Jwt 토큰 로테이션 실패 - userKey: {}", userKey);
+            return null;
         } finally {
             redisLockProvider.releaseLock(lockKey);
         }
-        return null;
     }
 
     @Scheduled(fixedDelay = 1000 * 60 * 5)
