@@ -22,8 +22,8 @@ Dockerfile
 docker-compose.yml
 
 # Environment files (.env는 런타임에 환경변수로 전달)
-.env
-.env.*
+.env*
+*.env
 
 # Documentation
 README.md

@@ -31,7 +31,7 @@ RUN apk add --no-cache curl
 
 # 프로젝트 정보를 환경 변수로 설정
 ENV PROJECT_NAME=discodeit \
-    PROJECT_VERSION=1.2-M8
+    PROJECT_VERSION=3.0-M12
 
 # 빌드 결과물만 복사 (최종 JAR 파일만 포함)
 COPY --from=build /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar ./app.jar

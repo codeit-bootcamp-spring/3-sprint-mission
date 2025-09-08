@@ -3,8 +3,6 @@ services:
     image: apache/kafka:latest
     hostname: broker
     container_name: broker
-    ports:
-      - 9092:9092
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
@@ -21,3 +19,6 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    # 네트워크 정의
+    networks:
+      - "discodeit-network"

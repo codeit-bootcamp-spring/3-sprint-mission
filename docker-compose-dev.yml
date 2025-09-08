@@ -1,0 +1,15 @@
+# override 설정을 적용하여 실행할 때. 순서 중요.
+# docker-compose -f docker-compose-kafka.yml -f docker-compose-redis.yml -f docker-compose-dev.yml up -d
+services:
+  # kafka port override
+  broker:
+    ports:
+      - 9092:9092
+
+  # redis port override
+  redis:
+    ports:
+      - 6379:6379
+
+networks:
+  discodeit-network:
