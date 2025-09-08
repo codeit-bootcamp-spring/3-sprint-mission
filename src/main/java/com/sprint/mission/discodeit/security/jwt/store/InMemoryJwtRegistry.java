@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * 메모리에 JWT 정보를 저장하는 JWT 레지스트리 구현체입니다.
- * 
+ *
  * <p>이 클래스는 JWT 토큰의 상태를 메모리에서 관리하며, 다음과 같은 특징을 가집니다:</p>
  * <ul>
  *   <li>동시성 처리를 위해 ConcurrentHashMap과 ConcurrentLinkedQueue 사용</li>
@@ -20,20 +20,20 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  *   <li>토큰 유효성 검증과 레지스트리 존재 여부를 함께 확인</li>
  *   <li>만료된 토큰의 자동 정리</li>
  * </ul>
- * 
+ *
  * <p>사용 예시:</p>
  * <pre>{@code
  * @Autowired
  * private InMemoryJwtRegistry jwtRegistry;
- * 
+ *
  * // 토큰 등록
  * JwtInformation info = new JwtInformation(userDto, accessToken, refreshToken);
  * jwtRegistry.registerJwtInformation(info);
- * 
+ *
  * // 토큰 존재 여부 확인
  * boolean exists = jwtRegistry.hasActiveJwtInformationByAccessToken(accessToken);
  * }</pre>
- * 
+ *
  * @author Discodeit Team
  * @since 1.0.0
  * @see JwtRegistry
@@ -62,7 +62,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
     /**
      * InMemoryJwtRegistry를 생성합니다.
-     * 
+     *
      * @param maxActiveJwtCount 최대 동시 활성 JWT 개수 (기본값: 1)
      * @param jwtTokenProvider JWT 토큰 유효성 검증을 위한 프로바이더
      */
@@ -76,10 +76,10 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
     /**
      * {@inheritDoc}
-     * 
-     * <p>동시 로그인 제한을 위해 최대 개수를 초과하는 경우 
+     *
+     * <p>동시 로그인 제한을 위해 최대 개수를 초과하는 경우
      * 오래된 토큰을 자동으로 제거합니다.</p>
-     * 
+     *
      * @param jwtInformation 등록할 JWT 정보
      */
     @Override
@@ -110,9 +110,9 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * <p>사용자 ID에 해당하는 모든 JWT 정보를 메모리에서 제거합니다.</p>
-     * 
+     *
      * @param userId 무효화할 사용자의 ID
      */
     @Override
@@ -133,9 +133,9 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * <p>사용자의 로그인 상태를 판단할 때 활용됩니다.</p>
-     * 
+     *
      * @param userId 확인할 사용자의 ID
      * @return 활성 JWT 정보가 존재하면 true, 그렇지 않으면 false
      */
@@ -155,10 +155,10 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * <p>Access Token의 유효성을 먼저 검증한 후, 레지스트리에 존재하는지 확인합니다.
      * 필터에서 유효한 토큰인지 확인할 때 활용됩니다.</p>
-     * 
+     *
      * @param accessToken 확인할 Access Token
      * @return 토큰이 유효하고 레지스트리에 존재하면 true, 그렇지 않으면 false
      */
@@ -198,10 +198,10 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * <p>Refresh Token의 유효성을 먼저 검증한 후, 레지스트리에 존재하는지 확인합니다.
      * 토큰 재발급 시 유효한 토큰인지 확인할 때 활용됩니다.</p>
-     * 
+     *
      * @param refreshToken 확인할 Refresh Token
      * @return 토큰이 유효하고 레지스트리에 존재하면 true, 그렇지 않으면 false
      */
@@ -215,7 +215,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
             log.debug(SERVICE_NAME + "유효하지 않은 Refresh Token= {}", refreshToken);
             return found;
         }
-        
+
         // 레지스트리에서 토큰 존재 여부 확인
         for (Map.Entry<UUID, Queue<JwtInformation>> entry : origin.entrySet()) {
             UUID userId = entry.getKey();
@@ -241,53 +241,55 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * <p>기존 Refresh Token을 새로운 JWT 정보로 교체합니다.
      * 토큰 재발급 시 기존 토큰을 무효화하고 새 토큰을 등록합니다.</p>
-     * 
+     *
      * @param refreshToken 교체할 기존 Refresh Token
      * @param newJwtInformation 새로운 JWT 정보
      */
     @Override
     public void rotateJwtInformation(String refreshToken, JwtInformation newJwtInformation) {
-        UUID targetUserId = null;
-        JwtInformation oldToken = null;
+        UUID targetUserId = null; JwtInformation old = null;
 
-        // 기존 Refresh Token을 가진 사용자와 토큰 찾기
-        for (Map.Entry<UUID, Queue<JwtInformation>> entry : origin.entrySet()) {
-            UUID userId = entry.getKey();
-            Queue<JwtInformation> userTokens = entry.getValue();
-
-            for (JwtInformation jwtInformation : userTokens) {
-                if (refreshToken.equals(jwtInformation.refreshToken())) {
-                    targetUserId = userId;
-                    oldToken = jwtInformation;
-                    break;
-                }
+        for (var e : origin.entrySet()) {
+            for (var info : e.getValue()) {
+                if (refreshToken.equals(info.refreshToken())) { targetUserId = e.getKey(); old = info; break; }
             }
             if (targetUserId != null) break;
         }
-
-        if (targetUserId != null && oldToken != null) {
-            // 기존 토큰 제거 후 새 토큰 등록
-            Queue<JwtInformation> userTokens = origin.get(targetUserId);
-            userTokens.remove(oldToken);
-            userTokens.offer(newJwtInformation);
-
-            log.info(SERVICE_NAME + "JWT 정보 로테이션 완료: userId={}, 기존 토큰 제거됨, 새 토큰 등록됨", targetUserId);
-        } else {
-            log.warn(SERVICE_NAME + "JWT 정보 로테이션 실패: refreshToken을 찾을 수 없음");
+        if (targetUserId == null || old == null) {
+            log.warn(SERVICE_NAME + "JWT 회전 실패: refreshToken 미발견");
+            return;
         }
+
+        Queue<JwtInformation> q = origin.get(targetUserId);
+        synchronized (q) {
+            // 1) 구 refresh 폐기
+            q.remove(old);
+
+            // 2) 구 access는 잠시 유지(동시요청 보호). refresh=null로 표식
+            JwtInformation oldAccessOnly = new JwtInformation(old.userDto(), old.accessToken(), null);
+            q.offer(oldAccessOnly);
+
+            // 3) 새 쌍 등록
+            q.offer(newJwtInformation);
+
+            // 4) 큐 크기 제한(설정: jwt.max-active-count=2 권장)
+            while (q.size() > maxActiveJwtCount) q.poll();
+        }
+        log.info(SERVICE_NAME + "JWT 회전: old access 유지, old refresh 폐기, new 등록");
     }
+
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * <p>만료된 JWT 정보를 메모리에서 정리합니다.
-     * Access Token과 Refresh Token의 유효성을 검증하여 
+     * Access Token과 Refresh Token의 유효성을 검증하여
      * 둘 중 하나라도 유효한 경우에만 유지합니다.</p>
-     * 
-     * <p>정기적으로 호출하여 메모리 사용량을 최적화하고 
+     *
+     * <p>정기적으로 호출하여 메모리 사용량을 최적화하고
      * 보안을 강화하는 것을 권장합니다.</p>
      */
     @Scheduled(fixedDelay = 1000 * 60 * 5)
