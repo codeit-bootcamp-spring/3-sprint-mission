@@ -1,24 +1,29 @@
 package com.sprint.mission.discodeit.security.jwt;
 
 import com.sprint.mission.discodeit.dto.jwt.JwtInformation;
+import com.sprint.mission.discodeit.event.UserLogInOutEvent;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Profile("dev")
 public class InMemoryJwtRegistry implements JwtRegistry {
 
     private final Map<UUID, JwtInformation> origin = new ConcurrentHashMap<>();
     private final Set<String> accessTokenIndexes = ConcurrentHashMap.newKeySet();
     private final Set<String> refreshTokenIndexes = ConcurrentHashMap.newKeySet();
     private final JwtTokenProvider jwtTokenProvider;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public void registerJwtInformation(JwtInformation jwtInformation) {
@@ -39,6 +44,8 @@ public class InMemoryJwtRegistry implements JwtRegistry {
                 username);
             return jwtInformation;
         });
+
+        eventPublisher.publishEvent(new UserLogInOutEvent(userId));
     }
 
     @Override
@@ -50,6 +57,8 @@ public class InMemoryJwtRegistry implements JwtRegistry {
             log.debug("[JwtRegistry] Jwt 정보 삭제 완료 - userId: {}", userId);
             return null;
         });
+
+        eventPublisher.publishEvent(new UserLogInOutEvent(userId));
     }
 
     @Override

@@ -1,12 +1,7 @@
 package com.sprint.mission.discodeit.auth.handler;
 
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
-import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
-import com.sprint.mission.discodeit.service.SseService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
@@ -24,11 +19,6 @@ public class JwtLogoutHandler implements LogoutHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
-    private final SseService sseService;
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
-
-    private static final String EVENT_NAME_USER_UPDATED = "users.updated";
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response,
@@ -45,17 +35,10 @@ public class JwtLogoutHandler implements LogoutHandler {
             .ifPresent(cookie -> {
                 String refreshToken = cookie.getValue();
                 UUID userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
-                User user = findUser(userId);
 
                 jwtRegistry.invalidateJwtInformationByUserId(userId);
-                sseService.broadcast(EVENT_NAME_USER_UPDATED, userMapper.toDto(user));
             });
 
         log.debug("[JwtLogoutHandler] 로그아웃 처리 완료");
-    }
-
-    private User findUser(UUID userId) {
-        return userRepository.findById(userId)
-            .orElseThrow(() -> new NotFoundUserException(userId));
     }
 }

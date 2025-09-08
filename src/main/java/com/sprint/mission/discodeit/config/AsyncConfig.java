@@ -35,6 +35,16 @@ public class AsyncConfig implements AsyncConfigurer {
         return buildExecutor(core, max, queue, keepAlive, "binaryContent-exec");
     }
 
+    @Bean(name = "userLogInOutExecutor")
+    public ThreadPoolTaskExecutor userLogInOutExecutor(
+        @Value("${async.executors.user-logInOut.core-size}") int core,
+        @Value("${async.executors.user-logInOut.max-size}") int max,
+        @Value("${async.executors.user-logInOut.queue-capacity}") int queue,
+        @Value("${async.executors.user-logInOut.keep-alive}") int keepAlive) {
+
+        return buildExecutor(core, max, queue, keepAlive, "binaryContent-exec");
+    }
+
     /**
      * ThreadPoolTaskExecutor 공통 빌더
      *

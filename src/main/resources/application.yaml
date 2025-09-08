@@ -104,6 +104,11 @@ async:
       max-size: ${MAX_SIZE:4}
       queue-capacity: ${QUEUE_CAPACITY:100}
       keep-alive: ${KEEP_ALIVE:30}
+    user-logInOut:
+      core-size: ${MAX_CORE_SIZE:4}
+      max-size: ${MAX_SIZE:16}
+      queue-capacity: ${QUEUE_CAPACITY:200}
+      keep-alive: ${KEEP_ALIVE:60}
 
 websocket:
   executors:

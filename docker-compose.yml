@@ -1,5 +1,41 @@
 version: '3.8'
 
+x-backend-common: &backend-common
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: discodeit-app:local-slim
+  env_file: .env
+  environment:
+    STORAGE_TYPE: ${STORAGE_TYPE}
+    STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH}
+    SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+    SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+    SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+    SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    DISCODEIT_STORAGE_LOCAL_ROOT_PATH: /app/binary_content_storage
+    SPRING_DATA_REDIS_HOST: redis
+    SPRING_DATA_REDIS_PORT: 6379
+    SPRING_KAFKA_BOOTSTRAP_SERVERS: broker:29092
+  expose: [ "8080" ]
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_started
+    broker:
+      condition: service_started
+  healthcheck:
+    test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+    interval: 10s
+    timeout: 5s
+    retries: 10
+    start_period: 40s
+  volumes:
+    - app_data:/app/binary_content_storage
+  networks:
+    - appnet
+
 # 서비스 정의
 services:
   reverse-proxy:
@@ -11,53 +47,19 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./src/main/resources/static:/usr/share/nginx/html:ro   # 정적 리소스
     depends_on:
-      backend:
+      backend-1:
+        condition: service_healthy
+      backend-2:
+        condition: service_healthy
+      backend-3:
         condition: service_healthy
     networks:
       - appnet
 
   # ------ Spring Boot Backend ------
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: discodeit-app:local-slim
-    container_name: discodeit_app
-    env_file: .env
-    # 환경 변수 설정
-    environment:
-      # STORAGE 설정
-      STORAGE_TYPE: ${STORAGE_TYPE}
-      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH}
-      # DB 설정
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      DISCODEIT_STORAGE_LOCAL_ROOT_PATH: /app/binary_content_storage
-      # Redis
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PORT: 6379
-      # Kafka (내부 리스너: broker: 29092)
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: broker:29092
-    expose:
-      - "8080"  # reverse-proxy만 접근
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
-      broker:
-        condition: service_started
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    networks:
-      - appnet
-    volumes:
-      - app_data:/app/binary_content_storage
+  backend-1: { <<: *backend-common }
+  backend-2: { <<: *backend-common }
+  backend-3: { <<: *backend-common }
 
   # ------ PostgreSQL (내부 전용) ------
   db:
