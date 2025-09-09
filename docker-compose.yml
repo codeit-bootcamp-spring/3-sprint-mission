@@ -18,7 +18,9 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: backend
+    # replicas 설정 (분산 환경)
+    deploy:
+      replicas: 3
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/discodeit
