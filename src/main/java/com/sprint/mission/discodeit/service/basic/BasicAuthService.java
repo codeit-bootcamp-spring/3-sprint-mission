@@ -12,7 +12,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
-import com.sprint.mission.discodeit.security.jwt.store.InMemoryJwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.store.JwtInformation;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
@@ -56,7 +56,7 @@ public class BasicAuthService implements AuthService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final InMemoryJwtRegistry jwtRegistry;
+    private final JwtRegistry jwtRegistry;
     private final JwtTokenProvider jwtTokenProvider;
     private final DiscodeitUserDetailsService userDetailsService;
     private final ApplicationEventPublisher eventPublisher;
@@ -104,7 +104,7 @@ public class BasicAuthService implements AuthService {
 
         if (refreshToken == null || !jwtTokenProvider.validateRefreshToken(refreshToken) || !jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
             log.error(SERVICE_NAME + "유효하지 않은 Refresh Token= {}", refreshToken);
-            throw new DiscodeitException("에러 발생", Instant.now(), ErrorCode.INVALID_ARGUMENT, null);
+            throw new DiscodeitException("에러 발생", Instant.now(), ErrorCode.UNAUTHORIZED_USER, null);
         }
 
         // 유효 쿠키면 쿠키 값 추출(이전 refreshToken 취급)
@@ -113,7 +113,10 @@ public class BasicAuthService implements AuthService {
         DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailsService.loadUserByUsername(username);
 
         if (userDetails == null) {
-            throw new DiscodeitException("에러 발생", Instant.now(), ErrorCode.INVALID_USER_CREDENTIALS, null);
+            throw new DiscodeitException("에러 발생",
+                    Instant.now(),
+                    ErrorCode.INVALID_USER_CREDENTIALS,
+                    null);
         }
 
         try {
@@ -139,7 +142,10 @@ public class BasicAuthService implements AuthService {
         } catch (JOSEException e) {
             // 리프레시 토큰 재발급 도중 발생한 예외 처리 (500)
             log.error(SERVICE_NAME + "유저 {}의 RefreshToken 재발급 실패", username, e);
-            throw new DiscodeitException(e.getMessage(), Instant.now(), ErrorCode.INTERNAL_SERVER_ERROR, null);
+            throw new DiscodeitException(e.getMessage(),
+                    Instant.now(),
+                    ErrorCode.UNAUTHORIZED_USER,
+                    null);
         }
     }
 

@@ -20,16 +20,18 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/sub");
-        registry.setApplicationDestinationPrefixes("/pub");
+
+        registry.enableSimpleBroker("/sub"); // 클라이언트 메시지 구족용
+
+        registry.setApplicationDestinationPrefixes("/pub"); // 클라이언트 메시지 발행용
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
                 .setAllowedOrigins("http://localhost:3000", "http://127.0.0.1:3000")
-                .withSockJS()
-                .setSuppressCors(false);
+                .withSockJS() // SockJS 사용: WebSocket 미지원 브라우저를 위해 SockJs 프로토콜을 사용한 대체 통신 폴백
+                .setSuppressCors(false); // SockJS info/폴백 응답에 CORS 헤더 노출
     }
 
     public AuthorizationChannelInterceptor authorizationChannelInterceptor() {

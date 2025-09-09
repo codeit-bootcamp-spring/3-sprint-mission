@@ -112,12 +112,6 @@ public class AuthController implements AuthApi {
     ) {
         log.info(CONTROLLER_NAME + "Refresh Token 재발급 요청");
         JwtInformation jwtInformation = authService.reIssueAccessByRefreshToken(response, refreshToken);
-        Cookie newRefreshCookie = jwtTokenProvider.generateRefreshTokenCookie(
-                jwtInformation.refreshToken()
-        );
-
-        log.info(CONTROLLER_NAME + "쿠키에 Refresh Token 추가");
-        response.addCookie(newRefreshCookie);
 
         UserDto userDto = jwtInformation.userDto();
         String newAccessToken = jwtInformation.accessToken();

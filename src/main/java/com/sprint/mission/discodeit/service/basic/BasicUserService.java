@@ -12,7 +12,7 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.jwt.store.InMemoryJwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.web.sse.SseService;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +64,7 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    private final InMemoryJwtRegistry jwtRegistry;
+    private final JwtRegistry jwtRegistry;
     private final ApplicationEventPublisher eventPublisher;
     private final SseService sseService;
 
