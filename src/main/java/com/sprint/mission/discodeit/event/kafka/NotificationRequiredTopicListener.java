@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
+import com.sprint.mission.discodeit.event.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
@@ -21,7 +22,6 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.SseService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -42,16 +43,18 @@ public class NotificationRequiredTopicListener {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final CacheManager cacheManager;
-    private final SseService sseService;
+    private final KafkaTemplate<String, String> kafkaTemplate;
     private final NotificationMapper notificationMapper;
 
-    private static final String EVENT_NAME_NOTIFICATION_CREATED = "notifications.created";
     private static final String ROLE_UPDATE_TITLE = "권한이 변경되었습니다.";
     private static final String PRIVATE_CHANNEL_NAME = "개인 메시지";
     private static final String S3_UPLOAD_FAIL_TITLE = "S3 업로드 실패";
     private final UserMapper userMapper;
 
-    @KafkaListener(topics = "discodeit.MessageCreatedEvent")
+    @KafkaListener(
+        topics = "discodeit.MessageCreatedEvent",
+        containerFactory = "processingKafkaListenerContainerFactory"
+    )
     public void onMessageCreated(String kafkaEvent) {
 
         try {
@@ -85,23 +88,31 @@ public class NotificationRequiredTopicListener {
 
             // 메시지를 보낸 사용자는 알림 대상에서 제외
             List<Notification> notifications = readStatuses.stream()
-                .filter(readStatus -> !userMapper.toDto(readStatus.getUser()).equals(author))
+                .filter(readStatus -> !readStatus.getUser().getId().equals(author.id()))
                 .map(readStatus -> new Notification(title, content, readStatus.getUser()))
                 .toList();
 
             List<Notification> saved = notificationRepository.saveAll(notifications);
 
-            log.debug("[NotificationRequiredEventListener] 알림 {}개 생성 완료", notifications.size());
+            log.debug("[NotificationRequiredEventListener] 알림 {}개 생성 완료", saved.size());
 
-            // 저장 후 SSE 전송 (각 수신자별 개별 이벤트)
-            sendSseEvent(saved);
+            for (Notification n : saved) {
+                NotificationDto dto = notificationMapper.toDto(n);
+                NotificationCreatedEvent notificationEvent = new NotificationCreatedEvent(
+                    dto.receiverId(), dto);
+                kafkaTemplate.send("discodeit.NotificationCreatedEvent",
+                    objectMapper.writeValueAsString(notificationEvent));
+            }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
 
     }
 
-    @KafkaListener(topics = "discodeit.RoleUpdatedEvent")
+    @KafkaListener(
+        topics = "discodeit.RoleUpdatedEvent",
+        containerFactory = "processingKafkaListenerContainerFactory"
+    )
     public void onRoleUpdated(String kafkaEvent) {
 
         try {
@@ -120,18 +131,25 @@ public class NotificationRequiredTopicListener {
                 .build();
 
             Notification savedNotification = notificationRepository.save(notification);
-            // 저장 후 SSE 전송 (각 수신자별 개별 이벤트)
-            sendSseEvent(List.of(savedNotification));
 
             log.debug("[NotificationRequiredEventListener] 권한 변경 알림 생성 완료- id: {}",
                 savedNotification.getId());
+
+            NotificationDto dto = notificationMapper.toDto(savedNotification);
+            NotificationCreatedEvent notificationEvent = new NotificationCreatedEvent(
+                dto.receiverId(), dto);
+            kafkaTemplate.send("discodeit.NotificationCreatedEvent",
+                objectMapper.writeValueAsString(notificationEvent));
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    @KafkaListener(topics = "discodeit.S3UploadFailedEvent")
+    @KafkaListener(
+        topics = "discodeit.S3UploadFailedEvent",
+        containerFactory = "processingKafkaListenerContainerFactory"
+    )
     public void onS3UploadFailed(String kafkaEvent) {
 
         try {
@@ -164,8 +182,13 @@ public class NotificationRequiredTopicListener {
             log.debug("[NotificationRequiredEventListener] S3 업로드 실패 알림 전송 완료- {}개",
                 notifications.size());
 
-            // 저장 후 SSE 전송 (각 수신자별 개별 이벤트)
-            sendSseEvent(saved);
+            for (Notification n : saved) {
+                NotificationDto dto = notificationMapper.toDto(n);
+                NotificationCreatedEvent notificationEvent = new NotificationCreatedEvent(
+                    dto.receiverId(), dto);
+                kafkaTemplate.send("discodeit.NotificationCreatedEvent",
+                    objectMapper.writeValueAsString(notificationEvent));
+            }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -189,16 +212,5 @@ public class NotificationRequiredTopicListener {
     private Channel findChannel(UUID channelId) {
         return channelRepository.findById(channelId)
             .orElseThrow(() -> new NotFoundChannelException(channelId));
-    }
-
-    private void sendSseEvent(List<Notification> notifications) {
-        for (Notification n : notifications) {
-            NotificationDto dto = notificationMapper.toDto(n);
-            sseService.send(
-                List.of(n.getUser().getId()),
-                EVENT_NAME_NOTIFICATION_CREATED,
-                dto
-            );
-        }
     }
 }

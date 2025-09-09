@@ -1,22 +1,22 @@
 -- 1. 스키마 생성
 CREATE SCHEMA IF NOT EXISTS discodeit;
 
--- SET search_path TO discodeit;
+SET search_path TO discodeit;
 
 -- 2. 스키마 권한 및 앞으로 생성될 객체 자동 권한 설정
--- GRANT USAGE ON SCHEMA discodeit TO discodeit_user;
--- GRANT ALL PRIVILEGES ON SCHEMA discodeit TO discodeit_user;
+GRANT USAGE ON SCHEMA discodeit TO discodeit_user;
+GRANT ALL PRIVILEGES ON SCHEMA discodeit TO discodeit_user;
 
 -- 향후 생성되는 모든 테이블에도 자동 권한
--- ALTER DEFAULT PRIVILEGES IN SCHEMA discodeit
---     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO discodeit_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA discodeit
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO discodeit_user;
 
 -- 향후 생성되는 모든 시퀀스도 자동 권한
--- ALTER DEFAULT PRIVILEGES IN SCHEMA discodeit
---     GRANT USAGE, SELECT ON SEQUENCES TO discodeit_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA discodeit
+    GRANT USAGE, SELECT ON SEQUENCES TO discodeit_user;
 
 -- 3. ROLE 검색 경로 설정
--- ALTER ROLE discodeit_user SET search_path TO discodeit, public;
+ALTER ROLE discodeit_user SET search_path TO discodeit, public;
 
 -- 4. 테이블 삭제
 DROP TABLE IF EXISTS message_attachments CASCADE;

@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: discodeit
   cache:
     type: redis
     caffeine:
@@ -22,12 +24,15 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
-      group-id: discodeit-group
+      group-id: discodeit.processing.notifications
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        isolation.level: read_committed
+      enable-auto-commit: false
 
-
+INSTANCE_ID: ${HOSTNAME:${random.uuid}}
 
 management:
   endpoints:
@@ -63,7 +68,10 @@ discodeit:
       region: ${AWS_S3_REGION}
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
-
+  jwt:
+    registry:
+      type: ${REGISTRY_TYPE:memory}
+    max-active-count: 3
 springdoc:
   api-docs:
     path: /v3/api-docs

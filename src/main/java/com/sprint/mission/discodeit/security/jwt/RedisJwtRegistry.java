@@ -10,25 +10,29 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 @Slf4j
+@Component
 @RequiredArgsConstructor
-@Profile("prod")
+@ConditionalOnProperty(name = "discodeit.jwt.registry.type", havingValue = "redis")
 public class RedisJwtRegistry implements JwtRegistry {
-
+    
     private static final String USER_JWT_KEY_PREFIX = "jwt:user:";
     private static final String ACCESS_TOKEN_INDEX_KEY = "jwt:access_tokens";
     private static final String REFRESH_TOKEN_INDEX_KEY = "jwt:refresh_tokens";
     private static final Duration DEFAULT_TTL = Duration.ofMinutes(30);
 
-    private final int maxActiveJwtCount;
+    @Value("${discodeit.jwt.max-active-count:3}")
+    private int maxActiveJwtCount;
     private final JwtTokenProvider jwtTokenProvider;
     private final ApplicationEventPublisher eventPublisher;
     private final RedisTemplate<String, Object> redisTemplate;

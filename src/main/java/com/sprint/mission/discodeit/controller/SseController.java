@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.service.SseService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +22,7 @@ public class SseController {
 
     private final SseService sseService;
 
-    @GetMapping
+    @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(
         @RequestHeader(value = "Last-Event-ID", required = false) String lastEventIdHeader) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

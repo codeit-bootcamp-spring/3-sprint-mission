@@ -8,15 +8,15 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@Profile("dev")
+@ConditionalOnProperty(name = "discodeit.jwt.registry.type", havingValue = "memory")
 public class InMemoryJwtRegistry implements JwtRegistry {
 
     private final Map<UUID, JwtInformation> origin = new ConcurrentHashMap<>();
