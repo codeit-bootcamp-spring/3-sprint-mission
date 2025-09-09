@@ -33,7 +33,6 @@ services:
   backend:
     build:
       context: .
-    container_name: backend
     restart: unless-stopped
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/discodeit
@@ -53,6 +52,8 @@ services:
         condition: service_started
       broker:
         condition: service_healthy
+    deploy:
+      replicas: 3
 
   db:
     image: postgres:16-alpine

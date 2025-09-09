@@ -37,7 +37,10 @@ public class NotificationRequiredTopicListener {
   private String adminUsername;
 
 
-  @KafkaListener(topics = "discodeit.MessageCreatedEvent")
+  @KafkaListener(
+      topics = "discodeit.MessageCreatedEvent",
+      groupId = "notification-group-${spring.application.instance_id:${random.uuid}}"
+  )
   public void onMessageCreatedEvent(String kafkaEvent) {
     try {
       MessageCreatedEvent event = objectMapper.readValue(kafkaEvent,

@@ -5,6 +5,7 @@ import com.nimbusds.jose.JOSEException;
 import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.event.message.UserEvent;
+import com.sprint.mission.discodeit.event.message.UserLogInOutEvent;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import jakarta.servlet.ServletException;
@@ -64,7 +65,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
             )
         );
 
-        eventPublisher.publishEvent(new UserEvent("users.updated",userDetails.getUserDto(), Instant.now()));
+        eventPublisher.publishEvent(new UserLogInOutEvent(userDetails.getUserDto().id(), true));
 
 
         log.info("JWT access and refresh tokens issued for user: {}", userDetails.getUsername());

@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.security.jwt;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.event.message.UserEvent;
+import com.sprint.mission.discodeit.event.message.UserLogInOutEvent;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,7 +47,7 @@ public class JwtLogoutHandler implements LogoutHandler {
           jwtRegistry.invalidateJwtInformationByUserId(userId);
             String username = tokenProvider.getUsernameFromToken(refreshToken);
             DiscodeitUserDetails userDetails = (DiscodeitUserDetails)userDetailsService.loadUserByUsername(username);
-            eventPublisher.publishEvent(new UserEvent("users.updated",userDetails.getUserDto(), Instant.now()));
+            eventPublisher.publishEvent(new UserLogInOutEvent(userDetails.getUserDto().id(), false));
         });
     log.debug("JWT logout handler executed - refresh token cookie cleared");
   }
