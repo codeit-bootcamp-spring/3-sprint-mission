@@ -2,21 +2,24 @@ package com.sprint.mission.discodeit.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.redis.RedisLockProvider;
 import com.sprint.mission.discodeit.security.Http403ForbiddenAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
-import com.sprint.mission.discodeit.security.jwt.InMemoryJwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.jwt.RedisJwtRegistry;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
@@ -132,7 +135,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtRegistry jwtRegistry(JwtTokenProvider jwtTokenProvider) {
-        return new InMemoryJwtRegistry(1, jwtTokenProvider);
+    public JwtRegistry jwtRegistry(
+            JwtTokenProvider jwtTokenProvider,
+            ApplicationEventPublisher eventPublisher,
+            RedisTemplate<String, Object> redisTemplate,
+            RedisLockProvider redisLockProvider
+    ) {
+        return new RedisJwtRegistry(3, jwtTokenProvider, eventPublisher, redisTemplate, redisLockProvider);
     }
 }
