@@ -1,13 +1,5 @@
 package com.sprint.mission.discodeit.security.jwt;
 
-import java.util.Date;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.stereotype.Component;
-
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -19,13 +11,24 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.security.userdetails.DiscodeitUserDetails;
-
 import jakarta.servlet.http.Cookie;
+import java.util.Date;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 public class JwtTokenProvider {
+
+  private final UserDetailsService userDetailsService;
 
   public static final String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
 
@@ -41,19 +44,31 @@ public class JwtTokenProvider {
       @Value("${discodeit.jwt.access-token.secret}") String accessTokenSecret,
       @Value("${discodeit.jwt.access-token.expiration-ms}") int accessTokenExpirationMs,
       @Value("${discodeit.jwt.refresh-token.secret}") String refreshTokenSecret,
-      @Value("${discodeit.jwt.refresh-token.expiration-ms}") int refreshTokenExpirationMs)
+      @Value("${discodeit.jwt.refresh-token.expiration-ms}") int refreshTokenExpirationMs,
+      UserDetailsService userDetailsService)
       throws JOSEException {
-
     this.accessTokenExpirationMs = accessTokenExpirationMs;
     this.refreshTokenExpirationMs = refreshTokenExpirationMs;
-
     byte[] accessSecretBytes = java.util.Base64.getDecoder().decode(accessTokenSecret);
     this.accessTokenSigner = new MACSigner(accessSecretBytes);
     this.accessTokenVerifier = new MACVerifier(accessSecretBytes);
-
     byte[] refreshSecretBytes = java.util.Base64.getDecoder().decode(refreshTokenSecret);
     this.refreshTokenSigner = new MACSigner(refreshSecretBytes);
     this.refreshTokenVerifier = new MACVerifier(refreshSecretBytes);
+    this.userDetailsService = userDetailsService;
+  }
+
+  public Authentication getAuthentication(String token) {
+    if (!validateAccessToken(token)) {
+      return null;
+    }
+    String username = getUsernameFromToken(token);
+    if (username == null) {
+      return null;
+    }
+    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+    return new UsernamePasswordAuthenticationToken(
+        userDetails, null, userDetails.getAuthorities());
   }
 
   public String generateAccessToken(DiscodeitUserDetails userDetails) throws JOSEException {
