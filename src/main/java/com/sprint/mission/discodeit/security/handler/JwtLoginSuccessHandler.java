@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.security.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.sprint.mission.discodeit.dto.response.JwtDto;
-import com.sprint.mission.discodeit.event.UserOnlineStatusChangedEvent;
+import com.sprint.mission.discodeit.event.UserLogInOutEvent;
 import com.sprint.mission.discodeit.exception.auth.InvalidCredentialsException;
 import com.sprint.mission.discodeit.exception.auth.TokenGenerationException;
 import com.sprint.mission.discodeit.security.jwt.JwtInformation;
@@ -65,7 +65,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
       jwtRegistry.registerJwtInformation(jwtInformation);
       // 온라인 상태 변경 이벤트 발행
       eventPublisher.publishEvent(
-          new UserOnlineStatusChangedEvent(userDetails.getUser().id(), true));
+          new UserLogInOutEvent(userDetails.getUser().id(), true));
 
       var usersCache = cacheManager.getCache("users");
       if (usersCache != null) {

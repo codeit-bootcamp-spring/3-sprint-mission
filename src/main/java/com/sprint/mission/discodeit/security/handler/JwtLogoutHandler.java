@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.security.handler;
 
 import com.nimbusds.jwt.SignedJWT;
-import com.sprint.mission.discodeit.event.UserOnlineStatusChangedEvent;
+import com.sprint.mission.discodeit.event.UserLogInOutEvent;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import jakarta.servlet.http.Cookie;
@@ -44,7 +44,7 @@ public class JwtLogoutHandler implements LogoutHandler {
               jwtRegistry.invalidateJwtInformationByUserId(UUID.fromString(userId));
               // 온라인 상태 변경 이벤트 발행
               eventPublisher.publishEvent(
-                  new UserOnlineStatusChangedEvent(UUID.fromString(userId), false));
+                  new UserLogInOutEvent(UUID.fromString(userId), false));
             } catch (Exception e) {
               log.warn("Failed to invalidate JWT information on logout", e);
             }

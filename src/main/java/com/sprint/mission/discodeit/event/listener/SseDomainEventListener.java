@@ -10,7 +10,7 @@ import com.sprint.mission.discodeit.event.ChannelUpdatedEvent;
 import com.sprint.mission.discodeit.event.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.event.UserCreatedEvent;
 import com.sprint.mission.discodeit.event.UserDeletedEvent;
-import com.sprint.mission.discodeit.event.UserOnlineStatusChangedEvent;
+import com.sprint.mission.discodeit.event.UserLogInOutEvent;
 import com.sprint.mission.discodeit.event.UserUpdatedEvent;
 import com.sprint.mission.discodeit.service.SseService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
@@ -56,7 +56,7 @@ public class SseDomainEventListener {
 
   @Async("eventTaskExecutor")
   @EventListener
-  public void on(UserOnlineStatusChangedEvent event) {
+  public void on(UserLogInOutEvent event) {
     UserResponse userResponse = basicUserService.findById(event.userId());
     sseService.broadcast("users.updated", userResponse);
   }
