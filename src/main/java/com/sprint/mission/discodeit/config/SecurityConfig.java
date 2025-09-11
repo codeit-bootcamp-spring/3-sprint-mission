@@ -175,7 +175,7 @@ public class SecurityConfig {
   @Bean
   @Profile("!test & !security-test")
   public JwtRegistry redisJwtRegistry(
-      @Value("${jwt.max-active-jwt-count:5}") int maxActiveJwtCount,
+      @Value("${jwt.max-active-jwt-count:1}") int maxActiveJwtCount,
       JwtTokenProvider jwtTokenProvider,
       ApplicationEventPublisher eventPublisher,
       RedisTemplate<String, Object> redisTemplate,
