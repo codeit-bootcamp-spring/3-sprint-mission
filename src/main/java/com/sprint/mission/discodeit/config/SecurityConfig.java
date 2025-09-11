@@ -167,13 +167,13 @@ public class SecurityConfig {
   }
 
   @Bean
-  @Profile({"test", "security-test"})
+  @Profile("test | security-test")
   public JwtRegistry inMemoryJwtRegistry(JwtTokenProvider jwtTokenProvider) {
     return new InMemoryJwtRegistry(jwtTokenProvider);
   }
 
   @Bean
-  @Profile("!test & !security-test")
+  @Profile("dev | prod")
   public JwtRegistry redisJwtRegistry(
       @Value("${jwt.max-active-jwt-count:1}") int maxActiveJwtCount,
       JwtTokenProvider jwtTokenProvider,
