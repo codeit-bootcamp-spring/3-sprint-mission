@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.redis.RedisLockProvider;
 import com.sprint.mission.discodeit.security.handler.ForbiddenAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.handler.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.handler.JwtLogoutHandler;
@@ -9,16 +10,20 @@ import com.sprint.mission.discodeit.security.jwt.InMemoryJwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.jwt.RedisJwtRegistry;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
@@ -162,7 +167,20 @@ public class SecurityConfig {
   }
 
   @Bean
-  public JwtRegistry jwtRegistry(JwtTokenProvider jwtTokenProvider) {
+  @Profile({"test", "security-test"})
+  public JwtRegistry inMemoryJwtRegistry(JwtTokenProvider jwtTokenProvider) {
     return new InMemoryJwtRegistry(jwtTokenProvider);
+  }
+
+  @Bean
+  @Profile("!test & !security-test")
+  public JwtRegistry redisJwtRegistry(
+      @Value("${jwt.max-active-jwt-count:5}") int maxActiveJwtCount,
+      JwtTokenProvider jwtTokenProvider,
+      ApplicationEventPublisher eventPublisher,
+      RedisTemplate<String, Object> redisTemplate,
+      RedisLockProvider redisLockProvider) {
+    return new RedisJwtRegistry(maxActiveJwtCount, jwtTokenProvider, eventPublisher,
+        redisTemplate, redisLockProvider);
   }
 }
