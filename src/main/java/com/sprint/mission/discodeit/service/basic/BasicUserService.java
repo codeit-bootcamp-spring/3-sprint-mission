@@ -8,6 +8,8 @@ import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.UserUpdateEvent;
+import com.sprint.mission.discodeit.event.UserUpdateType;
 import com.sprint.mission.discodeit.exception.binarycontent.ResourceLoadFailedException;
 import com.sprint.mission.discodeit.exception.user.UserEmailDuplicationException;
 import com.sprint.mission.discodeit.exception.user.UserNameDuplicationException;
@@ -88,8 +90,6 @@ public class BasicUserService implements UserService {
 
                     binaryContentRepository.save(content);
 
-//                    binaryContentStorage.put(content.getId(), profileImage.bytes());
-
                     // 이벤트 객체를 생성
                     BinaryContentCreatedEvent binaryContentEvent = BinaryContentCreatedEvent.now(
                         content.getId(),
@@ -111,8 +111,6 @@ public class BasicUserService implements UserService {
                                 (long) data.length, "image/png");
                         binaryContentRepository.save(defaultContent);
 
-//                        binaryContentStorage.put(defaultContent.getId(), data);
-
                         // 이벤트 객체를 생성
                         BinaryContentCreatedEvent binaryContentEvent = BinaryContentCreatedEvent.now(
                             defaultContent.getId(),
@@ -131,7 +129,11 @@ public class BasicUserService implements UserService {
 
         // 로그인 여부 (온라인 여부)
         boolean isOnline = onlineStatusUtil.isOnlineUser(savedUser.getId());
-        return userMapper.toDto(savedUser, isOnline);
+        UserDto dto = userMapper.toDto(savedUser, isOnline);
+
+        eventPublisher.publishEvent(new UserUpdateEvent(UserUpdateType.CREATED, dto));
+
+        return dto;
     }
 
     // 아이디로 검색
@@ -204,7 +206,6 @@ public class BasicUserService implements UserService {
                     // 기존 이미지 있으면 삭제
                     Optional.ofNullable(user.getProfile())
                             .ifPresent(profile -> {
-//                                binaryContentStorage.delete(profile.getId());
                                 binaryContentRepository.deleteById(profile.getId());
                             });
 
@@ -215,7 +216,6 @@ public class BasicUserService implements UserService {
                             profileImage.contentType()
                     );
                     binaryContentRepository.save(content);
-//                    binaryContentStorage.put(content.getId(), profileImage.bytes());
 
                     // 이벤트 객체를 생성
                     BinaryContentCreatedEvent binaryContentEvent = BinaryContentCreatedEvent.now(
@@ -231,7 +231,11 @@ public class BasicUserService implements UserService {
                 })
                 .orElse(null);
 
-        return userMapper.toDto(user, true);
+        UserDto dto = userMapper.toDto(user, true);
+
+        eventPublisher.publishEvent(new UserUpdateEvent(UserUpdateType.UPDATED, dto));
+
+        return dto;
     }
 
 
@@ -249,6 +253,10 @@ public class BasicUserService implements UserService {
         // 바이트 파일 삭제
         Optional.ofNullable(user.getProfile())
                 .ifPresent(profile -> binaryContentStorage.delete(profile.getId()));
+
+        UserDto dto = userMapper.toDto(user, true);
+
+        eventPublisher.publishEvent(new UserUpdateEvent(UserUpdateType.UPDATED, dto));
 
         // 유저 삭제 - 영속성 전이로 UserStatus, BinaryContent 삭제
         userRepository.delete(user);

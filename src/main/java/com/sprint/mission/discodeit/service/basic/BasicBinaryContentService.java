@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.response.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.BinaryContentUpdatedEvent;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -35,7 +36,6 @@ public class BasicBinaryContentService implements BinaryContentService {
         byte[] bytes = request.bytes();
 
         BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
-//        binaryContentStorage.put(binaryContent.getId(), bytes);
 
         // 이벤트 객체를 생성
         BinaryContentCreatedEvent binaryContentEvent = BinaryContentCreatedEvent.now(
@@ -80,7 +80,11 @@ public class BasicBinaryContentService implements BinaryContentService {
         binaryContent.updateStatus(status);
         BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
 
-        return binaryContentMapper.toDto(savedBinaryContent);
+        BinaryContentDto dto = binaryContentMapper.toDto(savedBinaryContent);
+
+        eventPublisher.publishEvent(new BinaryContentUpdatedEvent(savedBinaryContent.getId(), dto));
+
+        return dto;
     }
 
     // delete

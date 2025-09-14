@@ -44,13 +44,13 @@ public class NotificationRequiredEventListener {
     @Async("notificationTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void on(MessageCreatedEvent event) {
-        UUID channelId = event.channelId();
-        UUID authorId = event.authorId();
+        UUID channelId = event.messageDto().channelId();
+        UUID authorId = event.messageDto().author().id();
 
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> new ChannelNotFoundException(channelId));
-        Message message = messageRepository.findById(event.messageId())
-            .orElseThrow(() -> new MessageNotFoundException(event.messageId()));
+        Message message = messageRepository.findById(event.messageDto().id())
+            .orElseThrow(() -> new MessageNotFoundException(event.messageDto().id()));
 
         String title = message.getAuthor().getUsername() + " (#" + channel.getName() + ")";
 
@@ -96,6 +96,7 @@ public class NotificationRequiredEventListener {
         notificationRepository.save(notification);
     }
 
+    // S3에 파일 업로드 실패 시 알림 생성
     @Async("notificationTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void on(S3UploadFailEvent event) {

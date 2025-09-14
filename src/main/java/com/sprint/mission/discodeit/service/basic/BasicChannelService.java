@@ -9,6 +9,8 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.ChannelUpdateEvent;
+import com.sprint.mission.discodeit.event.ChannelUpdateType;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
@@ -25,6 +27,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +44,7 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final ChannelMapper channelMapper;
     private final CacheManager cacheManager;
+    private final ApplicationEventPublisher eventPublisher;
 
     // 공개 채널 생성
     @CacheEvict(cacheNames = "channelsByUser", allEntries = true)
@@ -56,7 +60,11 @@ public class BasicChannelService implements ChannelService {
         );
 
         channelRepository.save(channel);
-        return channelMapper.toDto(channel);
+        ChannelDto dto = channelMapper.toDto(channel);
+
+        eventPublisher.publishEvent(new ChannelUpdateEvent(ChannelUpdateType.CREATED, dto));
+
+        return dto;
     }
 
     // 비공개 채널 생성
@@ -80,8 +88,11 @@ public class BasicChannelService implements ChannelService {
 
         // 참여자 캐시 무효화
         evictChannelUser(request.participantIds());
+        ChannelDto dto = channelMapper.toDto(channel);
 
-        return channelMapper.toDto(channel);
+        eventPublisher.publishEvent(new ChannelUpdateEvent(ChannelUpdateType.CREATED, dto));
+
+        return dto;
     }
 
     // 채널 공개 여부 별로 조건 달아준 전체 조회
@@ -131,7 +142,11 @@ public class BasicChannelService implements ChannelService {
         channel.updateDescription(request.newDescription());
         log.info("ChannelService: 채널 이름과 설명 수정이 완료되었습니다.");
 
-        return channelMapper.toDto(channel);
+        ChannelDto dto = channelMapper.toDto(channel);
+
+        eventPublisher.publishEvent(new ChannelUpdateEvent(ChannelUpdateType.UPDATED, dto));
+
+        return dto;
     }
 
     // 채널 삭제
@@ -149,6 +164,10 @@ public class BasicChannelService implements ChannelService {
 
         List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelId(channelId);
         readStatusRepository.deleteAll(readStatuses);
+
+        ChannelDto dto = channelMapper.toDto(channel);
+
+        eventPublisher.publishEvent(new ChannelUpdateEvent(ChannelUpdateType.DELETED, dto));
 
         channelRepository.deleteById(channelId);
         log.info("ChannelService: 채널이 삭제되었습니다.");

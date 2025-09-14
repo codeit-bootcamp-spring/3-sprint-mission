@@ -11,7 +11,7 @@ spring:
       spec: maximumSize=100, expireAfterAccess=600s, recordStats
 
   profiles:
-    active: dev
+    active: docker
 
   datasource:
     driver-class-name: org.postgresql.Driver

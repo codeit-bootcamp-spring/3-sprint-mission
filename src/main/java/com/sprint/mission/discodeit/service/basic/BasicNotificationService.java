@@ -4,12 +4,16 @@ import com.sprint.mission.discodeit.dto.response.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.NotificationsPersistedEvent;
 import com.sprint.mission.discodeit.exception.auth.CustomAccessDeniedException;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.sse.SseMessageRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
+import com.sprint.mission.discodeit.service.sse.SseService;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -20,6 +24,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -30,10 +35,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class BasicNotificationService implements NotificationService {
 
+    private final SseService sseService;
     private final NotificationRepository notificationRepository;
+    private final SseMessageRepository sseMessageRepository;
     private final NotificationMapper notificationMapper;
     private final UserRepository userRepository;
     private final CacheManager cacheManager;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional(readOnly = true)
@@ -71,6 +79,18 @@ public class BasicNotificationService implements NotificationService {
         Set<UUID> userIds = notifications.stream()
             .map(notification -> notification.getReceiver().getId())
             .collect(Collectors.toSet());
+
+        // 저장된 엔티티
+        List<NotificationDto> dtos = notifications.stream()
+                .map(notificationMapper::toDto)
+                .toList();
+
+        // 이벤트 발행
+        NotificationsPersistedEvent event = new NotificationsPersistedEvent(
+            new ArrayList<>(userIds),
+            dtos
+        );
+        eventPublisher.publishEvent(event);
 
         evictNotificationUser(userIds);
     }

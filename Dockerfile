@@ -1,14 +1,14 @@
 ########################################################################################
 # 1단계: Gradle 빌드 환경 (멀티플랫폼 지원)
 ########################################################################################
-FROM amazoncorretto:17 AS builder
+FROM gradle:8.5-jdk17-alpine AS builder
 
 # 작업 디렉토리
 WORKDIR /app
 
 # 환경 변수 설정
 ENV PROJECT_NAME=discodeit
-ENV PROJECT_VERSION=1.2-M8
+ENV PROJECT_VERSION=3.0-M12
 
 # Gradle Wrapper와 설정 파일 복사
 COPY gradlew .
@@ -33,11 +33,14 @@ RUN ./gradlew clean build -x test
 ########################################################################################
 # 2단계: 실행 환경 (최적화된 런타임)
 ########################################################################################
-FROM amazoncorretto:17
+FROM gradle:8.5-jdk17-alpine
+
+# 헬스체크용 curl 설치
+RUN apk add --no-cache curl
 
 LABEL maintainer="jiin" \
       description="Spring Boot discodeit" \
-      version="1.2-M8"
+      version="3.0-M12"
 
 WORKDIR /app
 
@@ -45,10 +48,10 @@ RUN mkdir -p /app/.logs/prod && chmod -R 755 /app/.logs/prod
 
 # JVM 옵션 환경 변수 설정
 ENV PROJECT_NAME=discodeit \
-     PROJECT_VERSION=1.2-M8 \
+     PROJECT_VERSION=3.0-M12 \
      JVM_OPTS=""
 
-COPY --from=builder /app/build/libs/discodeit-1.2-M8.jar /app/app.jar
+COPY --from=builder /app/build/libs/discodeit-3.0-M12.jar /app/app.jar
 
 # 기본 이미지 파일 처리
 COPY --from=builder /app/src/main/resources/static/images /app/static/images
@@ -57,7 +60,7 @@ COPY --from=builder /app/src/main/resources/static/images /app/static/images
 # 컨테이너 실행 설정
 ########################################################################################
 # 포트 노출
-EXPOSE 80
+EXPOSE 8080
 
 # 애플리케이션 실행
-ENTRYPOINT ["sh", "-c", "java $JVM_OPTS -jar /app/app.jar --spring.profiles.active=prod --server.port=80"]
+ENTRYPOINT ["sh", "-c", "java $JVM_OPTS -jar /app/app.jar --spring.profiles.active=docker --server.port=8080"]

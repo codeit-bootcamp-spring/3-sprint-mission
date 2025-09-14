@@ -96,16 +96,14 @@ public class BasicMessageService implements MessageService {
         );
         messageRepository.save(newMessage);
 
+        MessageDto messageDto = messageMapper.toDto(newMessage);
+
         // 이벤트 객체를 생성
-        MessageCreatedEvent messageCreatedEvent = MessageCreatedEvent.now(
-            newMessage.getId(),
-            newMessage.getChannel().getId(),
-            newMessage.getAuthor().getId()
-        );
+        MessageCreatedEvent messageCreatedEvent = MessageCreatedEvent.now(messageDto);
         // 생성된 이벤트 객체를 전달인자로 이벤트 발행
         eventPublisher.publishEvent(messageCreatedEvent);
 
-        return messageMapper.toDto(newMessage);
+        return messageDto;
     }
 
     // 채널의 메시지 조회

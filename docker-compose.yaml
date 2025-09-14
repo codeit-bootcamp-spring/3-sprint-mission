@@ -5,70 +5,59 @@ version: '3.8'
 # ====================================================================
 
 services:
-  # PostgreSQL 데이터베이스 서비스
-  postgres:
-    image: postgres:17-alpine
-    container_name: discodeit-db
+  # Nginx 로드 밸런서
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: discodeit-nginx
+    ports:
+      - "3000:3000"
+    networks:
+      - discodeit-network
+    depends_on:
+      - discodeit-instance-1
+      - discodeit-instance-2
+      - discodeit-instance-3
+    environment:
+      - TZ=Asia/Seoul
     restart: unless-stopped
 
-    # 환경변수 설정
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
-      TZ: "Asia/Seoul"
-
-    # 포트 매핑 (호스트:컨테이너)
-    # 로컬 PostgreSQL과의 포트 충돌 방지를 위해 54321 포트 사용
-    ports:
-      - "${POSTGRES_PORT:-54321}:5432"
-
-    # 볼륨 마운트 (데이터 영속화)
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      # 초기 스크립트 실행 (선택사항)
-#      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-create-database.sql:ro
+      - ./src/main/resources/static:/usr/share/nginx/html:ro
 
-    # 헬스체크 설정
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-discodeit_user} -d ${POSTGRES_DB:-discodeit}" ]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
 
-    # 네트워크 설정
-    networks:
-      - discodeit-network
-
-  # Spring Boot 애플리케이션 서비스
-  app:
-    # 로컬 Dockerfile에서 빌드
+  # Spring Boot 인스턴스 1
+  discodeit-instance-1:
     build:
       context: .
       dockerfile: Dockerfile
-
-    container_name: discodeit_container
+    container_name: discodeit-instance-1
+    hostname: discodeit-instance-1
     restart: unless-stopped
-
-    # PostgreSQL 서비스가 건강한 상태가 된 후 시작
     depends_on:
       postgres:
         condition: service_healthy
+    expose:
+      - "8080"
+    networks:
+      - discodeit-network
 
     # 환경변수 설정
     environment:
       # Spring 프로파일
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      SPRING_PROFILES_ACTIVE: docker
 
       # 데이터베이스 연결 정보
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-discodeit}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-discodeit_user}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-discodeit1234}
-
-      # 서버 설정
-      SERVER_PORT: ${SERVER_PORT:-8081}
 
       # JVM 설정
       JVM_OPTS: ${JVM_OPTS:-}
@@ -82,53 +71,175 @@ services:
       # 로컬 스토리지 경로(필요 시 fallback)
       STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH:-./.binarycontents}
 
-      # .env 파일의 S3 연결 정보
-      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
-      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
-      AWS_S3_REGION: ${AWS_S3_REGION}
-      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
-
-      # Presigned-URL 만료(초) – 기본 600
-      AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
-
       # 기타 설정
       TZ: "Asia/Seoul"
-
-    # 포트 매핑 (호스트:컨테이너)
-    # 로컬 Spring Boot 애플리케이션과의 포트 충돌 방지를 위해 기본은 8888 포트 사용
-    ports:
-      - "${APP_PORT:-8888}:${SERVER_PORT:-80}"
+      INSTANCE_NAME: "discodeit-instance-1"
 
     # 볼륨 마운트
     volumes:
       # 로그 디렉토리 마운트
       - app_logs:/app/.logs
       # 데이터 디렉토리 (선택사항)
-      - app_data:/app/.binarycontents
+      - app_data_1:/app/.binarycontents
+
+    # 헬스체크 설정 (시작 시간 연장)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/discodeit/monitor/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s  # 2분으로 연장
+
+  # Spring Boot 인스턴스 2
+  discodeit-instance-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discodeit-instance-2
+    hostname: discodeit-instance-2
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "8080"
+    networks:
+      - discodeit-network
+
+    # 환경변수 설정
+    environment:
+      # Spring 프로파일
+      SPRING_PROFILES_ACTIVE: docker
+
+      # 데이터베이스 연결 정보
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-discodeit}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-discodeit_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-discodeit1234}
+
+      # JVM 설정
+      JVM_OPTS: ${JVM_OPTS:-}
+
+      # 로깅 설정
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_FILE_PATH: /app/.logs/compose-application.log
+
+      STORAGE_TYPE: ${STORAGE_TYPE}
+
+      # 로컬 스토리지 경로(필요 시 fallback)
+      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH:-./.binarycontents}
+
+      # 기타 설정
+      TZ: "Asia/Seoul"
+      INSTANCE_NAME: "discodeit-instance-2"
+
+    # 볼륨 마운트
+    volumes:
+      # 로그 디렉토리 마운트
+      - app_logs:/app/.logs
+      # 데이터 디렉토리 (선택사항)
+      - app_data_2:/app/.binarycontents
+
+    # 헬스체크 설정 (시작 시간 연장)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/discodeit/monitor/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s  # 2분으로 연장
+
+  # Spring Boot 인스턴스 3
+  discodeit-instance-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discodeit-instance-3
+    hostname: discodeit-instance-3
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "8080"
+    networks:
+      - discodeit-network
+
+    # 환경변수 설정
+    environment:
+      # Spring 프로파일
+      SPRING_PROFILES_ACTIVE: docker
+
+      # 데이터베이스 연결 정보
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-discodeit}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-discodeit_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-discodeit1234}
+
+      # JVM 설정
+      JVM_OPTS: ${JVM_OPTS:-}
+
+      # 로깅 설정
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_FILE_PATH: /app/.logs/compose-application.log
+
+      STORAGE_TYPE: ${STORAGE_TYPE}
+
+      # 로컬 스토리지 경로(필요 시 fallback)
+      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH:-./.binarycontents}
+
+      # 기타 설정
+      TZ: "Asia/Seoul"
+      INSTANCE_NAME: "discodeit-instance-3"
+
+    # 볼륨 마운트
+    volumes:
+      # 로그 디렉토리 마운트
+      - app_logs:/app/.logs
+      # 데이터 디렉토리 (선택사항)
+      - app_data_3:/app/.binarycontents
+
+    # 헬스체크 설정 (시작 시간 연장)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/discodeit/monitor/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s  # 2분으로 연장
+
+  # PostgreSQL 데이터베이스 서비스
+  postgres:
+    image: postgres:17-alpine
+    container_name: discodeit-db
+    restart: unless-stopped
+
+    # 환경변수 설정
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-discodeit}
+      POSTGRES_USER: ${POSTGRES_USER:-discodeit_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-discodeit1234}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+      TZ: "Asia/Seoul"
+
+    # 볼륨 마운트 (데이터 영속화)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
     # 헬스체크 설정
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:${SERVER_PORT:-80}/discodeit/monitor/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-discodeit_user} -d ${POSTGRES_DB:-discodeit}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    expose:
+      - "5432"
 
     # 네트워크 설정
     networks:
       - discodeit-network
 
-    # 로그 설정
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
 # ====================================================================
 # 볼륨 정의 (데이터 영속화)
 # ====================================================================
-
 volumes:
   # PostgreSQL 데이터 볼륨
   postgres_data:
@@ -141,9 +252,17 @@ volumes:
     name: discodeit-app-logs
 
   # 애플리케이션 데이터 볼륨
-  app_data:
+  app_data_1:
     driver: local
-    name: discodeit-data
+    name: discodeit-app-data-1
+
+  app_data_2:
+    driver: local
+    name: discodeit-app-data-2
+
+  app_data_3:
+    driver: local
+    name: discodeit-app-data-3
 
 # ====================================================================
 # 네트워크 정의

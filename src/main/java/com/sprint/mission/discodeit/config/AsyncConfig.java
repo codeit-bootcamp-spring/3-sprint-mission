@@ -61,14 +61,14 @@ public class AsyncConfig {
 
     // 기본 executor
     @Bean(name = "taskExecutor")
-    public ThreadPoolTaskExecutor menuTaskExecutor(
+    public ThreadPoolTaskExecutor taskExecutor(
         @Value("${discodeit.async.executors.default.core-size:4}") int core,
         @Value("${discodeit.async.executors.default.max-size:8}") int max,
         @Value("${discodeit.async.executors.default.queue-capacity:100}") int queue,
         @Value("${discodeit.async.executors.default.keep-alive-seconds:60}") int keepAlive,
         TaskDecorator mdcSecurityContextTaskDecorator
     ) {
-        return buildExecutor(core, max, queue, keepAlive, "menu-exec", mdcSecurityContextTaskDecorator);
+        return buildExecutor(core, max, queue, keepAlive, "task-exec", mdcSecurityContextTaskDecorator);
     }
 
     // 알림(이메일/SMS) 발송 비동기 executor
@@ -105,5 +105,29 @@ public class AsyncConfig {
         TaskDecorator mdcSecurityContextTaskDecorator
     ) {
         return buildExecutor(core, max, queue, keepAlive, "audit-exec", mdcSecurityContextTaskDecorator);
+    }
+
+    // 사용자 이벤트 비동기 executor
+    @Bean(name = "userTaskExecutor")
+    public ThreadPoolTaskExecutor userTaskExecutor(
+        @Value("${discodeit.async.executors.user.core-size:4}") int core,
+        @Value("${discodeit.async.executors.user.max-size:8}") int max,
+        @Value("${discodeit.async.executors.user.queue-capacity:200}") int queue,
+        @Value("${discodeit.async.executors.user.keep-alive-seconds:60}") int keepAlive,
+        TaskDecorator mdcSecurityContextTaskDecorator
+    ) {
+        return buildExecutor(core, max, queue, keepAlive, "user-exec", mdcSecurityContextTaskDecorator);
+    }
+
+    // 채널 이벤트 비동기 executor
+    @Bean(name = "channelTaskExecutor")
+    public ThreadPoolTaskExecutor channelTaskExecutor(
+        @Value("${discodeit.async.executors.channel.core-size:2}") int core,
+        @Value("${discodeit.async.executors.channel.max-size:4}") int max,
+        @Value("${discodeit.async.executors.channel.queue-capacity:100}") int queue,
+        @Value("${discodeit.async.executors.channel.keep-alive-seconds:60}") int keepAlive,
+        TaskDecorator mdcSecurityContextTaskDecorator
+    ) {
+        return buildExecutor(core, max, queue, keepAlive, "channel-exec", mdcSecurityContextTaskDecorator);
     }
 }
