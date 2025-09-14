@@ -20,14 +20,15 @@ jobs:
           distribution: corretto
           java-version: '17'
 
+      # push 또는 동일 저장소 PR만 AWS 자격증명
       - name: Configure AWS credentials
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
-      # 선택: Gradle 캐시(속도 향상)
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
@@ -38,20 +39,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # 권한 문제 예방 (과거에 permission denied 경험 있었으면 필수)
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # AWS CLI 동작 확인
       - name: Test AWS CLI (STS caller identity)
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
         run: aws sts get-caller-identity
 
       - name: Describe ECR Public repository
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
         run: |
           aws ecr-public describe-repositories \
             --repository-names "${{ secrets.ECR_REPOSITORY }}" \
             --region us-east-1
-
 
       - name: Run tests & generate JaCoCo report
         run: ./gradlew test jacocoTestReport
@@ -59,6 +59,10 @@ jobs:
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.CODECOV_TOKEN }}  
           slug: bladnoch/3-sprint-mission
           fail_ci_if_error: true
+
+      - name: Note about skipped AWS steps (fork PR)
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+        run: echo "Fork PR detected → AWS steps skipped (no secrets for forked PRs)."
