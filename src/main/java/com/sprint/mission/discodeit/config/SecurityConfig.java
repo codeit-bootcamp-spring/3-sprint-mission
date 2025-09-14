@@ -3,14 +3,15 @@ package com.sprint.mission.discodeit.config;
 import com.sprint.mission.discodeit.handler.CustomAccessDeniedHandler;
 import com.sprint.mission.discodeit.handler.CustomAuthenticationEntryPoint;
 import com.sprint.mission.discodeit.handler.LoginFailureHandler;
-import com.sprint.mission.discodeit.handler.LoginSuccessHandler;
-import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
+import com.sprint.mission.discodeit.handler.SpaCsrfTokenRequestHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
+import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
@@ -20,21 +21,32 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import java.util.List;
 import java.util.stream.IntStream;
 
+/**
+ * Spring Security 설정을 담당하는 설정 클래스입니다.
+ * 
+ * <p>JWT 기반 인증, 권한 관리, CSRF 보호, 세션 관리 등을 설정합니다.</p>
+ * 
+ * <p>주요 기능:</p>
+ * <ul>
+ *   <li>JWT 기반 무상태 인증 설정</li>
+ *   <li>권한 기반 접근 제어</li>
+ *   <li>CSRF 토큰 보호</li>
+ *   <li>로그인/로그아웃 핸들러 설정</li>
+ *   <li>메소드 보안 활성화</li>
+ * </ul>
+ * 
+ * @author HuInDoL
+ * @since 1.0.0
+ */
 @Slf4j
 @Configuration
 @EnableWebSecurity
@@ -43,11 +55,22 @@ public class SecurityConfig {
 
     private static final String CONFIG_NAME = "[SecurityConfig] ";
 
+    /**
+     * 비밀번호 인코딩을 위한 BCryptPasswordEncoder를 제공합니다.
+     * 
+     * @return BCryptPasswordEncoder 인스턴스
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * 애플리케이션 시작 시 현재 적용된 보안 필터 체인을 로깅합니다.
+     * 
+     * @param filterChain 현재 적용된 보안 필터 체인
+     * @return CommandLineRunner 인스턴스
+     */
     @Bean
     public CommandLineRunner debugFilterChain(SecurityFilterChain filterChain) {
 
@@ -64,22 +87,36 @@ public class SecurityConfig {
         };
     }
 
+    /**
+     * HTTP 보안 설정을 구성합니다.
+     * 
+     * <p>CSRF 보호, 권한 관리, 세션 정책, 로그인/로그아웃 설정을 포함합니다.</p>
+     * 
+     * @param http HttpSecurity 인스턴스
+     * @param loginSuccessHandler 로그인 성공 핸들러
+     * @param loginFailureHandler 로그인 실패 핸들러
+     * @param accessDeniedHandler 접근 거부 핸들러
+     * @param authenticationEntryPoint 인증 진입점 핸들러
+     * @param jwtLogoutHandler JWT 로그아웃 핸들러
+     * @return 구성된 SecurityFilterChain
+     * @throws Exception 설정 중 발생할 수 있는 예외
+     */
     @Bean
     public SecurityFilterChain filterChain(
             HttpSecurity http,
-            LoginSuccessHandler loginSuccessHandler,
+            JwtLoginSuccessHandler loginSuccessHandler,
             LoginFailureHandler loginFailureHandler,
             CustomAccessDeniedHandler accessDeniedHandler,
             CustomAuthenticationEntryPoint authenticationEntryPoint,
-            SessionRegistry sessionRegistry,
-            DiscodeitUserDetailsService discodeitUserDetailsService) throws Exception {
+            JwtLogoutHandler jwtLogoutHandler,
+            JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
 
         log.info(CONFIG_NAME + "FilterChain 구성 시작");
 
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
@@ -89,54 +126,41 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/csrf-token").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/logout").permitAll()
-                        .requestMatchers("/api/auth/me").authenticated()
+                        .requestMatchers("/api/auth/refresh").permitAll()
                         .requestMatchers("/api/auth/role").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
-                        .sessionFixation().migrateSession()
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                        .sessionConcurrency(concurrency -> concurrency
-                                .maximumSessions(1)
-                                .maxSessionsPreventsLogin(false)
-                                .sessionRegistry(sessionRegistry)
-                                .expiredUrl("/api/auth/login") // 만료된 세션 요청 시, 로그인 페이지로 이동
-                        )
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .securityContext(securityContext -> securityContext
-                        .securityContextRepository(new HttpSessionSecurityContextRepository()))
                 .formLogin(form -> form
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(loginSuccessHandler)
                         .failureHandler(loginFailureHandler)
-                        .permitAll()
-                )
-                .rememberMe(remember -> remember
-                        .key("discodeit-remember-me-key")
-                        .tokenValiditySeconds(60 * 60)
-                        .rememberMeCookieName("remember-me")
-                        .rememberMeParameter("remember-me")
-                        .userDetailsService(discodeitUserDetailsService)
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
-                        .deleteCookies("JSESSIONID", "remember-me")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .permitAll()
+                        .addLogoutHandler(jwtLogoutHandler)
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler)
                 )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         ;
 
         return http.build();
     }
 
+    /**
+     * 웹 보안 설정을 커스터마이징합니다.
+     * 
+     * <p>정적 리소스와 에러 페이지에 대한 보안 검사를 무시합니다.</p>
+     * 
+     * @return WebSecurityCustomizer 인스턴스
+     */
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
@@ -144,41 +168,14 @@ public class SecurityConfig {
                 .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/assets/**")
                 .requestMatchers("/index.html");
     }
-
-    @Bean
-    public HttpSessionEventPublisher httpSessionEventPublisher() {
-        return new HttpSessionEventPublisher();
-    }
-
-    @Bean
-    public SessionRegistry sessionRegistry() {
-
-        return new SessionRegistryImpl() {
-
-            @Override
-            public void registerNewSession(String sessionId, Object principal) {
-                log.info(CONFIG_NAME + "새 세션 등록 - 사용자: {}, 세션 ID: {}", principal, sessionId);
-                super.registerNewSession(sessionId, principal);
-                log.info(CONFIG_NAME + "현재 활성 세션 수: {}", getAllSessions(principal, false).size());
-            }
-
-            @Override
-            public void removeSessionInformation(String sessionId) {
-                log.info(CONFIG_NAME + "세션 제거 - 세션ID: {}", sessionId);
-                super.removeSessionInformation(sessionId);
-            }
-
-            @Override
-            public SessionInformation getSessionInformation(String sessionId) {
-                SessionInformation info = super.getSessionInformation(sessionId);
-                if (info != null) {
-                    log.info(CONFIG_NAME + "세션 정보 조회 - 세션ID: {}, 만료됨: {} ", sessionId, info.isExpired());
-                }
-                return info;
-            }
-        };
-    }
-
+    
+    /**
+     * 역할 계층 구조를 정의합니다.
+     * 
+     * <p>ADMIN > CHANNEL_MANAGER > USER 순서로 권한이 상속됩니다.</p>
+     * 
+     * @return 구성된 RoleHierarchy 인스턴스
+     */
     @Bean
     public RoleHierarchy roleHierarchy() {
 
@@ -191,6 +188,14 @@ public class SecurityConfig {
         return hierarchy;
     }
 
+    /**
+     * 메소드 보안 표현식 핸들러를 구성합니다.
+     * 
+     * <p>역할 계층 구조를 메소드 보안에 적용합니다.</p>
+     * 
+     * @param roleHierarchy 역할 계층 구조
+     * @return 구성된 MethodSecurityExpressionHandler 인스턴스
+     */
     @Bean
     static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
             RoleHierarchy roleHierarchy
