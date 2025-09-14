@@ -1,0 +1,149 @@
+# Docker Compose를 활용한 멀티 컨테이너 환경 구성
+# Spring Boot 애플리케이션 + PostgreSQL 데이터베이스 연동
+# version: '3.8'  # (Compose V2에서 불필요하여 주석 처리)
+
+# ====================================================================
+# 서비스 정의
+# ====================================================================
+services:
+  ##################################################################
+  # DB (내부 전용): 외부 포트 미노출, 백엔드만 접근
+  ##################################################################
+  postgres:
+    image: postgres:17-alpine
+#    container_name: discodeit-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # 외부 노출 금지: ports 제거
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+#      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    configs:
+      - source: schema_sql
+        target: /docker-entrypoint-initdb.d/001-schema.sql
+        mode: 0444
+    healthcheck:                          # [ADDED] DB 준비 여부 확인
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB -h 127.0.0.1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  ##################################################################
+  # Redis (내부 전용): 외부 포트 미노출, 백엔드만 접근
+  ##################################################################
+  redis:
+    image: redis:7.2-alpine
+#    container_name: discodeit-redis
+    restart: unless-stopped
+    # 외부 노출 금지: ports 없음
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
+  ##################################################################
+  # Kafka (KRaft, 내부 전용): 외부 포트 미노출, 백엔드만 접근
+  ##################################################################
+  broker:
+    image: apache/kafka:latest
+    hostname: broker
+#    container_name: discodeit-kafka
+    restart: unless-stopped
+    # 외부 노출 금지: ports 없음
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+
+  ##################################################################
+  # Backend (내부 전용): 외부 포트 미노출, Nginx만 접근
+  ##################################################################
+  app:
+    image: discodeit-app:1.0.0
+    build: .
+#    container_name: discodeit-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data/discodeit/storage:${STORAGE_LOCAL_ROOT_PATH:-/app/data/discodeit/storage}
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:-broker:29092}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH:-/app/data/discodeit/storage}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      PORT: ${PORT:-8080}
+      JWT_ACCESS_TOKEN: ${JWT_ACCESS_TOKEN}
+      JWT_REFRESH_TOKEN: ${JWT_REFRESH_TOKEN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      broker:
+        condition: service_started
+    deploy:
+      mode: replicated
+      replicas: 3
+      endpoint_mode: dnsrr
+    networks:
+      - default
+      - mesh
+
+  ##################################################################
+  # Reverse Proxy (외부 유일 진입점: 3000 → 컨테이너 80)
+  ##################################################################
+  nginx:
+    image: discodeit-nginx:1.0.0
+    build:
+      context: .               # [CHANGED] Nginx 빌드 컨텍스트를 프로젝트 루트로 변경
+      dockerfile: nginx/Dockerfile  # [CHANGED] Dockerfile 경로 명시
+    container_name: discodeit-nginx-lb
+    depends_on:
+      - app
+    deploy:
+      mode: replicated
+      replicas: 1
+    ports:
+      - "3000:80"
+#    restart: unless-stopped
+    networks:
+      - default                # [ADDED] 기본 네트워크도 연결해 DNS 해석 안정화
+      - mesh                   # [ADDED]
+
+configs:
+  schema_sql:
+    file: ./src/main/resources/schema.sql
+
+volumes:
+  postgres_data:
+  redis-data:
+
+networks:
+  mesh:                        # [ADDED] Nginx ↔ app 전용 사용자 정의 네트워크

@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.security.jwt.store.InMemoryJwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
 import jakarta.annotation.PostConstruct;
+import org.springframework.lang.NonNull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,13 +40,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         try {
             log.info(FILTER_NAME + "요청 처리 시작: {} {}", request.getMethod(), request.getRequestURI());
 
-            // Authorization 헤더에서 Bearer 토큰 추출
+            // Authorization 헤더에서 Bearer 토큰 추출 (+ /api/sse는 쿼리 파라미터 access_token 허용)
             String token = resolveToken(request);
+            if (!StringUtils.hasText(token) && request.getRequestURI() != null && request.getRequestURI().startsWith("/api/sse")) {
+                String qp = request.getParameter("access_token");
+                if (StringUtils.hasText(qp)) {
+                    token = qp;
+                    log.info(FILTER_NAME + "SSE 쿼리 파라미터 access_token 사용");
+                }
+            }
 
             // 토큰 존재 유무 확인
             if (StringUtils.hasText(token)) {
@@ -57,14 +64,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     String username = jwtTokenProvider.getUsernameFromToken(token);
 
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    UserDetails user = userDetailsService.loadUserByUsername(username);
 
                     // 사용자 정보를 담은 토큰 인증 토큰 생성
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(
-                                    userDetails,
+                                    user,
                                     null,
-                                    userDetails.getAuthorities());
+                                    user.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
                     // 인증 객체에 현재 요청(request) 정보 추가

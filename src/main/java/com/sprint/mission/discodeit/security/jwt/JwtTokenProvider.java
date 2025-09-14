@@ -80,8 +80,8 @@ public class JwtTokenProvider {
         this.accessTokenVerifier = new MACVerifier(accessSecretBytes);
 
         byte[] refreshSecretBytes = refreshTokenSecret.getBytes(StandardCharsets.UTF_8);
-        this.refreshTokenSigner = new MACSigner(refreshTokenSecret);
-        this.refreshTokenVerifier = new MACVerifier(refreshTokenSecret);
+        this.refreshTokenSigner = new MACSigner(refreshSecretBytes);
+        this.refreshTokenVerifier = new MACVerifier(refreshSecretBytes);
     }
 
     /**

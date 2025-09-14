@@ -12,8 +12,9 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.security.jwt.store.InMemoryJwtRegistry;
+import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.web.sse.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -24,6 +25,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Instant;
 import java.util.List;
@@ -61,8 +64,9 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    private final InMemoryJwtRegistry jwtRegistry;
+    private final JwtRegistry jwtRegistry;
     private final ApplicationEventPublisher eventPublisher;
+    private final SseService sseService;
 
     /**
      * 신규 유저를 생성합니다.
@@ -115,7 +119,11 @@ public class BasicUserService implements UserService {
         userRepository.saveAndFlush(user);
 
         log.info(SERVICE_NAME + "신규 유저 생성 성공: userId={}", user.getId());
-        return userMapper.toDto(user);
+
+        UserDto userDto = userMapper.toDto(user);
+        sseAfterCommitBroadcast("users.created", userDto);
+
+        return userDto;
     }
 
     /**
@@ -228,10 +236,12 @@ public class BasicUserService implements UserService {
         user.update(newUsername, newEmail, newPassword, nullableProfile);
         log.info(SERVICE_NAME + "유저 정보 수정 성공: userId={}", userId);
 
-        UserDto userDto = userMapper.toDto(user);
+        UserDto userDto = UserDto.withOnlineStatus(userMapper.toDto(user), isOnline(user.getId()));
         log.info(SERVICE_NAME + "유저 접속 상태 반영 시작");
 
-        return UserDto.withOnlineStatus(userDto, isOnline(userDto.id()));
+        sseAfterCommitBroadcast("users.updated", userDto);
+
+        return userDto;
     }
 
     /**
@@ -243,12 +253,15 @@ public class BasicUserService implements UserService {
     @CacheEvict(value = {"userById", "users"}, key = "#userId")
     public void delete(UUID userId) {
         log.info(SERVICE_NAME + "유저 삭제 시도: userId={}", userId);
-        if (!userRepository.existsById(userId)) {
-            log.error(SERVICE_NAME + "유저 없음: userId={}", userId);
-            throw new UserNotFoundException("해당 사용자를 찾을 수 없습니다.");
-        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("해당 사용자를 찾을 수 없습니다."));
+
         userRepository.deleteById(userId);
         log.info(SERVICE_NAME + "유저 삭제 성공: userId={}", userId);
+
+        UserDto userDto = userMapper.toDto(user);
+        sseAfterCommitBroadcast("users.deleted", userDto);
     }
 
     private boolean isOnline(UUID userId) {
@@ -258,5 +271,16 @@ public class BasicUserService implements UserService {
     @Override
     public boolean isUserOwner(UUID targetUserId, UUID currentUserId) {
         return targetUserId.equals(currentUserId);
+    }
+
+    private void sseAfterCommitBroadcast(String eventName, Object dto) {
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() { sseService.broadcast(eventName, dto); }
+            });
+        } else {
+            sseService.broadcast(eventName, dto);
+        }
     }
 }

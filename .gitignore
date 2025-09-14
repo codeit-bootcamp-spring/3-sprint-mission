@@ -97,8 +97,6 @@ aws-credentials.txt
 credentials
 
 ### Docker 관련 ###
-docker-compose.yml
-docker-compose.override.yml
 .dockerignore
 *.log
 
@@ -123,3 +121,5 @@ Desktop.ini        # Windows
 
 ### Lombok 관련 캐시 ###
 *.lombok.log
+
+data/

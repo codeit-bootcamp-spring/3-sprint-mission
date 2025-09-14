@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.security.jwt.store.JwtDto;
 import com.sprint.mission.discodeit.security.jwt.store.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.web.sse.SseService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -52,6 +53,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
     private final CacheManager cacheManager;
+    private final SseService sseService;
 
     /**
      * JwtLoginSuccessHandler를 생성합니다.
@@ -61,13 +63,14 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
      * @param jwtRegistry JWT 토큰 상태 관리 레지스트리
      * @param cacheManager 캐시 관리 컴포넌트
      */
-    public JwtLoginSuccessHandler(ObjectMapper objectMapper, JwtTokenProvider jwtTokenProvider, 
-                                JwtRegistry jwtRegistry, CacheManager cacheManager) {
+    public JwtLoginSuccessHandler(ObjectMapper objectMapper, JwtTokenProvider jwtTokenProvider,
+                                  JwtRegistry jwtRegistry, CacheManager cacheManager, SseService sseService) {
         log.info(HANDLER_NAME + "생성자 호출됨: 응답 JSON 직렬화를 위한 매퍼, JWT 생성/쿠키 유틸리티, 토큰 상태 저장소, 캐시 매니저 주입");
         this.objectMapper = objectMapper;
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtRegistry = jwtRegistry;
         this.cacheManager = cacheManager;
+        this.sseService = sseService;
     }
 
     /**
@@ -118,6 +121,12 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 UserDto userDto = userDetails.getUserDto();
                 JwtInformation jwtInformation = new JwtInformation(userDto, accessToken,refreshToken);
                 jwtRegistry.registerJwtInformation(jwtInformation);
+
+                try {
+                    sseService.broadcast("users.updated", UserDto.withOnlineStatus(userDto, true));
+                } catch (Exception ignore) {
+                    // SSE 실패해도 로그인 플로우 계속
+                }
 
                 // 5. 리프레시 쿠키 설정
                 log.info(HANDLER_NAME + "리프레시 쿠키 설정 시작");
