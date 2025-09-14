@@ -47,3 +47,13 @@ info:
   multipart:
     max-file-size: ${spring.servlet.multipart.max-file-size}
     max-request-size: ${spring.servlet.multipart.max-request-size}
+
+discodeit:
+  # JWT 설정
+  jwt:
+    access-token:
+      secret: ${JWT_ACCESS_SECRET:Hd08eNsaSd67aFrfBqmW6C3uXse8a2RYvtiEB2FQ-2A}
+      expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:1800000} # 30 minutes
+    refresh-token:
+      secret: ${JWT_REFRESH_SECRET:ezJI5LxI-t6Wwa9gwFnrn_ZmsEjifDvowl09NFf0hzs}
+      expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000} # 7 days
