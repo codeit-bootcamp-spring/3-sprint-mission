@@ -1,16 +1,16 @@
 package com.sprint.mission.discodeit.event.listener;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.entity.enums.BinaryContentStatus;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.service.SseService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -21,9 +21,11 @@ public class BinaryContentCreatedEventListener {
 
     private final BinaryContentStorage storage;
     private final BinaryContentService binaryContentService;
+    private final SseService sseService;
+
+    private static final String EVENT_NAME_BINARY_CONTENT_UPDATED = "binaryContents.updated";
 
     @Async("binaryContentExecutor")
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onBinaryContentCreated(BinaryContentCreatedEvent event) {
 
@@ -35,13 +37,21 @@ public class BinaryContentCreatedEventListener {
         try {
             storage.put(id, event.data());
 
-            binaryContentService.updateStatus(id, BinaryContentStatus.SUCCESS);
+            sendSseEvent(id, BinaryContentStatus.SUCCESS);
             log.info("[BinaryContentCreatedEventListener] 바이너리 데이터 저장 성공: {}", id);
+
         } catch (Exception e) {
             log.error("[BinaryContentCreatedEventListener] 바이너리 데이터 저장 성공: {}, 실패 이유: {}", id,
                 e.getMessage(), e);
 
-            binaryContentService.updateStatus(id, BinaryContentStatus.FAIL);
+            sendSseEvent(id, BinaryContentStatus.FAIL);
         }
+    }
+
+    private void sendSseEvent(UUID id, BinaryContentStatus status) {
+        BinaryContentResponseDto result = binaryContentService.updateStatus(id,
+            status);
+
+        sseService.broadcast(EVENT_NAME_BINARY_CONTENT_UPDATED, result);
     }
 }

@@ -20,14 +20,12 @@ import org.springframework.security.access.expression.method.DefaultMethodSecuri
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -87,7 +85,9 @@ public class SecurityConfig {
                         csrfToken.get();
                     }
                 })
-                .ignoringRequestMatchers("/h2-console/**")) // CSRF 비활성화
+                .ignoringRequestMatchers("/h2-console/**", "/api/sse", "/ws/**",
+                    "/api/auth/**")) // CSRF 비활성화
+
             .authorizeHttpRequests(auth -> auth
                 // API가 아닌 요청
                 .requestMatchers("/h2-console/**", "/",
@@ -104,6 +104,8 @@ public class SecurityConfig {
                 .requestMatchers(("/api/auth/login")).permitAll() // 로그인
                 .requestMatchers(("/api/auth/logout")).permitAll() // 로그아웃
                 .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll() // Refresh 토큰 재발급
+                .requestMatchers("/ws/**").permitAll()
+                .requestMatchers("/api/sse").permitAll()
 
                 // 퍼블릭 채널 생성, 수정, 삭제는 CHANNEL_MANAGER 권한을 가져야함
                 .requestMatchers(HttpMethod.POST, "/api/channels/public").hasRole("CHANNEL_MANAGER")
@@ -136,7 +138,6 @@ public class SecurityConfig {
                     .logoutSuccessHandler(
                         new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
                     .addLogoutHandler(jwtLogoutHandler)
-                    .permitAll()
             )
             // 예외 처리 (적절한 권한이 없는 경우)
             .exceptionHandling(ex -> ex

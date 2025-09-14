@@ -15,6 +15,36 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @EnableRetry
 public class AsyncConfig implements AsyncConfigurer {
 
+    @Bean(name = "binaryContentExecutor")
+    public ThreadPoolTaskExecutor binaryContentExecutor(
+        @Value("${async.executors.binary-content.core-size}") int core,
+        @Value("${async.executors.binary-content.max-size}") int max,
+        @Value("${async.executors.binary-content.queue-capacity}") int queue,
+        @Value("${async.executors.binary-content.keep-alive}") int keepAlive) {
+
+        return buildExecutor(core, max, queue, keepAlive, "binaryContent-exec");
+    }
+
+    @Bean(name = "notificationExecutor")
+    public ThreadPoolTaskExecutor notificationExecutor(
+        @Value("${async.executors.notification.core-size}") int core,
+        @Value("${async.executors.notification.max-size}") int max,
+        @Value("${async.executors.notification.queue-capacity}") int queue,
+        @Value("${async.executors.notification.keep-alive}") int keepAlive) {
+
+        return buildExecutor(core, max, queue, keepAlive, "binaryContent-exec");
+    }
+
+    @Bean(name = "userLogInOutExecutor")
+    public ThreadPoolTaskExecutor userLogInOutExecutor(
+        @Value("${async.executors.user-logInOut.core-size}") int core,
+        @Value("${async.executors.user-logInOut.max-size}") int max,
+        @Value("${async.executors.user-logInOut.queue-capacity}") int queue,
+        @Value("${async.executors.user-logInOut.keep-alive}") int keepAlive) {
+
+        return buildExecutor(core, max, queue, keepAlive, "binaryContent-exec");
+    }
+
     /**
      * ThreadPoolTaskExecutor 공통 빌더
      *
@@ -43,25 +73,5 @@ public class AsyncConfig implements AsyncConfigurer {
         executor.initialize();
 
         return executor;
-    }
-
-    @Bean(name = "binaryContentExecutor")
-    public ThreadPoolTaskExecutor binaryContentExecutor(
-        @Value("${async.executors.binary-content.core-size}") int core,
-        @Value("${async.executors.binary-content.max-size}") int max,
-        @Value("${async.executors.binary-content.queue-capacity}") int queue,
-        @Value("${async.executors.binary-content.keep-alive}") int keepAlive) {
-
-        return buildExecutor(core, max, queue, keepAlive, "binaryContent-exec");
-    }
-
-    @Bean(name = "notificationExecutor")
-    public ThreadPoolTaskExecutor notificationExecutor(
-        @Value("${async.executors.notification.core-size}") int core,
-        @Value("${async.executors.notification.max-size}") int max,
-        @Value("${async.executors.notification.queue-capacity}") int queue,
-        @Value("${async.executors.notification.keep-alive}") int keepAlive) {
-
-        return buildExecutor(core, max, queue, keepAlive, "binaryContent-exec");
     }
 }

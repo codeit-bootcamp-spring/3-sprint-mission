@@ -37,7 +37,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service("basicMessageService")
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class BasicMessageService implements MessageService {
 
     private final MessageRepository messageRepository;
@@ -66,11 +65,13 @@ public class BasicMessageService implements MessageService {
             BinaryContent attachment = binaryContents.get(i);
             byte[] data = binaryContentDtos.get(i).bytes();
 
-            log.info("[BasicUserService] 메시지 첨부 파일 메타데이터 저장 이벤트 발행 시작 - Thread : {}",
+            log.info("[BasicMessageService] 메시지 첨부 파일 메타데이터 저장 이벤트 발행 시작 - Thread : {}",
                 currentThread);
-            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(attachment, data);
-            eventPublisher.publishEvent(event);
-            log.info("[BasicUserService] 메시지 첨부 파일 메타데이터 저장 이벤트 발행 완료 - Thread: {}", currentThread);
+
+            eventPublisher.publishEvent(new BinaryContentCreatedEvent(attachment, data));
+
+            log.info("[BasicMessageService] 메시지 첨부 파일 메타데이터 저장 이벤트 발행 완료 - Thread: {}",
+                currentThread);
         }
 
         String content = messageRequestDto.content();
@@ -89,10 +90,9 @@ public class BasicMessageService implements MessageService {
 
         Message savedMessage = messageRepository.save(message);
 
-        MessageCreatedEvent messageCreatedEvent = new MessageCreatedEvent(author, channel,
-            savedMessage.getContent());
+        MessageResponseDto data = messageMapper.toDto(savedMessage);
 
-        eventPublisher.publishEvent(messageCreatedEvent);
+        eventPublisher.publishEvent(new MessageCreatedEvent(data));
 
         log.info(
             "[BasicMessageService] 메시지 생성 성공- id: {}, authorId: {}, channelId: {}, content: {}",
@@ -100,10 +100,11 @@ public class BasicMessageService implements MessageService {
             savedMessage.getChannel().getId(),
             savedMessage.getContent());
 
-        return messageMapper.toDto(message);
+        return data;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public MessageResponseDto findById(UUID messageId) {
         Message message = findMessage(messageId);
 
@@ -111,6 +112,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PageResponse<MessageResponseDto> findAllByChannelId(UUID channelId, Instant cursor,
         Pageable pageable) {
         int size = pageable.getPageSize();

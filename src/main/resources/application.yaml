@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: discodeit
   cache:
     type: redis
     caffeine:
@@ -14,20 +16,23 @@ spring:
       enable-statistics: true
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
-      group-id: discodeit-group
+      group-id: discodeit.processing.notifications
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        isolation.level: read_committed
+      enable-auto-commit: false
 
-
+INSTANCE_ID: ${HOSTNAME:${random.uuid}}
 
 management:
   endpoints:
@@ -63,7 +68,10 @@ discodeit:
       region: ${AWS_S3_REGION}
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
-
+  jwt:
+    registry:
+      type: ${REGISTRY_TYPE:memory}
+    max-active-count: 3
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -104,3 +112,23 @@ async:
       max-size: ${MAX_SIZE:4}
       queue-capacity: ${QUEUE_CAPACITY:100}
       keep-alive: ${KEEP_ALIVE:30}
+    user-logInOut:
+      core-size: ${MAX_CORE_SIZE:4}
+      max-size: ${MAX_SIZE:16}
+      queue-capacity: ${QUEUE_CAPACITY:200}
+      keep-alive: ${KEEP_ALIVE:60}
+
+websocket:
+  executors:
+    core-size: ${MAX_CORE_SIZE:4}
+    max-size: ${MAX_SIZE:8}
+    queue-capacity: ${QUEUE_CAPACITY:100}
+
+# JWT 설정
+jwt:
+  access-token:
+    secret: 5mB1dfWfn8ygrUjaY31ZFhZi6KzfX_7uOj6ae9IubC0
+    exp: 900000 # 15분
+  refresh-token:
+    secret: lqmmP_B1CxhpP4g-z5y5Rco34uYbY0is4nJRdYRRtHk
+    exp: 3600000 # 1시간

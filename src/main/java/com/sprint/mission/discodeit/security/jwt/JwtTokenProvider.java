@@ -319,6 +319,33 @@ public class JwtTokenProvider {
     }
 
     /**
+     * 토큰의 userID 클레임 추출
+     *
+     * @param token JWT 문자열
+     * @return 사용자 ID
+     */
+    public UUID getUserIdFromToken(String token) {
+
+        try {
+            log.debug("[TokenProvider] getUserIdFromToken: userId 추출 시작");
+
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            String userIdStr = (String) signedJWT.getJWTClaimsSet().getClaim("userId");
+
+            if (userIdStr == null) {
+                throw new IllegalArgumentException("JWT token에서 userId claim을 찾을 수 없습니다.");
+            }
+
+            log.debug("[TokenProvider] getUserIdFromToken 결과 userId: {}",
+                UUID.fromString(userIdStr));
+
+            return UUID.fromString(userIdStr);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid JWT Token", e);
+        }
+    }
+
+    /**
      * 토큰에서 JWT ID(jti) 추출
      *
      * @param token JWT 문자열

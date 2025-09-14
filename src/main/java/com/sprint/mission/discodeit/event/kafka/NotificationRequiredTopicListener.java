@@ -2,6 +2,9 @@ package com.sprint.mission.discodeit.event.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
+import com.sprint.mission.discodeit.dto.notification.NotificationDto;
+import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -9,17 +12,23 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.enums.ChannelType;
 import com.sprint.mission.discodeit.entity.enums.Role;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
+import com.sprint.mission.discodeit.event.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
+import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
+import com.sprint.mission.discodeit.mapper.struct.NotificationMapper;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -30,26 +39,35 @@ public class NotificationRequiredTopicListener {
     private final ObjectMapper objectMapper;
     private final NotificationRepository notificationRepository;
     private final ReadStatusRepository readStatusRepository;
+    private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final CacheManager cacheManager;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final NotificationMapper notificationMapper;
+
     private static final String ROLE_UPDATE_TITLE = "권한이 변경되었습니다.";
     private static final String PRIVATE_CHANNEL_NAME = "개인 메시지";
     private static final String S3_UPLOAD_FAIL_TITLE = "S3 업로드 실패";
 
-    @KafkaListener(topics = "discodeit.MessageCreatedEvent")
+    @KafkaListener(
+        topics = "discodeit.MessageCreatedEvent",
+        containerFactory = "processingKafkaListenerContainerFactory"
+    )
     public void onMessageCreated(String kafkaEvent) {
 
         try {
             MessageCreatedEvent event = objectMapper.readValue(kafkaEvent,
                 MessageCreatedEvent.class);
-            User author = event.author();
-            Channel channel = event.channel();
-            String title = getTitle(author, channel);
-            String content = event.content();
+            MessageResponseDto message = event.data();
+
+            UserResponseDto author = message.author();
+            UUID channelId = message.channelId();
+            String title = getTitle(author, channelId);
+            String content = message.content();
 
             // 알림 수신 여부가 true인 채널의 readStatus 조회
             List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelIdAndNotificationEnabled(
-                channel.getId(), true
+                channelId, true
             );
 
             // 캐시 무효화
@@ -58,7 +76,7 @@ public class NotificationRequiredTopicListener {
                 readStatuses.stream()
                     .map(ReadStatus::getUser)
                     .map(User::getId)
-                    .filter(userId -> !userId.equals(author.getId()))
+                    .filter(userId -> !userId.equals(author.id()))
                     .distinct()
                     .forEach(cache::evict);
             }
@@ -68,20 +86,31 @@ public class NotificationRequiredTopicListener {
 
             // 메시지를 보낸 사용자는 알림 대상에서 제외
             List<Notification> notifications = readStatuses.stream()
-                .filter(readStatus -> !readStatus.getUser().equals(author))
+                .filter(readStatus -> !readStatus.getUser().getId().equals(author.id()))
                 .map(readStatus -> new Notification(title, content, readStatus.getUser()))
                 .toList();
 
-            notificationRepository.saveAll(notifications);
+            List<Notification> saved = notificationRepository.saveAll(notifications);
 
-            log.debug("[NotificationRequiredEventListener] 알림 {}개 생성 완료", notifications.size());
+            log.debug("[NotificationRequiredEventListener] 알림 {}개 생성 완료", saved.size());
+
+            for (Notification n : saved) {
+                NotificationDto dto = notificationMapper.toDto(n);
+                NotificationCreatedEvent notificationEvent = new NotificationCreatedEvent(
+                    dto.receiverId(), dto);
+                kafkaTemplate.send("discodeit.NotificationCreatedEvent",
+                    objectMapper.writeValueAsString(notificationEvent));
+            }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
 
     }
 
-    @KafkaListener(topics = "discodeit.RoleUpdatedEvent")
+    @KafkaListener(
+        topics = "discodeit.RoleUpdatedEvent",
+        containerFactory = "processingKafkaListenerContainerFactory"
+    )
     public void onRoleUpdated(String kafkaEvent) {
 
         try {
@@ -104,12 +133,21 @@ public class NotificationRequiredTopicListener {
             log.debug("[NotificationRequiredEventListener] 권한 변경 알림 생성 완료- id: {}",
                 savedNotification.getId());
 
+            NotificationDto dto = notificationMapper.toDto(savedNotification);
+            NotificationCreatedEvent notificationEvent = new NotificationCreatedEvent(
+                dto.receiverId(), dto);
+            kafkaTemplate.send("discodeit.NotificationCreatedEvent",
+                objectMapper.writeValueAsString(notificationEvent));
+
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    @KafkaListener(topics = "discodeit.S3UploadFailedEvent")
+    @KafkaListener(
+        topics = "discodeit.S3UploadFailedEvent",
+        containerFactory = "processingKafkaListenerContainerFactory"
+    )
     public void onS3UploadFailed(String kafkaEvent) {
 
         try {
@@ -137,17 +175,27 @@ public class NotificationRequiredTopicListener {
                     .forEach(cache::evict);
             }
 
-            notificationRepository.saveAll(notifications);
+            List<Notification> saved = notificationRepository.saveAll(notifications);
 
             log.debug("[NotificationRequiredEventListener] S3 업로드 실패 알림 전송 완료- {}개",
                 notifications.size());
+
+            for (Notification n : saved) {
+                NotificationDto dto = notificationMapper.toDto(n);
+                NotificationCreatedEvent notificationEvent = new NotificationCreatedEvent(
+                    dto.receiverId(), dto);
+                kafkaTemplate.send("discodeit.NotificationCreatedEvent",
+                    objectMapper.writeValueAsString(notificationEvent));
+            }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private String getTitle(User author, Channel channel) {
-        StringBuilder title = new StringBuilder(author.getUsername()).append(" (#");
+    private String getTitle(UserResponseDto author, UUID channelId) {
+        StringBuilder title = new StringBuilder(author.username()).append(" (#");
+
+        Channel channel = findChannel(channelId);
 
         if (channel.getType().equals(ChannelType.PUBLIC)) {
             title.append(channel.getName());
@@ -157,5 +205,10 @@ public class NotificationRequiredTopicListener {
         title.append(")");
 
         return title.toString();
+    }
+
+    private Channel findChannel(UUID channelId) {
+        return channelRepository.findById(channelId)
+            .orElseThrow(() -> new NotFoundChannelException(channelId));
     }
 }

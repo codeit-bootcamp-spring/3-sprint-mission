@@ -1,3 +1,6 @@
+# Spring Boot 정적 리소스 제외
+src/main/resources/static/**
+
 /.gradle
 /build
 /target
