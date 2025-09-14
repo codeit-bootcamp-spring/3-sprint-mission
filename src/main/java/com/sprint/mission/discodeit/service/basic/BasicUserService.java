@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.request.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicatedUserException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -13,21 +14,39 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.jwt.store.InMemoryJwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * 사용자(User) 관련 비즈니스 로직을 처리하는 서비스 클래스입니다.
- * <p>사용자 생성, 수정, 삭제, 조회 기능을 제공합니다.</p>
+ * 
+ * <p>사용자 생성, 수정, 삭제, 조회 기능을 제공하며, 프로필 이미지 관리와
+ * JWT 토큰 무효화 등의 보안 기능도 포함합니다.</p>
+ * 
+ * <p>주요 기능:</p>
+ * <ul>
+ *   <li>사용자 계정 생성 및 관리</li>
+ *   <li>프로필 이미지 업로드 및 관리</li>
+ *   <li>사용자 정보 수정 및 삭제</li>
+ *   <li>JWT 토큰 무효화</li>
+ *   <li>이벤트 기반 파일 처리</li>
+ * </ul>
+ * 
+ * @author HuInDoL
+ * @since 1.0.0
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -35,14 +54,15 @@ import java.util.UUID;
 @ComponentScan(basePackages = "com.example.mapper")
 public class BasicUserService implements UserService {
 
+    private static final String SERVICE_NAME = "[UserService] ";
+
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserMapper userMapper;
-    private final BinaryContentStorage binaryContentStorage;
     private final PasswordEncoder passwordEncoder;
 
-    private static final String SERVICE_NAME = "[UserService] ";
     private final InMemoryJwtRegistry jwtRegistry;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 신규 유저를 생성합니다.
@@ -52,6 +72,7 @@ public class BasicUserService implements UserService {
      */
     @Override
     @Transactional
+    @CachePut(value = "users", key = "#result.id()")
     public UserDto create(UserCreateRequest userCreateRequest,
         Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         String username = userCreateRequest.username();
@@ -72,11 +93,16 @@ public class BasicUserService implements UserService {
                 String fileName = profileRequest.fileName();
                 String contentType = profileRequest.contentType();
                 byte[] bytes = profileRequest.bytes();
-                log.debug(SERVICE_NAME + "프로필 파일 저장: fileName={}, contentType={}, size={}", fileName, contentType, bytes.length);
+
                 BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
                     contentType);
                 binaryContentRepository.save(binaryContent); // profile 기본 정보 저장
-                binaryContentStorage.put(binaryContent.getId(), profileRequest.bytes()); // profile 정보 저장
+                log.debug(SERVICE_NAME + "프로필 파일 저장: fileName={}, contentType={}, size={}", fileName, contentType, bytes.length);
+
+                log.debug(SERVICE_NAME + "BinaryContent 생성 이벤트 발행");
+                BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(binaryContent, bytes, Instant.now());
+                eventPublisher.publishEvent(event);
+
                 return binaryContent;
             })
             .orElse(null);
@@ -99,6 +125,7 @@ public class BasicUserService implements UserService {
      */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "userById", key = "#userId")
     public UserDto find(UUID userId) {
         log.info(SERVICE_NAME + "유저 조회 시도: userId={}", userId);
         return userRepository.findById(userId)
@@ -116,6 +143,7 @@ public class BasicUserService implements UserService {
      */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "users")
     public List<UserDto> findAll() {
         log.info(SERVICE_NAME + "전체 유저 목록 조회 시도");
         List<UserDto> result = userRepository.findAllWithProfile()
@@ -136,6 +164,7 @@ public class BasicUserService implements UserService {
      */
     @Override
     @Transactional
+    @CachePut(value = "users", key = "#result.id()")
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
         Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         log.info(SERVICE_NAME + "유저 정보 수정 시도: userId={}", userId);
@@ -183,11 +212,15 @@ public class BasicUserService implements UserService {
                 String fileName = profileRequest.fileName();
                 String contentType = profileRequest.contentType();
                 byte[] bytes = profileRequest.bytes();
-                log.debug(SERVICE_NAME + "새 프로필 파일 저장: fileName={}, contentType={}, size={}", fileName, contentType, bytes.length);
                 BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
                     contentType);
                 binaryContentRepository.save(binaryContent);
-                binaryContentStorage.put(binaryContent.getId(), bytes);
+                log.debug(SERVICE_NAME + "새 프로필 파일 저장: fileName={}, contentType={}, size={}", fileName, contentType, bytes.length);
+
+                log.debug(SERVICE_NAME + "BinaryContent 수정 이벤트 발행");
+                BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(binaryContent, bytes, Instant.now());
+                eventPublisher.publishEvent(event);
+
                 return binaryContent;
             })
             .orElse(user.getProfile());
@@ -207,6 +240,7 @@ public class BasicUserService implements UserService {
      */
     @Override
     @Transactional
+    @CacheEvict(value = {"userById", "users"}, key = "#userId")
     public void delete(UUID userId) {
         log.info(SERVICE_NAME + "유저 삭제 시도: userId={}", userId);
         if (!userRepository.existsById(userId)) {

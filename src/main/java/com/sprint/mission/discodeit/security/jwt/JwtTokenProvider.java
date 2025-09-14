@@ -158,6 +158,12 @@ public class JwtTokenProvider {
         return completedJWT;
     }
 
+    /**
+     * Refresh Token을 쿠키로 생성합니다.
+     * 
+     * @param refreshToken 쿠키에 저장할 Refresh Token
+     * @return 생성된 쿠키
+     */
     public Cookie generateRefreshTokenCookie(String refreshToken) {
 
         log.info(PROVIDER_NAME + "generateRefreshTokenCookie 호출됨: Refresh Token 쿠키 생성");
@@ -167,13 +173,18 @@ public class JwtTokenProvider {
         cookie.setHttpOnly(true);
         cookie.setSecure(false);                // 개발환경: HTTP도 동작하도록 Secure=false (운영 환경에선 HTTPS 통신 이용 예정)
         cookie.setPath("/");
-        cookie.setMaxAge(accessTokenExpirationMs / 1000);
+        cookie.setMaxAge(refreshTokenExpirationMs / 1000);
 
-        log.info(PROVIDER_NAME + "generateRefreshTokenCookie 완료: Max-Age= {}", (accessTokenExpirationMs / 1000));
+        log.info(PROVIDER_NAME + "generateRefreshTokenCookie 완료: Max-Age= {}", (refreshTokenExpirationMs / 1000));
 
         return cookie;
     }
 
+    /**
+     * Refresh Token 쿠키를 만료시키는 쿠키를 생성합니다.
+     * 
+     * @return 만료된 쿠키
+     */
     public Cookie generateRefreshTokenExpirationCookie() {
 
         log.info(PROVIDER_NAME + "generateRefreshTokenExpirationCookie 호출됨: Refresh Token 만료 쿠키 생성");
@@ -190,6 +201,12 @@ public class JwtTokenProvider {
         return cookie;
     }
 
+    /**
+     * HTTP 응답에 Refresh Token 쿠키를 추가합니다.
+     * 
+     * @param response 쿠키를 추가할 HTTP 응답
+     * @param refreshToken 쿠키에 저장할 Refresh Token
+     */
     public void addRefreshCookie(HttpServletResponse response, String refreshToken) {
 
         log.info(PROVIDER_NAME + "addRefreshDCookie 호출됨: Refresh Token 쿠키 응답에 추가");
@@ -199,15 +216,12 @@ public class JwtTokenProvider {
         response.addCookie(cookie);
     }
 
-    public void expireRefreshToken(HttpServletResponse response) {
-
-        log.info(PROVIDER_NAME + "expireRefreshCookie 호출됨: 만료 쿠키 응답에 추가");
-
-        Cookie cookie = generateRefreshTokenExpirationCookie();
-
-        response.addCookie(cookie);
-    }
-
+    /**
+     * Access Token의 유효성을 검증합니다.
+     * 
+     * @param accessToken 검증할 Access Token
+     * @return 토큰이 유효하면 true, 그렇지 않으면 false
+     */
     public boolean validateAccessToken(String accessToken) {
 
         log.info(PROVIDER_NAME + "validateAccessToken 호출됨: 토큰 유효성 검사 시작");
@@ -219,6 +233,12 @@ public class JwtTokenProvider {
         return result;
     }
 
+    /**
+     * Refresh Token의 유효성을 검증합니다.
+     * 
+     * @param refreshToken 검증할 Refresh Token
+     * @return 토큰이 유효하면 true, 그렇지 않으면 false
+     */
     public boolean validateRefreshToken(String refreshToken) {
 
         log.info(PROVIDER_NAME + "validateRefreshToken 호출됨: 토큰 유효성 검사 시작");
@@ -229,6 +249,16 @@ public class JwtTokenProvider {
         return result;
     }
 
+    /**
+     * JWT 토큰의 유효성을 검증하는 공통 메소드입니다.
+     * 
+     * <p>서명 무결성, 토큰 타입, 만료 시간을 검증합니다.</p>
+     * 
+     * @param accessToken 검증할 JWT 토큰
+     * @param accessTokenVerifier 토큰 검증자
+     * @param expectedType 예상되는 토큰 타입
+     * @return 토큰이 유효하면 true, 그렇지 않으면 false
+     */
     private boolean verifyToken(String accessToken, JWSVerifier accessTokenVerifier, String expectedType) {
 
         try {
@@ -267,6 +297,13 @@ public class JwtTokenProvider {
         }
     }
 
+    /**
+     * JWT 토큰에서 사용자명을 추출합니다.
+     * 
+     * @param token 사용자명을 추출할 JWT 토큰
+     * @return 토큰에 포함된 사용자명
+     * @throws IllegalArgumentException 토큰이 유효하지 않은 경우
+     */
     public String getUsernameFromToken(String token) {
         try {
             log.info(PROVIDER_NAME + "getUsernameFromToken 호출됨: subject 추출 시작");
@@ -279,6 +316,26 @@ public class JwtTokenProvider {
             return subject;
         } catch (Exception e) {
             throw new IllegalArgumentException("유효하지 않은 JWT", e);
+        }
+    }
+    
+    /**
+     * JWT 토큰에서 사용자 ID를 추출합니다.
+     * 
+     * @param token 사용자 ID를 추출할 JWT 토큰
+     * @return 토큰에 포함된 사용자 ID
+     * @throws IllegalArgumentException 토큰이 유효하지 않거나 사용자 ID를 찾을 수 없는 경우
+     */
+    public UUID getUserId(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            String userIdStr = (String) signedJWT.getJWTClaimsSet().getClaim("userId");
+            if (userIdStr == null) {
+                throw new IllegalArgumentException("JWT에서 User의 ID를 찾을 수 없습니다.");
+            }
+            return UUID.fromString(userIdStr);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("유효하지 않은 JWT입니다.", e);
         }
     }
 }

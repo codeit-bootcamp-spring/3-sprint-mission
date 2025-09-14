@@ -24,26 +24,25 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA discodeit TO discod
 
 ALTER ROLE discodeit_user SET search_path TO discodeit;
 
-DROP TABLE IF EXISTS tbl_users CASCADE;
-DROP TABLE IF EXISTS tbl_channels CASCADE;
-DROP TABLE IF EXISTS tbl_binary_contents CASCADE;
-DROP TABLE IF EXISTS tbl_read_statuses CASCADE;
-DROP TABLE IF EXISTS tbl_messages CASCADE;
-DROP TABLE IF EXISTS tbl_message_attachments CASCADE;
+-- DROP TABLE IF EXISTS tbl_users CASCADE;
+-- DROP TABLE IF EXISTS tbl_channels CASCADE;
+-- DROP TABLE IF EXISTS tbl_binary_contents CASCADE;
+-- DROP TABLE IF EXISTS tbl_read_statuses CASCADE;
+-- DROP TABLE IF EXISTS tbl_messages CASCADE;
+-- DROP TABLE IF EXISTS tbl_message_attachments CASCADE;
+-- DROP TABLE IF EXISTS tbl_notifications CASCADE;
 
 CREATE TABLE IF NOT EXISTS discodeit.tbl_binary_contents
 (
     id           UUID PRIMARY KEY, --> tbl_users profile_id, tbl_message_attachments attachment_id
     created_at   TIMESTAMP WITH TIME ZONE  NOT NULL,
+    updated_at   TIMESTAMP WITH TIME ZONE,
     file_name    VARCHAR(255) NOT NULL,
     size         BIGINT       NOT NULL,
     content_type VARCHAR(100) NOT NULL,
-    bytes        BYTEA        NOT NULL
+    status       VARCHAR(20)  NOT NULL DEFAULT 'PROCESSING'
 );
 
--- 실제로 파일 다운로드하기 전까지는 메타 정보만 알고 있으면 되기 때문에 상대적인 성능 향상 위해 DROP
-ALTER TABLE discodeit.tbl_binary_contents
-    DROP COLUMN bytes;
 
 CREATE TABLE IF NOT EXISTS tbl_users
 (
@@ -77,12 +76,13 @@ CREATE TABLE IF NOT EXISTS discodeit.tbl_channels
 
 CREATE TABLE IF NOT EXISTS discodeit.tbl_read_statuses
 (
-    id           UUID PRIMARY KEY,
-    created_at   TIMESTAMP WITH TIME ZONE NOT NULL,
+    id           UUID                       PRIMARY KEY,
+    created_at   TIMESTAMP WITH TIME ZONE   NOT NULL,
     updated_at   TIMESTAMP WITH TIME ZONE,
-    user_id      UUID NOT NULL,
-    channel_id   UUID NOT NULL,
-    last_read_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    user_id      UUID                       NOT NULL,
+    channel_id   UUID                       NOT NULL,
+    last_read_at TIMESTAMP WITH TIME ZONE   NOT NULL,
+    notification_enabled BOOLEAN            NOT NULL    DEFAULT FALSE,
     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES tbl_users (id) ON DELETE CASCADE,
     CONSTRAINT fk_channel_id FOREIGN KEY (channel_id) REFERENCES tbl_channels (id) ON DELETE CASCADE,
     UNIQUE (user_id, channel_id)
@@ -146,6 +146,17 @@ CREATE TABLE IF NOT EXISTS discodeit.tbl_message_attachments
 --             REFERENCES tbl_binary_contents (id)
 --             ON DELETE CASCADE;
 
+CREATE TABLE IF NOT EXISTS tbl_notifications
+(
+    id          UUID        NOT NULL PRIMARY KEY,
+    created_at  TIMESTAMPTZ NOT NULL,
+    title       VARCHAR(50) NOT NULL,
+    content     VARCHAR(255)NOT NULL,
+    receiver_id  UUID        NOT NULL,
+    CONSTRAINT  fk_receiverId FOREIGN KEY (receiver_id) REFERENCES tbl_users (id) ON DELETE CASCADE
+
+);
+
 SELECT table_schema, table_name
 FROM information_schema.tables
 WHERE table_name = 'tbl_binary_contents';
@@ -154,3 +165,4 @@ SELECT table_schema, table_name
 FROM information_schema.tables
 WHERE table_schema = 'discodeit'
   AND table_name = 'tbl_binary_contents';
+

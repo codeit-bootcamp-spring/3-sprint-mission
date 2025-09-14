@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.security.jwt.store;
 
-import java.util.Optional;
 import java.util.UUID;
 
 /**

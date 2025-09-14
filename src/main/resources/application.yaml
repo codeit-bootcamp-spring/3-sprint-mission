@@ -8,10 +8,36 @@ spring:
     multipart:
       maxFileSize: 10MB # 파일 하나의 최대 크기
       maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
+  cache:
+    type: redis
+    cache-names:
+      - channels
+      - notifications
+      - users
+    caffeine:
+      spec: >
+        maximumSize=100,
+        expireAfterAccess=600s,
+        recordStats
+    redis:
+      enable-statistics: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
   session:
     timeout: 30m
-
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
   # JPA 설정
   jpa:
     hibernate:
@@ -31,6 +57,7 @@ spring:
   config:
     import: optional:file:.env[.properties]
 
+
 admin:
   username: admin
   email: admin@discodeit.com
@@ -39,6 +66,9 @@ admin:
 logging:
   level:
     root: info
+    org.springframework.cache: debug
+    org.springframework.cache.interceptor: trace
+    org.ohgiraffers.springcache: debug
 
 server:
   port: ${PORT:8080}
@@ -61,7 +91,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, loggers
+        include: health, info, metrics, loggers, env, configprops, beans, threaddump, heapdump, caches
       base-path: /actuator
   endpoint:
     health:
@@ -69,9 +99,26 @@ management:
       # 추후 never로 수정
       show-details: never
       show-components: never
+    metrics:
+      enabled: true
+    caches:
+      access: unrestricted
   info:
     env:
       enabled: true             # info 엔드포인트 명시적 활성화
+  observations:
+    annotations:
+      enabled: true
+  # Prometheus 메트릭 설정 (새로운 구조)
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  # 웹 서버 메트릭 설정 (Spring Boot 3.4.0 구조)
+  metrics:
+    distribution:
+      percentiles:
+        all: 0.5,0.95,0.99,0.999
 
 info:
   app:
@@ -99,9 +146,29 @@ info:
 
 jwt:
   access-token:
-    secret: ${JWT_ACCESS_TOKEN} # 임의 값 입력
+    secret: ${JWT_ACCESS_TOKEN:your-access-token-secret-key} # 임의 값 입력
     exp: 900000                                          # 15분(ms)
   refresh-token:
-    secret: ${JWT_REFRESH_TOKEN} # 임의 값 입력
+    secret: ${JWT_REFRESH_TOKEN:your-secret-token-secret-key} # 임의 값 입력
     exp: 3600000                                         # 1시간(ms)
   max-active-count: 1
+
+async:
+  executors:
+    main:
+      core-size: 4
+      max-size: 8
+      queue-capacity: 200
+      keep-alive-seconds: 60
+    # 파일 업로드/이미지 처리 등 작업 TaskExecutor 설정
+    file:
+      core-size: 2
+      max-size: 4
+      queue-capacity: 100
+      keep-alive-seconds: 60
+    # 알림 발송 비동기 TaskExecutor 설정
+    notification:
+      core-size: 2
+      max-size: 4
+      queue-capacity: 500
+      keep-alive-seconds: 60

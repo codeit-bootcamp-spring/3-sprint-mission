@@ -10,4 +10,7 @@ public interface UserMapper {
 
     @Mapping(target = "online", ignore = true)
     UserDto toDto(User user);
+
+    @Mapping(target = "role", ignore = true)
+    User toEntity(UserDto userDto);
 }

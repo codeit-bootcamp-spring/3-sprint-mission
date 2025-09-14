@@ -1,13 +1,17 @@
 package com.sprint.mission.discodeit.security.jwt;
 
 import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
+import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +45,7 @@ public class JwtLogoutHandler implements LogoutHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
+    private final CacheManager cacheManager;
 
     /**
      * 핸들러 초기화를 수행합니다.
@@ -77,21 +82,84 @@ public class JwtLogoutHandler implements LogoutHandler {
                 .filter(cookie -> cookie.getName().equals(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME))
                 .findFirst()
                 .ifPresent(cookie -> {
-                    if (jwtRegistry.hasActiveJwtInformationByRefreshToken(cookie.getValue())) {
-                        String refreshToken = cookie.getValue();
-
+                    String refreshToken = cookie.getValue();
+                    try {
                         UUID userId = jwtRegistry.findUserIdByRefreshToken(refreshToken);
 
                         if (userId != null) {
+                            // 1. JWT 레지스트리에서 토큰 무효화
                             jwtRegistry.invalidateJwtInformationByUserId(userId);
+                            log.info(HANDLER_NAME + "사용자 토큰 무효화 완료: userId={}", userId);
 
-                            log.info(HANDLER_NAME + "Refresh Token 무효화 완료");
+                            // 2. 사용자 관련 캐시 무효화
+                            evictUserCache(userId);
+
                         } else {
-                            log.info(HANDLER_NAME + "RefreshToken을 소유한 유저가 존재하지 않음");
+                            log.warn(HANDLER_NAME + "Refresh Token에 해당하는 사용자를 찾을 수 없음: {}", refreshToken);
                         }
-                    } else {
-                        log.info(HANDLER_NAME + "유효한 Refresh Token이 없음");
+                    } catch (Exception e) {
+                        log.error(HANDLER_NAME + "토큰 무효화 중 오류 발생: {}", e.getMessage(), e);
                     }
                 });
+    }
+
+    /**
+     * 사용자 관련 캐시를 무효화합니다.
+     * 
+     * @param userId 사용자 ID
+     */
+    private void evictUserCache(UUID userId) {
+        try {
+            // 사용자 정보 캐시 무효화
+            Cache userCache = cacheManager.getCache("userById");
+            if (userCache != null) {
+                userCache.evict(userId);
+                log.debug(HANDLER_NAME + "사용자 정보 캐시 무효화 완료 - userId: {}", userId);
+            }
+
+            // 전체 사용자 목록 캐시 무효화
+            Cache usersCache = cacheManager.getCache("users");
+            if (usersCache != null) {
+                usersCache.clear();
+                log.debug(HANDLER_NAME + "전체 사용자 목록 캐시 무효화 완료");
+            }
+
+            // UserDetails 캐시 무효화 (SecurityContext에서 username 조회)
+            String username = getCurrentUsername();
+            if (username != null) {
+                Cache userDetailsCache = cacheManager.getCache("userDetailsByUsername");
+                if (userDetailsCache != null) {
+                    userDetailsCache.evict(username);
+                    log.debug(HANDLER_NAME + "UserDetails 캐시 무효화 완료 - username: {}", username);
+                }
+            } else {
+                log.debug(HANDLER_NAME + "현재 사용자명을 찾을 수 없어 UserDetails 캐시 무효화 생략 - userId: {}", userId);
+            }
+
+            log.info(HANDLER_NAME + "사용자 로그아웃 캐시 무효화 완료 - userId: {}", userId);
+
+        } catch (Exception e) {
+            log.warn(HANDLER_NAME + "사용자 로그아웃 캐시 무효화 실패 - userId: {}", userId, e);
+        }
+    }
+
+    /**
+     * 현재 SecurityContext에서 사용자명을 가져옵니다.
+     * 
+     * @return 현재 사용자명, 인증되지 않은 경우 null
+     */
+    private String getCurrentUsername() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            
+            if (authentication != null && authentication.getPrincipal() instanceof DiscodeitUserDetails) {
+                return ((DiscodeitUserDetails) authentication.getPrincipal()).getUsername();
+            }
+            
+            return null;
+        } catch (Exception e) {
+            log.debug(HANDLER_NAME + "현재 사용자명 조회 실패", e);
+            return null;
+        }
     }
 }
