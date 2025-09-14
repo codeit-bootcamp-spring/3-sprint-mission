@@ -9,8 +9,6 @@ import com.sprint.mission.discodeit.event.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.event.UserLogInOutEvent;
 import com.sprint.mission.discodeit.exception.user.NotFoundUserException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.mapper.struct.NotificationMapper;
-import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.SseService;
 import java.util.List;
@@ -28,8 +26,6 @@ public class BroadcastListener {
 
     private final ObjectMapper objectMapper;
     private final SseService sseService;
-    private final NotificationRepository notificationRepository;
-    private final NotificationMapper notificationMapper;
     private final SimpMessagingTemplate messagingTemplate;
     private final UserRepository userRepository;
     private final UserMapper userMapper;

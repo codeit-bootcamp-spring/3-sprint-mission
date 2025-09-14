@@ -16,7 +16,6 @@ import com.sprint.mission.discodeit.event.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.exception.channel.NotFoundChannelException;
-import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.mapper.struct.NotificationMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
@@ -49,7 +48,6 @@ public class NotificationRequiredTopicListener {
     private static final String ROLE_UPDATE_TITLE = "권한이 변경되었습니다.";
     private static final String PRIVATE_CHANNEL_NAME = "개인 메시지";
     private static final String S3_UPLOAD_FAIL_TITLE = "S3 업로드 실패";
-    private final UserMapper userMapper;
 
     @KafkaListener(
         topics = "discodeit.MessageCreatedEvent",
