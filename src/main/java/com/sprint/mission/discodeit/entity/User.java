@@ -1,81 +1,64 @@
 package com.sprint.mission.discodeit.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
-/**
- * packageName    : com.sprint.mission.discodeit.refactor.entity
- * fileName       : User
- * author         : doungukkim
- * date           : 2025. 4. 17.
- * description    :
- * ===========================================================
- * DATE              AUTHOR             NOTE
- * -----------------------------------------------------------
- * 2025. 4. 17.        doungukkim       최초 생성
- */
-@Getter
 @Entity
-@ToString
-@NoArgsConstructor
+@Table(name = "users")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)  // JPA를 위한 기본 생성자
+public class User extends BaseUpdatableEntity {
 
-@AllArgsConstructor
-@Builder
-@Table(name = "users", schema = "discodeit")
-public class User extends BaseUpdatableEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
+  @Column(length = 50, nullable = false, unique = true)
+  private String username;
+  @Column(length = 100, nullable = false, unique = true)
+  private String email;
+  @Column(length = 60, nullable = false)
+  private String password;
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(name = "profile_id", columnDefinition = "uuid")
+  private BinaryContent profile;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Role role = Role.USER;
 
-    @Column(name = "username", nullable = false, length = 50)
-    private String username;
+  public User(String username, String email, String password, BinaryContent profile) {
+    this.username = username;
+    this.email = email;
+    this.password = password;
+    this.profile = profile;
+  }
 
-    @Column(name = "email", nullable = false,length = 100)
-    private String email;
-
-    @Column(name = "password", nullable = false, length = 60)
-    private String password;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "USER")
-    private Role role;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "profile_id")
-    private BinaryContent profile;
-
-    // 프로필 있음
-    public User(String username, String email, String password, BinaryContent profile) {
-        super();
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.profile = profile;
-        this.role = Role.USER;
+  public void update(String newUsername, String newEmail, String newPassword,
+      BinaryContent newProfile) {
+    if (newUsername != null && !newUsername.equals(this.username)) {
+      this.username = newUsername;
     }
+    if (newEmail != null && !newEmail.equals(this.email)) {
+      this.email = newEmail;
+    }
+    if (newPassword != null && !newPassword.equals(this.password)) {
+      this.password = newPassword;
+    }
+    if (newProfile != null) {
+      this.profile = newProfile;
+    }
+  }
 
-    // 프로필 없음
-    public User(String username, String email, String password) {
-        super();
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.role = Role.USER;
+  public void updateRole(Role newRole) {
+    if (this.role != newRole) {
+      this.role = newRole;
     }
-
-    public void changeUsername(String username) {
-        this.username = username;
-    }
-    public void changeEmail(String email) {
-        this.email = email;
-    }
-    public void changePassword(String password) {
-        this.password = password;
-    }
-    public void changeProfile(BinaryContent profile) {
-        this.profile = profile;
-    }
-    public void changeRole(Role role) {
-        this.role = role;
-    }
+  }
 }

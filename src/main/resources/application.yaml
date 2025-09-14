@@ -1,3 +1,6 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: discodeit
@@ -5,25 +8,53 @@ spring:
     multipart:
       maxFileSize: 10MB
       maxRequestSize: 30MB
+
   datasource:
     driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://db:5432/discodeit
+    username: discodeit_user
+    password: discodeit1234
+
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create
     open-in-view: false
-  profiles:
-    active:
-      - dev
+    properties:
+      hibernate.format_sql: true
+
+  cache:
+    type: redis
+    cache-names: [channels, notifications, users]
+    redis:
+      enable-statistics: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info,metrics,loggers
-      base-path: /actuator  # Actuator 엔드포인트 기본 경로
   endpoint:
     health:
       show-details: always
+  observations:
+    annotations:
+      enabled: true
 
 info:
   name: Discodeit
@@ -32,40 +63,31 @@ info:
     version: 17
   spring-boot:
     version: 3.4.0
-  config:
-    datasource:
-      url: ${spring.datasource.url}
-      driver-class-name: ${spring.datasource.driver-class-name}
-    jpa:
-      ddl-auto: ${spring.jpa.hibernate.ddl-auto}
-    storage:
-      type: ${discodeit.storage.type}
-      path: ${discodeit.storage.local.root-path}
-    multipart:
-      max-file-size: ${spring.servlet.multipart.maxFileSize}
-      max-request-size: ${spring.servlet.multipart.maxRequestSize}
 
 discodeit:
   storage:
-    type: ${STORAGE_TYPE:local}
+    type: ${STORAGE_TYPE:local}                  # local | s3
     local:
-      root-path: ${STORAGE_LOCAL_ROOT:.discodeit/storage}
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:/data/storage}
     s3:
-      access-key: ${AWS_S3_ACCESS_KEY}
-      secret-key: ${AWS_S3_SECRET_KEY}
-      region: ${AWS_S3_REGION}
-      bucket: ${AWS_S3_BUCKET}
+      access-key: ${AWS_S3_ACCESS_KEY:}
+      secret-key: ${AWS_S3_SECRET_KEY:}
+      region: ${AWS_S3_REGION:}
+      bucket: ${AWS_S3_BUCKET:}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
-
-  repository:
-    type: jcf
-    file-directory: data/
+  admin:
+    username: ${DISCODEIT_ADMIN_USERNAME:admin}
+    email: ${DISCODEIT_ADMIN_EMAIL:admin@admin.com}
+    password: ${DISCODEIT_ADMIN_PASSWORD:admin}
+  jwt:
+    access-token:
+      secret: ${ACCESS_TOKEN_SECRET:VhJ6h8zYj1c1dXyC2kQ3cR2b7aKjQ8bKp8m7S1dHj5xO2kVfY3yXc1lNq9rT6uWmG9tQ4pA8vJ2mK6yB1rU9sQ==}
+      expiration-ms: ${ACCESS_TOKEN_EXP:1800000}
+    refresh-token:
+      secret: ${REFRESH_TOKEN_SECRET:Y2mK9tQ3pL8vH1sN4cE7bR5xU2jW9nD6qF3rS8yT1kV5mP2aC7dL9gR3hT6uJ8kQ1wZ5oN2vB6pM9sD4fG7hJ2lA==}
+      expiration-ms: ${REFRESH_TOKEN_EXP:604800000}
 
 logging:
   level:
     root: info
-
-file:
-  upload:
-    all:
-      path: ./files
+    com.sprint.mission.discodeit: debug
