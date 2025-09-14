@@ -39,6 +39,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * Spring Security 설정
@@ -110,7 +111,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/logout").permitAll()
-                .requestMatchers("/api/auth/refresh").permitAll()
+                .requestMatchers(
+                    AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/refresh")).permitAll()
+                .requestMatchers("/discodeit/monitor/caches/**").permitAll()
 
                 // 퍼블릭 채널 생성, 수정, 삭제는 CHANNEM_MANAGER 권한을 가져야 함
                 .requestMatchers(HttpMethod.POST, "/api/channels/public").hasRole("CHANNEL_MANAGER")

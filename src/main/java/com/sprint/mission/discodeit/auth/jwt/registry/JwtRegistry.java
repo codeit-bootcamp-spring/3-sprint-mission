@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.auth.jwt.registry;
 import java.util.UUID;
 
 public interface JwtRegistry {
-    void registerJwt(JwtInformation jwtInformation);
+    void registerJwtInformation(JwtInformation jwtInformation);
 
     void invalidateJwtInformationByUserId(UUID userId);
 
@@ -14,6 +14,8 @@ public interface JwtRegistry {
     boolean hasActiveJwtInformationByRefreshToken(String refreshToken);
 
     void rotateJwtInformation(String refreshToken, JwtInformation newJwtInformation);
+
+    void clearExpiredJwtInformation();
 
     void invalidateByRefreshToken(String refreshToken);
 }

@@ -19,14 +19,14 @@ CREATE TABLE IF NOT EXISTS binary_contents
 (
     id UUID,
     created_at timestamptz NOT NULL,
+    updated_at timestamptz,
     file_name varchar(255) NOT NULL,
     size bigint NOT NULL,
     content_type varchar(100) NOT NULL,
---     bytes bytea NOT NULL,
+    status varchar(20) NOT NULL,
 
     CONSTRAINT pk_binary_id PRIMARY KEY (id)
 );
-
 
 -- users 테이블 생성
 CREATE TABLE IF NOT EXISTS users
@@ -98,6 +98,7 @@ CREATE TABLE IF NOT EXISTS read_statuses
     user_id UUID NOT NULL,
     channel_id UUID NOT NULL,
     last_read_at timestamptz NOT NULL,
+    notification_enabled boolean NOT NULL,
 
     CONSTRAINT pk_read_status_id PRIMARY KEY (id),
     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
@@ -116,3 +117,16 @@ CREATE TABLE IF NOT EXISTS message_attachments
     CONSTRAINT fk_message_id FOREIGN KEY (message_id) REFERENCES messages (id) ON DELETE CASCADE,
     CONSTRAINT fk_attachment_id FOREIGN KEY (attachment_id) REFERENCES binary_contents (id) ON DELETE CASCADE
 );
+
+-- notifications 테이블 생성
+CREATE TABLE IF NOT EXISTS notifications
+(
+    id UUID,
+    created_at timestamptz NOT NULL,
+    receiver_id UUID NOT NULL,
+    title       VARCHAR(200) NOT NULL,
+    content     TEXT NOT NULL,
+
+    CONSTRAINT pk_notifications_id PRIMARY KEY (id),
+    CONSTRAINT fk_users_receiver_id FOREIGN KEY (receiver_id) REFERENCES users (id) ON DELETE CASCADE
+)

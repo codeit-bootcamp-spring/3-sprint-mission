@@ -29,30 +29,30 @@ public class JwtLogoutHandler implements LogoutHandler {
         Authentication authentication) {
         log.info("[JwtLogoutHandler] 로그아웃 처리 시작");
         try {
-            boolean invalidated = false;
-
             // 레지스트리에서 사용자의 활성 JWT 무효화 (인증된 경우)
             if (authentication != null && authentication.getPrincipal() instanceof DiscodeitUserDetails userDetails) {
                 UUID userId = userDetails.getId();
                 jwtRegistry.invalidateJwtInformationByUserId(userId);
                 log.debug("[JwtLogoutHandler] 레지스트리 무효화 완료 - userId={}", userId);
-                invalidated = true;
             }
 
             // 인증 없어도 요청 쿠키의 리프레시 토큰을 활용해 토큰을 무효화
             String refreshToken = extractRefreshTokenFromCookie(request);
-            if (!invalidated && StringUtils.hasText(refreshToken)) {
-                if (jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
-                    // 단일 세션 제거
-                    jwtRegistry.invalidateByRefreshToken(refreshToken);
+            if (StringUtils.hasText(refreshToken)) {
+                try {
+                    UUID userIdFromRt = tokenProvider.getUserIdFromToken(refreshToken);
 
-                    log.debug("[JwtLogoutHandler] 쿠키 RT 기반 세션 무효화 완료");
-                    invalidated = true;
+                    if (userIdFromRt != null) {
+                        jwtRegistry.invalidateJwtInformationByUserId(userIdFromRt);
+                        log.debug("[JwtLogoutHandler] 쿠키 RT 기반 전체 무효화 완료 - userId={}", userIdFromRt);
+                    } else {
+                        log.debug("[JwtLogoutHandler] 리프레시 토큰에서 userId 파싱 실패");
+                    }
+                } catch (Exception ex) {
+                    log.debug("[JwtLogoutHandler] 리프레시 토큰 처리 중 예외: {}", ex.getMessage());
                 }
-            }
-
-            if (!invalidated) {
-                log.debug("[JwtLogoutHandler] 무효화할 활성 세션 없음");
+            } else {
+                log.debug("[JwtLogoutHandler] 유효한 리프레시 토큰 쿠키 없음");
             }
 
         } catch (Exception e) {

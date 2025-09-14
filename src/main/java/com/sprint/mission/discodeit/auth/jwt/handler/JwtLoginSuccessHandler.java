@@ -38,7 +38,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
         if (!(authentication.getPrincipal() instanceof DiscodeitUserDetails userDetails)) {
             log.error("[JwtLoginSuccessHandler] 예상치 못한 Principal 타입: {}", authentication.getPrincipal().getClass());
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
@@ -56,7 +56,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
 
             // 인메모리 레지스트리 등록
             JwtInformation jwtInfo = new JwtInformation(userDto, accessToken, refreshToken);
-            jwtRegistry.registerJwt(jwtInfo);
+            jwtRegistry.registerJwtInformation(jwtInfo);
 
             // RefreshToken 쿠키로 내려보내기
             jwtTokenProvider.addRefreshCookie(response, refreshToken);

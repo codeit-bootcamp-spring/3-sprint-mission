@@ -40,6 +40,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.postgresql:postgresql'
 	implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+	implementation 'org.springframework.retry:spring-retry'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
 
 	annotationProcessor 'org.projectlombok:lombok:1.18.32'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'

@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
@@ -20,6 +21,10 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,8 +40,10 @@ public class BasicChannelService implements ChannelService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final ChannelMapper channelMapper;
+    private final CacheManager cacheManager;
 
     // 공개 채널 생성
+    @CacheEvict(cacheNames = "channelsByUser", allEntries = true)
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     @Transactional
@@ -64,9 +71,15 @@ public class BasicChannelService implements ChannelService {
         );
         channelRepository.save(channel);
 
-        request.participantIds().stream()
-                .map(userId -> new ReadStatus(userRepository.findById(userId).get(), channel, channel.getCreatedAt()))
-                .forEach(readStatusRepository::save);
+        List<User> users = userRepository.findAllById(request.participantIds());
+
+        List<ReadStatus> readStatuses = users.stream()
+                .map(user -> new ReadStatus(user, channel, channel.getCreatedAt()))
+                .toList();
+        readStatusRepository.saveAll(readStatuses);
+
+        // 참여자 캐시 무효화
+        evictChannelUser(request.participantIds());
 
         return channelMapper.toDto(channel);
     }
@@ -74,6 +87,7 @@ public class BasicChannelService implements ChannelService {
     // 채널 공개 여부 별로 조건 달아준 전체 조회
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "channelsByUser", key = "#userId")
     public List<ChannelDto> findAllByUserId(UUID userId) {
 
         List<UUID> participants = readStatusRepository.findAllByUserId(userId).stream()
@@ -100,6 +114,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     // 채널 이름 수정
+    @CacheEvict(cacheNames = "channelsByUser", allEntries = true)
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     @Transactional
@@ -120,6 +135,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     // 채널 삭제
+    @CacheEvict(cacheNames = "channelsByUser", allEntries = true)
     @PreAuthorize("hasRole('CHANNEL_MANAGER')")
     @Override
     @Transactional
@@ -136,5 +152,19 @@ public class BasicChannelService implements ChannelService {
 
         channelRepository.deleteById(channelId);
         log.info("ChannelService: 채널이 삭제되었습니다.");
+    }
+
+    // 비공개 채널 참여자의 캐시 삭제를 위한 메서드
+    private void evictChannelUser(List<UUID> userIds) {
+        Cache cache = cacheManager.getCache("channelsByUser");
+
+        if (cache != null) {
+            for (UUID userId : userIds) {
+                cache.evict(userId);
+            }
+        }
+        else {
+            log.warn("채널 캐시가 존재하지 않습니다.");
+        }
     }
 }

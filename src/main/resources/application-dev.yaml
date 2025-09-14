@@ -32,6 +32,9 @@ logging:
     org.hibernate.orm.jdbc.bind: TRACE
     # Spring Security 관련 디버그 로그 활성화
     org.springframework.security: TRACE
+    # 캐시 인터셉터 로그
+    org.springframework.cache: TRACE
+    org.springframework.cache.interceptor: TRACE
 
 
 info:
@@ -57,3 +60,31 @@ discodeit:
     refresh-token:
       secret: ${JWT_REFRESH_SECRET:ezJI5LxI-t6Wwa9gwFnrn_ZmsEjifDvowl09NFf0hzs}
       expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000} # 7 days
+
+  # 비동기 TaskExecutor 설정
+  async:
+    executors:
+      # 기본 TaskExecutor 설정
+      default:
+        core-size: ${ASYNC_MENU_CORE_SIZE:4}
+        max-size: ${ASYNC_MENU_MAX_SIZE:8}
+        queue-capacity: ${ASYNC_MENU_QUEUE_CAPACITY:200}
+        keep-alive-seconds: ${ASYNC_MENU_KEEP_ALIVE_SECONDS:60}
+      # 알림(이메일/SMS) 발송 비동기 TaskExecutor 설정
+      notification:
+        core-size: ${ASYNC_NOTIFICATION_CORE_SIZE:2}
+        max-size: ${ASYNC_NOTIFICATION_MAX_SIZE:4}
+        queue-capacity: ${ASYNC_NOTIFICATION_QUEUE_CAPACITY:500}
+        keep-alive-seconds: ${ASYNC_NOTIFICATION_KEEP_ALIVE_SECONDS:60}
+      # 파일 업로드/이미지 처리 등 작업 TaskExecutor 설정
+      file:
+        core-size: ${ASYNC_FILE_CORE_SIZE:2}
+        max-size: ${ASYNC_FILE_MAX_SIZE:4}
+        queue-capacity: ${ASYNC_FILE_QUEUE_CAPACITY:100}
+        keep-alive-seconds: ${ASYNC_FILE_KEEP_ALIVE_SECONDS:120}
+      # 감사 로그/모니터링 등 백그라운드 작업 TaskExecutor 설정
+      audit:
+        core-size: ${ASYNC_AUDIT_CORE_SIZE:1}
+        max-size: ${ASYNC_AUDIT_MAX_SIZE:2}
+        queue-capacity: ${ASYNC_AUDIT_QUEUE_CAPACITY:1000}
+        keep-alive-seconds: ${ASYNC_AUDIT_KEEP_ALIVE_SECONDS:60}

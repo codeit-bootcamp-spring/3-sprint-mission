@@ -103,6 +103,19 @@
             <appender-ref ref="ERROR_FILE"/>
         </logger>
 
+        <!-- JWT 및 인증 관련 로그는 항상 표시 -->
+        <logger name="com.sprint.mission.discodeit.auth" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="APP_FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </logger>
+        
+        <!-- Security 관련 로그 -->
+        <logger name="org.springframework.security" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="APP_FILE"/>
+        </logger>
+
         <!-- Spring Framework 로그 레벨 조정 -->
         <logger name="org.springframework" level="INFO"/>
         <logger name="org.springframework.web" level="DEBUG"/>

@@ -1,6 +1,14 @@
 spring:
   application:
     name: discodeit
+  cache:
+    type: caffeine
+    cache-names:
+      - channelsByUser
+      - notificationsByUser
+      - usersAll
+    caffeine:
+      spec: maximumSize=100, expireAfterAccess=600s, recordStats
 
   profiles:
     active: dev
@@ -23,13 +31,13 @@ management:
     web:
       base-path: /discodeit/monitor
       exposure:
-        include: health, info, metrics, loggers
+        include: health, info, metrics, loggers, caches, prometheus
   endpoint:
     info:
       cache:
         time-to-live: 60s  # 60초간 info를 메모리에 저장
     health:
-      show-details: always      # 건강 상태 상세 정보 표시
+      show-details: when_authorized
 
   # Actuator info 엔드포인트 설정
   info:

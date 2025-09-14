@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -19,14 +20,18 @@ public class MessageSecurityService {
     }
 
     public boolean canEdit(UUID messageId, UUID userId) {
-        Message message = messageRepository.findById(messageId).orElse(null);
-        if (message == null) return false;
+        Optional<Message> message = messageRepository.findById(messageId);
+        if (message.isEmpty()) {
+            return false;
+        }
 
-        User user = userRepository .findById(userId).orElse(null);
-        if (user == null) return false;
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()) {
+            return false;
+        }
 
         // 작성자인 경우
-        return message.getAuthor().getId().equals(user.getId());
+        return message.get().getAuthor().getId().equals(user.get().getId());
     }
 
     public boolean canDelete(UUID messageId, UUID userId) {

@@ -22,4 +22,6 @@ public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID>,
     // 채널 아이디로 조회
     List<ReadStatus> findAllByChannelId(UUID channelId);
 
+    List<ReadStatus> findAllByChannelIdAndNotificationEnabledTrue(UUID channelId);
+
 }

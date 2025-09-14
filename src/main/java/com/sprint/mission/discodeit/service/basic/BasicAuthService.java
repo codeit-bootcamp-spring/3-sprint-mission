@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.exception.auth.InvalidTokenException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -19,6 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +35,7 @@ public class BasicAuthService implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final DiscodeitUserDetailsService userDetailsService;
     private final JwtRegistry jwtRegistry;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     // 유저의 권한을 수정
@@ -52,11 +55,18 @@ public class BasicAuthService implements AuthService {
         Role newRole = request.newRole();
         user.updateRole(newRole);
 
+        // 이벤트 객체를 생성
+        RoleUpdatedEvent roleUpdatedEvent = RoleUpdatedEvent.now(
+            userId,
+            user.getRole(),
+            request.newRole()
+        );
+        // 생성된 이벤트 객체를 전달인자로 이벤트 발행
+        eventPublisher.publishEvent(roleUpdatedEvent);
+
         jwtRegistry.invalidateJwtInformationByUserId(userId);
 
-        boolean isOnline = jwtRegistry.hasActiveJwtInformationByUserId(user.getId());
-
-        return userMapper.toDto(user, isOnline);
+        return userMapper.toDto(user);
     }
 
     @Override

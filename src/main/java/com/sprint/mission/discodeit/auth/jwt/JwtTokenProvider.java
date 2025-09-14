@@ -27,32 +27,16 @@ public class JwtTokenProvider {
     // 리프레시 토큰을 저장할 HTTP 쿠키의 이름
     public static final String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
 
-    // 액세스 토큰의 만료 시간(밀리초 단위)
     private final int accessTokenExpirationMs;
-    // 리프레시 토큰의 만료 시간(밀리초 단위)
     private final int refreshTokenExpirationMs;
 
-    // 액세스 토큰을 서명하기 위한 서명자
     private final JWSSigner accessTokenSigner;
-    // 액세스 토큰의 서명을 검증하기 위한 검증자
     private final JWSVerifier accessTokenVerifier;
-    // 리프레시 토큰을 서명하기 위한 서명자
     private final JWSSigner refreshTokenSigner;
-    // 리프레시 토큰의 서명을 검증하기 위한 검증자
     private final JWSVerifier refreshTokenVerifier;
 
-    /**
-     * 구성 프로퍼티를 기반으로 토큰 서명/검증자와 만료 시간을 초기화한다.
-     * 이 생성자는 애플리케이션 시작 시 한 번 호출되며, 이후 발급/검증 로직에서 재사용된다.
-     *
-     * @param accessTokenSecret Access 토큰에 사용할 HMAC 비밀키(HS256)
-     * @param accessTokenExpirationMs Access 토큰 만료 시간(ms)
-     * @param refreshTokenSecret Refresh 토큰에 사용할 HMAC 비밀키(HS256)
-     * @param refreshTokenExpirationMs Refresh 토큰 만료 시간(ms)
-     * @throws JOSEException 서명자/검증자 초기화 실패 시 발생
-     */
+     // 구성 프로퍼티를 기반으로 토큰 서명/검증자와 만료 시간을 초기화한다.
     public JwtTokenProvider(
-        // application.yaml 파일에 정의된 프로퍼티 값을 주입받는다.
         @Value("${discodeit.jwt.access-token.secret}") String accessTokenSecret,
         @Value("${discodeit.jwt.access-token.expiration-ms}") int accessTokenExpirationMs,
         @Value("${discodeit.jwt.refresh-token.secret}") String refreshTokenSecret,
@@ -61,33 +45,22 @@ public class JwtTokenProvider {
 
         log.info("[TokenProvider] 생성자 호출됨: 토큰 서명/검증자 및 만료 시간 초기화");
 
-        // 주입받은 만료 시간 값들을 필드에 저장하여 토큰 생성 시 사용할 수 있도록 설정한다.
+        // 주입받은 만료 시간 값들을 필드에 저장하여 토큰 생성 시 사용할 수 있도록 설정
         this.accessTokenExpirationMs = accessTokenExpirationMs;
         this.refreshTokenExpirationMs = refreshTokenExpirationMs;
 
-        // 액세스 토큰용 비밀키를 바이트 배열로 변환하여 HMAC-SHA256 서명자와 검증자를 생성한다.
-        // 이를 통해 액세스 토큰의 무결성을 보장하고 위변조를 방지할 수 있다.
-        // Access 토큰 검증/서명을 위한 비밀키 바이트 배열을 준비한다.
+        // 액세스 토큰용 비밀키를 바이트 배열로 변환하여 HMAC-SHA256 서명자와 검증자를 생성
         byte[] accessSecretBytes = accessTokenSecret.getBytes(StandardCharsets.UTF_8);
         this.accessTokenSigner = new MACSigner(accessSecretBytes);
         this.accessTokenVerifier = new MACVerifier(accessSecretBytes);
 
-        // 리프레시 토큰용 비밀키를 바이트 배열로 변환하여 별도의 서명자와 검증자를 생성한다.
-        // 액세스 토큰과 다른 비밀키를 사용함으로써 각 토큰의 독립적인 보안성을 확보한다.
+        // 리프레시 토큰용 비밀키를 바이트 배열로 변환하여 별도의 서명자와 검증자를 생성
         byte[] refreshSecretBytes = refreshTokenSecret.getBytes(StandardCharsets.UTF_8);
         this.refreshTokenSigner = new MACSigner(refreshSecretBytes);
         this.refreshTokenVerifier = new MACVerifier(refreshSecretBytes);
     }
 
-    /**
-     * 액세스 토큰을 생성한다.
-     * 로그인 성공 또는 리프레시 토큰을 통한 재발급 시 호출되며,
-     * 단기 인증에 사용되는 짧은 수명의 토큰을 발급한다.
-     *
-     * @param userDetails 사용자 정보(아이디, 권한, 내부 식별자)
-     * @return 직렬화된 JWT 문자열(Access Token)
-     * @throws JOSEException 토큰 서명 과정에서 실패할 경우 발생한다.
-     */
+     // 액세스 토큰 생성
     public String generateAccessToken(DiscodeitUserDetails userDetails) throws JOSEException {
 
         log.info("[TokenProvider] generateAccessToken 호출됨: {} 의 엑세스 토큰 생성 ", userDetails.getUsername());
@@ -96,15 +69,8 @@ public class JwtTokenProvider {
         return generateToken(userDetails, accessTokenExpirationMs, accessTokenSigner, "access");
     }
 
-    /**
-     * 리프레시 토큰을 생성한다.
-     * 로그인 성공 또는 리프레시 시 토큰 회전(rotation) 정책에 따라 새 RT를 발급할 때 호출된다.
-     * 이 토큰은 쿠키(HttpOnly)에 저장되어 액세스 토큰 재발급 시도에 사용된다.
-     *
-     * @param userDetails 사용자 정보(아이디, 권한, 내부 식별자)
-     * @return 직렬화된 JWT 문자열(Refresh Token)
-     * @throws JOSEException 토큰 서명 과정에서 실패할 경우 발생한다.
-     */
+
+    // 리프레시 토큰 생성
     public String generateRefreshToken(DiscodeitUserDetails userDetails) throws JOSEException {
 
         log.info("[TokenProvider] generateRefreshToken 호출됨: {} 의 리프레시 토큰 생성 ", userDetails.getUsername());
@@ -113,15 +79,8 @@ public class JwtTokenProvider {
         return generateToken(userDetails, refreshTokenExpirationMs, refreshTokenSigner, "refresh");
     }
 
-    /**
-     * 토큰 생성
-     * @param userDetails 사용자 정보
-     * @param expirationMs 토큰 만료 시간
-     * @param signer 토큰 서명자
-     * @param tokenType 토큰 타입("access" 또는 "refresh")
-     * @return 생성된 토큰
-     * @throws JOSEException 토큰 생성 중 발생할 수 있는 예외
-     */
+
+     //토큰 생성
     private String generateToken(DiscodeitUserDetails userDetails, int expirationMs, JWSSigner signer,
         String tokenType) throws JOSEException {
 
@@ -131,35 +90,26 @@ public class JwtTokenProvider {
         String tokenId = UUID.randomUUID().toString();
         UserDto user = userDetails.getUserDto();
 
-        // 현재 시간을 기준으로 토큰의 만료 시간을 설정한다.
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationMs);
 
         // 토큰의 클레임(claims)을 설정한다.
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-            // 토큰 주체(sub)
             .subject(user.username())
-            // 토큰 고유 식별자(jti)
             .jwtID(tokenId)
-            // 사용자 ID(userId)
             .claim("userId", user.id().toString())
-            // 토큰 타입(type)
             .claim("type", tokenType)
-            // 사용자 권한(roles)
             .claim("roles",
                 userDetails.getAuthorities()
                     .stream()
                     .map(GrantedAuthority::getAuthority)
                     .toList()
             )
-            // 토큰 발급 시간(iat)
             .issueTime(now)
-            // 토큰 만료 시간(exp)
             .expirationTime(expiryDate)
             .build();
 
         // 토큰 생성: 준비된 클레임과 헤더(HS256)를 사용하여 토큰 생성.
-        // 단, 아직 서명되지 않은 토큰이다.
         SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
 
         // 토큰 서명: 생성된 토큰에 서명자를 적용하여 서명.
@@ -173,13 +123,8 @@ public class JwtTokenProvider {
         return token;
     }
 
-    /**
-     * 리프레시 토큰을 HttpOnly 쿠키로 생성한다.
-     * 로그인 성공 또는 리프레시 성공 시 브라우저로 내려보낼 때 사용된다.
-     *
-     * @param refreshToken 직렬화된 JWT 문자열
-     * @return HttpOnly 설정이 적용된 쿠키 인스턴스
-     */
+
+    // 리프레시 토큰을 HttpOnly 쿠키로 생성
     public Cookie generateRefreshTokenCookie(String refreshToken) {
 
         log.info("[TokenProvider] generateRefreshTokenCookie 호출됨: Refresh Token 쿠키 생성");
@@ -187,7 +132,9 @@ public class JwtTokenProvider {
         Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken);
 
         cookie.setHttpOnly(true);
-        cookie.setSecure(false);	// 개발 환경: HTTP도 동작하도록 Secure=false (운영 환경은 true를 사용해 HTTPS 통신을 이용할 수 있도록 권장)
+        // 개발 환경: HTTP도 동작하도록 Secure=false
+        // (운영 환경은 true를 사용해 HTTPS 통신을 이용할 수 있도록 권장)
+        cookie.setSecure(false);
         cookie.setPath("/");
         cookie.setMaxAge(refreshTokenExpirationMs / 1000);
 
@@ -196,12 +143,8 @@ public class JwtTokenProvider {
         return cookie;
     }
 
-    /**
-     * 리프레시 토큰 쿠키를 즉시 만료시키는 쿠키를 생성한다.
-     * 로그아웃이나 보안 이벤트 발생 시 클라이언트 보유 RT를 제거하기 위해 사용한다.
-     *
-     * @return Max-Age=0으로 설정된 만료 쿠키
-     */
+
+    // 리프레시 토큰 쿠키를 즉시 만료시키는 쿠키를 생성
     public Cookie generateRefreshTokenExpirationCookie() {
 
         log.info("[TokenProvider] generateRefreshTokenExpirationCookie 호출됨: Refresh Token 만료 쿠키 생성");
@@ -211,16 +154,15 @@ public class JwtTokenProvider {
         cookie.setHttpOnly(true);
         cookie.setSecure(false);
         cookie.setPath("/");
-        cookie.setMaxAge(0);		// 쿠키 만료 시간을 0으로 설정하여 즉시 만료시킨다
+        cookie.setMaxAge(0);
 
         log.info("[TokenProvider] generateRefreshTokenExpirationCookie 완료");
 
         return cookie;
     }
 
-    /**
-     * 리프레시 토큰을 담은 HttpOnly 쿠키를 응답에 추가한다.
-     */
+
+     // 리프레시 토큰을 담은 HttpOnly 쿠키를 응답에 추가
     public void addRefreshCookie(HttpServletResponse response, String refreshToken) {
 
         log.info("[TokenProvider] addRefreshCookie 호출됨: RT 쿠키 응답에 추가");
@@ -229,6 +171,7 @@ public class JwtTokenProvider {
         response.addCookie(cookie);
     }
 
+    // 만료 쿠키를 응답에 추가
     public void expireRefreshCookie(HttpServletResponse response) {
 
         log.debug("[TokenProvider] expireRefreshCookie 호출됨: 만료 쿠키 응답에 추가");
@@ -245,16 +188,8 @@ public class JwtTokenProvider {
         return verifyToken(token, refreshTokenVerifier, "refresh");
     }
 
-    /**
-     * 토큰의 서명과 클레임을 실제로 검증하는 내부 유틸리티 메서드이다.
-     * 먼저 토큰을 파싱한 뒤, 제공된 검증자(HMAC)로 서명 무결성을 확인한다.
-     * 이어서 `type` 클레임이 기대한 값과 일치하는지 검사하고, 마지막으로 만료 시간을 판정한다.
-     *
-     * @param token 검사 대상 JWT 문자열
-     * @param verifier 서명 검증에 사용할 검증자(Access/Refresh별로 구분)
-     * @param expectedType 기대하는 토큰 타입("access" 또는 "refresh")
-     * @return 모든 조건을 충족하면 true, 하나라도 실패하면 false
-     */
+
+    // 토큰의 서명과 클레임을 실제로 검증하는 내부 유틸리티 메서드
     private boolean verifyToken(String token, JWSVerifier verifier, String expectedType) {
 
         try {
@@ -305,7 +240,21 @@ public class JwtTokenProvider {
             return subject;
 
         } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException("[TokenProvider] getUsernameFromToken: 예외 발생 - {}", e);
+        }
+    }
+
+    public UUID getUserIdFromToken(String token) {
+        try {
+            log.debug("[TokenProvider] userId 추출 시작");
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            String userIdStr = (String) signedJWT.getJWTClaimsSet().getClaim("userId");
+            if (userIdStr == null) {
+                throw new IllegalArgumentException("[TokenProvider] JWT 토큰에서 User Id 클레임 찾을 수 없음");
+            }
+            return UUID.fromString(userIdStr);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("[TokenProvider] getUserIdFromToken: 예외 발생 - {}", e);
         }
     }
 

@@ -1,20 +1,28 @@
-package com.sprint.mission.discodeit.storage;
+package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.response.BinaryContentDto;
+import com.sprint.mission.discodeit.event.S3UploadFailEvent;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.annotation.PreDestroy;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -22,19 +30,22 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
+@Slf4j
 @Component
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3",  matchIfMissing = false)
-public class S3BinaryContentStorage implements BinaryContentStorage{
-    private static final Logger logger = Logger.getLogger(S3BinaryContentStorage.class.getName());
+public class S3BinaryContentStorage implements BinaryContentStorage {
 
     private final String accessKey;
     private final String secretKey;
     private final String region;
     private final String bucket;
     private S3Client s3Client;
+
+    private final ApplicationEventPublisher publisher;
 
     @Value("${discodeit.storage.s3.presigned-url-expiration:600}")
     private int presignedUrlExpiration;
@@ -43,14 +54,21 @@ public class S3BinaryContentStorage implements BinaryContentStorage{
             @Value("${discodeit.storage.s3.access-key}") String accessKey,
             @Value("${discodeit.storage.s3.secret-key}") String secretKey,
             @Value("${discodeit.storage.s3.region}") String region,
-            @Value("${discodeit.storage.s3.bucket}") String bucket
+            @Value("${discodeit.storage.s3.bucket}") String bucket,
+            ApplicationEventPublisher publisher
     ) {
         this.accessKey = accessKey;
         this.secretKey = secretKey;
         this.region = region;
         this.bucket = bucket;
+        this.publisher = publisher;
     }
 
+    @Retryable(
+        retryFor = { S3Exception.class, SdkClientException.class },
+        maxAttempts = 3,
+        backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
     @Override
     public UUID put(UUID id, byte[] bytes) {
         String key = id.toString();
@@ -65,7 +83,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage{
                 RequestBody.fromBytes(bytes)
         );
 
-        logger.info("S3에 파일 업로드 완료");
+        log.info("S3에 파일 업로드 완료");
 
         return id;
     }
@@ -82,7 +100,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage{
                     .key(key)
                     .build();
 
-            logger.info("S3에서 파일 가져오기 완료");
+            log.info("S3에서 파일 가져오기 완료");
 
             // S3에서 객체를 InputStream 으로 읽어옴
             return s3Client.getObject(getRequest);
@@ -122,10 +140,10 @@ public class S3BinaryContentStorage implements BinaryContentStorage{
 
             s3Client.deleteObject(request);
 
-            logger.info("S3에서 파일 삭제");
+            log.info("S3에서 파일 삭제");
 
         } catch (NoSuchKeyException e){
-            logger.warning("파일이 존재하지 않습니다." + key);
+            log.warn("파일이 존재하지 않습니다. {}", key);
         } catch (Exception e){
             throw new RuntimeException("S3에서 파일 삭제 중 오류 발생", e);
         }
@@ -169,13 +187,34 @@ public class S3BinaryContentStorage implements BinaryContentStorage{
 
             presignedUrl = presigner.presignGetObject(presignRequest).url().toString();
         }
-        logger.info("Presigned URL: " + presignedUrl);
+        log.info("Presigned URL: " + presignedUrl);
         return presignedUrl;
+    }
+
+    // 재시도 모두 실패 시 호출되는 복구 메서드
+    @Recover
+    public void recover(S3Exception e, UUID fileId) {
+        // MDC의 Request ID, 실패 이유 (예외 메시지)
+        String requestId = MDC.get("requestId");
+        String errorMessage = e.getMessage();
+
+        S3UploadFailEvent event = S3UploadFailEvent.now(
+            fileId,
+            requestId,
+            errorMessage
+        );
+
+        publisher.publishEvent(event);
+
+        log.error("S3 업로드 최종 실패 - id={}, requestId={}, error={}",
+            fileId, requestId, errorMessage, e);
+
+        throw new RuntimeException("S3 업로드 실패: " + fileId, e);
     }
 
     @PreDestroy
     public void closeS3() {
         s3Client.close();
-        logger.info("S3Client 리소스 정리");
+        log.info("S3Client 리소스 정리");
     }
 }

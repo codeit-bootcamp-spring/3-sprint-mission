@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.auth.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.auth.jwt.dto.JwtDto;
 import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
@@ -8,6 +7,7 @@ import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -54,11 +54,7 @@ public class AuthController implements AuthApi {
     @PostMapping("/refresh")
     public ResponseEntity<JwtDto> refresh(
         /* 설명. @CookieValue 어노테이션을 사용하면 HTTP 요청 헤더(Cookie)의 쿠키 값을 자동으로 추출해준다. */
-        @CookieValue(
-            name = JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME,
-            required = false
-        )
-        String refreshToken,
+        @CookieValue("REFRESH_TOKEN") String refreshToken,
         HttpServletResponse response) {
 
         log.debug("[AuthController] RefreshToken 으로 AccessToken 재발급 요청");
@@ -70,7 +66,7 @@ public class AuthController implements AuthApi {
 
     @PutMapping(path = "/role")
     public ResponseEntity<UserDto> updateUserRole(
-        @RequestBody UserRoleUpdateRequest updateRequest
+        @Valid @RequestBody UserRoleUpdateRequest updateRequest
     ){
         log.info("[AuthController] 사용자 권한 수정 요청 들어옴");
 

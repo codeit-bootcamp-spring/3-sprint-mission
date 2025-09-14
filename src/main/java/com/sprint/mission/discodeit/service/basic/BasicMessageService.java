@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.auth.service.MessageSecurityService;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
@@ -10,6 +9,8 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.ValidationException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
@@ -21,13 +22,13 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,10 +44,9 @@ public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentStorage binaryContentStorage;
     private final MessageMapper messageMapper;
     private final PageResponseMapper pageResponseMapper;
-    private final MessageSecurityService messageSecurityService;
+    private final ApplicationEventPublisher eventPublisher;
 
     //메시지 생성
     @Override
@@ -73,7 +73,15 @@ public class BasicMessageService implements MessageService {
                     );
 
                     binaryContentRepository.save(content);
-                    binaryContentStorage.put(content.getId(), profileImage.bytes());
+//                    binaryContentStorage.put(content.getId(), profileImage.bytes());
+
+                    // 이벤트 객체를 생성
+                    BinaryContentCreatedEvent binaryContentEvent = BinaryContentCreatedEvent.now(
+                        content.getId(),
+                        profileImage.bytes()
+                    );
+                    // 생성된 이벤트 객체를 전달인자로 이벤트 발행
+                    eventPublisher.publishEvent(binaryContentEvent);
 
                     return content;
 
@@ -87,6 +95,15 @@ public class BasicMessageService implements MessageService {
                 attachments
         );
         messageRepository.save(newMessage);
+
+        // 이벤트 객체를 생성
+        MessageCreatedEvent messageCreatedEvent = MessageCreatedEvent.now(
+            newMessage.getId(),
+            newMessage.getChannel().getId(),
+            newMessage.getAuthor().getId()
+        );
+        // 생성된 이벤트 객체를 전달인자로 이벤트 발행
+        eventPublisher.publishEvent(messageCreatedEvent);
 
         return messageMapper.toDto(newMessage);
     }

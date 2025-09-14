@@ -47,24 +47,21 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
         log.info("[LoginFailureHandler] 로그인 실패 응답 완료");
     }
 
-    private static String getString(AuthenticationException exception) {
-        String errorMessage;
-
+    private String getString(AuthenticationException exception) {
         // incorrect the identify or password
         if(exception instanceof BadCredentialsException || exception instanceof InternalAuthenticationServiceException) {
-            errorMessage = "아이디나 비밀번호가 맞지 않습니다. 다시 확인해 주십시오.";
+            return "아이디나 비밀번호가 맞지 않습니다. 다시 확인해 주십시오.";
         }
         // account is disabled
         else if(exception instanceof DisabledException) {
-            errorMessage = "비활성화된 계정입니다.";
+            return "비활성화된 계정입니다.";
         }
         // expired the credential
         else if(exception instanceof CredentialsExpiredException) {
-            errorMessage = "인증 유효기간이 만료 되었습니다.";
+            return "인증 유효기간이 만료 되었습니다.";
         }
         else {
-            errorMessage = "알수 없는 이유로 로그인에 실패하였습니다.";
+            return "알수 없는 이유로 로그인에 실패하였습니다.";
         }
-        return errorMessage;
     }
 }
