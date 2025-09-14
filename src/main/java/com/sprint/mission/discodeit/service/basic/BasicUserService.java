@@ -1,11 +1,15 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.config.custom.CacheWrapper;
 import com.sprint.mission.discodeit.dto.data.BinaryContentData;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.UserCreatedEvent;
+import com.sprint.mission.discodeit.event.UserDeletedEvent;
+import com.sprint.mission.discodeit.event.UserUpdatedEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateNameException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -18,7 +22,6 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserRoleCommand;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -70,7 +73,9 @@ public class BasicUserService implements UserService {
       userRepository.save(savedUser);
     }
 
-    return toUserResponse(savedUser);
+    UserResponse response = toUserResponse(savedUser);
+    applicationEventPublisher.publishEvent(new UserCreatedEvent(response));
+    return response;
   }
 
   private void validateUserEmail(String email) {
@@ -109,8 +114,9 @@ public class BasicUserService implements UserService {
   @Override
   @Transactional(readOnly = true)
   @Cacheable("users")
-  public List<UserResponse> findAll() {
-    return userRepository.findAll().stream().map(this::toUserResponse).toList();
+  public CacheWrapper findAll() {
+    var dtos = userRepository.findAll().stream().map(this::toUserResponse).toList();
+    return new CacheWrapper(dtos);
   }
 
   @Override
@@ -142,7 +148,9 @@ public class BasicUserService implements UserService {
           }
 
           User savedUser = userRepository.save(user);
-          return toUserResponse(savedUser);
+          UserResponse response = toUserResponse(savedUser);
+          applicationEventPublisher.publishEvent(new UserUpdatedEvent(response));
+          return response;
         }).orElseThrow(() -> new UserNotFoundException(command.userId().toString()));
   }
 
@@ -151,25 +159,30 @@ public class BasicUserService implements UserService {
   @CacheEvict(value = "users", allEntries = true)
   public UserResponse updateRole(UpdateUserRoleCommand command) {
     return userRepository.findById(command.userId())
-        .map(user -> {
-          var oldRole = user.getRole();
-          if (!oldRole.equals(command.newRole())) {
-            user.updateRole(command.newRole());
-            User savedUser = userRepository.save(user);
-            jwtRegistry.invalidateJwtInformationByUserId(savedUser.getId());
-            applicationEventPublisher.publishEvent(
-                new RoleUpdatedEvent(
-                    savedUser.getId(),
-                    oldRole,
-                    command.newRole(),
-                    savedUser.getUpdatedAt()
-                ));
-            return toUserResponse(savedUser);
-          } else {
-            // 권한이 변경되지 않은 경우 기존 응답 반환
-            return toUserResponse(user);
-          }
-        }).orElseThrow(() -> new UserNotFoundException(command.userId().toString()));
+        .map(user -> updateUserRoleIfChanged(user, command))
+        .orElseThrow(() -> new UserNotFoundException(command.userId().toString()));
+  }
+
+  private UserResponse updateUserRoleIfChanged(User user, UpdateUserRoleCommand command) {
+    var oldRole = user.getRole();
+    if (!oldRole.equals(command.newRole())) {
+      user.updateRole(command.newRole());
+      User savedUser = userRepository.save(user);
+      jwtRegistry.invalidateJwtInformationByUserId(savedUser.getId());
+      applicationEventPublisher.publishEvent(
+          new RoleUpdatedEvent(
+              savedUser.getId(),
+              oldRole,
+              command.newRole(),
+              savedUser.getUpdatedAt()
+          ));
+      UserResponse response = toUserResponse(savedUser);
+      applicationEventPublisher.publishEvent(new UserUpdatedEvent(response));
+      return response;
+    } else {
+      // 권한이 변경되지 않은 경우 기존 응답 반환
+      return toUserResponse(user);
+    }
   }
 
   @Override
@@ -177,12 +190,14 @@ public class BasicUserService implements UserService {
   @CacheEvict(value = "users", allEntries = true)
   public void delete(UUID userId) {
     userRepository.findById(userId).ifPresentOrElse(user -> {
+      UserResponse response = toUserResponse(user);
       userRepository.deleteById(userId);
 
       Optional.ofNullable(user.getProfile())
           .ifPresent(profile -> binaryContentRepository.deleteById(profile.getId()));
 
       jwtRegistry.invalidateJwtInformationByUserId(userId);
+      applicationEventPublisher.publishEvent(new UserDeletedEvent(response));
     }, () -> {
       throw new UserNotFoundException(userId.toString());
     });

@@ -1,16 +1,14 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.assembler.UserCommandAssembler;
 import com.sprint.mission.discodeit.controller.api.UserApi;
-import com.sprint.mission.discodeit.dto.data.BinaryContentData;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentProcessingException;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
 import jakarta.validation.Valid;
-import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -34,12 +32,13 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController implements UserApi {
 
   private final UserService userService;
+  private final UserCommandAssembler userCommandAssembler;
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserResponse> create(
       @RequestPart @Valid UserCreateRequest userCreateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
-    CreateUserCommand command = toCreateCommand(userCreateRequest, profile);
+    CreateUserCommand command = userCommandAssembler.toCreateCommand(userCreateRequest, profile);
 
     UserResponse response = userService.create(command);
     return ResponseEntity.created(URI.create("/api/users/" + response.id())).body(response);
@@ -50,7 +49,8 @@ public class UserController implements UserApi {
       @PathVariable UUID userId,
       @RequestPart @Valid UserUpdateRequest userUpdateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
-    UpdateUserCommand command = toUpdateCommand(userId, userUpdateRequest, profile);
+    UpdateUserCommand command = userCommandAssembler.toUpdateCommand(userId, userUpdateRequest,
+        profile);
 
     UserResponse updated = userService.update(command);
     return ResponseEntity.ok(updated);
@@ -64,7 +64,9 @@ public class UserController implements UserApi {
 
   @GetMapping
   public ResponseEntity<List<UserResponse>> findAll() {
-    List<UserResponse> users = userService.findAll();
+    var wrapper = userService.findAll();
+    @SuppressWarnings("unchecked")
+    List<UserResponse> users = (List<UserResponse>) wrapper.getData();
     return ResponseEntity.ok(users);
   }
 
@@ -74,38 +76,4 @@ public class UserController implements UserApi {
     return ResponseEntity.noContent().build();
   }
 
-  private BinaryContentData resolveProfileImageRequest(MultipartFile profile) {
-    if (profile == null || profile.isEmpty()) {
-      return null;
-    }
-
-    try {
-      return new BinaryContentData(
-          profile.getOriginalFilename(),
-          profile.getContentType(),
-          profile.getBytes());
-    } catch (IOException e) {
-      throw new BinaryContentProcessingException();
-    }
-  }
-
-  private CreateUserCommand toCreateCommand(UserCreateRequest request, MultipartFile profile) {
-    BinaryContentData profileData = resolveProfileImageRequest(profile);
-    return new CreateUserCommand(
-        request.email(),
-        request.username(),
-        request.password(),
-        profileData);
-  }
-
-  private UpdateUserCommand toUpdateCommand(UUID userId, UserUpdateRequest request,
-      MultipartFile profile) {
-    BinaryContentData profileData = resolveProfileImageRequest(profile);
-    return new UpdateUserCommand(
-        userId,
-        request.newUsername(),
-        request.newEmail(),
-        request.newPassword(),
-        profileData);
-  }
 }

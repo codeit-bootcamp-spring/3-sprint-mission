@@ -37,6 +37,21 @@ spring:
         expireAfterAccess=600s,
         recordStats
 
+  kafka:
+    producer:
+      properties:
+        retries: 0
+    consumer:
+      group-id: test-discodeit-group
+      auto-offset-reset: earliest
+      properties:
+        retries: 0
+
+discodeit:
+  storage:
+    local:
+      root-path: .discodeit/storage/test
+
 decorator:
   datasource:
     p6spy:

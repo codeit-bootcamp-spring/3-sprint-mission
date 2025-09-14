@@ -1,17 +1,15 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.assembler.MessageCommandAssembler;
 import com.sprint.mission.discodeit.controller.api.MessageApi;
-import com.sprint.mission.discodeit.dto.data.BinaryContentData;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentProcessingException;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.command.CreateMessageCommand;
 import io.micrometer.core.annotation.Timed;
 import jakarta.validation.Valid;
-import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
@@ -40,6 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MessageController implements MessageApi {
 
   private final MessageService messageService;
+  private final MessageCommandAssembler messageCommandAssembler;
 
   @Timed("message.create.async")
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -47,8 +46,7 @@ public class MessageController implements MessageApi {
       @RequestPart("messageCreateRequest") @Valid MessageCreateRequest request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) {
 
-    List<BinaryContentData> binaryContentDataList = resolveAttachmentRequest(attachments);
-    CreateMessageCommand command = toCreateCommand(request, binaryContentDataList);
+    CreateMessageCommand command = messageCommandAssembler.toCreateCommand(request, attachments);
     MessageResponse message = messageService.create(command);
 
     return ResponseEntity.created(URI.create("/api/messages/" + message.id()))
@@ -77,34 +75,4 @@ public class MessageController implements MessageApi {
     return ResponseEntity.noContent().build();
   }
 
-  private List<BinaryContentData> resolveAttachmentRequest(List<MultipartFile> attachments) {
-    if (attachments == null || attachments.isEmpty()) {
-      return List.of();
-    }
-
-    return attachments.stream()
-        .filter(mf -> !mf.isEmpty())
-        .map(this::toBinaryContentData)
-        .toList();
-  }
-
-  private BinaryContentData toBinaryContentData(MultipartFile file) {
-    try {
-      return new BinaryContentData(
-          file.getOriginalFilename(),
-          file.getContentType(),
-          file.getBytes());
-    } catch (IOException e) {
-      throw new BinaryContentProcessingException();
-    }
-  }
-
-  private CreateMessageCommand toCreateCommand(MessageCreateRequest request,
-      List<BinaryContentData> attachments) {
-    return new CreateMessageCommand(
-        request.content(),
-        request.authorId(),
-        request.channelId(),
-        attachments);
-  }
 }

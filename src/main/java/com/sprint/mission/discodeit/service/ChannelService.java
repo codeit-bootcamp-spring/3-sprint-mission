@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.config.custom.CacheWrapper;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import java.util.List;
 import java.util.UUID;
@@ -37,7 +38,7 @@ public interface ChannelService {
    * @param userId 사용자 ID
    * @return 사용자가 참여 중인 채널 목록
    */
-  List<ChannelResponse> findAllByUserId(UUID userId);
+  CacheWrapper findAllByUserId(UUID userId);
 
   /**
    * 채널 정보를 업데이트한다

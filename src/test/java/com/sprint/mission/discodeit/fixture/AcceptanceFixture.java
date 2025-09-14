@@ -1,13 +1,13 @@
 package com.sprint.mission.discodeit.fixture;
 
-import static com.sprint.mission.discodeit.support.TestUtils.json;
-import static com.sprint.mission.discodeit.support.TestUtils.jsonHeader;
-import static com.sprint.mission.discodeit.support.TestUtils.multipartHeader;
+import static com.sprint.mission.discodeit.testutils.TestUtils.json;
+import static com.sprint.mission.discodeit.testutils.TestUtils.jsonHeader;
+import static com.sprint.mission.discodeit.testutils.TestUtils.multipartHeader;
 
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.response.MessageResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.support.AuthTestUtils;
+import com.sprint.mission.discodeit.testutils.AuthTestUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;

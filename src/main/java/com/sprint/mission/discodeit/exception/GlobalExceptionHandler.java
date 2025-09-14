@@ -2,14 +2,17 @@ package com.sprint.mission.discodeit.exception;
 
 import java.time.Instant;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestControllerAdvice
@@ -27,11 +30,15 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGeneralException(Exception e) {
-
     // 크롬 버전 때문에 출력되는 에러
-    if (e.getMessage()
-        .equals("No static resource .well-known/appspecific/com.chrome.devtools.json.")) {
+    if (e.getMessage() != null &&
+        e.getMessage().equals("No static resource .well-known/appspecific/com.chrome.devtools.json.")) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    // MissingRequestCookieException은 401로 분기 처리
+    if (e instanceof MissingRequestCookieException) {
+      return handleMissingRequestCookieException((MissingRequestCookieException) e);
     }
 
     log.error("[시스템 오류] {}", e.getMessage(), e);
@@ -76,5 +83,19 @@ public class GlobalExceptionHandler {
         Instant.now(),
         Map.of());
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+  }
+
+  @ExceptionHandler(MissingRequestCookieException.class)
+  public ResponseEntity<ErrorResponse> handleMissingRequestCookieException(MissingRequestCookieException e) {
+    log.warn("[인증 오류] 필수 쿠키 누락: {}", e.getCookieName());
+    ErrorResponse response = new ErrorResponse(
+        "UNAUTHORIZED",
+        "필수 인증 쿠키(REFRESH_TOKEN)가 없습니다.",
+        e.getClass().getSimpleName(),
+        HttpStatus.UNAUTHORIZED.value(),
+        Instant.now(),
+        Map.of("cookieName", e.getCookieName())
+    );
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
   }
 }

@@ -1,11 +1,15 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.assembler.ChannelAssembler;
+import com.sprint.mission.discodeit.config.custom.CacheWrapper;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.ChannelCreatedEvent;
+import com.sprint.mission.discodeit.event.ChannelDeletedEvent;
+import com.sprint.mission.discodeit.event.ChannelUpdatedEvent;
 import com.sprint.mission.discodeit.exception.channel.CannotUpdatePrivateChannelException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -20,6 +24,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +40,7 @@ public class BasicChannelService implements ChannelService {
   private final MessageRepository messageRepository;
   private final MessageAttachmentRepository messageAttachmentRepository;
   private final ChannelAssembler channelAssembler;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
@@ -42,7 +48,9 @@ public class BasicChannelService implements ChannelService {
   public ChannelResponse create(String name, String description) {
     Channel channel = Channel.createPublic(name, description);
     Channel savedChannel = channelRepository.save(channel);
-    return channelAssembler.toResponse(savedChannel);
+    ChannelResponse response = channelAssembler.toResponse(savedChannel);
+    eventPublisher.publishEvent(new ChannelCreatedEvent(response));
+    return response;
   }
 
   @Override
@@ -58,7 +66,9 @@ public class BasicChannelService implements ChannelService {
       readStatusRepository.save(status);
     }
 
-    return channelAssembler.toResponse(savedChannel);
+    ChannelResponse response = channelAssembler.toResponse(savedChannel);
+    eventPublisher.publishEvent(new ChannelCreatedEvent(response));
+    return response;
   }
 
   @Override
@@ -72,10 +82,11 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional(readOnly = true)
   @Cacheable(value = "channels", key = "#userId")
-  public List<ChannelResponse> findAllByUserId(UUID userId) {
-    return channelRepository.findAllByUserId(userId).stream()
+  public CacheWrapper findAllByUserId(UUID userId) {
+    var dtos = channelRepository.findAllByUserId(userId).stream()
         .map(channelAssembler::toResponse)
         .toList();
+    return new CacheWrapper(dtos);
   }
 
   @Override
@@ -93,7 +104,9 @@ public class BasicChannelService implements ChannelService {
     channel.updateDescription(newDescription);
 
     Channel updated = channelRepository.save(channel);
-    return channelAssembler.toResponse(updated);
+    ChannelResponse response = channelAssembler.toResponse(updated);
+    eventPublisher.publishEvent(new ChannelUpdatedEvent(response));
+    return response;
   }
 
   @Override
@@ -102,22 +115,15 @@ public class BasicChannelService implements ChannelService {
   public ChannelResponse delete(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(channelId.toString()));
-
-    // 해당 채널의 메시지 ID 목록 조회
     List<UUID> messageIds = messageRepository.findMessageIdsByChannelId(channelId);
+    ChannelResponse response = channelAssembler.toResponse(channel);
 
-    // 첨부파일 먼저 삭제
     messageAttachmentRepository.deleteByMessageIds(messageIds);
-
-    // 메시지 삭제
     messageRepository.deleteByChannelId(channelId);
-
-    // 읽음 상태 삭제
     readStatusRepository.deleteByChannelId(channelId);
-
-    // 채널 삭제
     channelRepository.deleteById(channelId);
 
-    return channelAssembler.toResponse(channel);
+    eventPublisher.publishEvent(new ChannelDeletedEvent(response));
+    return response;
   }
 }

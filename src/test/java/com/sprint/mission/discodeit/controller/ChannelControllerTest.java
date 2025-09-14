@@ -9,13 +9,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.config.TestSecurityConfig;
+import com.sprint.mission.discodeit.config.custom.CacheWrapper;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.testconfig.TestSecurityConfig;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,8 @@ class ChannelControllerTest {
         "설명2",
         null,
         null);
-    when(channelService.findAllByUserId(any())).thenReturn(List.of(ch1, ch2));
+    when(channelService.findAllByUserId(any()))
+        .thenReturn(new CacheWrapper(List.of(ch1, ch2)));
 
     mockMvc.perform(MockMvcRequestBuilders.get("/api/channels")
             .param("userId", UUID.randomUUID().toString()))

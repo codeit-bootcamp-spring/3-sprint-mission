@@ -1,6 +1,8 @@
 spring:
   application:
     name: discodeit
+  config:
+    import: optional:file:.env[.properties]
 
   servlet:
     multipart:
@@ -94,6 +96,7 @@ discodeit:
     refresh-token:
       secret: ${JWT_REFRESH_SECRET}
       expiration-ms: ${JWT_REFRESH_EXPIRATION_MS}
+    max-active-jwt-count: 1
 
 decorator:
   datasource:

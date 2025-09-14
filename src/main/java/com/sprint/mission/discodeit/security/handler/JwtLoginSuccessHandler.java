@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.security.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.sprint.mission.discodeit.dto.response.JwtDto;
+import com.sprint.mission.discodeit.event.UserLogInOutEvent;
 import com.sprint.mission.discodeit.exception.auth.InvalidCredentialsException;
 import com.sprint.mission.discodeit.exception.auth.TokenGenerationException;
 import com.sprint.mission.discodeit.security.jwt.JwtInformation;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -30,6 +32,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final JwtTokenProvider tokenProvider;
   private final JwtRegistry jwtRegistry;
   private final CacheManager cacheManager;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request,
@@ -60,6 +63,9 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
           refreshToken
       );
       jwtRegistry.registerJwtInformation(jwtInformation);
+      // 온라인 상태 변경 이벤트 발행
+      eventPublisher.publishEvent(
+          new UserLogInOutEvent(userDetails.getUser().id(), true));
 
       var usersCache = cacheManager.getCache("users");
       if (usersCache != null) {

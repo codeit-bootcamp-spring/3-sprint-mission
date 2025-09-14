@@ -1,15 +1,19 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.config.custom.CacheWrapper;
+import com.sprint.mission.discodeit.dto.response.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.NotificationCreatedEvent;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,18 +22,26 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationService {
 
   private final NotificationRepository notificationRepository;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   @CacheEvict(value = "notifications", key = "#receiver.id")
   public Notification create(User receiver, String title, String content) {
     Notification notification = Notification.create(receiver, title, content);
-    return notificationRepository.save(notification);
+    Notification saved = notificationRepository.save(notification);
+
+    eventPublisher.publishEvent(new NotificationCreatedEvent(NotificationDto.from(saved)));
+    return saved;
   }
 
   @Transactional(readOnly = true)
   @Cacheable(value = "notifications", key = "#receiverId")
-  public List<Notification> findAllByReceiverId(UUID receiverId) {
-    return notificationRepository.findAllByReceiverId(receiverId);
+  public CacheWrapper findAllByReceiverId(UUID receiverId) {
+    var dtos = notificationRepository.findAllByReceiverId(receiverId)
+        .stream()
+        .map(NotificationDto::from)
+        .toList();
+    return new CacheWrapper(dtos);
   }
 
   @Transactional
@@ -38,7 +50,7 @@ public class NotificationService {
     Notification notification = notificationRepository.findById(notificationId)
         .orElseThrow(() -> new NotificationNotFoundException(notificationId.toString()));
     if (!notification.getReceiver().getId().equals(receiverId)) {
-      throw new com.sprint.mission.discodeit.exception.DiscodeitException(
+      throw new DiscodeitException(
           ErrorCode.NOTIFICATION_PERMISSION_DENIED,
           "알림 삭제 권한이 없습니다.");
     }

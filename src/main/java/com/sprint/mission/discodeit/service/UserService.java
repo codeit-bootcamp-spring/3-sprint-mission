@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.config.custom.CacheWrapper;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
 import com.sprint.mission.discodeit.service.command.CreateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserCommand;
 import com.sprint.mission.discodeit.service.command.UpdateUserRoleCommand;
-import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
@@ -46,7 +46,7 @@ public interface UserService {
    *
    * @return 전체 사용자 목록
    */
-  List<UserResponse> findAll();
+  CacheWrapper findAll();
 
   /**
    * 사용자 정보를 업데이트한다

@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.testconfig.AbstractTestKafkaConfig;
 import jakarta.servlet.http.Cookie;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,10 +23,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 @Tag("integration")
+@ActiveProfiles("security-test")
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("security-test")
-class AuthControllerTest {
+class AuthControllerTest extends AbstractTestKafkaConfig {
 
   @Autowired
   MockMvc mockMvc;

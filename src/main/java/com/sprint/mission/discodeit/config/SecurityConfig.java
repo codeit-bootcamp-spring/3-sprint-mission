@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.redis.RedisLockProvider;
 import com.sprint.mission.discodeit.security.handler.ForbiddenAccessDeniedHandler;
 import com.sprint.mission.discodeit.security.handler.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.handler.JwtLogoutHandler;
@@ -9,26 +10,32 @@ import com.sprint.mission.discodeit.security.jwt.InMemoryJwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.jwt.RedisJwtRegistry;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyAuthoritiesMapper;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
@@ -73,6 +80,7 @@ public class SecurityConfig {
                 "/api/auth/login"
             ).permitAll()
             .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+            .requestMatchers("/ws/**", "/api/sse").permitAll()
             .requestMatchers(
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
@@ -142,6 +150,11 @@ public class SecurityConfig {
     return RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_CHANNEL_MANAGER > ROLE_USER");
   }
 
+  @Bean
+  public GrantedAuthoritiesMapper authoritiesMapper(RoleHierarchy roleHierarchy) {
+    return new RoleHierarchyAuthoritiesMapper(roleHierarchy);
+  }
+
   /**
    * Method Security 에 RoleHierarchy 적용.
    */
@@ -154,7 +167,20 @@ public class SecurityConfig {
   }
 
   @Bean
-  public JwtRegistry jwtRegistry(JwtTokenProvider jwtTokenProvider) {
+  @Profile("test | security-test")
+  public JwtRegistry inMemoryJwtRegistry(JwtTokenProvider jwtTokenProvider) {
     return new InMemoryJwtRegistry(jwtTokenProvider);
+  }
+
+  @Bean
+  @Profile("dev | prod")
+  public JwtRegistry redisJwtRegistry(
+      @Value("${jwt.max-active-jwt-count:1}") int maxActiveJwtCount,
+      JwtTokenProvider jwtTokenProvider,
+      ApplicationEventPublisher eventPublisher,
+      RedisTemplate<String, Object> redisTemplate,
+      RedisLockProvider redisLockProvider) {
+    return new RedisJwtRegistry(maxActiveJwtCount, jwtTokenProvider, eventPublisher,
+        redisTemplate, redisLockProvider);
   }
 }

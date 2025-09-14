@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.support;
+package com.sprint.mission.discodeit.testannotation;
 
 import com.sprint.mission.discodeit.config.AppConfig;
 import java.lang.annotation.Documented;
@@ -20,4 +20,3 @@ import org.springframework.context.annotation.Import;
 public @interface RepositoryTest {
 
 }
-

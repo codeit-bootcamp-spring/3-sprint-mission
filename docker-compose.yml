@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # PostgreSQL 데이터베이스 서비스
   postgres:
@@ -17,7 +15,7 @@ services:
     networks:
       - discodeit-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -28,30 +26,59 @@ services:
       context: .
       dockerfile: Dockerfile
     image: discodeit:local-slim # 빌드 후 local-slim 태그로 생성
-    container_name: discodeit-app
     environment:
-      SPRING_PROFILES_ACTIVE: dev # 개발 환경용
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev} # 개발 환경용
       SERVER_PORT: ${APP_INTERNAL_PORT:-80}
-      JVM_OPTS: ${JVM_OPTS:-}
-      # Storage Configuration
-      STORAGE_TYPE: ${STORAGE_TYPE:-local}
-      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH:-storage}
       # AWS S3 Configuration
       AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
       AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
       AWS_S3_REGION: ${AWS_S3_REGION}
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
       AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION:-600}
-    ports:
-      - "${APP_EXTERNAL_PORT:-8081}:${APP_INTERNAL_PORT:-80}"
+      # DataSource Configuration
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      # Admin Initializer
+      DISCODEIT_ADMIN_USERNAME: ${DISCODEIT_ADMIN_USERNAME}
+      DISCODEIT_ADMIN_EMAIL: ${DISCODEIT_ADMIN_EMAIL}
+      DISCODEIT_ADMIN_PASSWORD: ${DISCODEIT_ADMIN_PASSWORD}
+      # Storage Configuration
+      STORAGE_TYPE: ${STORAGE_TYPE:-local}
+      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH:-storage}
+      # JWT
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_ACCESS_EXPIRATION_MS: ${JWT_ACCESS_EXPIRATION_MS}
+      JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION_MS}
+      # Kafka, Redis
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      # JVM Options (optional)
+      JVM_OPTS: ${JVM_OPTS:-}
     volumes:
       - .discodeit/storage:/app/storage
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - discodeit-network
+    restart: unless-stopped
+    deploy:
+      replicas: 3
+
+  # Reverse proxy (Nginx)
+  reverse-proxy:
+    image: nginx:1.29-alpine
+    container_name: discodeit-reverse-proxy
+    depends_on:
+      - app
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./src/main/resources/static:/usr/share/nginx/html:ro
     networks:
       - discodeit-network
     restart: unless-stopped

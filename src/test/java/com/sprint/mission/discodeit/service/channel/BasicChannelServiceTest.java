@@ -9,12 +9,13 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
 import com.sprint.mission.discodeit.assembler.ChannelAssembler;
+import com.sprint.mission.discodeit.config.custom.CacheWrapper;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.response.UserResponse;
-import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelException;
 import com.sprint.mission.discodeit.fixture.ChannelFixture;
@@ -37,6 +38,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class BasicChannelServiceTest {
@@ -53,6 +55,8 @@ class BasicChannelServiceTest {
   ReadStatusRepository readStatusRepository;
   @Mock
   ChannelAssembler channelAssembler;
+  @Mock
+  private ApplicationEventPublisher applicationEventPublisher;
 
   @InjectMocks
   BasicChannelService channelService;
@@ -70,8 +74,8 @@ class BasicChannelServiceTest {
     Mockito.lenient().when(channelAssembler.toResponse(any(Channel.class)))
         .thenAnswer(invocation -> {
           Channel ch = invocation.getArgument(0);
-            List<UserResponse> participants = List.of(new UserResponse(
-                user.getId(), user.getUsername(), user.getEmail(), null, false, Role.USER));
+          List<UserResponse> participants = List.of(new UserResponse(
+              user.getId(), user.getUsername(), user.getEmail(), null, false, Role.USER));
           return new ChannelResponse(
               ch.getId(), ch.getType(), ch.getName(), ch.getDescription(),
               participants, Instant.now());
@@ -113,7 +117,9 @@ class BasicChannelServiceTest {
       given(channelRepository.findAllByUserId(user.getId())).willReturn(
           List.of(privateChannel, publicChannel));
 
-      List<ChannelResponse> responses = channelService.findAllByUserId(user.getId());
+      CacheWrapper wrapper = channelService.findAllByUserId(user.getId());
+      @SuppressWarnings("unchecked")
+      List<ChannelResponse> responses = (List<ChannelResponse>) wrapper.getData();
 
       assertEquals(2, responses.size());
       responses.forEach(this::verifyChannelResponse);
