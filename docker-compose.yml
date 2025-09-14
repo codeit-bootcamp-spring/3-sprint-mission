@@ -1,3 +1,4 @@
+
 services:
   reverse-proxy:
     image: nginx:1.27-alpine
@@ -9,8 +10,11 @@ services:
       - public
       - private
     volumes:
+      # 커스텀 로드밸런싱/WS/SSE 설정 포함(nginx/nginx.conf)
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # 정적 프론트 배포 산출물
       - ./frontend-dist:/usr/share/nginx/html:ro
+    restart: unless-stopped
 
   backend:
     build:
@@ -20,21 +24,27 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: compose
 
-      # DB
+      # --- DB ---
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/discodeit
       SPRING_DATASOURCE_USERNAME: discodeit_user
       SPRING_DATASOURCE_PASSWORD: discodeit1234
 
-      # Redis
-      REDIS_HOST: redis
-      REDIS_PORT: "6379"
+      # --- Redis (분산 세션/레지스트리, SSE 등에서 사용) ---
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: "6379"
 
-      # Kafka
+      # --- Kafka ---
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
-      # Storage
+      # --- Storage ---
       STORAGE_TYPE: local
       STORAGE_LOCAL_ROOT_PATH: /data/storage
+
+      # --- JWT 시크릿/만료 (env 파일과 매핑) ---
+      ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
+      JWT_ACCESS_EXPIRATION_MS: ${ACCESS_TOKEN_EXP}
+      JWT_REFRESH_EXPIRATION_MS: ${REFRESH_TOKEN_EXP}
 
     depends_on:
       - db
@@ -44,12 +54,14 @@ services:
       - private
     volumes:
       - app-storage:/data/storage
-    deploy:
-      replicas: 3
-      resources:
-        limits:
-          cpus: "0.75"
-          memory: 1g
+    # 외부 포트 노출 없음(프록시만 오픈)
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
 
   db:
     image: postgres:16-alpine
@@ -61,12 +73,25 @@ services:
       - db-data:/var/lib/postgresql/data
     networks:
       - private
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U discodeit_user -d discodeit"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
 
   redis:
     image: redis:7-alpine
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     networks:
       - private
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
 
   kafka:
     image: bitnami/kafka:3.7
@@ -86,6 +111,13 @@ services:
       - kafka-data:/bitnami/kafka
     networks:
       - private
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1'"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
 volumes:
   db-data:
