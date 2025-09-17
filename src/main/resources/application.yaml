@@ -1,3 +1,5 @@
+server:
+  forward-headers-strategy: framework
 spring:
   application:
     name: discodeit
@@ -9,7 +11,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     open-in-view: false
   profiles:
     active:
@@ -18,6 +20,10 @@ spring:
     import: optional:file:.env[.properties]
   cache:
     type: redis
+    cache-names:
+      - channels
+      - notifications
+      - users
     caffeine:
       spec: >
         maximumSize=100,
@@ -27,7 +33,7 @@ spring:
       enable-statistics: true
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:redis}
       port: ${REDIS_PORT:6379}
   kafka:
     bootstrap-servers: localhost:9092
@@ -44,7 +50,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,loggers, caches
+        include: health,info,metrics,loggers
   endpoint:
     health:
       show-details: always
@@ -94,7 +100,6 @@ discodeit:
     refresh-token:
       secret: ${JWT_REFRESH_SECRET:your-refresh-token-secret-key-here-make-it-different-and-long}
       expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000} # 7 days
-
 
 logging:
   level:

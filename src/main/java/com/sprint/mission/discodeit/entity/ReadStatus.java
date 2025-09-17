@@ -32,6 +32,7 @@ public class ReadStatus extends BaseUpdatableEntity {
   private Channel channel;
   @Column(columnDefinition = "timestamp with time zone", nullable = false)
   private Instant lastReadAt;
+
   @Column(nullable = false)
   private boolean notificationEnabled;
 
@@ -39,18 +40,15 @@ public class ReadStatus extends BaseUpdatableEntity {
     this.user = user;
     this.channel = channel;
     this.lastReadAt = lastReadAt;
-    if(channel.getType().equals(ChannelType.PRIVATE) ){ this.notificationEnabled = true;}
-    else{this.notificationEnabled = false;}
+    this.notificationEnabled = channel.getType().equals(ChannelType.PRIVATE);
   }
 
-  public void update(Instant newLastReadAt) {
+  public void update(Instant newLastReadAt, Boolean notificationEnabled) {
     if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
       this.lastReadAt = newLastReadAt;
     }
-  }
-  public void update(Boolean newNotificationEnabled){
-      if(newNotificationEnabled != null) {
-          this.notificationEnabled = newNotificationEnabled;
-      }
+    if (notificationEnabled != null) {
+      this.notificationEnabled = notificationEnabled;
+    }
   }
 }
