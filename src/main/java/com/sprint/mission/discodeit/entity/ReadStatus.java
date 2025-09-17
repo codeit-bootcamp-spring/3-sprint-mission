@@ -57,12 +57,4 @@ public class ReadStatus extends BaseUpdatableEntity {
         }
     }
 
-    public void enableNotification() {
-        this.notificationEnabled = true;
-    }
-
-    public void disableNotification() {
-        this.notificationEnabled = false;
-    }
-
 }

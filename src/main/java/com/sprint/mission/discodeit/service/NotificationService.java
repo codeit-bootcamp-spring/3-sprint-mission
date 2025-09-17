@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.data.NotificationDto;
-import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
 import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import java.util.List;
@@ -13,7 +12,7 @@ public interface NotificationService {
 
     void deleteMyNotification(UUID receiverId, UUID notificationId);
 
-    void createFromMessage(MessageCreatedEvent event);
+    List<NotificationDto> createFromMessage(UUID channelId, UUID messageId);
 
     void createFromRoleUpdate(RoleUpdatedEvent event);
 

@@ -48,7 +48,9 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 // 1. 동일 계정 기존 토큰 전부 무효화(동시 로그인 제한)
                 log.info("[JwtLoginSuccessHandler] 기존 토큰 무효화 시작 - username={}",
                     discodeitUserDetails.getUsername());
-                jwtRegistry.invalidateJwtInformationByUserId(userDto.id());
+                if (request.getRequestURI().equals("/api/auth/login")) {
+                    jwtRegistry.invalidateJwtInformationByUserId(userDto.id());
+                }
 
                 // 2. 새 Access/Refresh 발급
                 log.info("[JwtLoginSuccessHandler] 새 토큰 발급 시작");

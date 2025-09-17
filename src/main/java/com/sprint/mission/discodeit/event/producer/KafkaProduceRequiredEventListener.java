@@ -1,6 +1,9 @@
-package com.sprint.mission.discodeit.event;
+package com.sprint.mission.discodeit.event.producer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
+import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -9,6 +12,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+/**
+ * 이벤트를 직렬화해 kafka 토픽에 발행
+ * 로컬 이벤트를 kafka 브로커로 전파
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Component

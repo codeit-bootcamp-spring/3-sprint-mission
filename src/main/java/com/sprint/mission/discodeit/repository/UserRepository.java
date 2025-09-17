@@ -12,13 +12,14 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
 
+    @EntityGraph(attributePaths = "profile")
     Optional<User> findByUsername(String username);
 
     boolean existsByEmail(String email);
 
     boolean existsByUsername(String username);
 
-    @EntityGraph(attributePaths = {"profile"})
+    @EntityGraph(attributePaths = "profile")
     List<User> findAll();
 
     boolean existsByRole(Role role);
@@ -28,5 +29,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByUsernameAndIdNot(String username, UUID id);
 
     List<User> findByRole(Role role);
+
+    @EntityGraph(attributePaths = "profile")
+    Optional<User> findById(UUID id);
+
+    Optional<User> findByEmail(String email);
 
 }

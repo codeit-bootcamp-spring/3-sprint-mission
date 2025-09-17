@@ -1,12 +1,14 @@
 package com.sprint.mission.discodeit.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -25,7 +27,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
-    private final UserDetailsService userDetailsService;
+    private final DiscodeitUserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
     private final JwtRegistry jwtRegistry;
 
@@ -58,8 +60,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 log.info("[JwtAuthenticationFilter] JwtRegistry에서 토큰 활성 상태 확인됨");
 
                 // 사용자 단위 활성 여부
-                String username = tokenProvider.getUsernameFromToken(token);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                UUID userId = tokenProvider.getUserIdFromToken(token);
+                UserDetails userDetails = userDetailsService.loadUserById(userId);
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
@@ -67,8 +69,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authentication.setDetails(
                     new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.info("[JwtAuthenticationFilter] SecurityContext 인증 설정 완료: username={}",
-                    username);
+                log.info("[JwtAuthenticationFilter] SecurityContext 인증 설정 완료: userId={}",
+                    userId);
             }
         } catch (Exception e) {
             // 인증 과정에서 예외 발생 시 인증 컨텍스트를 초기화하고 401 응답을 반환한다.

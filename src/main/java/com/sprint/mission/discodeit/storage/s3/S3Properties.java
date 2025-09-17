@@ -17,6 +17,6 @@ public class S3Properties {
     private String secretKey;
     private String region;
     private String bucket;
-    private int expiration = 600;
+    private int presignedUrlExpiration = 600;
 
 }

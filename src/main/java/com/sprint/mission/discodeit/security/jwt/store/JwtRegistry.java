@@ -11,8 +11,6 @@ public interface JwtRegistry {
 
     boolean hasActiveJwtInformationByUserId(UUID userId);
 
-    boolean hasActiveJwtInformationByUsername(String username);
-
     boolean hasActiveJwtInformationByAccessToken(String accessToken);
 
     boolean hasActiveJwtInformationByRefreshToken(String refreshToken);

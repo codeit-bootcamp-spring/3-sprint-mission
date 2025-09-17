@@ -84,9 +84,10 @@ public class BasicMessageService implements MessageService {
             message.getId(), authorId, channelId);
 
         // 메시지 등록 이벤트 발행
-        publishMessageCreatedEvent(savedMessage);
-
-        return messageMapper.toDto(savedMessage);
+        MessageDto messageDto = messageMapper.toDto(savedMessage);
+        MessageCreatedEvent event = new MessageCreatedEvent(messageDto, channelId, message.getId());
+        eventPublisher.publishEvent(event);
+        return messageDto;
     }
 
     @Transactional(readOnly = true)
@@ -225,20 +226,5 @@ public class BasicMessageService implements MessageService {
         if (isContentEmpty && hasNoAttachments) {
             throw new MessageEmptyException();
         }
-    }
-
-    // 메시지 등록 알림 이벤트 발행
-    private MessageCreatedEvent publishMessageCreatedEvent(Message savedMessage) {
-        MessageCreatedEvent event = new MessageCreatedEvent(
-            savedMessage.getId(),
-            savedMessage.getChannel().getId(),
-            savedMessage.getChannel().getName(),
-            savedMessage.getAuthor().getId(),
-            savedMessage.getAuthor().getUsername(),
-            savedMessage.getContent(),
-            savedMessage.getCreatedAt()
-        );
-        eventPublisher.publishEvent(event);
-        return event;
     }
 }

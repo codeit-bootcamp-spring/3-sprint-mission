@@ -138,7 +138,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     }
 
     private String generatePresignedUrl(String key, String contentType) {
-        int expiration = props.getExpiration();
+        int expiration = props.getPresignedUrlExpiration();
         AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
 
         try (S3Presigner presigner = S3Presigner.builder()

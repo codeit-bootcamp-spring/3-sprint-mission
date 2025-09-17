@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -45,9 +46,8 @@ public class JwtLogoutHandler implements LogoutHandler {
                                 String username = tokenProvider.getUsernameFromToken(refreshToken);
                                 log.info("[JwtLogoutHandler] 쿠키 리프레시 토큰으로 사용자 식별: username={}",
                                     username);
-
-                                // 리프레시 토큰으로 해당 사용자의 모든 토큰 무효화 처리
-                                // 여기서는 개별 토큰 기반으로 처리하기 어려우므로 쿠키 만료로 대체
+                                UUID userId = tokenProvider.getUserIdFromToken(refreshToken);
+                                jwtRegistry.invalidateJwtInformationByUserId(userId);
                             }
                         } catch (Exception e) {
                             log.warn("[JwtLogoutHandler] 쿠키 토큰 처리 중 오류: {}", e.getMessage());

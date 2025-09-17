@@ -4,18 +4,19 @@ import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.jwt.store.JwtRegistry;
 import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +35,7 @@ public class AuthController {
 
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
-    private final UserDetailsService userDetailsService;
+    private final DiscodeitUserDetailsService userDetailsService;
     private final JwtRegistry jwtRegistry;
 
     @GetMapping("/csrf-token")
@@ -80,9 +81,9 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
-        DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailsService.loadUserByUsername(
-            username);
+        UUID userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+        DiscodeitUserDetails userDetails = (DiscodeitUserDetails) userDetailsService.loadUserById(
+            userId);
 
         try {
             // 새 토큰 발급
@@ -100,7 +101,7 @@ public class AuthController {
 
             JwtDto body = new JwtDto(userDto, newAccessToken);
 
-            log.info("[AuthController] 토큰 재발급 완료: username={}", username);
+            log.info("[AuthController] 토큰 재발급 완료: userId={}", userId);
             return ResponseEntity.ok(body);
         } catch (Exception e) {
             log.error("[AuthController] 토큰 재발급 중 오류: {}", e.getMessage(), e);

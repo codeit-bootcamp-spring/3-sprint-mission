@@ -8,6 +8,8 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.ChannelEvent;
+import com.sprint.mission.discodeit.event.EventType;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.InvalidChannelParticipantException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
@@ -19,11 +21,12 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,18 +41,15 @@ public class BasicChannelService implements ChannelService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final ChannelMapper channelMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     //private 채널생성
-    @CacheEvict(value = "channelsByUser", key = "#userId")
+    @CacheEvict(value = "channelsByUser", key = "#request.participantIds")
     @Transactional
     @Override
     public ChannelDto create(PrivateChannelCreateRequest request) {
         List<UUID> requestParticipantIds = new ArrayList<>(request.participantIds());
         log.info("[channel] 생성 요청: 참여자 수={}", requestParticipantIds.size());
-
-        Channel savedPrivateChannel = channelRepository.save(new Channel(ChannelType.PRIVATE));
-        log.info("[channel] 생성 완료: id={}, type={}", savedPrivateChannel.getId(),
-            savedPrivateChannel.getType());
 
         List<User> users = userRepository.findAllById(requestParticipantIds);
 
@@ -58,9 +58,25 @@ public class BasicChannelService implements ChannelService {
             requestParticipantIds.removeAll(found);
 
             log.warn("[channel] 참여자 추출 오류 - 유효하지 않은 Id 포함: {}", requestParticipantIds);
-            throw new InvalidChannelParticipantException(savedPrivateChannel.getId(),
-                requestParticipantIds);
+            throw new InvalidChannelParticipantException(null, requestParticipantIds);
         }
+
+        // 1:1 DM 중복 방지
+        if (requestParticipantIds.size() == 2) {
+            UUID user1 = requestParticipantIds.get(0);
+            UUID user2 = requestParticipantIds.get(1);
+
+            Optional<Channel> existing = readStatusRepository.findPrivateChannelByParticipants(
+                user1, user2);
+            if (existing.isPresent()) {
+                log.info("[channel] 기존 1:1 DM 반환: {}", existing.get().getId());
+                return channelMapper.toDto(existing.get());
+            }
+        }
+
+        Channel savedPrivateChannel = channelRepository.save(new Channel(ChannelType.PRIVATE));
+        log.info("[channel] 생성 완료: id={}, type={}", savedPrivateChannel.getId(),
+            savedPrivateChannel.getType());
 
         List<ReadStatus> readStatuses = users.stream()
             .map(user -> new ReadStatus(user, savedPrivateChannel,
@@ -68,6 +84,8 @@ public class BasicChannelService implements ChannelService {
             .toList();
 
         readStatusRepository.saveAll(readStatuses);
+        eventPublisher.publishEvent(
+            new ChannelEvent(savedPrivateChannel.getId(), savedPrivateChannel, EventType.CREATED));
         log.info("[channel] ReadStatus 저장 완료: count={}", readStatuses.size());
 
         return channelMapper.toDto(savedPrivateChannel);
@@ -85,6 +103,8 @@ public class BasicChannelService implements ChannelService {
 
         Channel savedPublicChannel = channelRepository.save(
             new Channel(ChannelType.PUBLIC, name, description));
+        eventPublisher.publishEvent(
+            new ChannelEvent(savedPublicChannel.getId(), savedPublicChannel, EventType.CREATED));
         log.info("[channel] 저장 완료: id={}", savedPublicChannel.getId());
 
         return channelMapper.toDto(savedPublicChannel);
@@ -103,11 +123,10 @@ public class BasicChannelService implements ChannelService {
             });
     }
 
-    @Cacheable(value = "channelsByUser", key = "#userId")
     @Transactional(readOnly = true)
     @Override
     public List<ChannelDto> findAllByUserId(UUID userId) {
-        log.info("[channel] 전체 조회 요청 (cacheable) - userId={} (캐시 miss 시 DB 접근)", userId);
+        log.info("[channel] 전체 조회 요청 - userId={}", userId);
         List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
             .map(ReadStatus::getChannel)
             .map(Channel::getId)
@@ -119,7 +138,7 @@ public class BasicChannelService implements ChannelService {
             .map(channelMapper::toDto)
             .toList();
 
-        log.info("[channel] 전체 조회 응답(DB 쿼리 실행됨): userId={}, 결과 개수={}", userId, channels.size());
+        log.info("[channel] 전체 조회 응답: userId={}, 결과 개수={}", userId, channels.size());
         return channels;
     }
 
@@ -148,6 +167,7 @@ public class BasicChannelService implements ChannelService {
         channel.update(newName, newDescription);
         log.info("[channel] 수정 완료: id={}, newName={}, newDescription={}", channelId, newName,
             newDescription);
+        eventPublisher.publishEvent(new ChannelEvent(channelId, channel, EventType.UPDATED));
 
         return channelMapper.toDto(channel);
     }
@@ -165,6 +185,7 @@ public class BasicChannelService implements ChannelService {
         messageRepository.deleteAllByChannelId(channelId);
         readStatusRepository.deleteAllByChannelId(channelId);
         channelRepository.deleteById(channelId);
+        eventPublisher.publishEvent(new ChannelEvent(channelId, null, EventType.DELETED));
 
         log.info("[channel] 삭제 완료: id={}", channelId);
     }

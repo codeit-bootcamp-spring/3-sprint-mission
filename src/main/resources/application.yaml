@@ -1,9 +1,11 @@
+# application.yaml
+
 spring:
   application:
     name: discodeit
 
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE}
 
   servlet:
     multipart:
@@ -15,7 +17,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     open-in-view: false
     generate-ddl: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -32,11 +34,6 @@ spring:
   cache:
     type: redis
     cache-names: users, channelsByUser, notificationsByUser
-    caffeine:
-      spec: >
-        maximumSize=100,
-        expireAfterAccess=600s,
-        recordStats
     redis:
       enable-statistics: true
   data:
@@ -46,13 +43,13 @@ spring:
 
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
-      group-id: discodeit-group
-      auto-offset-reset: earliest
+      group-id: discodeit-${random.uuid}
+      auto-offset-reset: latest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
@@ -103,6 +100,11 @@ discodeit:
       region: ${AWS_S3_REGION}
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
+
+  admin:
+    username: ${DISCODEIT_ADMIN_NAME}
+    password: ${DISCODEIT_ADMIN_PASSWORD}
+    email: ${DISCODEIT_ADMIN_EMAIL}
 
 logging:
   level:

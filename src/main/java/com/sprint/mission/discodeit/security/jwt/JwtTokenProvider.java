@@ -9,6 +9,11 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,7 +22,6 @@ import java.util.Date;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -38,10 +42,10 @@ public class JwtTokenProvider {
     // 애플리케이션 시작 시 한 번 호출되고, 이후 발급/검증 로직에서 재사용 됨
     public JwtTokenProvider(
         // application.yaml 파일에 정의된 프로퍼티 값 주입
-        @Value("${discodeit.jwt.access-token.secret}") String accessTokenSecret,
-        @Value("${discodeit.jwt.access-token.expiration-ms}") int accessTokenExpirationMs,
-        @Value("${discodeit.jwt.refresh-token.secret}") String refreshTokenSecret,
-        @Value("${discodeit.jwt.refresh-token.expiration-ms}") int refreshTokenExpirationMs
+        @Value("${jwt.access-token.secret}") String accessTokenSecret,
+        @Value("${jwt.access-token.expiration-ms}") int accessTokenExpirationMs,
+        @Value("${jwt.refresh-token.secret}") String refreshTokenSecret,
+        @Value("${jwt.refresh-token.expiration-ms}") int refreshTokenExpirationMs
     ) throws JOSEException {
 
         log.info("[TokenProvider] 생성자 호출됨: 토큰 서명/검증자 및 만료 시간 초기화");
@@ -99,19 +103,15 @@ public class JwtTokenProvider {
         Date expiryDate = new Date(now.getTime() + expirationMs);
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-            .subject(userDetails.getUsername())
+            .subject(userDetails.getUserId().toString())
             .jwtID(tokenId)
-            .claim("userId", userDetails.getUserId())
+            .claim("username", userDetails.getUsername())
+            .claim("email", userDetails.getUserDto().email())
+            .claim("role", userDetails.getUserDto().role().name())
             .claim("type", tokenType)
-            .claim("roles",
-                userDetails.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .toList()
-            )
             .issueTime(now)
             .expirationTime(expiryDate)
             .build();
-
         SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
 
         // 토큰 서명: 생성된 토큰에 서명자 적용하여 서명
@@ -270,6 +270,23 @@ public class JwtTokenProvider {
 
             return subject;
         } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid JWT token", e);
+        }
+    }
+
+    /**
+     * 토큰에서 userId(UUID)를 추출
+     */
+    public UUID getUserIdFromToken(String token) {
+        try {
+            log.info("[TokenProvider] getUserIdFromToken 호출됨: userId 추출 시작");
+
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            String subject = signedJWT.getJWTClaimsSet().getSubject();
+            return UUID.fromString(subject);
+
+        } catch (Exception e) {
+            log.warn("[TokenProvider] getUserIdFromToken 실패: {}", e.getMessage(), e);
             throw new IllegalArgumentException("Invalid JWT token", e);
         }
     }

@@ -12,13 +12,17 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.EventType;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.UserEvent;
+import com.sprint.mission.discodeit.event.publisher.KafkaEventPublisher;
 import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
 import com.sprint.mission.discodeit.exception.user.DuplicateUserException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import java.time.Instant;
 import java.util.List;
@@ -27,13 +31,11 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,7 +50,6 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-    private final UserDetailsService userDetailsService;
     private final ApplicationEventPublisher eventPublisher;
 
     @CacheEvict(value = "users", allEntries = true)
@@ -75,6 +76,7 @@ public class BasicUserService implements UserService {
 
         User user = new User(username, email, encodedPassword, nullableProfile);
         User savedUser = userRepository.save(user);
+        eventPublisher.publishEvent(new UserEvent(user.getId(), user, EventType.CREATED));
 
         log.info("[user] 생성 완료: userId={}, name={}, email={}, isProfile={}",
             user.getId(), username, email, nullableProfile != null);
@@ -95,18 +97,17 @@ public class BasicUserService implements UserService {
             });
     }
 
-    @Cacheable(value = "users")
     @Transactional(readOnly = true)
     @Override
     public List<UserDto> findAll() {
-        log.info("[user] 전체 조회 요청 (cacheable) - 캐시 miss 시 DB 접근");
+        log.info("[user] 전체 조회 요청");
 
         List<UserDto> userDtos = userRepository.findAll()
             .stream()
             .map(userMapper::toDto)
             .toList();
 
-        log.info("[user] 전체 조회 응답(DB 쿼리 실행됨): size={}", userDtos.size());
+        log.info("[user] 전체 조회 응답: size={}", userDtos.size());
         return userDtos;
     }
 
@@ -161,16 +162,19 @@ public class BasicUserService implements UserService {
 
         log.info("[user] 수정 완료: {}", logMessage);
 
-        String finalUsername = (newUsername != null) ? newUsername : user.getUsername();
-        UserDetails updatedUserDetails = userDetailsService.loadUserByUsername(finalUsername);
+        eventPublisher.publishEvent(new UserEvent(user.getId(), user, EventType.UPDATED));
+
+        UserDto updatedDto = userMapper.toDto(user);
+        DiscodeitUserDetails newDetails = new DiscodeitUserDetails(updatedDto, user.getPassword());
         Authentication newAuth = new UsernamePasswordAuthenticationToken(
-            updatedUserDetails,
-            updatedUserDetails.getPassword(),
-            updatedUserDetails.getAuthorities()
+            newDetails,
+            newDetails.getPassword(),
+            newDetails.getAuthorities()
         );
+
         SecurityContextHolder.getContext().setAuthentication(newAuth);
 
-        return userMapper.toDto(user);
+        return updatedDto;
     }
 
     @CacheEvict(value = "users", allEntries = true)
@@ -185,6 +189,7 @@ public class BasicUserService implements UserService {
         );
         Optional.ofNullable(user.getProfile()).ifPresent(binaryContentRepository::delete);
         userRepository.deleteById(userId);
+        eventPublisher.publishEvent(new UserEvent(userId, null, EventType.DELETED));
         log.info("[user] 삭제 완료: id={}", userId);
     }
 

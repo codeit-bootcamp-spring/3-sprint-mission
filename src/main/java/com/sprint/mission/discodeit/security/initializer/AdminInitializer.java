@@ -33,11 +33,20 @@ public class AdminInitializer implements ApplicationRunner {
         }
         log.info("기본 Admin 계정 생성 요청");
 
-        User user = new User(username, email, passwordEncoder.encode(password), null);
-        user.updateRole(Role.ADMIN);
-        userRepository.save(user);
-
-        log.info("기본 Admin 계정 생성 완료");
+        userRepository.findByEmail(email)
+            .ifPresentOrElse(
+                existing -> {
+                    existing.updateRole(Role.ADMIN);
+                    userRepository.save(existing);
+                    log.info("기존 유저를 Admin으로 승격: {}", email);
+                },
+                () -> {
+                    User user = new User(username, email, passwordEncoder.encode(password), null);
+                    user.updateRole(Role.ADMIN);
+                    userRepository.save(user);
+                    log.info("새 기본 Admin 계정 생성 완료");
+                }
+            );
     }
 
 }

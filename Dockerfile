@@ -13,7 +13,7 @@ COPY settings.gradle .
 # 의존성 다운로드 (별도 레이어로 캐시 최적화)
 # Gradle 실행 권한 부여
 RUN chmod +x ./gradlew
-RUN ./gradlew dependencies --no-daemon
+RUN ./gradlew dependencies --no-daemon || return 0
 
 # 파일 복사
 COPY . .
@@ -28,18 +28,14 @@ FROM amazoncorretto:17-alpine AS runtime
 
 WORKDIR /app
 
-# 빌드 결과물 경로 설정
-ARG PROJECT_NAME=discodeit
-ARG PROJECT_VERSION=1.2-M8
-
 # JAR 복사
-COPY --from=builder /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar app.jar
+COPY --from=builder /app/build/libs/*.jar app.jar
 
 # 환경 변수 설정
 ENV JVM_OPTS=""
 
-# 80 포트 노출
-EXPOSE 80
+# 포트 노출
+EXPOSE 8080
 
 # 애플리케이션 실행
-CMD ["sh", "-c", "java $JVM_OPTS -jar app.jar --spring.profiles.active=prod --server.port=80"]
+CMD ["sh", "-c", "java $JVM_OPTS -jar app.jar --spring.profiles.active=prod --server.port=8080"]

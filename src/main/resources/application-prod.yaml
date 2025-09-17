@@ -1,3 +1,5 @@
+# application-prod.yaml
+
 server:
   port: 80
 
@@ -5,6 +7,10 @@ spring:
   config:
     activate:
       on-profile: prod
+
+  kafka:
+    consumer:
+      group-id: discodeit-${random.uuid}
 
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -14,6 +20,7 @@ spring:
   jpa:
     properties:
       hibernate:
+        ddl-auto: validate
         format_sql: true
 logging:
   level:
@@ -22,11 +29,10 @@ logging:
     org.hibernate.SQL: off
     org.hibernate.orm.jdbc.bind: off
 
-discodeit:
-  jwt:
-    access-token:
-      secret: ${JWT_ACCESS_SECRET}
-      expiration-ms: 900000
-    refresh-token:
-      secret: ${JWT_REFRESH_SECRET}
-      expiration-ms: 1209600000
+jwt:
+  access-token:
+    secret: ${JWT_ACCESS_SECRET}
+    expiration-ms: 900000
+  refresh-token:
+    secret: ${JWT_REFRESH_SECRET}
+    expiration-ms: 1209600000
